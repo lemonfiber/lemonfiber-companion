@@ -26,11 +26,7 @@ use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichWalkthroughArm
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A walk with only what is required, and nothing optional said. */
 function aBareWalk(string $proves = 'That it works.', ?WhatWasWalked $item = null): AWalkthrough
@@ -55,16 +51,16 @@ function theOptionalPartsOf(AWalkthrough $walk): array
 {
     return [
         'item' => $walk->item()->either(
-            named: static fn(string $item): WhichWalkthroughArm => new WhichWalkthroughArm($item),
-            nothingChosen: static fn(): WhichWalkthroughArm => new WhichWalkthroughArm('(none)'),
+            named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut($item),
+            nothingChosen: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
         'link' => $walk->link(
-            linked: static fn(HowTheImportLinked $link): WhichWalkthroughArm => new WhichWalkthroughArm($link->value),
-            notImported: static fn(): WhichWalkthroughArm => new WhichWalkthroughArm('(none)'),
+            linked: static fn(HowTheImportLinked $link): TheWordCarriedOut => new TheWordCarriedOut($link->value),
+            notImported: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
         'stopped' => $walk->stopped(
-            at: static fn(WhereItStopped $stopped): WhichWalkthroughArm => new WhichWalkthroughArm($stopped->remedy()),
-            didNotStop: static fn(): WhichWalkthroughArm => new WhichWalkthroughArm('(none)'),
+            at: static fn(WhereItStopped $stopped): TheWordCarriedOut => new TheWordCarriedOut($stopped->remedy()),
+            didNotStop: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
     ];
 }
@@ -148,8 +144,8 @@ it('carries a line as it was said, with its detail or without one', function ():
     $without = ALineItSaid::withoutDetail(WalkthroughStep::Importing, 'Importing…');
 
     $detail = static fn(ALineItSaid $line): string => $line->detail(
-        said: static fn(string $detail): WhichWalkthroughArm => new WhichWalkthroughArm($detail),
-        nothing: static fn(): WhichWalkthroughArm => new WhichWalkthroughArm('(none)'),
+        said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
     )->said;
 
     expect($with->step())->toBe(WalkthroughStep::Grabbing)

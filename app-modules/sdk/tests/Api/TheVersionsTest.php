@@ -22,6 +22,7 @@ use Modules\Sdk\Api\VersionsAreUnreadable;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -76,18 +77,12 @@ function aVersionPayload(array $changed = [], array $changelog = []): array
 function theGroupsRead(WhatRunsHere $runs): string
 {
     return $runs->running(
-        named: static fn(Release $release, array $changes): AsRead => new AsRead(implode(' / ', array_map(
+        named: static fn(Release $release, array $changes): TheWordCarriedOut => new TheWordCarriedOut(implode(' / ', array_map(
             static fn(AGroupOfChanges $group): string => sprintf('%s: %s', $group->title(), implode(', ', iterator_to_array($group, preserve_keys: false))),
             $changes,
         ))),
-        notNamed: static fn(): AsRead => new AsRead('-'),
+        notNamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
     )->said;
-}
-
-/** One line carried out of an arm. */
-final readonly class AsRead
-{
-    public function __construct(public string $said) {}
 }
 
 it('reads an engine the stack could not ask as none, rather than refusing the rest', function (): void {

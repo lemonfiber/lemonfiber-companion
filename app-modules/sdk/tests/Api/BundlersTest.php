@@ -40,6 +40,7 @@ use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatABundleSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -101,18 +102,12 @@ function whatBecameOfTheBundleAnswered(MockResponse $answered): string
     return new Bundlers(new PinnedClients(), SequencedEntropy::counting())
         ->whatBecameOf(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), Job::named('a-bundle'))
         ->either(
-            stillRunning: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('still running'),
-            done: static fn(ABundle $bundle): WhatTheBundlerSaid => new WhatTheBundlerSaid(WhatABundleSays::of($bundle)),
-            refused: static fn(ARefusalInItsWords $why): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
-            ended: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('ended'),
-            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->kind()->name),
+            stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+            done: static fn(ABundle $bundle): TheWordCarriedOut => new TheWordCarriedOut(WhatABundleSays::of($bundle)),
+            refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
+            ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
         )->said;
-}
-
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheBundlerSaid
-{
-    public function __construct(public string $said) {}
 }
 
 it('describes a bundle at the support action, saying every choice and writing nothing', function (): void {
@@ -192,8 +187,8 @@ it('fetches a written bundle by the last segment of its path, and hands back its
     $said = new Bundlers(new PinnedClients(), SequencedEntropy::counting())
         ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
         ->either(
-            fetched: static fn(ABundleFile $file): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
-            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->kind()->name),
+            fetched: static fn(ABundleFile $file): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s: %s', $file->named(), $file->bytes())),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
         )->said;
 
     expect($said)->toBe("lemonfiber-support-2026-09-26T10-00-00Z.tar.gz: \x1F\x8B\x08\x00an archive")
@@ -207,8 +202,8 @@ it('reads a bundle it could not fetch as the obstacle the refusal was', function
     $said = new Bundlers(new PinnedClients(), SequencedEntropy::counting())
         ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
         ->either(
-            fetched: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('fetched'),
-            met: static fn(Obstacle $met): WhatTheBundlerSaid => new WhatTheBundlerSaid($met->kind()->name),
+            fetched: static fn(): TheWordCarriedOut => new TheWordCarriedOut('fetched'),
+            met: static fn(Obstacle $met): TheWordCarriedOut => new TheWordCarriedOut($met->kind()->name),
         )->said;
 
     expect($said)->toBe($why->kind()->name);

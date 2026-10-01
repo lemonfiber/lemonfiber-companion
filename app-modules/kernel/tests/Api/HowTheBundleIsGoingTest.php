@@ -23,21 +23,17 @@ use Modules\Kernel\Api\WhereABundleIs;
 
 use function sprintf;
 
-/** One line carried out of an arm of a bundle being followed. */
-final readonly class WhichArmTheBundleTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following a bundle takes, and what it carried there. */
 function howTheBundleIsGoingReads(HowTheBundleIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('running'),
-        done: static fn(ABundle $bundle): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('done:%d', $bundle->bytes())),
-        refused: static fn(ARefusalInItsWords $why): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
-        ended: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(ABundle $bundle): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%d', $bundle->bytes())),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

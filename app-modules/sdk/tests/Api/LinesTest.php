@@ -19,13 +19,8 @@ use Modules\Sdk\Api\Lines;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
-
-/** What one line's severity came to, carried out of `level()`, which must hand back an object. */
-final readonly class WhatALevelCameTo
-{
-    public function __construct(public string $said) {}
-}
 
 /**
  * A window whose lines arrived on a wire version this app has never heard of.
@@ -254,8 +249,8 @@ function everyLevelFolded(Scrollback $scrollback): string
 
     foreach ($scrollback as $line) {
         $levels[] = $line->level(
-            declared: static fn(HowSeriousALineIs $level): WhatALevelCameTo => new WhatALevelCameTo($level->value),
-            undeclared: static fn(): WhatALevelCameTo => new WhatALevelCameTo('-'),
+            declared: static fn(HowSeriousALineIs $level): TheWordCarriedOut => new TheWordCarriedOut($level->value),
+            undeclared: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
         )->said;
     }
 

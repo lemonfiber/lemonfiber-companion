@@ -22,11 +22,7 @@ use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatTheLineWasSaidToBe
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A limited line and nothing else known about it. */
 function aLimitedLine(): HowTheLineIsShared
@@ -39,10 +35,10 @@ function everyArmOf(HowTheLineIsShared $line): string
 {
     return sprintf(
         '%s|%s|%s|%s',
-        $line->capacity(static fn(WhatTheLineCarries $c): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe(sprintf('%d/%d', $c->down(), $c->up())), static fn(): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe('unmeasured'))->said,
-        $line->cap(static fn(AMonthlyCap $c): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe(sprintf('%d', $c->monthly())), static fn(): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe('uncapped'))->said,
-        $line->spentCap(static fn(string $doing): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe($doing), static fn(): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe('unspent'))->said,
-        $line->uploadCost(static fn(string $costs): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe($costs), static fn(): WhatTheLineWasSaidToBe => new WhatTheLineWasSaidToBe('no upload limit'))->said,
+        $line->capacity(static fn(WhatTheLineCarries $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d', $c->down(), $c->up())), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unmeasured'))->said,
+        $line->cap(static fn(AMonthlyCap $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $c->monthly())), static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncapped'))->said,
+        $line->spentCap(static fn(string $doing): TheWordCarriedOut => new TheWordCarriedOut($doing), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unspent'))->said,
+        $line->uploadCost(static fn(string $costs): TheWordCarriedOut => new TheWordCarriedOut($costs), static fn(): TheWordCarriedOut => new TheWordCarriedOut('no upload limit'))->said,
     );
 }
 

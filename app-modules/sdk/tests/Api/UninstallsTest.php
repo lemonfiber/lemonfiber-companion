@@ -21,6 +21,7 @@ use Modules\Sdk\Api\Uninstalls;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -76,12 +77,6 @@ function anUninstallPayload(array $manifest, array $removal = ['state' => 'surve
     return ['manifest' => $manifest, 'removal' => $removal];
 }
 
-/** A line carried out of an `either()` arm. */
-final readonly class WhatTheUninstallReadAs
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Each line the manifest reaches, as a line of its own.
  *
@@ -99,8 +94,8 @@ function everyLineTheManifestReaches(WhatTakingItOffComesTo $read): array
             $item->what(),
             $item->holdsACredential() ? 'secret' : 'plain',
             $item->size()->either(
-                known: static fn(int $figure): WhatTheUninstallReadAs => new WhatTheUninstallReadAs(sprintf('%d bytes', $figure)),
-                unread: static fn(): WhatTheUninstallReadAs => new WhatTheUninstallReadAs('unread'),
+                known: static fn(int $figure): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d bytes', $figure)),
+                unread: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unread'),
             )->said,
             $item->isKept() ? sprintf('kept: %s', $item->whyItIsKept()) : 'going',
         );
@@ -155,18 +150,18 @@ function everythingTheManifestCarries(array $manifest): string
 function whereTheUninstallGot(array $removal): string
 {
     return Uninstalls::in(uninstallSaying(anUninstallPayload(aPlainManifest(), $removal)))->removal()->either(
-        surveyed: static fn(): WhatTheUninstallReadAs => new WhatTheUninstallReadAs('surveyed'),
-        rehearsed: static fn(): WhatTheUninstallReadAs => new WhatTheUninstallReadAs('rehearsed'),
-        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): WhatTheUninstallReadAs
-            => new WhatTheUninstallReadAs(sprintf('complete %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)))),
-        partial: static function (NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): WhatTheUninstallReadAs {
+        surveyed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('surveyed'),
+        rehearsed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('rehearsed'),
+        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('complete %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)))),
+        partial: static function (NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): TheWordCarriedOut {
             $things = [];
 
             foreach ($left as $thing) {
                 $things[] = sprintf('%s/%s/%s', $thing->name(), $thing->why(), $thing->byHand());
             }
 
-            return new WhatTheUninstallReadAs(sprintf('partial %s / %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)), implode(',', $things)));
+            return new TheWordCarriedOut(sprintf('partial %s / %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)), implode(',', $things)));
         },
     )->said;
 }

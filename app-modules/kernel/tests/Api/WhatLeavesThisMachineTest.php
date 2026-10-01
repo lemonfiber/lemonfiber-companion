@@ -24,6 +24,8 @@ use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /** Fetching images, one of lemonfiber's own requests, as a stack would describe it. */
 function aRequestOfOursAboutImages(): ARequestOfOurs
 {
@@ -38,18 +40,12 @@ function aRequestOfOursAboutImages(): ARequestOfOurs
     );
 }
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheLeavingTook
-{
-    public function __construct(public string $said) {}
-}
-
 /** Which arm an answer takes, and what it carried there. */
 function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
 {
     return $answer->either(
-        leaving: static fn(WhatLeavesThisMachine $leaving): WhichArmTheLeavingTook => new WhichArmTheLeavingTook(sprintf('leaving:%d/%d', $leaving->ours()->count(), $leaving->theirs()->count())),
-        met: static fn(Obstacle $why): WhichArmTheLeavingTook => new WhichArmTheLeavingTook(sprintf('met:%s', $why->kind()->value)),
+        leaving: static fn(WhatLeavesThisMachine $leaving): TheWordCarriedOut => new TheWordCarriedOut(sprintf('leaving:%d/%d', $leaving->ours()->count(), $leaving->theirs()->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

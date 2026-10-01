@@ -24,6 +24,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatWalksThrough;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -55,12 +56,6 @@ function theSessionAWalkIsAskedWith(): Session
     return Session::of('a-session-not-a-secret');
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheWalkCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /** A finished walkthrough, every field of it folded into one line. */
 function everythingTheWalkSaid(AWalkthrough $walk): string
 {
@@ -68,8 +63,8 @@ function everythingTheWalkSaid(AWalkthrough $walk): string
 
     foreach ($walk->lines() as $line) {
         $lines[] = sprintf('%s:%s:%s', $line->step()->value, $line->said(), $line->detail(
-            said: static fn(string $detail): WhatTheWalkCameTo => new WhatTheWalkCameTo($detail),
-            nothing: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('(none)'),
+            said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+            nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said);
     }
 
@@ -90,29 +85,29 @@ function everythingTheWalkSaid(AWalkthrough $walk): string
         $walk->state()->value,
         $walk->proves(),
         $walk->item()->either(
-            named: static fn(string $item): WhatTheWalkCameTo => new WhatTheWalkCameTo($item),
-            nothingChosen: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('(no item)'),
+            named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut($item),
+            nothingChosen: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(no item)'),
         )->said,
         implode(';', $lines),
         implode(';', $suggestions),
         $walk->wentOnInTheBackground() ? 'in the background' : 'waited out',
         $walk->wasAlreadyHere() ? 'already here' : 'fetched',
         $walk->link(
-            linked: static fn(HowTheImportLinked $link): WhatTheWalkCameTo => new WhatTheWalkCameTo($link->value),
-            notImported: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('(no link)'),
+            linked: static fn(HowTheImportLinked $link): TheWordCarriedOut => new TheWordCarriedOut($link->value),
+            notImported: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(no link)'),
         )->said,
         implode(',', $next),
         $walk->stopped(
-            at: static function (WhereItStopped $stopped): WhatTheWalkCameTo {
+            at: static function (WhereItStopped $stopped): TheWordCarriedOut {
                 $logs = [];
 
                 foreach ($stopped->logs() as $log) {
                     $logs[] = sprintf('[%s]', $log);
                 }
 
-                return new WhatTheWalkCameTo(sprintf('%s:%s:%s:%s', $stopped->step()->value, $stopped->why()->value, $stopped->remedy(), implode('', $logs)));
+                return new TheWordCarriedOut(sprintf('%s:%s:%s:%s', $stopped->step()->value, $stopped->why()->value, $stopped->remedy(), implode('', $logs)));
             },
-            didNotStop: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('(did not stop)'),
+            didNotStop: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(did not stop)'),
         )->said,
     ]);
 }
@@ -121,10 +116,10 @@ function everythingTheWalkSaid(AWalkthrough $walk): string
 function whatTheWalkBecame(WalkingThrough $walking): string
 {
     return $walking->whatBecameOf(aStackThatCanWalk(), theSessionAWalkIsAskedWith(), Job::named(AStackThatWalksThrough::THE_JOB))->either(
-        stillRunning: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('still running'),
-        done: static fn(AWalkthrough $walk): WhatTheWalkCameTo => new WhatTheWalkCameTo(everythingTheWalkSaid($walk)),
-        ended: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('ended'),
-        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->kind()->name),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(AWalkthrough $walk): TheWordCarriedOut => new TheWordCarriedOut(everythingTheWalkSaid($walk)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -132,8 +127,8 @@ function whatTheWalkBecame(WalkingThrough $walking): string
 function howTheWalkStarted(WalkingThrough $walking, WhatToWalk $asked): string
 {
     return $walking->walk(aStackThatCanWalk(), theSessionAWalkIsAskedWith(), $asked)->either(
-        started: static fn(Job $job): WhatTheWalkCameTo => new WhatTheWalkCameTo(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -324,8 +319,8 @@ it('the fake remembers what it was asked to walk and the handle it was asked aft
 
     expect($walking->walked())->toHaveCount(1)
         ->and($walking->walked()[0]->either(
-            named: static fn(string $item): WhatTheWalkCameTo => new WhatTheWalkCameTo($item),
-            likeliest: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('(likeliest)'),
+            named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut($item),
+            likeliest: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(likeliest)'),
         )->said)->toBe('Sintel')
         ->and($walking->followed())->toHaveCount(1)
         ->and($walking->followed()[0]->shown())->toBe(AStackThatWalksThrough::THE_JOB);

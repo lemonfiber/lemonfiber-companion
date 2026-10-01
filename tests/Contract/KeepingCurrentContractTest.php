@@ -33,6 +33,7 @@ use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -341,35 +342,29 @@ function whatItWouldChange(KeepingCurrent $keeping): Services
     );
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheUpkeepTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Where the stack stands, folded to a word, so two answers can be compared. */
 function whereItStands(KeepingCurrent $keeping): string
 {
     return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
-        stands: static function (Upkeep $upkeep): WhatTheUpkeepTurnedOutToSay {
+        stands: static function (Upkeep $upkeep): TheWordCarriedOut {
             $history = [];
 
             foreach ($upkeep->history() as $release) {
                 $history[] = $release->wasWithdrawn() ? sprintf('%s(withdrawn)', $release->version()) : $release->version();
             }
 
-            return new WhatTheUpkeepTurnedOutToSay(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s/%s/%s/%s',
                 $upkeep->againstThePins()->value,
                 $upkeep->inUse(
-                    named: static fn(Release $inUse): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($inUse->version()),
-                    unstated: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('unstated'),
+                    named: static fn(Release $inUse): TheWordCarriedOut => new TheWordCarriedOut($inUse->version()),
+                    unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
                 )->said,
                 $upkeep->hasSomethingToOffer() ? 'offered' : 'nothing offered',
                 implode(',', $history),
             ));
         },
-        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -384,10 +379,10 @@ function whereItStands(KeepingCurrent $keeping): string
 function howItWasTaken(KeepingCurrent $keeping, TakingAnUpdate $agreed): string
 {
     return $keeping->take(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), $agreed)->either(
-        started: static fn(Job $job): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay(
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('following %s', $job->shown()),
         ),
-        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -559,18 +554,18 @@ function whatTheTakingSaid(KeepingCurrent $keeping): string
     return $keeping
         ->whatBecameOf(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), Job::named(AStackThatKeepsCurrent::THE_JOB))
         ->either(
-            stillRunning: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('still running'),
-            done: static function (Upkeep $report): WhatTheUpkeepTurnedOutToSay {
+            stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+            done: static function (Upkeep $report): TheWordCarriedOut {
                 $said = [];
 
                 foreach ($report->howItWent() as $service) {
                     $said[] = sprintf('%s:%s:%s', $service->service()->named(), $service->ending()->value, $service->undo()->value);
                 }
 
-                return new WhatTheUpkeepTurnedOutToSay(implode(' ', $said));
+                return new TheWordCarriedOut(implode(' ', $said));
             },
-            ended: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('ended'),
-            met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
+            ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
         )->said;
 }
 
@@ -671,12 +666,6 @@ function thePayloadShapeOfTheUpdateEnvelope(): string
     return $shape[1] ?? '';
 }
 
-/** One arm's name, so a fold can be asserted on rather than counted. */
-final readonly class WhichArmARowReached
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * A stack whose record holds one release, carrying whatever a case puts in `delivers`.
  *
@@ -721,10 +710,10 @@ function whatThatListedReleaseDelivers(array $release): string
 {
     foreach (Standings::in(new Envelope(1, 'update', aStackWhoseRecordHolds($release)))->history() as $found) {
         return $found->delivers()->either(
-            said: static fn(string $prose): WhichArmARowReached => new WhichArmARowReached(
+            said: static fn(string $prose): TheWordCarriedOut => new TheWordCarriedOut(
                 sprintf('said:%s', $prose),
             ),
-            saidNothing: static fn(): WhichArmARowReached => new WhichArmARowReached('silent'),
+            saidNothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('silent'),
         )->said;
     }
 

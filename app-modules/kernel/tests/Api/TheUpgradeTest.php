@@ -21,11 +21,7 @@ use Modules\Kernel\Api\WhereTheAskingStands;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheUpgradeTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** One kind of media, with any of its words replaced where a test names it. */
 function aKindToUpgrade(string $kind = 'movies', string $preset = 'Maximum', string $size = '~15 GB'): OneKindUpgraded
@@ -86,8 +82,8 @@ it('makes a yes to an upgrade only out of one that was described', function (): 
 it('tells an upgrade from what stood in the way of it', function (): void {
     $upgrade = TheUpgrade::described();
     $arm = static fn(WhatTheUpgradeCameTo $came): string => $came->either(
-        said: static fn(TheUpgrade $read): WhichArmTheUpgradeTook => new WhichArmTheUpgradeTook($read === $upgrade ? 'said' : 'another'),
-        met: static fn(Obstacle $why): WhichArmTheUpgradeTook => new WhichArmTheUpgradeTook($why->kind()->value),
+        said: static fn(TheUpgrade $read): TheWordCarriedOut => new TheWordCarriedOut($read === $upgrade ? 'said' : 'another'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 
     expect($arm(WhatTheUpgradeCameTo::said($upgrade)))->toBe('said')

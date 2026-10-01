@@ -24,6 +24,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatChecksItself;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The SelfChecking contract, run against the adapter and against the fake.
@@ -104,17 +105,11 @@ function everyWayOfAskingAboutItself(MockResponse $answered, ?Obstacle $why = nu
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheCopyTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheCopySays(SelfChecking $checking): string
 {
     return $checking->checkedOn(aStackThatKnowsItsOwnVersion(), Session::of('a-session-not-a-secret'))->either(
-        found: static fn(ThisCopyOfLemonfiber $copy): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay(sprintf(
+        found: static fn(ThisCopyOfLemonfiber $copy): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%s|%s|%s|%s|%s|%s',
             $copy->running(),
             $copy->gotThere()->installed()->value,
@@ -123,14 +118,14 @@ function everythingTheCopySays(SelfChecking $checking): string
             $copy->released()->version(),
             $copy->untold(),
             $copy->updatedBy()->either(
-                byRunning: static fn(string $command): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay(sprintf('run %s', $command)),
-                instead: static fn(string $why): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay(sprintf('instead %s', $why)),
-                notSaid: static fn(): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay('-'),
+                byRunning: static fn(string $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('run %s', $command)),
+                instead: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('instead %s', $why)),
+                notSaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
             )->said,
             $copy->brings()->carries(),
             $copy->brings()->afterwards(),
         )),
-        met: static fn(Obstacle $why): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

@@ -22,6 +22,7 @@ use Modules\Sdk\Api\Records;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -84,23 +85,17 @@ function theFirstChangeIn(TheRecord $record): Change
     throw new LogicException('The record held no change.');
 }
 
-/** One line carried out of the fold. */
-final readonly class WhatTheRecordedChangeSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** Where putting a change back stops short, as one line, or the word for nowhere. */
 function whatARecordedChangeSaysOfItsLimits(Change $change): string
 {
     return $change->stopsShort(
-        there: static fn(WhereItStopsShort $where): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid(
+        there: static fn(WhereItStopsShort $where): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('%s / %s', $where->why(), $where->instead(
-                said: static fn(string $what): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid($what),
-                nothing: static fn(): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid('-'),
+                said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+                nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
             )->said),
         ),
-        nowhere: static fn(): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid('nowhere'),
+        nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
     )->said;
 }
 
@@ -241,8 +236,8 @@ it('N11-R10 — reads a zero stamp as an unreadable clock, never as 1970', funct
 
     expect($unreadable->isTheSameMomentAs(WhenItWasMade::unreadable()))->toBeFalse()
         ->and($unreadable->either(
-            at: static fn(Instant $at): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid(sprintf('%d', $at->epochSeconds())),
-            unreadable: static fn(): WhatTheRecordedChangeSaid => new WhatTheRecordedChangeSaid('unreadable'),
+            at: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $at->epochSeconds())),
+            unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unreadable'),
         )->said)->toBe('unreadable')
         // The second after it is a moment: only zero means *nobody could tell*.
         ->and($known->isTheSameMomentAs(WhenItWasMade::at(Instant::atEpochSeconds(1))))->toBeTrue();

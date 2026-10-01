@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\TheWordCarriedOut;
 
 // The Sharing contract, run against the adapter and against the fake.
 //
@@ -58,20 +59,9 @@ function aReportToShare(): Assembled
 function howTheSharingWent(Handed $handed): string
 {
     return $handed->either(
-        over: static fn(): WhatTheSheetDid => new WhatTheSheetDid('over'),
-        refused: static fn(WhyNothingWasShared $why): WhatTheSheetDid => new WhatTheSheetDid($why->value),
+        over: static fn(): TheWordCarriedOut => new TheWordCarriedOut('over'),
+        refused: static fn(WhyNothingWasShared $why): TheWordCarriedOut => new TheWordCarriedOut($why->value),
     )->said;
-}
-
-/**
- * One word carried out of an `either()` arm.
- *
- * Named for this file rather than something general: the root suites share one
- * namespace, and two classes of a name are a fatal the moment both load (`G10`).
- */
-final readonly class WhatTheSheetDid
-{
-    public function __construct(public string $said) {}
 }
 
 it('N4-R13 — hands the report over and says it did', function (): void {

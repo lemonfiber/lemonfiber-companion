@@ -22,15 +22,10 @@ use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\TheWordCarriedOut;
 
 /** The moment every code in this file is read at. */
 const NOW = 1_000;
-
-/** Something to hand a closure that has to answer with an object. */
-final readonly class Answered
-{
-    public function __construct(public string $with) {}
-}
 
 /** A clock stopped at the moment above. */
 function stopped(): Clock
@@ -134,13 +129,13 @@ it('hands the confirmation and the material it is about across together', functi
     $said = parsed(digestOf('b'));
 
     $answered = WhatTheCodeSaysSoFar::comparing($said)->confirmedByTheOperator(
-        confirmed: static fn(Pairing $about, FingerprintWasConfirmed $by): Answered => new Answered(
+        confirmed: static fn(Pairing $about, FingerprintWasConfirmed $by): TheWordCarriedOut => new TheWordCarriedOut(
             $about === $said && $by->covers(AtAGlance::of(Fingerprint::of(digestOf('b')))) ? 'both' : 'wrong',
         ),
-        notYet: static fn(): Answered => new Answered('nothing'),
+        notYet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     );
 
-    expect($answered->with)->toBe('both');
+    expect($answered->said)->toBe('both');
 });
 
 it('hands the scanned road the material without minting a confirmation', function (): void {
@@ -151,11 +146,11 @@ it('hands the scanned road the material without minting a confirmation', functio
     $said = parsed(digestOf('c'));
 
     $answered = WhatTheCodeSaysSoFar::comparing($said)->material(
-        read: static fn(Pairing $about): Answered => new Answered($about === $said ? 'the same material' : 'another'),
-        notYet: static fn(): Answered => new Answered('nothing'),
+        read: static fn(Pairing $about): TheWordCarriedOut => new TheWordCarriedOut($about === $said ? 'the same material' : 'another'),
+        notYet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     );
 
-    expect($answered->with)->toBe('the same material');
+    expect($answered->said)->toBe('the same material');
 });
 
 it('has no material to hand over where the code did not parse', function (): void {
@@ -170,11 +165,11 @@ it('has no material to hand over where the code did not parse', function (): voi
         // The reading arm names nothing, because reaching it at all is the
         // failure — there is no `Pairing` for it to have been handed.
         $answered = $said->material(
-            read: static fn(): Answered => new Answered('handed over material'),
-            notYet: static fn(): Answered => new Answered('nothing'),
+            read: static fn(): TheWordCarriedOut => new TheWordCarriedOut('handed over material'),
+            notYet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
         );
 
-        expect($answered->with)->toBe('nothing');
+        expect($answered->said)->toBe('nothing');
     }
 });
 
@@ -187,13 +182,13 @@ it('makes no confirmation about a code that never reached the comparison', funct
     // the assertion: it must not be called at all, and a closure taking no
     // parameters would not prove that it was offered the right ones.
     $answered = WhatTheCodeSaysSoFar::unreadable()->confirmedByTheOperator(
-        confirmed: static fn(Pairing $about, FingerprintWasConfirmed $by): Answered => new Answered(sprintf(
+        confirmed: static fn(Pairing $about, FingerprintWasConfirmed $by): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'made one about %s, covered: %s',
             $about->at()->forTheClient(),
             $by->covers(AtAGlance::of($about->presenting())) ? 'yes' : 'no',
         )),
-        notYet: static fn(): Answered => new Answered('nothing'),
+        notYet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     );
 
-    expect($answered->with)->toBe('nothing');
+    expect($answered->said)->toBe('nothing');
 });

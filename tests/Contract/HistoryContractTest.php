@@ -23,6 +23,7 @@ use Modules\Sdk\Api\Recorders;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The History contract, run against the adapter and against the fake.
@@ -146,17 +147,11 @@ function everyWayOfAskingForTheRecord(MockResponse $answered, ?Obstacle $why = n
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheRecordTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the record says, folded to one line, so two answers can be compared. */
 function everythingTheRecordSays(History $history): string
 {
     return $history->recordedOn(aStackThatKeepsARecordOfItself(), theSessionTheRecordIsAskedWith())->either(
-        record: static function (TheRecord $record): WhatTheRecordTurnedOutToSay {
+        record: static function (TheRecord $record): TheWordCarriedOut {
             $rows = [$record->horizon()];
 
             foreach ($record as $change) {
@@ -166,26 +161,26 @@ function everythingTheRecordSays(History $history): string
                     $change->operation(),
                     $change->target(),
                     $change->when()->either(
-                        at: static fn(Instant $at): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay(sprintf('%d', $at->epochSeconds())),
-                        unreadable: static fn(): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay('clock unreadable'),
+                        at: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $at->epochSeconds())),
+                        unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('clock unreadable'),
                     )->said,
                     $change->reversal()->value,
                     $change->alongside(),
                     $change->stopsShort(
-                        there: static fn(WhereItStopsShort $where): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay(
+                        there: static fn(WhereItStopsShort $where): TheWordCarriedOut => new TheWordCarriedOut(
                             sprintf('%s/%s', $where->why(), $where->instead(
-                                said: static fn(string $what): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay($what),
-                                nothing: static fn(): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay('-'),
+                                said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+                                nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
                             )->said),
                         ),
-                        nowhere: static fn(): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay('-/-'),
+                        nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-/-'),
                     )->said,
                 );
             }
 
-            return new WhatTheRecordTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

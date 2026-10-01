@@ -22,6 +22,7 @@ use Modules\Sdk\Api\PinnedDoors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Admitting contract, run against the adapter and against the fake.
@@ -146,27 +147,15 @@ function everyDoor(MockResponse $answered, ?Obstacle $why = null): array
     ];
 }
 
-/**
- * One word carried out of an `either()` arm.
- *
- * `Admitted::either()` answers with an object, so that a caller cannot pull a
- * session out without saying what happens the other way. A test still wants to
- * compare a string, and this is the smallest honest way across.
- */
-final readonly class WhatTheDoorDid
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a door answered, as a word, whichever arm it took. */
 function whatHappenedAt(Admitting $door, ?Credential $said = null): string
 {
     return $door->admit(aStackWithADoor(), $said ?? Credential::of('the-operators-password'))
         ->either(
-            opened: static fn(Session $session, Instant $until): WhatTheDoorDid => new WhatTheDoorDid(
+            opened: static fn(Session $session, Instant $until): TheWordCarriedOut => new TheWordCarriedOut(
                 sprintf('opened %s until %d', $session->forTheHeader(), $until->epochSeconds()),
             ),
-            refused: static fn(Obstacle $why): WhatTheDoorDid => new WhatTheDoorDid($why->kind()->value),
+            refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
         )->said;
 }
 
@@ -220,10 +209,10 @@ it('answers exactly one way, and answers at all', function (): void {
     // screen that says nothing.
     foreach (everyDoor(anOpening()) as $which => $make) {
         $arms = 0;
-        $count = static function () use (&$arms): WhatTheDoorDid {
+        $count = static function () use (&$arms): TheWordCarriedOut {
             $arms++;
 
-            return new WhatTheDoorDid('counted');
+            return new TheWordCarriedOut('counted');
         };
 
         $make()->admit(aStackWithADoor(), Credential::of('the-operators-password'))

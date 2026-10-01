@@ -19,21 +19,17 @@ use Modules\Kernel\Api\WhatTheRemovalFound;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheRemovalTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer took, and what it carried. */
 function theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('underway:%s', $job->shown())),
-        answered: static fn(ARemoval $removal): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('answered:%s', $removal->who()->name())),
-        ended: static fn(): WhichArmTheRemovalTook => new WhichArmTheRemovalTook('ended'),
-        refused: static fn(string $because): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('met:%s', $why->kind()->value)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway:%s', $job->shown())),
+        answered: static fn(ARemoval $removal): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered:%s', $removal->who()->name())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

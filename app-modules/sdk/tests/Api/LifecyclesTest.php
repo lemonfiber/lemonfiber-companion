@@ -17,6 +17,7 @@ use Modules\Sdk\Api\Lifecycles;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -133,23 +134,17 @@ function theRestartRead(mixed $data): string
         '%s / %s / not back %s / left out %s / ports %s / %s',
         $report->was()->value,
         $report->amountsTo(
-            said: static fn(HowTheStackIsRunning $condition): ALineTheReportGave => new ALineTheReportGave($condition->value),
-            unsaid: static fn(): ALineTheReportGave => new ALineTheReportGave('unsaid'),
+            said: static fn(HowTheStackIsRunning $condition): TheWordCarriedOut => new TheWordCarriedOut($condition->value),
+            unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
         )->said,
         implode(',', $notBack),
         implode(',', $leftOut),
         implode(',', $ports),
         $report->whetherItRan(
-            ran: static fn(): ALineTheReportGave => new ALineTheReportGave('ran'),
-            declined: static fn(string $why): ALineTheReportGave => new ALineTheReportGave(sprintf('declined: %s', $why)),
+            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
         )->said,
     );
-}
-
-/** One line carried out of an arm of the report. */
-final readonly class ALineTheReportGave
-{
-    public function __construct(public string $said) {}
 }
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

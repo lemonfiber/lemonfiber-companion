@@ -28,6 +28,7 @@ use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheWordCarriedOut;
 
 // The requests awaiting a decision are visible from a phone.
 //
@@ -476,8 +477,8 @@ it('D7-R7 — and sends the sentence with it once there is one', function (): vo
 
     $decided = $wanting->whatItWasToldWasDecided();
     $said = $decided[0]->why(
-        was: static fn(string $because): object => new WhatTheRefusalCarried($because),
-        wasNot: static fn(): object => new WhatTheRefusalCarried(''),
+        was: static fn(string $because): object => new TheWordCarriedOut($because),
+        wasNot: static fn(): object => new TheWordCarriedOut(''),
     );
 
     expect($decided)->toHaveCount(1)
@@ -544,12 +545,6 @@ it('a session that ended between the reading and the decision sends nothing', fu
     expect($wanting->whatItWasToldWasDecided())->toBe([])
         ->and($screen->answer()->went->isSignedIn)->toBeFalse();
 });
-
-/** One sentence carried out of a decision's fold. */
-final readonly class WhatTheRefusalCarried
-{
-    public function __construct(public string $said) {}
-}
 
 it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): void {
     // `trim` rather than a bare comparison: a field holding three spaces looks

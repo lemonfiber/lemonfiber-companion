@@ -387,6 +387,31 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
     ));
 });
 
+it('G10 — a test file declares no class, interface, trait or enum', function (): void {
+    $declared = namesTestFilesDeclare();
+    $offenders = [];
+
+    expect(testSources())->not->toBe([], 'no test file was read, so this rule read nothing');
+
+    foreach ($declared['classes'] as $name => $path) {
+        $offenders[] = sprintf('%s in %s', $name, $path);
+    }
+
+    sort($offenders);
+
+    expect($offenders)->toBe([], sprintf(
+        "These test files declare a type:\n  %s\n\n"
+        . 'A type declared in a test file exists only once that file has loaded, and then '
+        . 'in the suite\'s own namespace: a run that loads it beside the architecture rules '
+        . 'has them judge a test\'s helper as though it were the application, and a run that '
+        . 'does not never sees it. One word carried out of an arm is '
+        . '`Tests\\Support\\TheWordCarriedOut`; anything else a test needs goes in '
+        . '`tests/Support`, where it is loaded the same way every time. An anonymous class '
+        . 'is an expression and is not this (G10).',
+        implode("\n  ", $offenders),
+    ));
+});
+
 it('G10 — no test helper shares its name with a class, whatever the case', function (): void {
     $declared = namesTestFilesDeclare();
     $clashes = [];

@@ -16,21 +16,17 @@ use Modules\Kernel\Api\WhatWasHeard;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmWasHeard
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function theWordForWhichArmWasHeard(WhatWasHeard $heard): string
 {
     return $heard->either(
-        nothing: static fn(): WhichArmWasHeard => new WhichArmWasHeard('nothing'),
-        alive: static fn(): WhichArmWasHeard => new WhichArmWasHeard('alive'),
-        said: static fn(TheHealthSummary $summary): WhichArmWasHeard => new WhichArmWasHeard(sprintf('said %s', $summary->standing()->value)),
-        closed: static fn(): WhichArmWasHeard => new WhichArmWasHeard('closed'),
-        met: static fn(Obstacle $why): WhichArmWasHeard => new WhichArmWasHeard(sprintf('met %s', $why->kind()->value)),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        alive: static fn(): TheWordCarriedOut => new TheWordCarriedOut('alive'),
+        said: static fn(TheHealthSummary $summary): TheWordCarriedOut => new TheWordCarriedOut(sprintf('said %s', $summary->standing()->value)),
+        closed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('closed'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 

@@ -25,6 +25,7 @@ use Modules\Sdk\Api\TheirOwn;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Owing contract, run against the adapter and against the fake.
@@ -226,27 +227,21 @@ function everyWayOfBeingOwed(MockResponse $answered, array $said, ?Obstacle $why
     ];
 }
 
-/** One answer carried out of an `either()` arm. */
-final readonly class WhatAMemberCameAwayWith
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a stack answered, as one string, whichever arm it took. */
 function whatAMemberWasOwed(Owing $owing): string
 {
     return $owing->toHandOver(theHouseAMemberBelongsTo(), theSessionAMemberHolds())->either(
-        told: static function (Sentences $said): WhatAMemberCameAwayWith {
+        told: static function (Sentences $said): TheWordCarriedOut {
             $lines = [];
 
             foreach ($said as $sentence) {
                 $lines[] = $sentence->shown();
             }
 
-            return new WhatAMemberCameAwayWith(sprintf('told:%s', implode('|', $lines)));
+            return new TheWordCarriedOut(sprintf('told:%s', implode('|', $lines)));
         },
-        refused: static fn(Obstacle $why): WhatAMemberCameAwayWith
-            => new WhatAMemberCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -260,15 +255,9 @@ function whatAMemberWasOwed(Owing $owing): string
 function theStandingOfTheirs(Wanted $one): string
 {
     return $one->standing()->either(
-        said: static fn(Waiting $said): WhatTheirStandingSaid => new WhatTheirStandingSaid($said->value),
-        unnamed: static fn(): WhatTheirStandingSaid => new WhatTheirStandingSaid('unnamed'),
+        said: static fn(Waiting $said): TheWordCarriedOut => new TheWordCarriedOut($said->value),
+        unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unnamed'),
     )->said;
-}
-
-/** One standing carried out of `either()`, since it must hand back an object. */
-final readonly class WhatTheirStandingSaid
-{
-    public function __construct(public string $said) {}
 }
 
 it('N3-R4 — hands over the sentences the core wrote, unchanged', function (): void {
@@ -358,17 +347,11 @@ it('stands in for a household with a payload the contract would accept', functio
         ->toBe([], "The payload this suite stands in for an operator with is not one a stack would send.\n");
 });
 
-/** One reading of what a member asked for, carried out of an `either()` arm. */
-final readonly class WhatAMemberSawOfTheirRequests
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a stack said they asked for, as one string, whichever arm it took. */
 function whatAMemberAskedFor(Owing $owing): string
 {
     return $owing->whatTheyAsked(theHouseAMemberBelongsTo(), theSessionAMemberHolds())->either(
-        told: static function (Requested $wanted): WhatAMemberSawOfTheirRequests {
+        told: static function (Requested $wanted): TheWordCarriedOut {
             $rows = [];
 
             foreach ($wanted as $one) {
@@ -377,18 +360,18 @@ function whatAMemberAskedFor(Owing $owing): string
                     $one->forWhat(),
                     theStandingOfTheirs($one),
                     $one->refusal(
-                        was: static fn(TurnedDown $why): WhatAMemberSawOfTheirRequests
-                            => new WhatAMemberSawOfTheirRequests($why->reason()),
-                        wasNot: static fn(): WhatAMemberSawOfTheirRequests
-                            => new WhatAMemberSawOfTheirRequests(''),
+                        was: static fn(TurnedDown $why): TheWordCarriedOut
+                            => new TheWordCarriedOut($why->reason()),
+                        wasNot: static fn(): TheWordCarriedOut
+                            => new TheWordCarriedOut(''),
                     )->said,
                 );
             }
 
-            return new WhatAMemberSawOfTheirRequests(sprintf('told:%s', implode('|', $rows)));
+            return new TheWordCarriedOut(sprintf('told:%s', implode('|', $rows)));
         },
-        refused: static fn(Obstacle $why): WhatAMemberSawOfTheirRequests
-            => new WhatAMemberSawOfTheirRequests(sprintf('refused:%s', $why->kind()->value)),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 

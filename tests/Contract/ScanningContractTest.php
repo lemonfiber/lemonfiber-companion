@@ -12,6 +12,7 @@ use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\ACameraOnAHandset;
+use Tests\Support\TheWordCarriedOut;
 
 // The Scanning contract, run against the adapter and against the fake.
 //
@@ -88,21 +89,6 @@ function whatACameraAnswering(WhyNothingWasScanned $why): ACameraOnAHandset
     };
 }
 
-/**
- * One word carried out of an `either()` arm.
- *
- * `WhatTheCameraSaw::either()` answers with an object, so that a caller cannot
- * pull a payload out without saying what happens the other way. A test still
- * wants to compare a string, and this is the smallest honest way across.
- *
- * Named for this file rather than something general: the root suites share one
- * namespace, and two classes of a name are a fatal the moment both load (`G10`).
- */
-final readonly class WhatTheScanCameBackWith
-{
-    public function __construct(public string $said) {}
-}
-
 /** What the camera answered, as a word, whichever arm it took. */
 function whatCameBack(Scanning $camera): string
 {
@@ -110,8 +96,8 @@ function whatCameBack(Scanning $camera): string
 
     $camera->forAPairingCode(static function (WhatTheCameraSaw $saw) use (&$said): void {
         $said = $saw->either(
-            read: static fn(string $payload): WhatTheScanCameBackWith => new WhatTheScanCameBackWith($payload),
-            nothing: static fn(WhyNothingWasScanned $why): WhatTheScanCameBackWith => new WhatTheScanCameBackWith($why->value),
+            read: static fn(string $payload): TheWordCarriedOut => new TheWordCarriedOut($payload),
+            nothing: static fn(WhyNothingWasScanned $why): TheWordCarriedOut => new TheWordCarriedOut($why->value),
         )->said;
     });
 

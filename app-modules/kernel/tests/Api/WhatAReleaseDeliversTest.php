@@ -11,6 +11,8 @@ use Modules\Kernel\Api\WhatAReleaseDelivers;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /**
  * The two arms, and the blank that is not a third.
  *
@@ -21,20 +23,14 @@ use function sprintf;
  * were carried rather than read as silence.
  */
 
-/** One arm's name, so the fold can be asserted on rather than counted. */
-final readonly class WhichArmItWas
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Which arm a value reaches, and what it hands over.
  */
 function whichArmADeliversReached(WhatAReleaseDelivers $delivers): string
 {
     return $delivers->either(
-        said: static fn(string $prose): WhichArmItWas => new WhichArmItWas(sprintf('said:%s', $prose)),
-        saidNothing: static fn(): WhichArmItWas => new WhichArmItWas('silent'),
+        said: static fn(string $prose): TheWordCarriedOut => new TheWordCarriedOut(sprintf('said:%s', $prose)),
+        saidNothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('silent'),
     )->said;
 }
 

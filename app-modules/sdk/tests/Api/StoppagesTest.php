@@ -18,6 +18,7 @@ use Modules\Sdk\Api\StuckIsUnreadable;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -46,12 +47,6 @@ function aStalledRow(string $title, string $service, string $stage): array
     return ['title' => $title, 'service' => $service, 'stage' => $stage];
 }
 
-/** One row carried out of `stated()`, since it must hand back an object. */
-final readonly class WhatOneStuckRowSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every row of a listing, folded to one string, so the order can be read. */
 function everyRowIn(Stalled $stalled): string
 {
@@ -59,8 +54,8 @@ function everyRowIn(Stalled $stalled): string
 
     foreach ($stalled as $one) {
         $rows[] = $one->stated(
-            static fn(string $title, ServiceId $service, Stage $stage): WhatOneStuckRowSaid
-                => new WhatOneStuckRowSaid(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
+            static fn(string $title, ServiceId $service, Stage $stage): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
         )->said;
     }
 

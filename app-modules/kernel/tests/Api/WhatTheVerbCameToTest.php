@@ -25,11 +25,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 use function sprintf;
 
-/** One word carried out of an arm of a verb's report. */
-final readonly class WhatTheReportSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A restart's report, with the services given and nothing left out. */
 function aRestartReported(WhereAServiceEndedUp ...$services): WhatTheVerbCameTo
@@ -58,8 +54,8 @@ function aRestartDeclined(string $why, WhereAServiceEndedUp ...$services): WhatT
 function whatItAmountsTo(WhatTheVerbCameTo $report): string
 {
     return $report->amountsTo(
-        said: static fn(HowTheStackIsRunning $condition): WhatTheReportSaid => new WhatTheReportSaid($condition->value),
-        unsaid: static fn(): WhatTheReportSaid => new WhatTheReportSaid('unsaid'),
+        said: static fn(HowTheStackIsRunning $condition): TheWordCarriedOut => new TheWordCarriedOut($condition->value),
+        unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
     )->said;
 }
 
@@ -67,8 +63,8 @@ function whatItAmountsTo(WhatTheVerbCameTo $report): string
 function whetherTheReportRan(WhatTheVerbCameTo $report): string
 {
     return $report->whetherItRan(
-        ran: static fn(): WhatTheReportSaid => new WhatTheReportSaid('ran'),
-        declined: static fn(string $why): WhatTheReportSaid => new WhatTheReportSaid(sprintf('declined: %s', $why)),
+        ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+        declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
     )->said;
 }
 

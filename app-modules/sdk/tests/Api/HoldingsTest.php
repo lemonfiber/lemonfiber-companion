@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Sdk\Api\Holdings;
 use Modules\Sdk\Api\ShelfIsUnreadable;
+use Tests\Support\WhatAShelfReadingCameTo;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -45,19 +46,6 @@ function whatAStackSaysAboutAShelf(array $differently = []): array
 function theShelfIn(mixed $data): WhatTheyMayWatch
 {
     return Holdings::in(new Envelope(1, 'held', $data));
-}
-
-/**
- * One reading carried out of an `either()` arm.
- *
- * A class rather than an array, because `either()` answers with an object and
- * the arms must agree on which — the shape the contract suites use for the
- * same reason.
- */
-final readonly class WhatAShelfReadingCameTo
-{
-    /** @param list<string> $rows */
-    public function __construct(public array $rows) {}
 }
 
 /**

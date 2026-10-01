@@ -12,18 +12,14 @@ use Modules\Kernel\Api\WhenItWasMade;
 
 use function sprintf;
 
-/** One word carried out of either arm. */
-final readonly class WhatTheClockSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** The moment as epoch seconds, or the word for an unreadable clock. Named for this file (`G10`). */
 function whatTheClockSays(WhenItWasMade $when): string
 {
     return $when->either(
-        at: static fn(Instant $at): WhatTheClockSaid => new WhatTheClockSaid(sprintf('%d', $at->epochSeconds())),
-        unreadable: static fn(): WhatTheClockSaid => new WhatTheClockSaid('unreadable'),
+        at: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $at->epochSeconds())),
+        unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unreadable'),
     )->said;
 }
 

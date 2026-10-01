@@ -18,6 +18,7 @@ use Modules\Sdk\Api\Invitations;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -65,12 +66,6 @@ function whatAnInvitationApplied(): array
     ];
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheInvitationCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Everything a payload says, as one line per part.
  *
@@ -98,14 +93,14 @@ function everythingTheInvitationSays(array $data): string
 function whatTheInvitationGrants(AnInvitation $invitation): string
 {
     return $invitation->granted(
-        these: static function (WhatWasGranted $granted): WhatTheInvitationCarried {
+        these: static function (WhatWasGranted $granted): TheWordCarriedOut {
             $libraries = [];
 
             foreach ($granted->libraries() as $library) {
                 $libraries[] = $library;
             }
 
-            return new WhatTheInvitationCarried(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s|%s|%s|%s|%s',
                 implode(',', $libraries),
                 $granted->limit(),
@@ -114,7 +109,7 @@ function whatTheInvitationGrants(AnInvitation $invitation): string
                 $granted->filtering(),
             ));
         },
-        nothing: static fn(): WhatTheInvitationCarried => new WhatTheInvitationCarried('nothing'),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
 }
 

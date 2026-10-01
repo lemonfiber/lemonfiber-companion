@@ -18,21 +18,17 @@ use Modules\Kernel\Api\WhatIsUnsupported;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhereTheWiringGotTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer took, and what it carried, folded to one line. */
 function theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('underway %s', $job->shown())),
-        answered: static fn(TheWiring $wiring): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('answered %s', $wiring->judged()->value)),
-        ended: static fn(): WhereTheWiringGotTo => new WhereTheWiringGotTo('ended'),
-        refused: static fn(string $because): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('met %s', $why->kind()->value)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(TheWiring $wiring): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered %s', $wiring->judged()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 

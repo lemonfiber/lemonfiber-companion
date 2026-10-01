@@ -22,6 +22,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatTraces;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -64,21 +65,15 @@ function everyWayOfFollowingAnItem(MockResponse $answered, WhereItGotTo $same, ?
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheTraceTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything a trace says, folded to one line, so two answers can be compared. */
 function everythingTheTraceSays(Tracing $tracing): string
 {
     return $tracing->tracedOn(aStackThatFollowsItems(), Session::of('a-session-not-a-secret'), WhatToFollow::called('Severance'))->either(
-        found: static fn(WhereItGotTo $trace): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay(sprintf('%s %s', $trace->item(), $trace->either(
-            nothingAskedFor: static fn(): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay('nothing asked for'),
-            followed: static fn(WhatTheTraceFound $found): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay(whatWasFound($found)),
+        found: static fn(WhereItGotTo $trace): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s', $trace->item(), $trace->either(
+            nothingAskedFor: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing asked for'),
+            followed: static fn(WhatTheTraceFound $found): TheWordCarriedOut => new TheWordCarriedOut(whatWasFound($found)),
         )->said)),
-        met: static fn(Obstacle $why): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -100,8 +95,8 @@ function whatWasFound(WhatTheTraceFound $found): string
     }
 
     $said[] = $found->here()->either(
-        whole: static fn(): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay('whole'),
-        inParts: static fn(ASeriesCounted $series): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay(whatIsHere($series)),
+        whole: static fn(): TheWordCarriedOut => new TheWordCarriedOut('whole'),
+        inParts: static fn(ASeriesCounted $series): TheWordCarriedOut => new TheWordCarriedOut(whatIsHere($series)),
     )->said;
 
     return implode('|', $said);

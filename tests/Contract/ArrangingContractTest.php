@@ -27,6 +27,7 @@ use Modules\Sdk\Api\SettingIsUnreadable;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatIsSet;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Arranging contract, run against the adapter and against the fake.
@@ -167,35 +168,23 @@ function everyWayOfReadingSettings(MockResponse $answered, ?Obstacle $why = null
 function howAStackReadsAsText(Arranging $arranging): string
 {
     return $arranging->asItStands(theMachineBeingRead(), theSessionAnOperatorHolds())->either(
-        told: static function (Settings $set): WhatAnOperatorCameAwayWith {
+        told: static function (Settings $set): TheWordCarriedOut {
             $rows = [];
 
             foreach ($set as $one) {
                 $rows[] = $one->holds->either(
-                    shown: static fn(string $value): WhatOneRowSaid
-                        => new WhatOneRowSaid(sprintf('%s=%s', $one->key, $value)),
-                    withheld: static fn(string $note): WhatOneRowSaid
-                        => new WhatOneRowSaid(sprintf('%s~%s', $one->key, $note)),
+                    shown: static fn(string $value): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('%s=%s', $one->key, $value)),
+                    withheld: static fn(string $note): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('%s~%s', $one->key, $note)),
                 )->said;
             }
 
-            return new WhatAnOperatorCameAwayWith(sprintf('told:%s', implode(',', $rows)));
+            return new TheWordCarriedOut(sprintf('told:%s', implode(',', $rows)));
         },
-        refused: static fn(Obstacle $why): WhatAnOperatorCameAwayWith
-            => new WhatAnOperatorCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
-}
-
-/** One row carried out of the fold. */
-final readonly class WhatOneRowSaid
-{
-    public function __construct(public string $said) {}
-}
-
-/** One answer carried out of an `either()` arm. */
-final readonly class WhatAnOperatorCameAwayWith
-{
-    public function __construct(public string $said) {}
 }
 
 foreach (everyWayOfReadingSettings(theConfigPayload()) as $name => $build) {
@@ -288,10 +277,10 @@ it('HowItIsSet reaches the arm the answer calls for, and hands it what it was gi
     // thing — an arm that fired with the wrong payload would pass a test that
     // only counted which one it was.
     $whichArm = static fn(HowItIsSet $how): string => $how->either(
-        told: static fn(Settings $set): WhatOneRowSaid => new WhatOneRowSaid(
+        told: static fn(Settings $set): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('told:%d', count($set)),
         ),
-        refused: static fn(Obstacle $why): WhatOneRowSaid => new WhatOneRowSaid(
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('refused:%s', $why->kind()->value),
         ),
     )->said;
@@ -498,12 +487,12 @@ it('reads all four attributions, and hands each arm what it was given', function
     // gives: an arm that fired with the wrong payload would pass a test that
     // only counted which one ran.
     $whichArm = static fn(WhoPutItThere $from): string => $from->whichever(
-        bundled: static fn(): WhatOneRowSaid => new WhatOneRowSaid('bundled'),
-        operator: static fn(): WhatOneRowSaid => new WhatOneRowSaid('operator'),
-        plugin: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('plugin:%s', $named)),
-        unknown: static fn(string $why): WhatOneRowSaid => new WhatOneRowSaid(sprintf('unknown:%s', $why)),
-        overridden: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('overridden:%s', $named)),
-        orphaned: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('orphaned:%s', $named)),
+        bundled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('bundled'),
+        operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('operator'),
+        plugin: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('orphaned:%s', $named)),
     )->said;
 
     // Read off the wire rather than built here, so the arm proven is the one

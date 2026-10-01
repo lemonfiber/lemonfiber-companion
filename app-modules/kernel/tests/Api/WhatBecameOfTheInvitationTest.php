@@ -22,21 +22,17 @@ use Modules\Kernel\Api\WhoWasTakenBack;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheInvitationTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a reading took, and what it carried. */
 function whichArmItTook(WhatBecameOfTheInvitation $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('underway:%s', $job->shown())),
-        answered: static fn(AnInvitation $invitation): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('answered:%s', $invitation->toHand()->name())),
-        ended: static fn(): WhichArmTheInvitationTook => new WhichArmTheInvitationTook('ended'),
-        refused: static fn(string $because): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('met:%s', $why->kind()->value)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway:%s', $job->shown())),
+        answered: static fn(AnInvitation $invitation): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered:%s', $invitation->toHand()->name())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

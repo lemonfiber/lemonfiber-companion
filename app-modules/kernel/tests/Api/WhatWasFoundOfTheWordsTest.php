@@ -15,16 +15,12 @@ use Modules\Kernel\Api\WhatWasFoundOfTheWords;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheGlossaryTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('takes the arm for what came back', function (): void {
     $fold = static fn(WhatWasFoundOfTheWords $answer): string => $answer->either(
-        found: static fn(TheGlossary $words): WhichArmTheGlossaryTook => new WhichArmTheGlossaryTook(sprintf('found:%d', $words->count())),
-        met: static fn(Obstacle $why): WhichArmTheGlossaryTook => new WhichArmTheGlossaryTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(TheGlossary $words): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%d', $words->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheWords::found(TheGlossary::of(AWord::explained('pin', 'Held at', '')))))->toBe('found:1')

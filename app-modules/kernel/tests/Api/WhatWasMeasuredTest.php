@@ -18,16 +18,12 @@ use Modules\Kernel\Api\WhereTheRoomWent;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheMeasuringTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('N12-R10 — a machine that could not be asked is never one with room to spare', function (): void {
     $fold = static fn(WhatWasMeasured $answer): string => $answer->either(
-        measured: static fn(WhereTheRoomWent $room): WhichArmTheMeasuringTook => new WhichArmTheMeasuringTook(sprintf('measured:%s', $room->stands()->value)),
-        met: static fn(Obstacle $why): WhichArmTheMeasuringTook => new WhichArmTheMeasuringTook(sprintf('met:%s', $why->kind()->value)),
+        measured: static fn(WhereTheRoomWent $room): TheWordCarriedOut => new TheWordCarriedOut(sprintf('measured:%s', $room->stands()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasMeasured::measured(WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), halted: false))))->toBe('measured:ample')

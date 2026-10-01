@@ -451,8 +451,8 @@ it('G12 — a kind stood in for is one the contract has an envelope for', functi
         . 'An envelope carries a payload between two programs, and a kind neither of them describes is not a '
         . 'conversation either of them can have — so a stand-in built under one is judged against nothing and '
         . 'reads as covered. Where the envelope is standing in as a carrier for a value a test needs out of a '
-        . 'closure, write a readonly class for that instead: WhatOneStuckRowSaid and WhatTheStackTurnedOutToBeOn '
-        . "are the two already here.\n",
+        . 'closure, carry it in Tests\\Support\\TheWordCarriedOut instead, or in a class of its own in '
+        . "tests/Support.\n",
         implode("\n  ", $unknown),
     ));
 });

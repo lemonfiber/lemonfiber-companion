@@ -10,21 +10,16 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\WhatLeansOnIt;
-
-/** One word carried out of `exit()`, since it must hand back an object. */
-final readonly class WhatTheDaemonSaidAboutEnding
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** How a service ended, or the word for nothing having said. */
 function howItEnded(Daemon $daemon): string
 {
     return $daemon->exit(
-        said: static fn(int $code): WhatTheDaemonSaidAboutEnding
-            => new WhatTheDaemonSaidAboutEnding((string) $code),
-        unstated: static fn(): WhatTheDaemonSaidAboutEnding
-            => new WhatTheDaemonSaidAboutEnding('unstated'),
+        said: static fn(int $code): TheWordCarriedOut
+            => new TheWordCarriedOut((string) $code),
+        unstated: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('unstated'),
     )->said;
 }
 

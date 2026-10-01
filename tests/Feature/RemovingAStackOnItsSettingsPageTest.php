@@ -2,26 +2,18 @@
 
 declare(strict_types=1);
 
-use Bootstrap\Composition\EveryKeeperOfAStack;
-use Modules\Connection\Api\RemovingAStack;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Stacks\Api\AStacksScreen;
-use Modules\Vault\Api\PlatformKeychain;
-use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Edge\NativeRouter;
 use Native\Mobile\Edge\NavigationIntent;
-use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\APlatformStore;
-use Tests\Support\Fakes\RemovalsUnderWayInMemory;
+use Tests\Support\APhoneOnItsStackSettings;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Stack settings, and Remove from phone on it: asked on the page, and once
@@ -36,41 +28,6 @@ function aStackOnItsSettingsPage(string $seed, string $name): Stack
         Address::of('https://192.168.1.47'),
         Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
     );
-}
-
-/** A phone paired with these, its pairings and sessions in one platform store. */
-final readonly class APhoneOnItsStackSettings
-{
-    public APlatformStore $store;
-
-    public PlatformStacks $stacks;
-
-    public PlatformKeychain $keychain;
-
-    public function __construct(Stack ...$paired)
-    {
-        $this->store = APlatformStore::working();
-        $this->stacks = new PlatformStacks($this->store);
-        $this->keychain = new PlatformKeychain($this->store);
-
-        foreach ($paired as $stack) {
-            $this->stacks->remember($stack);
-            $this->keychain->keep($stack->id(), Session::of('a-session'), Whose::theOperator());
-        }
-    }
-
-    /** The Stack settings page of this stack, removing through a journal that writes, or one that will not. */
-    public function pageOf(Stack $stack, bool $journalWrites = true): ThisStackOnThisPhone
-    {
-        $journal = $journalWrites ? new PlatformStacks($this->store) : RemovalsUnderWayInMemory::refusing();
-        $screen = new ThisStackOnThisPhone(
-            AroundThePhone::holding($this->stacks, storage: $this->keychain),
-            new RemovingAStack($journal, new EveryKeeperOfAStack($this->stacks, $this->keychain)),
-        );
-        $screen->setParams(['stack' => $stack->id()->stored()]);
-
-        return $screen;
-    }
 }
 
 /** Where a page sent the app, as how and where. Named for this file. */

@@ -21,6 +21,7 @@ use Modules\Sdk\Api\TheRestore;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -76,18 +77,12 @@ function aRestoreReportRead(mixed $done): ACopyPutBack
     return TheRestore::doneIn(new Envelope(1, 'restore', ['would' => aRestoreListingSaying(), 'done' => $done]));
 }
 
-/** One line carried out of an arm of where the data goes. */
-final readonly class WhereTheRestoredDataWent
-{
-    public function __construct(public string $said) {}
-}
-
 /** Where the data goes, as a line. */
 function whereTheRestoredDataGoes(WhereTheDataGoes $data): string
 {
     return $data->either(
-        whereItWas: static fn(): WhereTheRestoredDataWent => new WhereTheRestoredDataWent('where it was'),
-        elsewhere: static fn(ARelocation $moved): WhereTheRestoredDataWent => new WhereTheRestoredDataWent(sprintf('%s to %s', $moved->was(), $moved->now())),
+        whereItWas: static fn(): TheWordCarriedOut => new TheWordCarriedOut('where it was'),
+        elsewhere: static fn(ARelocation $moved): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s to %s', $moved->was(), $moved->now())),
     )->said;
 }
 

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Internal\Costs;
+use Tests\Support\WhatItTurnedOutToCost;
 
 /**
  * What a stack reports, with whatever this case is about changed.
@@ -25,12 +26,6 @@ function whatAStackReportsItsVerbsCost(array $differently = []): array
             ...$differently,
         ],
     ];
-}
-
-/** One answer carried out of an `either()` arm, which hands back objects. */
-final readonly class WhatItTurnedOutToCost
-{
-    public function __construct(public int $seconds, public string $said) {}
 }
 
 /** The length a verb is held to, as a number a test can compare. */

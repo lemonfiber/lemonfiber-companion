@@ -15,18 +15,14 @@ use Modules\Kernel\Api\WhatTheOperatorIsTold;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheAlertsTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function whatTheAlertsSaid(WhatTheAlertsWere $answer): string
 {
     return $answer->either(
-        told: static fn(WhatTheOperatorIsTold $told): WhichArmTheAlertsTook => new WhichArmTheAlertsTook(sprintf('told:%s', $told->preset())),
-        met: static fn(Obstacle $why): WhichArmTheAlertsTook => new WhichArmTheAlertsTook(sprintf('met:%s', $why->kind()->value)),
+        told: static fn(WhatTheOperatorIsTold $told): TheWordCarriedOut => new TheWordCarriedOut(sprintf('told:%s', $told->preset())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

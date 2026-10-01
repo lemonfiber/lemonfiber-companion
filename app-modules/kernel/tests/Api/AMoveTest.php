@@ -30,11 +30,7 @@ use Modules\Kernel\Api\WhatWasNamed;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheMoveTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** One service adopting would open with a newer version, wanting a copy first or not. */
 function aServiceAdopted(string $service, bool $backupFirst): AServiceAdopted
@@ -51,10 +47,10 @@ function aServiceAdopted(string $service, bool $backupFirst): AServiceAdopted
 function whichWayItMoved(AMove $move): string
 {
     return $move->either(
-        adopting: static fn(TheAdoption $adoption): WhichArmTheMoveTook => new WhichArmTheMoveTook(sprintf('adopting %s', $adoption->project())),
-        importing: static fn(TheImport $import): WhichArmTheMoveTook => new WhichArmTheMoveTook(sprintf('importing %s', $import->project())),
-        standingBeside: static fn(TheStandingBeside $beside): WhichArmTheMoveTook => new WhichArmTheMoveTook(sprintf('beside %s', $beside->written())),
-        replacing: static fn(TheReplacement $replacement): WhichArmTheMoveTook => new WhichArmTheMoveTook(sprintf('replacing %s', $replacement->project())),
+        adopting: static fn(TheAdoption $adoption): TheWordCarriedOut => new TheWordCarriedOut(sprintf('adopting %s', $adoption->project())),
+        importing: static fn(TheImport $import): TheWordCarriedOut => new TheWordCarriedOut(sprintf('importing %s', $import->project())),
+        standingBeside: static fn(TheStandingBeside $beside): TheWordCarriedOut => new TheWordCarriedOut(sprintf('beside %s', $beside->written())),
+        replacing: static fn(TheReplacement $replacement): TheWordCarriedOut => new TheWordCarriedOut(sprintf('replacing %s', $replacement->project())),
     )->said;
 }
 

@@ -17,11 +17,7 @@ use Modules\Kernel\Api\Wanted;
 
 use function sprintf;
 
-/** One standing carried out of `either()`, since it must hand back an object. */
-final readonly class WhatTheStandingWas
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A request as it arrives, with whatever a case wants to change. */
 function aRequest(
@@ -103,8 +99,8 @@ it('L7 — every standing names a line, built from the case', function (): void 
 function whereItStands(Wanted $wanted): string
 {
     return $wanted->standing()->either(
-        said: static fn(Waiting $said): WhatTheStandingWas => new WhatTheStandingWas($said->value),
-        unnamed: static fn(): WhatTheStandingWas => new WhatTheStandingWas('nobody named it'),
+        said: static fn(Waiting $said): TheWordCarriedOut => new TheWordCarriedOut($said->value),
+        unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nobody named it'),
     )->said;
 }
 
@@ -123,20 +119,14 @@ it('D7-R3 — hands the size out with its label still on it', function (): void 
         ->and(theSizeOn(aRequest()))->toBe('nobody-knows');
 });
 
-/** One word carried out of a refusal arm. */
-final readonly class WhatTheRequestSaidAboutBeingRefused
-{
-    public function __construct(public string $said) {}
-}
-
 /** Why a request was refused, or the word for not having been. */
 function whyItWasTurnedDown(Wanted $wanted): string
 {
     return $wanted->refusal(
-        was: static fn(TurnedDown $why): WhatTheRequestSaidAboutBeingRefused
-            => new WhatTheRequestSaidAboutBeingRefused($why->reason()),
-        wasNot: static fn(): WhatTheRequestSaidAboutBeingRefused
-            => new WhatTheRequestSaidAboutBeingRefused('not refused'),
+        was: static fn(TurnedDown $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->reason()),
+        wasNot: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('not refused'),
     )->said;
 }
 

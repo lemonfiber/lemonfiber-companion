@@ -17,19 +17,15 @@ use Modules\Kernel\Api\WhatTheHandoverDid;
 
 use function sprintf;
 
-/** One word carried out of whichever arm a handover took. */
-final readonly class WhatTheHandoverCameTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm, and what it carried. Named for this file (`G10`). */
 function whichWayTheHandoverWent(HowTheHandoverWent $went): string
 {
     return $went->either(
-        did: static fn(WhatTheHandoverDid $did): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('did %s', $did->name())),
-        refused: static fn(string $said): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('refused: %s', $said)),
-        met: static fn(Obstacle $why): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('met %s', $why->kind()->value)),
+        did: static fn(WhatTheHandoverDid $did): TheWordCarriedOut => new TheWordCarriedOut(sprintf('did %s', $did->name())),
+        refused: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s', $said)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 

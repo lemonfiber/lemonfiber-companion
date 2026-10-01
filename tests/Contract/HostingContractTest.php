@@ -27,6 +27,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatHosts;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Hosting contract, run against the adapter and against the fake.
@@ -175,27 +176,21 @@ function everyWayOfAskingWhatIsKept(
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheHostingTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every command, folded to a word each, so an order can be compared. */
 function everythingKeptBy(Hosting $hosting): string
 {
     return $hosting->keptRunningOn(aStackThatKeepsThingsRunning(), theSessionHostingIsAskedWith())->either(
-        keeps: static function (WhatRunsUnattended $running): WhatTheHostingTurnedOutToSay {
+        keeps: static function (WhatRunsUnattended $running): TheWordCarriedOut {
             $rows = [];
 
             foreach ($running as $one) {
                 $rows[] = sprintf('%s/%s/%s', $one->name(), $one->command(), $one->standing()->value);
             }
 
-            return new WhatTheHostingTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -203,10 +198,10 @@ function everythingKeptBy(Hosting $hosting): string
 function whatKeepsThemRunningIn(Hosting $hosting): string
 {
     return $hosting->keptRunningOn(aStackThatKeepsThingsRunning(), theSessionHostingIsAskedWith())->either(
-        keeps: static fn(WhatRunsUnattended $running): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($running->whatKeepsThem()->value),
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
+        keeps: static fn(WhatRunsUnattended $running): TheWordCarriedOut
+            => new TheWordCarriedOut($running->whatKeepsThem()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -214,15 +209,15 @@ function whatKeepsThemRunningIn(Hosting $hosting): string
 function whatToDoInsteadIn(Hosting $hosting): string
 {
     return $hosting->keptRunningOn(aStackThatKeepsThingsRunning(), theSessionHostingIsAskedWith())->either(
-        keeps: static fn(WhatRunsUnattended $running): WhatTheHostingTurnedOutToSay
+        keeps: static fn(WhatRunsUnattended $running): TheWordCarriedOut
             => $running->whereItCannot(
-                instead: static fn(string $what): WhatTheHostingTurnedOutToSay
-                    => new WhatTheHostingTurnedOutToSay($what),
-                itself: static fn(): WhatTheHostingTurnedOutToSay
-                    => new WhatTheHostingTurnedOutToSay('the machine does this itself'),
+                instead: static fn(string $what): TheWordCarriedOut
+                    => new TheWordCarriedOut($what),
+                itself: static fn(): TheWordCarriedOut
+                    => new TheWordCarriedOut('the machine does this itself'),
             ),
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -230,17 +225,17 @@ function whatToDoInsteadIn(Hosting $hosting): string
 function whatDidNotComeBackIn(Hosting $hosting): string
 {
     return $hosting->keptRunningOn(aStackThatKeepsThingsRunning(), theSessionHostingIsAskedWith())->either(
-        keeps: static function (WhatRunsUnattended $running): WhatTheHostingTurnedOutToSay {
+        keeps: static function (WhatRunsUnattended $running): TheWordCarriedOut {
             $names = [];
 
             foreach ($running->didNotComeBack() as $one) {
                 $names[] = $one->name();
             }
 
-            return new WhatTheHostingTurnedOutToSay(implode(' | ', $names));
+            return new TheWordCarriedOut(implode(' | ', $names));
         },
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -441,8 +436,8 @@ function everyWayOfHandingOver(MockResponse $answered, HowTheHandoverWent $went)
 function whereTheHandoverWrites(WhatTheHandoverDid $did): string
 {
     return $did->writesTo(
-        there: static fn(string $where): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay($where),
-        unsaid: static fn(): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay('nowhere said'),
+        there: static fn(string $where): TheWordCarriedOut => new TheWordCarriedOut($where),
+        unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere said'),
     )->said;
 }
 
@@ -455,7 +450,7 @@ function whereTheHandoverWrites(WhatTheHandoverDid $did): string
 function whatCameOfHandingOver(Hosting $hosting, HandingOver $doing = HandingOver::Install): string
 {
     return $hosting->handOver(aStackThatKeepsThingsRunning(), theSessionHostingIsAskedWith(), HostingAgreed::to($doing, 'watch'))->either(
-        did: static fn(WhatTheHandoverDid $did): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay(sprintf(
+        did: static fn(WhatTheHandoverDid $did): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s %s; rehearsed %s; started %s; %s; writes to %s; touched %s',
             $did->did()->value,
             $did->name(),
@@ -465,8 +460,8 @@ function whatCameOfHandingOver(Hosting $hosting, HandingOver $doing = HandingOve
             whereTheHandoverWrites($did),
             count($did->touched()) === 0 ? 'nothing' : implode(', ', iterator_to_array($did->touched(), preserve_keys: false)),
         )),
-        refused: static fn(string $said): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay(sprintf('refused: %s', $said)),
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay($why->kind()->value),
+        refused: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s', $said)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

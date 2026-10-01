@@ -34,11 +34,7 @@ use Modules\Kernel\Api\WhereTheServicesDisagree;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichTraceArm
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A trace found, with a whole item and nothing else. */
 function aPlainTrace(): WhatTheTraceFound
@@ -54,8 +50,8 @@ function aPlainTrace(): WhatTheTraceFound
 
 it('tells nothing asked for from an item followed, and keeps what was followed', function (): void {
     $fold = static fn(WhereItGotTo $trace): string => $trace->either(
-        nothingAskedFor: static fn(): WhichTraceArm => new WhichTraceArm(sprintf('nothing:%s', $trace->item())),
-        followed: static fn(WhatTheTraceFound $found): WhichTraceArm => new WhichTraceArm(sprintf('followed:%s:%s', $trace->item(), $found->got()->furthest()->value)),
+        nothingAskedFor: static fn(): TheWordCarriedOut => new TheWordCarriedOut(sprintf('nothing:%s', $trace->item())),
+        followed: static fn(WhatTheTraceFound $found): TheWordCarriedOut => new TheWordCarriedOut(sprintf('followed:%s:%s', $trace->item(), $found->got()->furthest()->value)),
     )->said;
 
     expect($fold(WhereItGotTo::nothingAskedFor('Dune')))->toBe('nothing:Dune')
@@ -85,8 +81,8 @@ it('counts a series by season and tells it from a whole item', function (): void
     $season = HowMuchOfASeasonIsHere::counted(1, 8, 9, 1, $episode);
     $series = ASeriesCounted::counted(8, 9, 1, $season);
     $fold = static fn(HowMuchOfItIsHere $here): string => $here->either(
-        whole: static fn(): WhichTraceArm => new WhichTraceArm('whole'),
-        inParts: static fn(ASeriesCounted $counted): WhichTraceArm => new WhichTraceArm(sprintf('%d/%d+%d', $counted->have(), $counted->wanted(), $counted->unmonitored())),
+        whole: static fn(): TheWordCarriedOut => new TheWordCarriedOut('whole'),
+        inParts: static fn(ASeriesCounted $counted): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d+%d', $counted->have(), $counted->wanted(), $counted->unmonitored())),
     )->said;
 
     expect($fold(HowMuchOfItIsHere::aWholeItem()))->toBe('whole')
@@ -148,8 +144,8 @@ it('names a catalogue key for every case', function (): void {
 
 it('takes the arm for what came back', function (): void {
     $fold = static fn(WhatWasFoundOfTheTrace $answer): string => $answer->either(
-        found: static fn(WhereItGotTo $trace): WhichTraceArm => new WhichTraceArm(sprintf('found:%s', $trace->item())),
-        met: static fn(Obstacle $why): WhichTraceArm => new WhichTraceArm(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(WhereItGotTo $trace): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $trace->item())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheTrace::found(WhereItGotTo::nothingAskedFor('Dune'))))->toBe('found:Dune')

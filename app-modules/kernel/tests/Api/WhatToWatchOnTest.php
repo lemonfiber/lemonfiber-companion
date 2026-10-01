@@ -22,11 +22,7 @@ use Modules\Kernel\Api\WhyPlaybackMayStruggle;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheAdviceTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Advice with the two sentences given here and nothing listed. */
 function adviceSaying(string $onlyAtHome, string $nothingIsInstalled): WhatToWatchOn
@@ -101,8 +97,8 @@ it('keeps every symptom in the stack\'s order', function (): void {
 
 it('advice that could not be asked for is never advice with nothing in it', function (): void {
     $fold = static fn(WhatWasFoundToWatchOn $answer): string => $answer->either(
-        found: static fn(WhatToWatchOn $advice): WhichArmTheAdviceTook => new WhichArmTheAdviceTook(sprintf('found:%s', $advice->onlyAtHome())),
-        met: static fn(Obstacle $why): WhichArmTheAdviceTook => new WhichArmTheAdviceTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(WhatToWatchOn $advice): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $advice->onlyAtHome())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundToWatchOn::found(adviceSaying('At home only', 'Nothing is installed'))))->toBe('found:At home only')

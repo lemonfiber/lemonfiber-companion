@@ -21,12 +21,7 @@ use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatTheRehearsalFound;
-
-/** One word carried out of an `either()` arm. */
-final readonly class WhatARehearsalAnswered
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 function qBittorrentLeftOut(): AServiceLeftOut
 {
@@ -79,8 +74,8 @@ it('says what each need is called on a screen', function (): void {
 
 it('answers the arm it was built with', function (): void {
     $rehearsal = WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()));
-    $found = static fn(WhatStartingItWouldComeTo $said): WhatARehearsalAnswered => new WhatARehearsalAnswered($said === $rehearsal ? 'found' : 'another');
-    $met = static fn(Obstacle $why): WhatARehearsalAnswered => new WhatARehearsalAnswered($why->kind()->value);
+    $found = static fn(WhatStartingItWouldComeTo $said): TheWordCarriedOut => new TheWordCarriedOut($said === $rehearsal ? 'found' : 'another');
+    $met = static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value);
 
     expect(WhatTheRehearsalFound::found($rehearsal)->either($found, $met)->said)->toBe('found')
         ->and(WhatTheRehearsalFound::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->either($found, $met)->said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);

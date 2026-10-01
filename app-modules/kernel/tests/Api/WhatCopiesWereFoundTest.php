@@ -15,18 +15,14 @@ use Modules\Kernel\Api\WhatCopiesWereFound;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheCopiesTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function whatCopiesWereFound(WhatCopiesWereFound $answer): string
 {
     return $answer->either(
-        copies: static fn(TheCopies $copies): WhichArmTheCopiesTook => new WhichArmTheCopiesTook(sprintf('copies:%d', count($copies))),
-        met: static fn(Obstacle $why): WhichArmTheCopiesTook => new WhichArmTheCopiesTook(sprintf('met:%s', $why->kind()->value)),
+        copies: static fn(TheCopies $copies): TheWordCarriedOut => new TheWordCarriedOut(sprintf('copies:%d', count($copies))),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

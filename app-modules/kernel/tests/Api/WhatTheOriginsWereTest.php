@@ -14,18 +14,14 @@ use Modules\Kernel\Api\WhereTheServicesComeFrom;
 
 use function sprintf;
 
-/** One word carried out of an arm. */
-final readonly class WhichArmTheOriginsTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function whatTheOriginsSaid(WhatTheOriginsWere $answer): string
 {
     return $answer->either(
-        origins: static fn(WhereTheServicesComeFrom $origins): WhichArmTheOriginsTook => new WhichArmTheOriginsTook(sprintf('origins:%d', $origins->count())),
-        met: static fn(Obstacle $why): WhichArmTheOriginsTook => new WhichArmTheOriginsTook(sprintf('met:%s', $why->kind()->value)),
+        origins: static fn(WhereTheServicesComeFrom $origins): TheWordCarriedOut => new TheWordCarriedOut(sprintf('origins:%d', $origins->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

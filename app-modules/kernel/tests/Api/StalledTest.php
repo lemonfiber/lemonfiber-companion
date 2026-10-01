@@ -7,12 +7,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\WhatIsUnsupported;
-
-/** One title carried out of `stated()`, since it must hand back an object. */
-final readonly class WhatOneTitleSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A stalled item, named so the order can be read back. */
 function aStalledItem(string $called): Stuck
@@ -27,7 +22,7 @@ function titlesIn(Stalled $stalled): string
 
     foreach ($stalled as $one) {
         $rows[] = $one->stated(
-            static fn(string $title): WhatOneTitleSaid => new WhatOneTitleSaid($title),
+            static fn(string $title): TheWordCarriedOut => new TheWordCarriedOut($title),
         )->said;
     }
 

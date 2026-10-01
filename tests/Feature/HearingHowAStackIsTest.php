@@ -40,6 +40,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\AScreenListening;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -68,12 +69,6 @@ function theStackBeingListenedTo(): Stack
         Address::of('https://192.168.1.44:8443'),
         Fingerprint::of(str_repeat('f', Fingerprint::CHARACTERS)),
     );
-}
-
-/** A moment, counted in seconds from one a test starts at. */
-function secondsAfterOpening(int $seconds): Instant
-{
-    return Instant::atEpochSeconds(1_790_000_000 + $seconds);
 }
 
 /** A summary counting one thing, with every part an item has. */
@@ -110,28 +105,6 @@ function aRunWithOneFinding(): Report
     ));
 }
 
-/** Everything a test of the line reaches for: the screen, and what stands in for its ports. */
-final readonly class AScreenListening
-{
-    public function __construct(
-        public HowThisStackIs $screen,
-        public AStackThatSpeaksUp $stream,
-        public FrozenClock $clock,
-        public ACaptureInMemory $window,
-        public AKeychainInMemory $keychain,
-        public StandingsInMemory $standings,
-    ) {}
-
-    /** The screen wakes at a moment, as its poll would wake it. */
-    public function wakesAt(int $seconds): self
-    {
-        $this->clock->moveTo(secondsAfterOpening($seconds));
-        $this->screen->listen();
-
-        return $this;
-    }
-}
-
 /** The home screen, listening to a stream that says what a test scripts, in front of somebody. */
 function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $window = null, bool $signedIn = true, ?Report $run = null): AScreenListening
 {
@@ -142,7 +115,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $clock = FrozenClock::at(secondsAfterOpening(0));
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
     $window ??= ACaptureInMemory::inFront();
     $standings = StandingsInMemory::working();
 
@@ -397,7 +370,7 @@ function whatTheListHolds(StandingsInMemory $standings): string
             retained: static fn(object $standing, Instant $at): Code => Code::of(sprintf(
                 '%s|%d',
                 $standing instanceof HowItStands ? $standing->value : 'not-a-word',
-                $at->epochSeconds() - secondsAfterOpening(0)->epochSeconds(),
+                $at->epochSeconds() - AScreenListening::secondsAfterOpening(0)->epochSeconds(),
             )),
         ),
     )->shown();
@@ -448,7 +421,7 @@ it('draws the summary it heard where the device would not keep the word', functi
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())),
-        FrozenClock::at(secondsAfterOpening(0)),
+        FrozenClock::at(AScreenListening::secondsAfterOpening(0)),
         ACaptureInMemory::inFront(),
         StandingsInMemory::refusing(),
         WhatThePhoneKeeps::nothingYet(),

@@ -15,21 +15,17 @@ use Modules\Kernel\Api\WhatTheWalkSaid;
 
 use function sprintf;
 
-/** One line carried out of an arm of what a walk said. */
-final readonly class WhichArmTheWalkTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer about a walk takes, and what it carried there. */
 function theWordForWhichArmTheWalkTook(WhatTheWalkSaid $said): string
 {
     return $said->either(
-        nothing: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('nothing'),
-        alive: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('alive'),
-        said: static fn(ALineItSaid $line): WhichArmTheWalkTook => new WhichArmTheWalkTook(sprintf('said %s: %s', $line->step()->value, $line->said())),
-        closed: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('closed'),
-        met: static fn(Obstacle $why): WhichArmTheWalkTook => new WhichArmTheWalkTook(sprintf('met %s', $why->kind()->value)),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        alive: static fn(): TheWordCarriedOut => new TheWordCarriedOut('alive'),
+        said: static fn(ALineItSaid $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf('said %s: %s', $line->step()->value, $line->said())),
+        closed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('closed'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 

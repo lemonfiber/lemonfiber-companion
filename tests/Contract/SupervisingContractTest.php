@@ -42,6 +42,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
@@ -304,17 +305,11 @@ function everyWayOfSupervising(array $answered, ?Obstacle $why = null): array
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatSupervisingTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every service, folded to a word each, so an order can be compared. */
 function everythingRunningIn(Supervising $supervising): string
 {
     return $supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
-        these: static function (Daemons $daemons): WhatSupervisingTurnedOutToSay {
+        these: static function (Daemons $daemons): TheWordCarriedOut {
             $rows = [];
 
             foreach ($daemons as $daemon) {
@@ -326,10 +321,10 @@ function everythingRunningIn(Supervising $supervising): string
                 );
             }
 
-            return new WhatSupervisingTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -337,10 +332,10 @@ function everythingRunningIn(Supervising $supervising): string
 function whatTheStackAmountsTo(Supervising $supervising): string
 {
     return $supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
-        these: static fn(Daemons $daemons): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($daemons->running()->value),
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
+        these: static fn(Daemons $daemons): TheWordCarriedOut
+            => new TheWordCarriedOut($daemons->running()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -348,10 +343,10 @@ function whatTheStackAmountsTo(Supervising $supervising): string
 function whatCameOfSaying(Supervising $supervising, AgreedTo $agreed): string
 {
     return $supervising->told(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed)->either(
-        started: static fn(Job $job): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($job->shown()),
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
+        started: static fn(Job $job): TheWordCarriedOut
+            => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -385,17 +380,17 @@ it('carries the stack\'s own judgement rather than one worked out from the rows'
 function theFormsIn(Supervising $supervising): string
 {
     return $supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
-        these: static function (Daemons $daemons): WhatSupervisingTurnedOutToSay {
+        these: static function (Daemons $daemons): TheWordCarriedOut {
             $forms = [];
 
             foreach ($daemons->forms() as $form) {
                 $forms[] = $form->named();
             }
 
-            return new WhatSupervisingTurnedOutToSay(sprintf('forms: %s', implode(', ', $forms)));
+            return new TheWordCarriedOut(sprintf('forms: %s', implode(', ', $forms)));
         },
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -698,15 +693,15 @@ function everyPartOfWhatTheVerbCameTo(WhatTheVerbCameTo $report): string
         '%s|%s|not back %s|left out %s|ports %s|%s',
         $report->was()->value,
         $report->amountsTo(
-            said: static fn(HowTheStackIsRunning $condition): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($condition->value),
-            unsaid: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('unsaid'),
+            said: static fn(HowTheStackIsRunning $condition): TheWordCarriedOut => new TheWordCarriedOut($condition->value),
+            unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
         )->said,
         implode(',', $notBack),
         implode(',', $leftOut),
         implode(',', $ports),
         $report->whetherItRan(
-            ran: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('ran'),
-            declined: static fn(string $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay(sprintf('declined: %s', $why)),
+            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
         )->said,
     );
 }
@@ -715,10 +710,10 @@ function everyPartOfWhatTheVerbCameTo(WhatTheVerbCameTo $report): string
 function whatBecameOfTheVerb(Supervising $supervising): string
 {
     return $supervising->whatBecameOf(aStackWithServices(), theSessionTheStackIsSupervisedWith(), Job::named(AStackThatSupervises::THE_JOB))->either(
-        stillRunning: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('still running'),
-        done: static fn(WhatTheVerbCameTo $report): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay(everyPartOfWhatTheVerbCameTo($report)),
-        ended: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('ended'),
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($why->kind()->value),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(WhatTheVerbCameTo $report): TheWordCarriedOut => new TheWordCarriedOut(everyPartOfWhatTheVerbCameTo($report)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

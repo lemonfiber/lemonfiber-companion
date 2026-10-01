@@ -28,6 +28,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatTakesCopies;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -100,18 +101,12 @@ function everyWayOfTakingACopy(MockResponse $answered, HowTheCopyIsGoing $became
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTakingACopySaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** What asking for a copy came to, as a line. */
 function howTheCopyWasAskedFor(TakingCopies $copying, ACopyAsked $asked): string
 {
     return $copying->take(aStackThatTakesACopy(), Session::of('a-session-not-a-secret'), $asked)->either(
-        started: static fn(Job $job): WhatTakingACopySaid => new WhatTakingACopySaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -119,8 +114,8 @@ function howTheCopyWasAskedFor(TakingCopies $copying, ACopyAsked $asked): string
 function whatBecameOfTheCopy(TakingCopies $copying): string
 {
     return $copying->whatBecameOf(aStackThatTakesACopy(), Session::of('a-session-not-a-secret'), Job::named(AStackThatTakesCopies::THE_JOB))->either(
-        stillRunning: static fn(): WhatTakingACopySaid => new WhatTakingACopySaid('still running'),
-        done: static fn(ACopyTaken $report): WhatTakingACopySaid => new WhatTakingACopySaid(sprintf(
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(ACopyTaken $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|pruned %s|%d of %d %s|%s|%s',
             WhatAScopeSays::of($report->scope()),
             implode(',', iterator_to_array($report->pruned(), preserve_keys: false)),
@@ -130,8 +125,8 @@ function whatBecameOfTheCopy(TakingCopies $copying): string
             $report->holds()->value,
             $report->was()->value,
         )),
-        ended: static fn(): WhatTakingACopySaid => new WhatTakingACopySaid('ended'),
-        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->kind()->name),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

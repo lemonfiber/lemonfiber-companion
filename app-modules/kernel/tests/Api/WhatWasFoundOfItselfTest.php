@@ -20,16 +20,12 @@ use Modules\Kernel\Api\WhereThisCopyStands;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheSelfCheckTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('a copy that could not be asked about is never one that is up to date', function (): void {
     $fold = static fn(WhatWasFoundOfItself $answer): string => $answer->either(
-        found: static fn(ThisCopyOfLemonfiber $copy): WhichArmTheSelfCheckTook => new WhichArmTheSelfCheckTook(sprintf('found:%s', $copy->stands()->value)),
-        met: static fn(Obstacle $why): WhichArmTheSelfCheckTook => new WhichArmTheSelfCheckTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(ThisCopyOfLemonfiber $copy): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $copy->stands()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
     $copy = ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Installer, ''), WhereThisCopyStands::Current, WhatIsReleased::nothing(), '', HowItWouldBeUpdated::notSaid(), WhatAnUpdateWouldBring::said('The program', 'Settings are kept'));
 

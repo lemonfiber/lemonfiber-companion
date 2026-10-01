@@ -21,11 +21,7 @@ use Modules\Kernel\Api\WhatWasFoundOfTheVersions;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatAnArmSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('holds the three versions, and an engine that did not answer as none', function (): void {
     $runs = WhatRunsHere::namingNoRelease('0.16.0', '0.9.0', '  ', HowTheNotesStand::Pending);
@@ -52,8 +48,8 @@ it('hands the running release and its notes to one arm, and a stack naming none 
         AGroupOfChanges::titled('New', 'One', 'Two'),
     );
     $arms = static fn(WhatRunsHere $runs): string => $runs->running(
-        named: static fn(Release $release, array $changes): WhatAnArmSaid => new WhatAnArmSaid(sprintf('%s %s %s', $release->version(), $changes[0]->title(), implode(',', iterator_to_array($changes[0], preserve_keys: false)))),
-        notNamed: static fn(): WhatAnArmSaid => new WhatAnArmSaid('-'),
+        named: static fn(Release $release, array $changes): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s %s', $release->version(), $changes[0]->title(), implode(',', iterator_to_array($changes[0], preserve_keys: false)))),
+        notNamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
     )->said;
 
     expect($arms($named))->toBe('0.16.0 New One,Two')
@@ -67,8 +63,8 @@ it('refuses a group of changes with no title', function (): void {
 it('answers what was found, or the obstacle met instead', function (): void {
     $runs = WhatRunsHere::namingNoRelease('0.16.0', '0.9.0', '', HowTheNotesStand::Stale);
     $said = static fn(WhatWasFoundOfTheVersions $found): string => $found->either(
-        found: static fn(WhatRunsHere $runs): WhatAnArmSaid => new WhatAnArmSaid($runs->lemonfiber()),
-        met: static fn(Obstacle $why): WhatAnArmSaid => new WhatAnArmSaid($why->kind()->value),
+        found: static fn(WhatRunsHere $runs): TheWordCarriedOut => new TheWordCarriedOut($runs->lemonfiber()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 
     expect($said(WhatWasFoundOfTheVersions::found($runs)))->toBe('0.16.0')

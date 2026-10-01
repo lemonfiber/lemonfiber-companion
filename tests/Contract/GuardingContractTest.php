@@ -24,6 +24,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatGuards;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Guarding contract, run against the adapter and against the fake.
@@ -93,18 +94,12 @@ function everyWayOfGuarding(MockResponse $answered, HowTheGuardIsGoing $became):
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatGuardingSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** What asking for a guard came to, as a line. */
 function howTheGuardWasAskedFor(Guarding $guarding): string
 {
     return $guarding->guard(aStackThatGuardsItsData(), Session::of('a-session-not-a-secret'), aGuardForTwoForms())->either(
-        started: static fn(Job $job): WhatGuardingSaid => new WhatGuardingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -112,17 +107,17 @@ function howTheGuardWasAskedFor(Guarding $guarding): string
 function whereTheGuardStands(HowTheGuardIsGoing $going): string
 {
     return $going->either(
-        guarding: static fn(): WhatGuardingSaid => new WhatGuardingSaid('guarding'),
-        sawItGo: static fn(WhatTheGuardSaw $saw): WhatGuardingSaid => new WhatGuardingSaid(sprintf(
+        guarding: static fn(): TheWordCarriedOut => new TheWordCarriedOut('guarding'),
+        sawItGo: static fn(WhatTheGuardSaw $saw): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'saw it go|%s|%s|%s',
             implode(',', array_map(static fn(Form $form): string => $form->named(), [...$saw->forms()])),
             $saw->stoppedThem() ? 'stopped them' : 'did not stop them',
             $saw->reason(),
         )),
-        refused: static fn(string $said): WhatGuardingSaid => new WhatGuardingSaid(sprintf('refused|%s', $said)),
-        ended: static fn(): WhatGuardingSaid => new WhatGuardingSaid('ended'),
-        unknown: static fn(): WhatGuardingSaid => new WhatGuardingSaid('unknown'),
-        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->kind()->name),
+        refused: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused|%s', $said)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        unknown: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unknown'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

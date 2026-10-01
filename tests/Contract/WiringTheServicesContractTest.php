@@ -27,6 +27,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWires;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The WiringTheServices contract, run against the adapter and against the fake.
@@ -115,29 +116,23 @@ function everyWayOfWiring(MockResponse ...$answered): array
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheWiringTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything an answer to wiring says, folded to one line, so two answers can be compared. */
 function everythingTheWiringSays(WhatBecameOfTheWiring $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay(sprintf('underway %s', $job->shown())),
-        answered: static function (TheWiring $wiring): WhatTheWiringTurnedOutToSay {
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static function (TheWiring $wiring): TheWordCarriedOut {
             $said = [$wiring->judged()->value, $wiring->wasRehearsed() ? 'rehearsed' : 'written'];
 
             foreach ($wiring as $connection) {
                 $said[] = sprintf('%s %s %s %s', $connection->connection(), $connection->ended()->state()->value, $connection->ended()->said(), $connection->breaks()->breakage());
             }
 
-            return new WhatTheWiringTurnedOutToSay(implode('|', $said));
+            return new TheWordCarriedOut(implode('|', $said));
         },
-        ended: static fn(): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay('ended'),
-        refused: static fn(string $because): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay($why->kind()->value),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

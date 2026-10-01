@@ -22,6 +22,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatNamesItsVersions;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The ReadingVersions contract, run against the adapter and against the fake.
@@ -114,24 +115,18 @@ function everyWayOfAskingWhatRuns(MockResponse $answered, ?Obstacle $why = null)
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheVersionsTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheVersionsSay(ReadingVersions $reading): string
 {
     return $reading->versionsOn(aStackThatKnowsItsVersions(), Session::of('a-session-not-a-secret'))->either(
-        found: static fn(WhatRunsHere $runs): WhatTheVersionsTurnedOutToSay => new WhatTheVersionsTurnedOutToSay(sprintf(
+        found: static fn(WhatRunsHere $runs): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%s|%s',
             $runs->lemonfiber(),
             $runs->stack(),
             $runs->engine(),
             $runs->notes()->value,
             $runs->running(
-                named: static fn(Release $release, array $changes): WhatTheVersionsTurnedOutToSay => new WhatTheVersionsTurnedOutToSay(sprintf(
+                named: static fn(Release $release, array $changes): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
                     '%s %s %s: %s',
                     $release->version(),
                     $release->theHouseholdWouldNotice() ? 'noticed' : 'unnoticed',
@@ -141,10 +136,10 @@ function everythingTheVersionsSay(ReadingVersions $reading): string
                         $changes,
                     )),
                 )),
-                notNamed: static fn(): WhatTheVersionsTurnedOutToSay => new WhatTheVersionsTurnedOutToSay('-'),
+                notNamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
             )->said,
         )),
-        met: static fn(Obstacle $why): WhatTheVersionsTurnedOutToSay => new WhatTheVersionsTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

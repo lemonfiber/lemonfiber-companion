@@ -21,6 +21,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatNamesItsOrigins;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Provenance contract, run against the adapter and against the fake.
@@ -125,17 +126,11 @@ function everyWayOfAskingWhereItComesFrom(MockResponse $answered, ?Obstacle $why
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheOriginsTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the origins say, folded to one line, so two answers can be compared. */
 function everythingTheOriginsSay(Provenance $provenance): string
 {
     return $provenance->declaredOn(aStackThatSaysWhereItsServicesComeFrom(), Session::of('a-session-not-a-secret'))->either(
-        origins: static function (WhereTheServicesComeFrom $origins): WhatTheOriginsTurnedOutToSay {
+        origins: static function (WhereTheServicesComeFrom $origins): TheWordCarriedOut {
             $rows = [];
 
             foreach ($origins as $origin) {
@@ -151,9 +146,9 @@ function everythingTheOriginsSay(Provenance $provenance): string
                 );
             }
 
-            return new WhatTheOriginsTurnedOutToSay(sprintf('origins: %s', implode(' | ', $rows)));
+            return new TheWordCarriedOut(sprintf('origins: %s', implode(' | ', $rows)));
         },
-        met: static fn(Obstacle $why): WhatTheOriginsTurnedOutToSay => new WhatTheOriginsTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

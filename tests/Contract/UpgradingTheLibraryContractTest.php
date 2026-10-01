@@ -23,6 +23,7 @@ use Modules\Sdk\Api\Upgraders;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatUpgrades;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The UpgradingTheLibrary contract, run against the adapter and against the fake.
@@ -84,26 +85,20 @@ function aKindUpgradedWith(array|string|null $outcome): array
     return ['media_type' => 'movies', 'preset' => 'Maximum', 'size_per_hour' => '~15 GB', 'outcome' => $outcome];
 }
 
-/** One answer carried out of an arm. */
-final readonly class WhatTheUpgradeCameBackAs
-{
-    public function __construct(public string $said) {}
-}
-
 /** What an upgrade came to, as one line. */
 function howAnUpgradeReadsAsText(WhatTheUpgradeCameTo $came): string
 {
     return $came->either(
-        said: static function (TheUpgrade $upgrade): WhatTheUpgradeCameBackAs {
+        said: static function (TheUpgrade $upgrade): TheWordCarriedOut {
             $kinds = [];
 
             foreach ($upgrade as $kind) {
                 $kinds[] = implode('/', [$kind->kind(), $kind->preset(), $kind->sizePerHour(), $kind->asking()->saidOnTheScreen(), $kind->asking()->detail()]);
             }
 
-            return new WhatTheUpgradeCameBackAs(sprintf('%s:%s', $upgrade->wasCarriedOut() ? 'carried out' : 'described', implode(';', $kinds)));
+            return new TheWordCarriedOut(sprintf('%s:%s', $upgrade->wasCarriedOut() ? 'carried out' : 'described', implode(';', $kinds)));
         },
-        met: static fn(Obstacle $why): WhatTheUpgradeCameBackAs => new WhatTheUpgradeCameBackAs(sprintf('refused:%s', $why->kind()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 

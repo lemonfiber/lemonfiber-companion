@@ -26,6 +26,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatTakesThemOut;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The RemovingSomebody contract, run against the adapter and against the fake.
@@ -121,25 +122,19 @@ function everyWayOfTakingSomebodyOut(MockResponse ...$answered): array
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTakingThemOutCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything an answer says, folded to one line, so two answers can be compared. */
 function everythingTheRemovalSays(WhatBecameOfTheRemoval $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo(sprintf('underway %s', $job->shown())),
-        answered: static function (ARemoval $removal): WhatTakingThemOutCameTo {
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static function (ARemoval $removal): TheWordCarriedOut {
             $findings = [];
 
             foreach ($removal->findings() as $finding) {
                 $findings[] = $finding;
             }
 
-            return new WhatTakingThemOutCameTo(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s|%s|%d|%s|%s|%s',
                 $removal->who()->name(),
                 $removal->wasCarriedOut() ? 'carried out' : 'described',
@@ -149,9 +144,9 @@ function everythingTheRemovalSays(WhatBecameOfTheRemoval $became): string
                 implode(',', $findings),
             ));
         },
-        ended: static fn(): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo('ended'),
-        refused: static fn(string $because): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo($why->kind()->value),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

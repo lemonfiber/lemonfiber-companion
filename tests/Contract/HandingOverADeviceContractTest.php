@@ -32,6 +32,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatHandsDevicesOver;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The HandingOverADevice contract, run against the adapter and against the fake.
@@ -129,18 +130,12 @@ function everyWayOfHandingADeviceOver(MockResponse $answered, WhatBecameOfTheHan
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatHandingOverSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** A moment as written, as the seconds it names or a word saying it names none. */
 function secondsIn(AMomentAsWritten $moment): string
 {
     return $moment->read(
-        read: static fn(Instant $at): WhatHandingOverSaid => new WhatHandingOverSaid((string) $at->epochSeconds()),
-        unreadable: static fn(): WhatHandingOverSaid => new WhatHandingOverSaid('undated'),
+        read: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()),
+        unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('undated'),
     )->said;
 }
 
@@ -179,11 +174,11 @@ function everythingTheHandoffSays(AHandoff $handoff): string
 function saidOfTheHandoff(WhatBecameOfTheHandoff $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatHandingOverSaid => new WhatHandingOverSaid(sprintf('following %s', $job->shown())),
-        answered: static fn(AHandoff $handoff): WhatHandingOverSaid => new WhatHandingOverSaid(everythingTheHandoffSays($handoff)),
-        ended: static fn(): WhatHandingOverSaid => new WhatHandingOverSaid('ended'),
-        refused: static fn(string $because): WhatHandingOverSaid => new WhatHandingOverSaid(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatHandingOverSaid => new WhatHandingOverSaid($why->kind()->name),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        answered: static fn(AHandoff $handoff): TheWordCarriedOut => new TheWordCarriedOut(everythingTheHandoffSays($handoff)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

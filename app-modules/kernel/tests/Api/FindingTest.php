@@ -29,6 +29,8 @@ use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 function aFinding(string $title = 'Torrent traffic leaves through the tunnel'): Finding
 {
     return Finding::of(
@@ -193,13 +195,7 @@ it('G4-R4 — a core that added nothing is told from one that added an empty lin
 function whatItSays(WhatItSaysUnderneath $underneath): string
 {
     return $underneath->either(
-        said: static fn(string $detail): WhatTheDetailTurnedOutToBe => new WhatTheDetailTurnedOutToBe($detail),
-        none: static fn(): WhatTheDetailTurnedOutToBe => new WhatTheDetailTurnedOutToBe('nothing'),
+        said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+        none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
-}
-
-/** One answer carried out of an `either()` arm, which hands back objects. */
-final readonly class WhatTheDetailTurnedOutToBe
-{
-    public function __construct(public string $said) {}
 }

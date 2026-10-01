@@ -14,23 +14,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
-
-/**
- * What an arm handed out, carried out of `whichever()` in one piece.
- *
- * The fold answers an object, which is what stops a reader returning a bare
- * `null` for the arms it did not think about. {@see WhatTheRefusalSaid} is the
- * same device one type over.
- */
-final readonly class WhatTheSettlementSaid
-{
-    public function __construct(
-        public string $arm,
-        public Services $services,
-        public ?WhoSettledIt $whose = null,
-        public ?WhyItWasChosen $why = null,
-    ) {}
-}
+use Tests\Support\WhatTheSettlementSaid;
 
 /** Everything the union handed a reader, whichever arm it took. */
 function handedOut(WhatSettledIt $settled): WhatTheSettlementSaid

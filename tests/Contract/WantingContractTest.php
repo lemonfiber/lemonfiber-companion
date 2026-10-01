@@ -26,6 +26,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Wanting contract, run against the adapter and against the fake.
@@ -201,10 +202,10 @@ function aDecidedAnswer(): MockResponse
 function whatCameOfDeciding(Wanting $wanting, Decided $decided): string
 {
     return $wanting->decided(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith(), $decided)->either(
-        started: static fn(Job $job): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($job->shown()),
-        met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
+        started: static fn(Job $job): TheWordCarriedOut
+            => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -292,20 +293,14 @@ it('D7-R7 — a refusal names the request and carries the sentence with it', fun
         ->toBe(['request' => 41, 'reason' => 'No room this month']);
 });
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheHouseholdTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a household answered, as a word, whichever arm it took. */
 function whatTheHouseholdSaid(Wanting $wanting): string
 {
     return $wanting->askedOf(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith())->either(
-        these: static fn(Requested $wanted): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay(sprintf('%d of which %d waiting', $wanted->count(), $wanted->waiting())),
-        met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
+        these: static fn(Requested $wanted): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('%d of which %d waiting', $wanted->count(), $wanted->waiting())),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -319,32 +314,26 @@ function whatTheHouseholdSaid(Wanting $wanting): string
 function theStandingOf(Wanted $one): string
 {
     return $one->standing()->either(
-        said: static fn(Waiting $said): WhatTheStandingSaid => new WhatTheStandingSaid($said->value),
-        unnamed: static fn(): WhatTheStandingSaid => new WhatTheStandingSaid('unnamed'),
+        said: static fn(Waiting $said): TheWordCarriedOut => new TheWordCarriedOut($said->value),
+        unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unnamed'),
     )->said;
-}
-
-/** One standing carried out of `either()`, since it must hand back an object. */
-final readonly class WhatTheStandingSaid
-{
-    public function __construct(public string $said) {}
 }
 
 /** Every request, folded to a word each, so an order can be compared. */
 function everyRequestIn(Wanting $wanting): string
 {
     return $wanting->askedOf(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith())->either(
-        these: static function (Requested $wanted): WhatTheHouseholdTurnedOutToSay {
+        these: static function (Requested $wanted): TheWordCarriedOut {
             $rows = [];
 
             foreach ($wanted as $one) {
                 $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), $one->forWhat(), theStandingOf($one));
             }
 
-            return new WhatTheHouseholdTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -383,10 +372,10 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
 it('answers exactly one way, and answers at all', function (): void {
     foreach (everyWayOfAskingTheHousehold(aHouseholdAnswer()) as $which => $make) {
         $arms = 0;
-        $count = static function () use (&$arms): WhatTheHouseholdTurnedOutToSay {
+        $count = static function () use (&$arms): TheWordCarriedOut {
             $arms++;
 
-            return new WhatTheHouseholdTurnedOutToSay('counted');
+            return new TheWordCarriedOut('counted');
         };
 
         $make()

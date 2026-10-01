@@ -95,22 +95,33 @@ final readonly class TestsAndNaming
 
             // Planted where `G10`'s other fixture is, and for its reason: the
             // clash is only a failure once something loads the file and asks
-            // whether the helper's name is a class, so the rule reads text.
-            Fixture::suite('G10', 'tests/Support/Fixtures/AHelperNamedLikeItsClassTest.php', <<<'PHP'
+            // whether the helper's name is a class, so the rule reads text. The
+            // class it clashes with is one PHP always has, so the fixture
+            // declares no type and trips no other rule.
+            Fixture::suite('G10', 'tests/Support/Fixtures/AHelperNamedLikeAClassTest.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
 
-                final readonly class WhatTheFixtureSaid
+                function arrayIterator(): string
+                {
+                    return 'planted';
+                }
+                PHP, 'no test helper shares its name'),
+
+            // Planted under `tests/Support` for the same reason again: a test
+            // file declaring a type is read as text, and a fixture a suite
+            // loaded would declare it for the whole run.
+            Fixture::suite('G10', 'tests/Support/Fixtures/ATestFileDeclaringATypeTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                final readonly class APlantedCarrier
                 {
                     public function __construct(public string $said) {}
                 }
-
-                function whatTheFixtureSaid(): string
-                {
-                    return new WhatTheFixtureSaid('planted')->said;
-                }
-                PHP, 'no test helper shares its name'),
+                PHP, 'a test file declares no class'),
 
             Fixture::suite('G5', 'app-modules/health/tests/Fixtures/AssertsTest.php', <<<'PHP'
                 <?php

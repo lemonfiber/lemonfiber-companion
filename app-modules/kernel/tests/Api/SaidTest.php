@@ -6,19 +6,14 @@ use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
-
-/** One word carried out of `when()`, since it must hand back an object. */
-final readonly class WhatTheMomentSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A line's moment, or the word for not having one. */
 function whenOneLineHappened(Said $said): string
 {
     return $said->when(
-        then: static fn(string $when): WhatTheMomentSaid => new WhatTheMomentSaid($when),
-        unstated: static fn(): WhatTheMomentSaid => new WhatTheMomentSaid('unstated'),
+        then: static fn(string $when): TheWordCarriedOut => new TheWordCarriedOut($when),
+        unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
     )->said;
 }
 

@@ -33,6 +33,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
 
@@ -206,21 +207,15 @@ function everyWayOfListening(array $streams, array $script): array
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheStreamSaidAsAWord
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every field of what was heard, as one line, whichever arm it took. */
 function whatWasHeardAsAWord(WhatWasHeard $heard): string
 {
     return $heard->either(
-        nothing: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('nothing'),
-        alive: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('alive'),
-        said: static fn(TheHealthSummary $summary): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord(aSummaryAsAWord($summary)),
-        closed: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('closed'),
-        met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->kind()->value),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        alive: static fn(): TheWordCarriedOut => new TheWordCarriedOut('alive'),
+        said: static fn(TheHealthSummary $summary): TheWordCarriedOut => new TheWordCarriedOut(aSummaryAsAWord($summary)),
+        closed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('closed'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -592,9 +587,9 @@ function whatWakesHearOfAStart(Hearing $hearing, int $wakes): array
 
     for ($wake = 0; $wake < $wakes; $wake++) {
         $heard[] = $hearing->whatAStartWaitsOn(aStackToListenTo(), theSessionItListensWith())->either(
-            saying: static fn(string $line): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord(sprintf('saying "%s"', $line)),
-            nothingNew: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('nothing new'),
-            met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->kind()->value),
+            saying: static fn(string $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf('saying "%s"', $line)),
+            nothingNew: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing new'),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
         )->said;
     }
 

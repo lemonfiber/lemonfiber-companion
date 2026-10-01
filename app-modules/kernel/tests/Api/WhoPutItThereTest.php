@@ -13,22 +13,18 @@ use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichOriginArm
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an origin takes, and what it hands over. */
 function theOriginArm(WhoPutItThere $origin): string
 {
     return $origin->whichever(
-        bundled: static fn(): WhichOriginArm => new WhichOriginArm('bundled'),
-        operator: static fn(): WhichOriginArm => new WhichOriginArm('operator'),
-        plugin: static fn(string $named): WhichOriginArm => new WhichOriginArm(sprintf('plugin:%s', $named)),
-        unknown: static fn(string $why): WhichOriginArm => new WhichOriginArm(sprintf('unknown:%s', $why)),
-        overridden: static fn(string $named, WhatItReplaced $replaced): WhichOriginArm => new WhichOriginArm(sprintf('overridden:%s from %s', $named, theOriginArm($replaced->from()))),
-        orphaned: static fn(string $named): WhichOriginArm => new WhichOriginArm(sprintf('orphaned:%s', $named)),
+        bundled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('bundled'),
+        operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('operator'),
+        plugin: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named, WhatItReplaced $replaced): TheWordCarriedOut => new TheWordCarriedOut(sprintf('overridden:%s from %s', $named, theOriginArm($replaced->from()))),
+        orphaned: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

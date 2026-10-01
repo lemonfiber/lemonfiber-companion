@@ -10,20 +10,15 @@ use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\WhatIsStuck;
 use Modules\Kernel\Api\WhatIsUnsupported;
-
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheStallSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Whichever arm an answer takes, as a word. */
 function whatCameBackAboutTheStall(WhatIsStuck $answer): string
 {
     return $answer->either(
-        these: static fn(Stalled $stalled): WhatTheStallSaid
-            => new WhatTheStallSaid(sprintf('%d stuck', $stalled->count())),
-        met: static fn(Obstacle $why): WhatTheStallSaid => new WhatTheStallSaid($why->kind()->value),
+        these: static fn(Stalled $stalled): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('%d stuck', $stalled->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

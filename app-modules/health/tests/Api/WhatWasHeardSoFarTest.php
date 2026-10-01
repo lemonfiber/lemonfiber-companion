@@ -18,6 +18,8 @@ use Modules\Kernel\Api\WhatWasHeard;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /** A moment, counted in seconds from one a test starts at. */
 function secondsIn(int $seconds): Instant
 {
@@ -30,19 +32,13 @@ function aSummaryThatSays(HowItStands $standing): TheHealthSummary
     return TheHealthSummary::of($standing, 0, '', WhatStoppedMoving::nothing());
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheScreenHolds
-{
-    public function __construct(public string $said) {}
-}
-
 /** The summary held, by which arm it took, with what it carried. */
 function theSummaryHeld(WhatWasHeardSoFar $heard): string
 {
     return $heard->summary(
-        none: static fn(): WhatTheScreenHolds => new WhatTheScreenHolds('none'),
-        current: static fn(TheHealthSummary $summary): WhatTheScreenHolds => new WhatTheScreenHolds(sprintf('current %s', $summary->standing()->value)),
-        asOf: static fn(TheHealthSummary $summary, Instant $at): WhatTheScreenHolds => new WhatTheScreenHolds(sprintf('%s as of %d', $summary->standing()->value, $at->epochSeconds() - 1_790_000_000)),
+        none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+        current: static fn(TheHealthSummary $summary): TheWordCarriedOut => new TheWordCarriedOut(sprintf('current %s', $summary->standing()->value)),
+        asOf: static fn(TheHealthSummary $summary, Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s as of %d', $summary->standing()->value, $at->epochSeconds() - 1_790_000_000)),
     )->said;
 }
 
@@ -50,8 +46,8 @@ function theSummaryHeld(WhatWasHeardSoFar $heard): string
 function whatStoppedIt(WhatWasHeardSoFar $heard): string
 {
     return $heard->stoppedBy(
-        nothing: static fn(): WhatTheScreenHolds => new WhatTheScreenHolds('nothing'),
-        met: static fn(Obstacle $why): WhatTheScreenHolds => new WhatTheScreenHolds($why->kind()->value),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

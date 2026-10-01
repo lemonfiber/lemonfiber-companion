@@ -36,6 +36,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatPutsRunsBack;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The PuttingARunBack contract, run against the adapter and against the fake.
@@ -126,12 +127,6 @@ function everyWayOfPuttingARunBack(MockResponse $answered, HowPuttingARunBackIsG
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatPuttingARunBackSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** One list of changes and what is said of each, as a line. */
 function changesAndWhySaid(ChangesAndWhy $changes): string
 {
@@ -148,8 +143,8 @@ function changesAndWhySaid(ChangesAndWhy $changes): string
 function howPuttingARunBackWasAgreed(PuttingARunBack $puttingBack): string
 {
     return $puttingBack->putBack(aStackARunIsPutBackOn(), Session::of('a-session-not-a-secret'), theRunAgreedTo())->either(
-        started: static fn(Job $job): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -157,15 +152,15 @@ function howPuttingARunBackWasAgreed(PuttingARunBack $puttingBack): string
 function whatBecameOfPuttingARunBack(PuttingARunBack $puttingBack): string
 {
     return $puttingBack->whatBecameOf(aStackARunIsPutBackOn(), Session::of('a-session-not-a-secret'), Job::named(AStackThatPutsRunsBack::THE_JOB))->either(
-        stillRunning: static fn(): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid('still running'),
-        done: static function (ARunPutBack $report): WhatPuttingARunBackSaid {
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static function (ARunPutBack $report): TheWordCarriedOut {
             $reversed = [];
 
             foreach ($report->reversed() as $change) {
                 $reversed[] = sprintf('%s %s', $change->does()->value, $change->target());
             }
 
-            return new WhatPuttingARunBackSaid(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s|%s|left %s|noted %s',
                 $report->rehearsed()->value,
                 implode(', ', $reversed),
@@ -173,14 +168,14 @@ function whatBecameOfPuttingARunBack(PuttingARunBack $puttingBack): string
                 changesAndWhySaid($report->noted()),
             ));
         },
-        refused: static fn(ARefusalInItsWords $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf(
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'refused: %s | %s | %s',
             $why->summary(),
             $why->meaning(),
             $why->named()->forTheOperator(),
         )),
-        ended: static fn(): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid('ended'),
-        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->kind()->name),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

@@ -21,19 +21,15 @@ use Modules\Kernel\Api\WhereTheDataGoes;
 
 use function sprintf;
 
-/** One line carried out of an arm of a rehearsed restore. */
-final readonly class WhichArmTheRehearsedRestoreTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a rehearsed restore takes, and what it carried there. */
 function whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound $found): string
 {
     return $found->either(
-        listed: static fn(WhatPuttingItBackWouldDo $listing): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('listed:%s', $listing->agreement())),
-        refused: static fn(ARefusalInItsWords $why): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('refused:%s', $why->summary())),
-        met: static fn(Obstacle $why): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('met:%s', $why->kind()->value)),
+        listed: static fn(WhatPuttingItBackWouldDo $listing): TheWordCarriedOut => new TheWordCarriedOut(sprintf('listed:%s', $listing->agreement())),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->summary())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

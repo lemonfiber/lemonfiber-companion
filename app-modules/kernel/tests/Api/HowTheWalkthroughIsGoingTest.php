@@ -18,20 +18,16 @@ use Modules\Kernel\Api\WhichWalk;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichGoingArm
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a reading takes, as one line. */
 function whichWayItIsGoing(HowTheWalkthroughIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichGoingArm => new WhichGoingArm('running'),
-        done: static fn(AWalkthrough $walk): WhichGoingArm => new WhichGoingArm(sprintf('done:%s', $walk->state()->value)),
-        ended: static fn(): WhichGoingArm => new WhichGoingArm('ended'),
-        met: static fn(Obstacle $why): WhichGoingArm => new WhichGoingArm(sprintf('met:%s', $why->kind()->name)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(AWalkthrough $walk): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%s', $walk->state()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->name)),
     )->said;
 }
 

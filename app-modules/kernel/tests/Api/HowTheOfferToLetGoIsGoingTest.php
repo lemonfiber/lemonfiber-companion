@@ -15,20 +15,16 @@ use Modules\Kernel\Api\WhatLettingItGoCosts;
 
 use function sprintf;
 
-/** One line carried out of an arm of an offer to let go being followed. */
-final readonly class WhichArmTheOfferToLetGoTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following an offer to let go takes, and what it carried there. */
 function howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook('running'),
-        offering: static fn(WhatLettingItGoCosts $offer): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook(sprintf('offered:%s', $offer->agreement())),
-        ended: static fn(): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        offering: static fn(WhatLettingItGoCosts $offer): TheWordCarriedOut => new TheWordCarriedOut(sprintf('offered:%s', $offer->agreement())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

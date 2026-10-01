@@ -19,12 +19,7 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
-
-/** One line carried out of an arm. */
-final readonly class WhatTheInvitationGranted
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** An invitation for Anna at the stack's address. */
 function anInvitationForAnna(): AnInvitationToHand
@@ -36,8 +31,8 @@ function anInvitationForAnna(): AnInvitationToHand
 function whatItGranted(AnInvitation $invitation): string
 {
     return $invitation->granted(
-        these: static fn(WhatWasGranted $granted): WhatTheInvitationGranted => new WhatTheInvitationGranted($granted->filtering()),
-        nothing: static fn(): WhatTheInvitationGranted => new WhatTheInvitationGranted('nothing'),
+        these: static fn(WhatWasGranted $granted): TheWordCarriedOut => new TheWordCarriedOut($granted->filtering()),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
 }
 

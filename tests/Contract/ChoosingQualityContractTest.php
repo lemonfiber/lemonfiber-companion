@@ -28,6 +28,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatChoosesQuality;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The ChoosingQuality contract, run against the adapter and against the fake.
@@ -187,12 +188,6 @@ function theQualityTheFakeHolds(): TheQualityChosen
     );
 }
 
-/** One answer carried out of an arm. */
-final readonly class WhatTheQualityCameBackAs
-{
-    public function __construct(public string $said) {}
-}
-
 /** The quality in force, as one line. */
 function theQualityAsText(TheQualityChosen $chosen): string
 {
@@ -214,8 +209,8 @@ function theQualityAsText(TheQualityChosen $chosen): string
         '%s|%s|%s|%s',
         implode(';', $presets),
         $chosen->music()->either(
-            set: static fn(AFormatInForce $format): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(theFormatAsText($format)),
-            unset: static fn(): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs('no music'),
+            set: static fn(AFormatInForce $format): TheWordCarriedOut => new TheWordCarriedOut(theFormatAsText($format)),
+            unset: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no music'),
         )->said,
         $chosen->became()->value,
         $chosen->customised() ? 'edited' : 'as written',
@@ -232,8 +227,8 @@ function theFormatAsText(AFormatInForce $format): string
 function howTheQualityReadsAsText(ChoosingQuality $choosing): string
 {
     return $choosing->inForceOn(theMachineWhoseQualityIsChosen(), theSessionQualityIsChosenOn())->either(
-        found: static fn(TheQualityChosen $chosen): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(theQualityAsText($chosen)),
-        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->kind()->value)),
+        found: static fn(TheQualityChosen $chosen): TheWordCarriedOut => new TheWordCarriedOut(theQualityAsText($chosen)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -241,15 +236,15 @@ function howTheQualityReadsAsText(ChoosingQuality $choosing): string
 function howAChoiceCameBackAsText(WhatTheChoiceCameTo $came): string
 {
     return $came->either(
-        inForce: static fn(TheQualityChosen $chosen): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(theQualityAsText($chosen)),
-        forMusic: static fn(AFormatChoiceMade $made): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf(
+        inForce: static fn(TheQualityChosen $chosen): TheWordCarriedOut => new TheWordCarriedOut(theQualityAsText($chosen)),
+        forMusic: static fn(AFormatChoiceMade $made): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'music:%s|%s|%s|%s',
             theFormatAsText($made->format()),
             $made->became()->value,
             $made->applied()->saidOnTheScreen(),
             $made->applied()->detail(),
         )),
-        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->kind()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 

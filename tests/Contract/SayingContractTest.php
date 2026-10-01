@@ -22,6 +22,7 @@ use Modules\Sdk\Api\Scrollbacks;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AServiceThatSpoke;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Saying contract, run against the adapter and against the fake.
@@ -147,12 +148,6 @@ function everyWayOfReadingAService(MockResponse $answered, ?Obstacle $why = null
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheServiceTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every line, folded to a word each, so an order can be compared. */
 function everyLineOf(Saying $saying): string
 {
@@ -162,27 +157,27 @@ function everyLineOf(Saying $saying): string
         theServiceBeingRead(),
         theBoundBothAreGiven(),
     )->either(
-        this_: static function (Scrollback $scrollback): WhatTheServiceTurnedOutToSay {
+        this_: static function (Scrollback $scrollback): TheWordCarriedOut {
             $rows = [];
 
             foreach ($scrollback as $line) {
                 $rows[] = sprintf(
                     '%s/%s/%s',
                     $line->when(
-                        then: static fn(string $when): WhatTheServiceTurnedOutToSay
-                            => new WhatTheServiceTurnedOutToSay($when),
-                        unstated: static fn(): WhatTheServiceTurnedOutToSay
-                            => new WhatTheServiceTurnedOutToSay('-'),
+                        then: static fn(string $when): TheWordCarriedOut
+                            => new TheWordCarriedOut($when),
+                        unstated: static fn(): TheWordCarriedOut
+                            => new TheWordCarriedOut('-'),
                     )->said,
                     $line->stream()->value,
                     $line->line(),
                 );
             }
 
-            return new WhatTheServiceTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheServiceTurnedOutToSay
-            => new WhatTheServiceTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -195,15 +190,15 @@ function whatTheWindowClaims(Saying $saying): string
         theServiceBeingRead(),
         theBoundBothAreGiven(),
     )->either(
-        this_: static fn(Scrollback $scrollback): WhatTheServiceTurnedOutToSay => new WhatTheServiceTurnedOutToSay(sprintf(
+        this_: static fn(Scrollback $scrollback): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s %d of %d, %s',
             $scrollback->service()->named(),
             $scrollback->howManyArrived(),
             $scrollback->asked()->figure(),
             $scrollback->isAWindow() ? 'a window' : 'the whole',
         )),
-        met: static fn(Obstacle $why): WhatTheServiceTurnedOutToSay
-            => new WhatTheServiceTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

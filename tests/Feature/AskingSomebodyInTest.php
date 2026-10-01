@@ -40,6 +40,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Asking somebody in: what an invitation grants before it is sent, sending
@@ -177,12 +178,12 @@ it('asks for the rehearsal with what was typed, and says it is working while it 
         ->and($asked?->name())->toBe('anna')
         ->and(iterator_to_array($asked?->libraries() ?? TheLibraries::of(), preserve_keys: true))->toBe(['Films', 'Kids'])
         ->and($asked?->age(
-            upTo: static fn(int $age): WhatTheScreenSent => new WhatTheScreenSent((string) $age),
-            none: static fn(): WhatTheScreenSent => new WhatTheScreenSent('none'),
+            upTo: static fn(int $age): TheWordCarriedOut => new TheWordCarriedOut((string) $age),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
         )->said)->toBe('12')
         ->and($asked?->unrated(
-            chosen: static fn(WhatBecomesOfUnrated $unrated): WhatTheScreenSent => new WhatTheScreenSent($unrated->value),
-            unsaid: static fn(): WhatTheScreenSent => new WhatTheScreenSent('unsaid'),
+            chosen: static fn(WhatBecomesOfUnrated $unrated): TheWordCarriedOut => new TheWordCarriedOut($unrated->value),
+            unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
         )->said)->toBe(WhatBecomesOfUnrated::HeldBack->value)
         ->and($drawn)->toContain(__('stacks.invitation.working'));
 });
@@ -197,21 +198,15 @@ it('reads no age and leaves unrated material to the stack where nothing was said
 
     expect($screen->unrated)->toBe('')
         ->and($asked?->age(
-            upTo: static fn(int $age): WhatTheScreenSent => new WhatTheScreenSent((string) $age),
-            none: static fn(): WhatTheScreenSent => new WhatTheScreenSent('none'),
+            upTo: static fn(int $age): TheWordCarriedOut => new TheWordCarriedOut((string) $age),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
         )->said)->toBe('none')
         ->and($asked?->unrated(
-            chosen: static fn(WhatBecomesOfUnrated $unrated): WhatTheScreenSent => new WhatTheScreenSent($unrated->value),
-            unsaid: static fn(): WhatTheScreenSent => new WhatTheScreenSent('unsaid'),
+            chosen: static fn(WhatBecomesOfUnrated $unrated): TheWordCarriedOut => new TheWordCarriedOut($unrated->value),
+            unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
         )->said)->toBe('unsaid')
         ->and(iterator_to_array($asked?->libraries() ?? TheLibraries::of('x'), preserve_keys: true))->toBe([]);
 });
-
-/** One word carried out of an arm. Named for this file (`G10`). */
-final readonly class WhatTheScreenSent
-{
-    public function __construct(public string $said) {}
-}
 
 it('says what the invitation would grant, and when it lapses, before anything is sent', function (): void {
     $inviting = AStackThatInvites::answering(...theWorkThenIts(annasInvitation(rehearsed: true)));

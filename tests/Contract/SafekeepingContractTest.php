@@ -24,6 +24,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatHoldsCredentials;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Safekeeping contract, run against the adapter and against the fake.
@@ -118,17 +119,11 @@ function everyWayOfAskingWhatIsHeld(MockResponse $answered, ?Obstacle $why = nul
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheCredentialsTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheCredentialsSay(Safekeeping $safekeeping): string
 {
     return $safekeeping->heldOn(aStackHoldingCredentials(), Session::of('a-session-not-a-secret'))->either(
-        found: static function (TheCredentialsHeld $held): WhatTheCredentialsTurnedOutToSay {
+        found: static function (TheCredentialsHeld $held): TheWordCarriedOut {
             $lines = [$held->protection()->summary(), implode(',', iterator_to_array($held->protection()->against(), preserve_keys: false)), implode(',', iterator_to_array($held->protection()->notAgainst(), preserve_keys: false))];
 
             foreach ($held as $credential) {
@@ -142,9 +137,9 @@ function everythingTheCredentialsSay(Safekeeping $safekeeping): string
                 );
             }
 
-            return new WhatTheCredentialsTurnedOutToSay(implode("\n", $lines));
+            return new TheWordCarriedOut(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheCredentialsTurnedOutToSay => new WhatTheCredentialsTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

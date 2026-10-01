@@ -33,18 +33,14 @@ use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheSurveyTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** What a layout costs, folded to one line. */
 function whatTheLayoutCosts(WhatLinkingCosts $linking): string
 {
     return $linking->either(
-        costs: static fn(string $because, string $cost, string $remedy, array $filesystems): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('%s|%s|%s|%s|%s', $because, $cost, $remedy, implode(',', $filesystems), implode(',', array_keys($filesystems)))),
-        links: static fn(): WhichArmTheSurveyTook => new WhichArmTheSurveyTook('links'),
+        costs: static fn(string $because, string $cost, string $remedy, array $filesystems): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s|%s|%s|%s|%s', $because, $cost, $remedy, implode(',', $filesystems), implode(',', array_keys($filesystems)))),
+        links: static fn(): TheWordCarriedOut => new TheWordCarriedOut('links'),
     )->said;
 }
 
@@ -191,8 +187,8 @@ it('refuses a layout cost that will not say why, what, or how to fix it, or name
 
 it('a survey that could not be read is never a machine with nothing on it', function (): void {
     $fold = static fn(WhatWasFoundAlreadyHere $answer): string => $answer->either(
-        found: static fn(TheSurvey $survey): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('found:%s', $survey->looked() ? 'looked' : 'could not look')),
-        met: static fn(Obstacle $why): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(TheSurvey $survey): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $survey->looked() ? 'looked' : 'could not look')),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundAlreadyHere::found(aSurveyThatFoundNothing(looked: false))))->toBe('found:could not look')

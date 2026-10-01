@@ -19,12 +19,7 @@ use Modules\Kernel\Api\ThereIsNothingToAgreeTo;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhenItWasMade;
-
-/** One line carried out of an arm. */
-final readonly class WhenTheRunWasSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A change made at a moment, or at none, going back as far as a case says. */
 function aChangeInARun(
@@ -47,11 +42,11 @@ function aChangeInARun(
 function whenTheRunWasMade(ARunToPutBack $run): string
 {
     return $run->when(
-        made: static fn(WhenItWasMade $when): WhenTheRunWasSaid => $when->either(
-            at: static fn(Instant $at): WhenTheRunWasSaid => new WhenTheRunWasSaid((string) $at->epochSeconds()),
-            unreadable: static fn(): WhenTheRunWasSaid => new WhenTheRunWasSaid('undated'),
+        made: static fn(WhenItWasMade $when): TheWordCarriedOut => $when->either(
+            at: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()),
+            unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('undated'),
         ),
-        nowhere: static fn(): WhenTheRunWasSaid => new WhenTheRunWasSaid('nowhere'),
+        nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
     )->said;
 }
 

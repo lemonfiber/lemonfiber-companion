@@ -22,6 +22,7 @@ use Modules\Sdk\Api\Households;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -529,15 +530,9 @@ it('stands in for a household with a payload the contract would accept', functio
 function theStandingRead(Wanted $one): string
 {
     return $one->standing()->either(
-        said: static fn(Waiting $said): WhatThisRowStands => new WhatThisRowStands($said->value),
-        unnamed: static fn(): WhatThisRowStands => new WhatThisRowStands('nobody named it'),
+        said: static fn(Waiting $said): TheWordCarriedOut => new TheWordCarriedOut($said->value),
+        unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nobody named it'),
     )->said;
-}
-
-/** One standing carried out of `either()`, since it must hand back an object. */
-final readonly class WhatThisRowStands
-{
-    public function __construct(public string $said) {}
 }
 
 it('N2-R11 — a status nobody named is a row, not the end of the reading', function (): void {

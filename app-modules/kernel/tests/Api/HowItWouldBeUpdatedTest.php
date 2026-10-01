@@ -12,19 +12,15 @@ use Modules\Kernel\Api\ItselfSaysNothing;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheUpdateTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function howItWouldBeUpdated(HowItWouldBeUpdated $by): string
 {
     return $by->either(
-        byRunning: static fn(string $command): WhichArmTheUpdateTook => new WhichArmTheUpdateTook(sprintf('run:%s', $command)),
-        instead: static fn(string $why): WhichArmTheUpdateTook => new WhichArmTheUpdateTook(sprintf('instead:%s', $why)),
-        notSaid: static fn(): WhichArmTheUpdateTook => new WhichArmTheUpdateTook('neither'),
+        byRunning: static fn(string $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('run:%s', $command)),
+        instead: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('instead:%s', $why)),
+        notSaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('neither'),
     )->said;
 }
 

@@ -18,18 +18,14 @@ use Modules\Kernel\Api\WhatWasFoundKept;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheKeepingTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function whatWasFoundKept(WhatWasFoundKept $answer): string
 {
     return $answer->either(
-        kept: static fn(WhatThisMachineKeeps $keeps): WhichArmTheKeepingTook => new WhichArmTheKeepingTook(sprintf('kept:%d', count($keeps->kept()))),
-        met: static fn(Obstacle $why): WhichArmTheKeepingTook => new WhichArmTheKeepingTook(sprintf('met:%s', $why->kind()->value)),
+        kept: static fn(WhatThisMachineKeeps $keeps): TheWordCarriedOut => new TheWordCarriedOut(sprintf('kept:%d', count($keeps->kept()))),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

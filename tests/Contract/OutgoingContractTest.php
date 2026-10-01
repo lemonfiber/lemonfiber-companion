@@ -27,6 +27,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSaysWhatLeavesIt;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Outgoing contract, run against the adapter and against the fake.
@@ -121,17 +122,11 @@ function everyWayOfAskingWhatLeaves(MockResponse $answered, ?Obstacle $why = nul
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatLeavingTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything that leaves, folded to one line, so two answers can be compared. */
 function everythingThatLeaves(Outgoing $outgoing): string
 {
     return $outgoing->leaving(aStackThatSaysWhatItSends(), Session::of('a-session-not-a-secret'))->either(
-        leaving: static function (WhatLeavesThisMachine $leaving): WhatLeavingTurnedOutToSay {
+        leaving: static function (WhatLeavesThisMachine $leaving): TheWordCarriedOut {
             $ours = [];
 
             foreach ($leaving->ours() as $request) {
@@ -142,14 +137,14 @@ function everythingThatLeaves(Outgoing $outgoing): string
 
             foreach ($leaving->theirs() as $request) {
                 $theirs[] = sprintf('%s:%s', $request->service()->named(), $request->reaches(
-                    recorded: static fn(string $destination, string $purpose): WhatLeavingTurnedOutToSay => new WhatLeavingTurnedOutToSay(sprintf('%s/%s', $destination, $purpose)),
-                    unrecorded: static fn(): WhatLeavingTurnedOutToSay => new WhatLeavingTurnedOutToSay('unrecorded'),
+                    recorded: static fn(string $destination, string $purpose): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s/%s', $destination, $purpose)),
+                    unrecorded: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unrecorded'),
                 )->said);
             }
 
-            return new WhatLeavingTurnedOutToSay(sprintf('ours: %s || theirs: %s', implode(' | ', $ours), implode(' | ', $theirs)));
+            return new TheWordCarriedOut(sprintf('ours: %s || theirs: %s', implode(' | ', $ours), implode(' | ', $theirs)));
         },
-        met: static fn(Obstacle $why): WhatLeavingTurnedOutToSay => new WhatLeavingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

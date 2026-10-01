@@ -24,11 +24,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatPuttingTheRunBackCameTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A report, leaving whatever a case says. */
 function aRunPutBackLeaving(ChangesAndWhy $left, WhetherItWasRehearsed $rehearsed = WhetherItWasRehearsed::CarriedOut): ARunPutBack
@@ -45,11 +41,11 @@ function aRunPutBackLeaving(ChangesAndWhy $left, WhetherItWasRehearsed $rehearse
 function whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('running'),
-        done: static fn(ARunPutBack $report): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('done, %s', $report->rehearsed()->value)),
-        refused: static fn(ARefusalInItsWords $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('refused, %s', $why->summary())),
-        ended: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('ended'),
-        met: static fn(Obstacle $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo($why->kind()->name),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(ARunPutBack $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done, %s', $report->rehearsed()->value)),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused, %s', $why->summary())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

@@ -25,6 +25,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackWithAFrontDoor;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Welcoming contract, run against the adapter and against the fake.
@@ -106,23 +107,17 @@ function everyWayOfAskingForTheDoor(MockResponse $answered, ?Obstacle $why = nul
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheDoorTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to lines, so two answers can be compared. */
 function everythingTheDoorSays(Welcoming $welcoming): string
 {
     return $welcoming->frontDoorOf(aStackWithADoorToAskAbout(), Session::of('a-session-not-a-secret'))->either(
-        found: static function (TheFrontDoor $door): WhatTheDoorTurnedOutToSay {
+        found: static function (TheFrontDoor $door): TheWordCarriedOut {
             $lines = [
                 sprintf('%s|%s', $door->standing()->value, $door->meaning()),
                 sprintf('%s|%s|%s', $door->chosen()->how()->value, $door->chosen()->named(), $door->chosen()->because()),
                 $door->begins()->either(
-                    at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): WhatTheDoorTurnedOutToSay => new WhatTheDoorTurnedOutToSay(sprintf('%s|%s|%s|%s', $service, $facing->value, $address->url(), $address->caution())),
-                    nowhere: static fn(): WhatTheDoorTurnedOutToSay => new WhatTheDoorTurnedOutToSay('nowhere'),
+                    at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s|%s|%s|%s', $service, $facing->value, $address->url(), $address->caution())),
+                    nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
                 )->said,
             ];
 
@@ -130,9 +125,9 @@ function everythingTheDoorSays(Welcoming $welcoming): string
                 $lines[] = sprintf('%s|%s|%s|%s|%s', $service->service(), $service->facing()->value, $service->because(), $service->address()->url(), $service->address()->caution());
             }
 
-            return new WhatTheDoorTurnedOutToSay(implode("\n", $lines));
+            return new TheWordCarriedOut(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheDoorTurnedOutToSay => new WhatTheDoorTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

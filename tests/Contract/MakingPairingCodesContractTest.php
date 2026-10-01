@@ -22,6 +22,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatMakesPairingCodes;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The MakingPairingCodes contract, run against the adapter and against the fake.
@@ -103,18 +104,12 @@ function everyWayOfAskingForACode(MockResponse $answered, WhatBecameOfThePairing
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatAskingForACodeSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** Any answer about a code, folded to one line. */
 function saidOfTheCode(WhatBecameOfThePairingCode $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatAskingForACodeSaid => new WhatAskingForACodeSaid(sprintf('following %s', $job->shown())),
-        made: static fn(APairingCode $code): WhatAskingForACodeSaid => new WhatAskingForACodeSaid(sprintf(
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        made: static fn(APairingCode $code): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%d|%s|%s|%s',
             $code->line()->carried(),
             $code->compare(),
@@ -123,9 +118,9 @@ function saidOfTheCode(WhatBecameOfThePairingCode $became): string
             $code->caution(),
             $code->hasExpiredBy(Instant::atEpochSeconds(1_790_813_400)) ? 'expired at its time' : 'still good at its time',
         )),
-        ended: static fn(): WhatAskingForACodeSaid => new WhatAskingForACodeSaid('ended'),
-        refused: static fn(string $because): WhatAskingForACodeSaid => new WhatAskingForACodeSaid(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatAskingForACodeSaid => new WhatAskingForACodeSaid($why->kind()->name),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
