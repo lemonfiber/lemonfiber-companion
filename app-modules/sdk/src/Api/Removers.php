@@ -56,6 +56,7 @@ final readonly class Removers implements RemovingSomebody
             return $this->underway($this->clients->client($stack, $session)->act(
                 Api::action(TakingThemOut::TakeThemOut->asked()),
                 [WireField::Name->value => $who->name()],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);

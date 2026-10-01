@@ -13,6 +13,8 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\MakingPairingCodes;
@@ -32,16 +34,20 @@ use Modules\Sdk\Internal\WhatTheReachMet;
  * encrypted on the network, no address a phone could reach — says why in its
  * own words, and that sentence is handed on as the refusal.
  *
- * **No key rides on the asking**, for {@see MakingPairingCodes}' reason.
+ * **Each asking carries a key of its own**, for {@see MakingPairingCodes}' reason.
  */
 final readonly class Pairers implements MakingPairingCodes
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function make(Stack $stack, Session $session): WhatBecameOfThePairingCode
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(Api::action(WhatToDoAboutPairing::MakeACode->asked())));
+            return $this->underway($this->clients->client($stack, $session)->act(
+                Api::action(WhatToDoAboutPairing::MakeACode->asked()),
+                [],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {

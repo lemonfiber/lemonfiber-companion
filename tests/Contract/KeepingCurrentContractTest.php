@@ -35,6 +35,7 @@ use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheContractAccepts;
@@ -332,7 +333,7 @@ function everyWayOfKeepingCurrent(MockResponse $answered, ?Obstacle $why = null,
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Upkeepers(new PinnedClients());
+            return new Upkeepers(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -549,7 +550,7 @@ function everyWayOfFollowingAnUpdate(MockResponse $answered, HowTheUpdateIsGoing
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Upkeepers(new PinnedClients());
+            return new Upkeepers(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }

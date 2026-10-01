@@ -82,6 +82,7 @@ final readonly class Ushers implements Inviting
             return $this->underway($this->clients->client($stack, $session)->act(
                 Api::action(AskingThemIn::Invite->asked()),
                 WhatAnInvitationAsksWith::offering($asked)->said,
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);

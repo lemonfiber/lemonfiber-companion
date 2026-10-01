@@ -16,6 +16,8 @@ use Lemonfiber\Sdk\Generated\MusicEnvelope;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -42,7 +44,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Graders implements ChoosingQuality
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function inForceOn(Stack $stack, Session $session): WhatWasFoundOfTheQuality
     {
@@ -83,7 +85,11 @@ final readonly class Graders implements ChoosingQuality
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->act(Api::action(WhatToDoAboutQuality::Choose->asked()), $this->body($asked, $confirmed));
+            $envelope = $client->act(
+                Api::action(WhatToDoAboutQuality::Choose->asked()),
+                $this->body($asked, $confirmed),
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
 
             // Inside the same `try` as the call, for {@see Adjustments}'
             // reason: on a write, *did it happen* is the question, and an

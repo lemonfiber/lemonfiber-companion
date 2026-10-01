@@ -13,7 +13,9 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Session;
@@ -33,7 +35,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Guides implements WalkingThrough
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function walk(Stack $stack, Session $session, WhatToWalk $asked): Underway
     {
@@ -43,10 +45,14 @@ final readonly class Guides implements WalkingThrough
             // The item where one was named and nothing where none was: the
             // stack reads a missing item as *suggest something likely to
             // work*, and says what it chose in the report.
-            $envelope = $client->act(Api::action($asked->asked()), $asked->either(
-                named: static fn(string $item): WhatADecisionAsksWith => new WhatADecisionAsksWith([WireField::Item->value => $item]),
-                likeliest: static fn(): WhatADecisionAsksWith => new WhatADecisionAsksWith([]),
-            )->said);
+            $envelope = $client->act(
+                Api::action($asked->asked()),
+                $asked->either(
+                    named: static fn(string $item): WhatADecisionAsksWith => new WhatADecisionAsksWith([WireField::Item->value => $item]),
+                    likeliest: static fn(): WhatADecisionAsksWith => new WhatADecisionAsksWith([]),
+                )->said,
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
 
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {

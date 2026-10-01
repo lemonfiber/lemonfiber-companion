@@ -32,6 +32,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatHandsDevicesOver;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -125,7 +126,7 @@ function everyWayOfHandingADeviceOver(MockResponse $answered, WhatBecameOfTheHan
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Connectors(new PinnedClients());
+            return new Connectors(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -206,16 +207,16 @@ it('comes away from asking with the job the stack named', function (): void {
     }
 });
 
-it('asks the hand-off action by the person\'s name, with no key', function (): void {
+it('asks the hand-off action by the person\'s name, under a key of its own', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([aHandoffTakenOn()]);
 
-    howTheHandoffWasAskedFor(new Connectors(new PinnedClients()));
+    howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting()));
     $sent = $mock->getLastPendingRequest();
 
     expect($sent?->getUrl())->toEndWith('/api/actions/household-handoff')
         ->and($sent?->body()?->all())->toBe(['name' => 'Sam'])
-        ->and($sent?->headers()->get('Idempotency-Key'))->toBeNull();
+        ->and($sent?->headers()->get('Idempotency-Key'))->not->toBeNull();
 });
 
 it('reads where the hand-off stands and everything it hands over, in the stack\'s order', function (): void {
@@ -249,7 +250,7 @@ it('reads what the contract makes optional as absent where the stack sent nothin
         'sessions' => [],
     ])))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe('Sam|unprovisioned|Nobody called Sam has an account yet.|Invite|||undated');
 });
 
@@ -257,14 +258,14 @@ it('reads a hand-off with nothing left to do as naming nothing next', function (
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersAHandoffWith(['state' => 'connected', 'reason' => null, 'remedy' => null])))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))->toStartWith('Sam|connected||Nothing|');
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toStartWith('Sam|connected||Nothing|');
 });
 
 it('reads every remedy the contract names', function (WhatTheHandoffNeedsNext $next): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersAHandoffWith(['state' => 'failed', 'remedy' => $next->value])))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))->toStartWith(sprintf('Sam|failed|The code went out and no device of theirs has signed in since.|%s|', $next->name));
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toStartWith(sprintf('Sam|failed|The code went out and no device of theirs has signed in since.|%s|', $next->name));
 })->with(array_filter(WhatTheHandoffNeedsNext::cases(), static fn(WhatTheHandoffNeedsNext $next): bool => $next !== WhatTheHandoffNeedsNext::Nothing));
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
@@ -274,12 +275,12 @@ it('hands on a refusal in the stack\'s own words, asking or following', function
 
     MockClient::destroyGlobal();
     MockClient::global([$refused()]);
-    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients())))->toBe(sprintf('refused %s', $said))
+    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toBe(sprintf('refused %s', $said))
         ->and(howTheHandoffWasAskedFor($fake))->toBe(sprintf('refused %s', $said));
 
     MockClient::destroyGlobal();
     MockClient::global([$refused()]);
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))->toBe(sprintf('refused %s', $said))
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toBe(sprintf('refused %s', $said))
         ->and(whatBecameOfTheHandoff($fake))->toBe(sprintf('refused %s', $said));
 });
 
@@ -297,7 +298,7 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
 
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients())))->toBe($why->kind()->name)
+        expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
             ->and(howTheHandoffWasAskedFor(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::met($why))))->toBe($why->kind()->name);
     }
 });
@@ -306,7 +307,7 @@ it('an asking answered with a handle it cannot follow is a stack that did not an
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'household-handoff', 'job' => ' ']]), 202)]);
 
-    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('a hand-off still being worked out is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
@@ -325,7 +326,7 @@ it('a hand-off this app cannot read is a stack that did not answer, never one wi
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersAHandoffWith($changed)))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no name' => [['name' => null]],
     'a blank name' => [['name' => ' ']],
@@ -351,7 +352,7 @@ it('a payload that is not a hand-off at all is a stack that did not answer', fun
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'handoff', 'data' => 'nothing']))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('the fake names each person asked for and each handle asked after', function (): void {

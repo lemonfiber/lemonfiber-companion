@@ -12,6 +12,8 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AnUpgradeDescribed;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -31,7 +33,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Upgraders implements UpgradingTheLibrary
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function whatItWouldComeTo(Stack $stack, Session $session): WhatTheUpgradeCameTo
     {
@@ -52,6 +54,7 @@ final readonly class Upgraders implements UpgradingTheLibrary
             $envelope = $client->act(
                 Api::action(WhatToDoAboutQuality::Upgrade->asked()),
                 [UpdateField::Confirm->value => $confirmed],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return WhatTheUpgradeCameTo::said(WhatAnUpgradeComesTo::in($envelope));

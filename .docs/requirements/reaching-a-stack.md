@@ -20,7 +20,7 @@ requirement is right and this page is a defect.
 | `ARCH-R62` | A resuming client sends the last event id it saw as `Last-Event-ID` | `Listeners` and `Narrators` keep where each stack's stream left off and open the next one after it; `HearingContractTest` and `HearingTheWalkContractTest` read the header off what was sent |
 | `N1-R7` | The credential exchange happens once | `Admissions` |
 | `N1-R11`, `N1-R19` | Sessions are separate per stack, and so is pinning, so the two cannot be paired up wrongly | `Upkeepers`, which fetches per stack and session |
-| `N1-R42` | Every action that changes a stack carries an idempotency key; a question carries none | `Menders::agreeTo()` has one, `Menders::wouldPutRight()` does not |
+| `N1-R42` | Every action carries an idempotency key minted where it is sent, the ones that only describe what they would do included | Every `act()` and `repair()` in `sdk`; `EveryActionNamesItsAttemptTest` reads them all |
 | `N1-R65` | A screen reads once per frame and renders what came back | `Requests` asks for the whole household rather than narrowing per member |
 | `N1-R41` | An action delivered with nothing to ask after it by has no handle | `Handles`, and `Job::named()` one layer in |
 | `ARCH-R79` | A word this build has not heard of means the contract moved, and is refused rather than rendered raw | `Lines` |

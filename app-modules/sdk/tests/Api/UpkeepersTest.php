@@ -40,6 +40,7 @@ use Saloon\Http\PendingRequest;
 
 use function str_repeat;
 
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -77,7 +78,7 @@ function theUpkeepAdapterAnswering(MockResponse ...$answers): Upkeepers
     MockClient::destroyGlobal();
     MockClient::global($answers);
 
-    return new Upkeepers(new PinnedClients());
+    return new Upkeepers(new PinnedClients(), SequencedEntropy::counting());
 }
 
 /** What the reading turned out to be, as a word a case can compare. */
@@ -156,7 +157,7 @@ function whatWasSentAskingAfterUpkeep(): PendingRequest
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
 
-    new Upkeepers(new PinnedClients())->standing(
+    new Upkeepers(new PinnedClients(), SequencedEntropy::counting())->standing(
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
     );
@@ -222,7 +223,7 @@ it('confirms the update and names no services the action would refuse', function
     MockClient::destroyGlobal();
     $mock = MockClient::global([aTakingWasStarted()]);
 
-    new Upkeepers(new PinnedClients())->take(
+    new Upkeepers(new PinnedClients(), SequencedEntropy::counting())->take(
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
         theUpdateTheAdapterIsHanded(),

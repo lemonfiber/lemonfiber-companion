@@ -14,8 +14,10 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\ConnectingADevice;
+use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\HandoffSaysNothing;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -35,11 +37,11 @@ use Modules\Sdk\Internal\WhatTheReachMet;
  * answers with a handle the hand-off arrives through. A name the stack turns
  * down is said in its own words and handed on as the refusal.
  *
- * **No key rides on the asking**, for {@see HandingOverADevice}' reason.
+ * **Each asking carries a key of its own**, for {@see HandingOverADevice}' reason.
  */
 final readonly class Connectors implements HandingOverADevice
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function handOver(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheHandoff
     {
@@ -47,6 +49,7 @@ final readonly class Connectors implements HandingOverADevice
             return $this->underway($this->clients->client($stack, $session)->act(
                 Api::action(ConnectingADevice::HandOver->asked()),
                 [WireField::Name->value => $who->name()],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);

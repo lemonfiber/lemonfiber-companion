@@ -14,7 +14,9 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
+use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -37,7 +39,7 @@ use Modules\Sdk\Internal\WhichUpdate;
  */
 final readonly class Upkeepers implements KeepingCurrent
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function standing(Stack $stack, Session $session): WhatIsCurrent
     {
@@ -76,7 +78,11 @@ final readonly class Upkeepers implements KeepingCurrent
             // `TakingAnUpdate::changing()` holds and the confirmation named.
             // The action narrows to one `service` and takes no list, so none
             // is sent: one would narrow the run, and a list is refused.
-            $envelope = $client->act(Api::action($agreed->asked()), [UpdateField::Confirm->value => true]);
+            $envelope = $client->act(
+                Api::action($agreed->asked()),
+                [UpdateField::Confirm->value => true],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
 
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {

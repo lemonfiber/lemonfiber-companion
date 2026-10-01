@@ -173,18 +173,19 @@ it('N1-R42 — a second agreement is a second name', function (): void {
     expect($second)->not->toBe($first);
 });
 
-it('N1-R42 — asking what would be put right names no attempt, since it changes nothing', function (): void {
-    // The line the requirement itself draws: a key belongs on an action that
-    // changes a stack. `Repair::offer()` describes what would be done and
-    // carries out none of it, and a key on a question invites a stack to one
-    // day answer a fresh reading with an old one.
+it('names an attempt of its own every time it asks what would be put right', function (): void {
+    // A key on every action, the question included. Each asking mints a fresh
+    // one, so a stack can never answer a new question with the answer it gave
+    // an old one: the same key comes back only on the one asking sent again.
     MockClient::destroyGlobal();
-    $mock = MockClient::global([aRepairTakenOn()]);
+    $mock = MockClient::global([aRepairTakenOn(), aRepairTakenOn()]);
+    $menders = new Menders(new PinnedClients(), SequencedEntropy::counting());
 
-    new Menders(new PinnedClients(), SequencedEntropy::counting())
-        ->wouldPutRight(theMendingStack(), Session::of('a-session-not-a-secret'));
+    $menders->wouldPutRight(theMendingStack(), Session::of('a-session-not-a-secret'));
+    $first = theKeyNaming($mock->getLastPendingRequest());
+    $menders->wouldPutRight(theMendingStack(), Session::of('a-session-not-a-secret'));
 
-    expect($mock->getLastPendingRequest()?->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+    expect(theKeyNaming($mock->getLastPendingRequest()))->not->toBe($first);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

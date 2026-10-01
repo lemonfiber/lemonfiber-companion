@@ -225,14 +225,14 @@ function theBodySent(MockClient $mock): array
     return is_array($body) ? $body : [];
 }
 
-it('asks for the rehearsal at the invite action, with everything asked and no yes, and no key', function (): void {
+it('asks for the rehearsal at the invite action, with everything asked and no yes, under a key of its own', function (): void {
     $ushers = theUshersAnswering(aHandleNamedJ1());
     $mock = theMockTheUshersAsk();
 
     expect(whereItGot($ushers->wouldInvite(theStackSomebodyIsAskedInTo(), Session::of('a-session-not-a-secret'), anInvitationForAnnaAsked())))->toBe('underway:j-1')
         ->and(theLastRequestSent($mock)->getUrl())->toEndWith('/api/actions/invite')
         ->and(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => ['Films', 'Kids'], 'confirm' => false, 'age_limit' => 12, 'unrated' => 'block'])
-        ->and(itNamedTheAttempt($mock))->toBeFalse();
+        ->and(itNamedTheAttempt($mock))->toBeTrue();
 });
 
 it('sends nothing for an age or for unrated material that was not said', function (): void {
