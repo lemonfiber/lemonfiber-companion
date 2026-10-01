@@ -219,7 +219,7 @@ it('begins pairing another stack from the foot of the list, and shuts the list a
         ->and(whereItWasSent($screen))->toBe(AScreenWithoutAStack::PairByScanning->value);
 });
 
-it('gives signing in to a stack the list of stacks and neither the menu nor the bar', function (): void {
+it('gives signing in to a stack the list of stacks and the menu, and not the bar', function (): void {
     $attic = theAtticToChooseFrom();
     $screen = new SignIntoAStack(
         ADoorThatWasKnockedOn::opening(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(HEARD_AT)),
@@ -231,6 +231,6 @@ it('gives signing in to a stack the list of stacks and neither the menu nor the 
     $types = typesDrawnIn(WhatTheDeviceWouldDraw::tree($screen));
 
     expect(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->offers())->toBe(['The attic'])
-        ->and($types)->not->toContain('native_drawer')
+        ->and($types)->toContain('native_drawer')
         ->and($types)->not->toContain('bottom_nav_item');
 });
