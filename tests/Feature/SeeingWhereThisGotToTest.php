@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarItGot;
 use Modules\Kernel\Api\HowMuchOfItIsHere;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -129,11 +130,11 @@ it('says so where nothing was tried, the services agree, and a film has no seaso
 
 it('tells nobody asking for it apart from a trace that could not be read', function (): void {
     $nobody = WhatTheDeviceWouldDraw::by(theTraceScreen(AStackThatTraces::with(WhereItGotTo::nothingAskedFor('Severance'))))->said();
-    $unread = theTraceScreen(AStackThatTraces::met(Obstacle::StackDidNotAnswer))->answer();
+    $unread = theTraceScreen(AStackThatTraces::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($nobody)->toContain(__('health.trace.nothing_asked_for', ['item' => 'Severance']))
         ->and($unread->went->cameBack())->toBeFalse()
-        ->and($unread->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($unread->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($unread->item)->toBe('Severance')
         ->and([$unread->followed, $unread->isUncertain, $unread->sureSaid, $unread->stall, $unread->furthest])->toBe([false, false, '', '', null])
         ->and([$unread->stages, $unread->history, $unread->disagreements])->toBe([[], [], []]);
@@ -208,7 +209,7 @@ it('a session that has ended asks nothing, and a refused one is let go', functio
 
     expect(theTraceScreen($tracing, signedIn: false)->answer()->went->isSignedIn)->toBeFalse()
         ->and($tracing->askings())->toBe(0)
-        ->and(theTraceScreen(AStackThatTraces::met(Obstacle::CredentialWasRefused), $keychain)->answer()->went->isSignedIn)->toBeFalse()
+        ->and(theTraceScreen(AStackThatTraces::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain)->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseItemIsFollowed()->id()))->toBeFalse();
 });
 

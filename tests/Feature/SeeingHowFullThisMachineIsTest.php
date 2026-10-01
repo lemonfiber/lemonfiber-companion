@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HowFreshAReadingIs;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchRoomAVolumeHas;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -260,10 +261,10 @@ it('says so where no volume is watched, nothing takes room and no download is on
 });
 
 it('N12-R10 — a stack that could not be asked is not a machine with room to spare', function (): void {
-    $answer = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->standsSaid)->toBe('')
         ->and($answer->halted)->toBeFalse()
@@ -284,7 +285,7 @@ it('N1-R44 — a session that has ended is not a machine with room to spare', fu
 
 it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseRoomIsRead()->id()))->toBeFalse();
@@ -303,7 +304,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('N1-R3 — asking again asks the machine again', function (): void {
-    $measuring = AStackThatMeasuresItsRoom::met(Obstacle::DeviceHasNoNetwork);
+    $measuring = AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRoomScreen($measuring);
 
     $screen->answer();
@@ -314,7 +315,7 @@ it('N1-R3 — asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
@@ -344,7 +345,7 @@ it('explains the ratio where it is drawn, once asked for however many downloads 
 });
 
 it('draws a word the glossary does not carry as it came, and offers for it only asking the stack what it means', function (): void {
-    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer));
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
         ->and(array_values(array_filter(WhatTheDeviceWouldDraw::by($screen)->offers(), static fn(string $offer): bool => $offer !== __('stacks.words.ask_in_place', ['word' => 'ratio']))))
@@ -354,7 +355,7 @@ it('draws a word the glossary does not carry as it came, and offers for it only 
 
 it('lets the session go where the stack refuses it the glossary', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), $keychain, explaining: AStackThatExplainsItsWords::met(Obstacle::CredentialWasRefused));
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), $keychain, explaining: AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
 
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 

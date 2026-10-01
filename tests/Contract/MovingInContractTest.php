@@ -14,6 +14,7 @@ use Modules\Kernel\Api\AServiceAdopted;
 use Modules\Kernel\Api\AServiceStanding;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
@@ -269,7 +270,7 @@ function everythingTheSurveySays(MovingIn $movingIn): string
             whatLinkingWouldCost($survey),
             ...whatMayBeDoneAboutIt($survey),
         ])),
-        met: static fn(Obstacle $why): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -296,14 +297,14 @@ it('comes away with every project and service, what is in the way, and every mod
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfSurveying($answered, $why) as $which => $make) {
-            expect(everythingTheSurveySays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheSurveySays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -312,7 +313,7 @@ it('a survey this app cannot read is an obstacle, never a machine with less on i
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysIsAlreadyThere(tautulliRuns: 'no')))]);
 
-    expect(everythingTheSurveySays(new Scouts(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheSurveySays(new Scouts(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('reads a survey that could not look as not having looked', function (): void {
@@ -440,7 +441,7 @@ function everythingMovingInSays(WhatBecameOfTheMove $became): string
         )),
         ended: static fn(): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay('ended'),
         refused: static fn(string $because): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -505,11 +506,11 @@ it('keeps following work the stack is still carrying out', function (): void {
 
 it('tells a session that has ended from a stack that is not answering, when moving in', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('Not yours to ask', 403, ['Content-Type' => 'text/plain']), Obstacle::NotForThisAccount],
-        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('  ', 404, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('Not yours to ask', 403, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('  ', 404, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -520,7 +521,7 @@ it('tells a session that has ended from a stack that is not answering, when movi
 
         foreach ($ways as $which => $make) {
             expect(everythingMovingInSays($make()->wouldMoveIn(aStackToSurvey(), Session::of('a-session-not-a-secret'), MovingInBy::Replacing)))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -562,7 +563,7 @@ it('a move this app cannot read is an obstacle, never a move that did less', fun
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysAdoptingWouldComeTo(stance: 'mostly')))]);
 
     expect(everythingMovingInSays(new Scouts(new PinnedClients(), SequencedEntropy::counting())->whatBecameOf(aStackToSurvey(), Session::of('a-session-not-a-secret'), Job::named('j-1'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('a handle this app cannot read is an obstacle, never a move under way', function (): void {
@@ -570,7 +571,7 @@ it('a handle this app cannot read is an obstacle, never a move under way', funct
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'migrate-adopt']]), 202)]);
 
     expect(everythingMovingInSays(new Scouts(new PinnedClients(), SequencedEntropy::counting())->wouldMoveIn(aStackToSurvey(), Session::of('a-session-not-a-secret'), MovingInBy::Adopting)))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with an answer to adopting the contract would accept', function (): void {

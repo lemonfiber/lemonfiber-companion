@@ -16,7 +16,6 @@ use Lemonfiber\Sdk\Generated\MusicEnvelope;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -57,8 +56,8 @@ final readonly class Graders implements ChoosingQuality
             return WhatWasFoundOfTheQuality::found(WhatIsChosen::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheQuality::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
-            return WhatWasFoundOfTheQuality::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+            return WhatWasFoundOfTheQuality::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -92,8 +91,8 @@ final readonly class Graders implements ChoosingQuality
             return $this->cameTo($envelope);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheChoiceCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
-            return WhatTheChoiceCameTo::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+            return WhatTheChoiceCameTo::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

@@ -25,7 +25,7 @@ enum Permission: string
      * Reaching a stack on the same network.
      *
      * The one the whole app depends on, and the one whose refusal looks most
-     * like something else — `Obstacle::LocalNetworkIsNotPermitted` exists so
+     * like something else — `Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)` exists so
      * that a refusal is not reported as a stack that is switched off.
      */
     case LocalNetwork = 'local_network';

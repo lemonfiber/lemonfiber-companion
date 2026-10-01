@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -236,11 +237,11 @@ it('before a walk, asks only for the glossary and draws the road a walk takes', 
 
 it('before a walk, says what stood in the way of reaching the machine, and leaves a way back', function (): void {
     $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
-    $screen = theWalkthroughScreen($walking, explaining: AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer));
+    $screen = theWalkthroughScreen($walking, explaining: AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(everythingAStateSays($screen->answer()))->toBe([
-        'isSignedIn' => true, 'met' => Obstacle::StackDidNotAnswer->said(), 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
+        'isSignedIn' => true, 'met' => KindOfObstacle::StackDidNotAnswer->said(), 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
     ])
         ->and($drawn->offers())->toContain(__('health.ask_again'))
         ->and($walking->walked())->toBe([]);
@@ -388,7 +389,7 @@ it('says the stack has not named a stage yet while it listens and has heard none
 it('says the stage could not be heard, rather than drawing an idle walk, and when it listens again', function (): void {
     $screen = theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)),
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
     );
 
     $screen->walk();
@@ -554,14 +555,14 @@ it('lets go of a session the stream refuses while a walk runs, and keeps one the
     theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
         keychain: $refusing,
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::CredentialWasRefused)),
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
     )->walk();
 
     $unanswering = AKeychainInMemory::working();
     theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
         keychain: $unanswering,
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)),
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
     )->walk();
 
     expect($refusing->isHolding(theStackAWalkRunsOn()->id()))->toBeFalse()
@@ -941,7 +942,7 @@ it('lets go of a walk the stack no longer knows, so the next opening offers a ne
 
 it('lets go of the walk before it when another is asked for, even where the start is refused', function (): void {
     $left = aPhoneThatLeftAWalkRunning('an-earlier-walk');
-    $screen = theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::StackDidNotAnswer), left: $left);
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), left: $left);
 
     // Opened on the earlier walk, and moved on from it by asking for another.
     expect($screen->took)->toBe('an-earlier-walk');
@@ -956,7 +957,7 @@ it('keeps the walk left running where the stack cannot be reached or the session
     // The walk is on the stack whoever can reach it, so neither is a reason to
     // lose the way back to it: reaching it again, or signing in again, finds it.
     $unreached = aPhoneThatLeftAWalkRunning();
-    theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::StackDidNotAnswer), left: $unreached)->answer();
+    theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), left: $unreached)->answer();
 
     $signedOut = aPhoneThatLeftAWalkRunning();
     theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), signedIn: false, left: $signedOut)->answer();
@@ -977,7 +978,7 @@ it('says a walk the stack no longer knows has no outcome, which is not a failure
 });
 
 it('says what stood in the way of starting one, and follows nothing', function (): void {
-    $walking = AStackThatWalksThrough::met(Obstacle::StackDidNotAnswer);
+    $walking = AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theWalkthroughScreen($walking);
     // A handle from an earlier walk is not one this start answered, so it is
     // not kept to be followed.
@@ -985,25 +986,25 @@ it('says what stood in the way of starting one, and follows nothing', function (
     $screen->walk();
 
     expect(everythingAStateSays($screen->answer()))->toBe([
-        'isSignedIn' => true, 'met' => Obstacle::StackDidNotAnswer->said(), 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
+        'isSignedIn' => true, 'met' => KindOfObstacle::StackDidNotAnswer->said(), 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
     ])
-        ->and($screen->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->took)->toBeNull()
         ->and($walking->followed())->toBe([]);
 });
 
 it('lets go of a session the stack refused, before a walk, starting or following', function (): void {
     $before = AKeychainInMemory::working();
-    $refusedBefore = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), $before, explaining: AStackThatExplainsItsWords::met(Obstacle::CredentialWasRefused));
+    $refusedBefore = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), $before, explaining: AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
 
     expect($refusedBefore->answer()->went->isSignedIn)->toBeFalse()
         ->and($before->isHolding(theStackAWalkRunsOn()->id()))->toBeFalse();
 
     $starting = AKeychainInMemory::working();
-    theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::CredentialWasRefused), $starting)->walk();
+    theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $starting)->walk();
 
     $following = AKeychainInMemory::working();
-    $screen = theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::CredentialWasRefused), $following);
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $following);
     $screen->took = AStackThatWalksThrough::THE_JOB;
 
     expect(everythingAStateSays($screen->answer()))->toBe([

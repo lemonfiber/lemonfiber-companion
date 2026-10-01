@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -224,10 +225,10 @@ it('N11-R10 — changes the clock could not date are never drawn as one moment',
 it('N11-R9 — a stack that could not be asked is not a record of nothing', function (): void {
     // Both would draw an empty list, and only one of them means nothing
     // happened.
-    $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->moments)->toBe([])
         ->and($answer->horizon)->toBe('');
 });
@@ -235,7 +236,7 @@ it('N11-R9 — a stack that could not be asked is not a record of nothing', func
 it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
     // A phone with no signal told to sign in is given advice for a problem it
     // does not have, over the one it does.
-    $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
@@ -257,7 +258,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // refused again, and draw a sign-in prompt over a device that still
     // believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseRecordIsRead()->id()))->toBeTrue();
 
@@ -282,7 +283,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('N1-R3 — asking again asks the machine again', function (): void {
-    $history = AStackThatKeepsARecord::met(Obstacle::DeviceHasNoNetwork);
+    $history = AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRecordScreen($history);
 
     $screen->answer();
@@ -293,7 +294,7 @@ it('N1-R3 — asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

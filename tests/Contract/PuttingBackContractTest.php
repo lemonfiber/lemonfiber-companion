@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingBack;
@@ -176,7 +177,7 @@ function whatPuttingItBackWouldDoSaid(PuttingBack $puttingBack): string
             whereTheDataGoesSaid($listing->whereTheDataGoes()),
         )),
         refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(aRestoreRefusalSaid($why)),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->name),
+        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
     )->said;
 }
 
@@ -258,7 +259,7 @@ function howPuttingItBackWasAgreed(PuttingBack $puttingBack): string
 {
     return $puttingBack->putBack(aStackACopyIsPutBackOn(), Session::of('a-session-not-a-secret'), theSameListing())->either(
         started: static fn(Job $job): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->name),
+        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
     )->said;
 }
 
@@ -275,7 +276,7 @@ function whatBecameOfPuttingItBack(PuttingBack $puttingBack): string
         )),
         refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(aRestoreRefusalSaid($why)),
         ended: static fn(): WhatPuttingItBackSaid => new WhatPuttingItBackSaid('ended'),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->name),
+        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
     )->said;
 }
 
@@ -306,16 +307,16 @@ it('reads a listing whose data goes back where it came from, said as nothing', f
 
 it('refuses to list a copy the stack would not, with the obstacle rather than a listing', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"too new"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"too new"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
-        expect(whatPuttingItBackWouldDoSaid(AStackThatPutsCopiesBack::met($why)))->toBe($why->name);
+        expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
+        expect(whatPuttingItBackWouldDoSaid(AStackThatPutsCopiesBack::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -333,15 +334,15 @@ it('a copy the stack will not list is its refusal, in its words, with what it na
 it('a listing refused with a problem at a status that says who may ask is what was met', function (): void {
     $problem = (string) json_encode(aRestoreProblemSaying('too new'));
     $table = [
-        [MockResponse::make($problem, 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make($problem, 403), Obstacle::NotForThisAccount],
-        [MockResponse::make('This machine would not supply the randomness a job needs to be named.', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
+        [MockResponse::make($problem, 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make($problem, 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('This machine would not supply the randomness a job needs to be named.', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$refused, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$refused]);
-        expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
+        expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
     }
 });
 
@@ -349,7 +350,7 @@ it('a listing this app cannot read is a stack that did not answer, never a short
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingItBack($would)))]);
 
-    expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'a blank agreement' => [['agreement' => ' ']],
     'no manifest' => [['manifest' => 'none']],
@@ -367,17 +368,17 @@ it('comes away from a yes with the job the stack named', function (): void {
 
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"still running"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => ' ']]), 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"still running"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howPuttingItBackWasAgreed(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
-        expect(howPuttingItBackWasAgreed(AStackThatPutsCopiesBack::listingButRefusing(theSameListing(), $why)))->toBe($why->name);
+        expect(howPuttingItBackWasAgreed(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
+        expect(howPuttingItBackWasAgreed(AStackThatPutsCopiesBack::listingButRefusing(theSameListing(), $why)))->toBe($why->kind()->name);
     }
 });
 
@@ -403,7 +404,7 @@ it('a finished restore that says nothing of what it did is a stack that did not 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingItBack()))]);
 
-    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('a restore still running is its own answer', function (): void {
@@ -423,14 +424,14 @@ it('a restore the stack no longer has a job for is ended, not unreachable and no
 
 it('asking after a restore tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfPuttingACopyBack($answered, HowPuttingItBackIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfPuttingItBack($build()))->toBe($why->name, $which);
+            expect(whatBecameOfPuttingItBack($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -449,12 +450,12 @@ it('a restore refused with no problem the stack wrote, or at a status that says 
     MockClient::destroyGlobal();
     MockClient::global([$answered]);
 
-    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
+    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
 })->with([
-    'a problem to a refused session' => [MockResponse::make((string) json_encode(aRestoreProblemSaying('not unpacked')), 401), Obstacle::CredentialWasRefused],
-    'a problem to an account that may not ask' => [MockResponse::make((string) json_encode(aRestoreProblemSaying('not unpacked')), 403), Obstacle::NotForThisAccount],
-    'a problem with a blank summary' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'RESTORE-6', 'severity' => 'error', 'state' => 'actionable', 'summary' => ' ', 'meaning' => 'Stopped part-way.', 'remedies' => []]]), 500), Obstacle::StackDidNotAnswer],
-    'a problem missing its remedies' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'RESTORE-6', 'severity' => 'error', 'state' => 'actionable', 'summary' => 'The backup could not be unpacked', 'meaning' => 'Stopped part-way.']]), 500), Obstacle::StackDidNotAnswer],
+    'a problem to a refused session' => [MockResponse::make((string) json_encode(aRestoreProblemSaying('not unpacked')), 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    'a problem to an account that may not ask' => [MockResponse::make((string) json_encode(aRestoreProblemSaying('not unpacked')), 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'a problem with a blank summary' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'RESTORE-6', 'severity' => 'error', 'state' => 'actionable', 'summary' => ' ', 'meaning' => 'Stopped part-way.', 'remedies' => []]]), 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    'a problem missing its remedies' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'RESTORE-6', 'severity' => 'error', 'state' => 'actionable', 'summary' => 'The backup could not be unpacked', 'meaning' => 'Stopped part-way.']]), 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('the fake remembers the copy rehearsed, the listing agreed to and the handle followed', function (): void {

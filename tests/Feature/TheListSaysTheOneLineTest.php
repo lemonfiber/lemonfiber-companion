@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -269,7 +270,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $heard = new HowThisStackIs(
-        AStackThatWasAsked::met(Obstacle::StackDidNotAnswer),
+        AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))),
@@ -394,7 +395,7 @@ it('asks no stack it holds no operator session for', function (): void {
 it('waits out a break before it asks a stack that could not be heard again', function (): void {
     $stack = aStackToOpenOn();
     $clock = FrozenClock::at(Instant::atEpochSeconds(NOW));
-    $hearing = AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::StackDidNotAnswer), aStackSayingItIsCritical());
+    $hearing = AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), aStackSayingItIsCritical());
     $screen = theListeningScreen($stack, StandingsInMemory::working(), aKeychainSignedInto($stack, Whose::theOperator()), $hearing, clock: $clock);
 
     $screen->listen();
@@ -416,7 +417,7 @@ it('lets go of a session the stack refused, so the row asks to sign in', functio
         $stack,
         StandingsInMemory::working(),
         $keychain,
-        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::CredentialWasRefused)),
+        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
     );
 
     $screen->listen();

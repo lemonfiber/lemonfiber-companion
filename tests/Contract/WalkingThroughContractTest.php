@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -123,7 +124,7 @@ function whatTheWalkBecame(WalkingThrough $walking): string
         stillRunning: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('still running'),
         done: static fn(AWalkthrough $walk): WhatTheWalkCameTo => new WhatTheWalkCameTo(everythingTheWalkSaid($walk)),
         ended: static fn(): WhatTheWalkCameTo => new WhatTheWalkCameTo('ended'),
-        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->name),
+        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->kind()->name),
     )->said;
 }
 
@@ -132,7 +133,7 @@ function howTheWalkStarted(WalkingThrough $walking, WhatToWalk $asked): string
 {
     return $walking->walk(aStackThatCanWalk(), theSessionAWalkIsAskedWith(), $asked)->either(
         started: static fn(Job $job): WhatTheWalkCameTo => new WhatTheWalkCameTo(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->name),
+        met: static fn(Obstacle $why): WhatTheWalkCameTo => new WhatTheWalkCameTo($why->kind()->name),
     )->said;
 }
 
@@ -200,9 +201,9 @@ function theHandleAWalkAnswers(): MockResponse
 function theWaysAWalkIsNotReached(): array
 {
     return [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 }
 
@@ -292,7 +293,7 @@ it('says a walk the stack no longer knows is ended, not unreachable and not runn
 it('tells a refused session from a stack that is not answering, asking after one', function (): void {
     foreach (theWaysAWalkIsNotReached() as [$answered, $why]) {
         foreach (everyWayOfNotWalkingThrough($answered, $why) as $which => $build) {
-            expect(whatTheWalkBecame($build()))->toBe($why->name, $which);
+            expect(whatTheWalkBecame($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -307,7 +308,7 @@ it('comes away from a start with the handle the stack named', function (): void 
 it('comes away from a start that did not happen with the obstacle rather than a handle', function (): void {
     foreach (theWaysAWalkIsNotReached() as [$answered, $why]) {
         foreach (everyWayOfNotWalkingThrough($answered, $why) as $which => $build) {
-            expect(howTheWalkStarted($build(), WhatToWalk::called('Big Buck Bunny')))->toBe($why->name, $which);
+            expect(howTheWalkStarted($build(), WhatToWalk::called('Big Buck Bunny')))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -371,7 +372,7 @@ it('refuses a finished walk it cannot read as a stack that did not answer', func
     MockClient::destroyGlobal();
     MockClient::global([aFinishedWalk([...WalkthroughsToFollow::theWalkThatWorkedAsAStackSendsIt(), 'state' => 'wandering'])]);
 
-    expect(whatTheWalkBecame(new Guides(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatTheWalkBecame(new Guides(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

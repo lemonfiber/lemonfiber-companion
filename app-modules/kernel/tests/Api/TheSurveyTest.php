@@ -15,6 +15,7 @@ use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\APortMoved;
 use Modules\Kernel\Api\AProjectStanding;
 use Modules\Kernel\Api\AServiceStanding;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheModes;
 use Modules\Kernel\Api\ThePortsHeld;
@@ -191,9 +192,9 @@ it('refuses a layout cost that will not say why, what, or how to fix it, or name
 it('a survey that could not be read is never a machine with nothing on it', function (): void {
     $fold = static fn(WhatWasFoundAlreadyHere $answer): string => $answer->either(
         found: static fn(TheSurvey $survey): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('found:%s', $survey->looked() ? 'looked' : 'could not look')),
-        met: static fn(Obstacle $why): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheSurveyTook => new WhichArmTheSurveyTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundAlreadyHere::found(aSurveyThatFoundNothing(looked: false))))->toBe('found:could not look')
-        ->and($fold(WhatWasFoundAlreadyHere::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasFoundAlreadyHere::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

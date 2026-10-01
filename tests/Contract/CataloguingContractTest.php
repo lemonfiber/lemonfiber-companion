@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -144,7 +145,7 @@ function whatTheStacksCatalogueComesTo(Cataloguing $catalogue): string
             $why->meaning(),
             $why->named()->forTheOperator(),
         )),
-        met: static fn(Obstacle $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid($why->name),
+        met: static fn(Obstacle $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid($why->kind()->name),
     )->said;
 }
 
@@ -216,7 +217,7 @@ it('a catalogue this app cannot read is a stack that did not answer, never a sho
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCatalogue($changed)))]);
 
-    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no services' => [['services' => null]],
     'nothing dropped said at all' => [['removed' => 'none']],
@@ -235,21 +236,21 @@ it('a catalogue leaving out either list is a stack that did not answer', functio
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCatalogue(without: [$field])))]);
 
-    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with(['services', 'removed']);
 
 it('tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->name)
-            ->and(whatTheStacksCatalogueComesTo(AStackThatCatalogues::met($why)))->toBe($why->name);
+        expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->kind()->name)
+            ->and(whatTheStacksCatalogueComesTo(AStackThatCatalogues::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -269,11 +270,11 @@ it('a manifest problem at a status that says who may ask, or a sentence with no 
     MockClient::destroyGlobal();
     MockClient::global([$answered]);
 
-    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->name);
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->kind()->name);
 })->with([
-    'a refused session' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 401), Obstacle::CredentialWasRefused],
-    'an account that may not ask' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 403), Obstacle::NotForThisAccount],
-    'a sentence' => [MockResponse::make('This answer could not be rendered.', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
+    'a refused session' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    'an account that may not ask' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'a sentence' => [MockResponse::make('This answer could not be rendered.', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('asks the catalogue endpoint', function (): void {

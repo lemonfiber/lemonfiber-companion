@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
@@ -89,7 +90,7 @@ it('says it is waiting while a subscription is open and has said nothing yet', f
 });
 
 it('reads as unknown, and says what stopped it, where a subscription could not be heard before it said anything', function (): void {
-    $line = theLineAfter(minutesIn(0), WhatWasHeard::met(Obstacle::StackDidNotAnswer));
+    $line = theLineAfter(minutesIn(0), WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($line->said)->toBe('health.standing.unknown')
         ->and($line->counted)->toBe('')
@@ -172,7 +173,7 @@ it('says what stopped a subscription beside what it last heard', function (): vo
     $line = theLineAfter(
         minutesIn(2),
         WhatWasHeard::said(aSummaryCountingOne(HowItStands::Critical)),
-        WhatWasHeard::met(Obstacle::DeviceHasNoNetwork),
+        WhatWasHeard::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
     );
 
     expect($line->said)->toBe('health.standing.unknown')
@@ -195,6 +196,7 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
         ago: AgoAsShown::from(HowLongAgo::Minutes, minutesIn(0), Instant::atEpochSeconds(1_790_000_030)),
         met: '',
         remedy: '',
+        filling: [],
         affected: [],
         stopped: [],
         slow: [],
@@ -220,6 +222,7 @@ it('says a stack never heard cannot be told, with no age', function (): void {
         ago: AgoAsShown::live(),
         met: '',
         remedy: '',
+        filling: [],
         affected: [],
         stopped: [],
         slow: [],

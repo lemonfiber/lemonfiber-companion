@@ -60,8 +60,8 @@
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.keeps.copies_unread') }}</x-design::strong>
             @if ($this->answer()->copies->went->isSignedIn)
-                <x-design::body>{{ __($this->answer()->copies->went->met) }}</x-design::body>
-                <x-design::body>{{ __($this->answer()->copies->went->remedy) }}</x-design::body>
+                <x-design::body>{{ __($this->answer()->copies->went->met, $this->answer()->copies->went->filling()) }}</x-design::body>
+                <x-design::body>{{ __($this->answer()->copies->went->remedy, $this->answer()->copies->went->filling()) }}</x-design::body>
             @else
                 <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
             @endif

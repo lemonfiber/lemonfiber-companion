@@ -8,6 +8,7 @@ use function count;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheRoots;
 use Modules\Kernel\Api\WhatIsBeside;
@@ -28,7 +29,7 @@ function whatWasFoundKept(WhatWasFoundKept $answer): string
 {
     return $answer->either(
         kept: static fn(WhatThisMachineKeeps $keeps): WhichArmTheKeepingTook => new WhichArmTheKeepingTook(sprintf('kept:%d', count($keeps->kept()))),
-        met: static fn(Obstacle $why): WhichArmTheKeepingTook => new WhichArmTheKeepingTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheKeepingTook => new WhichArmTheKeepingTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -36,5 +37,5 @@ it('N6-R7 — a machine that could not be asked is never one keeping nothing', f
     $nothing = WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of());
 
     expect(whatWasFoundKept(WhatWasFoundKept::kept($nothing)))->toBe('kept:0')
-        ->and(whatWasFoundKept(WhatWasFoundKept::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whatWasFoundKept(WhatWasFoundKept::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

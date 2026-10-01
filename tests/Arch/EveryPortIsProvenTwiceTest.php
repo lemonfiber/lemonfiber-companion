@@ -57,19 +57,13 @@ use Tests\Support\Tree;
  * why, the count may fall and may not rise, and a row that has grown a contract
  * has to come out.
  *
- * The reasons differ in kind and that is the part worth reading. Two of these
- * are already covered by something else and would be a second reading of it;
- * one is a gap.
+ * The reasons differ in kind and that is the part worth reading. One of these
+ * is already covered by something else and would be a second reading of it;
+ * the other is a gap.
  *
  * @var array<string, string> the port's short name => why nothing holds it yet
  */
 const NOTHING_HOLDS_IT_YET = [
-    'Clients' => 'Covered elsewhere. It extends `Modules\Kernel\Api\Reaching` and narrows that '
-        . 'port\'s `object` to the SDK\'s own `Client`, so both of its implementations — '
-        . '`PinnedClients` and `ClientsThatReachNothing` — are already named in '
-        . '`ReachingContractTest` and run against its assertions. A file here would be that '
-        . 'one again with a return type narrowed, and the narrowing is what PHPStan already '
-        . 'refuses to let anybody break.',
     'StandsIn' => 'Covered elsewhere, twice. `EveryStandInReplacesItsOwnPortTest` runs over the '
         . 'whole registry and asserts no two claim the same port, that the port claimed is an '
         . 'interface, and that `which()` answers an instance of it; '
@@ -89,7 +83,7 @@ const NOTHING_HOLDS_IT_YET = [
  * is a number that may not rise, which is the whole of what stops a register
  * from being a to-do list wearing a gate's clothes.
  */
-const HOW_MANY_MAY_GO_UNHELD = 3;
+const HOW_MANY_MAY_GO_UNHELD = 2;
 
 /**
  * Every interface this repository declares in a tree the coverage floor measures.

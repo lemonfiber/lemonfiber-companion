@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AServiceBeside;
 use Modules\Kernel\Api\HowTheDoorCameToBe;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheDoorSaysNothing;
 use Modules\Kernel\Api\TheFrontDoor;
@@ -128,9 +129,9 @@ it('says each standing, facing and choice under a key of its own', function (): 
 it('a door that could not be read is never a stack with no door', function (): void {
     $fold = static fn(WhatWasFoundOfTheFrontDoor $answer): string => $answer->either(
         found: static fn(TheFrontDoor $door): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('found:%s', $door->standing()->value)),
-        met: static fn(Obstacle $why): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheFrontDoor::found(aDoorMeaning('Nothing is open'))))->toBe('found:none')
-        ->and($fold(WhatWasFoundOfTheFrontDoor::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasFoundOfTheFrontDoor::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

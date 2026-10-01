@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Tests\Support\WhatMarkupDraws;
@@ -16,7 +17,7 @@ uses(TestCase::class);
 // opened, and a scroll view there would be a scroll view inside a scroll view.
 
 it('draws what was met, what to do about it and the action in the column it stands in', function (): void {
-    $met = Obstacle::StackDidNotAnswer;
+    $met = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
     expect(WhatMarkupDraws::outline(
         '<native:column><x-operator::what-stood-in-the-way :went="$went" sign-in-goes-to="/sign-in" /></native:column>',
@@ -39,7 +40,7 @@ it('draws an ended session and the way back in the column it stands in', functio
 });
 
 it('opens no scroll view inside the content it is drawn in', function (): void {
-    $met = Obstacle::StackDidNotAnswer;
+    $met = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
     expect(WhatMarkupDraws::outline(
         '<x-operator::content><native:text>Before</native:text>'

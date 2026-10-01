@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\AGroupOfChanges;
 use Modules\Kernel\Api\HowTheNotesStand;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\VersionIsBlank;
@@ -67,9 +68,9 @@ it('answers what was found, or the obstacle met instead', function (): void {
     $runs = WhatRunsHere::namingNoRelease('0.16.0', '0.9.0', '', HowTheNotesStand::Stale);
     $said = static fn(WhatWasFoundOfTheVersions $found): string => $found->either(
         found: static fn(WhatRunsHere $runs): WhatAnArmSaid => new WhatAnArmSaid($runs->lemonfiber()),
-        met: static fn(Obstacle $why): WhatAnArmSaid => new WhatAnArmSaid($why->value),
+        met: static fn(Obstacle $why): WhatAnArmSaid => new WhatAnArmSaid($why->kind()->value),
     )->said;
 
     expect($said(WhatWasFoundOfTheVersions::found($runs)))->toBe('0.16.0')
-        ->and($said(WhatWasFoundOfTheVersions::met(Obstacle::StackDidNotAnswer)))->toBe(Obstacle::StackDidNotAnswer->value);
+        ->and($said(WhatWasFoundOfTheVersions::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(KindOfObstacle::StackDidNotAnswer->value);
 });

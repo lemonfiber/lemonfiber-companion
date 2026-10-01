@@ -22,6 +22,8 @@ namespace Modules\Household\Internal\ViewModels;
  * to the member and two catalogue keys off an obstacle, so a member surface can
  * hold this without holding a fault, a code, a remedy or another member.
  */
+use Modules\Kernel\Api\Obstacle;
+
 final readonly class WhatAMemberTurnedOutToBeOwed
 {
     /**
@@ -38,6 +40,7 @@ final readonly class WhatAMemberTurnedOutToBeOwed
         public string $met,
         public string $remedy,
         public array $sentences,
+        private ?Obstacle $why = null,
     ) {}
 
     /**
@@ -71,11 +74,21 @@ final readonly class WhatAMemberTurnedOutToBeOwed
      * screen cannot come to disagree with the ones beside it about whether
      * somebody is signed in.
      */
-    public static function somethingStopped(string $met, string $remedy, bool $signedOut): self
+    public static function somethingStopped(Obstacle $why): self
     {
-        return $signedOut
+        return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $met, remedy: $remedy, sentences: []);
+            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), sentences: [], why: $why);
+    }
+
+    /**
+     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
+     *
+     * @return array<string, int>
+     */
+    public function filling(): array
+    {
+        return $this->why instanceof Obstacle ? $this->why->filling() : [];
     }
 
     /**

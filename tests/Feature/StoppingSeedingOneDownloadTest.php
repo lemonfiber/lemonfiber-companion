@@ -12,6 +12,7 @@ use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowLettingItGoIsGoing;
 use Modules\Kernel\Api\HowTheOfferToLetGoIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -277,8 +278,8 @@ it('offers nothing to agree to where the stack would not say what it would cost'
     expect($stopping->agreed())->toBe([])
         ->and($screen->wasAgreedTo())->toBeFalse();
 })->with([
-    'refusing to ask' => [Obstacle::StackDidNotAnswer, AStackThatStopsSeeding::met(Obstacle::StackDidNotAnswer)],
-    'refusing to answer' => [Obstacle::StackDidNotAnswer, AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::met(Obstacle::StackDidNotAnswer), HowLettingItGoIsGoing::stillRunning())],
+    'refusing to ask' => [Obstacle::of(KindOfObstacle::StackDidNotAnswer), AStackThatStopsSeeding::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    'refusing to answer' => [Obstacle::of(KindOfObstacle::StackDidNotAnswer), AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), HowLettingItGoIsGoing::stillRunning())],
 ]);
 
 it('names no download where it was opened on none, and asks the stack nothing', function (mixed $named): void {
@@ -309,8 +310,8 @@ it('lets go of a session the stack refused while it was asked what stopping woul
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackADownloadIsLetGoOn()->id()))->toBeFalse();
 })->with([
-    'asking' => [AStackThatStopsSeeding::met(Obstacle::CredentialWasRefused)],
-    'reading the offer' => [AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::met(Obstacle::CredentialWasRefused), HowLettingItGoIsGoing::stillRunning())],
+    'asking' => [AStackThatStopsSeeding::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))],
+    'reading the offer' => [AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), HowLettingItGoIsGoing::stillRunning())],
 ]);
 
 it('stops seeding exactly the offer it showed, and says it is doing so on its cadence', function (): void {
@@ -407,14 +408,14 @@ it('says stopping the stack has no outcome for is not known, rather than failed'
 });
 
 it('says what stood in the way of a yes the stack refused, and asks for the offer afresh', function (): void {
-    $stopping = AStackThatStopsSeeding::offeringButRefusing(anOfferToLetTheFilmGo(), Obstacle::StackDidNotAnswer);
+    $stopping = AStackThatStopsSeeding::offeringButRefusing(anOfferToLetTheFilmGo(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theLettingGoScreen($stopping);
     $screen->answer();
     $screen->agree();
 
-    expect(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+    expect(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($screen->isWorking())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -452,8 +453,8 @@ it('asks for the offer afresh when asked again before a yes', function (): void 
 it('lets go of a session refused while stopping or asking after it', function (bool $whileAsking): void {
     $keychain = AKeychainInMemory::working();
     $stopping = $whileAsking
-        ? aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::met(Obstacle::CredentialWasRefused))
-        : AStackThatStopsSeeding::offeringButRefusing(anOfferToLetTheFilmGo(), Obstacle::CredentialWasRefused);
+        ? aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)))
+        : AStackThatStopsSeeding::offeringButRefusing(anOfferToLetTheFilmGo(), Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = theLettingGoScreen($stopping, $keychain);
     $screen->answer();
     $screen->agree();

@@ -30,6 +30,7 @@ final readonly class WhatTheOneLineSays
      * @param AgoAsShown                  $ago       when the summary shown was heard, or live where it is current
      * @param string                      $met       the key for what stopped the subscription, or empty
      * @param string                      $remedy    the key for what to do about that, or empty
+     * @param array<string, int>          $filling   what those two sentences are filled with, or nothing
      * @param list<AnAffectedItemAsShown> $affected  every thing counted as wrong, worst first
      * @param list<AStoppageAsShown>      $stopped   what stopped in the queue and wants a fix, in the stack's order
      * @param list<AStoppageAsShown>      $slow      what is slow and still moving, in the stack's order
@@ -44,6 +45,7 @@ final readonly class WhatTheOneLineSays
         public AgoAsShown $ago,
         public string $met,
         public string $remedy,
+        public array $filling,
         public array $affected,
         public array $stopped,
         public array $slow,

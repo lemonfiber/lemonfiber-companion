@@ -17,7 +17,6 @@ use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\CheckSaidNothing;
 use Modules\Kernel\Api\CodeIsBlank;
 use Modules\Kernel\Api\FindingHasNoTitle;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemedySaysNothing;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
@@ -85,11 +84,8 @@ final readonly class Questions implements Asking
             return WhatCameBack::report(Reports::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatCameBack::met(WhatARefusalMeant::obstacle($why));
-        } catch (
-            ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ReportIsUnreadable
-            |CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason
-        ) {
-            return WhatCameBack::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ReportIsUnreadable|CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason $why) {
+            return WhatCameBack::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

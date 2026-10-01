@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -37,7 +38,7 @@ it('reads a session a stack without codes will not accept as a refused credentia
     // signs somebody out.
     $obstacle = WhatARefusalMeant::obstacle(refusedWith(401));
 
-    expect($obstacle)->toBe(Obstacle::CredentialWasRefused)
+    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused))
         ->and($obstacle->meansWeAreSignedOut())->toBeTrue();
 });
 
@@ -47,7 +48,7 @@ it('reads a stack without codes that will not let this account ask as its own ob
     // was never theirs.
     $obstacle = WhatARefusalMeant::obstacle(refusedWith(403));
 
-    expect($obstacle)->toBe(Obstacle::NotForThisAccount)
+    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::NotForThisAccount))
         ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
 });
 
@@ -59,9 +60,18 @@ it('reads everything else as a stack that did not answer', function (): void {
     foreach ([500, 502, 503, 418] as $status) {
         $obstacle = WhatARefusalMeant::obstacle(refusedWith($status));
 
-        expect($obstacle)->toBe(Obstacle::StackDidNotAnswer, (string) $status)
+        expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer), (string) $status)
             ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
     }
+});
+
+it('reads a stack held by other work as busy, which signs nobody out', function (): void {
+    // Nothing was changed and the same request goes through once that work
+    // has finished, so it is neither silence nor a refusal of who is asking.
+    $obstacle = WhatARefusalMeant::obstacle(refusedWith(409));
+
+    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::StackIsBusy))
+        ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
 });
 
 it('reads a peer presenting a certificate the pairing did not name as not the paired stack', function (): void {
@@ -72,13 +82,13 @@ it('reads a peer presenting a certificate the pairing did not name as not the pa
         CertificateWasRefused::whenAsking('/api/status', str_repeat('b', 64), str_repeat('a', 64)),
     );
 
-    expect($obstacle)->toBe(Obstacle::StackIsNotTheOnePaired)
+    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired))
         ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
 });
 
 it('hands on the stack\'s own sentence only for a request it turned down', function (): void {
     // Everything from the first refusal up to the first fault on the stack's
-    // side, bar the two with remedies of their own, is the stack saying no in
+    // side, bar the three with remedies of their own, is the stack saying no in
     // words, and those words are the answer.
     $said = [];
 
@@ -91,10 +101,10 @@ it('hands on the stack\'s own sentence only for a request it turned down', funct
         400 => 'Nothing here to wire',
         401 => null,
         403 => null,
-        409 => 'Nothing here to wire',
+        409 => null,
         499 => 'Nothing here to wire',
         500 => null,
-    ])->and(WhatARefusalMeant::inItsOwnWords(refusedWith(409)))->toBeNull();
+    ])->and(WhatARefusalMeant::inItsOwnWords(refusedWith(422)))->toBeNull();
 });
 
 /** One line carried out of either arm of a refusal read in its words. */
@@ -114,7 +124,7 @@ function whatTheRefusalSaidInItsWords(CertificateWasRefused|RequestFailed $why):
             $words->meaning(),
             $words->named()->forTheOperator(),
         )),
-        met: static fn(Obstacle $obstacle): WhatTheRefusalCameTo => new WhatTheRefusalCameTo($obstacle->name),
+        met: static fn(Obstacle $obstacle): WhatTheRefusalCameTo => new WhatTheRefusalCameTo($obstacle->kind()->name),
     )->said;
 }
 
@@ -162,14 +172,14 @@ it('reads a problem the stack sent as its refusal, in its words, with what it na
 });
 
 it('reads a problem at a status that says who may ask as what was met', function (): void {
-    expect(whatTheRefusalSaidInItsWords(aProblemTheStackSent(401)))->toBe(Obstacle::CredentialWasRefused->name)
-        ->and(whatTheRefusalSaidInItsWords(aProblemTheStackSent(403)))->toBe(Obstacle::NotForThisAccount->name)
+    expect(whatTheRefusalSaidInItsWords(aProblemTheStackSent(401)))->toEqual(KindOfObstacle::CredentialWasRefused->name)
+        ->and(whatTheRefusalSaidInItsWords(aProblemTheStackSent(403)))->toEqual(KindOfObstacle::NotForThisAccount->name)
         ->and(whatTheRefusalSaidInItsWords(CertificateWasRefused::whenAsking('/api/actions/restore', str_repeat('b', 64), str_repeat('a', 64))))
-        ->toBe(Obstacle::StackIsNotTheOnePaired->name);
+        ->toEqual(KindOfObstacle::StackIsNotTheOnePaired->name);
 });
 
 it('reads an answer holding no problem with a sentence in it as a stack that did not answer', function (RequestFailed $why): void {
-    expect(whatTheRefusalSaidInItsWords($why))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatTheRefusalSaidInItsWords($why))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'a sentence with no problem around it' => [RequestFailed::from('/api/actions/restore', 500, 'This machine would not supply the randomness a job needs to be named.')],
     'a problem with a blank summary' => [aProblemTheStackSent(500, ['summary' => ' '])],
@@ -193,16 +203,16 @@ it('reads a session the stack no longer admits as signed out, though it answered
     // the code is what says signing in again is the remedy.
     $obstacle = WhatARefusalMeant::obstacle(refusedFor(RefusalCode::NotAdmitted));
 
-    expect($obstacle)->toBe(Obstacle::CredentialWasRefused)
+    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused))
         ->and($obstacle->meansWeAreSignedOut())->toBeTrue();
 });
 
 it('reads each refusal of who is asking as its own obstacle', function (RefusalCode $code, Obstacle $met): void {
-    expect(WhatARefusalMeant::obstacle(refusedFor($code)))->toBe($met);
+    expect(WhatARefusalMeant::obstacle(refusedFor($code)))->toEqual($met);
 })->with([
-    'an account asking for what is not its own' => [RefusalCode::NotYours, Obstacle::NotForThisAccount],
-    'an account the media server could not vouch for' => [RefusalCode::Unconfirmed, Obstacle::MediaServerDidNotAnswer],
-    'an address the stack is not listening on' => [RefusalCode::Elsewhere, Obstacle::AddressIsNotTheStacks],
+    'an account asking for what is not its own' => [RefusalCode::NotYours, Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'an account the media server could not vouch for' => [RefusalCode::Unconfirmed, Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer)],
+    'an address the stack is not listening on' => [RefusalCode::Elsewhere, Obstacle::of(KindOfObstacle::AddressIsNotTheStacks)],
 ]);
 
 it('signs out on the one code that says the session is not admitted, and on no other', function (): void {
@@ -230,12 +240,13 @@ it('reads a code it does not know by the status it came with', function (): void
         aProblemTheStackSent($status, ['code' => 'NEWER-1']),
     );
 
-    expect($unknown(401))->toBe(Obstacle::CredentialWasRefused)
-        ->and($unknown(403))->toBe(Obstacle::NotForThisAccount)
-        ->and($unknown(400))->toBe(Obstacle::StackDidNotAnswer);
+    expect($unknown(401))->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused))
+        ->and($unknown(403))->toEqual(Obstacle::of(KindOfObstacle::NotForThisAccount))
+        ->and($unknown(409))->toEqual(Obstacle::of(KindOfObstacle::StackIsBusy))
+        ->and($unknown(400))->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
 });
 
 it('reads a media server that could not vouch for an account as met rather than in the stack\'s words', function (): void {
-    expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Unconfirmed)))->toBe(Obstacle::MediaServerDidNotAnswer->name)
-        ->and(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Elsewhere)))->toBe(Obstacle::AddressIsNotTheStacks->name);
+    expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Unconfirmed)))->toEqual(KindOfObstacle::MediaServerDidNotAnswer->name)
+        ->and(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Elsewhere)))->toEqual(KindOfObstacle::AddressIsNotTheStacks->name);
 });

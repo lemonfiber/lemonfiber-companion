@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingARunBack;
@@ -148,7 +149,7 @@ function howPuttingARunBackWasAgreed(PuttingARunBack $puttingBack): string
 {
     return $puttingBack->putBack(aStackARunIsPutBackOn(), Session::of('a-session-not-a-secret'), theRunAgreedTo())->either(
         started: static fn(Job $job): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->name),
+        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->kind()->name),
     )->said;
 }
 
@@ -179,7 +180,7 @@ function whatBecameOfPuttingARunBack(PuttingARunBack $puttingBack): string
             $why->named()->forTheOperator(),
         )),
         ended: static fn(): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid('ended'),
-        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->name),
+        met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->kind()->name),
     )->said;
 }
 
@@ -246,17 +247,17 @@ it('comes away from a yes with the job the stack named', function (): void {
 
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"no such run"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => ' ']]), 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"no such run"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howPuttingARunBackWasAgreed(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
-        expect(howPuttingARunBackWasAgreed(AStackThatPutsRunsBack::met($why)))->toBe($why->name);
+        expect(howPuttingARunBackWasAgreed(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
+        expect(howPuttingARunBackWasAgreed(AStackThatPutsRunsBack::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -291,7 +292,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack($changed)))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no left' => [['left' => null]],
     'no reversed' => [['reversed' => 'all of it']],
@@ -313,14 +314,14 @@ it('a report leaving out a list, or whether it was a rehearsal, is a stack that 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(without: [$field])))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with(['reversed', 'left', 'rehearsed']);
 
 it('a reversal that leaves out what it does is a stack that did not answer', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(['reversed' => [['target' => 'sonarr']]])))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('a run still going back is its own answer', function (): void {
@@ -340,14 +341,14 @@ it('a run the stack no longer has a job for is ended, not unreachable and not ru
 
 it('asking after a run tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"cannot succeed"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"cannot succeed"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfPuttingARunBack($answered, HowPuttingARunBackIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfPuttingARunBack($build()))->toBe($why->name, $which);
+            expect(whatBecameOfPuttingARunBack($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -363,14 +364,14 @@ it('a run the stack would not put back is its refusal, in its words, with what i
 it('a problem at a status that says who may ask is still what was met', function (): void {
     $body = (string) json_encode(aProblemThatStoppedTheRun('UNDO-1', 'Nothing was changed at 1790150000', 'Nothing was put back.'));
     $table = [
-        [MockResponse::make($body, 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make($body, 403), Obstacle::NotForThisAccount],
+        [MockResponse::make($body, 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make($body, 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
+        expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
     }
 });
 
@@ -378,7 +379,7 @@ it('an answer holding no problem the stack wrote is a stack that did not answer,
     MockClient::destroyGlobal();
     MockClient::global([$answered]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'a sentence with no problem around it' => [MockResponse::make('This machine would not supply the randomness a job needs to be named.', 500, ['Content-Type' => 'text/plain'])],
     'a problem with a blank summary' => [MockResponse::make((string) json_encode(aProblemThatStoppedTheRun('UNDO-1', ' ', 'Nothing was put back.')), 500)],

@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
@@ -43,7 +44,7 @@ it('counts plainly where the stack reached everything', function (): void {
 });
 
 it('carries no limit and the plain count where nothing was read', function (): void {
-    foreach ([new HowAStallReads()->signedOut(), new HowAStallReads()->met(Obstacle::StackDidNotAnswer)] as $read) {
+    foreach ([new HowAStallReads()->signedOut(), new HowAStallReads()->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))] as $read) {
         expect($read->unreached)->toBe([])
             ->and($read->countSaid)->toBe(HowAStallReads::COUNTED);
     }

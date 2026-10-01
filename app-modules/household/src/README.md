@@ -20,7 +20,7 @@ was not.
 
 **Nothing here hides a control on entitlement grounds.** The app asks, the core
 answers, and where the answer is *no* the app says so. A stack refusing a
-request this account may not make arrives as `Obstacle::NotForThisAccount`,
+request this account may not make arrives as `KindOfObstacle::NotForThisAccount`,
 which carries its own sentence and its own remedy and is told apart from a
 refused credential and from a stack that did not answer — three refusals, three
 screens. `tests/Contract/OwingContractTest.php` holds the reading of it and

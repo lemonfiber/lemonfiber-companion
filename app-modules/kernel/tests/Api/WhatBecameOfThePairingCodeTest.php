@@ -11,6 +11,7 @@ use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
@@ -31,7 +32,7 @@ function whichArmThePairingCodeTook(WhatBecameOfThePairingCode $became): string
         made: static fn(APairingCode $code): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('made %s', $code->compare())),
         ended: static fn(): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo('ended'),
         refused: static fn(string $because): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('met %s', $why->name)),
+        met: static fn(Obstacle $why): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('met %s', $why->kind()->name)),
     )->said;
 }
 
@@ -42,7 +43,7 @@ it('takes the arm it was made on, and no other', function (): void {
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::made($code)))->toBe('made ABCD')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::ended()))->toBe('ended')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::refused('not served')))->toBe('refused not served')
-        ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::met(Obstacle::StackDidNotAnswer)))->toBe('met StackDidNotAnswer');
+        ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met StackDidNotAnswer');
 });
 
 it('refuses a refusal with nothing in it', function (): void {

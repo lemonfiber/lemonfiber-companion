@@ -7,6 +7,7 @@ namespace Modules\Operator\Tests\Internal\Presenters;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
@@ -60,7 +61,7 @@ it('N1-R44 — a session that has ended carries no proposal at all', function ()
 it('N1-R44 — a stack that could not be reached carries no proposal at all', function (): void {
     // The obstacle is the one thing this arm does carry, and it is carried on
     // `went` rather than smeared across the fields a proposal would fill.
-    $met = new HowAChangeReads()->met(Obstacle::StackDidNotAnswer);
+    $met = new HowAChangeReads()->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
 
     expect($met->went->cameBack())->toBeFalse()
         ->and($met->went->met)->not->toBe('');

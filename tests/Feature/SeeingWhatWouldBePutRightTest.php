@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Nonce;
@@ -207,10 +208,10 @@ it('a stack with no repair to offer is not a job that ended', function (): void 
 });
 
 it('N1-R10 — a stack that could not be asked says so, and says what to do', function (): void {
-    $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::StackDidNotAnswer));
+    $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($screen->offer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->offer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->offer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and(count($screen->offer()->repairs))->toBe(0)
         ->and($screen->offer()->isWorking)->toBeFalse()
         ->and($screen->offer()->hasEnded)->toBeFalse();
@@ -220,10 +221,10 @@ it('a stack that took the question on and then went away is an obstacle too', fu
     // The awkward middle: a phone leaves the house between asking and reading.
     // The screen has a state for it rather than holding a handle it can never
     // resolve — and it is the obstacle, because that is what the operator met.
-    $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::StackDidNotAnswer);
+    $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
 });
@@ -496,14 +497,14 @@ it('N1-R10 — a stack that goes away between agreeing and reading says what was
     // that offers a listing and *then* cannot be reached — one that met the
     // obstacle on both halves could never get as far as agreeing.
     $screen = theRepairsScreen(
-        AStackThatWouldMend::goneAfterAgreeing(aListingWorthReading(), Obstacle::StackDidNotAnswer),
+        AStackThatWouldMend::goneAfterAgreeing(aListingWorthReading(), Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
 
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->done()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($screen->done()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->done()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
@@ -646,7 +647,7 @@ it('N3-R13 — a refused credential on the outcome read signs this device out', 
     $keychain = AKeychainInMemory::working();
     $mending = AStackThatWouldMend::goneAfterAgreeing(
         aListingWorthReading(),
-        Obstacle::CredentialWasRefused,
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
     );
     $screen = theRepairsScreen($mending, keychain: $keychain);
 
@@ -683,7 +684,7 @@ it('N3-R13 — and the session is let go of, handle and all', function (): void 
     // would have the next frame ask about work on behalf of somebody the stack
     // has stopped recognising.
     $keychain = AKeychainInMemory::working();
-    $mending = AStackThatWouldMend::met(Obstacle::CredentialWasRefused);
+    $mending = AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = theRepairsScreen($mending, keychain: $keychain);
 
     expect($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeTrue();

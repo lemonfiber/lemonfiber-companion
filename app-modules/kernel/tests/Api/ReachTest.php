@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Reach;
 
@@ -31,7 +32,7 @@ function foldReach(Reach $reach): Code
 {
     return $reach->either(
         made: static fn(object $reached): Code => Code::of(sprintf('made:%s', $reached::class)),
-        blocked: static fn(Obstacle $obstacle): Code => Code::of(sprintf('blocked:%s', $obstacle->value)),
+        blocked: static fn(Obstacle $obstacle): Code => Code::of(sprintf('blocked:%s', $obstacle->kind()->value)),
     );
 }
 
@@ -43,10 +44,10 @@ it('hands the blocked arm the obstacle itself, not the fact of one', function ()
     // The whole point: there is no moment at which "it did not work" exists as
     // a value on its own, so there is nothing for a caller to render one
     // sentence from — which is the collapse that is forbidden.
-    expect(foldReach(Reach::blockedBy(Obstacle::CredentialWasRefused))->shown())
+    expect(foldReach(Reach::blockedBy(Obstacle::of(KindOfObstacle::CredentialWasRefused)))->shown())
         ->toBe('blocked:credential_refused');
 
-    expect(foldReach(Reach::blockedBy(Obstacle::DeviceHasNoNetwork))->shown())
+    expect(foldReach(Reach::blockedBy(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)))->shown())
         ->toBe('blocked:no_network');
 });
 
@@ -55,7 +56,7 @@ it('hands the made arm what came back', function (): void {
 
     $answer = Reach::made($reached)->either(
         made: static fn(object $given): object => $given,
-        blocked: static fn(Obstacle $obstacle): Code => Code::of($obstacle->value),
+        blocked: static fn(Obstacle $obstacle): Code => Code::of($obstacle->kind()->value),
     );
 
     // Identity rather than equality: an `either` that rebuilt the value would

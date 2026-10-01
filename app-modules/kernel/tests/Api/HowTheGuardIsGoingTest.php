@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 
@@ -30,7 +31,7 @@ function whichArmAGuardTakes(HowTheGuardIsGoing $going): string
         refused: static fn(string $said): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('refused:%s', $said)),
         ended: static fn(): WhichArmTheGuardTook => new WhichArmTheGuardTook('ended'),
         unknown: static fn(): WhichArmTheGuardTook => new WhichArmTheGuardTook('unknown'),
-        met: static fn(Obstacle $why): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -42,7 +43,7 @@ it('each way a guard stands takes its own arm, and ended and unknown are two', f
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::refused('Nothing to guard.')))->toBe('refused:Nothing to guard.')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::ended()))->toBe('ended')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::unknown()))->toBe('unknown')
-        ->and(whichArmAGuardTakes(HowTheGuardIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whichArmAGuardTakes(HowTheGuardIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('what the guard saw is carried as the stack said it', function (): void {

@@ -31,6 +31,7 @@ let package = Package(
                 "ScanningViewController.swift",
                 "StorageFunctions.swift",
                 "LinkFunctions.swift",
+                "LocalNetworkFunctions.swift",
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
             ]
@@ -84,6 +85,11 @@ let package = Package(
             name: "LinkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LinkRuleTests"
+        ),
+        .testTarget(
+            name: "LocalNetworkRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/LocalNetworkRuleTests"
         ),
         .testTarget(
             name: "WhatTheOperatorSaidTests",

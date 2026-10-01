@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -261,16 +262,16 @@ it('lets go of a stream that has been silent past twice the heartbeat, and reads
 });
 
 it('lets go of the session a stack refused on the stream, and keeps it for any other obstacle', function (): void {
-    $refused = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::CredentialWasRefused)));
+    $refused = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
     $refused->wakesAt(0);
 
-    $unanswered = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::StackDidNotAnswer)));
+    $unanswered = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $unanswered->wakesAt(0);
 
     expect($refused->keychain->isHolding(theStackBeingListenedTo()->id()))->toBeFalse()
         ->and($unanswered->keychain->isHolding(theStackBeingListenedTo()->id()))->toBeTrue()
-        ->and($unanswered->screen->summary()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($unanswered->screen->summary()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy());
+        ->and($unanswered->screen->summary()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($unanswered->screen->summary()->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy());
 });
 
 it('does not listen without a session, and looks for one again after a break', function (): void {
@@ -369,7 +370,7 @@ it('heads a line that names nothing with its own sentence, and says no age while
 it('draws when a line that is not current was heard, and what stopped the stream', function (): void {
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
         WhatWasHeard::said(aSummaryOfAFillingDisk()),
-        WhatWasHeard::met(Obstacle::StackDidNotAnswer),
+        WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     ));
 
     $listening->wakesAt(0)->wakesAt(120);
@@ -381,7 +382,7 @@ it('draws when a line that is not current was heard, and what stopped the stream
     expect($drawn)->toContain('The disk is full')
         ->and($listening->screen->summary()->tone)->toBe('unknown')
         ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 2)]))
-        ->and($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
 /** What the list would read back for the stack being listened to, flattened to one string. */
@@ -424,7 +425,7 @@ it('keeps nothing for the list where nothing was said', function (): void {
     $quiet = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::nothing(), WhatWasHeard::aSignOfLife()));
     $quiet->wakesAt(0)->wakesAt(2);
 
-    $refused = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::StackDidNotAnswer)));
+    $refused = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $refused->wakesAt(0);
 
     $ended = aScreenListeningTo(AStackThatSpeaksUp::thenEnding());

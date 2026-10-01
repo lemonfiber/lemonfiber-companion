@@ -19,7 +19,6 @@ use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -64,8 +63,8 @@ final readonly class Reversers implements PuttingARunBack
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -79,8 +78,8 @@ final readonly class Reversers implements PuttingARunBack
                 refused: HowPuttingARunBackIsGoing::refused(...),
                 met: HowPuttingARunBackIsGoing::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UndoIsUnreadable) {
-            return HowPuttingARunBackIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UndoIsUnreadable $why) {
+            return HowPuttingARunBackIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

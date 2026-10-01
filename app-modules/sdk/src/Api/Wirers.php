@@ -17,7 +17,6 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheWiringSaysNothing;
@@ -25,6 +24,7 @@ use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * {@see WiringTheServices}, answered by asking the stack.
@@ -49,8 +49,8 @@ final readonly class Wirers implements WiringTheServices
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -60,8 +60,8 @@ final readonly class Wirers implements WiringTheServices
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SeedIsUnreadable|TheWiringSaysNothing) {
-            return WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SeedIsUnreadable|TheWiringSaysNothing $why) {
+            return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -92,8 +92,8 @@ final readonly class Wirers implements WiringTheServices
     {
         try {
             return WhatBecameOfTheWiring::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheWiring::met(WhatTheReachMet::byItself($why));
         }
     }
 

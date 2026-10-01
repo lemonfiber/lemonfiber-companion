@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -168,10 +169,10 @@ it('says an empty shelf in as many words', function (): void {
 });
 
 it('N1-R10 — reports what stood in the way and keeps the way back', function (): void {
-    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::StackDidNotAnswer));
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($met->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($met->answer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($met->answer()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($met->answer()->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($met->answer()->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toBe([]);
 });
@@ -186,15 +187,15 @@ it('N3-R15 — draws an obstacle as itself, never as a library out of reach', fu
     //
     // Asked of the frame and not only of the flag: what goes wrong here is
     // what somebody reads, not which boolean is set.
-    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::StackDidNotAnswer));
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($met->answer()->isOutOfReach)->toBeFalse()
         ->and($met->answer()->reasons)->toBe([]);
 
     $drawn = WhatTheDeviceWouldDraw::by($met)->said();
 
-    expect($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()));
-    expect($drawn)->toContain(__(Obstacle::StackDidNotAnswer->remedy()));
+    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
+    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()));
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach'));
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach_action'));
 });
@@ -206,7 +207,7 @@ it('N3-R13 — a refused credential is a signed-out device, not a report', funct
     // lets go of the session inside to prevent.
     $keychain = AKeychainInMemory::working();
     $refused = theShelfScreen(
-        AShelfThatWasRead::met(Obstacle::CredentialWasRefused),
+        AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
         keychain: $keychain,
     );
 
@@ -220,7 +221,7 @@ it('N3-R13 — a refused credential is a signed-out device, not a report', funct
 
 it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
     $keychain = AKeychainInMemory::working();
-    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::StackDidNotAnswer), keychain: $keychain);
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), keychain: $keychain);
 
     expect($met->answer()->isSignedIn)->toBeTrue()
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)

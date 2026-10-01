@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -35,7 +36,7 @@ function whichArmItTook(WhatBecameOfTheInvitation $became): string
         answered: static fn(AnInvitation $invitation): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('answered:%s', $invitation->toHand()->name())),
         ended: static fn(): WhichArmTheInvitationTook => new WhichArmTheInvitationTook('ended'),
         refused: static fn(string $because): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheInvitationTook => new WhichArmTheInvitationTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -52,7 +53,7 @@ it('takes the arm it was made on, and carries what it was made with', function (
         ->and(whichArmItTook(WhatBecameOfTheInvitation::answered($invitation)))->toBe('answered:anna')
         ->and(whichArmItTook(WhatBecameOfTheInvitation::ended()))->toBe('ended')
         ->and(whichArmItTook(WhatBecameOfTheInvitation::refused('There is no library called Cartoons')))->toBe('refused:There is no library called Cartoons')
-        ->and(whichArmItTook(WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whichArmItTook(WhatBecameOfTheInvitation::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal with nothing said', function (): void {

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
@@ -126,7 +127,7 @@ function everythingTheRehearsalSays(Rehearsing $rehearsing): string
                 $rehearsal->footprint()->mebibytes(),
             ));
         },
-        met: static fn(Obstacle $why): WhatTheRehearsalTurnedOutToSay => new WhatTheRehearsalTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheRehearsalTurnedOutToSay => new WhatTheRehearsalTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -140,14 +141,14 @@ it('comes away with what would start, each service left out with what it would n
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfRehearsingAStart($answered, $why) as $which => $make) {
-            expect(everythingTheRehearsalSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheRehearsalSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -156,7 +157,7 @@ it('a rehearsal this app cannot read is an obstacle, never a start half-describe
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends(name: ' ')))]);
 
-    expect(everythingTheRehearsalSays(new Rehearsers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheRehearsalSays(new Rehearsers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the forms read naming the form, which is how a start is rehearsed rather than the forms listed', function (): void {

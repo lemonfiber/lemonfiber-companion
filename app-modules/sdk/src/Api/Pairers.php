@@ -16,13 +16,13 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\MakingPairingCodes;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 use Modules\Kernel\Api\WhatToDoAboutPairing;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack for a pairing code, and follows it.
@@ -44,8 +44,8 @@ final readonly class Pairers implements MakingPairingCodes
             return $this->underway($this->clients->client($stack, $session)->act(Api::action(WhatToDoAboutPairing::MakeACode->asked())));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfThePairingCode::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfThePairingCode::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -55,8 +55,8 @@ final readonly class Pairers implements MakingPairingCodes
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|PairingIsUnreadable|PairingIsNotReadable) {
-            return WhatBecameOfThePairingCode::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|PairingIsUnreadable|PairingIsNotReadable $why) {
+            return WhatBecameOfThePairingCode::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -87,8 +87,8 @@ final readonly class Pairers implements MakingPairingCodes
     {
         try {
             return WhatBecameOfThePairingCode::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfThePairingCode::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfThePairingCode::met(WhatTheReachMet::byItself($why));
         }
     }
 

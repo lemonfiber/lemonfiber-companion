@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ThePortsHeld;
@@ -69,7 +70,7 @@ it('holds nothing of a report in every state that has none', function (): void {
 
     expect($reads->notAsked())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), wasAsked: false))
         ->and($reads->signedOut())->toEqual(aVerbWithNoReport(HowTheReadingWent::theSessionEnded()))
-        ->and($reads->met(Obstacle::StackDidNotAnswer))->toEqual(aVerbWithNoReport(HowTheReadingWent::somethingStopped(Obstacle::StackDidNotAnswer)))
+        ->and($reads->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->toEqual(aVerbWithNoReport(HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->and($reads->running())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), isWorking: true))
         ->and($reads->ended())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), hasEnded: true));
 });

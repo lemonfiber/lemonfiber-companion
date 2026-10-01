@@ -16,7 +16,6 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -52,8 +51,8 @@ final readonly class Guides implements WalkingThrough
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -63,8 +62,8 @@ final readonly class Guides implements WalkingThrough
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheWalkthroughIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WalkthroughIsUnreadable) {
-            return HowTheWalkthroughIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WalkthroughIsUnreadable $why) {
+            return HowTheWalkthroughIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

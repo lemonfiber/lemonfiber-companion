@@ -10,6 +10,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OurRequests;
 use Modules\Kernel\Api\ServiceId;
@@ -48,7 +49,7 @@ function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
 {
     return $answer->either(
         leaving: static fn(WhatLeavesThisMachine $leaving): WhichArmTheLeavingTook => new WhichArmTheLeavingTook(sprintf('leaving:%d/%d', $leaving->ours()->count(), $leaving->theirs()->count())),
-        met: static fn(Obstacle $why): WhichArmTheLeavingTook => new WhichArmTheLeavingTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheLeavingTook => new WhichArmTheLeavingTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -65,6 +66,6 @@ it('N10-R1 — keeps lemonfiber\'s requests and its services\' apart', function 
 
 it('N10-R12 — nothing leaving is an answer, and a stack that could not be asked is not', function (): void {
     expect(whatWasFoundLeaving(WhatWasFoundLeaving::leaving(WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of()))))->toBe('leaving:0/0')
-        ->and(whatWasFoundLeaving(WhatWasFoundLeaving::met(Obstacle::StackDidNotAnswer)))
-        ->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whatWasFoundLeaving(WhatWasFoundLeaving::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
+        ->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

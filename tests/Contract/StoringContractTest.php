@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -127,7 +128,7 @@ function everythingTheKeepingSays(Storing $storing): string
 
             return new WhatTheKeepingTurnedOutToSay(implode(' | ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheKeepingTurnedOutToSay => new WhatTheKeepingTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheKeepingTurnedOutToSay => new WhatTheKeepingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -147,14 +148,14 @@ it('N6-R7 — comes away with where things are kept, what, why, and which hold a
 
 it('N1-R44 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhatIsStored($answered, $why) as $which => $make) {
-            expect(everythingTheKeepingSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheKeepingSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -163,7 +164,7 @@ it('N6-R7 — a secret flag this app cannot read is an obstacle, never a thing w
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItKeeps(secret: 'yes')))]);
 
-    expect(everythingTheKeepingSays(new Storekeepers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheKeepingSays(new Storekeepers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

@@ -118,8 +118,8 @@
             @endforelse
         @elseif ($this->upgrading->went->isSignedIn)
             <x-design::notice tone="unknown">
-                <x-design::strong>{{ __($this->upgrading->went->met) }}</x-design::strong>
-                <x-design::body>{{ __($this->upgrading->went->remedy) }}</x-design::body>
+                <x-design::strong>{{ __($this->upgrading->went->met, $this->upgrading->went->filling()) }}</x-design::strong>
+                <x-design::body>{{ __($this->upgrading->went->remedy, $this->upgrading->went->filling()) }}</x-design::body>
             </x-design::notice>
         @else
             <x-design::notice tone="unknown">

@@ -20,7 +20,6 @@ use Modules\Kernel\Api\HowTheOfferToLetGoIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RoomSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -62,8 +61,8 @@ final readonly class Releasers implements StoppingSeeding
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -73,8 +72,8 @@ final readonly class Releasers implements StoppingSeeding
             return $this->offer($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheOfferToLetGoIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StopSeedingIsUnreadable|RoomSaysNothing) {
-            return HowTheOfferToLetGoIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StopSeedingIsUnreadable|RoomSaysNothing $why) {
+            return HowTheOfferToLetGoIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -93,8 +92,8 @@ final readonly class Releasers implements StoppingSeeding
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -104,8 +103,8 @@ final readonly class Releasers implements StoppingSeeding
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowLettingItGoIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StopSeedingIsUnreadable|RoomSaysNothing) {
-            return HowLettingItGoIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StopSeedingIsUnreadable|RoomSaysNothing $why) {
+            return HowLettingItGoIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

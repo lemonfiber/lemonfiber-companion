@@ -8,7 +8,7 @@ namespace Modules\Kernel\Api;
  * Whether this device is on a network at all.
  *
  * A launch with no network is told apart from one that could not
- * reach the stack, and `Obstacle::DeviceHasNoNetwork` has existed for it since
+ * reach the stack, and `Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)` has existed for it since
  * the obstacles were written without anything ever producing one — because
  * nothing could. A phone in flight mode and a machine that is switched off
  * produce the same silence at the socket, and the app was reporting both as the
@@ -25,10 +25,12 @@ namespace Modules\Kernel\Api;
  * any of those. It answers the one question that can be settled without sending
  * anything: is there a network here to send it over.
  *
- * **Asked before reaching, never instead of it.** A connected device is not a
- * reachable stack, so an affirmative here is permission to try rather than a
- * prediction that it will work. Only the refusal is load-bearing, which is why
- * this is worth asking at a launch and worth nothing as a substitute for one.
+ * **Asked around reaching, never instead of it.** A launch asks before it
+ * reaches, and every reach that met silence asks again to say whose silence it
+ * was. A connected device is not a reachable stack, so an affirmative here is
+ * permission to try rather than a prediction that it will work. Only the
+ * refusal is load-bearing, which is why this is worth asking and worth nothing
+ * as a substitute for a reach.
  */
 interface Networking
 {

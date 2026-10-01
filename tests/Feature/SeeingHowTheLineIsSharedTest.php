@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RateUnit;
@@ -135,10 +136,10 @@ it('N10-R7 — no cap declared is not a cap of nought, and a line nobody measure
 });
 
 it('N10-R12 — a stack that could not be asked is not a line with nothing on it', function (): void {
-    $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->standsSaid)->toBe('')
         ->and($answer->means)->toBe('')
         ->and($answer->downSays)->toBe('')
@@ -152,7 +153,7 @@ it('N10-R12 — a stack that could not be asked is not a line with nothing on it
 });
 
 it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
-    $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
@@ -169,7 +170,7 @@ it('N1-R44 — a session that has ended is not a line with nothing on it', funct
 
 it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theLineScreen(AStackThatRationsItsLine::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseLineIsRead()->id()))->toBeTrue();
 
@@ -192,7 +193,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('N1-R3 — asking again asks the machine again', function (): void {
-    $rationing = AStackThatRationsItsLine::met(Obstacle::DeviceHasNoNetwork);
+    $rationing = AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theLineScreen($rationing);
 
     $screen->answer();
@@ -203,7 +204,7 @@ it('N1-R3 — asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theLineScreen(AStackThatRationsItsLine::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

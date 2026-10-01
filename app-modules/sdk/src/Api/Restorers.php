@@ -20,7 +20,6 @@ use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\KeepingSaysNothing;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
@@ -82,8 +81,8 @@ final readonly class Restorers implements PuttingBack
                 refused: WhatTheRestoreRehearsalFound::refused(...),
                 met: WhatTheRestoreRehearsalFound::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
-            return WhatTheRestoreRehearsalFound::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
+            return WhatTheRestoreRehearsalFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -106,8 +105,8 @@ final readonly class Restorers implements PuttingBack
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -121,8 +120,8 @@ final readonly class Restorers implements PuttingBack
                 refused: HowPuttingItBackIsGoing::refused(...),
                 met: HowPuttingItBackIsGoing::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
-            return HowPuttingItBackIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
+            return HowPuttingItBackIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

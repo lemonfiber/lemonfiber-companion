@@ -16,6 +16,8 @@ requirement is right and this page is a defect.
 | `N1-R20` | One file may open a connection, so the certificate pin has a single home | `PinnedClients` and `PinnedDoors`; `tests/Feature/NothingReachesAStackUnpinnedTest.php` |
 | `N1-R18` | The pinned fingerprint comes from the pairing material and never from the network | `PinnedClients` — a fingerprint learned from the connection it is meant to validate proves nothing |
 | `N1-R13` | A wire version this build does not support is refused rather than read | `Lines`, which asserts each envelope's kind as it builds a window |
+| `ARCH-R55` | An `api_version` mismatch is refused plainly, naming both versions, rather than rendering a partial view | `WhatTheReachMet::versions()`, which every adapter's mismatch reaches through `Clients::whatStoodInTheWay()`, carries both numbers on `Obstacle::versionsDisagree()`; the screen names them and nothing the envelope held is drawn. `ClientsContractTest` holds every set of clients to it |
+| `ARCH-R62` | A resuming client sends the last event id it saw as `Last-Event-ID` | `Listeners` and `Narrators` keep where each stack's stream left off and open the next one after it; `HearingContractTest` and `HearingTheWalkContractTest` read the header off what was sent |
 | `N1-R7` | The credential exchange happens once | `Admissions` |
 | `N1-R11`, `N1-R19` | Sessions are separate per stack, and so is pinning, so the two cannot be paired up wrongly | `Upkeepers`, which fetches per stack and session |
 | `N1-R42` | Every action that changes a stack carries an idempotency key; a question carries none | `Menders::agreeTo()` has one, `Menders::wouldPutRight()` does not |
@@ -30,6 +32,9 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R10` | A door that is not answering and a credential that was refused are different things with different remedies, and are not flattened into one | `Admissions`; `tests/Feature/EveryObstacleSaysSomethingOfItsOwnTest.php` |
+| `N1-R10` | A stack that did not answer and a phone with no network are told apart on every reach, not only at launch | `ClientsThatAskTheDevice`, bound at `Clients`, asks `Networking` whenever a reach met silence; every adapter's silence goes through `Clients::whatStoodInTheWay()` |
+| `N4-R17` | A refused local-network permission is told apart from a stack that did not answer, on every reach | `ClientsThatAskTheDevice` asks `TheLocalNetwork`, which `PlatformLocalNetwork` answers through the bridge's probe; `TheLocalNetworkContractTest` |
+| `ARCH-R135` | Work stopped because other work held the stack is said to be that, with the same request offered once it is done | `WhatARefusalMeant` reads a `409` the stack sends without a code this build knows as `StackIsBusy`, never as the machine failing |
 | `N2-R4` | The offer screen's payload is read or refused, never guessed at | `OfferIsUnreadable` |
 | `N2-R7` | The roster's payload, likewise | `RosterIsUnreadable` |
 | `N2-R10` | The log window's payload, likewise | `LineIsUnreadable` |

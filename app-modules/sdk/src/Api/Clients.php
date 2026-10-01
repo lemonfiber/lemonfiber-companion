@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Throwable;
 
 /**
  * {@see Reaching}, said in the one module allowed to name what comes back.
@@ -41,4 +43,15 @@ interface Clients extends Reaching
      * is the one interface that may say what a client is.
      */
     public function client(Stack $stack, Session $session): Client;
+
+    /**
+     * What stood between this stack and an answer this app could read.
+     *
+     * Asked by every adapter whose reach ended in silence, in an envelope of
+     * another API version, or in an answer it could not read, so that one place
+     * decides the obstacle and every screen names the same one for the same
+     * reach. A refusal the stack answered with is {@see
+     * \Modules\Sdk\Internal\WhatARefusalMeant}'s, never this.
+     */
+    public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle;
 }

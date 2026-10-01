@@ -22,7 +22,6 @@ use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Mending;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -76,8 +75,8 @@ final readonly class Menders implements Mending
             return Underway::as(Handles::in($client->repair(Asking::offer())));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -101,8 +100,8 @@ final readonly class Menders implements Mending
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -112,8 +111,8 @@ final readonly class Menders implements Mending
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing) {
-            return HowTheRepairIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing $why) {
+            return HowTheRepairIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -123,8 +122,8 @@ final readonly class Menders implements Mending
             return $this->standing($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheOfferIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing) {
-            return HowTheOfferIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing $why) {
+            return HowTheOfferIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

@@ -10,6 +10,7 @@ use function it;
 
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Interrupted;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StackId;
@@ -44,7 +45,7 @@ function foldInterrupted(Interrupted $what): Code
     return $what->either(
         ended: static fn(Whereabouts $was): Code => Code::of(sprintf('ended:%s', $was->screen())),
         refused: static fn(Obstacle $because, Whereabouts $was): Code => Code::of(
-            sprintf('refused:%s:%s', $because->value, $was->screen()),
+            sprintf('refused:%s:%s', $because->kind()->value, $was->screen()),
         ),
     );
 }
@@ -58,7 +59,7 @@ it('N1-R46 — an ended session and a refused credential are read differently', 
     $refused = Interrupted::theCredentialWasRefused(
         theStackTheOperatorWasOn(),
         whereTheOperatorWas(),
-        Obstacle::CredentialWasRefused,
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
     );
 
     expect(foldInterrupted($ended)->shown())->toBe('ended:stack.readings')
@@ -108,7 +109,7 @@ it('N1-R44 — both arms come back to the screen the operator was on', function 
     $on = theStackTheOperatorWasOn();
 
     expect(Interrupted::theSessionEnded($on, $where)->resumeAt()->is($where))->toBeTrue()
-        ->and(Interrupted::theCredentialWasRefused($on, $where, Obstacle::CredentialWasRefused)->resumeAt()->is($where))
+        ->and(Interrupted::theCredentialWasRefused($on, $where, Obstacle::of(KindOfObstacle::CredentialWasRefused))->resumeAt()->is($where))
         ->toBeTrue();
 });
 
@@ -122,7 +123,7 @@ it('N1-R44 — the screen reaches both arms of the fold as well', function (): v
 
     expect(foldInterrupted(Interrupted::theSessionEnded($on, $where))->shown())
         ->toBe('ended:stack.settings')
-        ->and(foldInterrupted(Interrupted::theCredentialWasRefused($on, $where, Obstacle::CredentialWasRefused))->shown())
+        ->and(foldInterrupted(Interrupted::theCredentialWasRefused($on, $where, Obstacle::of(KindOfObstacle::CredentialWasRefused)))->shown())
         ->toBe('refused:credential_refused:stack.settings');
 });
 
@@ -134,7 +135,7 @@ it('N1-R11 — names its stack on both arms', function (): void {
 
     expect(Interrupted::theSessionEnded($on, whereTheOperatorWas())->on()->is($on))->toBeTrue()
         ->and(Interrupted::theSessionEnded($on, whereTheOperatorWas())->on()->is($another))->toBeFalse()
-        ->and(Interrupted::theCredentialWasRefused($on, whereTheOperatorWas(), Obstacle::CredentialWasRefused)->on()->is($on))
+        ->and(Interrupted::theCredentialWasRefused($on, whereTheOperatorWas(), Obstacle::of(KindOfObstacle::CredentialWasRefused))->on()->is($on))
         ->toBeTrue();
 });
 

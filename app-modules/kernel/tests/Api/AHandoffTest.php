@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\ASignedInDevice;
 use Modules\Kernel\Api\HandoffSaysNothing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\TheClientsToHandOver;
@@ -60,7 +61,7 @@ function whichArmTheHandoffTook(WhatBecameOfTheHandoff $became): string
         answered: static fn(AHandoff $handoff): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('answered %s', $handoff->stands()->value)),
         ended: static fn(): WhatTheHandoffCameTo => new WhatTheHandoffCameTo('ended'),
         refused: static fn(string $because): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('met %s', $why->name)),
+        met: static fn(Obstacle $why): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('met %s', $why->kind()->name)),
     )->said;
 }
 
@@ -69,7 +70,7 @@ it('takes the arm it was made on, and no other', function (): void {
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::answered(aHandoffSaying('It could not go ahead.'))))->toBe('answered failed')
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::ended()))->toBe('ended')
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::refused('no such name')))->toBe('refused no such name')
-        ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::met(Obstacle::StackDidNotAnswer)))->toBe('met StackDidNotAnswer');
+        ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met StackDidNotAnswer');
 });
 
 it('refuses a refusal or a reason with nothing in it, and takes an empty reason as none', function (): void {

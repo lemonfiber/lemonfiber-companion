@@ -16,7 +16,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowTheHandoverWent;
 use Modules\Kernel\Api\IdempotencyKey;
-use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatKeepsRunning;
@@ -80,8 +80,8 @@ final readonly class Keepers implements Hosting
             return WhatKeepsRunning::keeps(Hosts::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatKeepsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
-            return WhatKeepsRunning::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+            return WhatKeepsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -102,8 +102,8 @@ final readonly class Keepers implements Hosting
             return HowTheHandoverWent::did(Handovers::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedWith($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
-            return HowTheHandoverWent::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+            return HowTheHandoverWent::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -119,7 +119,7 @@ final readonly class Keepers implements Hosting
         $met = WhatARefusalMeant::obstacle($why);
         $said = $why instanceof RequestFailed ? $why->said() : null;
 
-        if ($met !== Obstacle::StackDidNotAnswer || $said === null) {
+        if ($met->kind() !== KindOfObstacle::StackDidNotAnswer || $said === null) {
             return HowTheHandoverWent::met($met);
         }
 

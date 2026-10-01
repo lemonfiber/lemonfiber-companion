@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Recognised;
@@ -38,7 +39,7 @@ function whatItSaw(Recognised $seen): string
 {
     return $seen->either(
         paired: fn(): Code => Code::of('paired'),
-        stranger: fn(Obstacle $why): Code => Code::of($why->value),
+        stranger: fn(Obstacle $why): Code => Code::of($why->kind()->value),
     )->shown();
 }
 
@@ -51,7 +52,7 @@ it('N1-R20 — refuses a machine presenting something else', function (): void {
     // paired stack, but carry on" — a warning is a dialog with a way past it,
     // and the way past it is the thing an attacker needs.
     expect(whatItSaw(theLoft()->recognises(Fingerprint::of(SOMETHING_ELSE))))
-        ->toBe(Obstacle::StackIsNotTheOnePaired->value);
+        ->toEqual(KindOfObstacle::StackIsNotTheOnePaired->value);
 });
 
 it('N1-R20 — reports it as this not being the machine, and offers re-pairing', function (): void {
@@ -59,9 +60,9 @@ it('N1-R20 — reports it as this not being the machine, and offers re-pairing',
     // already attached to the obstacle: it is critical rather than advisory, it
     // has a code somebody can search for, and it is actionable — which is what
     // puts "pair again" on the screen rather than instructions to read.
-    expect(Obstacle::StackIsNotTheOnePaired->severity())->toBe(Severity::Critical)
-        ->and(Obstacle::StackIsNotTheOnePaired->code()->shown())->toBe('COMPANION-CERTIFICATE-CHANGED')
-        ->and(Obstacle::StackIsNotTheOnePaired->standing())->toBe(Standing::Actionable);
+    expect(KindOfObstacle::StackIsNotTheOnePaired->severity())->toBe(Severity::Critical)
+        ->and(KindOfObstacle::StackIsNotTheOnePaired->code()->shown())->toBe('COMPANION-CERTIFICATE-CHANGED')
+        ->and(KindOfObstacle::StackIsNotTheOnePaired->standing())->toBe(Standing::Actionable);
 });
 
 it('N1-R20 — the stranger arm cannot be handed a gentler obstacle', function (): void {

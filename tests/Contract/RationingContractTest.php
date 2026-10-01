@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rationing;
@@ -134,7 +135,7 @@ function everythingTheReadingSays(Rationing $rationing): string
             )->said,
             $line->uploadCost(static fn(string $costs): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($costs), static fn(): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay('-'))->said,
         )),
-        met: static fn(Obstacle $why): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -151,14 +152,14 @@ it('N10-R4, N10-R5, N10-R6 — comes away with the line\'s standing, capacity an
 
 it('N10-R12 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingHowTheLineIs($answered, $why) as $which => $make) {
-            expect(everythingTheReadingSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheReadingSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -167,7 +168,7 @@ it('N10-R12 — a line this app cannot read is an obstacle, never an unlimited l
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsLine('throttled')))]);
 
-    expect(everythingTheReadingSays(new Quartermasters(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheReadingSays(new Quartermasters(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

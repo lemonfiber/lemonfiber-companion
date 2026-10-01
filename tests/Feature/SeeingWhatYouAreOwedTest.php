@@ -6,6 +6,7 @@ use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -140,7 +141,7 @@ it('N3-R3 — draws a refusal as a refusal rather than as an empty reading', fun
     // The distinction the whole screen turns on. A member who may not ask for
     // something and a member with nothing to be told both arrive with no
     // sentences, and they are opposite things to read.
-    $refused = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::NotForThisAccount));
+    $refused = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount)));
     $nothing = theOwedScreen(AMemberWhoIsOwed::owedNothing());
 
     expect($refused->answer()->cameBack())->toBeFalse()
@@ -156,10 +157,10 @@ it('N3-R2 — says nothing about entitlement that the core did not say', functio
     // obstacle's own pair of keys and nothing this module wrote. Asserted as
     // the obstacle's own rather than as literals, because a screen spelling
     // them would be a second wording able to drift from the one beside it.
-    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::NotForThisAccount));
+    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount)));
 
-    expect($screen->answer()->met)->toBe(Obstacle::NotForThisAccount->said())
-        ->and($screen->answer()->remedy)->toBe(Obstacle::NotForThisAccount->remedy());
+    expect($screen->answer()->met)->toEqual(KindOfObstacle::NotForThisAccount->said())
+        ->and($screen->answer()->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedy());
 });
 
 it('N3-R13 — a refused credential signs the device out and the session is let go of', function (): void {
@@ -168,7 +169,7 @@ it('N3-R13 — a refused credential signs the device out and the session is let 
     // and somebody would be looking at a sign-in prompt over a device that
     // still believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     // Neither key, because nothing was met: the device is signed out and the
     // remedy for that is a screen rather than a sentence. A word in either
@@ -184,7 +185,7 @@ it('N3-R13 — an obstacle that is not a refused credential leaves the session a
     // being thrown out of the house, and a screen that forgot the session on
     // every obstacle would ask for the password every time a machine slept.
     $keychain = AKeychainInMemory::working();
-    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::DeviceHasNoNetwork), $keychain);
+    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain);
 
     expect($screen->answer()->isSignedIn)->toBeTrue()
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeTrue();
@@ -312,7 +313,7 @@ it('N3-R6 — draws a refusal as a refusal rather than as having asked for nothi
     // The same distinction the sentences turn on. Both arrive with no rows, and
     // an empty list drawn for the refusal tells somebody they have asked for
     // nothing when the truth is that nobody could find out.
-    $refused = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::NotForThisAccount));
+    $refused = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount)));
     $nothing = theOwedScreen(AMemberWhoIsOwed::asking(Requested::none()));
 
     expect($refused->requests()->cameBack())->toBeFalse()
@@ -374,7 +375,7 @@ it('N3-R13 — a refused credential met on the requests read lets the session go
     // it. A screen that let go only on the sentences would leave a device
     // signed out on one half and signed in on the other.
     $keychain = AKeychainInMemory::working();
-    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     $stack = theStackAMemberReadsFrom()->id();
 

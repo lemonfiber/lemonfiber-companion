@@ -13,7 +13,6 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\HowItIsSet;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
@@ -44,7 +43,7 @@ final readonly class Arrangements implements Arranging
             return HowItIsSet::told(Dials::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowItIsSet::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
             // {@see SettingIsUnnamed} is here rather than guarded against
             // above, so the kernel type keeps deciding what a nameless setting
             // means and this decides what an unreadable answer looks like to
@@ -52,7 +51,7 @@ final readonly class Arrangements implements Arranging
             // cannot show sent a listing this app cannot claim is complete,
             // and an incomplete listing is the one thing this screen must
             // never present as a whole one.
-            return HowItIsSet::refused(Obstacle::StackDidNotAnswer);
+            return HowItIsSet::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

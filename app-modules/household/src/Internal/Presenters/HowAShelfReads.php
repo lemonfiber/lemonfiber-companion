@@ -68,11 +68,7 @@ final readonly class HowAShelfReads
      */
     public function met(Obstacle $why): WhatAMemberTurnedOutToBeAbleToWatch
     {
-        return WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped(
-            $why->said(),
-            $why->remedy(),
-            $why->meansWeAreSignedOut(),
-        );
+        return WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped($why);
     }
 
     /** This device holds no session for that stack, so nothing was asked. */

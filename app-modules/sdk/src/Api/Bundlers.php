@@ -24,7 +24,6 @@ use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -71,8 +70,8 @@ final readonly class Bundlers implements AskingForHelp
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -86,8 +85,8 @@ final readonly class Bundlers implements AskingForHelp
                 refused: HowTheBundleIsGoing::refused(...),
                 met: HowTheBundleIsGoing::met(...),
             );
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable|ABundleHasNoName) {
-            return HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable|ABundleHasNoName $why) {
+            return HowTheBundleIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -106,8 +105,8 @@ final readonly class Bundlers implements AskingForHelp
             return ABundleFetched::as(ABundleFile::fetched($written, $file->bytes()));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return ABundleFetched::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable) {
-            return ABundleFetched::met(Obstacle::StackDidNotAnswer);
+        } catch (Unreachable $why) {
+            return ABundleFetched::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

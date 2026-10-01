@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -602,13 +603,13 @@ it('leaves a password where it is when the operator says never mind', function (
 });
 
 it('an act the stack could not be reached for is an obstacle beside the rest, that can be asked again', function (): void {
-    $screen = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer)));
+    $screen = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $screen->name = 'anna';
     $screen->offer();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howItIsGoing()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+    expect($screen->howItIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->toContain(__('stacks.invitation.who_is_in'))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
@@ -618,11 +619,11 @@ it('an act the stack could not be reached for is an obstacle beside the rest, th
 });
 
 it('a household that could not be read is an obstacle, not nobody in', function (): void {
-    $inviting = AStackThatInvites::answering()->readingAs(Obstacle::StackDidNotAnswer);
+    $inviting = AStackThatInvites::answering()->readingAs(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theInvitationScreen($inviting);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->not->toContain(__('stacks.invitation.nobody_in'))
         ->and($drawn->offers())->toContain(__('health.ask_again'))
         ->and($drawn->offers())->not->toContain(__('stacks.invitation.what_would_it_grant'));
@@ -635,13 +636,13 @@ it('a household that could not be read is an obstacle, not nobody in', function 
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theInvitationScreen(AStackThatInvites::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theInvitationScreen(AStackThatInvites::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackSomebodyIsAskedIn()->id()))->toBeFalse();
 
     $acting = AKeychainInMemory::working();
-    $refused = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::met(Obstacle::CredentialWasRefused)), keychain: $acting);
+    $refused = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $acting);
     $refused->name = 'anna';
     $refused->offer();
 

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\APossibleCause;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -140,7 +141,7 @@ function everythingTheAdviceSays(Advising $advising): string
 
             return new WhatTheAdviceTurnedOutToSay(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheAdviceTurnedOutToSay => new WhatTheAdviceTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheAdviceTurnedOutToSay => new WhatTheAdviceTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -162,14 +163,14 @@ it('comes away with every device, its rating and what to use instead, and what t
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForAdvice($answered, $why) as $which => $make) {
-            expect(everythingTheAdviceSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheAdviceSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -178,14 +179,14 @@ it('a rating this app cannot read is an obstacle, never the nearest rating', fun
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAdvises('excellent')))]);
 
-    expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('an app that does not say whether it is open source is an obstacle, never a guess', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(str_replace(',"open_source":true', '', (string) json_encode(whatAStackAdvises())))]);
 
-    expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the clients endpoint, and nothing else', function (): void {

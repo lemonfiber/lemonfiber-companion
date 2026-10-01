@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEventSetApart;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -109,7 +110,7 @@ function everythingTheSettingSays(Telling $telling): string
 
             return new WhatTheSettingTurnedOutToSay(sprintf('%s/%s/[%s]', $told->preset(), $told->means(), implode(',', $exceptions)));
         },
-        met: static fn(Obstacle $why): WhatTheSettingTurnedOutToSay => new WhatTheSettingTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheSettingTurnedOutToSay => new WhatTheSettingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -123,14 +124,14 @@ it('N10-R8 — comes away with the preset, what it means and every exception', f
 
 it('N10-R12 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhatIsTold($answered, $why) as $which => $make) {
-            expect(everythingTheSettingSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheSettingSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -139,7 +140,7 @@ it('N10-R12 — a setting this app cannot read is an obstacle, not an empty one'
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItTells('  ')))]);
 
-    expect(everythingTheSettingSays(new Heralds(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheSettingSays(new Heralds(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

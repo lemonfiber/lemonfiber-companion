@@ -9,6 +9,7 @@ use Modules\Kernel\Api\APortMoved;
 use Modules\Kernel\Api\AProjectStanding;
 use Modules\Kernel\Api\AServiceStanding;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -270,11 +271,11 @@ it('says so where a project has no services or the stack offers no mode', functi
 });
 
 it('a stack that could not be asked is not a machine with nothing on it', function (): void {
-    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::StackDidNotAnswer));
+    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $answer = $screen->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([$answer->looked, $answer->projects, $answer->conflicts, $answer->beside, $answer->unsupported, $answer->modes])
         ->toBe([false, [], [], [], [], []])
@@ -294,7 +295,7 @@ it('a session that has ended is not a machine with nothing on it', function (): 
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackThatWasSurveyed()->id()))->toBeFalse();
@@ -313,7 +314,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('asking again asks the machine again', function (): void {
-    $movingIn = AStackWithSomethingAlreadyOnIt::met(Obstacle::DeviceHasNoNetwork);
+    $movingIn = AStackWithSomethingAlreadyOnIt::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theSurveyScreen($movingIn);
 
     $screen->answer();
@@ -324,7 +325,7 @@ it('asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

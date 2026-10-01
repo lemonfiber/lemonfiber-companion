@@ -44,8 +44,8 @@
          so this screen cannot describe a condition differently from the one
          beside it. --}}
     <x-design::notice tone="unknown">
-        <x-design::strong>{{ __($this->answer()->met) }}</x-design::strong>
-        <x-design::body>{{ __($this->answer()->remedy) }}</x-design::body>
+        <x-design::strong>{{ __($this->answer()->met, $this->answer()->filling()) }}</x-design::strong>
+        <x-design::body>{{ __($this->answer()->remedy, $this->answer()->filling()) }}</x-design::body>
     </x-design::notice>
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />

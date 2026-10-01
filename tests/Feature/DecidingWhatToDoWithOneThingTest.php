@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -355,7 +356,7 @@ it('N2-R8 — states no length once the reading it came from is gone', function 
     // what substitution refuses.
     $screen = theThingScreen(AStackThatSupervises::thenMeeting(
         WhatAMachineRuns::twoThings(),
-        Obstacle::DeviceHasNoNetwork,
+        Obstacle::of(KindOfObstacle::DeviceHasNoNetwork),
     ));
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
@@ -435,16 +436,16 @@ it('N1-R44 — a device with no session for it asks nothing', function (): void 
 });
 
 it('N1-R10 — an obstacle is what stood in the way, with what to do about it', function (): void {
-    $screen = theThingScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theThingScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $answer = $screen->answer();
 
-    expect($answer->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($answer->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+    expect($answer->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+        ->and($answer->went->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy())
         ->and($answer->went->isSignedIn)->toBeTrue();
 });
 
 it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
-    $supervising = AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork);
+    $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theThingScreen($supervising);
 
     $screen->answer();
@@ -461,7 +462,7 @@ it('N3-R13 — a credential refused on the verb lets the session go too', functi
     $keychain = AKeychainInMemory::working();
     $supervising = AStackThatSupervises::withButRefusing(
         WhatAMachineRuns::twoThings(),
-        Obstacle::CredentialWasRefused,
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
     );
     $screen = theThingScreen($supervising, keychain: $keychain);
 
@@ -478,7 +479,7 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
     // were entitled to start all along.
     $keychain = AKeychainInMemory::working();
     $screen = theThingScreen(
-        AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork),
+        AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         keychain: $keychain,
     );
 
@@ -612,21 +613,21 @@ it('a rehearsal that could not be had says what stood in the way, and lets go of
     $unanswered = theThingScreen(
         AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
         'library',
-        rehearsing: AStackThatRehearses::met(Obstacle::StackDidNotAnswer),
+        rehearsing: AStackThatRehearses::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
     theThingScreen(
         AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
         'library',
         $keychain,
-        rehearsing: AStackThatRehearses::met(Obstacle::CredentialWasRefused),
+        rehearsing: AStackThatRehearses::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
     )->rehearsal();
 
-    expect($unanswered->rehearsal()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($unanswered->rehearsal()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($unanswered->rehearsal()->wouldStart)->toBe([])
         ->and($unanswered->rehearsal()->leftOut)->toBe([])
         ->and($unanswered->rehearsal()->estimatedMib)->toBeNull()
         ->and($unanswered->rehearsal()->unestimated)->toBe([])
-        ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
 

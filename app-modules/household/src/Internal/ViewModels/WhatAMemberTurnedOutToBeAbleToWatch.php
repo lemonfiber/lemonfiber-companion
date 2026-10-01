@@ -20,6 +20,8 @@ namespace Modules\Household\Internal\ViewModels;
  * @param list<WhatOneHoldingSays> $holdings
  * @param list<string>             $reasons
  */
+use Modules\Kernel\Api\Obstacle;
+
 final readonly class WhatAMemberTurnedOutToBeAbleToWatch
 {
     /**
@@ -33,6 +35,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
         public bool $isOutOfReach,
         public array $holdings,
         public array $reasons,
+        private ?Obstacle $why = null,
     ) {}
 
     /**
@@ -90,18 +93,29 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     }
 
     /** Something stood in the way, and this is what the member met. */
-    public static function somethingStopped(string $met, string $remedy, bool $signedOut): self
+    public static function somethingStopped(Obstacle $why): self
     {
-        return $signedOut
+        return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
             : new self(
                 isSignedIn: true,
-                met: $met,
-                remedy: $remedy,
+                met: $why->said(),
+                remedy: $why->remedy(),
                 isOutOfReach: false,
                 holdings: [],
                 reasons: [],
+                why: $why,
             );
+    }
+
+    /**
+     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
+     *
+     * @return array<string, int>
+     */
+    public function filling(): array
+    {
+        return $this->why instanceof Obstacle ? $this->why->filling() : [];
     }
 
     /**

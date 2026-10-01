@@ -44,11 +44,7 @@ final readonly class HowWhatAMemberIsOwedReads
      */
     public function met(Obstacle $why): WhatAMemberTurnedOutToBeOwed
     {
-        return WhatAMemberTurnedOutToBeOwed::somethingStopped(
-            $why->said(),
-            $why->remedy(),
-            $why->meansWeAreSignedOut(),
-        );
+        return WhatAMemberTurnedOutToBeOwed::somethingStopped($why);
     }
 
     /** This device holds no session for that stack, so nothing was asked. */

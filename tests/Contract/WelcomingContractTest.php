@@ -7,6 +7,7 @@ use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AServiceBeside;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheDoorCameToBe;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -131,7 +132,7 @@ function everythingTheDoorSays(Welcoming $welcoming): string
 
             return new WhatTheDoorTurnedOutToSay(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheDoorTurnedOutToSay => new WhatTheDoorTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheDoorTurnedOutToSay => new WhatTheDoorTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -152,14 +153,14 @@ it('comes away with the door, how it came to be, and every address as the stack 
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForTheDoor($answered, $why) as $which => $make) {
-            expect(everythingTheDoorSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheDoorSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -168,7 +169,7 @@ it('a standing this app cannot read is an obstacle, never a door drawn as open',
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsDoor('ajar')))]);
 
-    expect(everythingTheDoorSays(new Doorkeepers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheDoorSays(new Doorkeepers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the front-door endpoint, and nothing else', function (): void {

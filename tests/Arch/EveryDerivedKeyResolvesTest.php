@@ -31,9 +31,9 @@ use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\Medium;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\RateUnit;
 use Modules\Kernel\Api\Severity;
@@ -147,9 +147,9 @@ function everyDerivedKey(): array
             WhyNothingWasScanned::cases(),
             static fn(WhyNothingWasScanned $why): array => [$why->saidOnTheScreen(), $why->remedy()],
         ),
-        Obstacle::class => aPairPerCase(
-            Obstacle::cases(),
-            static fn(Obstacle $why): array => [$why->said(), $why->remedy()],
+        KindOfObstacle::class => aPairPerCase(
+            KindOfObstacle::cases(),
+            static fn(KindOfObstacle $why): array => [$why->said(), $why->remedy()],
         ),
         WhereTheCodeGot::class => aPairPerCase(
             WhereTheCodeGot::cases(),

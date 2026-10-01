@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
@@ -39,6 +40,6 @@ it('draws each way the machine can stand for room with its own tone', function (
 it('draws a reading that did not come back as unknown, never as comfortable', function (): void {
     $presenter = new HowTheRoomReads();
 
-    expect($presenter->met(Obstacle::StackDidNotAnswer)->tone)->toBe(Tone::Unknown->value)
+    expect($presenter->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->tone)->toBe(Tone::Unknown->value)
         ->and($presenter->signedOut()->tone)->toBe(Tone::Unknown->value);
 });

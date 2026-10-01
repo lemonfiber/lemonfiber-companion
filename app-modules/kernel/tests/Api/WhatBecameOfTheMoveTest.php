@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheMoveSaysNothing;
@@ -32,7 +33,7 @@ function whereTheMoveGotTo(WhatBecameOfTheMove $became): string
         answered: static fn(AMove $move): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('answered %s', $move->stance()->value)),
         ended: static fn(): WhereTheMoveGotTo => new WhereTheMoveGotTo('ended'),
         refused: static fn(string $because): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -43,7 +44,7 @@ it('takes each arm it was built on, and no other', function (): void {
         ->and(whereTheMoveGotTo(WhatBecameOfTheMove::answered($move)))->toBe('answered applied')
         ->and(whereTheMoveGotTo(WhatBecameOfTheMove::ended()))->toBe('ended')
         ->and(whereTheMoveGotTo(WhatBecameOfTheMove::refused('Nothing here to take over')))->toBe('refused Nothing here to take over')
-        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met %s', Obstacle::StackDidNotAnswer->value));
+        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal that does not say why', function (): void {

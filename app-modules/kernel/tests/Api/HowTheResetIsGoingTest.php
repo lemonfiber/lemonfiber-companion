@@ -12,6 +12,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\HowTheResetIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -32,7 +33,7 @@ function howTheResetIsGoingReads(HowTheResetIsGoing $going): string
         done: static fn(TheReset $reset): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('done:%d', count($reset->connections()))),
         refused: static fn(ARefusalInItsWords $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhichArmTheResetTook => new WhichArmTheResetTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -46,5 +47,5 @@ it('takes the arm for each state, and carries the report, the refusal and the ob
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused(ARefusalInItsWords::said('A file could not be written', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:A file could not be written:')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::ended()))->toBe('ended')
-        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\AdviceSaysNothing;
 use Modules\Kernel\Api\APossibleCause;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SomethingThatGoesWrong;
 use Modules\Kernel\Api\TheDevices;
@@ -101,9 +102,9 @@ it('keeps every symptom in the stack\'s order', function (): void {
 it('advice that could not be asked for is never advice with nothing in it', function (): void {
     $fold = static fn(WhatWasFoundToWatchOn $answer): string => $answer->either(
         found: static fn(WhatToWatchOn $advice): WhichArmTheAdviceTook => new WhichArmTheAdviceTook(sprintf('found:%s', $advice->onlyAtHome())),
-        met: static fn(Obstacle $why): WhichArmTheAdviceTook => new WhichArmTheAdviceTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheAdviceTook => new WhichArmTheAdviceTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundToWatchOn::found(adviceSaying('At home only', 'Nothing is installed'))))->toBe('found:At home only')
-        ->and($fold(WhatWasFoundToWatchOn::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasFoundToWatchOn::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

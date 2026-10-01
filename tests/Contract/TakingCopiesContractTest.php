@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowACopyPaced;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
@@ -110,7 +111,7 @@ function howTheCopyWasAskedFor(TakingCopies $copying, ACopyAsked $asked): string
 {
     return $copying->take(aStackThatTakesACopy(), Session::of('a-session-not-a-secret'), $asked)->either(
         started: static fn(Job $job): WhatTakingACopySaid => new WhatTakingACopySaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->name),
+        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->kind()->name),
     )->said;
 }
 
@@ -130,7 +131,7 @@ function whatBecameOfTheCopy(TakingCopies $copying): string
             $report->was()->value,
         )),
         ended: static fn(): WhatTakingACopySaid => new WhatTakingACopySaid('ended'),
-        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->name),
+        met: static fn(Obstacle $why): WhatTakingACopySaid => new WhatTakingACopySaid($why->kind()->name),
     )->said;
 }
 
@@ -150,17 +151,17 @@ it('comes away from asking for a copy with the job the stack named, whatever the
 
 it('comes away from a copy that was not taken with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'backup', 'job' => ' ']]), 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'backup', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheCopyWasAskedFor(new Copiers(new PinnedClients(), SequencedEntropy::counting()), ACopyAsked::ofTheWholeStack()))->toBe($why->name);
-        expect(howTheCopyWasAskedFor(AStackThatTakesCopies::met($why), ACopyAsked::ofTheWholeStack()))->toBe($why->name);
+        expect(howTheCopyWasAskedFor(new Copiers(new PinnedClients(), SequencedEntropy::counting()), ACopyAsked::ofTheWholeStack()))->toBe($why->kind()->name);
+        expect(howTheCopyWasAskedFor(AStackThatTakesCopies::met($why), ACopyAsked::ofTheWholeStack()))->toBe($why->kind()->name);
     }
 });
 
@@ -190,14 +191,14 @@ it('a copy the stack no longer has a job for is ended, not unreachable and not r
 
 it('asking after a copy tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfTakingACopy($answered, HowTheCopyIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfTheCopy($build()))->toBe($why->name, $which);
+            expect(whatBecameOfTheCopy($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -206,7 +207,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfACopy($changed)))]);
 
-    expect(whatBecameOfTheCopy(new Copiers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCopy(new Copiers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no scope' => [['scope' => null]],
     'a scope with no word this app knows' => [['scope' => ['scope' => 'everything']]],

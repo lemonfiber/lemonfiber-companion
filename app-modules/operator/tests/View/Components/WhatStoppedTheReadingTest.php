@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Tests\Support\WhatMarkupDraws;
@@ -16,7 +17,7 @@ uses(TestCase::class);
 // scrolls, like every other screen's content.
 
 it('draws what stood in the way inside one padded column that scrolls', function (): void {
-    $met = Obstacle::StackDidNotAnswer;
+    $met = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
     expect(WhatMarkupDraws::outline(
         '<x-operator::what-stopped-the-reading :went="$went" sign-in-goes-to="/sign-in" />',

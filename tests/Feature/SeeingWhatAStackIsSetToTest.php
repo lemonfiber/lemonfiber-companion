@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
@@ -162,11 +163,11 @@ it('says a stack holds nothing rather than drawing a blank', function (): void {
 });
 
 it('reports what stood in the way rather than an empty listing', function (): void {
-    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::StackDidNotAnswer));
+    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($screen->answer()->went->cameBack())->toBeFalse()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->answer()->howMany())->toBe(0);
 });
 
@@ -222,7 +223,7 @@ it('offers putting the configuration back on a listing that came back, holding s
 })->with([
     'holding settings' => [AStackThatIsSet::to(whatTheLoftIsSetTo()), true],
     'holding none' => [AStackThatIsSet::toNothing(), true],
-    'not answering' => [AStackThatIsSet::met(Obstacle::StackDidNotAnswer), false],
+    'not answering' => [AStackThatIsSet::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), false],
 ]);
 
 it('shows the sign-in prompt rather than a listing when the session has gone', function (): void {
@@ -257,7 +258,7 @@ it('N3-R13 — lets the session go when the stack refuses the credential', funct
     // operator ends up at a sign-in prompt on a device that still believes it
     // is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
@@ -269,7 +270,7 @@ it('N3-R13 — keeps the session when the machine could not be reached', functio
     // the session here would make somebody sign in again to read settings they
     // were entitled to read all along.
     $keychain = AKeychainInMemory::working();
-    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::DeviceHasNoNetwork), keychain: $keychain);
+    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue()
         ->and($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeTrue();
@@ -445,14 +446,14 @@ it('says a setting holds nothing yet rather than showing a blank', function (): 
 it('reports what stood in the way of a change rather than a silent nothing', function (): void {
     $screen = theSettingsScreen(
         AStackThatIsSet::to(whatTheLoftIsSetTo()),
-        AStackToldToChangeSomething::met(Obstacle::StackDidNotAnswer),
+        AStackToldToChangeSomething::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
 
     $screen->change('LIBRARY_PATH');
     $screen->wouldBe('LIBRARY_PATH');
 
     expect($screen->proposal()?->went->cameBack())->toBeFalse()
-        ->and($screen->proposal()?->went->met)->toBe(Obstacle::StackDidNotAnswer->said());
+        ->and($screen->proposal()?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('puts nothing to the stack when nothing is open', function (): void {
@@ -525,7 +526,7 @@ it('shows a proposal only under the row it is about', function (): void {
 it('shows no proposal under any row when the reading did not come back', function (): void {
     $screen = theSettingsScreen(
         AStackThatIsSet::to(whatTheLoftIsSetTo()),
-        AStackToldToChangeSomething::met(Obstacle::StackDidNotAnswer),
+        AStackToldToChangeSomething::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
 
     $screen->change('LIBRARY_PATH');
@@ -626,7 +627,7 @@ it('N3-R13 — lets the session go when a change is refused on the credential', 
     $keychain = AKeychainInMemory::working();
     $screen = theSettingsScreen(
         AStackThatIsSet::to(whatTheLoftIsSetTo()),
-        AStackToldToChangeSomething::met(Obstacle::CredentialWasRefused),
+        AStackToldToChangeSomething::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
         keychain: $keychain,
     );
 

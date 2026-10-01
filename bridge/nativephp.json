@@ -146,6 +146,12 @@
             "description": "Say whether anything is reachable from this device right now"
         },
         {
+            "name": "Lemonfiber.LocalNetwork.Probe",
+            "android": "app.lemonfiber.native.LocalNetworkFunctions.Probe",
+            "ios": "LocalNetworkFunctions.Probe",
+            "description": "Say whether the platform refuses this app the local network on the way to one address"
+        },
+        {
             "name": "Lemonfiber.Clock.Zone",
             "android": "app.lemonfiber.native.ClockFunctions.Zone",
             "ios": "ClockFunctions.Zone",

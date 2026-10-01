@@ -7,6 +7,7 @@ namespace Modules\Operator\Tests\Internal\ViewModels;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 
@@ -44,11 +45,11 @@ it('a reading that came back has nothing to report and is the screen\'s own to d
 it('N1-R10 — something met carries what happened and what to do about it', function (): void {
     // Both, because one is a fact about the world and the other is advice, and
     // a screen showing only the first leaves an operator with nothing to try.
-    $went = HowTheReadingWent::somethingStopped(Obstacle::StackDidNotAnswer);
+    $went = HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
 
     expect($went->isSignedIn)->toBeTrue()
-        ->and($went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($went->cameBack())->toBeFalse();
 });
 
@@ -58,7 +59,7 @@ it('N3-R13 — a refused credential is a session that ended rather than somethin
     // everybody remembering — and a screen that read it the other way would go
     // on rendering what it had already loaded under a session the stack had
     // stopped recognising.
-    $went = HowTheReadingWent::somethingStopped(Obstacle::CredentialWasRefused);
+    $went = HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::CredentialWasRefused));
 
     expect($went->isSignedIn)->toBeFalse()
         ->and($went->met)->toBe('')

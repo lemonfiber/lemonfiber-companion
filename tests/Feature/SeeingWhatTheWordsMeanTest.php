@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -143,10 +144,10 @@ it('a search narrows what is shown without asking the machine again', function (
 });
 
 it('a glossary that could not be read is not an empty one', function (): void {
-    $answer = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->words)->toBe([])
         ->and($answer->isSearching)->toBeFalse();
 });
@@ -163,7 +164,7 @@ it('a session that has ended asks nothing', function (): void {
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseWordsAreRead()->id()))->toBeFalse();
@@ -181,7 +182,7 @@ it('asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theWordsScreen(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
@@ -336,20 +337,20 @@ it('what one word came to is not said of another word looked for next', function
 });
 
 it('what stood in the way of asking is said, and asking stays offered', function (): void {
-    $explaining = AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::StackDidNotAnswer);
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theWordsScreen($explaining);
     $screen->looking = 'grabbed';
     $screen->answer();
 
     $screen->askTheStack();
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.words.ask', ['word' => 'grabbed']), __('health.ask_again')]);
 });
 
 it('a credential the stack refused while asking for one word lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
     $screen->looking = 'grabbed';
     $screen->answer();
 

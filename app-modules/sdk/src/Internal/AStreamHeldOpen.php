@@ -25,6 +25,15 @@ final readonly class AStreamHeldOpen
     ) {}
 
     /**
+     * The identifier of the last event this stream carried, which a stream
+     * opened in its place resumes after; none where no event carried one.
+     */
+    public function leftOffAt(): ?string
+    {
+        return $this->parser->lastEventId();
+    }
+
+    /**
      * Everything that has arrived, up to the first read that found nothing.
      *
      * A chunk is taken and the reader moved on before the chunk is looked at,

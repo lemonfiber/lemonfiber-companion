@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\SentenceSaysNothing;
@@ -63,14 +62,14 @@ final readonly class TheirOwn implements Owing
             return WhatTheyAreOwed::told(Tellings::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyAreOwed::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing $why) {
             // {@see SentenceSaysNothing} is in this list rather than guarded
             // against above, so one type decides what a blank sentence means
             // and this one decides what an unreadable answer means to whoever
             // is looking at it. A stack that sent a blank line among real ones
             // sent something this app cannot show, which is the same to a
             // member as an answer that never arrived.
-            return WhatTheyAreOwed::refused(Obstacle::StackDidNotAnswer);
+            return WhatTheyAreOwed::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -108,13 +107,13 @@ final readonly class TheirOwn implements Owing
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyAsked::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt $why) {
             // {@see SentenceSaysNothing} is not in this list, and its absence is
             // the difference between the two readings: no sentence is read here,
             // so there is no blank one to meet. A request row this app cannot
             // show raises {@see HouseholdIsUnreadable} instead, which is already
             // here.
-            return WhatTheyAsked::refused(Obstacle::StackDidNotAnswer);
+            return WhatTheyAsked::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

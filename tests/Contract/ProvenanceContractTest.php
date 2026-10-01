@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ImageDigest;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Provenance;
@@ -152,7 +153,7 @@ function everythingTheOriginsSay(Provenance $provenance): string
 
             return new WhatTheOriginsTurnedOutToSay(sprintf('origins: %s', implode(' | ', $rows)));
         },
-        met: static fn(Obstacle $why): WhatTheOriginsTurnedOutToSay => new WhatTheOriginsTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheOriginsTurnedOutToSay => new WhatTheOriginsTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -178,14 +179,14 @@ it('a stack declaring nothing answers with no origins, not an obstacle', functio
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhereItComesFrom($answered, $why) as $which => $make) {
-            expect(everythingTheOriginsSay($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheOriginsSay($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -196,7 +197,7 @@ it('N11-R7 — origins this app cannot read are an obstacle, not a shorter list'
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackNamingItsOriginsSends('  ')))]);
 
-    expect(everythingTheOriginsSay(new Archivists(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheOriginsSay(new Archivists(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

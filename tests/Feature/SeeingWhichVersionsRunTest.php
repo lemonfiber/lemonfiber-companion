@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AGroupOfChanges;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheNotesStand;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
@@ -156,10 +157,10 @@ it('offers nothing but asking again', function (): void {
 });
 
 it('a stack that could not be asked names no version', function (): void {
-    $answer = theVersionsScreen(AStackThatNamesItsVersions::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theVersionsScreen(AStackThatNamesItsVersions::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->said())
         ->and([$answer->lemonfiber, $answer->stack, $answer->engine, $answer->release, $answer->notesSaid, $answer->noticedSaid])
         ->toBe(['', '', '', '', '', ''])
         ->and($answer->changes)->toBe([]);
@@ -176,7 +177,7 @@ it('a session that has ended asks nothing', function (): void {
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theVersionsScreen(AStackThatNamesItsVersions::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theVersionsScreen(AStackThatNamesItsVersions::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseVersionsAreRead()->id()))->toBeFalse();

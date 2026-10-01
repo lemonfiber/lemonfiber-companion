@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\InvitationSaysNothing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
@@ -46,12 +47,12 @@ it('takes the arm it was made on', function (): void {
     $members = TheMembers::of(AMember::joined('anna'));
     $found = WhatWasFoundOfTheMembers::found($members)->either(
         found: static fn(TheMembers $held): WhoWasFoundIn => new WhoWasFoundIn($held === $members ? 'found' : 'other'),
-        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->value),
+        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->kind()->value),
     )->said;
-    $met = WhatWasFoundOfTheMembers::met(Obstacle::StackDidNotAnswer)->either(
+    $met = WhatWasFoundOfTheMembers::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->either(
         found: static fn(TheMembers $held): WhoWasFoundIn => new WhoWasFoundIn(sprintf('%d found', count($held))),
-        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->value),
+        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->kind()->value),
     )->said;
 
-    expect([$found, $met])->toBe(['found', Obstacle::StackDidNotAnswer->value]);
+    expect([$found, $met])->toBe(['found', KindOfObstacle::StackDidNotAnswer->value]);
 });

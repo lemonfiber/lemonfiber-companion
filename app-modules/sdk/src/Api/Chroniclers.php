@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -41,8 +40,8 @@ final readonly class Chroniclers implements ReadingVersions
             return WhatWasFoundOfTheVersions::found(TheVersions::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheVersions::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ChangelogIsUnreadable|VersionsAreUnreadable|VersionIsBlank) {
-            return WhatWasFoundOfTheVersions::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ChangelogIsUnreadable|VersionsAreUnreadable|VersionIsBlank $why) {
+            return WhatWasFoundOfTheVersions::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

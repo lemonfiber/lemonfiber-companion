@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -145,7 +146,7 @@ function everythingStuckIn(Stalling $stalling): string
             return new WhatTheStallTurnedOutToSay(implode(' | ', $rows));
         },
         met: static fn(Obstacle $why): WhatTheStallTurnedOutToSay
-            => new WhatTheStallTurnedOutToSay($why->value),
+            => new WhatTheStallTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -156,7 +157,7 @@ function howMuchOfTheStallWasShown(Stalling $stalling): string
         these: static fn(Stalled $stalled): WhatTheStallTurnedOutToSay
             => new WhatTheStallTurnedOutToSay($stalled->howMuchIsShown()->value),
         met: static fn(Obstacle $why): WhatTheStallTurnedOutToSay
-            => new WhatTheStallTurnedOutToSay($why->value),
+            => new WhatTheStallTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -183,14 +184,14 @@ it('says whether the listing is the whole of what the stack holds', function ():
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhatStopped($answered, $why) as $which => $make) {
-            expect(everythingStuckIn($make()))->toBe($why->value, $which);
+            expect(everythingStuckIn($make()))->toBe($why->kind()->value, $which);
         }
     }
 });
@@ -211,8 +212,8 @@ it('an answer this app cannot read is a stack that did not answer', function ():
         ]),
     );
 
-    foreach (everyWayOfAskingWhatStopped($answered, Obstacle::StackDidNotAnswer) as $which => $make) {
-        expect(everythingStuckIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfAskingWhatStopped($answered, Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        expect(everythingStuckIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 

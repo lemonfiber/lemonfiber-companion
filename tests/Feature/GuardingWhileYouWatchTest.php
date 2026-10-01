@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -376,17 +377,17 @@ it('lets go through nothing when the session was let go before the screen was le
 });
 
 it('a guard the stack could not be asked to start says what stood in the way, and offers asking again', function (): void {
-    $screen = aGuardAgreedTo(AStackThatGuards::met(Obstacle::StackDidNotAnswer));
+    $screen = aGuardAgreedTo(AStackThatGuards::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->lastGuard()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($drawn->said())->toContain(aLineOfTheGuard(Obstacle::StackDidNotAnswer->said()))
+    expect($screen->lastGuard()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($drawn->said())->toContain(aLineOfTheGuard(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(aLineOfTheGuard('health.ask_again'));
 });
 
 it('a credential the stack refused while guarding signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::met(Obstacle::CredentialWasRefused)), $keychain);
+    $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), $keychain);
 
     expect(theGuardAskedAfter($screen)->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackAGuardWatches()->id()))->toBeFalse();
@@ -430,7 +431,7 @@ it('names forms for another guard once the last has ended, and not while one gua
 });
 
 it('asking again asks for the forms and for where the guard stands', function (): void {
-    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::met(Obstacle::StackDidNotAnswer), HowTheGuardIsGoing::stillGuarding());
+    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), HowTheGuardIsGoing::stillGuarding());
     $screen = aGuardAgreedTo($guarding);
     theGuardAskedAfter($screen);
 
@@ -441,10 +442,10 @@ it('asking again asks for the forms and for where the guard stands', function ()
 });
 
 it('forms that could not be listed offer no guard, only asking again', function (): void {
-    $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
+    $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), AStackThatSupervises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(aLineOfTheGuard('stacks.guard.name', ['form' => 'library']))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineOfTheGuard(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineOfTheGuard(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
 it('a stack that declares no forms says so', function (): void {

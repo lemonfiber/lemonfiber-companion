@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -56,7 +57,7 @@ function aTabToChooseFrom(?AKeychainInMemory $keychain = null, ?StandingsInMemor
     $attic = theAtticToChooseFrom();
     $sessions = $keychain ?? AKeychainInMemory::working();
     $screen = new HowCurrentThisStackIs(
-        AStackThatKeepsCurrent::met(Obstacle::DeviceHasNoNetwork),
+        AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $sessions,
         AroundThePhone::holding(StacksInMemory::holding($attic, theBarnToChooseFrom()), $standings, $sessions),
     );

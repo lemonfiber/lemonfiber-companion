@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -201,13 +202,13 @@ it('a quiet week is an answer, and is not the same as a stack that did not answe
     // for anything*, which is worse than an error: it is a confident wrong
     // answer to the question the operator opened the app with.
     $quiet = theRequestsScreen(AHouseholdThatAsked::wantingNothing());
-    $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
+    $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($quiet->howMany())->toBe(0)
         ->and($quiet->answer()->went->met)->toBe('')
         ->and($unreachable->howMany())->toBe(0)
-        ->and($unreachable->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($unreachable->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy());
+        ->and($unreachable->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($unreachable->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy());
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to reach it', function (): void {
@@ -313,7 +314,7 @@ it('a stack that could not be reached is still a signed-in screen', function ():
     // that answered *signed in* for everything passes a test that only ever
     // sends one of them.
     $answered = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
-    $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
+    $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($answered->answer()->went->isSignedIn)->toBeTrue()
         ->and($unreachable->answer()->went->isSignedIn)->toBeTrue()
@@ -339,7 +340,7 @@ it('refuses a route parameter that is not text', function (): void {
 
 it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
     // The action an obstacle must not take away.
-    $wanting = AHouseholdThatAsked::met(Obstacle::DeviceHasNoNetwork);
+    $wanting = AHouseholdThatAsked::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRequestsScreen($wanting);
 
     $screen->howMany();
@@ -393,7 +394,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // left in the store is resumed on the next frame and refused again.
     $keychain = AKeychainInMemory::working();
     $screen = theRequestsScreen(
-        AHouseholdThatAsked::met(Obstacle::CredentialWasRefused),
+        AHouseholdThatAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
         $keychain,
     );
 
@@ -520,7 +521,7 @@ it('N3-R13 — a credential refused on the decision lets the session go too', fu
     $keychain = AKeychainInMemory::working();
     $wanting = AHouseholdThatAsked::wantingButRefusing(
         aHouseholdMidWeek(),
-        Obstacle::CredentialWasRefused,
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
     );
     $screen = theRequestsScreen($wanting, $keychain);
 

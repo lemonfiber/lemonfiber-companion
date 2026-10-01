@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\InTheConnectionCatalogue;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
@@ -270,18 +271,23 @@ enum HowTheSignInWent: string
     /** What a surface shows for each thing the operator met at the door. */
     public static function met(Obstacle $why): self
     {
-        return match ($why) {
-            Obstacle::CredentialWasRefused => self::CredentialWasRefused,
-            Obstacle::TooManyAttempts => self::TooManyAttempts,
+        return match ($why->kind()) {
+            KindOfObstacle::CredentialWasRefused => self::CredentialWasRefused,
+            KindOfObstacle::TooManyAttempts => self::TooManyAttempts,
             // Its own state rather than folded in with a stack that
             // did not answer. They look alike at the socket and are opposite
             // everywhere that matters: one is a machine to go and check, the
             // other is a switch on the phone the operator is holding.
-            Obstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
-            Obstacle::StackIsNotTheOnePaired => self::TheMachineIsNotTheOnePaired,
-            Obstacle::AddressIsNotTheStacks => self::TheAddressIsNotTheStacks,
-            Obstacle::StackDidNotAnswer,
-            Obstacle::DeviceHasNoNetwork,
+            KindOfObstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
+            KindOfObstacle::StackIsNotTheOnePaired => self::TheMachineIsNotTheOnePaired,
+            KindOfObstacle::AddressIsNotTheStacks => self::TheAddressIsNotTheStacks,
+            KindOfObstacle::StackDidNotAnswer,
+            KindOfObstacle::DeviceHasNoNetwork,
+            // The door answers neither: it is asked before any version is
+            // read past it and before any work can hold the stack, so each
+            // reaching here is a door that did not answer in a way this app reads.
+            KindOfObstacle::VersionsDisagree,
+            KindOfObstacle::StackIsBusy,
             // Not a state of its own, because this door cannot answer with it.
             // Entitlement is decided on what an account asks for after it is
             // admitted, and `Admissions` reads every other refusal from the
@@ -289,11 +295,11 @@ enum HowTheSignInWent: string
             // an account by name is the day a sign-in state is owed for it —
             // this enum has none that would be true of it, and inventing one
             // now would be a screen nobody can reach.
-            Obstacle::NotForThisAccount,
+            KindOfObstacle::NotForThisAccount,
             // The door is the one place that never asks the media server about an
             // account it has not yet admitted, so this cannot arrive here either;
             // the day it does, it is owed a state of its own rather than this one.
-            Obstacle::MediaServerDidNotAnswer => self::StackDidNotAnswer,
+            KindOfObstacle::MediaServerDidNotAnswer => self::StackDidNotAnswer,
         };
     }
 

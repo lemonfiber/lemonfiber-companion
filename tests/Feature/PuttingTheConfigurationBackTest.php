@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheResetIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -369,13 +370,13 @@ it('offers nothing to agree to where the stack could not be asked, and lets go o
 
     expect($resetting->agreed())->toBe([]);
 })->with([
-    'not answering' => [Obstacle::StackDidNotAnswer, true],
-    'a refused session' => [Obstacle::CredentialWasRefused, false],
+    'not answering' => [Obstacle::of(KindOfObstacle::StackDidNotAnswer), true],
+    'a refused session' => [Obstacle::of(KindOfObstacle::CredentialWasRefused), false],
 ]);
 
 it('lets go of a session refused while asking after the preview', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = thePuttingItAllBackScreen(AStackThatResets::previewing(HowTheResetIsGoing::met(Obstacle::CredentialWasRefused), HowTheResetIsGoing::stillRunning()), $keychain);
+    $screen = thePuttingItAllBackScreen(AStackThatResets::previewing(HowTheResetIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), HowTheResetIsGoing::stillRunning()), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseConfigurationGoesBack()->id()))->toBeFalse();
@@ -513,14 +514,14 @@ it('asks after the same yes when asked again while it runs', function (): void {
 });
 
 it('says what stood in the way of a yes the stack refused, and asks for the preview afresh', function (): void {
-    $resetting = AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), Obstacle::StackDidNotAnswer);
+    $resetting = AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePuttingItAllBackScreen($resetting);
     $screen->answer();
     $screen->agree();
 
-    expect(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: true, changed: ['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+    expect(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: true, changed: ['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($screen->isWorking())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -533,8 +534,8 @@ it('says what stood in the way of a yes the stack refused, and asks for the prev
 it('lets go of a session refused while putting back or asking after', function (bool $whileAsking): void {
     $keychain = AKeychainInMemory::working();
     $resetting = $whileAsking
-        ? aStackPreviewingTheReset(HowTheResetIsGoing::met(Obstacle::CredentialWasRefused))
-        : AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), Obstacle::CredentialWasRefused);
+        ? aStackPreviewingTheReset(HowTheResetIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)))
+        : AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = thePuttingItAllBackScreen($resetting, $keychain);
     $screen->answer();
     $screen->agree();

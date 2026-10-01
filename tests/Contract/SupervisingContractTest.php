@@ -17,6 +17,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -328,7 +329,7 @@ function everythingRunningIn(Supervising $supervising): string
             return new WhatSupervisingTurnedOutToSay(implode(' | ', $rows));
         },
         met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->value),
+            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -339,7 +340,7 @@ function whatTheStackAmountsTo(Supervising $supervising): string
         these: static fn(Daemons $daemons): WhatSupervisingTurnedOutToSay
             => new WhatSupervisingTurnedOutToSay($daemons->running()->value),
         met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->value),
+            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -350,7 +351,7 @@ function whatCameOfSaying(Supervising $supervising, AgreedTo $agreed): string
         started: static fn(Job $job): WhatSupervisingTurnedOutToSay
             => new WhatSupervisingTurnedOutToSay($job->shown()),
         met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->value),
+            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -394,7 +395,7 @@ function theFormsIn(Supervising $supervising): string
             return new WhatSupervisingTurnedOutToSay(sprintf('forms: %s', implode(', ', $forms)));
         },
         met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
-            => new WhatSupervisingTurnedOutToSay($why->value),
+            => new WhatSupervisingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -423,8 +424,8 @@ it('N18-R9 — forms that could not be read are a stack that did not answer, not
     ];
 
     foreach ($table as $case => $forms) {
-        foreach (everyWayOfSupervising([$running, $forms], Obstacle::StackDidNotAnswer) as $which => $make) {
-            expect(theFormsIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
+        foreach (everyWayOfSupervising([$running, $forms], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+            expect(theFormsIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
         }
     }
 });
@@ -452,14 +453,14 @@ it('N2-R7 — takes the same verb about a whole form', function (): void {
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfSupervising([$answered], $why) as $which => $make) {
-            expect(everythingRunningIn($make()))->toBe($why->value, $which);
+            expect(everythingRunningIn($make()))->toBe($why->kind()->value, $which);
         }
     }
 });
@@ -472,13 +473,13 @@ it('N1-R10 — says the same about a verb it could not deliver', function (): vo
     $agreed = AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr'));
 
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfSupervising([$answered], $why) as $which => $make) {
-            expect(whatCameOfSaying($make(), $agreed))->toBe($why->value, $which);
+            expect(whatCameOfSaying($make(), $agreed))->toBe($why->kind()->value, $which);
         }
     }
 });
@@ -519,8 +520,8 @@ it('an answer this app cannot read is a stack that did not answer', function ():
 
     $declared = MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends()));
 
-    foreach (everyWayOfSupervising([$answered, $declared], Obstacle::StackDidNotAnswer) as $which => $make) {
-        expect(everythingRunningIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfSupervising([$answered, $declared], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        expect(everythingRunningIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 
@@ -536,8 +537,8 @@ it('an acknowledgement with no name in it is a stack that did not answer', funct
         (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'up']]),
     );
 
-    foreach (everyWayOfSupervising([$answered], Obstacle::StackDidNotAnswer) as $which => $make) {
-        expect(whatCameOfSaying($make(), $agreed))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        expect(whatCameOfSaying($make(), $agreed))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 
@@ -717,7 +718,7 @@ function whatBecameOfTheVerb(Supervising $supervising): string
         stillRunning: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('still running'),
         done: static fn(WhatTheVerbCameTo $report): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay(everyPartOfWhatTheVerbCameTo($report)),
         ended: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('ended'),
-        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -753,14 +754,14 @@ it('a verb the stack no longer has a job for is ended, not unreachable and not r
 
 it('asking after a verb tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfFollowingAVerb($answered, HowTheVerbIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfTheVerb($build()))->toBe($why->value, $which);
+            expect(whatBecameOfTheVerb($build()))->toBe($why->kind()->value, $which);
         }
     }
 });
@@ -769,7 +770,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfARestart($changed)))]);
 
-    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 })->with([
     'no word on whether it was rehearsed' => [['rehearsed' => 'no']],
     'a condition this app has no word for' => [['condition' => 'fine']],
@@ -792,7 +793,7 @@ it('the fake follows a verb as still running until a test says what it came to',
     // sent is running. A stack that could not be reached cannot be asked
     // after either, which is the obstacle every half of it meets.
     expect(whatBecameOfTheVerb(AStackThatSupervises::with(theSameRunning())))->toBe('still running')
-        ->and(whatBecameOfTheVerb(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork)))->toBe(Obstacle::DeviceHasNoNetwork->value);
+        ->and(whatBecameOfTheVerb(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))))->toEqual(KindOfObstacle::DeviceHasNoNetwork->value);
 });
 
 it('stands in for a stack with a report the contract would accept', function (): void {

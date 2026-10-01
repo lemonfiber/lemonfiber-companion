@@ -11,6 +11,7 @@ use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Kernel\Api\AFormatInForce;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\ThePresetsInForce;
@@ -80,12 +81,12 @@ it('tells a choice answered with what is in force from one for music and from wh
     $arm = static fn(WhatTheChoiceCameTo $came): string => $came->either(
         inForce: static fn(TheQualityChosen $read): WhichArmTheChoiceTook => new WhichArmTheChoiceTook($read->became()->value),
         forMusic: static fn(AFormatChoiceMade $read): WhichArmTheChoiceTook => new WhichArmTheChoiceTook(sprintf('%s %s %s', $read->format()->format(), $read->became()->value, $read->applied()->saidOnTheScreen())),
-        met: static fn(Obstacle $why): WhichArmTheChoiceTook => new WhichArmTheChoiceTook($why->value),
+        met: static fn(Obstacle $why): WhichArmTheChoiceTook => new WhichArmTheChoiceTook($why->kind()->value),
     )->said;
 
     expect($arm(WhatTheChoiceCameTo::inForce($chosen)))->toBe('recorded')
         ->and($arm(WhatTheChoiceCameTo::forMusic($made)))->toBe('Lossless rehearsed quality.asked.not-asked')
-        ->and($arm(WhatTheChoiceCameTo::met(Obstacle::NotForThisAccount)))->toBe('not_for_this_account');
+        ->and($arm(WhatTheChoiceCameTo::met(Obstacle::of(KindOfObstacle::NotForThisAccount))))->toBe('not_for_this_account');
 });
 
 it('asks for each act about quality by lemonfiber\'s name for it', function (): void {

@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -42,8 +41,8 @@ final readonly class Inspectors implements SelfChecking
             return WhatWasFoundOfItself::found(WhereThisCopyIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfItself::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SelfUpdateIsUnreadable) {
-            return WhatWasFoundOfItself::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SelfUpdateIsUnreadable $why) {
+            return WhatWasFoundOfItself::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

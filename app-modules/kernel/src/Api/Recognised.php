@@ -46,7 +46,7 @@ final readonly class Recognised
      */
     public static function asAStranger(): self
     {
-        return new self(Obstacle::StackIsNotTheOnePaired);
+        return new self(Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired));
     }
 
     /**

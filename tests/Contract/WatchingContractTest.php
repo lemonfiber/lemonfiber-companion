@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -156,7 +157,7 @@ function whatAShelfSaid(Watching $watching): string
             return new WhatAShelfCameAwayWith(sprintf('out-of-reach:%s', implode('|', $lines)));
         },
         refused: static fn(Obstacle $why): WhatAShelfCameAwayWith
-            => new WhatAShelfCameAwayWith(sprintf('refused:%s', $why->value)),
+            => new WhatAShelfCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -204,16 +205,16 @@ it('N3-R15 — tells a library that could not be read from a shelf with nothing 
 
 it('N1-R10 — says the same about a reading it could not get', function (): void {
     $refusals = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         // A shelf whose rows this side cannot read is the same thing to the
         // member as one that never arrived.
         [
             MockResponse::make((string) json_encode(whatAStackSendsAboutAShelf([
                 ['id' => 'a1', 'title' => 'A film', 'medium' => 'hologram'],
             ]))),
-            Obstacle::StackDidNotAnswer,
+            Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         ],
         // A blank line among real ones. One type decides what an empty
         // sentence means and this one decides what an unreadable answer means
@@ -224,13 +225,13 @@ it('N1-R10 — says the same about a reading it could not get', function (): voi
             MockResponse::make((string) json_encode(
                 whatAStackSendsAboutAShelf([], available: false, findings: ['   ']),
             )),
-            Obstacle::StackDidNotAnswer,
+            Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         ],
     ];
 
     foreach ($refusals as [$answered, $why]) {
         foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met($why)) as $which => $build) {
-            expect(whatAShelfSaid($build()))->toBe(sprintf('refused:%s', $why->value), $which);
+            expect(whatAShelfSaid($build()))->toBe(sprintf('refused:%s', $why->kind()->value), $which);
         }
     }
 });
@@ -253,8 +254,8 @@ it('N3-R14 — the operator has no shelf, and that is an answer', function (): v
         outOfReach: static fn(): WhatAShelfCameAwayWith
             => new WhatAShelfCameAwayWith('out-of-reach'),
         refused: static fn(Obstacle $why): WhatAShelfCameAwayWith
-            => new WhatAShelfCameAwayWith($why->value),
-    )->said)->toBe(Obstacle::NotForThisAccount->value);
+            => new WhatAShelfCameAwayWith($why->kind()->value),
+    )->said)->toEqual(KindOfObstacle::NotForThisAccount->value);
 });
 
 it('G12 — the payload this suite stands a shelf in with is one a stack would send', function (): void {

@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowTheHandoverWent;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -194,7 +195,7 @@ function everythingKeptBy(Hosting $hosting): string
             return new WhatTheHostingTurnedOutToSay(implode(' | ', $rows));
         },
         met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->value),
+            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -205,7 +206,7 @@ function whatKeepsThemRunningIn(Hosting $hosting): string
         keeps: static fn(WhatRunsUnattended $running): WhatTheHostingTurnedOutToSay
             => new WhatTheHostingTurnedOutToSay($running->whatKeepsThem()->value),
         met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->value),
+            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -221,7 +222,7 @@ function whatToDoInsteadIn(Hosting $hosting): string
                     => new WhatTheHostingTurnedOutToSay('the machine does this itself'),
             ),
         met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->value),
+            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -239,7 +240,7 @@ function whatDidNotComeBackIn(Hosting $hosting): string
             return new WhatTheHostingTurnedOutToSay(implode(' | ', $names));
         },
         met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay
-            => new WhatTheHostingTurnedOutToSay($why->value),
+            => new WhatTheHostingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -285,14 +286,14 @@ it('N16-R6 — names what did not come back, and the orphan is in it', function 
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhatIsKept($answered, $why) as $which => $make) {
-            expect(everythingKeptBy($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingKeptBy($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -306,7 +307,7 @@ it('N16-R13 — a listing this app cannot read is an obstacle, not a shorter lis
         (string) json_encode(whatAHostingMachineSends('a-word-this-app-does-not-read')),
     )]);
 
-    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('N16-R5 — an unsupported machine with nothing to do instead is an obstacle', function (): void {
@@ -318,7 +319,7 @@ it('N16-R5 — an unsupported machine with nothing to do instead is an obstacle'
         (string) json_encode(whatAnUnsupportedMachineSends(saysWhatToDoInstead: false)),
     )]);
 
-    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a machine with a payload the contract would accept', function (): void {
@@ -465,7 +466,7 @@ function whatCameOfHandingOver(Hosting $hosting, HandingOver $doing = HandingOve
             count($did->touched()) === 0 ? 'nothing' : implode(', ', iterator_to_array($did->touched(), preserve_keys: false)),
         )),
         refused: static fn(string $said): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay(sprintf('refused: %s', $said)),
-        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheHostingTurnedOutToSay => new WhatTheHostingTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -584,14 +585,14 @@ it('carries the stack\'s own words where it answered and would not', function ()
 
 it('tells a refused session, and a stack that said nothing, from a refusal in words', function (): void {
     $table = [
-        [MockResponse::make('the session is not one', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('the session is not one', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfHandingOver($answered, HowTheHandoverWent::met($why)) as $which => $make) {
-            expect(whatCameOfHandingOver($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(whatCameOfHandingOver($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -629,13 +630,13 @@ it('an account of an act this app cannot read is a stack that did not answer', f
     ];
 
     foreach ($spoiled as $which => $body) {
-        expect(whatTheAdapterMakesOf($body))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+        expect(whatTheAdapterMakesOf($body))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 
 it('a reading with no account of an act is not taken for one', function (): void {
     // The listing on its own answers what is hosted, not what was done.
-    expect(whatTheAdapterMakesOf(whatAHostingMachineSends()))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(whatTheAdapterMakesOf(whatAHostingMachineSends()))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a machine answering a handing over with payloads the contract would accept', function (): void {

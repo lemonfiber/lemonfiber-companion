@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\NamedOnTheManifest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TakingItOff;
@@ -56,7 +57,7 @@ function theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall $became): string
         answered: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs(sprintf('answered %s', $uninstall->manifest()->agreement())),
         ended: static fn(): WhereItGotAs => new WhereItGotAs('ended'),
         refused: static fn(string $because): WhereItGotAs => new WhereItGotAs(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -87,22 +88,22 @@ it('answers the work on the arm for where it is', function (): void {
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::answered(aReadingOfStopping())))->toBe('answered stop-0')
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::ended()))->toBe('ended')
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::refused('No')))->toBe('refused No')
-        ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met %s', Obstacle::StackDidNotAnswer->value))
+        ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value))
         ->and(fn(): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::refused(' '))->toThrow(UninstallSaysNothing::class, 'its `reason` blank');
 });
 
 it('answers a reading on the arm for what it found', function (): void {
     $found = WhatWasFoundOfTheUninstall::found(aReadingOfStopping())->either(
         found: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs($uninstall->manifest()->agreement()),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->value),
+        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->kind()->value),
     );
-    $met = WhatWasFoundOfTheUninstall::met(Obstacle::CredentialWasRefused)->either(
+    $met = WhatWasFoundOfTheUninstall::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))->either(
         found: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs($uninstall->manifest()->agreement()),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->value),
+        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->kind()->value),
     );
 
     expect($found->said)->toBe('stop-0')
-        ->and($met->said)->toBe(Obstacle::CredentialWasRefused->value);
+        ->and($met->said)->toEqual(KindOfObstacle::CredentialWasRefused->value);
 });
 
 it('says which removal takes what admits this app, and which takes the library', function (): void {

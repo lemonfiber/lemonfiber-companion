@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -47,8 +46,8 @@ final readonly class Lookouts implements Outgoing
             return WhatWasFoundLeaving::leaving(WhatLeaves::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundLeaving::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OutboundIsUnreadable) {
-            return WhatWasFoundLeaving::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OutboundIsUnreadable $why) {
+            return WhatWasFoundLeaving::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

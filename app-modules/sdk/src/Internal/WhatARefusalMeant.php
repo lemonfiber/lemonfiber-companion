@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 
@@ -85,6 +86,16 @@ final readonly class WhatARefusalMeant
      */
     private const int ACCOUNT_MAY_NOT_ASK = 403;
 
+    /**
+     * The status a stack answers with while other work holds it.
+     *
+     * The stack takes one piece of work at a time and refuses the next while
+     * one is running. Nothing was changed, and the same request succeeds once
+     * that work has finished, which is a remedy of its own and none of the
+     * others'.
+     */
+    private const int HELD_BY_OTHER_WORK = 409;
+
     /** The first status that is a refusal at all. */
     private const int A_REFUSAL = 400;
 
@@ -101,7 +112,7 @@ final readonly class WhatARefusalMeant
      */
     public static function inItsOwnWords(RequestFailed $why): ?string
     {
-        if (self::obstacle($why) !== Obstacle::StackDidNotAnswer) {
+        if (! self::obstacle($why)->is(KindOfObstacle::StackDidNotAnswer)) {
             return null;
         }
 
@@ -128,7 +139,7 @@ final readonly class WhatARefusalMeant
         $said = $why instanceof RequestFailed ? $why->said() : null;
         $problem = $why instanceof RequestFailed ? $why->refusal() : null;
 
-        return $obstacle !== Obstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
+        return $obstacle->kind() !== KindOfObstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
             ? $met($obstacle)
             : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
     }
@@ -136,7 +147,7 @@ final readonly class WhatARefusalMeant
     public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
     {
         if ($why instanceof CertificateWasRefused) {
-            return Obstacle::StackIsNotTheOnePaired;
+            return Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired);
         }
 
         $code = $why->code();
@@ -146,10 +157,10 @@ final readonly class WhatARefusalMeant
         }
 
         return match ($code) {
-            RefusalCode::NotAdmitted => Obstacle::CredentialWasRefused,
-            RefusalCode::NotYours => Obstacle::NotForThisAccount,
-            RefusalCode::Unconfirmed => Obstacle::MediaServerDidNotAnswer,
-            RefusalCode::Elsewhere => Obstacle::AddressIsNotTheStacks,
+            RefusalCode::NotAdmitted => Obstacle::of(KindOfObstacle::CredentialWasRefused),
+            RefusalCode::NotYours => Obstacle::of(KindOfObstacle::NotForThisAccount),
+            RefusalCode::Unconfirmed => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
+            RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
             // The door's own refusals, which `Admissions` reads where the
             // password is offered. One reaching here is about what was offered
             // at the door, and it ends no session.
@@ -185,7 +196,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::NotALineCount,
             RefusalCode::NotAChoice,
             RefusalCode::Unrenderable,
-            RefusalCode::NoJobName => Obstacle::StackDidNotAnswer,
+            RefusalCode::NoJobName => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }
 
@@ -193,9 +204,10 @@ final readonly class WhatARefusalMeant
     private static function byStatus(int $status): Obstacle
     {
         return match ($status) {
-            self::SESSION_IS_NOT_ACCEPTED => Obstacle::CredentialWasRefused,
-            self::ACCOUNT_MAY_NOT_ASK => Obstacle::NotForThisAccount,
-            default => Obstacle::StackDidNotAnswer,
+            self::SESSION_IS_NOT_ACCEPTED => Obstacle::of(KindOfObstacle::CredentialWasRefused),
+            self::ACCOUNT_MAY_NOT_ASK => Obstacle::of(KindOfObstacle::NotForThisAccount),
+            self::HELD_BY_OTHER_WORK => Obstacle::of(KindOfObstacle::StackIsBusy),
+            default => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }
 

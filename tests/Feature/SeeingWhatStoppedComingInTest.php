@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -169,15 +170,15 @@ it('nothing stuck is an answer, and not the same one as a stack that would not s
 });
 
 it('N1-R10 — a stack that could not be asked says which of the six it met', function (): void {
-    $screen = theStalledScreen(AStackThatStalled::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theStalledScreen(AStackThatStalled::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
 
     expect($screen->howMany())->toBe(0)
         // Meeting an obstacle is not losing the session either: the device
         // asked and was answered. Reporting otherwise would hide which of the
         // six was met behind a sign-in screen for a session that is fine.
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->answer()->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be complete about, so the line is not rendered at all
         // rather than claiming a listing that was never read.
         ->and($screen->answer()->shownSaid)->toBe('');
@@ -263,7 +264,7 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     // The action an obstacle must not take away. A stack that was asleep when
     // the screen opened may be awake now, and leaving and returning is what
     // the cadence rule refuses by name.
-    $stalling = AStackThatStalled::met(Obstacle::DeviceHasNoNetwork);
+    $stalling = AStackThatStalled::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theStalledScreen($stalling);
 
     $screen->howMany();
@@ -278,7 +279,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // make them itself: a fold cannot forget anything, and a session left in
     // the store is resumed on the next frame and refused again.
     $keychain = AKeychainInMemory::working();
-    $screen = theStalledScreen(AStackThatStalled::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theStalledScreen(AStackThatStalled::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeTrue();
 
@@ -382,8 +383,8 @@ it('draws a queue it could not ask as the obstacle, and never as nothing stopped
         ->and($drawn)->not->toContain(__('health.nothing_stopped'))
         ->and($drawn)->not->toContain(__('health.nothing_stopped_action'));
 })->with([
-    'no network' => [Obstacle::DeviceHasNoNetwork],
-    'a stack that did not answer' => [Obstacle::StackDidNotAnswer],
+    'no network' => [Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)],
+    'a stack that did not answer' => [Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('offers asking again, following an item and asking what an unexplained stage means, and nothing that acts on the queue or sets it up', function (): void {

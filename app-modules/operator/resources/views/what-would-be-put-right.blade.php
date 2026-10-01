@@ -10,8 +10,8 @@
         {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->offer()->went->met) }}</x-design::strong>
-            <x-design::body>{{ __($this->offer()->went->remedy) }}</x-design::body>
+            <x-design::strong>{{ __($this->offer()->went->met, $this->offer()->went->filling()) }}</x-design::strong>
+            <x-design::body>{{ __($this->offer()->went->remedy, $this->offer()->went->filling()) }}</x-design::body>
         </x-design::notice>
 
         {{-- The action stays on the screen and the failure is reported
@@ -53,8 +53,8 @@
             <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
         @elseif (! $this->done()->went->cameBack())
             <x-design::notice tone="unknown">
-                <x-design::strong>{{ __($this->done()->went->met) }}</x-design::strong>
-                <x-design::body>{{ __($this->done()->went->remedy) }}</x-design::body>
+                <x-design::strong>{{ __($this->done()->went->met, $this->done()->went->filling()) }}</x-design::strong>
+                <x-design::body>{{ __($this->done()->went->remedy, $this->done()->went->filling()) }}</x-design::body>
             </x-design::notice>
 
             {{-- The sharper half of it: this obstacle stands

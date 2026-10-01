@@ -87,6 +87,7 @@ sourceSets {
             "ScanningActivity.kt",
             "StorageFunctions.kt",
             "LinkFunctions.kt",
+            "LocalNetworkFunctions.kt",
             "LemonfiberInit.kt",
             "HandoverFunctions.kt",
             "ClockFunctions.kt",

@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -203,7 +204,7 @@ function whatCameOfDeciding(Wanting $wanting, Decided $decided): string
         started: static fn(Job $job): WhatTheHouseholdTurnedOutToSay
             => new WhatTheHouseholdTurnedOutToSay($job->shown()),
         met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->value),
+            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -228,15 +229,15 @@ it('D7-R7 — takes a refusal, which carries the sentence it owes', function ():
 
 it('N1-R10 — says the same about a decision it could not deliver', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $met]) {
         foreach (everyWayOfAskingTheHousehold($answered, $met) as $which => $make) {
             expect(whatCameOfDeciding($make(), Decided::toApprove(RequestId::numbered(41))))
-                ->toBe($met->value, $which);
+                ->toBe($met->kind()->value, $which);
         }
     }
 });
@@ -304,7 +305,7 @@ function whatTheHouseholdSaid(Wanting $wanting): string
         these: static fn(Requested $wanted): WhatTheHouseholdTurnedOutToSay
             => new WhatTheHouseholdTurnedOutToSay(sprintf('%d of which %d waiting', $wanted->count(), $wanted->waiting())),
         met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->value),
+            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -343,7 +344,7 @@ function everyRequestIn(Wanting $wanting): string
             return new WhatTheHouseholdTurnedOutToSay(implode(' | ', $rows));
         },
         met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
-            => new WhatTheHouseholdTurnedOutToSay($why->value),
+            => new WhatTheHouseholdTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -367,14 +368,14 @@ it('D7-R7 — carries who asked, onto every row, in the order the stack listed t
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingTheHousehold($answered, $why) as $which => $make) {
-            expect(whatTheHouseholdSaid($make()))->toBe($why->value, sprintf('%s, %s', $which, $why->value));
+            expect(whatTheHouseholdSaid($make()))->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });

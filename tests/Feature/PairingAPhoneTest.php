@@ -8,6 +8,7 @@ use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -207,12 +208,12 @@ it('goes back to offering a code where the stack has no outcome for the one aske
 
 it('says what stood in the way, and lets go of a session the stack refused', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = thePairingScreen(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met(Obstacle::StackDidNotAnswer)), keychain: $keychain);
+    $screen = thePairingScreen(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), keychain: $keychain);
     $screen->make();
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
-    $refusing = thePairingScreen(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met(Obstacle::CredentialWasRefused)), keychain: $keychain);
+    $refusing = thePairingScreen(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
     $refusing->make();
 
     expect($keychain->isHolding(theStackAPhoneIsPairedWith()->id()))->toBeFalse();

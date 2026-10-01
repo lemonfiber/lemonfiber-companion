@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\KindOfObstacle;
 use Tests\Support\Catalogue;
 
 // Three different things, each with its own remedy.
@@ -12,7 +12,7 @@ use Tests\Support\Catalogue;
 // the same sentence satisfy every rule in the repository and defeat the
 // requirement entirely, because what the operator meets is the sentence.
 //
-// Written over `Obstacle::cases()` rather than over a list of keys, so a fourth
+// Written over `KindOfObstacle::cases()` rather than over a list of keys, so a fourth
 // case fails here until somebody writes what it says — in both languages.
 //
 // It sits outside the module because it reads `lang/`, which a capability may
@@ -34,7 +34,7 @@ it('N1-R10 — every obstacle has a sentence and a remedy, in every language', f
     foreach (Catalogue::locales() as $locale) {
         $catalogue = Catalogue::of($locale, 'connection');
 
-        foreach (Obstacle::cases() as $obstacle) {
+        foreach (KindOfObstacle::cases() as $obstacle) {
             foreach (['connection.%s', 'connection.%s_action'] as $shape) {
                 $key = sprintf($shape, $obstacle->value);
 
@@ -66,7 +66,7 @@ it('N1-R10 — no two obstacles say the same thing', function (): void {
         foreach (['connection.%s', 'connection.%s_action'] as $shape) {
             $said = [];
 
-            foreach (Obstacle::cases() as $obstacle) {
+            foreach (KindOfObstacle::cases() as $obstacle) {
                 $key = sprintf($shape, $obstacle->value);
                 $said[$key] = $catalogue[$key] ?? '';
             }

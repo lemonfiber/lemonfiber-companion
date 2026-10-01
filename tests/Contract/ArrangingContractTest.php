@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AnOriginIsUnnamed;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItIsSet;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -181,7 +182,7 @@ function howAStackReadsAsText(Arranging $arranging): string
             return new WhatAnOperatorCameAwayWith(sprintf('told:%s', implode(',', $rows)));
         },
         refused: static fn(Obstacle $why): WhatAnOperatorCameAwayWith
-            => new WhatAnOperatorCameAwayWith(sprintf('refused:%s', $why->value)),
+            => new WhatAnOperatorCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -235,7 +236,7 @@ it('the fake and the adapter both refuse rather than answer with nothing', funct
     // above is what tells them apart for every screen downstream.
     expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))
         ->not->toBe('told:')
-        ->and(howAStackReadsAsText(AStackThatIsSet::met(Obstacle::StackDidNotAnswer)))
+        ->and(howAStackReadsAsText(AStackThatIsSet::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toBe('refused:no_answer');
 });
 
@@ -291,13 +292,13 @@ it('HowItIsSet reaches the arm the answer calls for, and hands it what it was gi
             sprintf('told:%d', count($set)),
         ),
         refused: static fn(Obstacle $why): WhatOneRowSaid => new WhatOneRowSaid(
-            sprintf('refused:%s', $why->value),
+            sprintf('refused:%s', $why->kind()->value),
         ),
     )->said;
 
     expect($whichArm(HowItIsSet::told(Settings::none())))->toBe('told:0')
         ->and($whichArm(HowItIsSet::told(theSameSettings())))->toBe('told:2')
-        ->and($whichArm(HowItIsSet::refused(Obstacle::StackDidNotAnswer)))->toBe('refused:no_answer');
+        ->and($whichArm(HowItIsSet::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('refused:no_answer');
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

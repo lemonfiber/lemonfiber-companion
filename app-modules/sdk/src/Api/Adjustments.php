@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Adjusting;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
@@ -76,8 +75,8 @@ final readonly class Adjustments implements Adjusting
             return WhatTheStackMadeOfIt::said(Dials::reviewIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheStackMadeOfIt::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
-            return WhatTheStackMadeOfIt::refused(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
+            return WhatTheStackMadeOfIt::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

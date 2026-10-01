@@ -11,6 +11,7 @@ use Modules\Design\View\Tone;
 use Modules\Kernel\Api\HowItWouldBeUpdated;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowThisCopyGotThere;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThisCopyOfLemonfiber;
 use Modules\Kernel\Api\WhatAnUpdateWouldBring;
@@ -47,6 +48,6 @@ it('draws each way the running copy can stand with its own tone', function (Wher
 it('draws a reading that did not come back as unknown, never as current', function (): void {
     $presenter = new HowThisCopyReads();
 
-    expect($presenter->met(Obstacle::StackDidNotAnswer)->tone)->toBe(Tone::Unknown->value)
+    expect($presenter->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->tone)->toBe(Tone::Unknown->value)
         ->and($presenter->signedOut()->tone)->toBe(Tone::Unknown->value);
 });

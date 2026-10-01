@@ -20,6 +20,7 @@ use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -104,7 +105,7 @@ function whatBecameOfTheBundleAnswered(MockResponse $answered): string
             done: static fn(ABundle $bundle): WhatTheBundlerSaid => new WhatTheBundlerSaid(WhatABundleSays::of($bundle)),
             refused: static fn(ARefusalInItsWords $why): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
             ended: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('ended'),
-            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->name),
+            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->kind()->name),
         )->said;
 }
 
@@ -170,18 +171,18 @@ it('carries a bundle the stack refused in its own words, with what its problem n
 ]);
 
 it('reads a refused session, an account that may not ask, and a refusal with no problem in it as obstacles', function (int $status, string $body, Obstacle $why): void {
-    expect(whatBecameOfTheBundleAnswered(MockResponse::make($body, $status)))->toBe($why->name);
+    expect(whatBecameOfTheBundleAnswered(MockResponse::make($body, $status)))->toBe($why->kind()->name);
 })->with([
-    'a refused session' => [401, 'This needs the run token.', Obstacle::CredentialWasRefused],
-    'an account that may not ask' => [403, 'Only the operator can ask for this.', Obstacle::NotForThisAccount],
-    'nothing said' => [500, '', Obstacle::StackDidNotAnswer],
-    'a sentence with no problem around it' => [400, WhatABundleSays::A_LEAK, Obstacle::StackDidNotAnswer],
-    'markup from something in between' => [502, '<html>bad gateway</html>', Obstacle::StackDidNotAnswer],
+    'a refused session' => [401, 'This needs the run token.', Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    'an account that may not ask' => [403, 'Only the operator can ask for this.', Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'nothing said' => [500, '', Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    'a sentence with no problem around it' => [400, WhatABundleSays::A_LEAK, Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    'markup from something in between' => [502, '<html>bad gateway</html>', Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('reads a bundle written to a path that names no file as a stack that did not answer', function (): void {
     expect(whatBecameOfTheBundleAnswered(MockResponse::make((string) json_encode(WhatABundleSays::envelope(['path' => '/home/op/bundles/'])))))
-        ->toBe(Obstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('fetches a written bundle by the last segment of its path, and hands back its bytes unopened', function (): void {
@@ -192,7 +193,7 @@ it('fetches a written bundle by the last segment of its path, and hands back its
         ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
         ->either(
             fetched: static fn(ABundleFile $file): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
-            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->name),
+            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->kind()->name),
         )->said;
 
     expect($said)->toBe("lemonfiber-support-2026-09-26T10-00-00Z.tar.gz: \x1F\x8B\x08\x00an archive")
@@ -207,14 +208,14 @@ it('reads a bundle it could not fetch as the obstacle the refusal was', function
         ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
         ->either(
             fetched: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('fetched'),
-            met: static fn(Obstacle $met): WhatTheBundlerSaid => new WhatTheBundlerSaid($met->name),
+            met: static fn(Obstacle $met): WhatTheBundlerSaid => new WhatTheBundlerSaid($met->kind()->name),
         )->said;
 
-    expect($said)->toBe($why->name);
+    expect($said)->toBe($why->kind()->name);
 })->with([
-    'a refused session' => [401, Obstacle::CredentialWasRefused],
-    'an account that may not ask' => [403, Obstacle::NotForThisAccount],
-    'a bundle the stack no longer has' => [404, Obstacle::StackDidNotAnswer],
+    'a refused session' => [401, Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    'an account that may not ask' => [403, Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'a bundle the stack no longer has' => [404, Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

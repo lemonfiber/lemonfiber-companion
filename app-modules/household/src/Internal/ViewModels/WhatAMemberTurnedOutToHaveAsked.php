@@ -28,6 +28,8 @@ namespace Modules\Household\Internal\ViewModels;
  * because the core narrowed the reading to them — so this type has no member on
  * it, and there is no field a screen could show the wrong person's name in.
  */
+use Modules\Kernel\Api\Obstacle;
+
 final readonly class WhatAMemberTurnedOutToHaveAsked
 {
     /**
@@ -45,6 +47,7 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
         public string $met,
         public string $remedy,
         public array $rows,
+        private ?Obstacle $why = null,
     ) {}
 
     /**
@@ -80,11 +83,21 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
      * this screen cannot come to disagree with the ones beside it about whether
      * somebody is signed in.
      */
-    public static function somethingStopped(string $met, string $remedy, bool $signedOut): self
+    public static function somethingStopped(Obstacle $why): self
     {
-        return $signedOut
+        return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $met, remedy: $remedy, rows: []);
+            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), rows: [], why: $why);
+    }
+
+    /**
+     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
+     *
+     * @return array<string, int>
+     */
+    public function filling(): array
+    {
+        return $this->why instanceof Obstacle ? $this->why->filling() : [];
     }
 
     /**

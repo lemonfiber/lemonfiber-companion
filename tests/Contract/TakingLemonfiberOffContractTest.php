@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\NamedOnTheManifest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -241,7 +242,7 @@ function everythingTheWorkSays(WhatBecameOfTheUninstall $became): string
         answered: static fn(AnUninstall $uninstall): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(everythingTheUninstallSays($uninstall)),
         ended: static fn(): WhatTakingItOffCameTo => new WhatTakingItOffCameTo('ended'),
         refused: static fn(string $because): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->value),
+        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->kind()->value),
     )->said;
 }
 
@@ -250,7 +251,7 @@ function everythingTheUninstallReadingSays(WhatWasFoundOfTheUninstall $found): s
 {
     return $found->either(
         found: static fn(AnUninstall $uninstall): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(everythingTheUninstallSays($uninstall)),
-        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->value),
+        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->kind()->value),
     )->said;
 }
 
@@ -367,11 +368,11 @@ it('asks the reading by its tier, and the removal with the tier, the yes, the re
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         // A fault on the stack's side, even one with a sentence, is not its refusal.
-        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -384,9 +385,9 @@ it('tells a session that has ended from a stack that is not answering', function
             $removing = $make();
 
             expect(everythingTheUninstallReadingSays($removing->surveyed(aStackToTakeLemonfiberOff(), theSessionLemonfiberIsTakenOffOn(), WhichRemoval::Stop)))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value))
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value))
                 ->and(everythingTheWorkSays($removing->takeItOff(aStackToTakeLemonfiberOff(), theSessionLemonfiberIsTakenOffOn(), aYesToTheConfigurationReading())))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -418,9 +419,9 @@ it('says the stack did not answer where a refusal carries no sentence, or the st
     $removing = everyWayOfTakingItOff(WhereTakingItOffGot::surveyed(), $silent, $failed)['the adapter']();
 
     expect(everythingTheWorkSays($removing->takeItOff(aStackToTakeLemonfiberOff(), theSessionLemonfiberIsTakenOffOn(), aYesToTheConfigurationReading())))
-        ->toBe(Obstacle::StackDidNotAnswer->value)
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value)
         ->and(everythingTheWorkSays($removing->takeItOff(aStackToTakeLemonfiberOff(), theSessionLemonfiberIsTakenOffOn(), aYesToTheConfigurationReading())))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('says the stack has no outcome for work it no longer knows, or that ended before it finished, and work still going is underway', function (): void {

@@ -22,7 +22,6 @@ use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
@@ -30,6 +29,7 @@ use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
 use Modules\Sdk\Internal\WhatAnInvitationAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack to let somebody in, and who is in already.
@@ -71,8 +71,8 @@ final readonly class Ushers implements Inviting
             return WhatWasFoundOfTheMembers::found(Households::whoIsIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheMembers::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing) {
-            return WhatWasFoundOfTheMembers::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing $why) {
+            return WhatWasFoundOfTheMembers::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -85,8 +85,8 @@ final readonly class Ushers implements Inviting
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -100,8 +100,8 @@ final readonly class Ushers implements Inviting
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -115,8 +115,8 @@ final readonly class Ushers implements Inviting
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -126,8 +126,8 @@ final readonly class Ushers implements Inviting
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|InvitationIsUnreadable|InvitationSaysNothing) {
-            return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|InvitationIsUnreadable|InvitationSaysNothing $why) {
+            return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -161,8 +161,8 @@ final readonly class Ushers implements Inviting
     {
         try {
             return WhatBecameOfTheInvitation::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheInvitation::met(WhatTheReachMet::byItself($why));
         }
     }
 

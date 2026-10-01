@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -26,15 +27,15 @@ function whichArm(Launch $launch): string
 {
     return $launch->either(
         unpaired: static fn(): Code => Code::of('unpaired'),
-        blocked: static fn(Obstacle $obstacle): Code => Code::of($obstacle->value),
+        blocked: static fn(Obstacle $obstacle): Code => Code::of($obstacle->kind()->value),
         ready: static fn(StackId $stack): Code => Code::of($stack->stored()),
     )->shown();
 }
 
 it('no network, no answer and a refused credential stay three things', function (): void {
-    expect(whichArm(Launch::blockedBy(Obstacle::DeviceHasNoNetwork)))->toBe('no_network');
-    expect(whichArm(Launch::blockedBy(Obstacle::StackDidNotAnswer)))->toBe('no_answer');
-    expect(whichArm(Launch::blockedBy(Obstacle::CredentialWasRefused)))->toBe('credential_refused');
+    expect(whichArm(Launch::blockedBy(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))))->toBe('no_network');
+    expect(whichArm(Launch::blockedBy(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('no_answer');
+    expect(whichArm(Launch::blockedBy(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe('credential_refused');
 });
 
 it('a first run is not a failure to reach', function (): void {

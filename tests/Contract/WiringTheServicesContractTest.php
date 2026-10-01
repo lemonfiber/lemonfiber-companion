@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -136,7 +137,7 @@ function everythingTheWiringSays(WhatBecameOfTheWiring $became): string
         },
         ended: static fn(): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay('ended'),
         refused: static fn(string $because): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheWiringTurnedOutToSay => new WhatTheWiringTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -175,10 +176,10 @@ it('keeps following a run the stack is still carrying out', function (): void {
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('Not yours to ask', 403, ['Content-Type' => 'text/plain']), Obstacle::NotForThisAccount],
-        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('Not yours to ask', 403, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -189,7 +190,7 @@ it('tells a session that has ended from a stack that is not answering', function
 
         foreach ($ways as $which => $make) {
             expect(everythingTheWiringSays($make()->wire(aStackToWire(), Session::of('a-session-not-a-secret'))))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -231,7 +232,7 @@ it('a run this app cannot read is an obstacle, never a run that did less', funct
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfTheRun([...whatTheRunCarries(), 'assessment' => 'mostly'])))]);
 
     expect(everythingTheWiringSays(new Wirers(new PinnedClients(), SequencedEntropy::counting())->whatBecameOf(aStackToWire(), Session::of('a-session-not-a-secret'), Job::named('j-1'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('a handle this app cannot read is an obstacle, never a run under way', function (): void {
@@ -239,7 +240,7 @@ it('a handle this app cannot read is an obstacle, never a run under way', functi
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'seed']]), 202)]);
 
     expect(everythingTheWiringSays(new Wirers(new PinnedClients(), SequencedEntropy::counting())->wire(aStackToWire(), Session::of('a-session-not-a-secret'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

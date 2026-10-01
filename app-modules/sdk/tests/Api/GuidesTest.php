@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -68,7 +69,7 @@ function whatStartingCameTo(Guides $guide): string
 {
     return $guide->walk(theStackTheGuideWalks(), Session::of('a-session-not-a-secret'), WhatToWalk::called('Sintel'))->either(
         started: static fn(Job $job): WhatTheGuideSaid => new WhatTheGuideSaid($job->shown()),
-        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->name),
+        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->kind()->name),
     )->said;
 }
 
@@ -79,7 +80,7 @@ function whatFollowingCameTo(Guides $guide): string
         stillRunning: static fn(): WhatTheGuideSaid => new WhatTheGuideSaid('running'),
         done: static fn(AWalkthrough $walk): WhatTheGuideSaid => new WhatTheGuideSaid($walk->state()->value),
         ended: static fn(): WhatTheGuideSaid => new WhatTheGuideSaid('ended'),
-        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->name),
+        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->kind()->name),
     )->said;
 }
 
@@ -89,17 +90,22 @@ function whatFollowingCameTo(Guides $guide): string
 // `walkthrough` is stood in for and not judged: its version or what it proves is what each case takes away.
 
 it('reads a start it cannot follow as a stack that did not answer, whatever made it unreadable', function (array $body): void {
-    expect(whatStartingCameTo(aGuideAnswering($body)))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatStartingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
-    'a contract version it does not speak' => [['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'a-walk']]],
     'an answer about something else' => [['api_version' => 1, 'kind' => 'status', 'data' => []]],
     'a handle with no name' => [['api_version' => 1, 'kind' => 'job', 'data' => []]],
 ]);
 
+it('reads a start or a record in a contract version it does not speak as the versions disagreeing', function (): void {
+    expect(whatStartingCameTo(aGuideAnswering(['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'a-walk']])))
+        ->toEqual(KindOfObstacle::VersionsDisagree->name)
+        ->and(whatFollowingCameTo(aGuideAnswering(['api_version' => 99, 'kind' => 'walkthrough', 'data' => WalkthroughsToFollow::theWalkThatWorkedAsAStackSendsIt()])))
+        ->toEqual(KindOfObstacle::VersionsDisagree->name);
+});
+
 it('reads a record it cannot read as a stack that did not answer, whatever made it unreadable', function (array $body): void {
-    expect(whatFollowingCameTo(aGuideAnswering($body)))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatFollowingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
-    'a contract version it does not speak' => [['api_version' => 99, 'kind' => 'walkthrough', 'data' => WalkthroughsToFollow::theWalkThatWorkedAsAStackSendsIt()]],
     'an answer about something else' => [['api_version' => 1, 'kind' => 'status', 'data' => []]],
     'a record missing what it proves' => [['api_version' => 1, 'kind' => 'walkthrough', 'data' => ['state' => 'complete']]],
 ]);

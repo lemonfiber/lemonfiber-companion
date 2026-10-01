@@ -12,6 +12,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\CatalogueSaysNothing;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheCatalogue;
@@ -101,11 +102,11 @@ it('answers with the catalogue, the refusal in the stack\'s words, or what stood
     $said = static fn(WhatTheCatalogueSaid $answer): string => $answer->either(
         catalogue: static fn(TheCatalogue $read): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($read === $catalogue ? 'the catalogue' : 'another'),
         refused: static fn(ARefusalInItsWords $why): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid(sprintf('refused: %s', $why->summary())),
-        met: static fn(Obstacle $why): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($why->name),
+        met: static fn(Obstacle $why): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($why->kind()->name),
     )->said;
 
     expect($said(WhatTheCatalogueSaid::catalogue($catalogue)))->toBe('the catalogue')
         ->and($said(WhatTheCatalogueSaid::refused(ARefusalInItsWords::said('This stack file could not be read', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused: This stack file could not be read')
-        ->and($said(WhatTheCatalogueSaid::met(Obstacle::StackDidNotAnswer)))->toBe(Obstacle::StackDidNotAnswer->name);
+        ->and($said(WhatTheCatalogueSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });

@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
@@ -232,10 +233,10 @@ it('N1-R44 — a session that has ended is a sign-in rather than an obstacle', f
 });
 
 it('N1-R10 — an obstacle carries what stood in the way and what to do about it', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer));
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->answer()->went->isSignedIn)->toBeTrue();
 });
 
@@ -563,29 +564,29 @@ it('N2-R18 — an update the stack has no outcome for is said to be that, not a 
 });
 
 it('N1-R10 — a take the stack refused says what stood in the way, and follows nothing', function (): void {
-    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::StackDidNotAnswer);
+    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = aScreenThatTookTheUpdate($keeping);
 
-    expect($screen->lastUpdate()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->lastUpdate()->isWorking)->toBeFalse()
         ->and($keeping->taken())->toHaveCount(1)
         ->and($keeping->followed())->toBe([])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
 it('N1-R10 — asking after an update says what stood in the way', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::StackDidNotAnswer));
+    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect(aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toBe(Obstacle::StackDidNotAnswer->said());
+    expect(aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('N1-R46 — lets go of a session the stack refused while taking or following an update', function (): void {
     $refusingTheTake = AKeychainInMemory::working();
-    aScreenThatTookTheUpdate(AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::CredentialWasRefused), $refusingTheTake);
+    aScreenThatTookTheUpdate(AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::CredentialWasRefused)), $refusingTheTake);
 
     $refusingTheQuestion = AKeychainInMemory::working();
     aScreenThatTookTheUpdate(
-        AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::CredentialWasRefused)),
+        AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
         $refusingTheQuestion,
     )->lastUpdate();
 
@@ -597,7 +598,7 @@ it('N1-R46 — an obstacle meaning the session ended renders the sign-in', funct
     // The fold's own branch rather than the screen's: *your session ended, sign
     // in again* and *the stack refused that credential* send an operator to two
     // different places, and only one of them offers a way back in.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::CredentialWasRefused));
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->went->met)->toBe('');
@@ -645,7 +646,7 @@ it('N1-R46 — lets go of a session the stack refused', function (): void {
     // would go on offering to ask again with it, and every ask would fail the
     // same way — so the session is dropped and the next frame offers a sign-in.
     $keychain = AKeychainInMemory::working();
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     $screen->answer();
 
@@ -657,7 +658,7 @@ it('keeps a session the stack merely could not answer with', function (): void {
     // obstacle*: a stack that is switched off has refused nothing, and dropping
     // the session would make somebody sign in again to fix a router.
     $keychain = AKeychainInMemory::working();
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer), $keychain);
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
 
     $screen->answer();
 
@@ -702,11 +703,11 @@ it('N1-R10 — an obstacle states what stood in the way and nothing about the st
     // The same completeness, one state over. An obstacle means nothing was
     // read, so anything this carried about the stack would be left over from a
     // reading that did not happen.
-    $answer = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($answer->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($answer->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($answer->pinsSaid)->toBe('')
         ->and($answer->running)->toBe('')
         ->and($answer->runningWasWithdrawn)->toBeFalse()

@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\HandoverSaysNothing;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowTheHandoverWent;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheFilesTouched;
 use Modules\Kernel\Api\WhatTheHandoverDid;
@@ -28,7 +29,7 @@ function whichWayTheHandoverWent(HowTheHandoverWent $went): string
     return $went->either(
         did: static fn(WhatTheHandoverDid $did): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('did %s', $did->name())),
         refused: static fn(string $said): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('refused: %s', $said)),
-        met: static fn(Obstacle $why): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhatTheHandoverCameTo => new WhatTheHandoverCameTo(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -46,7 +47,7 @@ it('carries the stack\'s own words for a refusal, less the space around them', f
 });
 
 it('carries what the operator met where nothing answered', function (): void {
-    expect(whichWayTheHandoverWent(HowTheHandoverWent::met(Obstacle::StackDidNotAnswer)))->toBe('met no_answer');
+    expect(whichWayTheHandoverWent(HowTheHandoverWent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
 });
 
 it('refuses a refusal that says nothing', function (): void {

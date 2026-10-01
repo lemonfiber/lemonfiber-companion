@@ -8,6 +8,7 @@ implements one kernel port over the platform:
 | `SystemClock` | `Clock` |
 | `SystemEntropy` | `Entropy` |
 | `PlatformNetwork` | `Networking` |
+| `PlatformLocalNetwork` | `TheLocalNetwork` |
 | `PlatformNotifier` | `Notifier` |
 | `PlatformScanner` | `Scanning` |
 | `PlatformScreen` | `Capture` |

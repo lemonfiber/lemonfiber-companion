@@ -49,6 +49,7 @@ final readonly class HowTheReadingWent
         public bool $isSignedIn,
         public string $met,
         public string $remedy,
+        private ?Obstacle $why = null,
     ) {}
 
     /** The stack answered and there is something to draw. */
@@ -82,7 +83,17 @@ final readonly class HowTheReadingWent
     {
         return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy());
+            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), why: $why);
+    }
+
+    /**
+     * What both sentences are filled with: the facts the obstacle was met with, or nothing.
+     *
+     * @return array<string, int>
+     */
+    public function filling(): array
+    {
+        return $this->why instanceof Obstacle ? $this->why->filling() : [];
     }
 
     /**

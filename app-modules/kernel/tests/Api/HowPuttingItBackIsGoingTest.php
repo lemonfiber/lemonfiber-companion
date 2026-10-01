@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -31,7 +32,7 @@ function howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing $going): string
         done: static fn(ACopyPutBack $report): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('done:%s', $report->takenBy())),
         refused: static fn(ARefusalInItsWords $why): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('refused:%s', $why->summary())),
         ended: static fn(): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook('ended'),
-        met: static fn(Obstacle $why): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -43,5 +44,5 @@ it('takes the arm for each state, and carries the report, the refusal and the ob
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::done($report)))->toBe('done:0.9.0')
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::refused($refused)))->toBe('refused:The backup could not be unpacked')
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::ended()))->toBe('ended')
-        ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::met(Obstacle::CredentialWasRefused)))->toBe(sprintf('met:%s', Obstacle::CredentialWasRefused->value));
+        ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

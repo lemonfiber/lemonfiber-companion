@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatGoingBackDoes;
@@ -48,7 +49,7 @@ function whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing $going): string
         done: static fn(ARunPutBack $report): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('done, %s', $report->rehearsed()->value)),
         refused: static fn(ARefusalInItsWords $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('refused, %s', $why->summary())),
         ended: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('ended'),
-        met: static fn(Obstacle $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo($why->name),
+        met: static fn(Obstacle $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo($why->kind()->name),
     )->said;
 }
 
@@ -113,7 +114,7 @@ it('follows a run going back to each of its five arms', function (): void {
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::done(aRunPutBackLeaving(ChangesAndWhy::these(), WhetherItWasRehearsed::Rehearsed))))->toBe('done, rehearsed')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::refused($refused)))->toBe('refused, Nothing was changed at 1790150000')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::ended()))->toBe('ended')
-        ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(Obstacle::StackDidNotAnswer->name);
+        ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('says each kind of reversal by its own line', function (): void {

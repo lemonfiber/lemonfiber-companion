@@ -19,7 +19,6 @@ use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
@@ -100,8 +99,8 @@ final readonly class Supervisors implements Supervising
             );
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RosterIsUnreadable|RepertoireIsUnreadable) {
-            return WhatIsRunning::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RosterIsUnreadable|RepertoireIsUnreadable $why) {
+            return WhatIsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -123,8 +122,8 @@ final readonly class Supervisors implements Supervising
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -134,8 +133,8 @@ final readonly class Supervisors implements Supervising
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheVerbIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable) {
-            return HowTheVerbIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable $why) {
+            return HowTheVerbIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
