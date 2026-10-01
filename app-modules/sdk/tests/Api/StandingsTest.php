@@ -10,6 +10,7 @@ use function it;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowItEnded;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Upkeep;
@@ -152,6 +153,18 @@ it('reads whether an update is available off the pins, not off the changelog', f
 
     expect($justUpdated->againstThePins())->toBe(AgainstThePins::Current)
         ->and($behind->againstThePins())->toBe(AgainstThePins::UpdatesAvailable);
+});
+
+it('reads where the notes stand off the changelog, apart from the pins', function (): void {
+    // The two `state` fields again, the other way round: notes out of step on
+    // a stack that is current, and notes in step on one that is behind.
+    $outOfStep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(['state' => 'stale']));
+    $inStep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(['state' => 'current'], ['state' => 'updates-available']));
+
+    expect($outOfStep->notes())->toBe(HowTheNotesStand::Stale)
+        ->and($outOfStep->againstThePins())->toBe(AgainstThePins::Current)
+        ->and($inStep->notes())->toBe(HowTheNotesStand::Current)
+        ->and($inStep->againstThePins())->toBe(AgainstThePins::UpdatesAvailable);
 });
 
 it('N2-R15 — reads the release in use off the changelog', function (): void {

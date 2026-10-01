@@ -11,6 +11,7 @@ use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
@@ -382,6 +383,7 @@ function anUpdateSomebodyAgreedTo(): TakingAnUpdate
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     ));
 }
 

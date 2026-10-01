@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -103,6 +104,7 @@ function theUpdateTheAdapterIsHanded(): TakingAnUpdate
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     ));
 }
 

@@ -9,6 +9,7 @@ use function is_array;
 use function is_bool;
 use function is_string;
 
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
@@ -83,6 +84,27 @@ final readonly class Changelogs
         }
 
         return self::release($said, ChangelogIsUnreadable::running());
+    }
+
+    /**
+     * Whether the notes describe what this build could have shipped.
+     *
+     * The record's own `state`, and nothing about whether an update is waiting:
+     * that is the `update` envelope's top-level `state`. Read here for every
+     * envelope that carries the block, so the two screens that draw notes take
+     * the same answer from the same place.
+     *
+     * @param  array<array-key, mixed>  $changelog
+     */
+    public static function standing(array $changelog): HowTheNotesStand
+    {
+        if (! array_key_exists(WireField::State->value, $changelog) || ! is_string($changelog[WireField::State->value])) {
+            throw ChangelogIsUnreadable::missing(WireField::State);
+        }
+
+        $said = $changelog[WireField::State->value];
+
+        return HowTheNotesStand::tryFrom($said) ?? throw ChangelogIsUnreadable::standing($said);
     }
 
     /**

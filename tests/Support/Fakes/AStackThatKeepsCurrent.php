@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -78,6 +79,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
             Services::none(),
             Services::none(),
             HowServicesTookIt::none(),
+            HowTheNotesStand::Current,
         ));
     }
 

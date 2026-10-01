@@ -25,7 +25,8 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param string                         $pinsSaid   the key for where the services stand against their pins
      * @param string                         $running    the version in use, or a dash where the stack named none
      * @param bool                           $runningWasWithdrawn whether the version in use has been taken back
-     * @param ?WhatOneReleaseSays            $inUse      what the release in use changed, where the stack named it
+     * @param ?WhatOneReleaseSays            $inUse      what the release in use changed, where the stack named it and its notes are current
+     * @param WhatWithheldNotesSay           $notesWithheld why those notes are not shown, where they are not
      * @param list<WhatOneReleaseSays>       $history    every release the stack's record holds, newest first
      * @param ?TakingAnUpdate                $offer      the update to take, where the stack offered one
      */
@@ -35,6 +36,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public string $running,
         public bool $runningWasWithdrawn,
         public ?WhatOneReleaseSays $inUse,
+        public WhatWithheldNotesSay $notesWithheld,
         public array $history,
         public ?TakingAnUpdate $offer,
     ) {}

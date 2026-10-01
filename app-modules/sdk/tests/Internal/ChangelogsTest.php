@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
 use Modules\Sdk\Api\ChangelogIsUnreadable;
@@ -189,3 +190,20 @@ it('refuses a running release it cannot read', function (): void {
         'running' => oneReleaseTheRecordHolds(['user_facing' => 'yes']),
     ])))->toThrow(ChangelogIsUnreadable::class, 'running release');
 });
+
+it('reads where the notes stand off the record\'s own state', function (string $said, HowTheNotesStand $stands): void {
+    expect(Changelogs::standing(aChangelogSaying(['state' => $said])))->toBe($stands);
+})->with([
+    'current' => ['current', HowTheNotesStand::Current],
+    'pending' => ['pending', HowTheNotesStand::Pending],
+    'stale' => ['stale', HowTheNotesStand::Stale],
+]);
+
+it('refuses a standing the contract does not have, or none at all', function (array $changelog, string $says): void {
+    expect(fn(): HowTheNotesStand => Changelogs::standing($changelog))
+        ->toThrow(ChangelogIsUnreadable::class, $says);
+})->with([
+    'a word it does not have' => [['state' => 'withdrawn', 'releases' => []], '`withdrawn`'],
+    'not a word' => [['state' => 3, 'releases' => []], '`state`'],
+    'no state' => [['releases' => []], '`state`'],
+]);

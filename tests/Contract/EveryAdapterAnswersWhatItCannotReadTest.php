@@ -52,6 +52,7 @@ use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\MovingInBy;
@@ -233,6 +234,7 @@ function anUpdateToSpoilTheAnswerTo(): TakingAnUpdate
         Services::these(ServiceId::called('sonarr')),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     ));
 }
 
