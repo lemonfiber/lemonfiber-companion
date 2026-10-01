@@ -333,15 +333,19 @@ it('hears nothing from a stream that has said nothing yet', function (): void {
 });
 
 it('tells a session the stack refused from a stack that could not be heard', function (): void {
+    $unreachable = MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
+        => new FatalRequestException(new RuntimeException('Connection refused'), $asked));
+
+    // A connection that was never made is asked after twice more before it is
+    // reported, so a stack that cannot be heard answers all three times.
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
-            => new FatalRequestException(new RuntimeException('Connection refused'), $asked)), Obstacle::StackDidNotAnswer],
+        [[MockResponse::make('{"error":"no"}', 401)], Obstacle::CredentialWasRefused],
+        [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::StackDidNotAnswer],
+        [[$unreachable, $unreachable, $unreachable], Obstacle::StackDidNotAnswer],
     ];
 
     foreach ($table as [$answered, $why]) {
-        foreach (everyWayOfListening([$answered], [WhatWasHeard::met($why)]) as $which => $make) {
+        foreach (everyWayOfListening($answered, [WhatWasHeard::met($why)]) as $which => $make) {
             expect(whatWakesHear($make(), 1))->toBe([$why->value], sprintf('%s, %s', $which, $why->value));
         }
     }

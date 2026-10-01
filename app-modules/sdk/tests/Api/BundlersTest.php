@@ -93,7 +93,9 @@ function whatAskingForABundleSent(ABundleAsked $asked): PendingRequest
 function whatBecameOfTheBundleAnswered(MockResponse $answered): string
 {
     MockClient::destroyGlobal();
-    MockClient::global([$answered]);
+    // The same answer however often it is asked: a 502, 503 or 504 is asked
+    // after twice more before it is read.
+    MockClient::global([$answered, $answered, $answered]);
 
     return new Bundlers(new PinnedClients(), SequencedEntropy::counting())
         ->whatBecameOf(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), Job::named('a-bundle'))
