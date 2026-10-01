@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -50,7 +51,11 @@ final readonly class HowUpkeepReads
             pinsSaid: $upkeep->againstThePins()->saidOnTheScreen(),
             running: $on->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
-            inUse: $on->notes,
+            // The notes are what the release changed only where the record
+            // describes the running build; otherwise the screen says why not,
+            // as the versions screen does.
+            inUse: $upkeep->notes() === HowTheNotesStand::Current ? $on->notes : null,
+            notesWithheld: new HowWithheldNotesRead()->of($upkeep->notes()),
             history: $history,
             // Asked of the reading rather than worked out from the history.
             // Releases are listed whether or not a service would move, so a
@@ -83,6 +88,7 @@ final readonly class HowUpkeepReads
             running: '',
             runningWasWithdrawn: false,
             inUse: null,
+            notesWithheld: new HowWithheldNotesRead()->of(HowTheNotesStand::Current),
             history: [],
             offer: null,
         );

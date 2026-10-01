@@ -123,9 +123,9 @@ it('refuses a blank version rather than drawing one', function (): void {
 
 it('refuses notes whose standing is missing or not a word the contract has', function (): void {
     expect(static fn(): WhatRunsHere => TheVersions::in(versionsSaying(aVersionPayload(changelog: ['state' => null]))))
-        ->toThrow(VersionsAreUnreadable::class, '`state`')
+        ->toThrow(ChangelogIsUnreadable::class, '`state`')
         ->and(static fn(): WhatRunsHere => TheVersions::in(versionsSaying(aVersionPayload(changelog: ['state' => 'fresh']))))
-        ->toThrow(VersionsAreUnreadable::class, '`fresh`');
+        ->toThrow(ChangelogIsUnreadable::class, '`fresh`');
 });
 
 it('refuses a payload with no changelog at all', function (): void {

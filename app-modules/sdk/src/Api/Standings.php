@@ -51,10 +51,11 @@ final readonly class Standings
         $stuck = Changes::permanentIn($data);
         $went = Endings::in($data);
         $inUse = Changelogs::running($changelog);
+        $notes = Changelogs::standing($changelog);
 
         return $inUse instanceof Release
-            ? Upkeep::runningOn($pins, $inUse, $history, $changing, $stuck, $went)
-            : Upkeep::reported($pins, $history, $changing, $stuck, $went);
+            ? Upkeep::runningOn($pins, $inUse, $history, $changing, $stuck, $went, $notes)
+            : Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes);
     }
 
     /** @param Envelope<mixed> $envelope */

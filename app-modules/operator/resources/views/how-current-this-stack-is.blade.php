@@ -115,6 +115,14 @@
                 @endif
             </x-design::note>
         </x-design::card>
+    @elseif ($this->answer()->notesWithheld->said !== '')
+        {{-- The record does not describe the running build: notes not written
+             yet, or notes out of step with it. Said as that, the way the
+             versions screen says it, rather than drawn as what it changed. --}}
+        <x-design::card>
+            <x-design::strong>{{ __($this->answer()->notesWithheld->said) }}</x-design::strong>
+            <x-design::body>{{ __($this->answer()->notesWithheld->meansSaid) }}</x-design::body>
+        </x-design::card>
     @endif
 
     {{-- Every release the stack's record holds, newest first. History up to

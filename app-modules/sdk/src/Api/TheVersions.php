@@ -11,7 +11,6 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\VersionEnvelope;
 use Modules\Kernel\Api\AGroupOfChanges;
-use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\WhatRunsHere;
 use Modules\Sdk\Api\Fields\VersionField;
@@ -45,7 +44,7 @@ final readonly class TheVersions
         $lemonfiber = self::said($data, VersionField::Binary);
         $stack = self::said($data, WireField::Stack);
         $engine = self::engine($data);
-        $notes = self::notes($changelog);
+        $notes = Changelogs::standing($changelog);
         $running = Changelogs::running($changelog);
 
         return $running instanceof Release
@@ -90,18 +89,6 @@ final readonly class TheVersions
         $said = $data[VersionField::Compose->value];
 
         return is_string($said) ? $said : '';
-    }
-
-    /**
-     * Whether the notes describe the copy answering, which is never assumed.
-     *
-     * @param array<array-key, mixed> $changelog
-     */
-    private static function notes(array $changelog): HowTheNotesStand
-    {
-        $said = self::said($changelog, WireField::State);
-
-        return HowTheNotesStand::tryFrom($said) ?? throw VersionsAreUnreadable::notes($said);
     }
 
     /**

@@ -28,7 +28,8 @@ final readonly class Upkeep
         private Services $changing,
         private Services $cannotBePutBack,
         private HowServicesTookIt $went,
-        private ?Release $inUse = null,
+        private HowTheNotesStand $notes,
+        private ?Release $inUse,
     ) {}
 
     /**
@@ -45,8 +46,9 @@ final readonly class Upkeep
         Services $changing,
         Services $cannotBePutBack,
         HowServicesTookIt $went,
+        HowTheNotesStand $notes,
     ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went);
+        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, null);
     }
 
     /** The same reading, where the stack named the release that is running. */
@@ -57,8 +59,9 @@ final readonly class Upkeep
         Services $changing,
         Services $cannotBePutBack,
         HowServicesTookIt $went,
+        HowTheNotesStand $notes,
     ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went, $inUse);
+        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $inUse);
     }
 
     public function againstThePins(): AgainstThePins
@@ -86,6 +89,19 @@ final readonly class Upkeep
     public function inUse(Closure $named, Closure $unstated): object
     {
         return $this->inUse instanceof Release ? $named($this->inUse) : $unstated();
+    }
+
+    /**
+     * Whether the release record's notes describe the running build.
+     *
+     * Nothing about whether an update is waiting, which is
+     * {@see againstThePins()}: the record can be out of step with a stack that
+     * is current, and in step with one that has updates available. A screen
+     * draws the running release's notes only where they are current.
+     */
+    public function notes(): HowTheNotesStand
+    {
+        return $this->notes;
     }
 
     /** Every release the stack's record holds, newest first, withdrawn ones included. */

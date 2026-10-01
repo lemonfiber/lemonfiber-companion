@@ -34,10 +34,10 @@ use Tests\Support\WhereAShapeHoldsItself;
 //
 // The last of those four is the argument. `update.changelog.state` says whether
 // the release record matches the running build, and the top-level `state` beside
-// it says whether any service would move. The screen once read the first for
-// the second, and a register keyed on names could not see which one it read,
-// because a case written for the `status` envelope had already answered for
-// both. So the question is *does anything read this path*, and
+// it says whether any service would move. Reading the first for the second
+// offers updates nobody can take, and a register keyed on names cannot see
+// which one a reader takes, because a case written for the `status` envelope
+// answers for both. So the question is *does anything read this path*, and
 // `Tests\Support\WhatTheReadersRead` answers it by following the reader.
 //
 // **It is a register of decisions, not of gaps.** Most rows here will never be
@@ -784,15 +784,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'near neighbour of that and wants a requirement of its own before it wants a screen.',
     ],
     [
-        'path' => 'UpdateEnvelope.changelog.state',
-        'because' => 'Whether the release record describes what this build could have shipped: `current` '
-            . 'where it holds the running release, `pending` where that release has no notes yet, `stale` '
-            . 'where it lists a later release or a version it cannot order. It says nothing about whether '
-            . 'an update is available — that is the top-level `state` — and no requirement on the update '
-            . 'screen asks for it. `N14-R7` asks for it on the version screen, which reads the same block '
-            . 'through `Changelogs`.',
-    ],
-    [
         'path' => 'RepairEnvelope.beyond',
         'because' => 'Remedies for checks this repair did not attempt. `N2-R4` offers the repair the core '
             . 'offers for the finding in hand; a list of other checks belongs to a screen about the whole '
@@ -1152,16 +1143,15 @@ it('N1-R17 — every path on an envelope this app reads has been decided about',
 });
 
 it('N1-R17 — the reading follows a reader rather than recognising a name', function (): void {
-    // What the rule above rests on, asserted on the pair that proves it. Both
-    // of these are called `state`, one is read and one is not, and a reading
-    // that answered from `WireField` would call both of them read. The top-level
-    // one says whether an update is available; the changelog's says whether the
-    // release record matches the running build, and reading it for the first
-    // question is the mistake that offered updates nobody could take.
+    // What the rule above rests on, asserted on a pair that proves it. Both of
+    // these are called `detail`, one is read and one is not, and a reading that
+    // answered from `WireField` would call both of them read. The verdict's own
+    // detail is what the check found, drawn at the foot of a finding; the one
+    // on the single remedy an unverified verdict offers is not drawn.
     $read = WhatTheReadersRead::paths();
 
-    expect($read)->toContain('UpdateEnvelope.state')
-        ->and($read)->not->toContain('UpdateEnvelope.changelog.state');
+    expect($read)->toContain('DoctorEnvelope.findings[].verdict.detail')
+        ->and($read)->not->toContain('DoctorEnvelope.findings[].verdict.remedy.detail');
 
     // And a second pair one level further in, where both paths are nested and
     // the app reads three of the five verbs the stack describes. A reading that

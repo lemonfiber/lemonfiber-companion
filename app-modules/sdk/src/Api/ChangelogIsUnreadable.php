@@ -29,6 +29,12 @@ final class ChangelogIsUnreadable extends InvalidArgumentException
         return new self(sprintf('Release %d in the changelog could not be read.', $position + 1));
     }
 
+    /** Where the notes stand was a word the contract does not have. */
+    public static function standing(string $said): self
+    {
+        return new self(sprintf('The changelog says its notes stand at `%s`, which is not a word the contract has.', $said));
+    }
+
     /** The release that is running, where the stack named one this side cannot read. */
     public static function running(): self
     {

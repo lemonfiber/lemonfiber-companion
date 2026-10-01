@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\NothingToTake;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
@@ -29,6 +30,7 @@ function aReadingWhosePinsSay(AgainstThePins $pins, Services $changing, bool $ru
         $changing,
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     );
 }
 
@@ -95,6 +97,7 @@ it('keeps a withdrawn release in the history rather than dropping it', function 
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     );
 
     $said = [];

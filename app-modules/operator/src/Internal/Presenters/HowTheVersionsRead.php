@@ -84,15 +84,15 @@ final readonly class HowTheVersionsRead
      */
     private function withoutTheNotes(WhatRunsHere $runs, HowTheNotesStand $notes): TheVersionsTurnedOutToBe
     {
-        $stale = $notes === HowTheNotesStand::Stale;
+        $withheld = new HowWithheldNotesRead()->of($notes === HowTheNotesStand::Current ? HowTheNotesStand::Pending : $notes);
 
         return new TheVersionsTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             lemonfiber: $runs->lemonfiber(),
             stack: $runs->stack(),
             engine: $runs->engine(),
-            notesSaid: $stale ? 'stacks.versions.notes_stale' : 'stacks.versions.notes_pending',
-            notesMeanSaid: $stale ? 'stacks.versions.notes_stale_means' : 'stacks.versions.notes_pending_means',
+            notesSaid: $withheld->said,
+            notesMeanSaid: $withheld->meansSaid,
             release: '',
             noticedSaid: '',
             withdrawn: false,

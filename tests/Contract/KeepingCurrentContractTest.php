@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Job;
@@ -92,6 +93,7 @@ function theSameStanding(): Upkeep
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         theSameApplying(),
+        HowTheNotesStand::Current,
     );
 }
 
@@ -232,6 +234,7 @@ function theSameStandingWithAnUpdateAvailable(): Upkeep
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     );
 }
 
@@ -282,6 +285,7 @@ function theSameStandingWithPendingNotes(): Upkeep
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
     );
 }
 
