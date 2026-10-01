@@ -448,10 +448,8 @@ it('N2-R18 — says what became of each service the update taken here touched', 
         // not come back up on it, which sends somebody to its own log rather
         // than to the machine.
         ->and($applied[0]->endingSaid)->toBe(HowItEnded::NotStarted->saidOnTheScreen())
-        ->and($applied[0]->arrived)->toBeFalse()
         ->and($applied[1]->service)->toBe('jellyfin')
         ->and($applied[1]->endingSaid)->toBe(HowItEnded::Updated->saidOnTheScreen())
-        ->and($applied[1]->arrived)->toBeTrue()
         ->and($keeping->followed())->toHaveCount(1)
         ->and($keeping->followed()[0]->shown())->toBe(AStackThatKeepsCurrent::THE_JOB);
 });
@@ -467,6 +465,20 @@ it('N2-R19 — says which way back, and whether it brings the data with it', fun
         ->and($applied[0]->undoCarriesTheDataWithIt)->toBeTrue()
         ->and($applied[1]->undoSaid)->toBe(HowToUndoIt::Rollback->saidOnTheScreen())
         ->and($applied[1]->undoCarriesTheDataWithIt)->toBeFalse();
+});
+
+it('says the way back under every service the update moved, the one that arrived included', function (): void {
+    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
+    $drawn = WhatTheDeviceWouldDraw::by(aScreenThatTookTheUpdate($keeping))->said();
+
+    $arrived = array_search('jellyfin', $drawn, strict: true);
+
+    expect(is_int($arrived))->toBeTrue()
+        ->and(array_slice($drawn, (int) $arrived + 1, 2))->toBe([
+            __(HowItEnded::Updated->saidOnTheScreen()),
+            __(HowToUndoIt::Rollback->saidOnTheScreen()),
+        ])
+        ->and($drawn)->toContain(__(HowToUndoIt::Restore->saidOnTheScreen()), __('updates.undo_carries_data'));
 });
 
 it('N2-R18 — counts what is not where the operator wanted it, apart from what is unknown', function (): void {
