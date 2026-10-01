@@ -8,12 +8,19 @@ use Bootstrap\Composition\EveryKeeperOfAStack;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\StackId;
+
+use function str_repeat;
+
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\RemovalsUnderWayInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 
 /**
  * What a screen is handed about what the phone keeps, where a test is about something else.
@@ -35,6 +42,17 @@ final readonly class WhatThePhoneKeeps
     public static function nothingToClear(): ClearingWhatCannotBeRead
     {
         return new ClearingWhatCannotBeRead(ASealInMemory::working(), HealthReadingsInMemory::empty());
+    }
+
+    /** Clearing what the phone kept on opening, where its key has gone since the launch before and a word was kept. */
+    public static function clearedAtOpening(): ClearingWhatCannotBeRead
+    {
+        $seal = ASealInMemory::working();
+        $seal->standing();
+        $kept = StandingsInMemory::working();
+        $kept->remember(StackId::of(Nonce::of(str_repeat('f', Nonce::SHORTEST))), HowItStands::Healthy, Instant::atEpochSeconds(0));
+
+        return new ClearingWhatCannotBeRead($seal->losesItsKeys(), $kept);
     }
 
     /** Removing a stack, with nothing left from a removal before. */

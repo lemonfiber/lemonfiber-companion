@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal;
 
 use function array_any;
 
+use Modules\Kernel\Api\WhichTab;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -25,10 +26,16 @@ use Modules\Stacks\Api\AStacksScreen;
  */
 enum TheTabs: string
 {
-    case Health = 'health';
-    case Services = 'services';
-    case Updates = 'updates';
-    case Repairs = 'repairs';
+    case Health = WhichTab::Health->value;
+    case Services = WhichTab::Services->value;
+    case Updates = WhichTab::Updates->value;
+    case Repairs = WhichTab::Repairs->value;
+
+    /** The tab the phone kept a word for. */
+    public static function kept(WhichTab $tab): self
+    {
+        return self::from($tab->value);
+    }
 
     /** Whether the screen drawn by this class is one of the tabs. */
     public static function drawnBy(string $class): bool
@@ -46,6 +53,12 @@ enum TheTabs: string
             WhatWouldBePutRight::class => self::Repairs,
             default => null,
         };
+    }
+
+    /** The word the phone keeps for this tab. */
+    public function word(): WhichTab
+    {
+        return WhichTab::from($this->value);
     }
 
     /** The screen the tab opens. */

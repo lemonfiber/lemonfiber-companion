@@ -18,10 +18,12 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhichTab;
 use Modules\Kernel\Api\Whose;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
@@ -31,6 +33,7 @@ use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 
 // The ForgetsAStack contract, run against every keeper of a stack and against
@@ -68,6 +71,8 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake words' => StandingsInMemory::working(),
         'the platform work' => new PlatformWorkLeftRunning($store, new PlatformStacks($store)),
         'the fake work' => WorkLeftRunningInMemory::working(),
+        'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::working()),
+        'the fake place' => WhereTheOperatorWasInMemory::nowhere(),
     ];
 
     foreach ([...$keepers, $pairings, $words] as $keeper) {
@@ -106,6 +111,12 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
         return;
     }
 
+    if ($keeper instanceof PlatformWhereTheOperatorWas || $keeper instanceof WhereTheOperatorWasInMemory) {
+        $keeper->wasOn($stack->id(), WhichTab::Services);
+
+        return;
+    }
+
     if ($keeper instanceof PlatformWorkLeftRunning || $keeper instanceof WorkLeftRunningInMemory) {
         $keeper->remember($stack->id(), KindOfWork::Walkthrough, Job::named('a-walk'));
 
@@ -139,6 +150,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform keychain' => new PlatformKeychain(APlatformStore::refusing()),
         'the platform words' => new PlatformStandings(APlatformStore::refusing()),
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
+        'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0))),
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);

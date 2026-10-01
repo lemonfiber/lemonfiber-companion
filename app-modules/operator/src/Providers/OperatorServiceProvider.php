@@ -58,7 +58,9 @@ use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Modules\Operator\Internal\Screens\WhichAppToWatchOn;
 use Modules\Operator\Internal\Screens\WhichVersionsRunHere;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Modules\Operator\Internal\WhereAStackOpens;
 use Modules\Stacks\Api\AStacksScreen;
+use Override;
 
 /**
  * The operator surface, declaring its own screens.
@@ -81,6 +83,13 @@ use Modules\Stacks\Api\AStacksScreen;
  */
 final class OperatorServiceProvider extends ServiceProvider
 {
+    /** One opening a run: the container holds the one that remembers it has landed. */
+    #[Override]
+    public function register(): void
+    {
+        $this->app->singleton(WhereAStackOpens::class);
+    }
+
     public function boot(): void
     {
         // The views are not registered here. `internachi/modular` already

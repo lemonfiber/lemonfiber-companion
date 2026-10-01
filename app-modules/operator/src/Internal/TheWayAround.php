@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\WhereTheOperatorWas;
 use Modules\Operator\Internal\ViewModels\AStackToChooseAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -38,6 +39,7 @@ final readonly class TheWayAround
         private Clock $clock,
         private SecureStorage $storage,
         private HearingEachStack $hearing,
+        private WhereTheOperatorWas $was,
     ) {}
 
     /**
@@ -145,9 +147,29 @@ final readonly class TheWayAround
     }
 
     /**
+     * Where the app opens: the stack the operator was last on, on the tab they
+     * last used there, or the first stack in their order where that one is
+     * gone; nowhere where the phone holds no stack.
+     */
+    public function whereTheOpeningLands(): string
+    {
+        $first = null;
+
+        foreach ($this->stacks->configured() as $stack) {
+            if ($this->was->wasLastOn($stack->id())) {
+                return $this->choosingLeadsTo($stack);
+            }
+
+            $first ??= $stack;
+        }
+
+        return $first instanceof Stack ? $this->choosingLeadsTo($first) : '';
+    }
+
+    /**
      * Where choosing a stack from that list leads: its sign-in where this
-     * phone holds no session for it, its health for the operator, and what a
-     * member is owed for a member.
+     * phone holds no session for it, the tab the operator last used on it for
+     * the operator, and what a member is owed for a member.
      */
     public function choosingLeadsTo(Stack $stack): string
     {
@@ -155,8 +177,14 @@ final readonly class TheWayAround
 
         return match (WhereTappingLeads::for($this->storage, $stack->id())) {
             WhereTappingLeads::TheSignIn => $where->signIn(),
-            WhereTappingLeads::TheReport => $where->health(),
+            WhereTappingLeads::TheReport => $this->onItsLastTab($stack),
             WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
         };
+    }
+
+    /** The stack, on the tab the operator last used there, and on Health where they have used none. */
+    public function onItsLastTab(Stack $stack): string
+    {
+        return TheTabs::kept($this->was->tabOf($stack->id()))->screen()->forTheStack($stack->id());
     }
 }

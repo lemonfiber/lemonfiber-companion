@@ -32,6 +32,9 @@ enum KeptUnder: string
     /** A handle to work a stack was left carrying, per kind of work and per stack. */
     case WorkLeftRunning = 'lemonfiber.left-running';
 
+    /** The stack the operator was last on, and the tab they last used on each. */
+    case WhereTheOperatorWas = 'lemonfiber.where-left-off';
+
     /** The key for one record beneath this one: the names in order, after a dot each. */
     public function beneath(string ...$names): string
     {

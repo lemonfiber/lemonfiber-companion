@@ -85,6 +85,7 @@ it('lists the stacks on the phone in the order they were put in', function (): v
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 
     expect(theStacksAmong(WhatTheDeviceWouldDraw::by($screen)->said()))->toBe(['The shed', 'The loft', 'The attic']);

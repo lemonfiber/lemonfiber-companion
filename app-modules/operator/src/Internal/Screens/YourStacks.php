@@ -35,6 +35,7 @@ use Modules\Operator\Internal\WhatEachStackLastSaid;
 use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhereAStackOpens;
 use Modules\Operator\Internal\WhereTappingLeads;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
@@ -137,7 +138,23 @@ final class YourStacks extends NativeComponent
         private readonly Hearing $hearing,
         private readonly Capture $capture,
         private readonly RemovingAStack $removing,
+        private readonly WhereAStackOpens $landing,
     ) {}
+
+    /**
+     * The opening: its housekeeping first, then on to where the operator left
+     * off, the first time the list is built in a run. An opening that cleared
+     * what the phone kept stays on the list, which says so once.
+     */
+    public function mount(): void
+    {
+        $cleared = $this->savedDataWasCleared();
+        $lands = $this->landing->theOpening();
+
+        if (! $cleared && $lands !== '') {
+            $this->navigate($lands);
+        }
+    }
 
     /**
      * Whether this device has been introduced to anything.
@@ -337,13 +354,11 @@ final class YourStacks extends NativeComponent
      */
     public function tappingGoesTo(Stack $stack): string
     {
-        $where = WhereAStackIs::of($stack->id());
-
         $leads = WhereTappingLeads::for($this->storage, $stack->id());
 
         return match ($leads) {
             WhereTappingLeads::TheSignIn => $this->signInAt($stack),
-            WhereTappingLeads::TheReport => $where->health(),
+            WhereTappingLeads::TheReport => $this->landing->onItsLastTab($stack),
             WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
         };
     }
