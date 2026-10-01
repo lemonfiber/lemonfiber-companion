@@ -17,6 +17,7 @@ return [
     'media_server_unconfirmed_action' => 'Er is niets aan je account veranderd. Probeer het opnieuw zodra de mediaserver draait.',
     'address_not_the_stacks' => 'Deze stack accepteerde het adres niet waarop deze app hem bereikte.',
     'address_not_the_stacks_action' => 'Koppel opnieuw vanaf de stack zelf, zodat deze app het adres heeft waarop hij antwoordt.',
+    'encrypted' => 'Versleuteld, en gecontroleerd aan de hand van het certificaat waarmee je hebt gekoppeld.',
     'paired' => 'Gekoppeld aan :stack',
     'pairing_refused' => 'Die koppelingslink is geweigerd. Vraag een nieuwe aan op de stack.',
     'fingerprint_changed' => 'Het certificaat van deze stack is gewijzigd. Koppel opnieuw vanaf de stack zelf voordat je verdergaat.',

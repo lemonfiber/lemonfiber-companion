@@ -131,7 +131,7 @@ it('draws the stack\'s name in the top bar as the control that opens the list, a
         ->and($drawn->offers())->toBe(['The attic']);
 });
 
-it('lists every stack in the phone\'s order with how it last stood, marks the current one, and ends with adding a stack', function (): void {
+it('lists every stack in the phone\'s order with how it last stood, marks the current one, ends with adding a stack, and says how each is reached', function (): void {
     $standings = StandingsInMemory::working()->lastHeard(theBarnToChooseFrom()->id(), HowItStands::Broken, Instant::atEpochSeconds(HEARD_AT));
     $screen = aTabToChooseFrom(standings: $standings);
     $screen->chooseAStack();
@@ -146,6 +146,7 @@ it('lists every stack in the phone\'s order with how it last stood, marks the cu
         'The barn',
         __(HowItStands::Broken->saidInAWord()),
         __('navigation.switcher.add'),
+        __('connection.encrypted'),
     ])->and($drawn->offers())->toBe(['The attic', 'The attic', 'The barn', __('navigation.switcher.add')])
         ->and(array_map(static fn(AStackToChooseAsShown $stack): string => $stack->pressed(), $screen->stacksToChooseFrom()))
         ->toBe(['stopChoosingAStack()', sprintf("openTheStack('%s')", theBarnToChooseFrom()->id()->stored())]);
