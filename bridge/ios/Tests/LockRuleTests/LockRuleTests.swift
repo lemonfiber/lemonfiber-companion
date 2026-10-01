@@ -2,74 +2,118 @@ import Testing
 
 @testable import LemonfiberNative
 
-// When the app must be locked, and when it may ask.
+// When the app is locked, and what the glass may show.
 //
-// The same cases as `LockRuleTest.kt`, in the same order, for the same reason
-// the capture rule is mirrored: two platforms quietly disagreeing about when an
-// app locks is a bug nobody finds, because each half looks right on its own. A
-// CI job compares the two files case for case.
+// The same cases as `LockRuleTest.kt`; a CI job compares the two files case
+// for case, so the halves cannot quietly disagree about when an app locks.
 
-@Test("a cold start is locked, whatever the grace period says")
-func coldStartIsLocked() {
-    // No grace across a launch. The app that was open before is not the app
-    // that is open now, and an hour of grace configured yesterday must not
-    // carry a relaunch today.
-    #expect(LockRule.coldStart(grace: 3600).mustLock)
-    #expect(LockRule.coldStart(grace: 0).mustLock)
+private let later: Int64 = 1_000
+
+private func openAt(_ now: Int64) -> LockRule {
+    LockRule.coldStart().asking().answered(succeeded: true).left(now)
 }
 
-@Test("an app idle past its grace period is locked")
-func idlePastGraceIsLocked() {
-    let rule = LockRule.coldStart(grace: 60).authenticated().after(seconds: 60)
-
-    #expect(rule.mustLock)
+@Test("a cold start stands, whatever Lock after says")
+func coldStartStands() {
+    #expect(LockRule.coldStart().standsAt(now: 0, canAsk: true))
+    #expect(LockRule.coldStart().awayFor(seconds: 3600).standsAt(now: later, canAsk: true))
 }
 
-@Test("an app inside its grace period is not locked")
-func insideGraceIsNotLocked() {
-    // The one state that must *not* lock. Without it the rule could answer true
-    // unconditionally, every other test here would still pass, and an app that
-    // demanded a passcode on every glance would ship.
-    let rule = LockRule.coldStart(grace: 60).authenticated().after(seconds: 59)
+@Test("only the device's success opens it")
+func onlySuccessOpens() {
+    let failed = LockRule.coldStart().asking().answered(succeeded: false)
 
-    #expect(!rule.mustLock)
-    #expect(!rule.mayPrompt)
+    #expect(failed.held)
+    #expect(!failed.prompting)
+    #expect(!LockRule.coldStart().asking().answered(succeeded: true).held)
 }
 
-@Test("a grace of nothing means asking every time")
-func zeroGraceAlwaysLocks() {
-    // `>=` rather than `>` is what makes this work, and it is the boundary the
-    // comparison gets wrong in the other direction: with `>`, a grace of zero
-    // would never lock at all — the configuration meaning "ask every time"
-    // would mean "never ask".
-    let rule = LockRule.coldStart(grace: 0).authenticated()
+@Test("coming back inside Lock after leaves it open")
+func insideLockAfterStaysOpen() {
+    let rule = openAt(later).awayFor(seconds: 60).returned(now: later + 59, canAsk: true)
 
-    #expect(rule.mustLock)
+    #expect(!rule.held)
+    #expect(!rule.mustCover)
 }
 
-@Test("no prompt while the operator is in the middle of something")
-func noPromptDuringAnAction() {
-    // Locked, and silent. The lock screen is shown; the device's own prompt
-    // waits. An operator interrupted mid-action answers a dialog to get rid of
-    // it, which is not authentication.
-    let rule = LockRule.coldStart(grace: 60).doing()
+@Test("coming back once Lock after has passed stands it again")
+func pastLockAfterStands() {
+    let rule = openAt(later).awayFor(seconds: 60).returned(now: later + 60, canAsk: true)
 
-    #expect(rule.mustLock)
-    #expect(!rule.mayPrompt)
+    #expect(rule.held)
+    #expect(rule.mustCover)
 }
 
-@Test("the prompt comes once the action is finished")
-func promptsOnceTheActionIsDone() {
-    let rule = LockRule.coldStart(grace: 60).doing().idle()
-
-    #expect(rule.mustLock)
-    #expect(rule.mayPrompt)
+@Test("immediately stands it on every return")
+func immediatelyStandsEveryTime() {
+    #expect(openAt(later).returned(now: later, canAsk: true).held)
 }
 
-@Test("authenticating clears the lock and the clock")
-func authenticatingClearsBoth() {
-    let rule = LockRule.coldStart(grace: 60).after(seconds: 500).authenticated()
+@Test("a time away counts before the return")
+func timeAwayCountsBeforeTheReturn() {
+    let away = openAt(later).awayFor(seconds: 60)
 
-    #expect(!rule.mustLock)
-    #expect(rule.secondsSinceAuthenticated == 0)
+    #expect(!away.standsAt(now: later + 59, canAsk: true))
+    #expect(away.standsAt(now: later + 60, canAsk: true))
+}
+
+@Test("the device's own prompt going up is not leaving")
+func promptIsNotLeaving() {
+    let rule = LockRule.coldStart().asking().answered(succeeded: true).asking().left(later)
+
+    #expect(!rule.away)
+    #expect(!rule.returned(now: later + 3600, canAsk: true).held)
+}
+
+@Test("the glass stays covered from leaving until the lock is drawn")
+func coveredUntilDrawn() {
+    let back = openAt(later).returned(now: later, canAsk: true)
+
+    #expect(openAt(later).mustCover)
+    #expect(back.mustCover)
+    #expect(!back.drawn().mustCover)
+}
+
+@Test("opening it uncovers the glass")
+func openingUncovers() {
+    let back = openAt(later).returned(now: later, canAsk: true)
+
+    #expect(!back.asking().answered(succeeded: true).mustCover)
+    #expect(back.asking().answered(succeeded: false).mustCover)
+}
+
+@Test("it asks by itself once per standing")
+func asksByItselfOnce() {
+    let asked = openAt(later).returned(now: later, canAsk: true).askingByItself().answered(succeeded: false)
+
+    #expect(!asked.mayAskByItself)
+    #expect(asked.left(later).returned(now: later, canAsk: true).held)
+    #expect(!asked.left(later).returned(now: later, canAsk: true).mayAskByItself)
+    #expect(
+        asked.asking().answered(succeeded: true).left(later).returned(now: later, canAsk: true).mayAskByItself
+    )
+}
+
+@Test("it never asks over a prompt that is already up")
+func neverAsksOverAPrompt() {
+    #expect(!LockRule.coldStart().asking().mayAskByItself)
+}
+
+@Test("waiving opens it and uncovers the glass")
+func waivingOpens() {
+    let waived = openAt(later).returned(now: later, canAsk: true).waived()
+
+    #expect(!waived.held)
+    #expect(!waived.mustCover)
+}
+
+@Test("a device with no screen lock has nobody to ask")
+func noScreenLockNobodyToAsk() {
+    #expect(!LockRule.coldStart().standsAt(now: 0, canAsk: false))
+    #expect(!openAt(later).returned(now: later, canAsk: false).mustCover)
+}
+
+@Test("the passcode stands behind the biometrics")
+func passcodeBehindBiometrics() {
+    #expect(WhatUnlocks.accepted == .deviceOwnerAuthentication)
 }

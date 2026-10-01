@@ -47,6 +47,12 @@ trait FollowsWhatTheVerbCameTo
         return $this->cameTo ??= $this->followed();
     }
 
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->whatItCameTo()->isWorking;
+    }
+
     abstract public function stack(): Stack;
 
     /**

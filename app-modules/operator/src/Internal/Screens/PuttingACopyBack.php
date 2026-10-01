@@ -20,6 +20,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -62,7 +63,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class PuttingACopyBack extends NativeComponent
+final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -112,6 +113,12 @@ final class PuttingACopyBack extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->isWorking();
     }
 
     public function render(): View

@@ -75,15 +75,21 @@ enum LemonfiberFunctions {
         }
     }
 
+    /// Put the window into whatever state the lock now calls for, on the main queue.
+    static func refresh() {
+        DispatchQueue.main.async { apply() }
+    }
+
     /// Put the window into whatever state the rule now calls for.
     ///
     /// `isCaptured` is read here rather than folded into `CaptureRule`, because
     /// it is a fact about the device at this instant rather than about what the
     /// app is showing — and the rule is the part that is meant to be testable
-    /// without one.
+    /// without one. The lock's own cover is the same view: the glass shows
+    /// nothing while either asks for it.
     private static func apply() {
         let recording = UIScreen.main.isCaptured
-        let hide = rule.mustProtect || (rule.concealed && recording)
+        let hide = rule.mustProtect || (rule.concealed && recording) || TheLock.mustCover
 
         guard
             let window = UIApplication.shared.connectedScenes
@@ -115,6 +121,9 @@ enum LemonfiberFunctions {
         let over = UIView()
         over.backgroundColor = .systemBackground
         over.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // VoiceOver reads nothing under it: a cover a screen reader can read
+        // through covers nothing.
+        over.accessibilityViewIsModal = true
 
         return over
     }

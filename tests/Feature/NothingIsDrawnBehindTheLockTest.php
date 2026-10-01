@@ -2,48 +2,29 @@
 
 declare(strict_types=1);
 
-use Modules\Connection\Api\Opening;
+use Bootstrap\Composition\NativePHP\ScreenRouter;
+use Bootstrap\Composition\NativePHP\TheLockIsOnTheGlass;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HowItStands;
-use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\TheHealthSummary;
-use Modules\Kernel\Api\WhatStoppedMoving;
-use Modules\Kernel\Api\WhatWasHeard;
-use Modules\Kernel\Api\Whose;
-use Modules\Operator\Internal\Screens\YourStacks;
-use Tests\Support\Fakes\ACaptureInMemory;
-use Tests\Support\Fakes\ADeviceOnANetwork;
+use Modules\Kernel\Api\WhenTheLockAsks;
+use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\Screens\Locked;
+use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Edge\NavigationIntent;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
-use Tests\Support\Fakes\AKeychainInMemory;
-use Tests\Support\Fakes\AShareSheetThatWasOffered;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
-use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\AScreenUnderTheLock;
 use Tests\Support\WhatTheDeviceWouldDraw;
-use Tests\Support\WhatThePhoneKeeps;
 
-// What the lock is for, and what it hides.
+// What the lock screen draws, and how it goes on.
 //
-// Asked against the rendered tree rather than the template text, because all
-// three are claims about a *frame*. A template carries both arms of its own
-// `@if` and reads as a screen that says everything on every branch; which of
-// them the device draws is decided at render, which is where this asks.
-//
-// The three are one behaviour seen from three sides: when the
-// prompt is asked at all, what decides it, and what the
-// frame may carry while it stands.
+// Asked against the rendered tree rather than the template text, because these
+// are claims about a frame.
 
-/** The moment a launch is read at. Named for this file (`G10`). */
-const WHEN_IT_LAUNCHED = 1_770_000_000;
-
-/** A machine this device could be holding. */
+/** A machine this device could be holding. Named for this file. */
 function aStackBehindTheLock(): Stack
 {
     return Stack::of(
@@ -54,135 +35,187 @@ function aStackBehindTheLock(): Stack
     );
 }
 
-/** The launch screen over a device that answers the unlock this way. */
-function theScreenOnADeviceThat(ADeviceThatKnowsYou $device, Stack ...$paired): YourStacks
+/** Where a lock screen went, as a path, or nowhere. Named for this file. */
+function whereTheLockWent(Locked $screen): string
 {
-    $stacks = StacksInMemory::holding(...$paired);
+    $intent = $screen->getNavigationIntent();
 
-    return new YourStacks(
-        $stacks,
-        AKeychainInMemory::working(),
-        AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_LAUNCHED)),
-        new Opening($device, $stacks, ADeviceOnANetwork::connected()),
-        WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
-    );
+    return $intent instanceof NavigationIntent ? sprintf('%s %s', $intent->type, $intent->uri ?? '') : 'nowhere';
 }
 
-/** What that screen puts on the glass. */
-function whatTheLaunchDraws(YourStacks $screen): WhatTheDeviceWouldDraw
-{
-    return WhatTheDeviceWouldDraw::by($screen);
-}
+it('draws the reason and the way in, and nothing else', function (): void {
+    // Exactly, not *contains*: a check that found the unlock copy present would
+    // pass for a frame carrying the machine list underneath it.
+    $drawn = WhatTheDeviceWouldDraw::by(new Locked(ADeviceThatKnowsYou::refusing()));
 
-it('N4-R24 — a locked launch draws the reason and the way in, and nothing else', function (): void {
-    $drawn = whatTheLaunchDraws(theScreenOnADeviceThat(
-        ADeviceThatKnowsYou::refusing(),
-        aStackBehindTheLock(),
-    ));
-
-    // Exactly, not *contains*. The requirement names three things that must not
-    // be behind a lock — a first-run surface, an empty state and any frame
-    // already rendered — and a check that merely found the unlock copy present
-    // would pass for a frame carrying all three underneath it, which is the
-    // failure this is written against: the machine list legible behind the
-    // prompt.
-    expect($drawn->said())->toBe([
-        __('device.unlock_reason'),
-        __('device.unlock'),
-    ]);
+    expect($drawn->said())->toBe([__('device.unlock_reason'), __('device.unlock')])
+        ->and($drawn->offers())->toBe([__('device.unlock')])
+        ->and($drawn->said())->not->toContain(aStackBehindTheLock()->name()->shown());
 });
 
-it('N4-R24 — nothing behind a lock can be pressed', function (): void {
-    $drawn = whatTheLaunchDraws(theScreenOnADeviceThat(
-        ADeviceThatKnowsYou::refusing(),
-        aStackBehindTheLock(),
-    ));
+it('draws no top bar, so there is no back arrow and no edge swipe', function (): void {
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(new Locked(ADeviceThatKnowsYou::refusing())));
 
-    // The half that matters most. A sentence drawn behind a prompt leaks the
-    // shape of somebody's household; a control drawn behind one can be pressed
-    // through it, which is the lock failing at the thing it is for.
-    expect($drawn->offers())->toBe([__('device.unlock')]);
+    expect($tree)->not->toContain('top_bar')
+        ->and($tree)->not->toContain('side_nav')
+        ->and($tree)->not->toContain('bottom_nav');
 });
 
-it('N4-R24 — the name of a machine is not behind the lock', function (): void {
-    $stack = aStackBehindTheLock();
-    $drawn = whatTheLaunchDraws(theScreenOnADeviceThat(ADeviceThatKnowsYou::refusing(), $stack));
+it('keeps its words clear of the status bar and the home indicator', function (): void {
+    // With no top bar to take the status bar's inset, the screen takes both
+    // insets itself, or the reason is drawn under the clock.
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(new Locked(ADeviceThatKnowsYou::refusing())));
 
-    // Named separately from the assertion above, which would catch it, because
-    // this is the one a reader wants to see stated: the name is
-    // what the operator chose, and the names of the machines in somebody's
-    // house is exactly what an unlocked phone on a table would show a guest.
-    expect($drawn->said())->not->toContain($stack->name()->shown());
+    expect($tree)->toContain('"safe_area":1');
 });
 
-it('no stack is reached behind a lock, even one this device is signed into', function (): void {
-    $stack = aStackBehindTheLock();
-    $stacks = StacksInMemory::holding($stack);
-    $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    $hearing = AStackThatSpeaksUp::holdingOpen(
-        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
-    );
-    $screen = new YourStacks(
-        $stacks,
-        $keychain,
-        AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_LAUNCHED)),
-        new Opening(ADeviceThatKnowsYou::refusing(), $stacks, ADeviceOnANetwork::connected()),
-        WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
-        $hearing,
-        ACaptureInMemory::inFront(),
-    );
+it('stays where it is on the back button', function (): void {
+    $screen = new Locked(ADeviceThatKnowsYou::willing());
 
-    // A wake on a locked list is a wake on a frame that shows nothing, and a
-    // subscription opened there would be the lock reaching the stack for it.
-    $screen->listen();
+    $screen->onBackPressed();
 
-    expect($hearing->asked())->toBe(0);
+    expect(whereTheLockWent($screen))->toBe('nowhere');
 });
 
-it('N4-R22 — a device holding nothing reaches its first run with no prompt', function (): void {
+it('goes on only when the device lets the operator in', function (): void {
+    $refused = new Locked(ADeviceThatKnowsYou::refusing());
+    $refused->tryToUnlock();
+
+    $willing = new Locked(ADeviceThatKnowsYou::willing());
+    $willing->tryToUnlock();
+
+    expect(whereTheLockWent($refused))->toBe('nowhere')
+        ->and(whereTheLockWent($willing))->toBe(sprintf('replace %s', AScreenWithoutAStack::TheList->value));
+});
+
+it('asks the device again on every tap, even where it would not ask by itself', function (): void {
     $device = ADeviceThatKnowsYou::refusing();
+    $screen = new Locked($device);
+    $screen->setData([Locked::AWAITS => true]);
 
-    $drawn = whatTheLaunchDraws(theScreenOnADeviceThat($device));
+    $screen->tryToUnlock();
+    $screen->tryToUnlock();
 
-    // The device would refuse, and is never asked. A lock over an empty store
-    // protects nothing, and a prompt protecting nothing is how somebody learns
-    // the prompt is noise — which costs the lock its meaning on the launch
-    // where it is real.
-    expect($drawn->said())->not->toContain(__('device.unlock_reason'))
-        ->and($drawn->said())->toContain(__('onboarding.what_this_is'));
+    expect($device->asked())->toBe(2);
 });
 
-it('N4-R23 — the store decides, so a pairing engages the lock without a flag', function (): void {
-    $refusing = ADeviceThatKnowsYou::refusing();
+it('goes on when the device says its own prompt opened the lock, and not before', function (): void {
+    $device = ADeviceThatKnowsYou::willing();
+    $screen = new Locked($device);
 
-    // The same device and the same screen class, differing only in what the
-    // store holds. Nothing in between is set, cleared or remembered:
-    // asks for the store itself rather than a flag the app maintains, and a
-    // flag is exactly what would let these two frames come out the same.
-    expect(whatTheLaunchDraws(theScreenOnADeviceThat($refusing))->said())
-        ->not->toContain(__('device.unlock_reason'));
+    $screen->drawn();
+    $screen->lockMoved();
 
-    expect(whatTheLaunchDraws(theScreenOnADeviceThat($refusing, aStackBehindTheLock()))->said())
-        ->toContain(__('device.unlock_reason'));
+    expect(whereTheLockWent($screen))->toBe('nowhere');
+
+    $device->answers();
+    $screen->lockMoved();
+
+    expect(whereTheLockWent($screen))->toBe(sprintf('replace %s', AScreenWithoutAStack::TheList->value));
 });
 
-it('N4-R3, N4-R22 — a handset with no screen lock set is not held shut', function (): void {
-    $drawn = whatTheLaunchDraws(theScreenOnADeviceThat(
-        ADeviceThatKnowsYou::withNoScreenLock(),
-        aStackBehindTheLock(),
-    ));
+it('lets the device ask by itself where nothing is awaited', function (): void {
+    $device = ADeviceThatKnowsYou::willing();
 
-    // Refusing to open here would be this app requiring something the platform
-    // does not have, on a device where the operator has already decided. The
-    // machine is drawn, which is the working alternative that is asked for.
-    expect($drawn->said())->toContain(aStackBehindTheLock()->name()->shown());
+    new Locked($device)->drawn();
+
+    expect($device->askedByItself())->toBe(1)
+        ->and($device->asked())->toBe(0);
+});
+
+it('does not let the device ask by itself over an outcome still awaited', function (): void {
+    $device = ADeviceThatKnowsYou::willing();
+    $screen = new Locked($device);
+    $screen->setData([Locked::AWAITS => true]);
+
+    $screen->drawn();
+
+    expect($device->drawnTimes())->toBe(1)
+        ->and($device->askedByItself())->toBe(0);
+});
+
+it('goes on when it is come back to after the lock opened', function (): void {
+    $screen = new Locked(ADeviceThatKnowsYou::unlocked());
+
+    $screen->onResume();
+
+    expect(whereTheLockWent($screen))->toBe(sprintf('replace %s', AScreenWithoutAStack::TheList->value));
+});
+
+it('stays when it is come back to and the lock still stands', function (): void {
+    $screen = new Locked(ADeviceThatKnowsYou::refusing());
+
+    $screen->onResume();
+
+    expect(whereTheLockWent($screen))->toBe('nowhere');
+});
+
+it('is asked by itself as the device is told, with the prompt either way', function (): void {
+    expect(WhenTheLockAsks::ByItself->byItself())->toBeTrue()
+        ->and(WhenTheLockAsks::OnlyWhenTapped->byItself())->toBeFalse();
+});
+
+/**
+ * A navigation stack holding these paths, every one of them built as the lock.
+ *
+ * @param list<string> $paths
+ */
+function aStackOfLocks(ADeviceThatKnowsYou $device, array $paths): Locked
+{
+    $top = new Locked($device);
+    $router = new ScreenRouter(static fn(): Locked => $top);
+
+    $entries = [];
+
+    foreach ($paths as $path) {
+        $entries[] = ['uri' => $path];
+    }
+
+    $router->preloadStack($entries);
+    $top->setRouter($router);
+
+    return $top;
+}
+
+it('steps back to the screen it was put over, whose state was kept under it', function (): void {
+    $screen = aStackOfLocks(ADeviceThatKnowsYou::willing(), [AScreenWithoutAStack::TheList->value, AScreenWithoutAStack::Locked->value]);
+
+    $screen->tryToUnlock();
+
+    expect(whereTheLockWent($screen))->toBe('back ');
+});
+
+it('builds the screen it stood in for', function (): void {
+    $screen = aStackOfLocks(ADeviceThatKnowsYou::willing(), [AScreenWithoutAStack::PairByTyping->value]);
+
+    $screen->tryToUnlock();
+
+    expect(whereTheLockWent($screen))->toBe(sprintf('replace %s', AScreenWithoutAStack::PairByTyping->value));
+});
+
+it('opens on the list where it is the only screen there is', function (): void {
+    $screen = aStackOfLocks(ADeviceThatKnowsYou::willing(), [AScreenWithoutAStack::Locked->value]);
+
+    $screen->tryToUnlock();
+
+    expect(whereTheLockWent($screen))->toBe(sprintf('replace %s', AScreenWithoutAStack::TheList->value));
+});
+
+it('tells the device only the lock screen is on the glass', function (): void {
+    $device = ADeviceThatKnowsYou::refusing();
+    $observer = new TheLockIsOnTheGlass();
+
+    // Held here, because the runloop holds the screen it marks only weakly.
+    $locked = new Locked($device);
+    $other = AScreenUnderTheLock::atRest();
+
+    $before = NativeComponent::markActive($locked);
+    $observer->tree([], AScreenWithoutAStack::Locked->value);
+    NativeComponent::markActive($other);
+    $observer->tree([], AScreenWithoutAStack::TheList->value);
+    $observer->event([], null);
+    $observer->nav([]);
+    NativeComponent::restoreActive($before);
+
+    expect($device->drawnTimes())->toBe(1);
 });

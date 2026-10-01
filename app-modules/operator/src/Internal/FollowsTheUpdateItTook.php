@@ -60,6 +60,12 @@ trait FollowsTheUpdateItTook
         }
     }
 
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->lastUpdate()->isWorking;
+    }
+
     abstract public function stack(): Stack;
 
     /**

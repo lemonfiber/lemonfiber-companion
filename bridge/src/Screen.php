@@ -85,19 +85,44 @@ final readonly class Screen
     }
 
     /**
-     * Ask the device who this is.
+     * Ask the device who this is, and answer whether it said so.
      *
      * The reason is shown in the platform's own dialog, which is the app's last
-     * chance to say why it is asking.
-     *
-     * Answers whether the prompt was *raised*, not whether it succeeded: the
-     * dialog is the operator's to answer in their own time, and the real result
-     * arrives as an event. A caller wanting the answer waits for that; a caller
-     * wanting to know whether anything happened at all reads this.
+     * chance to say why it is asking. The call waits for the operator, and yes
+     * is the platform's success callback and nothing else: a cancel, a failure,
+     * a lockout and a device that is not there all answer no.
      */
     public function authenticate(string $reason): bool
     {
-        return $this->asked(Call::Authenticate, WhatAnAnswerHolds::Acknowledged, ['reason' => $reason]);
+        return $this->asked(Call::Authenticate, WhatAnAnswerHolds::Authenticated, ['reason' => $reason]);
+    }
+
+    /**
+     * Whether the app lock is open right now.
+     *
+     * Open only on a plain yes. Off a handset, and on any answer that is not
+     * one, the lock stands.
+     */
+    public function lockIsOpen(): bool
+    {
+        return $this->asked(Call::LockStanding, WhatAnAnswerHolds::Open);
+    }
+
+    /** Stand the lock down, and answer whether it is now open. */
+    public function waiveTheLock(): bool
+    {
+        return $this->asked(Call::LockWaive, WhatAnAnswerHolds::Open);
+    }
+
+    /**
+     * Say the lock screen is on the glass, and answer whether the lock is open.
+     *
+     * Where the lock may ask by itself, the device raises its prompt with this
+     * reason; its answer arrives later, as the lock opening.
+     */
+    public function lockIsDrawn(string $reason, bool $mayAsk): bool
+    {
+        return $this->asked(Call::LockDrawn, WhatAnAnswerHolds::Open, ['reason' => $reason, 'ask' => $mayAsk]);
     }
 
     /**
@@ -137,7 +162,7 @@ final readonly class Screen
     /**
      * One bridge call, reduced to the one key its answer is about.
      *
-     * @param array<string, string> $with
+     * @param array<string, string|bool> $with
      */
     private function asked(Call $function, WhatAnAnswerHolds $key, array $with = []): bool
     {

@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -57,7 +58,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class LettingADownloadGo extends NativeComponent
+final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -110,6 +111,12 @@ final class LettingADownloadGo extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->isWorking();
     }
 
     public function render(): View

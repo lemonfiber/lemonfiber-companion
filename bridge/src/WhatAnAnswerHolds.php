@@ -46,6 +46,9 @@ enum WhatAnAnswerHolds: string
     /** Whether the device can ask who is holding it. */
     case CanAuthenticate = 'canAuthenticate';
 
-    /** Whether the person holding it said it is them. */
-    case Acknowledged = 'acknowledged';
+    /** Whether the device's own prompt succeeded. */
+    case Authenticated = 'authenticated';
+
+    /** Whether the app lock is open. Anything but a plain yes is held. */
+    case Open = 'open';
 }

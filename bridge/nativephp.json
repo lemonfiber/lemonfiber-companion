@@ -29,13 +29,31 @@
             "name": "Lemonfiber.Authenticate",
             "android": "app.lemonfiber.native.LemonfiberAuth.Authenticate",
             "ios": "LemonfiberAuth.Authenticate",
-            "description": "Ask the device who this is, falling back to the passcode where biometry fails rather than to unlocked"
+            "description": "Ask the device who this is and wait for the answer, falling back to the passcode where biometry fails rather than to unlocked"
         },
         {
             "name": "Lemonfiber.CanAuthenticate",
             "android": "app.lemonfiber.native.LemonfiberAuth.CanAuthenticate",
             "ios": "LemonfiberAuth.CanAuthenticate",
             "description": "Whether the device has a screen lock configured and can authenticate at all"
+        },
+        {
+            "name": "Lemonfiber.Lock.Standing",
+            "android": "app.lemonfiber.native.TheLock.Standing",
+            "ios": "TheLock.Standing",
+            "description": "Whether the app lock stands right now, answered from the lock the device holds"
+        },
+        {
+            "name": "Lemonfiber.Lock.Waive",
+            "android": "app.lemonfiber.native.TheLock.Waive",
+            "ios": "TheLock.Waive",
+            "description": "Stand the lock down because the store holds nothing for it to guard"
+        },
+        {
+            "name": "Lemonfiber.Lock.Drawn",
+            "android": "app.lemonfiber.native.TheLock.Drawn",
+            "ios": "TheLock.Drawn",
+            "description": "The lock screen is on the glass: take the cover down, and ask once where that is allowed"
         },
         {
             "name": "Lemonfiber.Telling.Show",
@@ -154,6 +172,7 @@
         "dependencies": {
             "implementation": [
                 "androidx.biometric:biometric:1.1.0",
+                "androidx.lifecycle:lifecycle-process:2.6.1",
                 "com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1",
                 "androidx.camera:camera-core:1.3.0",
                 "androidx.camera:camera-camera2:1.3.0",

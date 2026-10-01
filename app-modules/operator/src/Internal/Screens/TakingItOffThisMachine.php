@@ -22,6 +22,7 @@ use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -59,7 +60,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class TakingItOffThisMachine extends NativeComponent
+final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -102,6 +103,12 @@ final class TakingItOffThisMachine extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->answer()->isWorking;
     }
 
     public function render(): View

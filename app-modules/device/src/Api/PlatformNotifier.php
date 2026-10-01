@@ -10,6 +10,7 @@ use Lemonfiber\Native\WhatTheOperatorSaid;
 use Lemonfiber\Native\WhyNothingWasTold;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Asked;
+use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
@@ -56,7 +57,7 @@ final readonly class PlatformNotifier implements Notifier
      */
     private const string UNDER = 'lemonfiber';
 
-    public function __construct(private Centre $centre, private Words $words) {}
+    public function __construct(private Centre $centre, private Words $words, private DeviceAuth $lock) {}
 
     public function standing(): Asked
     {
@@ -98,7 +99,7 @@ final readonly class PlatformNotifier implements Notifier
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
 
-        return $notification->either(
+        return $this->whileTheLockStands($notification)->either(
             plain: fn(WhatTheCoreDecided $says, StackId $about): Told => $this->centre->show(
                 $this->idFor($says),
                 $this->words->for('notifications.plain.title', ['stack' => $about->stored()]),
@@ -115,6 +116,21 @@ final readonly class PlatformNotifier implements Notifier
         )->either(
             done: static fn(): Shown => Shown::delivered(),
             withheld: fn(WhyNothingWasTold $why): Shown => Shown::withheld($this->meaning($why)),
+        );
+    }
+
+    /**
+     * The notification as it may be shown right now.
+     *
+     * Asked of the device, which counts a time away that has not ended: a
+     * notification shown once the app has been away longer than the operator
+     * allows is shown while the lock stands, and says nothing of the stack.
+     */
+    private function whileTheLockStands(Notification $notification): Notification
+    {
+        return $this->lock->standing()->either(
+            held: static fn(): Notification => $notification->whileLocked(),
+            open: static fn(): Notification => $notification,
         );
     }
 

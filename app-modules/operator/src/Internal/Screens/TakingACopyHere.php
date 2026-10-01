@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -53,7 +54,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class TakingACopyHere extends NativeComponent
+final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
 {
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
@@ -97,6 +98,12 @@ final class TakingACopyHere extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->lastCopy()->isWorking;
     }
 
     public function render(): View

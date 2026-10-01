@@ -59,13 +59,53 @@ it('sends the reason it is asking the device who somebody is', function (): void
     // Nothing held it: the parameter could be dropped from the call and every
     // test here stayed green, because the answer this method reads does not
     // depend on what it sent.
-    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['acknowledged' => true]);
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['authenticated' => true]);
 
     expect(new Screen()->authenticate('to unlock your stacks'))->toBeTrue();
 
     $bridge->assertCalled(
         'Lemonfiber.Authenticate',
         fn(array $sent): bool => $sent === ['reason' => 'to unlock your stacks'],
+    );
+});
+
+it('reads only the platform success as the device saying who somebody is', function (): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['authenticated' => false, 'acknowledged' => true]);
+
+    expect(new Screen()->authenticate('to unlock your stacks'))->toBeFalse();
+});
+
+it('reads the lock as open only on a plain yes', function (): void {
+    FakeBridge::enable()
+        ->respondTo('Lemonfiber.Lock.Standing', ['open' => true])
+        ->respondTo('Lemonfiber.Lock.Waive', ['open' => 'true'])
+        ->respondTo('Lemonfiber.Lock.Drawn', ['open' => false]);
+
+    $device = new Screen();
+
+    expect($device->lockIsOpen())->toBeTrue()
+        ->and($device->waiveTheLock())->toBeFalse()
+        ->and($device->lockIsDrawn('to unlock your stacks', mayAsk: true))->toBeFalse();
+});
+
+it('reads a lock off a handset as one that stands', function (): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.Lock.Standing', [
+        'status' => 'error',
+        'code' => 'NO_DEVICE',
+        'message' => 'No device connected.',
+    ]);
+
+    expect(new Screen()->lockIsOpen())->toBeFalse();
+});
+
+it('tells the device whether it may ask by itself, and why', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Lock.Drawn', ['open' => false]);
+
+    new Screen()->lockIsDrawn('to unlock your stacks', mayAsk: false);
+
+    $bridge->assertCalled(
+        'Lemonfiber.Lock.Drawn',
+        fn(array $sent): bool => $sent === ['reason' => 'to unlock your stacks', 'ask' => false],
     );
 });
 
@@ -140,7 +180,7 @@ it('does not send a payload it could not encode, and says so as nothing said', f
     // Nothing is sent instead, and the answer is the same one every other way
     // of not reaching the bridge gives. The second assertion is the one that
     // matters: the bridge was not called at all.
-    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['acknowledged' => true]);
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['authenticated' => true]);
 
     expect(new Screen()->authenticate("\xB1"))->toBeFalse()
         ->and($bridge->calls)->toBe([]);

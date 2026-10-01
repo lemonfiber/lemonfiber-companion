@@ -18,8 +18,9 @@ namespace Modules\Kernel\Api;
  * told what it may accept; that cannot be expressed here at all. What *can* be
  * expressed here is the second clause: {@see Lock} is either `held()` or
  * `openedBy(Authenticated)`, and an `Authenticated` can only be made by
- * {@see Authenticated::byTheDevice()}. There is no value this port can answer
- * with that means "open, but nobody checked".
+ * {@see Authenticated::byTheDevice()}, from the device's own answer. The device
+ * answers open only after its prompt succeeded, after a waiver asked for by
+ * whoever found the store empty, or where it has no screen lock to ask with.
  *
  * **Asking is not the same as being allowed to ask.** {@see self::isAvailable()}
  * answers whether the device has a screen lock configured at all, which is a
@@ -41,14 +42,40 @@ interface DeviceAuth
     /**
      * Ask, and answer with a lock that is either held or opened.
      *
+     * The device's prompt goes up now and this waits for it, so the lock that
+     * comes back is what the operator did.
+     *
      * **Takes nothing, and that is the decision.** iOS and Android both show a
-     * reason in their own dialog, so there is one sentence to supply — and a
-     * `string $reason` parameter was the first shape of this method until `D2`
-     * refused it. The rule was right for a better reason than the one it states:
-     * a caller that may pass the sentence is a caller that may write the
-     * sentence, and `L1` says the words come from the translator. With no
+     * reason in their own dialog, so there is one sentence to supply, and a
+     * caller that may pass the sentence is a caller that may write it. With no
      * parameter there is nowhere to put a literal, and the adapter reads the
      * one line the catalogue holds.
      */
     public function unlock(): Lock;
+
+    /**
+     * Whether the lock stands right now, asked without prompting.
+     *
+     * The device holds the lock: it stands from a cold start, stands again once
+     * the app has been away longer than the operator allows, and opens only on
+     * the prompt's success. Where the device has no screen lock it never stands.
+     */
+    public function standing(): Lock;
+
+    /**
+     * Stand the lock down, because the store holds nothing for it to guard.
+     *
+     * Asked only by whoever read the store and found it empty, and answered
+     * with how the lock stands afterwards.
+     */
+    public function waive(): Lock;
+
+    /**
+     * The lock screen is on the glass, so the device may stop covering it.
+     *
+     * Where it {@see WhenTheLockAsks::ByItself}, the device also raises its
+     * prompt, once per time the lock stood; the answer arrives later as the lock
+     * opening, and this answers how it stands now.
+     */
+    public function drawn(WhenTheLockAsks $asks): Lock;
 }

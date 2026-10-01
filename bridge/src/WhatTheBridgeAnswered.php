@@ -32,7 +32,7 @@ final readonly class WhatTheBridgeAnswered
     /**
      * One call, carrying what it was handed.
      *
-     * @param array<string, int|string> $with
+     * @param array<string, int|string|bool> $with
      */
     public static function to(Call $function, array $with = []): self
     {

@@ -14,13 +14,13 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
-use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The first run is a sequence, not a wall.
@@ -62,13 +62,22 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         AShareSheetThatWasOffered::working(),
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_WAS_FIRST_RUN)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
     );
 }
+
+it('draws its first step on a device holding nothing, and no unlock', function (): void {
+    // A lock over an empty store protects nothing, so the gate builds this
+    // screen without asking; what reaches the glass is the first step.
+    $drawn = WhatTheDeviceWouldDraw::by(theScreenAFirstRunLandsOn());
+
+    expect($drawn->said())->toContain(__('onboarding.what_this_is'))
+        ->and($drawn->said())->not->toContain(__('device.unlock_reason'));
+});
 
 it('N1-R54 — a first run opens on what the app is, not on a button', function (): void {
     // The order is the requirement. A sequence that opened on pairing would be

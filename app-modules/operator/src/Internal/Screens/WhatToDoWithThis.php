@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
@@ -97,7 +98,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class WhatToDoWithThis extends NativeComponent
+final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
     use AsksWhatTheStackIsRunning;
     use FollowsWhatTheVerbCameTo;

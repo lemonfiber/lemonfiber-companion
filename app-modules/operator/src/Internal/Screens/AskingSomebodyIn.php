@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowTheUnratedChoiceReads;
@@ -74,7 +75,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class AskingSomebodyIn extends NativeComponent
+final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -323,6 +324,12 @@ final class AskingSomebodyIn extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->howItIsGoing()->isWorking;
     }
 
     public function render(): View

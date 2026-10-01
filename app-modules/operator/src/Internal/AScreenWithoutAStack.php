@@ -53,6 +53,9 @@ enum AScreenWithoutAStack: string
      */
     case NotHereYet = '/not-yet/{what}';
 
+    /** The lock, put over whatever was on the glass when the device stood it again. */
+    case Locked = '/locked';
+
     /** This screen's path, saying which item this version of the app does not have yet. */
     public function saying(WhatIsNotHereYet $what): string
     {
