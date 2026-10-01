@@ -13,19 +13,15 @@ use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatWasReplaced
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which case a replaced value is, and what it holds. */
 function theWordForWhatWasReplaced(WhatItReplaced $replaced): string
 {
     return $replaced->whichever(
-        held: static fn(string $value): WhatWasReplaced => new WhatWasReplaced(sprintf('held:%s', $value)),
-        nothingSet: static fn(): WhatWasReplaced => new WhatWasReplaced('nothing'),
-        withheld: static fn(): WhatWasReplaced => new WhatWasReplaced('withheld'),
+        held: static fn(string $value): TheWordCarriedOut => new TheWordCarriedOut(sprintf('held:%s', $value)),
+        nothingSet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        withheld: static fn(): TheWordCarriedOut => new TheWordCarriedOut('withheld'),
     )->said;
 }
 

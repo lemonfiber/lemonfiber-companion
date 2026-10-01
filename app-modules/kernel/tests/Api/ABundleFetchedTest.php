@@ -12,19 +12,14 @@ use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
-
-/** One line carried out of an arm of a bundle fetched. */
-final readonly class WhichArmTheFetchTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a bundle fetched takes, and what it carried there. */
 function whatTheFetchCameTo(ABundleFetched $fetched): string
 {
     return $fetched->either(
-        fetched: static fn(ABundleFile $file): WhichArmTheFetchTook => new WhichArmTheFetchTook($file->named()),
-        met: static fn(Obstacle $why): WhichArmTheFetchTook => new WhichArmTheFetchTook($why->kind()->name),
+        fetched: static fn(ABundleFile $file): TheWordCarriedOut => new TheWordCarriedOut($file->named()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

@@ -31,6 +31,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Mending contract, run against the adapter and against the fake.
@@ -158,20 +159,14 @@ function stillGoing(): MockResponse
     return MockResponse::make((string) json_encode(whatAStackNamingAJobSends()), 202);
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheRepairTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** What starting the work produced, as a word. */
 function whatStartingSaid(Mending $mending): string
 {
     return $mending->wouldPutRight(aStackThatMightMend(), theSessionARepairIsAskedWith())->either(
-        started: static fn(Job $job): WhatTheRepairTurnedOutToSay
-            => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-            => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+        started: static fn(Job $job): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('started %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -181,25 +176,25 @@ function whatTheHandleSaid(Mending $mending): string
     return $mending
         ->whatBecameOf(aStackThatMightMend(), theSessionARepairIsAskedWith(), Job::named(AStackThatWouldMend::THE_JOB))
         ->either(
-            stillRunning: static fn(): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay('still running'),
-            offering: static function (Offer $offer): WhatTheRepairTurnedOutToSay {
+            stillRunning: static fn(): TheWordCarriedOut
+                => new TheWordCarriedOut('still running'),
+            offering: static function (Offer $offer): TheWordCarriedOut {
                 $said = [];
 
                 foreach ($offer->repairs() as $repair) {
                     $said[] = $repair->stated(
-                        static fn(string $does, Effects $effects, Undoing $undoing): WhatTheRepairTurnedOutToSay
-                            => new WhatTheRepairTurnedOutToSay(
+                        static fn(string $does, Effects $effects, Undoing $undoing): TheWordCarriedOut
+                            => new TheWordCarriedOut(
                                 sprintf('%s/%d/%s', $does, $effects->count(), $undoing->value),
                             ),
                     )->said;
                 }
 
-                return new WhatTheRepairTurnedOutToSay(sprintf('%s: %s', $offer->named(), implode(' | ', $said)));
+                return new TheWordCarriedOut(sprintf('%s: %s', $offer->named(), implode(' | ', $said)));
             },
-            ended: static fn(): WhatTheRepairTurnedOutToSay => new WhatTheRepairTurnedOutToSay('ended'),
-            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+            ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+            met: static fn(Obstacle $why): TheWordCarriedOut
+                => new TheWordCarriedOut($why->kind()->value),
         )->said;
 }
 
@@ -447,28 +442,28 @@ function whatWasDone(Mending $mending): string
     return $mending
         ->whatWasDoneAbout(aStackThatMightMend(), theSessionARepairIsAskedWith(), Job::named(AStackThatWouldMend::THE_JOB))
         ->either(
-            stillRunning: static fn(): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay('still running'),
-            done: static function (WhatWasMended $mended): WhatTheRepairTurnedOutToSay {
+            stillRunning: static fn(): TheWordCarriedOut
+                => new TheWordCarriedOut('still running'),
+            done: static function (WhatWasMended $mended): TheWordCarriedOut {
                 $said = [];
 
                 foreach ($mended as $one) {
                     $said[] = $one->said(
-                        static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatTheRepairTurnedOutToSay
-                            => new WhatTheRepairTurnedOutToSay($left->either(
-                                something: static fn(string $what): WhatTheRepairTurnedOutToSay
-                                    => new WhatTheRepairTurnedOutToSay(sprintf('%s/%s', $became->value, $what)),
-                                nothing: static fn(): WhatTheRepairTurnedOutToSay
-                                    => new WhatTheRepairTurnedOutToSay($became->value),
+                        static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): TheWordCarriedOut
+                            => new TheWordCarriedOut($left->either(
+                                something: static fn(string $what): TheWordCarriedOut
+                                    => new TheWordCarriedOut(sprintf('%s/%s', $became->value, $what)),
+                                nothing: static fn(): TheWordCarriedOut
+                                    => new TheWordCarriedOut($became->value),
                             )->said),
                     )->said;
                 }
 
-                return new WhatTheRepairTurnedOutToSay(sprintf('%d: %s', $mended->changed(), implode(' | ', $said)));
+                return new TheWordCarriedOut(sprintf('%d: %s', $mended->changed(), implode(' | ', $said)));
             },
-            ended: static fn(): WhatTheRepairTurnedOutToSay => new WhatTheRepairTurnedOutToSay('ended'),
-            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+            ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+            met: static fn(Obstacle $why): TheWordCarriedOut
+                => new TheWordCarriedOut($why->kind()->value),
         )->said;
 }
 
@@ -481,10 +476,10 @@ it('N2-R5 — agreeing is its own act, and answers a handle like every other', f
     foreach ($ways as $which => $make) {
         $mending = $make();
         $said = $mending->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())->either(
-            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
-            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+            started: static fn(Job $job): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): TheWordCarriedOut
+                => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
         expect($said)->toBe(sprintf('started %s', AStackThatWouldMend::THE_JOB), $which);
@@ -563,10 +558,10 @@ it('N1-R10 — a refused agreement is a refused session, not a broken machine', 
     $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
-            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
-            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+            started: static fn(Job $job): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): TheWordCarriedOut
+                => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
     expect($said)->toEqual(KindOfObstacle::CredentialWasRefused->value);
@@ -579,10 +574,10 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
     $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
-            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
-            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
+            started: static fn(Job $job): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): TheWordCarriedOut
+                => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
     expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);

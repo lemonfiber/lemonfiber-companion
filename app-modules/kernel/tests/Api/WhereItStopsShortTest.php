@@ -9,19 +9,14 @@ use function it;
 
 use Modules\Kernel\Api\ChangeSaysNothing;
 use Modules\Kernel\Api\WhereItStopsShort;
-
-/** One line carried out of the suggestion arm. */
-final readonly class WhatTheLimitSuggested
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** What to do instead, or the word for nothing. Named for this file (`G10`). */
 function whatTheLimitSuggests(WhereItStopsShort $where): string
 {
     return $where->instead(
-        said: static fn(string $what): WhatTheLimitSuggested => new WhatTheLimitSuggested($what),
-        nothing: static fn(): WhatTheLimitSuggested => new WhatTheLimitSuggested('nothing'),
+        said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
 }
 

@@ -20,6 +20,7 @@ use Modules\Sdk\Api\WhatIsAlreadyHere;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 use function var_export;
@@ -100,12 +101,6 @@ function aSurveyWith(array $data, array $path, mixed $value): array
     return $data;
 }
 
-/** One word carried out of an arm. */
-final readonly class WhatTheSurveyCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every port a service publishes, as one line. */
 function thePortsRead(ThePortsItPublishes $ports): string
 {
@@ -168,8 +163,8 @@ it('reads a layout that the stack reports nothing about, or null, as one that li
     $survey = WhatIsAlreadyHere::in(surveySaying(aSurveyWith(aSurveyOfTwoOfEverything(), ['linking'], $linking)));
 
     expect($survey->linking()->either(
-        costs: static fn(): WhatTheSurveyCarried => new WhatTheSurveyCarried('costs'),
-        links: static fn(): WhatTheSurveyCarried => new WhatTheSurveyCarried('links'),
+        costs: static fn(): TheWordCarriedOut => new TheWordCarriedOut('costs'),
+        links: static fn(): TheWordCarriedOut => new TheWordCarriedOut('links'),
     )->said)->toBe('links');
 })->with(['absent', null]);
 

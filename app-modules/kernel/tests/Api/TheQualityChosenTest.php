@@ -21,11 +21,7 @@ use Modules\Kernel\Api\WhatWasFoundOfTheQuality;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheQualityTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A preset with every word said, and one of them replaced where a test names it. */
 function aPresetSaying(string $scope = 'movies', string $preset = 'Maximum', string $means = '4K where it exists', string $resolution = '2160p', string $size = '~15 GB', string $transcoding = 'Needs a strong client'): APresetInForce
@@ -43,8 +39,8 @@ function aFormatSaying(string $scope = 'music', string $format = 'Lossless', str
 function whatMusicIsSetToAsText(WhatMusicIsSetTo $music): string
 {
     return $music->either(
-        set: static fn(AFormatInForce $format): WhichArmTheQualityTook => new WhichArmTheQualityTook($format->format()),
-        unset: static fn(): WhichArmTheQualityTook => new WhichArmTheQualityTook('unset'),
+        set: static fn(AFormatInForce $format): TheWordCarriedOut => new TheWordCarriedOut($format->format()),
+        unset: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unset'),
     )->said;
 }
 
@@ -114,8 +110,8 @@ it('keeps everything the quality was reported with', function (): void {
 it('tells the quality found from what stood in the way', function (): void {
     $chosen = TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false);
     $found = static fn(WhatWasFoundOfTheQuality $answer): string => $answer->either(
-        found: static fn(TheQualityChosen $read): WhichArmTheQualityTook => new WhichArmTheQualityTook($read === $chosen ? 'found' : 'another'),
-        met: static fn(Obstacle $why): WhichArmTheQualityTook => new WhichArmTheQualityTook($why->kind()->value),
+        found: static fn(TheQualityChosen $read): TheWordCarriedOut => new TheWordCarriedOut($read === $chosen ? 'found' : 'another'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 
     expect($found(WhatWasFoundOfTheQuality::found($chosen)))->toBe('found')

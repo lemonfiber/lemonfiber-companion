@@ -35,6 +35,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Inviting contract, run against the adapter and against the fake.
@@ -116,18 +117,12 @@ function everyWayOfInviting(MockResponse ...$answered): array
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheInvitingCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything an answer says, folded to one line, so two answers can be compared. */
 function everythingTheInvitingSays(WhatBecameOfTheInvitation $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('underway %s', $job->shown())),
-        answered: static function (AnInvitation $invitation): WhatTheInvitingCameTo {
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static function (AnInvitation $invitation): TheWordCarriedOut {
             $toHand = $invitation->toHand();
             $withdrawn = [];
 
@@ -135,7 +130,7 @@ function everythingTheInvitingSays(WhatBecameOfTheInvitation $became): string
                 $withdrawn[] = $name;
             }
 
-            return new WhatTheInvitingCameTo(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s|%s|%s|%d|%s|%s|%s|%s|%s',
                 $toHand->name(),
                 $toHand->address()->url(),
@@ -146,14 +141,14 @@ function everythingTheInvitingSays(WhatBecameOfTheInvitation $became): string
                 $invitation->wasRehearsed() ? 'rehearsed' : 'carried out',
                 implode(',', $withdrawn),
                 $invitation->granted(
-                    these: static fn(WhatWasGranted $granted): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('%s %s %s', $granted->limit(), $granted->unrated()->value, $granted->filtering())),
-                    nothing: static fn(): WhatTheInvitingCameTo => new WhatTheInvitingCameTo('nothing'),
+                    these: static fn(WhatWasGranted $granted): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s %s', $granted->limit(), $granted->unrated()->value, $granted->filtering())),
+                    nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
                 )->said,
             ));
         },
-        ended: static fn(): WhatTheInvitingCameTo => new WhatTheInvitingCameTo('ended'),
-        refused: static fn(string $because): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -248,16 +243,16 @@ it('reads who is in, joined or still invited', function (): void {
 
     foreach ($ways as $which => $make) {
         $said = $make()->whoIsIn(aStackToInviteSomebodyTo(), Session::of('a-session-not-a-secret'))->either(
-            found: static function (TheMembers $members): WhatTheInvitingCameTo {
+            found: static function (TheMembers $members): TheWordCarriedOut {
                 $found = [];
 
                 foreach ($members as $member) {
                     $found[] = sprintf('%s:%s', $member->name(), $member->hasJoined() ? 'joined' : 'invited');
                 }
 
-                return new WhatTheInvitingCameTo(implode(',', $found));
+                return new TheWordCarriedOut(implode(',', $found));
             },
-            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
         expect($said)->toBe('anna:joined,bob:invited', $which);
@@ -272,8 +267,8 @@ it('tells a household that could not be read from nobody in', function (): void 
 
     foreach ($ways as $which => $make) {
         $said = $make()->whoIsIn(aStackToInviteSomebodyTo(), Session::of('a-session-not-a-secret'))->either(
-            found: static fn(TheMembers $members): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('%d found', count($members))),
-            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
+            found: static fn(TheMembers $members): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d found', count($members))),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
         expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);

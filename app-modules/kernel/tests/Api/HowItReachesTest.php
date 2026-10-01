@@ -15,24 +15,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
-
-/**
- * Everything an arm handed out, carried out of `whichever()` in one piece.
- *
- * One carrier rather than a fold per assertion, so every parameter the union
- * hands a reader is read by something — an arm whose payload no test touches is
- * an arm nothing is holding to its signature.
- */
-final readonly class WhatTheReachSaid
-{
-    public function __construct(
-        public string $arm,
-        public string $subject,
-        public Services $services,
-        public ?WhatSettledIt $settled,
-        public string $why,
-    ) {}
-}
+use Tests\Support\WhatTheReachSaid;
 
 function whatTheReachGave(HowItReaches $reaches): WhatTheReachSaid
 {

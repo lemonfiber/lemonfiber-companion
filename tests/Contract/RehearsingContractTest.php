@@ -26,6 +26,7 @@ use Modules\Sdk\Api\Rehearsers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Rehearsing contract, run against the adapter and against the fake.
@@ -97,17 +98,11 @@ function everyWayOfRehearsingAStart(MockResponse $answered, ?Obstacle $why = nul
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheRehearsalTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the rehearsal says, folded to one line, so two answers can be compared. */
 function everythingTheRehearsalSays(Rehearsing $rehearsing): string
 {
     return $rehearsing->whatStarting(aStackThatRehearses(), Session::of('a-session-not-a-secret'), Form::called('dl'))->either(
-        found: static function (WhatStartingItWouldComeTo $rehearsal): WhatTheRehearsalTurnedOutToSay {
+        found: static function (WhatStartingItWouldComeTo $rehearsal): TheWordCarriedOut {
             $leftOut = [];
 
             foreach ($rehearsal->leftOut() as $service) {
@@ -120,14 +115,14 @@ function everythingTheRehearsalSays(Rehearsing $rehearsing): string
                 $started[] = $service->named();
             }
 
-            return new WhatTheRehearsalTurnedOutToSay(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 '%s / %s / %d MiB',
                 implode(',', $started),
                 implode(',', $leftOut),
                 $rehearsal->footprint()->mebibytes(),
             ));
         },
-        met: static fn(Obstacle $why): WhatTheRehearsalTurnedOutToSay => new WhatTheRehearsalTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

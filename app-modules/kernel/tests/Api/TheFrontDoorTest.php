@@ -25,18 +25,14 @@ use Modules\Kernel\Api\WhereTheHouseholdBegins;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheDoorTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Where the household begins, folded to one line. */
 function whereTheyBegin(WhereTheHouseholdBegins $begins): string
 {
     return $begins->either(
-        at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('%s|%s|%s', $service, $facing->value, $address->url())),
-        nowhere: static fn(): WhichArmTheDoorTook => new WhichArmTheDoorTook('nowhere'),
+        at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s|%s|%s', $service, $facing->value, $address->url())),
+        nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
     )->said;
 }
 
@@ -128,8 +124,8 @@ it('says each standing, facing and choice under a key of its own', function (): 
 
 it('a door that could not be read is never a stack with no door', function (): void {
     $fold = static fn(WhatWasFoundOfTheFrontDoor $answer): string => $answer->either(
-        found: static fn(TheFrontDoor $door): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('found:%s', $door->standing()->value)),
-        met: static fn(Obstacle $why): WhichArmTheDoorTook => new WhichArmTheDoorTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(TheFrontDoor $door): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $door->standing()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheFrontDoor::found(aDoorMeaning('Nothing is open'))))->toBe('found:none')

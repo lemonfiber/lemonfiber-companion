@@ -26,6 +26,7 @@ use Modules\Sdk\Api\Questions;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Asking contract, run against the adapter and against the fake.
@@ -176,26 +177,14 @@ function everyWayOfAsking(MockResponse $answered, ?Obstacle $why = null): array
     ];
 }
 
-/**
- * One word carried out of an `either()` arm.
- *
- * `WhatCameBack::either()` answers with an object, so a caller cannot pull a
- * report out without saying what happens when there is none. A test still wants
- * to compare a string, and this is the smallest honest way across.
- */
-final readonly class WhatTheStackTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a stack answered, as a word, whichever arm it took. */
 function whatItSaid(Asking $asking): string
 {
     return $asking->about(aStackToAskAfter(), theSessionInHand())->either(
-        said: static fn(Report $report): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay(
+        said: static fn(Report $report): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('%s with %d', $report->overall()->value, $report->findings()->count()),
         ),
-        met: static fn(Obstacle $why): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -256,10 +245,10 @@ it('answers exactly one way, and answers at all', function (): void {
     // neither would leave an operator looking at a machine that said nothing.
     foreach (everyWayOfAsking(aDegradedAnswer()) as $which => $make) {
         $arms = 0;
-        $count = static function () use (&$arms): WhatTheStackTurnedOutToSay {
+        $count = static function () use (&$arms): TheWordCarriedOut {
             $arms++;
 
-            return new WhatTheStackTurnedOutToSay('counted');
+            return new TheWordCarriedOut('counted');
         };
 
         $make()->about(aStackToAskAfter(), theSessionInHand())->either(said: $count, met: $count);

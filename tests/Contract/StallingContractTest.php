@@ -23,6 +23,7 @@ use Modules\Sdk\Api\Stalls;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatStalled;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Stalling contract, run against the adapter and against the fake.
@@ -123,30 +124,24 @@ function everyWayOfAskingWhatStopped(MockResponse $answered, ?Obstacle $why = nu
     ];
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheStallTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every stalled row, folded to a word each, so an order can be compared. */
 function everythingStuckIn(Stalling $stalling): string
 {
     return $stalling->stoppedOn(aStackWithSomethingStuck(), theSessionTheStallIsAskedWith())->either(
-        these: static function (Stalled $stalled): WhatTheStallTurnedOutToSay {
+        these: static function (Stalled $stalled): TheWordCarriedOut {
             $rows = [];
 
             foreach ($stalled as $one) {
                 $rows[] = $one->stated(
-                    static fn(string $title, ServiceId $service, Stage $stage): WhatTheStallTurnedOutToSay
-                        => new WhatTheStallTurnedOutToSay(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
+                    static fn(string $title, ServiceId $service, Stage $stage): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
                 )->said;
             }
 
-            return new WhatTheStallTurnedOutToSay(implode(' | ', $rows));
+            return new TheWordCarriedOut(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheStallTurnedOutToSay
-            => new WhatTheStallTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -154,10 +149,10 @@ function everythingStuckIn(Stalling $stalling): string
 function howMuchOfTheStallWasShown(Stalling $stalling): string
 {
     return $stalling->stoppedOn(aStackWithSomethingStuck(), theSessionTheStallIsAskedWith())->either(
-        these: static fn(Stalled $stalled): WhatTheStallTurnedOutToSay
-            => new WhatTheStallTurnedOutToSay($stalled->howMuchIsShown()->value),
-        met: static fn(Obstacle $why): WhatTheStallTurnedOutToSay
-            => new WhatTheStallTurnedOutToSay($why->kind()->value),
+        these: static fn(Stalled $stalled): TheWordCarriedOut
+            => new TheWordCarriedOut($stalled->howMuchIsShown()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

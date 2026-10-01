@@ -14,18 +14,14 @@ use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatAServiceWasSaidToReach
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a request takes, and what it carried there. */
 function whatItReaches(ARequestOfTheirs $request): string
 {
     return $request->reaches(
-        recorded: static fn(string $destination, string $purpose): WhatAServiceWasSaidToReach => new WhatAServiceWasSaidToReach(sprintf('recorded:%s:%s', $destination, $purpose)),
-        unrecorded: static fn(): WhatAServiceWasSaidToReach => new WhatAServiceWasSaidToReach('unrecorded'),
+        recorded: static fn(string $destination, string $purpose): TheWordCarriedOut => new TheWordCarriedOut(sprintf('recorded:%s:%s', $destination, $purpose)),
+        unrecorded: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unrecorded'),
     )->said;
 }
 

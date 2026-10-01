@@ -15,6 +15,7 @@ use Modules\Sdk\Api\WhereThisCopyIs;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -43,12 +44,6 @@ function aPlainCopy(): array
     ];
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheCopyCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Everything a payload says, as one line.
  *
@@ -67,9 +62,9 @@ function theCopyRead(array $data): string
         $copy->released()->version(),
         $copy->untold(),
         $copy->updatedBy()->either(
-            byRunning: static fn(string $command): WhatTheCopyCarried => new WhatTheCopyCarried(sprintf('run %s', $command)),
-            instead: static fn(string $why): WhatTheCopyCarried => new WhatTheCopyCarried(sprintf('instead %s', $why)),
-            notSaid: static fn(): WhatTheCopyCarried => new WhatTheCopyCarried('-'),
+            byRunning: static fn(string $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('run %s', $command)),
+            instead: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('instead %s', $why)),
+            notSaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
         )->said,
         $copy->brings()->carries(),
         $copy->brings()->afterwards(),

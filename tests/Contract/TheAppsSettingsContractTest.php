@@ -8,6 +8,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhetherTheSettingsOpened;
 use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\TheWordCarriedOut;
 
 // The TheAppsSettings contract, run against the adapter and against the fake.
 //
@@ -24,18 +25,12 @@ function overASettingsPageThatSays(string $outcome): PlatformAppsSettings
     return new PlatformAppsSettings(new AppsSettings());
 }
 
-/** One word carried out of either arm. */
-final readonly class WhatOpeningTheSettingsCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /** What asking came to, as a word. */
 function theWordForWhatOpeningTheSettingsCameTo(WhetherTheSettingsOpened $opened): string
 {
     return $opened->either(
-        opened: static fn(): WhatOpeningTheSettingsCameTo => new WhatOpeningTheSettingsCameTo('opened'),
-        wouldNot: static fn(): WhatOpeningTheSettingsCameTo => new WhatOpeningTheSettingsCameTo('would not'),
+        opened: static fn(): TheWordCarriedOut => new TheWordCarriedOut('opened'),
+        wouldNot: static fn(): TheWordCarriedOut => new TheWordCarriedOut('would not'),
     )->said;
 }
 

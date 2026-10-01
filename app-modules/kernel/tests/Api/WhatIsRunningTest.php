@@ -17,6 +17,7 @@ use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Tests\Support\AnObstacleOfEachKind;
+use Tests\Support\TheWordCarriedOut;
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
 function whatTheRunningVerbsCostHere(): Disturbances
@@ -28,19 +29,13 @@ function whatTheRunningVerbsCostHere(): Disturbances
     );
 }
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheListingSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** Whichever arm an answer takes, as a word. */
 function whatCameBackAboutWhatRuns(WhatIsRunning $answer): string
 {
     return $answer->either(
-        these: static fn(Daemons $daemons): WhatTheListingSaid
-            => new WhatTheListingSaid(sprintf('%d running', $daemons->count())),
-        met: static fn(Obstacle $why): WhatTheListingSaid => new WhatTheListingSaid($why->kind()->value),
+        these: static fn(Daemons $daemons): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('%d running', $daemons->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

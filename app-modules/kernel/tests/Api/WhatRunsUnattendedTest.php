@@ -15,12 +15,7 @@ use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatDidNotComeBack;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
-
-/** One word carried out of whichever arm a listing takes. */
-final readonly class WhatTheMachineSaidAboutKeepingThings
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /**
  * What to do instead, or the word for the machine doing it itself.
@@ -33,10 +28,10 @@ final readonly class WhatTheMachineSaidAboutKeepingThings
 function whatTheMachineSays(WhatRunsUnattended $running): string
 {
     return $running->whereItCannot(
-        instead: static fn(string $what): WhatTheMachineSaidAboutKeepingThings
-            => new WhatTheMachineSaidAboutKeepingThings($what),
-        itself: static fn(): WhatTheMachineSaidAboutKeepingThings
-            => new WhatTheMachineSaidAboutKeepingThings('the machine does this itself'),
+        instead: static fn(string $what): TheWordCarriedOut
+            => new TheWordCarriedOut($what),
+        itself: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('the machine does this itself'),
     )->said;
 }
 

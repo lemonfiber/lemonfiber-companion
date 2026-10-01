@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
 use Modules\Sdk\Api\ChangelogIsUnreadable;
 use Modules\Sdk\Internal\Changelogs;
+use Tests\Support\TheWordCarriedOut;
 
 /**
  * One release the record lists, with this case's field changed.
@@ -153,8 +154,8 @@ it('reads what a release delivers in the stack\'s words, and silence as silence'
         oneReleaseTheRecordHolds(['delivers' => 7]),
     ]])) as $release) {
         $said[] = $release->delivers()->either(
-            said: static fn(string $prose): WhatAChangelogRowSaid => new WhatAChangelogRowSaid($prose),
-            saidNothing: static fn(): WhatAChangelogRowSaid => new WhatAChangelogRowSaid('silent'),
+            said: static fn(string $prose): TheWordCarriedOut => new TheWordCarriedOut($prose),
+            saidNothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('silent'),
         )->said;
     }
 
@@ -188,9 +189,3 @@ it('refuses a running release it cannot read', function (): void {
         'running' => oneReleaseTheRecordHolds(['user_facing' => 'yes']),
     ])))->toThrow(ChangelogIsUnreadable::class, 'running release');
 });
-
-/** One answer carried out of an `either()` arm, which hands back objects. */
-final readonly class WhatAChangelogRowSaid
-{
-    public function __construct(public string $said) {}
-}

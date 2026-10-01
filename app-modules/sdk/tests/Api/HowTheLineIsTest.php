@@ -20,6 +20,7 @@ use Modules\Sdk\Api\HowTheLineIs;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -70,12 +71,6 @@ function everythingItCouldKnow(): array
     ];
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheLineReadAs
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything a reading says, as one line. */
 function everythingTheLineSays(HowTheLineIsShared $line): string
 {
@@ -88,18 +83,18 @@ function everythingTheLineSays(HowTheLineIsShared $line): string
         implode(',', iterator_to_array($line->cautions(), preserve_keys: false)),
         implode(',', iterator_to_array($line->untouched(), preserve_keys: false)),
         $line->capacity(
-            static fn(WhatTheLineCarries $c): WhatTheLineReadAs => new WhatTheLineReadAs(sprintf('%d/%d %s @%d %s', $c->down(), $c->up(), $c->measuredAs()->value, $c->taken()->epochSeconds(), $c->tunnel()->value)),
-            static fn(): WhatTheLineReadAs => new WhatTheLineReadAs('unmeasured'),
+            static fn(WhatTheLineCarries $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d %s @%d %s', $c->down(), $c->up(), $c->measuredAs()->value, $c->taken()->epochSeconds(), $c->tunnel()->value)),
+            static fn(): TheWordCarriedOut => new TheWordCarriedOut('unmeasured'),
         )->said,
         $line->cap(
-            static fn(AMonthlyCap $c): WhatTheLineReadAs => new WhatTheLineReadAs(sprintf('%d %s %s', $c->monthly(), $c->does()->value, $c->stands(
-                static fn(WhereTheMonthStands $m): WhatTheLineReadAs => new WhatTheLineReadAs($m->value),
-                static fn(): WhatTheLineReadAs => new WhatTheLineReadAs('uncounted'),
+            static fn(AMonthlyCap $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d %s %s', $c->monthly(), $c->does()->value, $c->stands(
+                static fn(WhereTheMonthStands $m): TheWordCarriedOut => new TheWordCarriedOut($m->value),
+                static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncounted'),
             )->said)),
-            static fn(): WhatTheLineReadAs => new WhatTheLineReadAs('uncapped'),
+            static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncapped'),
         )->said,
-        $line->spentCap(static fn(string $doing): WhatTheLineReadAs => new WhatTheLineReadAs($doing), static fn(): WhatTheLineReadAs => new WhatTheLineReadAs('unspent'))->said,
-        $line->uploadCost(static fn(string $costs): WhatTheLineReadAs => new WhatTheLineReadAs($costs), static fn(): WhatTheLineReadAs => new WhatTheLineReadAs('no upload cost'))->said,
+        $line->spentCap(static fn(string $doing): TheWordCarriedOut => new TheWordCarriedOut($doing), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unspent'))->said,
+        $line->uploadCost(static fn(string $costs): TheWordCarriedOut => new TheWordCarriedOut($costs), static fn(): TheWordCarriedOut => new TheWordCarriedOut('no upload cost'))->said,
     );
 }
 

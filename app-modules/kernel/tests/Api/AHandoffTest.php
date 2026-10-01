@@ -29,11 +29,7 @@ use Modules\Kernel\Api\WhereTheHandoffStands;
 
 use function sprintf;
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheHandoffCameTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A hand-off with a reason where a case gives one. */
 function aHandoffSaying(string $reason): AHandoff
@@ -57,11 +53,11 @@ function aHandoffSaying(string $reason): AHandoff
 function whichArmTheHandoffTook(WhatBecameOfTheHandoff $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('underway %s', $job->shown())),
-        answered: static fn(AHandoff $handoff): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('answered %s', $handoff->stands()->value)),
-        ended: static fn(): WhatTheHandoffCameTo => new WhatTheHandoffCameTo('ended'),
-        refused: static fn(string $because): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheHandoffCameTo => new WhatTheHandoffCameTo(sprintf('met %s', $why->kind()->name)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(AHandoff $handoff): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered %s', $handoff->stands()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->name)),
     )->said;
 }
 

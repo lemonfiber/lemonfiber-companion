@@ -18,21 +18,17 @@ use Modules\Kernel\Api\WhereTheDataGoes;
 
 use function sprintf;
 
-/** One line carried out of an arm of a restore being followed. */
-final readonly class WhichArmPuttingItBackTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following a restore takes, and what it carried there. */
 function howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook('running'),
-        done: static fn(ACopyPutBack $report): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('done:%s', $report->takenBy())),
-        refused: static fn(ARefusalInItsWords $why): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('refused:%s', $why->summary())),
-        ended: static fn(): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook('ended'),
-        met: static fn(Obstacle $why): WhichArmPuttingItBackTook => new WhichArmPuttingItBackTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(ACopyPutBack $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%s', $report->takenBy())),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->summary())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

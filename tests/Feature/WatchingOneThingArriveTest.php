@@ -53,6 +53,7 @@ use Tests\Support\Fakes\AStackThatWalksThrough;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\Tree;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -140,8 +141,8 @@ function aScreenThatWalked(
 function theWalkLeftOn(WorkLeftRunningInMemory $left): string
 {
     return $left->whatWasLeft(theStackAWalkRunsOn()->id(), KindOfWork::Walkthrough)->either(
-        job: static fn(Job $job): WhatTheScreenWasAsked => new WhatTheScreenWasAsked($job->shown()),
-        nothing: static fn(): WhatTheScreenWasAsked => new WhatTheScreenWasAsked('(nothing left running)'),
+        job: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut($job->shown()),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(nothing left running)'),
     )->said;
 }
 
@@ -151,18 +152,12 @@ function aPhoneThatLeftAWalkRunning(string $job = AStackThatWalksThrough::THE_JO
     return WorkLeftRunningInMemory::working()->leftBefore(theStackAWalkRunsOn()->id(), KindOfWork::Walkthrough, Job::named($job));
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheScreenWasAsked
-{
-    public function __construct(public string $said) {}
-}
-
 /** What the screen was asked to walk, as the stack would be told. */
 function whatItWasAskedToWalk(WhatToWalk $asked): string
 {
     return $asked->either(
-        named: static fn(string $item): WhatTheScreenWasAsked => new WhatTheScreenWasAsked($item),
-        likeliest: static fn(): WhatTheScreenWasAsked => new WhatTheScreenWasAsked('(whatever is likely)'),
+        named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut($item),
+        likeliest: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(whatever is likely)'),
     )->said;
 }
 

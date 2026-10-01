@@ -18,6 +18,7 @@ use Modules\Sdk\Api\Traces;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -41,12 +42,6 @@ function aTracedSeries(): array
     return TracesToFollow::theSeriesAsAStackSendsIt();
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheTraceCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Whether it was followed, how sure, how far, and how much is here, as one line.
  *
@@ -55,8 +50,8 @@ final readonly class WhatTheTraceCarried
 function theTraceRead(array $data): string
 {
     return Traces::in(traceSaying($data))->either(
-        nothingAskedFor: static fn(): WhatTheTraceCarried => new WhatTheTraceCarried('nothing asked for'),
-        followed: static fn(WhatTheTraceFound $found): WhatTheTraceCarried => new WhatTheTraceCarried(sprintf(
+        nothingAskedFor: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing asked for'),
+        followed: static fn(WhatTheTraceFound $found): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%d stages|%d moments|%d disagreements|%s',
             $found->sure()->value,
             $found->got()->furthest()->value,
@@ -65,8 +60,8 @@ function theTraceRead(array $data): string
             $found->history()->count(),
             $found->disagreements()->count(),
             $found->here()->either(
-                whole: static fn(): WhatTheTraceCarried => new WhatTheTraceCarried('whole'),
-                inParts: static fn(ASeriesCounted $series): WhatTheTraceCarried => new WhatTheTraceCarried(sprintf('%d/%d in %d seasons', $series->have(), $series->wanted(), $series->seasons()->count())),
+                whole: static fn(): TheWordCarriedOut => new TheWordCarriedOut('whole'),
+                inParts: static fn(ASeriesCounted $series): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d in %d seasons', $series->have(), $series->wanted(), $series->seasons()->count())),
             )->said,
         )),
     )->said;

@@ -24,11 +24,7 @@ use Modules\Kernel\Api\WhatWasDropped;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatTheCatalogueArmSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A service as the catalogue declares it, any word replaced where a case says. */
 function aServiceCatalogued(string $name = 'Sonarr', string $describes = 'Finds television', string $withoutIt = 'No new episodes'): WhatAServiceIsFor
@@ -40,8 +36,8 @@ function aServiceCatalogued(string $name = 'Sonarr', string $describes = 'Finds 
 function whatReplacedIt(AServiceDropped $dropped): string
 {
     return $dropped->replacement(
-        by: static fn(string $by): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($by),
-        nothing: static fn(): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid('nothing'),
+        by: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut($by),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
 }
 
@@ -100,9 +96,9 @@ it('keeps both lists in the stack\'s order, whatever they were handed under', fu
 it('answers with the catalogue, the refusal in the stack\'s words, or what stood in the way', function (): void {
     $catalogue = TheCatalogue::of(WhatTheServicesAreFor::these(), WhatWasDropped::these());
     $said = static fn(WhatTheCatalogueSaid $answer): string => $answer->either(
-        catalogue: static fn(TheCatalogue $read): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($read === $catalogue ? 'the catalogue' : 'another'),
-        refused: static fn(ARefusalInItsWords $why): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid(sprintf('refused: %s', $why->summary())),
-        met: static fn(Obstacle $why): WhatTheCatalogueArmSaid => new WhatTheCatalogueArmSaid($why->kind()->name),
+        catalogue: static fn(TheCatalogue $read): TheWordCarriedOut => new TheWordCarriedOut($read === $catalogue ? 'the catalogue' : 'another'),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s', $why->summary())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 
     expect($said(WhatTheCatalogueSaid::catalogue($catalogue)))->toBe('the catalogue')

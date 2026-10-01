@@ -12,19 +12,15 @@ use Modules\Kernel\Api\WhereABundleIs;
 
 use function sprintf;
 
-/** One line carried out of an arm of where a bundle is. */
-final readonly class WhichArmTheBundlesPlaceTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm where a bundle is takes, and the path it carried there. */
 function whereTheBundleIsReads(WhereABundleIs $where): string
 {
     return $where->either(
-        wouldGo: static fn(string $path): WhichArmTheBundlesPlaceTook => new WhichArmTheBundlesPlaceTook(sprintf('would go:%s', $path)),
-        written: static fn(string $path): WhichArmTheBundlesPlaceTook => new WhichArmTheBundlesPlaceTook(sprintf('written:%s', $path)),
-        unsaid: static fn(): WhichArmTheBundlesPlaceTook => new WhichArmTheBundlesPlaceTook('unsaid'),
+        wouldGo: static fn(string $path): TheWordCarriedOut => new TheWordCarriedOut(sprintf('would go:%s', $path)),
+        written: static fn(string $path): TheWordCarriedOut => new TheWordCarriedOut(sprintf('written:%s', $path)),
+        unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
     )->said;
 }
 

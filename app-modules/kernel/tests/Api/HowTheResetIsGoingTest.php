@@ -19,21 +19,17 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 
 use function sprintf;
 
-/** One line carried out of an arm of a reset being followed. */
-final readonly class WhichArmTheResetTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following a reset takes, and what it carried there. */
 function howTheResetIsGoingReads(HowTheResetIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmTheResetTook => new WhichArmTheResetTook('running'),
-        done: static fn(TheReset $reset): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('done:%d', count($reset->connections()))),
-        refused: static fn(ARefusalInItsWords $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
-        ended: static fn(): WhichArmTheResetTook => new WhichArmTheResetTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(TheReset $reset): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%d', count($reset->connections()))),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

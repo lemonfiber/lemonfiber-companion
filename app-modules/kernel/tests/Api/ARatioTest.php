@@ -9,19 +9,14 @@ use function it;
 
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\RoomSaysNothing;
-
-/** One line carried out of an arm. */
-final readonly class WhichArmTheRatioTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a ratio takes, and what it carried there. */
 function howTheRatioReads(ARatio $ratio): string
 {
     return $ratio->either(
-        read: static fn(string $read): WhichArmTheRatioTook => new WhichArmTheRatioTook($read),
-        none: static fn(): WhichArmTheRatioTook => new WhichArmTheRatioTook('none'),
+        read: static fn(string $read): TheWordCarriedOut => new TheWordCarriedOut($read),
+        none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
     )->said;
 }
 

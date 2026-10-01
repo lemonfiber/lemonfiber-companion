@@ -13,19 +13,14 @@ use Modules\Kernel\Api\HandoverSaysNothing;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\TheFilesTouched;
 use Modules\Kernel\Api\WhatTheHandoverDid;
-
-/** One word carried out of whichever arm `writesTo()` takes. */
-final readonly class WhereTheHandoverSaidItWrites
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Where a handover says the command's words go, or the word for it not saying. Named for this file (`G10`). */
 function whereTheHandoverSaysItWrites(WhatTheHandoverDid $did): string
 {
     return $did->writesTo(
-        there: static fn(string $where): WhereTheHandoverSaidItWrites => new WhereTheHandoverSaidItWrites($where),
-        unsaid: static fn(): WhereTheHandoverSaidItWrites => new WhereTheHandoverSaidItWrites('not said'),
+        there: static fn(string $where): TheWordCarriedOut => new TheWordCarriedOut($where),
+        unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('not said'),
     )->said;
 }
 

@@ -20,6 +20,7 @@ use Modules\Sdk\Api\Walkthroughs;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -72,12 +73,6 @@ function theWalkRead(array $data): AWalkthrough
     return Walkthroughs::in(aWalkSaying($data));
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheWalkCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * The optional parts of a walk, each folded to a word: what it walked, what the
  * import did, what comes next, and where it stopped.
@@ -88,17 +83,17 @@ function whatTheWalkLeftOptional(AWalkthrough $walk): array
 {
     return [
         'item' => $walk->item()->either(
-            named: static fn(string $item): WhatTheWalkCarried => new WhatTheWalkCarried($item),
-            nothingChosen: static fn(): WhatTheWalkCarried => new WhatTheWalkCarried('(none)'),
+            named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut($item),
+            nothingChosen: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
         'link' => $walk->link(
-            linked: static fn(HowTheImportLinked $link): WhatTheWalkCarried => new WhatTheWalkCarried($link->value),
-            notImported: static fn(): WhatTheWalkCarried => new WhatTheWalkCarried('(none)'),
+            linked: static fn(HowTheImportLinked $link): TheWordCarriedOut => new TheWordCarriedOut($link->value),
+            notImported: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
         'next' => $walk->handover()->count(),
         'stopped' => $walk->stopped(
-            at: static fn(WhereItStopped $stopped): WhatTheWalkCarried => new WhatTheWalkCarried(sprintf('%s:%d logs', $stopped->why()->value, $stopped->logs()->count())),
-            didNotStop: static fn(): WhatTheWalkCarried => new WhatTheWalkCarried('(none)'),
+            at: static fn(WhereItStopped $stopped): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s:%d logs', $stopped->why()->value, $stopped->logs()->count())),
+            didNotStop: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said,
     ];
 }
@@ -109,8 +104,8 @@ it('reads a walk that worked with everything it carries', function (): void {
 
     foreach ($walk->lines() as $line) {
         $details[] = $line->detail(
-            said: static fn(string $detail): WhatTheWalkCarried => new WhatTheWalkCarried($detail),
-            nothing: static fn(): WhatTheWalkCarried => new WhatTheWalkCarried('(none)'),
+            said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+            nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
         )->said;
     }
 
@@ -136,8 +131,8 @@ it('reads an absent optional field and a null one as the same nothing', function
 
 it('reads a log line as it came, blank included', function (): void {
     $logs = theWalkRead(WalkthroughsToFollow::theWalkThatMatchedNothingAsAStackSendsIt())->stopped(
-        at: static fn(WhereItStopped $stopped): WhatTheWalkCarried => new WhatTheWalkCarried(implode('|', iterator_to_array($stopped->logs(), preserve_keys: false))),
-        didNotStop: static fn(): WhatTheWalkCarried => new WhatTheWalkCarried('(none)'),
+        at: static fn(WhereItStopped $stopped): TheWordCarriedOut => new TheWordCarriedOut(implode('|', iterator_to_array($stopped->logs(), preserve_keys: false))),
+        didNotStop: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(none)'),
     )->said;
 
     expect($logs)->toBe('prowlarr: query returned 0 results|');

@@ -18,6 +18,7 @@ use Modules\Sdk\Api\WhereTheDoorIs;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -57,12 +58,6 @@ function aPlainServiceBeside(): array
     return ['service' => 'Jellyfin', 'facing' => 'watching', 'because' => 'Nothing can be asked for there'];
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheDoorCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Everything a payload says, as lines.
  *
@@ -75,8 +70,8 @@ function theDoorRead(array $data): string
         sprintf('%s|%s', $door->standing()->value, $door->meaning()),
         sprintf('%s|%s|%s', $door->chosen()->how()->value, $door->chosen()->named(), $door->chosen()->because()),
         $door->begins()->either(
-            at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): WhatTheDoorCarried => new WhatTheDoorCarried(sprintf('at %s|%s|%s|%s', $service, $facing->value, $address->url(), $address->caution())),
-            nowhere: static fn(): WhatTheDoorCarried => new WhatTheDoorCarried('nowhere'),
+            at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): TheWordCarriedOut => new TheWordCarriedOut(sprintf('at %s|%s|%s|%s', $service, $facing->value, $address->url(), $address->caution())),
+            nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
         )->said,
     ];
 

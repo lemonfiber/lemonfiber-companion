@@ -44,6 +44,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatTakesItOff;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The TakingLemonfiberOff contract, run against the adapter and against the fake.
@@ -138,12 +139,6 @@ function whatAStackSaysOfTakingItOff(array $removal): array
     ];
 }
 
-/** A line carried out of an `either()` arm. */
-final readonly class WhatTakingItOffCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Each line a reading reaches, folded to a line of its own.
  *
@@ -161,8 +156,8 @@ function everyLineTakingItOffReaches(WhatTakingItOffComesTo $manifest): array
             $item->what(),
             $item->holdsACredential() ? 'secret' : 'plain',
             $item->size()->either(
-                known: static fn(int $bytes): WhatTakingItOffCameTo => new WhatTakingItOffCameTo((string) $bytes),
-                unread: static fn(): WhatTakingItOffCameTo => new WhatTakingItOffCameTo('unread'),
+                known: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut((string) $bytes),
+                unread: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unread'),
             )->said,
             $item->whyItIsKept(),
         );
@@ -175,18 +170,18 @@ function everyLineTakingItOffReaches(WhatTakingItOffComesTo $manifest): array
 function whereTakingItOffGotTo(WhereTakingItOffGot $got): string
 {
     return $got->either(
-        surveyed: static fn(): WhatTakingItOffCameTo => new WhatTakingItOffCameTo('surveyed'),
-        rehearsed: static fn(): WhatTakingItOffCameTo => new WhatTakingItOffCameTo('rehearsed'),
-        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): WhatTakingItOffCameTo
-            => new WhatTakingItOffCameTo(sprintf('complete %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)))),
-        partial: static function (NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): WhatTakingItOffCameTo {
+        surveyed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('surveyed'),
+        rehearsed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('rehearsed'),
+        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('complete %s / %s', implode(',', iterator_to_array($gone, preserve_keys: false)), implode(',', iterator_to_array($credentials, preserve_keys: false)))),
+        partial: static function (NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): TheWordCarriedOut {
             $things = [];
 
             foreach ($left as $thing) {
                 $things[] = sprintf('%s/%s/%s', $thing->name(), $thing->why(), $thing->byHand());
             }
 
-            return new WhatTakingItOffCameTo(sprintf(
+            return new TheWordCarriedOut(sprintf(
                 'partial %s / %s / %s',
                 implode(',', iterator_to_array($gone, preserve_keys: false)),
                 implode(',', iterator_to_array($credentials, preserve_keys: false)),
@@ -238,11 +233,11 @@ function everythingTheUninstallSays(AnUninstall $uninstall): string
 function everythingTheWorkSays(WhatBecameOfTheUninstall $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(sprintf('underway %s', $job->shown())),
-        answered: static fn(AnUninstall $uninstall): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(everythingTheUninstallSays($uninstall)),
-        ended: static fn(): WhatTakingItOffCameTo => new WhatTakingItOffCameTo('ended'),
-        refused: static fn(string $because): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->kind()->value),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(AnUninstall $uninstall): TheWordCarriedOut => new TheWordCarriedOut(everythingTheUninstallSays($uninstall)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -250,8 +245,8 @@ function everythingTheWorkSays(WhatBecameOfTheUninstall $became): string
 function everythingTheUninstallReadingSays(WhatWasFoundOfTheUninstall $found): string
 {
     return $found->either(
-        found: static fn(AnUninstall $uninstall): WhatTakingItOffCameTo => new WhatTakingItOffCameTo(everythingTheUninstallSays($uninstall)),
-        met: static fn(Obstacle $why): WhatTakingItOffCameTo => new WhatTakingItOffCameTo($why->kind()->value),
+        found: static fn(AnUninstall $uninstall): TheWordCarriedOut => new TheWordCarriedOut(everythingTheUninstallSays($uninstall)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

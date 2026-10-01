@@ -15,20 +15,16 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 use function sprintf;
 
-/** One line carried out of an arm of stopping seeding being followed. */
-final readonly class WhichArmLettingItGoTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following stopping seeding takes, and what it carried there. */
 function howLettingItGoIsGoingReads(HowLettingItGoIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmLettingItGoTook => new WhichArmLettingItGoTook('running'),
-        done: static fn(ADownloadLetGo $report): WhichArmLettingItGoTook => new WhichArmLettingItGoTook(sprintf('done:%s', $report->name())),
-        ended: static fn(): WhichArmLettingItGoTook => new WhichArmLettingItGoTook('ended'),
-        met: static fn(Obstacle $why): WhichArmLettingItGoTook => new WhichArmLettingItGoTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(ADownloadLetGo $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%s', $report->name())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

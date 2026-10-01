@@ -28,6 +28,7 @@ use Saloon\Http\Faking\MockResponse;
 
 use function str_repeat;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 
 afterEach(function (): void {
@@ -43,12 +44,6 @@ function theStackTheGuideWalks(): Stack
         Address::of('https://192.168.1.42:8443'),
         Fingerprint::of(str_repeat('e', Fingerprint::CHARACTERS)),
     );
-}
-
-/** One line carried out of an arm. */
-final readonly class WhatTheGuideSaid
-{
-    public function __construct(public string $said) {}
 }
 
 /**
@@ -68,8 +63,8 @@ function aGuideAnswering(array $body, int $status = 200): Guides
 function whatStartingCameTo(Guides $guide): string
 {
     return $guide->walk(theStackTheGuideWalks(), Session::of('a-session-not-a-secret'), WhatToWalk::called('Sintel'))->either(
-        started: static fn(Job $job): WhatTheGuideSaid => new WhatTheGuideSaid($job->shown()),
-        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -77,10 +72,10 @@ function whatStartingCameTo(Guides $guide): string
 function whatFollowingCameTo(Guides $guide): string
 {
     return $guide->whatBecameOf(theStackTheGuideWalks(), Session::of('a-session-not-a-secret'), Job::named('a-walk'))->either(
-        stillRunning: static fn(): WhatTheGuideSaid => new WhatTheGuideSaid('running'),
-        done: static fn(AWalkthrough $walk): WhatTheGuideSaid => new WhatTheGuideSaid($walk->state()->value),
-        ended: static fn(): WhatTheGuideSaid => new WhatTheGuideSaid('ended'),
-        met: static fn(Obstacle $why): WhatTheGuideSaid => new WhatTheGuideSaid($why->kind()->name),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(AWalkthrough $walk): TheWordCarriedOut => new TheWordCarriedOut($walk->state()->value),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

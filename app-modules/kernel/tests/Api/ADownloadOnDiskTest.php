@@ -14,21 +14,17 @@ use Modules\Kernel\Api\WhereADownloadStands;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheDownloadTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Whether a download carries a ratio. */
 function whatRatioItCarries(ADownloadOnDisk $download): string
 {
     return $download->ratio(
-        seeding: static fn(ARatio $ratio): WhichArmTheDownloadTook => $ratio->either(
-            read: static fn(string $read): WhichArmTheDownloadTook => new WhichArmTheDownloadTook(sprintf('seeding %s', $read)),
-            none: static fn(): WhichArmTheDownloadTook => new WhichArmTheDownloadTook('seeding, no ratio'),
+        seeding: static fn(ARatio $ratio): TheWordCarriedOut => $ratio->either(
+            read: static fn(string $read): TheWordCarriedOut => new TheWordCarriedOut(sprintf('seeding %s', $read)),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('seeding, no ratio'),
         ),
-        notSeeding: static fn(): WhichArmTheDownloadTook => new WhichArmTheDownloadTook('none'),
+        notSeeding: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
     )->said;
 }
 

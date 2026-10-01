@@ -25,6 +25,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Adjusting contract, run against the adapter and against the fake.
@@ -178,9 +179,9 @@ function howAChangeReadsAsText(Adjusting $adjusting, bool $agreeing = false): st
         : $adjusting->wouldBe($stack, $session, $asked);
 
     return $made->either(
-        said: static fn(WhereTheChangeStands $stands): WhatAChangeCameBackAs
-            => new WhatAChangeCameBackAs($stands->change->from->either(
-                shown: static fn(string $held): WhatAChangeCameBackAs => new WhatAChangeCameBackAs(sprintf(
+        said: static fn(WhereTheChangeStands $stands): TheWordCarriedOut
+            => new TheWordCarriedOut($stands->change->from->either(
+                shown: static fn(string $held): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
                     '%s:%s->%s:%s:%s',
                     $stands->change->key,
                     $held,
@@ -188,7 +189,7 @@ function howAChangeReadsAsText(Adjusting $adjusting, bool $agreeing = false): st
                     $stands->change->cost->value,
                     $stands->stance->value,
                 )),
-                nothingYet: static fn(): WhatAChangeCameBackAs => new WhatAChangeCameBackAs(sprintf(
+                nothingYet: static fn(): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
                     '%s:-> %s:%s:%s',
                     $stands->change->key,
                     $stands->change->to,
@@ -196,15 +197,9 @@ function howAChangeReadsAsText(Adjusting $adjusting, bool $agreeing = false): st
                     $stands->stance->value,
                 )),
             )->said),
-        refused: static fn(Obstacle $why): WhatAChangeCameBackAs
-            => new WhatAChangeCameBackAs(sprintf('refused:%s', $why->kind()->value)),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
-}
-
-/** One answer carried out of an `either()` arm. */
-final readonly class WhatAChangeCameBackAs
-{
-    public function __construct(public string $said) {}
 }
 
 foreach (everyWayOfPuttingAChange(whatAStackSendsAboutAChange()) as $name => $build) {

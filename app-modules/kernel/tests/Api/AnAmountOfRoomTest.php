@@ -12,18 +12,14 @@ use Modules\Kernel\Api\RoomSaysNothing;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheAmountTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an amount takes, and what it carried there. */
 function whatTheAmountSays(AnAmountOfRoom $amount): string
 {
     return $amount->either(
-        known: static fn(int $bytes): WhichArmTheAmountTook => new WhichArmTheAmountTook(sprintf('known:%d', $bytes)),
-        unread: static fn(): WhichArmTheAmountTook => new WhichArmTheAmountTook('unread'),
+        known: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut(sprintf('known:%d', $bytes)),
+        unread: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unread'),
     )->said;
 }
 

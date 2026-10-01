@@ -14,6 +14,8 @@ use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 // The store, held to the four things `Keeps` promises.
 //
 // Its own suite rather than only the round-trips the stand-ins exercise. Three
@@ -26,30 +28,19 @@ use function sprintf;
 function whatItAnswered(WasRead $read): string
 {
     return $read->either(
-        found: static fn(string $value): Answered => Answered::saying(sprintf('found:%s', $value)),
-        nothing: static fn(): Answered => Answered::saying('nothing'),
-        refused: static fn(): Answered => Answered::saying('refused'),
-    )->word;
+        found: static fn(string $value): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%s', $value)),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'),
+    )->said;
 }
 
 /** Whether a write was taken, and at which accessibility. */
 function whatItWroteAt(Wrote $wrote): string
 {
     return $wrote->either(
-        done: static fn(WhenAValueMayBeRead $when): Answered => Answered::saying($when->value),
-        refused: static fn(): Answered => Answered::saying('refused'),
-    )->word;
-}
-
-/** A word carried out of an `either()` arm, which may only build an object. */
-final readonly class Answered
-{
-    private function __construct(public string $word) {}
-
-    public static function saying(string $word): self
-    {
-        return new self(word: $word);
-    }
+        done: static fn(WhenAValueMayBeRead $when): TheWordCarriedOut => new TheWordCarriedOut($when->value),
+        refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'),
+    )->said;
 }
 
 it('answers with what was written under a key', function (): void {

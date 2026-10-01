@@ -20,6 +20,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 use function sprintf;
 use function str_repeat;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // What the operator met, given what the far end refused with.
@@ -107,24 +108,18 @@ it('hands on the stack\'s own sentence only for a request it turned down', funct
     ])->and(WhatARefusalMeant::inItsOwnWords(refusedWith(422)))->toBeNull();
 });
 
-/** One line carried out of either arm of a refusal read in its words. */
-final readonly class WhatTheRefusalCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a refusal comes to when it is read for the stack's own words, as a line. */
 function whatTheRefusalSaidInItsWords(CertificateWasRefused|RequestFailed $why): string
 {
     return WhatARefusalMeant::inItsWords(
         $why,
-        refused: static fn(ARefusalInItsWords $words): WhatTheRefusalCameTo => new WhatTheRefusalCameTo(sprintf(
+        refused: static fn(ARefusalInItsWords $words): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'refused: %s | %s | %s',
             $words->summary(),
             $words->meaning(),
             $words->named()->forTheOperator(),
         )),
-        met: static fn(Obstacle $obstacle): WhatTheRefusalCameTo => new WhatTheRefusalCameTo($obstacle->kind()->name),
+        met: static fn(Obstacle $obstacle): TheWordCarriedOut => new TheWordCarriedOut($obstacle->kind()->name),
     )->said;
 }
 

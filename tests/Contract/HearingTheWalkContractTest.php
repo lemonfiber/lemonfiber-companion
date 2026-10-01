@@ -22,6 +22,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatNarrates;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
 
@@ -147,21 +148,15 @@ function everyWayOfFollowingAWalk(array $streams, array $script): array
     ];
 }
 
-/** One word carried out of an `either()` arm of what a walk said. */
-final readonly class WhatTheWalkSaidAsAWord
-{
-    public function __construct(public string $said) {}
-}
-
 /** Every field of what the walk said, as one line, whichever arm it took. */
 function theWordForWhatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
 {
     return $said->either(
-        nothing: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('nothing'),
-        alive: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('alive'),
-        said: static fn(ALineItSaid $line): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord(aLineHeardAsAWord($line)),
-        closed: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('closed'),
-        met: static fn(Obstacle $why): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord($why->kind()->value),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+        alive: static fn(): TheWordCarriedOut => new TheWordCarriedOut('alive'),
+        said: static fn(ALineItSaid $line): TheWordCarriedOut => new TheWordCarriedOut(aLineHeardAsAWord($line)),
+        closed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('closed'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -169,8 +164,8 @@ function theWordForWhatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
 function aLineHeardAsAWord(ALineItSaid $line): string
 {
     return sprintf('%s: %s (%s)', $line->step()->value, $line->said(), $line->detail(
-        said: static fn(string $detail): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord($detail),
-        nothing: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('nothing particular'),
+        said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing particular'),
     )->said);
 }
 

@@ -48,6 +48,7 @@ use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -94,21 +95,15 @@ function itNamedTheAttempt(MockClient $mock): bool
     return is_string($key) && $key !== '';
 }
 
-/** One word carried out of an arm. */
-final readonly class WhereTheUshersGot
-{
-    public function __construct(public string $said) {}
-}
-
 /** Which arm an answer took, with what it carried. */
 function whereItGot(WhatBecameOfTheInvitation $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhereTheUshersGot => new WhereTheUshersGot(sprintf('underway:%s', $job->shown())),
-        answered: static fn(AnInvitation $invitation): WhereTheUshersGot => new WhereTheUshersGot(sprintf('answered:%s:%s', $invitation->toHand()->name(), $invitation->standing()->value)),
-        ended: static fn(): WhereTheUshersGot => new WhereTheUshersGot('ended'),
-        refused: static fn(string $because): WhereTheUshersGot => new WhereTheUshersGot(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway:%s', $job->shown())),
+        answered: static fn(AnInvitation $invitation): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered:%s:%s', $invitation->toHand()->name(), $invitation->standing()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->name)),
     )->said;
 }
 
@@ -348,16 +343,16 @@ it('reads who is in off the household the operator\'s requests are read from, an
         $ushers = theUshersAnswering($answer);
         $mock = theMockTheUshersAsk();
         $said = $ushers->whoIsIn(theStackSomebodyIsAskedInTo(), Session::of('a-session-not-a-secret'))->either(
-            found: static function (TheMembers $members): WhereTheUshersGot {
+            found: static function (TheMembers $members): TheWordCarriedOut {
                 $names = [];
 
                 foreach ($members as $member) {
                     $names[] = $member->name();
                 }
 
-                return new WhereTheUshersGot(implode(',', $names));
+                return new TheWordCarriedOut(implode(',', $names));
             },
-            met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->name)),
         )->said;
 
         expect($said)->toBe($expected, $expected)
@@ -373,8 +368,8 @@ it('answers work it cannot ask after, and a household it cannot read, as a stack
 
     $followed = whereItGot(theUshersAnswering(nothingAnswering())->whatBecameOf($stack, $session, Job::named('j-1')));
     $read = theUshersAnswering(nothingAnswering())->whoIsIn($stack, $session)->either(
-        found: static fn(TheMembers $members): WhereTheUshersGot => new WhereTheUshersGot(sprintf('found:%d', $members->count())),
-        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
+        found: static fn(TheMembers $members): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%d', $members->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->name)),
     )->said;
 
     expect($followed)->toBe('met:StackDidNotAnswer')

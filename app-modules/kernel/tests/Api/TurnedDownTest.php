@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\RequestWasRefusedForNothing;
 use Modules\Kernel\Api\TurnedDown;
-
-/** One word carried out of `when()`, since it must hand back an object. */
-final readonly class WhatTheRefusalSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** A refusal's moment, or the word for not having one. */
 function whenItWasRefused(TurnedDown $why): string
 {
     return $why->when(
-        then: static fn(string $when): WhatTheRefusalSaid => new WhatTheRefusalSaid($when),
-        unstated: static fn(): WhatTheRefusalSaid => new WhatTheRefusalSaid('unstated'),
+        then: static fn(string $when): TheWordCarriedOut => new TheWordCarriedOut($when),
+        unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
     )->said;
 }
 

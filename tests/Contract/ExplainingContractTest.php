@@ -21,6 +21,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Explaining contract, run against the adapter and against the fake.
@@ -96,26 +97,20 @@ function everyWayOfAskingForTheWords(MockResponse $answered, ?Obstacle $why = nu
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheWordsTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheWordsSay(Explaining $explaining): string
 {
     return $explaining->glossaryOn(aStackThatExplainsItself(), Session::of('a-session-not-a-secret'))->either(
-        found: static function (TheGlossary $words): WhatTheWordsTurnedOutToSay {
+        found: static function (TheGlossary $words): TheWordCarriedOut {
             $said = [];
 
             foreach ($words as $word) {
                 $said[] = sprintf('%s|%s|%s|%s', $word->word(), $word->short(), $word->deep(), implode(',', [...$word->alsoCalled()]));
             }
 
-            return new WhatTheWordsTurnedOutToSay(implode(' / ', $said));
+            return new TheWordCarriedOut(implode(' / ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -217,7 +212,7 @@ function everyWayOfAskingForOneWord(MockResponse $answered, ?Obstacle $why = nul
 function everythingOneWordSays(Explaining $explaining, string $word): string
 {
     return $explaining->wordOn(aStackThatExplainsItself(), Session::of('a-session-not-a-secret'), AWordInUse::named($word))->either(
-        explained: static fn(AWord $entry): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay(sprintf(
+        explained: static fn(AWord $entry): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%s|%s',
             $entry->word(),
             $entry->short(),
@@ -225,8 +220,8 @@ function everythingOneWordSays(Explaining $explaining, string $word): string
             implode(',', [...$entry->alsoCalled()]),
             $entry->explains(AWordInUse::named($word)) ? 'explains it' : 'explains something else',
         )),
-        unexplained: static fn(): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay('no entry'),
-        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->kind()->value),
+        unexplained: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no entry'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

@@ -34,6 +34,7 @@ use Modules\Sdk\Api\Surveyors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatMeasuresItsRoom;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Measuring contract, run against the adapter and against the fake.
@@ -134,18 +135,12 @@ function everyWayOfAskingHowFull(MockResponse $answered, ?Obstacle $why = null):
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheRoomTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** A figure a reading may not have, as text. */
 function roomAmount(AnAmountOfRoom $amount): string
 {
     return $amount->either(
-        known: static fn(int $bytes): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay((string) $bytes),
-        unread: static fn(): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay('unread'),
+        known: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut((string) $bytes),
+        unread: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unread'),
     )->said;
 }
 
@@ -153,7 +148,7 @@ function roomAmount(AnAmountOfRoom $amount): string
 function everythingTheRoomSays(Measuring $measuring): string
 {
     return $measuring->measuredOn(aStackThatFills(), Session::of('a-session-not-a-secret'))->either(
-        measured: static function (WhereTheRoomWent $room): WhatTheRoomTurnedOutToSay {
+        measured: static function (WhereTheRoomWent $room): TheWordCarriedOut {
             $said = [sprintf('%s halted:%s', $room->stands()->value, $room->isHalted() ? 'yes' : 'no')];
 
             foreach ($room->volumes() as $volume) {
@@ -167,8 +162,8 @@ function everythingTheRoomSays(Measuring $measuring): string
                     $volume->room()->committed(),
                     roomAmount($volume->room()->projected()),
                     $volume->reading()->either(
-                        live: static fn(): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay('live'),
-                        asOf: static fn(Instant $at): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay(sprintf('as of %d', $at->epochSeconds())),
+                        live: static fn(): TheWordCarriedOut => new TheWordCarriedOut('live'),
+                        asOf: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('as of %d', $at->epochSeconds())),
                     )->said,
                 );
             }
@@ -184,19 +179,19 @@ function everythingTheRoomSays(Measuring $measuring): string
                     $download->bytes(),
                     $download->stands()->value,
                     $download->ratio(
-                        seeding: static fn(ARatio $ratio): WhatTheRoomTurnedOutToSay => $ratio->either(
-                            read: static fn(string $read): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay($read),
-                            none: static fn(): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay('no ratio'),
+                        seeding: static fn(ARatio $ratio): TheWordCarriedOut => $ratio->either(
+                            read: static fn(string $read): TheWordCarriedOut => new TheWordCarriedOut($read),
+                            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no ratio'),
                         ),
-                        notSeeding: static fn(): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay('-'),
+                        notSeeding: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
                     )->said,
                     $download->consequence(),
                 );
             }
 
-            return new WhatTheRoomTurnedOutToSay(implode(' | ', $said));
+            return new TheWordCarriedOut(implode(' | ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

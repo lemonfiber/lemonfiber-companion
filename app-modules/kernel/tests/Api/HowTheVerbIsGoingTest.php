@@ -19,20 +19,16 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 use function sprintf;
 
-/** One line carried out of an arm of a verb being followed. */
-final readonly class WhichArmTheVerbTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following a verb takes, and what it carried there. */
 function howTheVerbIsGoingReads(HowTheVerbIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmTheVerbTook => new WhichArmTheVerbTook('running'),
-        done: static fn(WhatTheVerbCameTo $report): WhichArmTheVerbTook => new WhichArmTheVerbTook(sprintf('done:%s', $report->was()->value)),
-        ended: static fn(): WhichArmTheVerbTook => new WhichArmTheVerbTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheVerbTook => new WhichArmTheVerbTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(WhatTheVerbCameTo $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%s', $report->was()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

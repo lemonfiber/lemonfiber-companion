@@ -16,18 +16,14 @@ use Modules\Kernel\Api\WhereTheLineStands;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheLineTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, and what it carried there. */
 function whatTheLineWasFound(WhatTheLineWasFound $answer): string
 {
     return $answer->either(
-        shared: static fn(HowTheLineIsShared $line): WhichArmTheLineTook => new WhichArmTheLineTook(sprintf('shared:%s', $line->stands()->value)),
-        met: static fn(Obstacle $why): WhichArmTheLineTook => new WhichArmTheLineTook(sprintf('met:%s', $why->kind()->value)),
+        shared: static fn(HowTheLineIsShared $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf('shared:%s', $line->stands()->value)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

@@ -14,19 +14,15 @@ use Modules\Kernel\Api\WhatWasSaidOfOneWord;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheWordTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes, folded to one line. */
 function whichArmOneWordTakes(WhatWasSaidOfOneWord $answer): string
 {
     return $answer->either(
-        explained: static fn(AWord $word): WhichArmTheWordTook => new WhichArmTheWordTook(sprintf('explained:%s', $word->word())),
-        unexplained: static fn(): WhichArmTheWordTook => new WhichArmTheWordTook('unexplained'),
-        met: static fn(Obstacle $why): WhichArmTheWordTook => new WhichArmTheWordTook(sprintf('met:%s', $why->kind()->value)),
+        explained: static fn(AWord $word): TheWordCarriedOut => new TheWordCarriedOut(sprintf('explained:%s', $word->word())),
+        unexplained: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unexplained'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

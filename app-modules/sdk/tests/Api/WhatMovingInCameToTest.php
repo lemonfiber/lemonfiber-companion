@@ -27,6 +27,7 @@ use Modules\Sdk\Api\WhatMovingInCameTo;
 use function sprintf;
 use function str_starts_with;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 use function var_export;
@@ -98,12 +99,6 @@ function aMoveWith(array $data, array $path, mixed $value): array
     return $data;
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheMoveCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /** Records, each as one word. */
 function theRecordsRead(TheRecords $records): string
 {
@@ -120,7 +115,7 @@ function theRecordsRead(TheRecords $records): string
 function everythingTheMoveSays(AMove $move): string
 {
     return sprintf('%s|%s|%s|%s', $move->by()->value, $move->stance()->value, $move->refusal(), $move->either(
-        adopting: static function (TheAdoption $adoption): WhatTheMoveCarried {
+        adopting: static function (TheAdoption $adoption): TheWordCarriedOut {
             $upgrades = [];
 
             foreach ($adoption as $upgrade) {
@@ -128,27 +123,27 @@ function everythingTheMoveSays(AMove $move): string
                 $upgrades[] = sprintf('%s %s>%s %s %s %s %s', $what->service(), $upgrade->existing(), $upgrade->ours(), $upgrade->verdict(), $what->because(), var_export($what->wantsACopyFirst(), return: true), var_export($what->isRefused(), return: true));
             }
 
-            return new WhatTheMoveCarried(sprintf('%s|%s|%s|%s', $adoption->project(), implode(',', $upgrades), implode(',', iterator_to_array($adoption->backUp(), preserve_keys: false)), $adoption->backedUp()));
+            return new TheWordCarriedOut(sprintf('%s|%s|%s|%s', $adoption->project(), implode(',', $upgrades), implode(',', iterator_to_array($adoption->backUp(), preserve_keys: false)), $adoption->backedUp()));
         },
-        importing: static function (TheImport $import): WhatTheMoveCarried {
+        importing: static function (TheImport $import): TheWordCarriedOut {
             $left = [];
 
             foreach ($import->notCarried() as $limit) {
                 $left[] = sprintf('%s: %s', $limit->what(), $limit->because());
             }
 
-            return new WhatTheMoveCarried(sprintf('%s|%s|%s|%s', $import->project(), theRecordsRead($import->carried()), theRecordsRead($import->wouldCarry()), implode(',', $left)));
+            return new TheWordCarriedOut(sprintf('%s|%s|%s|%s', $import->project(), theRecordsRead($import->carried()), theRecordsRead($import->wouldCarry()), implode(',', $left)));
         },
-        standingBeside: static function (TheStandingBeside $beside): WhatTheMoveCarried {
+        standingBeside: static function (TheStandingBeside $beside): TheWordCarriedOut {
             $ports = [];
 
             foreach ($beside->ports() as $moved) {
                 $ports[] = sprintf('%s %d>%d', $moved->service(), $moved->from(), $moved->to());
             }
 
-            return new WhatTheMoveCarried(sprintf('%s|%s', implode(',', $ports), $beside->written()));
+            return new TheWordCarriedOut(sprintf('%s|%s', implode(',', $ports), $beside->written()));
         },
-        replacing: static fn(TheReplacement $replacement): WhatTheMoveCarried => new WhatTheMoveCarried(sprintf(
+        replacing: static fn(TheReplacement $replacement): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%s',
             $replacement->project(),
             implode(',', iterator_to_array($replacement->wouldStop(), preserve_keys: false)),

@@ -16,6 +16,8 @@ use Modules\Kernel\Api\WhereItStopsShort;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /** One change as it arrives, with whatever a case wants to change about it. */
 function aChangeMade(
     string $did = 'Pointed Sonarr at the new library',
@@ -28,12 +30,6 @@ function aChangeMade(
     return Change::made($did, $operation, $target, WhenItWasMade::at(Instant::atEpochSeconds($at)), $reversal, $alongside);
 }
 
-/** One line carried out of the fold. */
-final readonly class WhatTheChangeSaidOfItself
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * Where putting it back stops short, as one line, or the word for nowhere.
  *
@@ -43,13 +39,13 @@ final readonly class WhatTheChangeSaidOfItself
 function whereTheChangeStopsShort(Change $change): string
 {
     return $change->stopsShort(
-        there: static fn(WhereItStopsShort $where): WhatTheChangeSaidOfItself => new WhatTheChangeSaidOfItself(
+        there: static fn(WhereItStopsShort $where): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('%s / %s', $where->why(), $where->instead(
-                said: static fn(string $what): WhatTheChangeSaidOfItself => new WhatTheChangeSaidOfItself($what),
-                nothing: static fn(): WhatTheChangeSaidOfItself => new WhatTheChangeSaidOfItself('-'),
+                said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+                nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
             )->said),
         ),
-        nowhere: static fn(): WhatTheChangeSaidOfItself => new WhatTheChangeSaidOfItself('nowhere'),
+        nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
     )->said;
 }
 

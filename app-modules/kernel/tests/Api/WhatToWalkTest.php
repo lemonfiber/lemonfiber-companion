@@ -11,18 +11,14 @@ use Modules\Kernel\Api\WhatToWalk;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichWalkArm
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** What a walk was asked for, as one line. */
 function whatWasAskedToWalk(WhatToWalk $asked): string
 {
     return $asked->either(
-        named: static fn(string $item): WhichWalkArm => new WhichWalkArm(sprintf('named:%s', $item)),
-        likeliest: static fn(): WhichWalkArm => new WhichWalkArm('likeliest'),
+        named: static fn(string $item): TheWordCarriedOut => new TheWordCarriedOut(sprintf('named:%s', $item)),
+        likeliest: static fn(): TheWordCarriedOut => new TheWordCarriedOut('likeliest'),
     )->said;
 }
 

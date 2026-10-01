@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\UnattendedIsUnnamed;
+use Tests\Support\TheWordCarriedOut;
 
 /** One command as it arrives, with whatever a case wants to change. */
 function aCommand(
@@ -19,12 +20,6 @@ function aCommand(
     HowItIsHosted $standing = HowItIsHosted::Hosted,
 ): Unattended {
     return Unattended::called($name, $command, $guarantees, $standing);
-}
-
-/** One word carried out of the missing arm. */
-final readonly class WhatTheCommandSaidAboutWhatIsGone
-{
-    public function __construct(public string $said) {}
 }
 
 /**
@@ -38,10 +33,10 @@ final readonly class WhatTheCommandSaidAboutWhatIsGone
 function whatIsGoneFrom(Unattended $command): string
 {
     return $command->missing(
-        gone: static fn(string $where): WhatTheCommandSaidAboutWhatIsGone
-            => new WhatTheCommandSaidAboutWhatIsGone($where),
-        nothing: static fn(): WhatTheCommandSaidAboutWhatIsGone
-            => new WhatTheCommandSaidAboutWhatIsGone('nothing is missing'),
+        gone: static fn(string $where): TheWordCarriedOut
+            => new TheWordCarriedOut($where),
+        nothing: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('nothing is missing'),
     )->said;
 }
 

@@ -22,6 +22,7 @@ use Modules\Sdk\Api\WhatLeaves;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -97,12 +98,6 @@ function theFirstOfTheirs(WhatLeavesThisMachine $leaving): ARequestOfTheirs
     throw new LogicException('The answer held no service row.');
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheirRequestSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** One of lemonfiber's requests, as one line. */
 function oneLineFor(ARequestOfOurs $request): string
 {
@@ -122,8 +117,8 @@ function oneLineFor(ARequestOfOurs $request): string
 function oneLineForTheirs(ARequestOfTheirs $request): string
 {
     return sprintf('%s/%s', $request->service()->named(), $request->reaches(
-        recorded: static fn(string $destination, string $purpose): WhatTheirRequestSaid => new WhatTheirRequestSaid(sprintf('%s/%s', $destination, $purpose)),
-        unrecorded: static fn(): WhatTheirRequestSaid => new WhatTheirRequestSaid('unrecorded'),
+        recorded: static fn(string $destination, string $purpose): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s/%s', $destination, $purpose)),
+        unrecorded: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unrecorded'),
     )->said);
 }
 
@@ -230,22 +225,16 @@ it('judges the payload these cases are built on against the contract', function 
         ->toBe([]);
 });
 
-/** Who put a service there, carried out of the fold as one line. */
-final readonly class WhoBroughtTheService
-{
-    public function __construct(public string $said) {}
-}
-
 /** Who a service's row says put it on the stack, as one line a case can compare. */
 function whoPutTheServiceThere(ARequestOfTheirs $request): string
 {
     return $request->origin()->whichever(
-        bundled: static fn(): WhoBroughtTheService => new WhoBroughtTheService('bundled'),
-        operator: static fn(): WhoBroughtTheService => new WhoBroughtTheService('operator'),
-        plugin: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('plugin:%s', $named)),
-        unknown: static fn(string $why): WhoBroughtTheService => new WhoBroughtTheService(sprintf('unknown:%s', $why)),
-        overridden: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('overridden:%s', $named)),
-        orphaned: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('orphaned:%s', $named)),
+        bundled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('bundled'),
+        operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('operator'),
+        plugin: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

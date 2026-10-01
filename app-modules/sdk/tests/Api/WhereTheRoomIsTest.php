@@ -19,6 +19,7 @@ use Modules\Sdk\Api\WhereTheRoomIs;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -95,26 +96,20 @@ function theVolumeRead(array $data): string
 
     foreach (WhereTheRoomIs::in(spaceSaying($data))->volumes() as $volume) {
         $said = sprintf('%s|%s|%s|%s', $volume->point(), roomFigure($volume->room()->free()), roomFigure($volume->room()->projected()), $volume->reading()->either(
-            live: static fn(): WhatTheReaderCarried => new WhatTheReaderCarried('live'),
-            asOf: static fn(Instant $at): WhatTheReaderCarried => new WhatTheReaderCarried((string) $at->epochSeconds()),
+            live: static fn(): TheWordCarriedOut => new TheWordCarriedOut('live'),
+            asOf: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()),
         )->said);
     }
 
     return $said;
 }
 
-/** One line carried out of an arm. */
-final readonly class WhatTheReaderCarried
-{
-    public function __construct(public string $said) {}
-}
-
 /** A figure as text, or `unread`. */
 function roomFigure(AnAmountOfRoom $amount): string
 {
     return $amount->either(
-        known: static fn(int $bytes): WhatTheReaderCarried => new WhatTheReaderCarried((string) $bytes),
-        unread: static fn(): WhatTheReaderCarried => new WhatTheReaderCarried('unread'),
+        known: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut((string) $bytes),
+        unread: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unread'),
     )->said;
 }
 
@@ -136,11 +131,11 @@ function theDownloadRead(array $data): ADownloadOnDisk
 function theRatioRead(ADownloadOnDisk $download): string
 {
     return $download->ratio(
-        seeding: static fn(ARatio $ratio): WhatTheReaderCarried => $ratio->either(
-            read: static fn(string $read): WhatTheReaderCarried => new WhatTheReaderCarried($read),
-            none: static fn(): WhatTheReaderCarried => new WhatTheReaderCarried('none'),
+        seeding: static fn(ARatio $ratio): TheWordCarriedOut => $ratio->either(
+            read: static fn(string $read): TheWordCarriedOut => new TheWordCarriedOut($read),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
         ),
-        notSeeding: static fn(): WhatTheReaderCarried => new WhatTheReaderCarried('-'),
+        notSeeding: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
     )->said;
 }
 

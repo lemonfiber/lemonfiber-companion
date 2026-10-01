@@ -9,12 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Instant;
-
-/** What reading a timestamp came to, carried out of `read()`, which must hand back an object. */
-final readonly class WhatTheTimestampNamed
-{
-    public function __construct(public ?int $seconds) {}
-}
+use Tests\Support\WhatTheTimestampNamed;
 
 /** The seconds since the epoch a timestamp names, or null where it names none. */
 function secondsTheTimestampNames(string $written): ?int

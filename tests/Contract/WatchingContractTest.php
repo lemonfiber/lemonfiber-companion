@@ -25,6 +25,7 @@ use Modules\Sdk\Api\Shelves;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AShelfThatWasRead;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Watching contract, run against the adapter and against the fake.
@@ -114,12 +115,6 @@ function everyWayOfReadingAShelf(MockResponse $answered, Watching $fake): array
     ];
 }
 
-/** One answer carried out of an `either()` arm. */
-final readonly class WhatAShelfCameAwayWith
-{
-    public function __construct(public string $said) {}
-}
-
 /** What a stack answered, as one string, whichever arm it took. */
 function whatAShelfSaid(Watching $watching): string
 {
@@ -128,7 +123,7 @@ function whatAShelfSaid(Watching $watching): string
         theSessionAShelfIsAskedUnder(),
         theMemberWhoseShelfItIs(),
     )->either(
-        told: static function (Shelf $shelf): WhatAShelfCameAwayWith {
+        told: static function (Shelf $shelf): TheWordCarriedOut {
             $rows = [];
 
             foreach ($shelf as $holding) {
@@ -137,27 +132,27 @@ function whatAShelfSaid(Watching $watching): string
                     $holding->titled(),
                     $holding->medium()->value,
                     $holding->year()->either(
-                        dated: static fn(int $year): WhatAShelfCameAwayWith
-                            => new WhatAShelfCameAwayWith((string) $year),
-                        unstated: static fn(): WhatAShelfCameAwayWith
-                            => new WhatAShelfCameAwayWith('undated'),
+                        dated: static fn(int $year): TheWordCarriedOut
+                            => new TheWordCarriedOut((string) $year),
+                        unstated: static fn(): TheWordCarriedOut
+                            => new TheWordCarriedOut('undated'),
                     )->said,
                 );
             }
 
-            return new WhatAShelfCameAwayWith(sprintf('told:%s', implode('|', $rows)));
+            return new TheWordCarriedOut(sprintf('told:%s', implode('|', $rows)));
         },
-        outOfReach: static function (Sentences $said): WhatAShelfCameAwayWith {
+        outOfReach: static function (Sentences $said): TheWordCarriedOut {
             $lines = [];
 
             foreach ($said as $sentence) {
                 $lines[] = $sentence->shown();
             }
 
-            return new WhatAShelfCameAwayWith(sprintf('out-of-reach:%s', implode('|', $lines)));
+            return new TheWordCarriedOut(sprintf('out-of-reach:%s', implode('|', $lines)));
         },
-        refused: static fn(Obstacle $why): WhatAShelfCameAwayWith
-            => new WhatAShelfCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -250,11 +245,11 @@ it('N3-R14 — the operator has no shelf, and that is an answer', function (): v
     );
 
     expect($answer->either(
-        told: static fn(): WhatAShelfCameAwayWith => new WhatAShelfCameAwayWith('told'),
-        outOfReach: static fn(): WhatAShelfCameAwayWith
-            => new WhatAShelfCameAwayWith('out-of-reach'),
-        refused: static fn(Obstacle $why): WhatAShelfCameAwayWith
-            => new WhatAShelfCameAwayWith($why->kind()->value),
+        told: static fn(): TheWordCarriedOut => new TheWordCarriedOut('told'),
+        outOfReach: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('out-of-reach'),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
     )->said)->toEqual(KindOfObstacle::NotForThisAccount->value);
 });
 

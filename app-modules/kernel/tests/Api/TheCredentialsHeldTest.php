@@ -23,6 +23,8 @@ use Modules\Kernel\Api\WhoMadeACredential;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /** What the store protects against, as every case here says it. */
 function aStoreThatProtects(): WhatTheStoreProtects
 {
@@ -33,12 +35,6 @@ function aStoreThatProtects(): WhatTheStoreProtects
 function aCredentialCalled(string $name): ACredentialHeld
 {
     return ACredentialHeld::described($name, WhereACredentialStands::Active, WhoMadeACredential::Operator, WhatUsesIt::of(), '');
-}
-
-/** One line carried out of an arm. */
-final readonly class WhichArmTheCredentialsTook
-{
-    public function __construct(public string $said) {}
 }
 
 it('keeps what the store is, what it protects against, and what it does not', function (): void {
@@ -71,8 +67,8 @@ it('keeps every credential in the stack\'s order, with the store beside them', f
 
 it('a stack that could not be asked never holds an empty list', function (): void {
     $fold = static fn(WhatWasFoundOfTheCredentials $answer): string => $answer->either(
-        found: static fn(TheCredentialsHeld $held): WhichArmTheCredentialsTook => new WhichArmTheCredentialsTook(sprintf('found:%d', $held->count())),
-        met: static fn(Obstacle $why): WhichArmTheCredentialsTook => new WhichArmTheCredentialsTook(sprintf('met:%s', $why->kind()->value)),
+        found: static fn(TheCredentialsHeld $held): TheWordCarriedOut => new TheWordCarriedOut(sprintf('found:%d', $held->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheCredentials::found(TheCredentialsHeld::of(aStoreThatProtects()))))->toBe('found:0')

@@ -12,18 +12,14 @@ use Modules\Kernel\Api\WhereTheDataGoes;
 
 use function sprintf;
 
-/** One line carried out of an arm of where the data goes. */
-final readonly class WhichArmTheDataTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm where the data goes takes, and what it carried there. */
 function whereThisDataGoes(WhereTheDataGoes $data): string
 {
     return $data->either(
-        whereItWas: static fn(): WhichArmTheDataTook => new WhichArmTheDataTook('where it was'),
-        elsewhere: static fn(ARelocation $moved): WhichArmTheDataTook => new WhichArmTheDataTook(sprintf('%s to %s', $moved->was(), $moved->now())),
+        whereItWas: static fn(): TheWordCarriedOut => new TheWordCarriedOut('where it was'),
+        elsewhere: static fn(ARelocation $moved): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s to %s', $moved->was(), $moved->now())),
     )->said;
 }
 

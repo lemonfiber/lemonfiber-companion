@@ -49,6 +49,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackWithSomethingAlreadyOnIt;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The MovingIn contract, run against the adapter and against the fake.
@@ -160,12 +161,6 @@ function everyWayOfSurveying(MockResponse $answered, ?Obstacle $why = null): arr
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheSurveyTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** One of two words, for a flag folded into a line. */
 function oneWordFor(bool $is, string $yes, string $no): string
 {
@@ -254,8 +249,8 @@ function whatMayBeDoneAboutIt(TheSurvey $survey): array
 function whatLinkingWouldCost(TheSurvey $survey): string
 {
     return $survey->linking()->either(
-        costs: static fn(string $because, string $cost, string $remedy, array $filesystems): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay(sprintf('linking %s|%s|%s|%s', $because, $cost, $remedy, implode(',', $filesystems))),
-        links: static fn(): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay('links'),
+        costs: static fn(string $because, string $cost, string $remedy, array $filesystems): TheWordCarriedOut => new TheWordCarriedOut(sprintf('linking %s|%s|%s|%s', $because, $cost, $remedy, implode(',', $filesystems))),
+        links: static fn(): TheWordCarriedOut => new TheWordCarriedOut('links'),
     )->said;
 }
 
@@ -263,14 +258,14 @@ function whatLinkingWouldCost(TheSurvey $survey): string
 function everythingTheSurveySays(MovingIn $movingIn): string
 {
     return $movingIn->surveyedOn(aStackToSurvey(), Session::of('a-session-not-a-secret'))->either(
-        found: static fn(TheSurvey $survey): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay(implode("\n", [
+        found: static fn(TheSurvey $survey): TheWordCarriedOut => new TheWordCarriedOut(implode("\n", [
             oneWordFor($survey->looked(), 'looked', 'could not look'),
             ...whatWasFoundStanding($survey),
             ...whatIsInTheWay($survey),
             whatLinkingWouldCost($survey),
             ...whatMayBeDoneAboutIt($survey),
         ])),
-        met: static fn(Obstacle $why): WhatTheSurveyTurnedOutToSay => new WhatTheSurveyTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
@@ -405,14 +400,8 @@ function everyWayOfMovingIn(MockResponse ...$answered): array
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatMovingInTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** What adopting carries, folded to one line. */
-function whatAdoptingCarried(TheAdoption $adoption): WhatMovingInTurnedOutToSay
+function whatAdoptingCarried(TheAdoption $adoption): TheWordCarriedOut
 {
     $said = [$adoption->project(), implode(',', iterator_to_array($adoption->backUp(), preserve_keys: false)), $adoption->backedUp()];
 
@@ -420,28 +409,28 @@ function whatAdoptingCarried(TheAdoption $adoption): WhatMovingInTurnedOutToSay
         $said[] = sprintf('%s %s>%s %s %s', $upgrade->what()->service(), $upgrade->existing(), $upgrade->ours(), $upgrade->verdict(), oneWordFor($upgrade->what()->wantsACopyFirst(), 'copy first', 'no copy'));
     }
 
-    return new WhatMovingInTurnedOutToSay(implode('|', $said));
+    return new TheWordCarriedOut(implode('|', $said));
 }
 
 /** Everything an answer to moving in says, folded to one line, so two answers can be compared. */
 function everythingMovingInSays(WhatBecameOfTheMove $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay(sprintf('underway %s', $job->shown())),
-        answered: static fn(AMove $move): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay(sprintf(
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(AMove $move): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s',
             $move->by()->value,
             $move->stance()->value,
             $move->either(
                 adopting: whatAdoptingCarried(...),
-                importing: static fn(): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay('importing'),
-                standingBeside: static fn(): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay('beside'),
-                replacing: static fn(): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay('replacing'),
+                importing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('importing'),
+                standingBeside: static fn(): TheWordCarriedOut => new TheWordCarriedOut('beside'),
+                replacing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('replacing'),
             )->said,
         )),
-        ended: static fn(): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay('ended'),
-        refused: static fn(string $because): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatMovingInTurnedOutToSay => new WhatMovingInTurnedOutToSay($why->kind()->value),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

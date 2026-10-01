@@ -21,6 +21,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSaysWhatItTells;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Telling contract, run against the adapter and against the fake.
@@ -91,26 +92,20 @@ function everyWayOfAskingWhatIsTold(MockResponse $answered, ?Obstacle $why = nul
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheSettingTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the setting says, folded to one line, so two answers can be compared. */
 function everythingTheSettingSays(Telling $telling): string
 {
     return $telling->toldAbout(aStackThatSaysWhatItWakesYouFor(), Session::of('a-session-not-a-secret'))->either(
-        told: static function (WhatTheOperatorIsTold $told): WhatTheSettingTurnedOutToSay {
+        told: static function (WhatTheOperatorIsTold $told): TheWordCarriedOut {
             $exceptions = [];
 
             foreach ($told->exceptions() as $event) {
                 $exceptions[] = sprintf('%s=%s', $event->kind(), $event->heard()->value);
             }
 
-            return new WhatTheSettingTurnedOutToSay(sprintf('%s/%s/[%s]', $told->preset(), $told->means(), implode(',', $exceptions)));
+            return new TheWordCarriedOut(sprintf('%s/%s/[%s]', $told->preset(), $told->means(), implode(',', $exceptions)));
         },
-        met: static fn(Obstacle $why): WhatTheSettingTurnedOutToSay => new WhatTheSettingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

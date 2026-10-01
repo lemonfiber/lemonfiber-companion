@@ -19,20 +19,16 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 use function sprintf;
 
-/** One line carried out of an arm of a copy being followed. */
-final readonly class WhichArmTheCopyTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm following a copy takes, and what it carried there. */
 function howTheCopyIsGoingReads(HowTheCopyIsGoing $going): string
 {
     return $going->either(
-        stillRunning: static fn(): WhichArmTheCopyTook => new WhichArmTheCopyTook('running'),
-        done: static fn(ACopyTaken $report): WhichArmTheCopyTook => new WhichArmTheCopyTook(sprintf('done:%d', $report->pace()->moved())),
-        ended: static fn(): WhichArmTheCopyTook => new WhichArmTheCopyTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheCopyTook => new WhichArmTheCopyTook(sprintf('met:%s', $why->kind()->value)),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
+        done: static fn(ACopyTaken $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf('done:%d', $report->pace()->moved())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

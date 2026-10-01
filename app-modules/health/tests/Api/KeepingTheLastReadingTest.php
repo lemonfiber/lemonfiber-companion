@@ -41,6 +41,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
+use Tests\Support\WhatIsKeptOfHealth;
 
 /** The moment a kept summary in these tests was heard at. */
 const WHEN_THE_SUMMARY_WAS_HEARD = 1_790_000_000;
@@ -158,47 +159,6 @@ function whetherItWasKept(Noted $noted): string
     )->shown();
 }
 
-/** A seal, a store, and what decides between them, over the two stand-ins. */
-final readonly class WhatIsKeptOfHealth
-{
-    public KeepingTheLastReading $keeping;
-
-    public ReadingsKeptForInMemory $settings;
-
-    public function __construct(public ASealInMemory $seal, public HealthReadingsInMemory $store, ?Instant $now = null)
-    {
-        $this->settings = ReadingsKeptForInMemory::standard();
-        $this->keeping = new KeepingTheLastReading($seal, $store, $this->settings, FrozenClock::at($now ?? Instant::atEpochSeconds(0)));
-    }
-
-    /** The same, with the clock reading this. */
-    public static function onAPhoneThatSealsAt(Instant $now): self
-    {
-        return new self(ASealInMemory::working(), HealthReadingsInMemory::empty(), $now);
-    }
-
-    public static function onAPhoneThatSeals(): self
-    {
-        return new self(ASealInMemory::working(), HealthReadingsInMemory::empty());
-    }
-
-    /** A value kept for a stack as though a summary had been, sealed by this phone. */
-    public function holdsSealed(string $written): self
-    {
-        $this->seal->seal(Unsealed::of($written))->either(
-            sealed: fn(SealedPayload $payload): Noted => $this->store->keep(
-                $this->seal->stack(theStackItIsKeptFor()),
-                $payload,
-                Shape::One,
-                secondsAfterItWasHeard(0),
-            ),
-            refused: static fn(): Noted => Noted::notKept(),
-        );
-
-        return $this;
-    }
-}
-
 it('keeps a summary sealed, and hands it back on opening as of when it was heard', function (): void {
     $kept = WhatIsKeptOfHealth::onAPhoneThatSeals();
 
@@ -293,7 +253,7 @@ it('lets go of a kept reading that does not open, and opens on nothing', functio
 });
 
 it('lets go of a kept reading that opens to something that is not a summary', function (string $written): void {
-    $kept = WhatIsKeptOfHealth::onAPhoneThatSeals()->holdsSealed($written);
+    $kept = WhatIsKeptOfHealth::onAPhoneThatSeals()->holdsSealed($written, theStackItIsKeptFor(), secondsAfterItWasHeard(0));
 
     expect(whatTheScreenOpensOn($kept->keeping->lastKept(theStackItIsKeptFor())))->toBe('nothing')
         ->and($kept->store->forgetEverything()->howMany())->toBe(0);

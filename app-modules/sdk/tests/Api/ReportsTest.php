@@ -31,6 +31,7 @@ use Modules\Sdk\Api\Reports;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -674,7 +675,7 @@ function whatOneFindingSaysUnderneath(array $verdict): string
 
     foreach ($report->findings() as $finding) {
         return $finding->said()->either(
-            nothingWrong: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+            nothingWrong: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
             wentWrong: static fn(
                 Code $code,
                 string $meaning,
@@ -682,21 +683,15 @@ function whatOneFindingSaysUnderneath(array $verdict): string
                 Severity $severity,
                 Standing $standing,
                 WhatItSaysUnderneath $underneath,
-            ): WhatWasAddedUnderneath => new WhatWasAddedUnderneath($underneath->either(
-                said: static fn(string $detail): WhatWasAddedUnderneath => new WhatWasAddedUnderneath($detail),
-                none: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+            ): TheWordCarriedOut => new TheWordCarriedOut($underneath->either(
+                said: static fn(string $detail): TheWordCarriedOut => new TheWordCarriedOut($detail),
+                none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
             )->said),
-            couldNotSay: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+            couldNotSay: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
         )->said;
     }
 
     return 'no finding at all';
-}
-
-/** One answer carried out of an `either()` arm, which hands back objects. */
-final readonly class WhatWasAddedUnderneath
-{
-    public function __construct(public string $said) {}
 }
 
 it('stands in for a stack with a payload the contract would accept', function (): void {
@@ -710,22 +705,16 @@ it('stands in for a stack with a payload the contract would accept', function ()
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
 
-/** Who put a check there, carried out of the fold as one line. */
-final readonly class WhoBroughtTheCheck
-{
-    public function __construct(public string $said) {}
-}
-
 /** Who a finding says put its check there, as one line a case can compare. */
 function whoPutTheCheckThere(Finding $finding): string
 {
     return $finding->origin()->whichever(
-        bundled: static fn(): WhoBroughtTheCheck => new WhoBroughtTheCheck('bundled'),
-        operator: static fn(): WhoBroughtTheCheck => new WhoBroughtTheCheck('operator'),
-        plugin: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('plugin:%s', $named)),
-        unknown: static fn(string $why): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('unknown:%s', $why)),
-        overridden: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('overridden:%s', $named)),
-        orphaned: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('orphaned:%s', $named)),
+        bundled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('bundled'),
+        operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('operator'),
+        plugin: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

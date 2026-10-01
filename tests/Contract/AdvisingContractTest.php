@@ -25,6 +25,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatAdvises;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Advising contract, run against the adapter and against the fake.
@@ -106,12 +107,6 @@ function everyWayOfAskingForAdvice(MockResponse $answered, ?Obstacle $why = null
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheAdviceTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to lines, so two answers can be compared. */
 /** Whether a device's app is open source, as a word. */
 function howItIsLicensed(ADeviceToWatchOn $device): string
@@ -122,7 +117,7 @@ function howItIsLicensed(ADeviceToWatchOn $device): string
 function everythingTheAdviceSays(Advising $advising): string
 {
     return $advising->advisedBy(aStackGivingAdvice(), Session::of('a-session-not-a-secret'))->either(
-        found: static function (WhatToWatchOn $advice): WhatTheAdviceTurnedOutToSay {
+        found: static function (WhatToWatchOn $advice): TheWordCarriedOut {
             $lines = [
                 $advice->onlyAtHome(),
                 $advice->nothingIsInstalled(),
@@ -139,9 +134,9 @@ function everythingTheAdviceSays(Advising $advising): string
                 }
             }
 
-            return new WhatTheAdviceTurnedOutToSay(implode("\n", $lines));
+            return new TheWordCarriedOut(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheAdviceTurnedOutToSay => new WhatTheAdviceTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

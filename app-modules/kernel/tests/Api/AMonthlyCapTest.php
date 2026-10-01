@@ -11,19 +11,14 @@ use Modules\Kernel\Api\AMonthlyCap;
 use Modules\Kernel\Api\LineSaysNothing;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhereTheMonthStands;
-
-/** One line carried out of an arm. */
-final readonly class WhereTheCapWasSaidToStand
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Where a cap's month stands, or the word for uncounted. */
 function whereTheMonthStandsOn(AMonthlyCap $cap): string
 {
     return $cap->stands(
-        stands: static fn(WhereTheMonthStands $month): WhereTheCapWasSaidToStand => new WhereTheCapWasSaidToStand($month->value),
-        uncounted: static fn(): WhereTheCapWasSaidToStand => new WhereTheCapWasSaidToStand('uncounted'),
+        stands: static fn(WhereTheMonthStands $month): TheWordCarriedOut => new TheWordCarriedOut($month->value),
+        uncounted: static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncounted'),
     )->said;
 }
 

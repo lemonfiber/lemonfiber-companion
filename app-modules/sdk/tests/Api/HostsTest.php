@@ -19,6 +19,7 @@ use Modules\Sdk\Api\Hosts;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -68,15 +69,9 @@ function everyCommandIn(WhatRunsUnattended $running): string
 function whatIsGoneIn(Unattended $command): string
 {
     return $command->missing(
-        gone: static fn(string $where): WhatOneHostedRowSaid => new WhatOneHostedRowSaid($where),
-        nothing: static fn(): WhatOneHostedRowSaid => new WhatOneHostedRowSaid('nothing'),
+        gone: static fn(string $where): TheWordCarriedOut => new TheWordCarriedOut($where),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
-}
-
-/** One word carried out of an arm, since a fold must hand back an object. */
-final readonly class WhatOneHostedRowSaid
-{
-    public function __construct(public string $said) {}
 }
 
 it('N16-R5 — reads a listing, keeping the machine\'s order', function (): void {
@@ -97,8 +92,8 @@ it('N16-R5 — a machine with no manager carries what to do instead', function (
     ]));
 
     expect($running->whereItCannot(
-        instead: static fn(string $what): WhatOneHostedRowSaid => new WhatOneHostedRowSaid($what),
-        itself: static fn(): WhatOneHostedRowSaid => new WhatOneHostedRowSaid('itself'),
+        instead: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+        itself: static fn(): TheWordCarriedOut => new TheWordCarriedOut('itself'),
     )->said)->toBe('Add it to your own login items.');
 });
 

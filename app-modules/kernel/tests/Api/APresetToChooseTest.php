@@ -25,11 +25,7 @@ use Modules\Kernel\Api\WhatToDoAboutQuality;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheChoiceTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** An answer about quality that became what is given. */
 function anAnswerThatBecame(WhatBecameOfTheChoice $became): TheQualityChosen
@@ -79,9 +75,9 @@ it('tells a choice answered with what is in force from one for music and from wh
         WhatBecameOfAskingIt::notAsked(),
     );
     $arm = static fn(WhatTheChoiceCameTo $came): string => $came->either(
-        inForce: static fn(TheQualityChosen $read): WhichArmTheChoiceTook => new WhichArmTheChoiceTook($read->became()->value),
-        forMusic: static fn(AFormatChoiceMade $read): WhichArmTheChoiceTook => new WhichArmTheChoiceTook(sprintf('%s %s %s', $read->format()->format(), $read->became()->value, $read->applied()->saidOnTheScreen())),
-        met: static fn(Obstacle $why): WhichArmTheChoiceTook => new WhichArmTheChoiceTook($why->kind()->value),
+        inForce: static fn(TheQualityChosen $read): TheWordCarriedOut => new TheWordCarriedOut($read->became()->value),
+        forMusic: static fn(AFormatChoiceMade $read): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s %s', $read->format()->format(), $read->became()->value, $read->applied()->saidOnTheScreen())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 
     expect($arm(WhatTheChoiceCameTo::inForce($chosen)))->toBe('recorded')

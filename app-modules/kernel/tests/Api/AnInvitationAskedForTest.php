@@ -16,11 +16,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhatTheInvitationAsked
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** The age an invitation is asked with, and what becomes of unrated material, as one line. */
 function whatItIsAskedWith(AnInvitationAskedFor $asked): string
@@ -28,12 +24,12 @@ function whatItIsAskedWith(AnInvitationAskedFor $asked): string
     return sprintf(
         '%s|%s',
         $asked->age(
-            upTo: static fn(int $age): WhatTheInvitationAsked => new WhatTheInvitationAsked(sprintf('%d', $age)),
-            none: static fn(): WhatTheInvitationAsked => new WhatTheInvitationAsked('no limit'),
+            upTo: static fn(int $age): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $age)),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no limit'),
         )->said,
         $asked->unrated(
-            chosen: static fn(WhatBecomesOfUnrated $unrated): WhatTheInvitationAsked => new WhatTheInvitationAsked($unrated->asked()),
-            unsaid: static fn(): WhatTheInvitationAsked => new WhatTheInvitationAsked('left to the stack'),
+            chosen: static fn(WhatBecomesOfUnrated $unrated): TheWordCarriedOut => new TheWordCarriedOut($unrated->asked()),
+            unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('left to the stack'),
         )->said,
     );
 }

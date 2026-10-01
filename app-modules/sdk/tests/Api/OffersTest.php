@@ -19,6 +19,7 @@ use Modules\Sdk\Api\Offers;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -57,20 +58,6 @@ function anOfferedRepair(array $changed = []): array
 }
 
 /**
- * One answer carried out of an arm, which hands back objects.
- *
- * `StoppagesTest`'s `WhatOneStuckRowSaid` one endpoint over, and the same
- * argument: an arm returns an object so that a caller cannot fold two arms into
- * a nullable string. The envelope type is not the thing to carry it in —
- * an envelope is what one program sends another, and a body under a kind the
- * contract has not got is a conversation neither end could have had.
- */
-final readonly class WhatOneOfferSaid
-{
-    public function __construct(public string $said) {}
-}
-
-/**
  * A whole listing around one repair.
  *
  * @param array<string, mixed> $repair
@@ -94,8 +81,8 @@ it('N2-R4 — reads all three clauses off an offered repair', function (): void 
 
     foreach ($offer->repairs() as $repair) {
         $said = $repair->stated(
-            static fn(string $does, Effects $effects, Undoing $undoing): WhatOneOfferSaid
-                => new WhatOneOfferSaid(sprintf('%s/%d/%s', $does, $effects->count(), $undoing->value)),
+            static fn(string $does, Effects $effects, Undoing $undoing): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('%s/%d/%s', $does, $effects->count(), $undoing->value)),
         )->said;
     }
 
@@ -112,8 +99,8 @@ it('N2-R4 — reads reversible as the word rather than carrying the boolean', fu
 
     foreach ($permanent->repairs() as $repair) {
         $said[] = $repair->stated(
-            static fn(string $does, Effects $effects, Undoing $undoing): WhatOneOfferSaid
-                => new WhatOneOfferSaid($undoing->value),
+            static fn(string $does, Effects $effects, Undoing $undoing): TheWordCarriedOut
+                => new TheWordCarriedOut($undoing->value),
         )->said;
     }
 
@@ -324,11 +311,11 @@ it('N2-R5 — reads what became of a repair, and what a stopped one left', funct
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
-                => new WhatOneOfferSaid($left->either(
-                    something: static fn(string $what): WhatOneOfferSaid
-                        => new WhatOneOfferSaid(sprintf('%s/%s', $became->value, $what)),
-                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid($became->value),
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): TheWordCarriedOut
+                => new TheWordCarriedOut($left->either(
+                    something: static fn(string $what): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('%s/%s', $became->value, $what)),
+                    nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut($became->value),
                 )->said),
         )->said;
     }
@@ -346,11 +333,11 @@ it('reads a stopped repair that left nothing as having left nothing', function (
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
-                => new WhatOneOfferSaid($left->either(
-                    something: static fn(string $what): WhatOneOfferSaid
-                        => new WhatOneOfferSaid(sprintf('left %s', $what)),
-                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid('left nothing'),
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): TheWordCarriedOut
+                => new TheWordCarriedOut($left->either(
+                    something: static fn(string $what): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('left %s', $what)),
+                    nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('left nothing'),
                 )->said),
         )->said;
 
@@ -425,11 +412,11 @@ it('reads a description of what was left that says nothing as nothing', function
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
-                => new WhatOneOfferSaid($left->either(
-                    something: static fn(string $what): WhatOneOfferSaid
-                        => new WhatOneOfferSaid(sprintf('left %s', $what)),
-                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid('left nothing'),
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): TheWordCarriedOut
+                => new TheWordCarriedOut($left->either(
+                    something: static fn(string $what): TheWordCarriedOut
+                        => new TheWordCarriedOut(sprintf('left %s', $what)),
+                    nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('left nothing'),
                 )->said),
         )->said;
 

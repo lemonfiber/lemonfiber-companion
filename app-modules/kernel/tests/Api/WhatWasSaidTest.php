@@ -10,20 +10,15 @@ use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\WhatWasSaid;
-
-/** One word carried out of an `either()` arm. */
-final readonly class WhatTheReadSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Whichever arm an answer takes, as a word. */
 function whatCameBackAboutTheService(WhatWasSaid $answer): string
 {
     return $answer->either(
-        this_: static fn(Scrollback $scrollback): WhatTheReadSaid
-            => new WhatTheReadSaid(sprintf('%d lines', $scrollback->count())),
-        met: static fn(Obstacle $why): WhatTheReadSaid => new WhatTheReadSaid($why->kind()->value),
+        this_: static fn(Scrollback $scrollback): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('%d lines', $scrollback->count())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

@@ -18,6 +18,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatListsItsCopies;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Copying contract, run against the adapter and against the fake.
@@ -71,26 +72,20 @@ function everyWayOfAskingForTheCopies(MockResponse $answered, TheCopies|Obstacle
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheCopiesTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheCopiesSay(Copying $copying): string
 {
     return $copying->copiesOn(aStackThatHoldsCopies(), Session::of('a-session-not-a-secret'))->either(
-        copies: static function (TheCopies $copies): WhatTheCopiesTurnedOutToSay {
+        copies: static function (TheCopies $copies): TheWordCarriedOut {
             $names = [];
 
             foreach ($copies as $name) {
                 $names[] = $name;
             }
 
-            return new WhatTheCopiesTurnedOutToSay(sprintf('%d: %s', count($copies), implode(', ', $names)));
+            return new TheWordCarriedOut(sprintf('%d: %s', count($copies), implode(', ', $names)));
         },
-        met: static fn(Obstacle $why): WhatTheCopiesTurnedOutToSay => new WhatTheCopiesTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

@@ -27,6 +27,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatStopsSeeding;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The StoppingSeeding contract, run against the adapter and against the fake.
@@ -112,21 +113,15 @@ function aReleaserAnswered(MockResponse $answered): StoppingSeeding
     return new Releasers(new PinnedClients(), SequencedEntropy::counting());
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatStoppingSeedingSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** A download's standing and ratio, as a line. */
 function whereTheDownloadLetGoStands(ADownloadOnDisk $download): string
 {
     return $download->ratio(
-        seeding: static fn(ARatio $ratio): WhatStoppingSeedingSaid => $ratio->either(
-            read: static fn(string $read): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('%s at %s', $download->stands()->value, $read)),
-            none: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('%s, no ratio', $download->stands()->value)),
+        seeding: static fn(ARatio $ratio): TheWordCarriedOut => $ratio->either(
+            read: static fn(string $read): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s at %s', $download->stands()->value, $read)),
+            none: static fn(): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s, no ratio', $download->stands()->value)),
         ),
-        notSeeding: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($download->stands()->value),
+        notSeeding: static fn(): TheWordCarriedOut => new TheWordCarriedOut($download->stands()->value),
     )->said;
 }
 
@@ -134,8 +129,8 @@ function whereTheDownloadLetGoStands(ADownloadOnDisk $download): string
 function howAskingWhatItCostsWent(StoppingSeeding $stopping): string
 {
     return $stopping->whatItWouldCost(aStackThatSeeds(), Session::of('a-session-not-a-secret'), ADownloadHeld::named('Show.Season1'))->either(
-        started: static fn(Job $job): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -143,8 +138,8 @@ function howAskingWhatItCostsWent(StoppingSeeding $stopping): string
 function whatTheOfferToLetGoSaid(StoppingSeeding $stopping): string
 {
     return $stopping->whatTheOfferCameTo(aStackThatSeeds(), Session::of('a-session-not-a-secret'), Job::named(AStackThatStopsSeeding::THE_OFFER))->either(
-        stillRunning: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('still running'),
-        offering: static fn(WhatLettingItGoCosts $offer): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf(
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        offering: static fn(WhatLettingItGoCosts $offer): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%d|%s|%s|%s|%s',
             $offer->download()->name(),
             $offer->download()->bytes(),
@@ -153,8 +148,8 @@ function whatTheOfferToLetGoSaid(StoppingSeeding $stopping): string
             $offer->goes(),
             $offer->agreement(),
         )),
-        ended: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('ended'),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -162,8 +157,8 @@ function whatTheOfferToLetGoSaid(StoppingSeeding $stopping): string
 function howStoppingSeedingWasAgreed(StoppingSeeding $stopping): string
 {
     return $stopping->stop(aStackThatSeeds(), Session::of('a-session-not-a-secret'), theSameOfferToLetGo())->either(
-        started: static fn(Job $job): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -171,15 +166,15 @@ function howStoppingSeedingWasAgreed(StoppingSeeding $stopping): string
 function whatBecameOfLettingItGo(StoppingSeeding $stopping): string
 {
     return $stopping->whatBecameOf(aStackThatSeeds(), Session::of('a-session-not-a-secret'), Job::named(AStackThatStopsSeeding::THE_JOB))->either(
-        stillRunning: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('still running'),
-        done: static fn(ADownloadLetGo $gone): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf(
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(ADownloadLetGo $gone): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%d|%s',
             $gone->name(),
             $gone->bytes(),
             $gone->wasRehearsed()->value,
         )),
-        ended: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('ended'),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

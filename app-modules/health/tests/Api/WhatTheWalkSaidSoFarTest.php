@@ -17,6 +17,8 @@ use Modules\Kernel\Api\WhatTheWalkSaid;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /** A moment in a walk, counted in seconds from one a test starts at. */
 function secondsIntoTheWalk(int $seconds): Instant
 {
@@ -29,19 +31,13 @@ function aStepAt(WalkthroughStep $step): WhatTheWalkSaid
     return WhatTheWalkSaid::said(ALineItSaid::withoutDetail($step, 'Doing what this step does'));
 }
 
-/** One line carried out of an arm of the step held. */
-final readonly class WhatTheWalkScreenHolds
-{
-    public function __construct(public string $said) {}
-}
-
 /** The step held, by which arm it took, with what it carried. */
 function theStepHeld(WhatTheWalkSaidSoFar $heard): string
 {
     return $heard->step(
-        none: static fn(): WhatTheWalkScreenHolds => new WhatTheWalkScreenHolds('none'),
-        current: static fn(ALineItSaid $line): WhatTheWalkScreenHolds => new WhatTheWalkScreenHolds(sprintf('current %s', $line->step()->value)),
-        asOf: static fn(ALineItSaid $line, Instant $at): WhatTheWalkScreenHolds => new WhatTheWalkScreenHolds(sprintf('%s as of %d', $line->step()->value, $at->epochSeconds() - 1_790_000_000)),
+        none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+        current: static fn(ALineItSaid $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf('current %s', $line->step()->value)),
+        asOf: static fn(ALineItSaid $line, Instant $at): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s as of %d', $line->step()->value, $at->epochSeconds() - 1_790_000_000)),
     )->said;
 }
 

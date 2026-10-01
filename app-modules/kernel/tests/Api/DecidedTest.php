@@ -7,21 +7,16 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\RequestIsUnnumbered;
 use Modules\Kernel\Api\RequestWasRefusedForNothing;
 use Modules\Kernel\Api\WhatWasDecided;
-
-/** One sentence carried out of a fold, so a test can read it. */
-final readonly class WhatItCarried
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('N2-R11 — an approval names the request and owes nothing else', function (): void {
     $decided = Decided::toApprove(RequestId::numbered(41));
 
     $why = $decided->why(
-        was: static fn(string $because): object => new WhatItCarried($because),
+        was: static fn(string $because): object => new TheWordCarriedOut($because),
         // A word of its own rather than a blank, so that swapping the arms is
         // a failure rather than two ways of saying nothing.
-        wasNot: static fn(): object => new WhatItCarried('nothing was owed'),
+        wasNot: static fn(): object => new TheWordCarriedOut('nothing was owed'),
     );
 
     expect($decided->asked())->toBe('household-approve')
@@ -41,8 +36,8 @@ it('D7-R7 — and carries it, trimmed, where there is one', function (): void {
     $decided = Decided::toDecline(RequestId::numbered(41), '  No room this month  ');
 
     $why = $decided->why(
-        was: static fn(string $because): object => new WhatItCarried($because),
-        wasNot: static fn(): object => new WhatItCarried('nothing was owed'),
+        was: static fn(string $because): object => new TheWordCarriedOut($because),
+        wasNot: static fn(): object => new TheWordCarriedOut('nothing was owed'),
     );
 
     expect($decided->asked())->toBe('household-decline')

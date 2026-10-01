@@ -23,6 +23,8 @@ use Modules\Sdk\Api\SummaryIsUnreadable;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
+
 /**
  * A `dashboard` envelope holding whatever health summary the case is about.
  *
@@ -251,12 +253,6 @@ it('refuses a dashboard with no stopped list, rather than reading it as nothing 
         ->and(whyTheSummaryWasRefused(new Envelope(1, 'dashboard', ['health' => aHealthSummary(), 'stuck' => 'nothing'])))->toContain('`stuck`');
 });
 
-/** What one item's exit code came to, carried out of `exit()`, which must hand back an object. */
-final readonly class WhatAnExitCameTo
-{
-    public function __construct(public string $said) {}
-}
-
 /**
  * The exit code each affected item carried, in order, or `-` for one that carried none.
  *
@@ -268,8 +264,8 @@ function everyExitCarried(Envelope $envelope): string
 
     foreach (Summaries::in($envelope) as $item) {
         $codes[] = $item->exit(
-            said: static fn(int $code): WhatAnExitCameTo => new WhatAnExitCameTo(sprintf('%d', $code)),
-            unstated: static fn(): WhatAnExitCameTo => new WhatAnExitCameTo('-'),
+            said: static fn(int $code): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $code)),
+            unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
         )->said;
     }
 

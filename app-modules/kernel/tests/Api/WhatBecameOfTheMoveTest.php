@@ -19,21 +19,17 @@ use Modules\Kernel\Api\WhatBecameOfTheMove;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhereTheMoveGotTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer took, and what it carried, folded to one line. */
 function theWordForWhereTheMoveGotTo(WhatBecameOfTheMove $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('underway %s', $job->shown())),
-        answered: static fn(AMove $move): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('answered %s', $move->stance()->value)),
-        ended: static fn(): WhereTheMoveGotTo => new WhereTheMoveGotTo('ended'),
-        refused: static fn(string $because): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('met %s', $why->kind()->value)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(AMove $move): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered %s', $move->stance()->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 

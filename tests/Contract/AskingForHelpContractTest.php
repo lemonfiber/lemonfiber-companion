@@ -29,6 +29,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatBundles;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatABundleSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -77,18 +78,12 @@ function everyWayOfAskingForABundle(MockResponse $answered, HowTheBundleIsGoing 
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatAskingForABundleSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** What asking for a bundle came to, as a line. */
 function howTheBundleWasAskedFor(AskingForHelp $helping): string
 {
     return $helping->ask(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), aBundleAskedFor())->either(
-        started: static fn(Job $job): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -96,11 +91,11 @@ function howTheBundleWasAskedFor(AskingForHelp $helping): string
 function whatBecameOfTheBundle(AskingForHelp $helping): string
 {
     return $helping->whatBecameOf(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), Job::named(AStackThatBundles::THE_JOB))->either(
-        stillRunning: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('still running'),
-        done: static fn(ABundle $bundle): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(WhatABundleSays::of($bundle)),
-        refused: static fn(ARefusalInItsWords $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
-        ended: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('ended'),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(ABundle $bundle): TheWordCarriedOut => new TheWordCarriedOut(WhatABundleSays::of($bundle)),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -214,8 +209,8 @@ it('the fake remembers each bundle asked for, in order', function (): void {
 function whatFetchingTheBundleCameTo(AskingForHelp $helping): string
 {
     return $helping->fetch(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))->either(
-        fetched: static fn(ABundleFile $file): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
+        fetched: static fn(ABundleFile $file): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s: %s', $file->named(), $file->bytes())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

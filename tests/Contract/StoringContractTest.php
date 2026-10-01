@@ -25,6 +25,7 @@ use Modules\Sdk\Api\Storekeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSaysWhatItKeeps;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Storing contract, run against the adapter and against the fake.
@@ -101,17 +102,11 @@ function everyWayOfAskingWhatIsStored(MockResponse $answered, ?Obstacle $why = n
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheKeepingTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheKeepingSays(Storing $storing): string
 {
     return $storing->storedOn(aStackThatKeepsThings(), Session::of('a-session-not-a-secret'))->either(
-        kept: static function (WhatThisMachineKeeps $keeps): WhatTheKeepingTurnedOutToSay {
+        kept: static function (WhatThisMachineKeeps $keeps): TheWordCarriedOut {
             $said = [];
 
             foreach ($keeps->roots() as $root) {
@@ -126,9 +121,9 @@ function everythingTheKeepingSays(Storing $storing): string
                 $said[] = sprintf('beside %s: %s', $one->what(), $one->why());
             }
 
-            return new WhatTheKeepingTurnedOutToSay(implode(' | ', $said));
+            return new TheWordCarriedOut(implode(' | ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheKeepingTurnedOutToSay => new WhatTheKeepingTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

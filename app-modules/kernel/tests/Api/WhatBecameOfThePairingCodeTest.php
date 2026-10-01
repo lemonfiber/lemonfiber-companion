@@ -18,21 +18,17 @@ use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 
 use function sprintf;
 
-/** One word carried out of an `either()` arm. */
-final readonly class WhatThePairingCodeCameTo
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm an answer takes. */
 function whichArmThePairingCodeTook(WhatBecameOfThePairingCode $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('underway %s', $job->shown())),
-        made: static fn(APairingCode $code): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('made %s', $code->compare())),
-        ended: static fn(): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo('ended'),
-        refused: static fn(string $because): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatThePairingCodeCameTo => new WhatThePairingCodeCameTo(sprintf('met %s', $why->kind()->name)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        made: static fn(APairingCode $code): TheWordCarriedOut => new TheWordCarriedOut(sprintf('made %s', $code->compare())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->name)),
     )->said;
 }
 

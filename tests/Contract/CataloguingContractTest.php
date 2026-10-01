@@ -26,6 +26,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatCatalogues;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Cataloguing contract, run against the adapter and against the fake.
@@ -107,17 +108,11 @@ function everyWayOfReadingACatalogue(MockResponse $answered, TheCatalogue $same)
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheCatalogueWasSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** What reading a catalogue came to, every part folded to one line. */
 function whatTheStacksCatalogueComesTo(Cataloguing $catalogue): string
 {
     return $catalogue->describedOn(aStackWhoseCatalogueIsRead(), Session::of('a-session-not-a-secret'))->either(
-        catalogue: static function (TheCatalogue $read): WhatTheCatalogueWasSaid {
+        catalogue: static function (TheCatalogue $read): TheWordCarriedOut {
             $said = [];
 
             foreach ($read->services() as $service) {
@@ -131,21 +126,21 @@ function whatTheStacksCatalogueComesTo(Cataloguing $catalogue): string
                     $dropped->removedIn(),
                     $dropped->reason(),
                     $dropped->replacement(
-                        by: static fn(string $by): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid(sprintf('replaced by %s', $by)),
-                        nothing: static fn(): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid('not replaced'),
+                        by: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut(sprintf('replaced by %s', $by)),
+                        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('not replaced'),
                     )->said,
                 );
             }
 
-            return new WhatTheCatalogueWasSaid(implode(' | ', $said));
+            return new TheWordCarriedOut(implode(' | ', $said));
         },
-        refused: static fn(ARefusalInItsWords $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid(sprintf(
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'refused: %s | %s | %s',
             $why->summary(),
             $why->meaning(),
             $why->named()->forTheOperator(),
         )),
-        met: static fn(Obstacle $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid($why->kind()->name),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

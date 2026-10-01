@@ -25,6 +25,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatResets;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAResetSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -73,12 +74,6 @@ function everyWayOfResetting(MockResponse $answered, HowTheResetIsGoing $preview
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatResettingSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** A report, every part of it folded to one line. */
 function whatTheResetReportSays(TheReset $reset): string
 {
@@ -104,8 +99,8 @@ function whatTheResetReportSays(TheReset $reset): string
 function howThePreviewWasAskedFor(ResettingTheConfiguration $resetting): string
 {
     return $resetting->wouldRevert(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'))->either(
-        started: static fn(Job $job): WhatResettingSaid => new WhatResettingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -113,8 +108,8 @@ function howThePreviewWasAskedFor(ResettingTheConfiguration $resetting): string
 function howTheResetWasAgreed(ResettingTheConfiguration $resetting): string
 {
     return $resetting->revert(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'), AResetAgreed::to(WhatAResetSays::previewed()))->either(
-        started: static fn(Job $job): WhatResettingSaid => new WhatResettingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -122,11 +117,11 @@ function howTheResetWasAgreed(ResettingTheConfiguration $resetting): string
 function whatBecameOfResetting(ResettingTheConfiguration $resetting, string $job = AStackThatResets::THE_PREVIEW): string
 {
     return $resetting->whatBecameOf(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'), Job::named($job))->either(
-        stillRunning: static fn(): WhatResettingSaid => new WhatResettingSaid('still running'),
-        done: static fn(TheReset $reset): WhatResettingSaid => new WhatResettingSaid(whatTheResetReportSays($reset)),
-        refused: static fn(ARefusalInItsWords $why): WhatResettingSaid => new WhatResettingSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
-        ended: static fn(): WhatResettingSaid => new WhatResettingSaid('ended'),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(TheReset $reset): TheWordCarriedOut => new TheWordCarriedOut(whatTheResetReportSays($reset)),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

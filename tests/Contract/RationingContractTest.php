@@ -28,6 +28,7 @@ use Modules\Sdk\Api\Quartermasters;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Rationing contract, run against the adapter and against the fake.
@@ -106,36 +107,30 @@ function everyWayOfAskingHowTheLineIs(MockResponse $answered, ?Obstacle $why = n
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatTheLineTurnedOutToSay
-{
-    public function __construct(public string $said) {}
-}
-
 /** Everything the reading says, folded to one line, so two answers can be compared. */
 function everythingTheReadingSays(Rationing $rationing): string
 {
     return $rationing->rationedOn(aStackThatSharesItsLine(), Session::of('a-session-not-a-secret'))->either(
-        shared: static fn(HowTheLineIsShared $line): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay(sprintf(
+        shared: static fn(HowTheLineIsShared $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|%s|%s|%s|%s',
             $line->stands()->value,
             $line->means(),
             $line->downSays(),
             $line->upSays(),
             $line->capacity(
-                static fn(WhatTheLineCarries $c): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay(sprintf('%d/%d %s %s', $c->down(), $c->up(), $c->measuredAs()->value, $c->tunnel()->value)),
-                static fn(): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay('unmeasured'),
+                static fn(WhatTheLineCarries $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d %s %s', $c->down(), $c->up(), $c->measuredAs()->value, $c->tunnel()->value)),
+                static fn(): TheWordCarriedOut => new TheWordCarriedOut('unmeasured'),
             )->said,
             $line->cap(
-                static fn(AMonthlyCap $c): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay(sprintf('%d %s %s', $c->monthly(), $c->does()->value, $c->stands(
-                    static fn(WhereTheMonthStands $m): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($m->value),
-                    static fn(): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay('uncounted'),
+                static fn(AMonthlyCap $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d %s %s', $c->monthly(), $c->does()->value, $c->stands(
+                    static fn(WhereTheMonthStands $m): TheWordCarriedOut => new TheWordCarriedOut($m->value),
+                    static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncounted'),
                 )->said)),
-                static fn(): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay('uncapped'),
+                static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncapped'),
             )->said,
-            $line->uploadCost(static fn(string $costs): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($costs), static fn(): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay('-'))->said,
+            $line->uploadCost(static fn(string $costs): TheWordCarriedOut => new TheWordCarriedOut($costs), static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'))->said,
         )),
-        met: static fn(Obstacle $why): WhatTheLineTurnedOutToSay => new WhatTheLineTurnedOutToSay($why->kind()->value),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 

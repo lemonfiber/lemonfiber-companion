@@ -6,19 +6,14 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\StuckSaysNothing;
-
-/** One word carried out of `stated()`, since it must hand back an object. */
-final readonly class WhatOneStalledItemSaid
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** All three facts of a stalled item, folded into one string. */
 function whatTheStalledItemSaid(Stuck $stuck): string
 {
     return $stuck->stated(
-        static fn(string $title, ServiceId $service, Stage $stage): WhatOneStalledItemSaid
-            => new WhatOneStalledItemSaid(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
+        static fn(string $title, ServiceId $service, Stage $stage): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
     )->said;
 }
 

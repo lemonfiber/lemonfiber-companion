@@ -18,11 +18,7 @@ use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhoWasFoundIn
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 it('keeps a member by name, joined or still invited', function (): void {
     $anna = AMember::joined('anna');
@@ -46,12 +42,12 @@ it('holds members in the stack\'s order', function (): void {
 it('takes the arm it was made on', function (): void {
     $members = TheMembers::of(AMember::joined('anna'));
     $found = WhatWasFoundOfTheMembers::found($members)->either(
-        found: static fn(TheMembers $held): WhoWasFoundIn => new WhoWasFoundIn($held === $members ? 'found' : 'other'),
-        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->kind()->value),
+        found: static fn(TheMembers $held): TheWordCarriedOut => new TheWordCarriedOut($held === $members ? 'found' : 'other'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
     $met = WhatWasFoundOfTheMembers::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->either(
-        found: static fn(TheMembers $held): WhoWasFoundIn => new WhoWasFoundIn(sprintf('%d found', count($held))),
-        met: static fn(Obstacle $why): WhoWasFoundIn => new WhoWasFoundIn($why->kind()->value),
+        found: static fn(TheMembers $held): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d found', count($held))),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 
     expect([$found, $met])->toBe(['found', KindOfObstacle::StackDidNotAnswer->value]);

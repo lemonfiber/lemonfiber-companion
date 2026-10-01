@@ -19,6 +19,7 @@ use Modules\Sdk\Api\UpkeepIsUnreadable;
 
 use function sprintf;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -120,27 +121,15 @@ function aReleaseInUseSaying(array $differently = []): array
     ];
 }
 
-/**
- * One answer carried out of an `either()` arm, which hands back objects.
- *
- * {@see Upkeep::inUse()} returns an object so that a caller cannot fold its two
- * arms into a nullable string — which would lose the difference between a stack
- * that has not looked and one running nothing.
- */
-final readonly class WhatTheStackTurnedOutToBeOn
-{
-    public function __construct(public string $version) {}
-}
-
 /** What the stack said it is on, as a word a test can compare. */
 function whatItIsOn(Upkeep $upkeep): string
 {
     return $upkeep->inUse(
-        named: static fn(Release $inUse): WhatTheStackTurnedOutToBeOn
-            => new WhatTheStackTurnedOutToBeOn($inUse->version()),
-        unstated: static fn(): WhatTheStackTurnedOutToBeOn
-            => new WhatTheStackTurnedOutToBeOn('unstated'),
-    )->version;
+        named: static fn(Release $inUse): TheWordCarriedOut
+            => new TheWordCarriedOut($inUse->version()),
+        unstated: static fn(): TheWordCarriedOut
+            => new TheWordCarriedOut('unstated'),
+    )->said;
 }
 
 /**

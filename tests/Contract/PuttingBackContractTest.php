@@ -31,6 +31,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatPutsCopiesBack;
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -146,18 +147,12 @@ function everyWayOfPuttingACopyBack(MockResponse $answered, HowPuttingItBackIsGo
     ];
 }
 
-/** One line carried out of an `either()` arm. */
-final readonly class WhatPuttingItBackSaid
-{
-    public function __construct(public string $said) {}
-}
-
 /** Where the data goes, as a line. */
 function whereTheDataGoesSaid(WhereTheDataGoes $data): string
 {
     return $data->either(
-        whereItWas: static fn(): WhatPuttingItBackSaid => new WhatPuttingItBackSaid('where it was'),
-        elsewhere: static fn(ARelocation $moved): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(sprintf('%s to %s', $moved->was(), $moved->now())),
+        whereItWas: static fn(): TheWordCarriedOut => new TheWordCarriedOut('where it was'),
+        elsewhere: static fn(ARelocation $moved): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s to %s', $moved->was(), $moved->now())),
     )->said;
 }
 
@@ -165,7 +160,7 @@ function whereTheDataGoesSaid(WhereTheDataGoes $data): string
 function whatPuttingItBackWouldDoSaid(PuttingBack $puttingBack): string
 {
     return $puttingBack->rehearse(aStackACopyIsPutBackOn(), Session::of('a-session-not-a-secret'), theCopyPutBack())->either(
-        listed: static fn(WhatPuttingItBackWouldDo $listing): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(sprintf(
+        listed: static fn(WhatPuttingItBackWouldDo $listing): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|%s|%s|by %s at %s|holds %s|%s|%s',
             $listing->copy()->name(),
             $listing->agreement(),
@@ -176,8 +171,8 @@ function whatPuttingItBackWouldDoSaid(PuttingBack $puttingBack): string
             $listing->isOlder() ? 'older' : 'this version',
             whereTheDataGoesSaid($listing->whereTheDataGoes()),
         )),
-        refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(aRestoreRefusalSaid($why)),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(aRestoreRefusalSaid($why)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -258,8 +253,8 @@ function aRestoreRefusedWith(string $which): array
 function howPuttingItBackWasAgreed(PuttingBack $puttingBack): string
 {
     return $puttingBack->putBack(aStackACopyIsPutBackOn(), Session::of('a-session-not-a-secret'), theSameListing())->either(
-        started: static fn(Job $job): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -267,16 +262,16 @@ function howPuttingItBackWasAgreed(PuttingBack $puttingBack): string
 function whatBecameOfPuttingItBack(PuttingBack $puttingBack): string
 {
     return $puttingBack->whatBecameOf(aStackACopyIsPutBackOn(), Session::of('a-session-not-a-secret'), Job::named(AStackThatPutsCopiesBack::THE_JOB))->either(
-        stillRunning: static fn(): WhatPuttingItBackSaid => new WhatPuttingItBackSaid('still running'),
-        done: static fn(ACopyPutBack $report): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(sprintf(
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(ACopyPutBack $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             '%s|by %s|%s',
             WhatAScopeSays::of($report->scope()),
             $report->takenBy(),
             whereTheDataGoesSaid($report->whereTheDataWent()),
         )),
-        refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid(aRestoreRefusalSaid($why)),
-        ended: static fn(): WhatPuttingItBackSaid => new WhatPuttingItBackSaid('ended'),
-        met: static fn(Obstacle $why): WhatPuttingItBackSaid => new WhatPuttingItBackSaid($why->kind()->name),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(aRestoreRefusalSaid($why)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

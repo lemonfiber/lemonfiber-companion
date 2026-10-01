@@ -7,12 +7,7 @@ use Modules\Kernel\Api\WhatItReplaced;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\OriginIsUnreadable;
 use Modules\Sdk\Internal\Attributions;
-
-/** The arm an origin was read on, carried out of a fold that hands back objects. */
-final readonly class WhoTheRowNamed
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /**
  * Who a row carrying this `origin` was put there by, as one line.
@@ -29,21 +24,21 @@ function whoPutIt(mixed $origin): string
 function whoTheOriginNamed(WhoPutItThere $origin): string
 {
     return $origin->whichever(
-        bundled: static fn(): WhoTheRowNamed => new WhoTheRowNamed('bundled'),
-        operator: static fn(): WhoTheRowNamed => new WhoTheRowNamed('operator'),
-        plugin: static fn(string $named): WhoTheRowNamed => new WhoTheRowNamed(sprintf('plugin:%s', $named)),
-        unknown: static fn(string $why): WhoTheRowNamed => new WhoTheRowNamed(sprintf('unknown:%s', $why)),
-        overridden: static fn(string $named, WhatItReplaced $replaced): WhoTheRowNamed => new WhoTheRowNamed(sprintf(
+        bundled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('bundled'),
+        operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('operator'),
+        plugin: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named, WhatItReplaced $replaced): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'overridden:%s over %s from %s',
             $named,
             $replaced->whichever(
-                held: static fn(string $value): WhoTheRowNamed => new WhoTheRowNamed(sprintf('"%s"', $value)),
-                nothingSet: static fn(): WhoTheRowNamed => new WhoTheRowNamed('nothing'),
-                withheld: static fn(): WhoTheRowNamed => new WhoTheRowNamed('a secret'),
+                held: static fn(string $value): TheWordCarriedOut => new TheWordCarriedOut(sprintf('"%s"', $value)),
+                nothingSet: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+                withheld: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a secret'),
             )->said,
             whoTheOriginNamed($replaced->from()),
         )),
-        orphaned: static fn(string $named): WhoTheRowNamed => new WhoTheRowNamed(sprintf('orphaned:%s', $named)),
+        orphaned: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

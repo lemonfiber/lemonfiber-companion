@@ -32,20 +32,16 @@ use Modules\Kernel\Api\WhichRemoval;
 
 use function sprintf;
 
-/** A line carried out of an `either()` arm. */
-final readonly class WhereItGotAs
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a removal answers on, and how much it carried there. */
 function theArmTakingItOffGotTo(WhereTakingItOffGot $got): string
 {
     return $got->either(
-        surveyed: static fn(): WhereItGotAs => new WhereItGotAs('surveyed'),
-        rehearsed: static fn(): WhereItGotAs => new WhereItGotAs('rehearsed'),
-        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): WhereItGotAs => new WhereItGotAs(sprintf('complete %d/%d', $gone->count(), $credentials->count())),
-        partial: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): WhereItGotAs => new WhereItGotAs(sprintf('partial %d/%d/%d', $gone->count(), $credentials->count(), $left->count())),
+        surveyed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('surveyed'),
+        rehearsed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('rehearsed'),
+        complete: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): TheWordCarriedOut => new TheWordCarriedOut(sprintf('complete %d/%d', $gone->count(), $credentials->count())),
+        partial: static fn(NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): TheWordCarriedOut => new TheWordCarriedOut(sprintf('partial %d/%d/%d', $gone->count(), $credentials->count(), $left->count())),
     )->said;
 }
 
@@ -53,11 +49,11 @@ function theArmTakingItOffGotTo(WhereTakingItOffGot $got): string
 function theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall $became): string
 {
     return $became->either(
-        underway: static fn(Job $job): WhereItGotAs => new WhereItGotAs(sprintf('underway %s', $job->shown())),
-        answered: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs(sprintf('answered %s', $uninstall->manifest()->agreement())),
-        ended: static fn(): WhereItGotAs => new WhereItGotAs('ended'),
-        refused: static fn(string $because): WhereItGotAs => new WhereItGotAs(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs(sprintf('met %s', $why->kind()->value)),
+        underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway %s', $job->shown())),
+        answered: static fn(AnUninstall $uninstall): TheWordCarriedOut => new TheWordCarriedOut(sprintf('answered %s', $uninstall->manifest()->agreement())),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        refused: static fn(string $because): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused %s', $because)),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -94,12 +90,12 @@ it('answers the work on the arm for where it is', function (): void {
 
 it('answers a reading on the arm for what it found', function (): void {
     $found = WhatWasFoundOfTheUninstall::found(aReadingOfStopping())->either(
-        found: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs($uninstall->manifest()->agreement()),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->kind()->value),
+        found: static fn(AnUninstall $uninstall): TheWordCarriedOut => new TheWordCarriedOut($uninstall->manifest()->agreement()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     );
     $met = WhatWasFoundOfTheUninstall::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))->either(
-        found: static fn(AnUninstall $uninstall): WhereItGotAs => new WhereItGotAs($uninstall->manifest()->agreement()),
-        met: static fn(Obstacle $why): WhereItGotAs => new WhereItGotAs($why->kind()->value),
+        found: static fn(AnUninstall $uninstall): TheWordCarriedOut => new TheWordCarriedOut($uninstall->manifest()->agreement()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     );
 
     expect($found->said)->toBe('stop-0')

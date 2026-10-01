@@ -38,6 +38,7 @@ use Saloon\Http\PendingRequest;
 
 use function str_repeat;
 
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -87,9 +88,9 @@ function whatTheAdapterMade(MockResponse $answer): string
         // A reading that came through is not what any case here is about, and
         // is named so that one meaning to assert an obstacle cannot pass by
         // meeting a payload it could read.
-        stands: static fn(): WhatTheTakingTurnedOutToBe => new WhatTheTakingTurnedOutToBe('a reading'),
-        met: static fn(Obstacle $why): WhatTheTakingTurnedOutToBe
-            => new WhatTheTakingTurnedOutToBe($why->kind()->name),
+        stands: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a reading'),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 
@@ -308,20 +309,14 @@ function anUpdateWhoseChangelogNobodyCanRead(): array
     ]];
 }
 
-/** One answer carried out of an `either()` arm, which hands back objects. */
-final readonly class WhatTheTakingTurnedOutToBe
-{
-    public function __construct(public string $said) {}
-}
-
 /** What became of a taking, as a word a case can compare. */
 function whatBecameOfTheTaking(Underway $underway): string
 {
     return $underway->either(
-        started: static fn(Job $job): WhatTheTakingTurnedOutToBe
-            => new WhatTheTakingTurnedOutToBe($job->shown()),
-        met: static fn(Obstacle $why): WhatTheTakingTurnedOutToBe
-            => new WhatTheTakingTurnedOutToBe($why->kind()->name),
+        started: static fn(Job $job): TheWordCarriedOut
+            => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->name),
     )->said;
 }
 

@@ -16,22 +16,18 @@ use Modules\Kernel\Api\WhatTheGuardSaw;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmTheGuardTook
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm a guard's standing takes, folded to one line. */
 function whichArmAGuardTakes(HowTheGuardIsGoing $going): string
 {
     return $going->either(
-        guarding: static fn(): WhichArmTheGuardTook => new WhichArmTheGuardTook('guarding'),
-        sawItGo: static fn(WhatTheGuardSaw $saw): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('saw it go:%s', $saw->stoppedThem() ? 'stopped' : 'not stopped')),
-        refused: static fn(string $said): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('refused:%s', $said)),
-        ended: static fn(): WhichArmTheGuardTook => new WhichArmTheGuardTook('ended'),
-        unknown: static fn(): WhichArmTheGuardTook => new WhichArmTheGuardTook('unknown'),
-        met: static fn(Obstacle $why): WhichArmTheGuardTook => new WhichArmTheGuardTook(sprintf('met:%s', $why->kind()->value)),
+        guarding: static fn(): TheWordCarriedOut => new TheWordCarriedOut('guarding'),
+        sawItGo: static fn(WhatTheGuardSaw $saw): TheWordCarriedOut => new TheWordCarriedOut(sprintf('saw it go:%s', $saw->stoppedThem() ? 'stopped' : 'not stopped')),
+        refused: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $said)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        unknown: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unknown'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 

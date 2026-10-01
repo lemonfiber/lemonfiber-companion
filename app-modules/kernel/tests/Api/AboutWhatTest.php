@@ -5,20 +5,15 @@ declare(strict_types=1);
 use Modules\Kernel\Api\AboutWhat;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ServiceIsUnnamed;
-
-/** What an arm said, since `either()` hands back an object rather than a string. */
-final readonly class WhatTheFindingWasAbout
-{
-    public function __construct(public string $said) {}
-}
+use Tests\Support\TheWordCarriedOut;
 
 /** Which arm this took, and what it was handed. */
 function whatItWasAbout(AboutWhat $about): string
 {
     return $about->either(
-        theMachine: static fn(): WhatTheFindingWasAbout => new WhatTheFindingWasAbout('the machine'),
-        theService: static fn(ServiceId $service): WhatTheFindingWasAbout
-            => new WhatTheFindingWasAbout($service->named()),
+        theMachine: static fn(): TheWordCarriedOut => new TheWordCarriedOut('the machine'),
+        theService: static fn(ServiceId $service): TheWordCarriedOut
+            => new TheWordCarriedOut($service->named()),
     )->said;
 }
 
@@ -59,8 +54,8 @@ it('keeps the name, less the whitespace around it', function (): void {
 function whatItWasCalled(AboutWhat $about): string
 {
     return $about->whatItIsCalled(
-        called: static fn(string $name): WhatTheFindingWasAbout => new WhatTheFindingWasAbout($name),
-        unsaid: static fn(): WhatTheFindingWasAbout => new WhatTheFindingWasAbout('unsaid'),
+        called: static fn(string $name): TheWordCarriedOut => new TheWordCarriedOut($name),
+        unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
     )->said;
 }
 
