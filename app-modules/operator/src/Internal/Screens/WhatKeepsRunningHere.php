@@ -15,9 +15,11 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAHandoverReads;
 use Modules\Operator\Internal\Presenters\HowHostingReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -73,6 +75,7 @@ use function view;
 #[Concealed]
 final class WhatKeepsRunningHere extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -98,6 +101,7 @@ final class WhatKeepsRunningHere extends NativeComponent
         private readonly Hosting $hosting,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

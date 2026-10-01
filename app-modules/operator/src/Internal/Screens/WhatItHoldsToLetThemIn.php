@@ -11,8 +11,10 @@ use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCredentialsRead;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheCredentialsTurnedOutToBe;
@@ -40,6 +42,7 @@ use function view;
 #[Concealed]
 final class WhatItHoldsToLetThemIn extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -54,6 +57,7 @@ final class WhatItHoldsToLetThemIn extends NativeComponent
         private readonly Safekeeping $safekeeping,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

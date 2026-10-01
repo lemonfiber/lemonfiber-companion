@@ -66,6 +66,12 @@
                 <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
             @endif
         </x-design::notice>
+        @if ($this->answer()->copies->went->isPutRightInTheAppsSettings())
+            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            @if ($this->theSettingsWouldNotOpen)
+                <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+            @endif
+        @endif
         @unless ($this->answer()->copies->went->isSignedIn)
             <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
         @endunless
@@ -77,6 +83,7 @@
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

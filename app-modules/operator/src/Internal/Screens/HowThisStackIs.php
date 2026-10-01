@@ -24,9 +24,11 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
 use Modules\Operator\Internal\Presenters\HowAStackReads;
@@ -87,6 +89,7 @@ use function view;
 #[Concealed]
 final class HowThisStackIs extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use HearsHowTheStackIs {
         HearsHowTheStackIs::stop insteadof FindsItsWayAround;
         HearsHowTheStackIs::holdsItsStacksStream insteadof FindsItsWayAround;
@@ -142,6 +145,7 @@ final class HowThisStackIs extends NativeComponent
         private readonly Capture $capture,
         private readonly Standings $standings,
         private readonly KeepingTheLastReading $keeping,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

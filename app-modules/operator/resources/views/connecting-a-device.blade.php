@@ -6,6 +6,7 @@
 
     @if (! $this->going()->went->cameBack())
         <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->going()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
             ask-again="show()"

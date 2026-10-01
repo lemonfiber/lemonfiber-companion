@@ -19,11 +19,13 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingLemonfiberOff;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
@@ -62,6 +64,7 @@ use function view;
 #[Concealed]
 final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -91,6 +94,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         private readonly TakingLemonfiberOff $takingItOff,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame. */

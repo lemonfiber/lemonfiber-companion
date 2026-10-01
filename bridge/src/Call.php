@@ -166,6 +166,9 @@ enum Call: string
      */
     case LocalNetworkProbe = 'Lemonfiber.LocalNetwork.Probe';
 
+    /** Open this app's own page in the phone's settings, and answer whether it opened. */
+    case SettingsOpen = 'Lemonfiber.Settings.Open';
+
     case Zone = 'Lemonfiber.Clock.Zone';
 
     /**

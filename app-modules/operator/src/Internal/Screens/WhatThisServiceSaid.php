@@ -22,8 +22,10 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Zone;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
@@ -69,6 +71,7 @@ use function view;
 #[Concealed]
 final class WhatThisServiceSaid extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -116,6 +119,7 @@ final class WhatThisServiceSaid extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly LocalZone $here,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

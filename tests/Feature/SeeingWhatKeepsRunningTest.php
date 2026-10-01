@@ -27,6 +27,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatHosts;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -78,7 +79,7 @@ function theHostingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatKeepsRunningHere($hosting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatKeepsRunningHere($hosting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

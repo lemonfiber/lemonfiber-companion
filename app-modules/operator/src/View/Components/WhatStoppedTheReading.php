@@ -38,6 +38,7 @@ final class WhatStoppedTheReading extends Component
     public function __construct(
         public readonly HowTheReadingWent $went,
         public readonly string $signInGoesTo,
+        public readonly bool $settingsWouldNotOpen = false,
     ) {}
 
     public function render(): View

@@ -24,8 +24,10 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
@@ -67,6 +69,7 @@ use function view;
 #[Concealed]
 final class GuardingWhileYouWatch extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
 
@@ -96,6 +99,7 @@ final class GuardingWhileYouWatch extends NativeComponent
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

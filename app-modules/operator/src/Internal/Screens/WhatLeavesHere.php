@@ -11,8 +11,10 @@ use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
@@ -45,6 +47,7 @@ use function view;
 #[Concealed]
 final class WhatLeavesHere extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -59,6 +62,7 @@ final class WhatLeavesHere extends NativeComponent
         private readonly Outgoing $outgoing,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

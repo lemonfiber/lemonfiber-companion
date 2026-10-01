@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -68,6 +69,7 @@ function theShelfScreen(
     ?Whose $whose = null,
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
+    ?AppsSettingsThatOpen $settings = null,
 ): WhatYouCanWatch {
     $stack = theStackAShelfIsReadFrom();
     $keychain ??= AKeychainInMemory::working();
@@ -80,7 +82,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatYouCanWatch($watching, $keychain, StacksInMemory::holding($stack), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -236,6 +238,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
         AShelfThatWasRead::holding(aShelfOfThree()),
         AKeychainInMemory::working(),
         StacksInMemory::holding(theStackAShelfIsReadFrom()),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => 7]);
 
@@ -312,4 +315,16 @@ it('is what the router serves under the shelf path', function (): void {
     );
 
     expect($resolved['class'] ?? null)->toBe(WhatYouCanWatch::class);
+});
+
+it('offers a member the app\'s settings where the local network was refused, and says so where the phone would not open them', function (): void {
+    $settings = AppsSettingsThatOpen::wouldNot();
+    $screen = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)), settings: $settings);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.open_settings'));
+
+    $screen->openTheAppsSettings();
+
+    expect($settings->timesOpened())->toBe(1)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.settings_would_not_open'));
 });

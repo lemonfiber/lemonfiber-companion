@@ -11,8 +11,10 @@ use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatRunsHere;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheVersionsRead;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheVersionsTurnedOutToBe;
@@ -39,6 +41,7 @@ use function view;
 #[Concealed]
 final class WhichVersionsRunHere extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -49,6 +52,7 @@ final class WhichVersionsRunHere extends NativeComponent
         private readonly ReadingVersions $reading,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame. */

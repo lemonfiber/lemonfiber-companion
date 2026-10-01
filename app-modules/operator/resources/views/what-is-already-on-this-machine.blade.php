@@ -167,6 +167,7 @@
         {{-- Asking, or asking after it, met something: said where the answer
              would have been, with the way back. --}}
         <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howTheMoveIsGoing()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
@@ -179,6 +180,7 @@
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

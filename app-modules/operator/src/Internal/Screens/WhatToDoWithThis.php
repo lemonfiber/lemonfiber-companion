@@ -21,11 +21,13 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
@@ -100,6 +102,7 @@ use function view;
 #[Concealed]
 final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FollowsWhatTheVerbCameTo;
     use FindsItsWayAround;
@@ -124,6 +127,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Hearing $hearing,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

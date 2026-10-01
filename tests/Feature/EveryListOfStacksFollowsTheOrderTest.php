@@ -18,6 +18,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -86,6 +87,7 @@ it('lists the stacks on the phone in the order they were put in', function (): v
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 
     expect(theStacksAmong(WhatTheDeviceWouldDraw::by($screen)->said()))->toBe(['The shed', 'The loft', 'The attic']);
@@ -96,6 +98,7 @@ it('offers the stacks to switch to in the order they were put in', function (): 
         AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         AKeychainInMemory::working(),
         AroundThePhone::holding(threeStacksPutInOrder()),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => aStackInTheOrder('The loft', 'a')->id()->stored()]);
     $screen->chooseAStack();

@@ -18,9 +18,11 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StoppingSeeding;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
@@ -60,6 +62,7 @@ use function view;
 #[Concealed]
 final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -94,6 +97,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         private readonly StoppingSeeding $stopping,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

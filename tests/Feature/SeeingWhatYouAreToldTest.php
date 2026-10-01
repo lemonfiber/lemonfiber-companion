@@ -22,6 +22,7 @@ use Modules\Operator\Internal\ViewModels\OneEventSetApart;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSaysWhatItTells;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -64,7 +65,7 @@ function theToldScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatYouAreToldAbout($telling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatYouAreToldAbout($telling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

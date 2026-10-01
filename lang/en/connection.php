@@ -7,6 +7,8 @@ return [
     'no_network_action' => 'Connect to Wi-Fi or turn on mobile data, then try again.',
     'local_network_refused' => 'This app is not allowed onto the local network.',
     'local_network_refused_action' => 'Allow local network access for lemonfiber in Settings.',
+    'open_settings' => 'Open Settings',
+    'settings_would_not_open' => 'This phone would not open its settings for lemonfiber.',
     'no_answer' => 'This stack did not answer.',
     'no_answer_action' => 'Check that the machine is on and on the same network.',
     'not_for_this_account' => 'This is not something this account may ask for.',

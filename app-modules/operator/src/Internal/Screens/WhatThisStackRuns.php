@@ -11,8 +11,10 @@ use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -74,6 +76,7 @@ use function view;
 #[Concealed]
 final class WhatThisStackRuns extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
 
@@ -89,6 +92,7 @@ final class WhatThisStackRuns extends NativeComponent
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

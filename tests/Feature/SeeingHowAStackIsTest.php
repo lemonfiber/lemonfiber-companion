@@ -43,6 +43,7 @@ use Tests\Support\AnObstacleOfEachKind;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -128,7 +129,7 @@ function theHealthScreen(
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
+    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet(), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -294,7 +295,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
+    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet(), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue();
@@ -347,7 +348,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $stack = theStackBeingLookedAt();
 
-    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
+    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet(), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()

@@ -9,6 +9,7 @@ implements one kernel port over the platform:
 | `SystemEntropy` | `Entropy` |
 | `PlatformNetwork` | `Networking` |
 | `PlatformLocalNetwork` | `TheLocalNetwork` |
+| `PlatformAppsSettings` | `TheAppsSettings` |
 | `PlatformNotifier` | `Notifier` |
 | `PlatformScanner` | `Scanning` |
 | `PlatformScreen` | `Capture` |

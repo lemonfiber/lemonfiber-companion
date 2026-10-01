@@ -32,6 +32,7 @@ final class WhatStoodInTheWay extends Component
         public readonly HowTheReadingWent $went,
         public readonly string $signInGoesTo,
         public readonly string $askAgain = 'again()',
+        public readonly bool $settingsWouldNotOpen = false,
     ) {}
 
     public function render(): View

@@ -24,10 +24,12 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\HearsHowEachStackIs;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
@@ -95,6 +97,7 @@ use function view;
 #[Lazy]
 final class YourStacks extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use HearsHowEachStackIs;
 
     public ?Launch $launched = null;
@@ -139,6 +142,7 @@ final class YourStacks extends NativeComponent
         private readonly Capture $capture,
         private readonly RemovingAStack $removing,
         private readonly WhereAStackOpens $landing,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

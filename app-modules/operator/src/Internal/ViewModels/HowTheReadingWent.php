@@ -86,6 +86,12 @@ final readonly class HowTheReadingWent
             : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), why: $why);
     }
 
+    /** Whether what stood in the way is put right on this app's page in the phone's settings. */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
+    }
+
     /**
      * What both sentences are filled with: the facts the obstacle was met with, or nothing.
      *

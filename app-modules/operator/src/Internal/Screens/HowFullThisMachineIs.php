@@ -13,8 +13,10 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRoomReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
@@ -46,6 +48,7 @@ use function view;
 #[Concealed]
 final class HowFullThisMachineIs extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use FindsItsWayAround;
@@ -66,6 +69,7 @@ final class HowFullThisMachineIs extends NativeComponent
         private readonly TheWayAround $around,
         private readonly Clock $clock,
         private readonly Explaining $explaining,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

@@ -38,6 +38,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatHandsDevicesOver;
 use Tests\Support\Fakes\AStackThatInvites;
@@ -112,6 +113,7 @@ function theConnectingScreen(
         FrozenClock::at(Instant::atEpochSeconds(THE_HOUR_AFTER)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -315,6 +317,7 @@ it('is offered on each member\'s card, told apart by their name', function (): v
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
+        new AppsSettingsThatOpen(),
     );
     $household->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();
@@ -331,6 +334,7 @@ it('opens asking somebody in with the name it was sent with already typed', func
         AKeychainInMemory::working(),
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
+        new AppsSettingsThatOpen(),
     );
     $household->mount('Sam');
     $blank = clone $household;

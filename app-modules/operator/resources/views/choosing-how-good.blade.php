@@ -121,6 +121,12 @@
                 <x-design::strong>{{ __($this->upgrading->went->met, $this->upgrading->went->filling()) }}</x-design::strong>
                 <x-design::body>{{ __($this->upgrading->went->remedy, $this->upgrading->went->filling()) }}</x-design::body>
             </x-design::notice>
+            @if ($this->upgrading->went->isPutRightInTheAppsSettings())
+                <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+                @if ($this->theSettingsWouldNotOpen)
+                    <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+                @endif
+            @endif
         @else
             <x-design::notice tone="unknown">
                 <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
@@ -138,6 +144,7 @@
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

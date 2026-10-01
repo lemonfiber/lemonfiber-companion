@@ -23,9 +23,11 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
@@ -63,6 +65,7 @@ use function view;
 #[Concealed]
 final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -96,6 +99,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Clock $clock,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

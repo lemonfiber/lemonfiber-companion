@@ -28,6 +28,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatStalled;
 use Tests\Support\Fakes\StacksInMemory;
@@ -85,7 +86,7 @@ function theStalledScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()));
+    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;

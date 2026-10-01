@@ -7,6 +7,8 @@ return [
     'no_network_action' => 'Maak verbinding met wifi of zet mobiele data aan en probeer het opnieuw.',
     'local_network_refused' => 'Deze app mag het lokale netwerk niet op.',
     'local_network_refused_action' => 'Geef lemonfiber toegang tot het lokale netwerk in Instellingen.',
+    'open_settings' => 'Open Instellingen',
+    'settings_would_not_open' => 'Deze telefoon wilde zijn instellingen voor lemonfiber niet openen.',
     'no_answer' => 'Deze stack gaf geen antwoord.',
     'no_answer_action' => 'Controleer of de machine aanstaat en op hetzelfde netwerk zit.',
     'not_for_this_account' => 'Dit is niets wat dit account mag opvragen.',

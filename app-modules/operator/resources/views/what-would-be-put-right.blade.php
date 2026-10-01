@@ -18,6 +18,12 @@
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
         <x-design::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
+        @if ($this->offer()->went->isPutRightInTheAppsSettings())
+            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            @if ($this->theSettingsWouldNotOpen)
+                <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+            @endif
+        @endif
     @elseif ($this->offer()->isWorking)
         {{-- The unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
@@ -62,6 +68,12 @@
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
             <x-design::action label="{{ __('health.ask_again') }}" tap="again()" />
+            @if ($this->done()->went->isPutRightInTheAppsSettings())
+                <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+                @if ($this->theSettingsWouldNotOpen)
+                    <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+                @endif
+            @endif
         @elseif ($this->done()->hasEnded)
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and

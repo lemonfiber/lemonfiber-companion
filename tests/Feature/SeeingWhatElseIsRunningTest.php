@@ -24,6 +24,7 @@ use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -90,7 +91,7 @@ function theStrangersScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatElseIsRunningHere($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatElseIsRunningHere($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

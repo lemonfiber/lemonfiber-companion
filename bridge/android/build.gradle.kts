@@ -88,6 +88,7 @@ sourceSets {
             "StorageFunctions.kt",
             "LinkFunctions.kt",
             "LocalNetworkFunctions.kt",
+            "SettingsFunctions.kt",
             "LemonfiberInit.kt",
             "HandoverFunctions.kt",
             "ClockFunctions.kt",

@@ -16,9 +16,11 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Wanting;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHouseholdsAskingReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
@@ -62,6 +64,7 @@ use function view;
 #[Concealed]
 final class WhatTheHouseholdAsked extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -92,6 +95,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
         private readonly Wanting $wanting,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

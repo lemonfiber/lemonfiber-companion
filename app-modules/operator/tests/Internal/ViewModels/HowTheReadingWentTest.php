@@ -66,3 +66,11 @@ it('N3-R13 — a refused credential is a session that ended rather than somethin
         ->and($went->remedy)->toBe('')
         ->and($went->cameBack())->toBeFalse();
 });
+
+it('is put right in the app\'s settings only where the local network was refused', function (): void {
+    expect([
+        HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->isPutRightInTheAppsSettings(),
+        HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
+        HowTheReadingWent::itCameBack()->isPutRightInTheAppsSettings(),
+    ])->toBe([true, false, false]);
+});

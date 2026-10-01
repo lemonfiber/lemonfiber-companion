@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
@@ -89,6 +90,7 @@ function theSettingsScreen(
         $adjusting,
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

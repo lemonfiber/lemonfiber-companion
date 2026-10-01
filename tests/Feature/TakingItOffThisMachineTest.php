@@ -50,6 +50,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatTakesItOff;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -81,7 +82,7 @@ function theTakingItOffScreen(AStackThatTakesItOff $removing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)));
+    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

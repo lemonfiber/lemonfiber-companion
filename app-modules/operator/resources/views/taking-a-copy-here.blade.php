@@ -14,6 +14,7 @@
 @elseif ($this->lastCopy()->wasAsked)
     @if (! $this->lastCopy()->went->cameBack())
         <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->lastCopy()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
@@ -106,6 +107,7 @@
     {{-- The services could not be listed, so nothing is offered to copy:
          a stack that cannot say what it runs is not one to ask for a copy. --}}
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

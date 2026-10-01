@@ -12,6 +12,7 @@
          above it, so an offer cannot read as something that happened. --}}
     @if (! $this->done()->went->cameBack())
         <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
@@ -75,6 +76,7 @@
     {{-- The stack would not say what stopping would cost, so there is
          nothing to agree to and nothing is offered. --}}
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

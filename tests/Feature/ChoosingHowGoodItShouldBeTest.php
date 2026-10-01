@@ -31,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\APresetAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChoosesQuality;
 use Tests\Support\Fakes\AStackThatUpgrades;
 use Tests\Support\Fakes\StacksInMemory;
@@ -119,6 +120,7 @@ function theQualityScreen(
         $upgrades ?? AStackThatUpgrades::describing(anUpgradeOfTwoKinds(), anUpgradeCarriedOut()),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

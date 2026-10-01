@@ -5,5 +5,5 @@
      own, because this inside that content is a scroll view inside a scroll
      view. --}}
 <x-operator::content>
-    <x-operator::what-stood-in-the-way :went="$went" :sign-in-goes-to="$signInGoesTo" />
+    <x-operator::what-stood-in-the-way :went="$went" :sign-in-goes-to="$signInGoesTo" :settings-would-not-open="$settingsWouldNotOpen" />
 </x-operator::content>

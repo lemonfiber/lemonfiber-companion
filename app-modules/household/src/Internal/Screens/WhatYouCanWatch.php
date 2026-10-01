@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Household\Internal\LetsGoOfARefusedSession;
+use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Kernel\Api\Concealed;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
@@ -58,6 +60,7 @@ use function view;
 #[Concealed]
 final class WhatYouCanWatch extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
 
     /**
@@ -75,6 +78,7 @@ final class WhatYouCanWatch extends NativeComponent
         private readonly Watching $watching,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

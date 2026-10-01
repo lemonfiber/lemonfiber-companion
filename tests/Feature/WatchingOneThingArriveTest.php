@@ -45,6 +45,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatNarrates;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -106,6 +107,7 @@ function theWalkthroughScreen(
         $narrating ?? AStackThatNarrates::holdingOpen(),
         $clock ?? FrozenClock::at(secondsIntoFollowingAWalk(0)),
         $capture ?? ACaptureInMemory::inFront(),
+        settings: new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->mount();

@@ -25,6 +25,7 @@ use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChecksItself;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -68,6 +69,7 @@ function theCopyScreen(
     AStackThatChecksItself $checking,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AppsSettingsThatOpen $settings = null,
 ): WhatIsRunningHere {
     $stack = theStackWhoseCopyIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -76,7 +78,7 @@ function theCopyScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -214,4 +216,34 @@ it('the way here and the way back are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()))->render()->name())->toBe('operator::what-is-running-here');
+});
+
+it('offers the way to the app\'s settings beside asking again, where the platform refused the local network, and opens them', function (): void {
+    $settings = new AppsSettingsThatOpen();
+    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)), settings: $settings);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.ask_again'), __('connection.open_settings'));
+
+    $screen->openTheAppsSettings();
+
+    expect($settings->timesOpened())->toBe(1);
+});
+
+it('offers no way to the app\'s settings where a stack only did not answer', function (): void {
+    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+
+    $offered = WhatTheDeviceWouldDraw::by($screen)->offers();
+
+    expect($offered)->toContain(__('health.ask_again'))
+        ->and($offered)->not->toContain(__('connection.open_settings'));
+});
+
+it('says so where the phone would not open its settings', function (): void {
+    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)), settings: AppsSettingsThatOpen::wouldNot());
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('connection.settings_would_not_open'));
+
+    $screen->openTheAppsSettings();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.settings_would_not_open'));
 });

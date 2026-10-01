@@ -22,6 +22,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -60,6 +61,7 @@ function aTabToChooseFrom(?AKeychainInMemory $keychain = null, ?StandingsInMemor
         AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $sessions,
         AroundThePhone::holding(StacksInMemory::holding($attic, theBarnToChooseFrom()), $standings, $sessions),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 
@@ -226,6 +228,7 @@ it('gives signing in to a stack the list of stacks and the menu, and not the bar
         ADoorThatWasKnockedOn::opening(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(HEARD_AT)),
         AKeychainInMemory::working(),
         AroundThePhone::holding(StacksInMemory::holding($attic)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

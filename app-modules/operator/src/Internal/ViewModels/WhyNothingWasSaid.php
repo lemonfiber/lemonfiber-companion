@@ -25,6 +25,12 @@ final readonly class WhyNothingWasSaid
         return new self($why->said(), $why->remedy(), $why);
     }
 
+    /** Whether what stood in the way is put right on this app's page in the phone's settings. */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
+    }
+
     /**
      * What both sentences are filled with: the facts the obstacle was met with, or nothing.
      *

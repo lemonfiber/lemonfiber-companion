@@ -49,6 +49,12 @@
     </x-design::notice>
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+    @if ($this->answer()->isPutRightInTheAppsSettings())
+        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        @if ($this->theSettingsWouldNotOpen)
+            <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+        @endif
+    @endif
 @else
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
