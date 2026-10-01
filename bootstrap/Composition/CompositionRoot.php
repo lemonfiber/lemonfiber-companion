@@ -8,6 +8,7 @@ use Bootstrap\Composition\NativePHP\BehindTheLock;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
 use Bootstrap\Composition\NativePHP\TheLockIsOnTheGlass;
+use Bootstrap\Composition\NativePHP\TheOperatorIsHere;
 use Bootstrap\Composition\NativePHP\TheRunloop;
 use Bootstrap\Composition\NativePHP\TheTheme;
 use Bootstrap\Composition\NativePHP\WhenTheLockMoves;
@@ -112,8 +113,10 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Welcoming;
+use Modules\Kernel\Api\WhereTheOperatorWas;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Operator\Api\NotingWhereTheOperatorIs;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
@@ -172,6 +175,7 @@ use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Native\Mobile\Edge\TreeObservers;
 
@@ -351,6 +355,14 @@ final class CompositionRoot extends ServiceProvider
             static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore(), new PlatformStacks(new PlatformStore())),
         );
 
+        // Where the operator was: the stack last on view and the tab last used
+        // on each, in the same store and bound the same way. A marker, so it
+        // goes with Clear saved data and with Remove from phone.
+        $this->app->bind(
+            WhereTheOperatorWas::class,
+            static fn(): WhereTheOperatorWas => new PlatformWhereTheOperatorWas(new PlatformStore()),
+        );
+
         // The two keys that seal what the phone keeps, in the same store and
         // bound the same way. Beside the session rather than beside the data
         // they seal: a key kept in the application's own files would sit next
@@ -394,7 +406,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, SettingsKept::class, Standings::class, WorkLeftRunning::class],
+            [HealthReadingsKept::class, SettingsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -407,7 +419,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Standings::class, WorkLeftRunning::class],
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)
@@ -719,6 +731,21 @@ final class CompositionRoot extends ServiceProvider
         // lock screen has been published. After boot, where the dispatcher is
         // the one every provider has registered with.
         $this->app->booted($this->keepTheLock(...));
+
+        // Where the operator is, noted as each screen comes to the front, so the
+        // app opens there after the lock and a chosen stack opens on its tab.
+        $this->app->booted($this->noteWhereTheOperatorIs(...));
+    }
+
+    /**
+     * Note the stack and tab of each screen that comes to the front.
+     *
+     * A method for the reason {@see keepTheLock()} is one: `make()` raises a
+     * checked exception.
+     */
+    private function noteWhereTheOperatorIs(): void
+    {
+        TreeObservers::register(new TheOperatorIsHere($this->app->make(NotingWhereTheOperatorIs::class)));
     }
 
     /**

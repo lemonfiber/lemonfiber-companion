@@ -12,6 +12,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -68,6 +69,7 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 

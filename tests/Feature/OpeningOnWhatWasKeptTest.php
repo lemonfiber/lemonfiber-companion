@@ -168,6 +168,7 @@ function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 

@@ -74,6 +74,7 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 
@@ -132,6 +133,7 @@ it('says nothing about the session where this device is signed in', function ():
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(sprintf(
@@ -245,6 +247,7 @@ it('keeps one stack\'s word apart from another\'s', function (): void {
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(HowItStands::Broken->saidOnTheScreen())
@@ -310,6 +313,7 @@ function theListeningScreen(
         $hearing,
         $capture ?? ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 

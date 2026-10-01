@@ -21,14 +21,17 @@ use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhichTab;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 
 // The ForgetsEverythingKept contract, run against every store and against all
@@ -156,5 +159,20 @@ it('forgets the work left running on every stack, and says how much', function (
 
         expect($left->forgetEverything()->howMany())->toBe(2, $which)
             ->and($left->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+it('forgets where the operator was on every stack, and says how many', function (): void {
+    foreach ([
+        'the platform store' => new PlatformWhereTheOperatorWas(APlatformStore::working()),
+        'the fake' => WhereTheOperatorWasInMemory::nowhere(),
+    ] as $which => $was) {
+        foreach (['a', 'b'] as $seed) {
+            $was->wasOn(aStackWithMarkers($seed)->id(), WhichTab::Updates);
+        }
+
+        expect($was->forgetEverything()->howMany())->toBe(2, $which)
+            ->and($was->wasLastOn(aStackWithMarkers('b')->id()))->toBeFalse($which)
+            ->and($was->forgetEverything()->howMany())->toBe(0, $which);
     }
 });

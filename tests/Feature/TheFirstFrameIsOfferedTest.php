@@ -20,6 +20,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -84,6 +85,7 @@ function theLaunchScreen(
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 

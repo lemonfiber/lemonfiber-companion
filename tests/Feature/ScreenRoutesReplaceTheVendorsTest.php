@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -410,6 +411,7 @@ function aScreen(): YourStacks
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
+        AroundThePhone::alreadyOpened(),
     );
 }
 
