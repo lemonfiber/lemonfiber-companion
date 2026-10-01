@@ -17,6 +17,7 @@ return [
     'media_server_unconfirmed_action' => 'Nothing about your account has changed. Try again once the media server is running.',
     'address_not_the_stacks' => 'This stack did not accept the address this app reached it at.',
     'address_not_the_stacks_action' => 'Pair again from the stack itself, so this app holds the address it answers on.',
+    'encrypted' => 'Encrypted, and checked against the certificate you paired with.',
     'paired' => 'Paired with :stack',
     'pairing_refused' => 'That pairing link was refused. Ask for a new one from the stack.',
     'fingerprint_changed' => "This stack's certificate has changed. Pair again from the stack itself before continuing.",

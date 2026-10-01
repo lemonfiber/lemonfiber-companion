@@ -28,6 +28,12 @@
                     tap="addAStack()"
                 />
             </x-design::section>
+
+            {{-- One line for every stack in the list, because every one is reached
+                 the same way: pinned to the certificate its pairing named, which
+                 only an encrypted address presents, and `Pairing` refuses any
+                 other. --}}
+            <x-design::note>{{ __('connection.encrypted') }}</x-design::note>
         @endif
     </native:column>
 </native:bottom-sheet>

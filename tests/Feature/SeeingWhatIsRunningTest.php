@@ -116,6 +116,11 @@ it('shows why there is no command where there is none, instead of a command', fu
     expect($drawn)->toContain('How it was installed could not be told, so there is nothing exact to type');
 });
 
+it('says the answer came over a connection encrypted and checked against the paired certificate', function (): void {
+    expect(WhatTheDeviceWouldDraw::by(theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion())))->said())
+        ->toContain(__('connection.encrypted'));
+});
+
 it('says who owns a copy another tool keeps up to date', function (): void {
     $brew = ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Homebrew, 'brew'), WhereThisCopyStands::ManagedExternally, WhatIsReleased::said('0.16.0'), '', HowItWouldBeUpdated::byRunning('brew upgrade lemonfiber'), whatUpdatingBrings());
     $drawn = WhatTheDeviceWouldDraw::by(theCopyScreen(AStackThatChecksItself::with($brew)))->said();

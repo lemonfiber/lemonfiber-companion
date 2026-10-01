@@ -11,6 +11,13 @@
         <x-design::note>{{ __('stacks.itself.owner', ['owner' => $this->answer()->owner]) }}</x-design::note>
     @endif
 
+    {{-- How this app reached it. Every connection is pinned to the
+         certificate the pairing named, which an address is only able to
+         present where it is encrypted, and the line says so only then. --}}
+    @if ($this->stack()->at()->isEncrypted())
+        <x-design::note>{{ __('connection.encrypted') }}</x-design::note>
+    @endif
+
     {{-- Where it stands against what has been released. A newer release is
          the heading, named; otherwise the standing is, with the newest
          version under it where there is one. A check that failed is never
