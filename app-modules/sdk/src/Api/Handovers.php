@@ -120,14 +120,14 @@ final readonly class Handovers
      */
     private static function changed(array $data): array
     {
-        if (! array_key_exists(WireField::Changed->value, $data)) {
-            throw HostingIsUnreadable::changed(WireField::Changed);
+        if (! array_key_exists(HostingField::Changed->value, $data)) {
+            throw HostingIsUnreadable::changed(HostingField::Changed);
         }
 
-        $changed = $data[WireField::Changed->value];
+        $changed = $data[HostingField::Changed->value];
 
         if (! is_array($changed)) {
-            throw HostingIsUnreadable::changed(WireField::Changed);
+            throw HostingIsUnreadable::changed(HostingField::Changed);
         }
 
         return $changed;

@@ -416,12 +416,6 @@ enum WireField: string implements NamesAWireField
     case Installed = 'installed';
 
     /**
-     * What the version on offer says it changed, on a `self-update`; and what
-     * one install or removal did to the machine, on a `hosting`.
-     */
-    case Changed = 'changed';
-
-    /**
      * Where somebody is sent: a service beside the front door, or the one
      * address an invitation hands over. Either way the machine's own text.
      */
