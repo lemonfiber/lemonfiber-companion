@@ -15,6 +15,7 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\Locked;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NavigationIntent;
+use Tests\Support\ALockScreen;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AScreenUnderTheLock;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -46,7 +47,7 @@ function whereTheLockWent(Locked $screen): string
 it('draws the reason and the way in, and nothing else', function (): void {
     // Exactly, not *contains*: a check that found the unlock copy present would
     // pass for a frame carrying the machine list underneath it.
-    $drawn = WhatTheDeviceWouldDraw::by(new Locked(ADeviceThatKnowsYou::refusing()));
+    $drawn = WhatTheDeviceWouldDraw::by(ALockScreen::over(ADeviceThatKnowsYou::refusing()));
 
     expect($drawn->said())->toBe([__('device.unlock_reason'), __('device.unlock')])
         ->and($drawn->offers())->toBe([__('device.unlock')])
@@ -54,7 +55,7 @@ it('draws the reason and the way in, and nothing else', function (): void {
 });
 
 it('draws no top bar, so there is no back arrow and no edge swipe', function (): void {
-    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(new Locked(ADeviceThatKnowsYou::refusing())));
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(ALockScreen::over(ADeviceThatKnowsYou::refusing())));
 
     expect($tree)->not->toContain('top_bar')
         ->and($tree)->not->toContain('side_nav')
@@ -64,13 +65,13 @@ it('draws no top bar, so there is no back arrow and no edge swipe', function ():
 it('keeps its words clear of the status bar and the home indicator', function (): void {
     // With no top bar to take the status bar's inset, the screen takes both
     // insets itself, or the reason is drawn under the clock.
-    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(new Locked(ADeviceThatKnowsYou::refusing())));
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(ALockScreen::over(ADeviceThatKnowsYou::refusing())));
 
     expect($tree)->toContain('"safe_area":1');
 });
 
 it('stays where it is on the back button', function (): void {
-    $screen = new Locked(ADeviceThatKnowsYou::willing());
+    $screen = ALockScreen::over(ADeviceThatKnowsYou::willing());
 
     $screen->onBackPressed();
 
@@ -78,10 +79,10 @@ it('stays where it is on the back button', function (): void {
 });
 
 it('goes on only when the device lets the operator in', function (): void {
-    $refused = new Locked(ADeviceThatKnowsYou::refusing());
+    $refused = ALockScreen::over(ADeviceThatKnowsYou::refusing());
     $refused->tryToUnlock();
 
-    $willing = new Locked(ADeviceThatKnowsYou::willing());
+    $willing = ALockScreen::over(ADeviceThatKnowsYou::willing());
     $willing->tryToUnlock();
 
     expect(whereTheLockWent($refused))->toBe('nowhere')
@@ -90,7 +91,7 @@ it('goes on only when the device lets the operator in', function (): void {
 
 it('asks the device again on every tap, even where it would not ask by itself', function (): void {
     $device = ADeviceThatKnowsYou::refusing();
-    $screen = new Locked($device);
+    $screen = ALockScreen::over($device);
     $screen->setData([Locked::AWAITS => true]);
 
     $screen->tryToUnlock();
@@ -101,7 +102,7 @@ it('asks the device again on every tap, even where it would not ask by itself', 
 
 it('goes on when the device says its own prompt opened the lock, and not before', function (): void {
     $device = ADeviceThatKnowsYou::willing();
-    $screen = new Locked($device);
+    $screen = ALockScreen::over($device);
 
     $screen->drawn();
     $screen->lockMoved();
@@ -117,7 +118,7 @@ it('goes on when the device says its own prompt opened the lock, and not before'
 it('lets the device ask by itself where nothing is awaited', function (): void {
     $device = ADeviceThatKnowsYou::willing();
 
-    new Locked($device)->drawn();
+    ALockScreen::over($device)->drawn();
 
     expect($device->askedByItself())->toBe(1)
         ->and($device->asked())->toBe(0);
@@ -125,7 +126,7 @@ it('lets the device ask by itself where nothing is awaited', function (): void {
 
 it('does not let the device ask by itself over an outcome still awaited', function (): void {
     $device = ADeviceThatKnowsYou::willing();
-    $screen = new Locked($device);
+    $screen = ALockScreen::over($device);
     $screen->setData([Locked::AWAITS => true]);
 
     $screen->drawn();
@@ -135,7 +136,7 @@ it('does not let the device ask by itself over an outcome still awaited', functi
 });
 
 it('goes on when it is come back to after the lock opened', function (): void {
-    $screen = new Locked(ADeviceThatKnowsYou::unlocked());
+    $screen = ALockScreen::over(ADeviceThatKnowsYou::unlocked());
 
     $screen->onResume();
 
@@ -143,7 +144,7 @@ it('goes on when it is come back to after the lock opened', function (): void {
 });
 
 it('stays when it is come back to and the lock still stands', function (): void {
-    $screen = new Locked(ADeviceThatKnowsYou::refusing());
+    $screen = ALockScreen::over(ADeviceThatKnowsYou::refusing());
 
     $screen->onResume();
 
@@ -162,7 +163,7 @@ it('is asked by itself as the device is told, with the prompt either way', funct
  */
 function aStackOfLocks(ADeviceThatKnowsYou $device, array $paths): Locked
 {
-    $top = new Locked($device);
+    $top = ALockScreen::over($device);
     $router = new ScreenRouter(static fn(): Locked => $top);
 
     $entries = [];
@@ -206,7 +207,7 @@ it('tells the device only the lock screen is on the glass', function (): void {
     $observer = new TheLockIsOnTheGlass();
 
     // Held here, because the runloop holds the screen it marks only weakly.
-    $locked = new Locked($device);
+    $locked = ALockScreen::over($device);
     $other = AScreenUnderTheLock::atRest();
 
     $before = NativeComponent::markActive($locked);
@@ -218,4 +219,15 @@ it('tells the device only the lock screen is on the glass', function (): void {
     NativeComponent::restoreActive($before);
 
     expect($device->drawnTimes())->toBe(1);
+});
+
+it('tells the device how long the app may be away once the lock opens, and not before', function (): void {
+    $refused = ADeviceThatKnowsYou::refusing();
+    ALockScreen::over($refused)->tryToUnlock();
+
+    $willing = ADeviceThatKnowsYou::willing();
+    ALockScreen::over($willing)->tryToUnlock();
+
+    expect($refused->allowedAway())->toBeNull()
+        ->and($willing->allowedAway())->toBe(0);
 });

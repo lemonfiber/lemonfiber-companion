@@ -6,6 +6,7 @@ namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\Authenticated;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Lock;
 use Modules\Kernel\Api\WhenTheLockAsks;
 
@@ -31,6 +32,8 @@ final class ADeviceThatKnowsYou implements DeviceAuth
     private int $drawn = 0;
 
     private bool $open;
+
+    private ?int $allowedAway = null;
 
     private function __construct(
         private readonly bool $available,
@@ -100,6 +103,19 @@ final class ADeviceThatKnowsYou implements DeviceAuth
         }
 
         return $this->standing();
+    }
+
+    public function allowAway(HowLong $howLong): Lock
+    {
+        $this->allowedAway = $howLong->inSeconds();
+
+        return $this->standing();
+    }
+
+    /** How many seconds the device was last told the app may be away, or none. */
+    public function allowedAway(): ?int
+    {
+        return $this->allowedAway;
     }
 
     /** The prompt the device raised by itself is answered. */

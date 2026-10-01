@@ -126,6 +126,15 @@ final readonly class Screen
     }
 
     /**
+     * Say how many seconds the app may be away before the lock stands again,
+     * and answer whether the lock is open.
+     */
+    public function lockAfter(int $seconds): bool
+    {
+        return $this->asked(Call::LockAfter, WhatAnAnswerHolds::Open, ['seconds' => $seconds]);
+    }
+
+    /**
      * One bridge call, reduced to the one thing every answer carries.
      *
      * {@see WhatTheBridgeAnswered} says what the bridge is on a handset, on a
@@ -162,7 +171,7 @@ final readonly class Screen
     /**
      * One bridge call, reduced to the one key its answer is about.
      *
-     * @param array<string, string|bool> $with
+     * @param array<string, string|bool|int> $with
      */
     private function asked(Call $function, WhatAnAnswerHolds $key, array $with = []): bool
     {

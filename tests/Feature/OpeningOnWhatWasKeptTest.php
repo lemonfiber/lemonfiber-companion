@@ -23,8 +23,8 @@ use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
-use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\ALockScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
@@ -204,7 +204,7 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
 
     // While the lock stands the navigation stack builds the lock screen in
     // place of the launch, and the lock screen reads nothing kept.
-    WhatTheDeviceWouldDraw::by(new Locked(ADeviceThatKnowsYou::refusing()));
+    WhatTheDeviceWouldDraw::by(ALockScreen::over(ADeviceThatKnowsYou::refusing()));
 
     expect($store->newest($attic)->either(
         found: static fn(): Code => Code::of('found'),

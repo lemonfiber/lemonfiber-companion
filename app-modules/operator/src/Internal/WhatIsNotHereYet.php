@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * The menu's items this version of the app does not have yet.
  *
- * What's new at the menu's top and the two settings at its foot are drawn
+ * What's new at the menu's top and the stack's settings at its foot are drawn
  * all the same, and each opens a screen that says it is not in this version
  * yet. The value is the segment of that screen's path, so the screen can say
  * which it is.
@@ -18,7 +18,6 @@ enum WhatIsNotHereYet: string
 {
     case WhatsNew = 'whats_new';
     case StackSettings = 'stack_settings';
-    case AppSettings = 'app_settings';
 
     /** The catalogue key of the item's label, which is also the screen's title. */
     public function said(): string
@@ -32,7 +31,6 @@ enum WhatIsNotHereYet: string
         return match ($this) {
             self::WhatsNew => 'new_releases',
             self::StackSettings => 'settings',
-            self::AppSettings => 'settings_applications',
         };
     }
 
@@ -42,7 +40,6 @@ enum WhatIsNotHereYet: string
         return match ($this) {
             self::WhatsNew => 'newspaper',
             self::StackSettings => 'gearshape',
-            self::AppSettings => 'gearshape.2',
         };
     }
 

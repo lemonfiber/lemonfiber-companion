@@ -8,6 +8,7 @@ use Lemonfiber\Native\Screen as Native;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Authenticated;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Lock;
 use Modules\Kernel\Api\WhenTheLockAsks;
 
@@ -51,6 +52,11 @@ final readonly class PlatformAuth implements DeviceAuth
     public function drawn(WhenTheLockAsks $asks): Lock
     {
         return $this->lock(open: $this->device->lockIsDrawn($this->reason(), mayAsk: $asks->byItself()));
+    }
+
+    public function allowAway(HowLong $howLong): Lock
+    {
+        return $this->lock(open: $this->device->lockAfter($howLong->inSeconds()));
     }
 
     /**

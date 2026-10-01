@@ -19,6 +19,7 @@ use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Native\Mobile\Edge\NavigationIntent;
+use Tests\Support\ALockScreen;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\AScreenUnderTheLock;
@@ -144,7 +145,7 @@ it('cannot take the lock down by waking the lock screen', function (): void {
     // A forged or replayed wake-up over the lock screen reads the device, and
     // the device says the lock stands.
     $device = ADeviceThatKnowsYou::refusing();
-    $screen = new Locked($device);
+    $screen = ALockScreen::over($device);
     $moves = new WhenTheLockMoves(new TheLock($device, StacksInMemory::holding(aPairingTheLockGuards())));
 
     $moves->over($screen);
@@ -155,7 +156,7 @@ it('cannot take the lock down by waking the lock screen', function (): void {
 });
 
 it('lets the lock screen go on once the device opened the lock', function (): void {
-    $screen = new Locked(ADeviceThatKnowsYou::unlocked());
+    $screen = ALockScreen::over(ADeviceThatKnowsYou::unlocked());
 
     new WhenTheLockMoves(new TheLock(ADeviceThatKnowsYou::unlocked(), StacksInMemory::working()))->over($screen);
 

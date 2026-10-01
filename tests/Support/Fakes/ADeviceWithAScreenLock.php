@@ -53,7 +53,8 @@ final class ADeviceWithAScreenLock
             ->respondTo('Lemonfiber.Authenticate', $this->authenticate(...))
             ->respondTo('Lemonfiber.Lock.Standing', $this->standing(...))
             ->respondTo('Lemonfiber.Lock.Waive', $this->waive(...))
-            ->respondTo('Lemonfiber.Lock.Drawn', $this->standing(...));
+            ->respondTo('Lemonfiber.Lock.Drawn', $this->standing(...))
+            ->respondTo('Lemonfiber.Lock.After', $this->standing(...));
 
         return $this;
     }

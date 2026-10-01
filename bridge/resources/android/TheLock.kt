@@ -298,4 +298,22 @@ public object TheLock {
             return mapOf("open" to !stands(activity))
         }
     }
+
+    /**
+     * `Lemonfiber.Lock.After` — how many seconds the app may be away.
+     *
+     * A missing or negative count is not taken, and the lock keeps what it
+     * had; a fraction of a second is dropped.
+     */
+    public class After(private val activity: FragmentActivity) : BridgeFunction {
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> {
+            val seconds = (parameters["seconds"] as? Number)?.toLong()
+
+            if (seconds != null && seconds >= 0) {
+                change { it.awayFor(seconds) }
+            }
+
+            return mapOf("open" to !stands(activity))
+        }
+    }
 }

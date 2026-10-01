@@ -25,6 +25,8 @@ use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Codes\Api\QrCodes;
 use Modules\Connection\Api\TheLock;
+use Modules\Connection\Internal\SettingsKept;
+use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
@@ -363,12 +365,16 @@ final class CompositionRoot extends ServiceProvider
         // open.
         $this->app->bind(HealthReadingsKept::class, HealthReadingsInTheDatabase::class);
 
+        // `connection`'s settings — how long the app may be away before the
+        // lock asks again — sealed by `connection` before they reach it.
+        $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
+
         // Every store of what the phone keeps, registered under one tag and
         // cleared together where the seal's key had to be made afresh: what
         // was sealed under the old key cannot be opened under the new one. A
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
-        $this->app->tag([HealthReadingsKept::class], self::WHAT_THE_PHONE_KEEPS);
+        $this->app->tag([HealthReadingsKept::class, SettingsKept::class], self::WHAT_THE_PHONE_KEEPS);
         $this->app->when(EveryStoreThePhoneKeeps::class)
             ->needs(ForgetsEverythingKept::class)
             ->giveTagged(self::WHAT_THE_PHONE_KEEPS);

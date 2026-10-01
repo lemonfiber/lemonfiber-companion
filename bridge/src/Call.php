@@ -51,6 +51,9 @@ enum Call: string
     /** The lock screen is on the glass. */
     case LockDrawn = 'Lemonfiber.Lock.Drawn';
 
+    /** How long the app may be away before the lock stands again. */
+    case LockAfter = 'Lemonfiber.Lock.After';
+
     /**
      * Whether the device can authenticate anybody at all.
      *

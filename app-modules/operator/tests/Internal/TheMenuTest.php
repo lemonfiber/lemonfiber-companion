@@ -18,6 +18,7 @@ use function json_decode;
 use const JSON_THROW_ON_ERROR;
 
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\ThePhonesSettingsInTheMenu;
 use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
 
@@ -77,13 +78,15 @@ it('gives What\'s new and the two settings an icon each platform has, and a labe
     $material = theIconsIn('material-icons');
     $symbols = theIconsIn('sf-symbols');
 
-    foreach (WhatIsNotHereYet::cases() as $item) {
+    foreach ([...WhatIsNotHereYet::cases(), new ThePhonesSettingsInTheMenu()] as $item) {
         expect($material)->toContain($item->glyph())
             ->and($symbols)->toContain($item->iosGlyph());
     }
 
     expect(WhatIsNotHereYet::WhatsNew->said())->toBe('navigation.menu.whats_new')
-        ->and(WhatIsNotHereYet::AppSettings->goes())->toBe('/not-yet/app_settings');
+        ->and(WhatIsNotHereYet::StackSettings->goes())->toBe('/not-yet/stack_settings')
+        ->and(new ThePhonesSettingsInTheMenu()->said())->toBe('navigation.menu.app_settings')
+        ->and(new ThePhonesSettingsInTheMenu()->appSettings())->toBe('/settings');
 });
 
 it('names each group by a key of its own', function (): void {

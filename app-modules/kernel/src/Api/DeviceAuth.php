@@ -78,4 +78,12 @@ interface DeviceAuth
      * opening, and this answers how it stands now.
      */
     public function drawn(WhenTheLockAsks $asks): Lock;
+
+    /**
+     * How long the app may be out of sight before the lock stands again.
+     *
+     * The device measures the time away, so it is told; answered with how the
+     * lock stands.
+     */
+    public function allowAway(HowLong $howLong): Lock;
 }
