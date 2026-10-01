@@ -27,6 +27,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
@@ -83,6 +84,7 @@ function theListTheAppOpensOn(StacksInMemory $stacks, WhereTheOperatorWasInMemor
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         new WhereAStackOpens(AroundThePhone::holding($stacks, storage: $keychain, was: $was)),
+        new AppsSettingsThatOpen(),
     );
 }
 
@@ -157,6 +159,7 @@ it('opens a stack chosen from the list on the tab last used there', function ():
         AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($attic, $barn), storage: $keychain, was: $was),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 
@@ -169,11 +172,11 @@ it('notes a screen under a tab as where the operator is, and nothing for a scree
     $attic = aStackLeftOff('The attic', 'b');
     $was = WhereTheOperatorWasInMemory::nowhere();
     $noting = new NotingWhereTheOperatorIs($was);
-    $updates = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)));
+    $updates = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen());
     $updates->setParams(['stack' => $attic->id()->stored()]);
-    $words = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)));
+    $words = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen());
     $words->setParams(['stack' => $attic->id()->stored()]);
-    $nameless = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)));
+    $nameless = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen());
     $nameless->setParams(['stack' => ' ']);
 
     expect($noting->cameToTheFront($updates))->toBeTrue()
@@ -187,7 +190,7 @@ it('hands the operator each screen that comes to the front once, however many fr
     $attic = aStackLeftOff('The attic', 'b');
     $was = WhereTheOperatorWasInMemory::nowhere();
     $observer = new TheOperatorIsHere(new NotingWhereTheOperatorIs($was));
-    $updates = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)));
+    $updates = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen());
     $updates->setParams(['stack' => $attic->id()->stored()]);
     $route = AStacksScreen::Updates->forTheStack($attic->id());
 

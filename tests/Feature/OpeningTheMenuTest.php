@@ -19,6 +19,7 @@ use Modules\Operator\Internal\WhereInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
@@ -38,7 +39,7 @@ function theStackWhoseMenuIsOpened(): Stack
 function aTabWithTheMenu(): HowCurrentThisStackIs
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -48,7 +49,7 @@ function aTabWithTheMenu(): HowCurrentThisStackIs
 function aScreenTheMenuOpens(): WhatTheWordsMean
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

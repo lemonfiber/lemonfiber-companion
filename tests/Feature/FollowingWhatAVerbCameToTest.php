@@ -35,6 +35,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -80,6 +81,7 @@ function theScreenAVerbIsFollowedFrom(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         $hearing ?? AStackThatSpeaksUp::whileItStarts(),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 

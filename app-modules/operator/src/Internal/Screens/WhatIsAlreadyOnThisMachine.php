@@ -18,10 +18,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stance;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -60,6 +62,7 @@ use function view;
 #[Concealed]
 final class WhatIsAlreadyOnThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -86,6 +89,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         private readonly MovingIn $movingIn,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

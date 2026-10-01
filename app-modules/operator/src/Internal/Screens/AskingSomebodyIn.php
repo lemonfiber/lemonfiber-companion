@@ -22,11 +22,13 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -75,6 +77,7 @@ use function view;
 #[Concealed]
 final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use ChoosesWhatAnInvitationAsks;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -110,6 +113,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Translator $catalogue,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

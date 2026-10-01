@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheVersionsSpoken;
 
@@ -19,4 +20,12 @@ it('fills its obstacle sentences with the versions that disagreed', function ():
 
 it('fills in nothing where nothing stood in the way', function (): void {
     expect(WhatAMemberTurnedOutToBeAbleToWatch::these([])->filling())->toBe([]);
+});
+
+it('is put right in the app\'s settings only where the local network was refused', function (): void {
+    expect([
+        WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToBeAbleToWatch::these([])->isPutRightInTheAppsSettings(),
+    ])->toBe([true, false, false]);
 });

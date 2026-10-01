@@ -15,9 +15,11 @@ use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -65,6 +67,7 @@ use function view;
 #[Concealed]
 final class PairByScanning extends NativeComponent
 {
+    use OffersTheAppsSettings;
     /**
      * What the operator is calling this machine.
      *
@@ -116,6 +119,7 @@ final class PairByScanning extends NativeComponent
         private readonly Introducing $introducing,
         private readonly Remembering $remembering,
         private readonly Clock $clock,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** What the operator is calling this machine. */

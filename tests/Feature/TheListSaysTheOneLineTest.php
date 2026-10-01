@@ -26,6 +26,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
@@ -75,6 +76,7 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 }
 
@@ -134,6 +136,7 @@ it('says nothing about the session where this device is signed in', function ():
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(sprintf(
@@ -248,6 +251,7 @@ it('keeps one stack\'s word apart from another\'s', function (): void {
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(HowItStands::Broken->saidOnTheScreen())
@@ -281,6 +285,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         ACaptureInMemory::inFront(),
         $standings,
         WhatThePhoneKeeps::nothingYet(),
+        new AppsSettingsThatOpen(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
     $heard->listen();
@@ -314,6 +319,7 @@ function theListeningScreen(
         $capture ?? ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 }
 

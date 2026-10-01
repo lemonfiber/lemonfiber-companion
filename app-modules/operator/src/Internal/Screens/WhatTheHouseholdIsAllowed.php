@@ -12,7 +12,9 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheAllowanceTurnedOutToBe;
@@ -33,6 +35,7 @@ use function view;
 #[Concealed]
 final class WhatTheHouseholdIsAllowed extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -43,6 +46,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** The stack this screen is about. */

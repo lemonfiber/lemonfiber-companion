@@ -51,6 +51,7 @@
         @endif
     @else
         <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->lastGuard()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
@@ -93,6 +94,7 @@
     {{-- The forms could not be listed, so no guard is offered: a stack that
          cannot say what it declares is not one to name forms for. --}}
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

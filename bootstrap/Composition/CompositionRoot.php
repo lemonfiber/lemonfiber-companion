@@ -17,6 +17,7 @@ use function config;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\AppsSettings as TheAppsSettingsPage;
 use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
 use Lemonfiber\Native\Handover as TheSheet;
@@ -30,6 +31,7 @@ use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
+use Modules\Device\Api\PlatformAppsSettings;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
@@ -106,6 +108,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheLocalNetwork;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -617,6 +620,11 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             TheLocalNetwork::class,
             static fn(): TheLocalNetwork => new PlatformLocalNetwork(new TheLocalNetworkProbe()),
+        );
+
+        $this->app->bind(
+            TheAppsSettings::class,
+            static fn(): TheAppsSettings => new PlatformAppsSettings(new TheAppsSettingsPage()),
         );
 
         // Which zone the phone's clock is set to, asked each time rather than

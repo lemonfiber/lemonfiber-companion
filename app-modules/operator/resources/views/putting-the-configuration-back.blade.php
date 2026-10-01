@@ -64,6 +64,7 @@
     {{-- The stack could not be asked, so there is nothing to agree to and
          nothing is offered. --}}
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

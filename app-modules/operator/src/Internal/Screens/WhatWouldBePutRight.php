@@ -21,9 +21,11 @@ use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -72,6 +74,7 @@ use function view;
 #[Concealed]
 final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -121,6 +124,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         private readonly Mending $mending,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

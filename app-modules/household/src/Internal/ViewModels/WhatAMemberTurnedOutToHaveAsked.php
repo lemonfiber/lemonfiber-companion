@@ -90,6 +90,12 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
             : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), rows: [], why: $why);
     }
 
+    /** Whether what stood in the way is put right on this app's page in the phone's settings. */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
+    }
+
     /**
      * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
      *

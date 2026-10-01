@@ -15,8 +15,10 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
@@ -64,6 +66,7 @@ use function view;
 #[Concealed]
 final class WhatStoppedComingIn extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use FindsItsWayAround;
@@ -84,6 +87,7 @@ final class WhatStoppedComingIn extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Explaining $explaining,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

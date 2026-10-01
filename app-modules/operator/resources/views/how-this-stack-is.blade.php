@@ -21,6 +21,12 @@
             <x-design::strong>{{ __($this->summary()->met, $this->summary()->filling) }}</x-design::strong>
             <x-design::body>{{ __($this->summary()->remedy, $this->summary()->filling) }}</x-design::body>
         </x-design::notice>
+        @if ($this->summary()->inTheAppsSettings)
+            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            @if ($this->theSettingsWouldNotOpen)
+                <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+            @endif
+        @endif
     @endif
 
     {{-- How many, counted by cause, as the one row that opens them out;
@@ -172,6 +178,7 @@
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
+        :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />

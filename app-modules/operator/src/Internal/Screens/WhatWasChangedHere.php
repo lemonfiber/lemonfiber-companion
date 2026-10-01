@@ -12,8 +12,10 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheRecordTurnedOutToBe;
@@ -50,6 +52,7 @@ use function view;
 #[Concealed]
 final class WhatWasChangedHere extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -68,6 +71,7 @@ final class WhatWasChangedHere extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Clock $clock,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_filter;
 use function array_intersect;
 use function array_map;
 use function array_unique;
+use function array_values;
 use function count;
 use function expect;
 use function it;
@@ -210,4 +212,15 @@ it('says which side is newer', function (): void {
     expect(TheVersionsSpoken::between(3, 2)->isTheStackNewer())->toBeTrue()
         ->and(TheVersionsSpoken::between(2, 3)->isTheStackNewer())->toBeFalse()
         ->and([TheVersionsSpoken::between(3, 2)->answered(), TheVersionsSpoken::between(3, 2)->spoken()])->toBe([3, 2]);
+});
+
+it('puts only a refused local-network permission right in the app\'s settings', function (): void {
+    $there = array_values(array_filter(
+        KindOfObstacle::cases(),
+        static fn(KindOfObstacle $kind): bool => $kind->isPutRightInTheAppsSettings(),
+    ));
+
+    expect($there)->toBe([KindOfObstacle::LocalNetworkIsNotPermitted])
+        ->and(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)->isPutRightInTheAppsSettings())->toBeTrue()
+        ->and(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->isPutRightInTheAppsSettings())->toBeFalse();
 });

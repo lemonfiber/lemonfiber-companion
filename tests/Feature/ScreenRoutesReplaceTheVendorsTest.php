@@ -23,6 +23,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -412,6 +413,7 @@ function aScreen(): YourStacks
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 }
 

@@ -21,6 +21,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -62,6 +63,7 @@ function scanningScreen(ACameraInMemory $camera, ?WhyAStackCannotBeRemembered $r
             AKeychainInMemory::working(),
         ),
         FrozenClock::at(Instant::atEpochSeconds(SCANNED_AT)),
+        new AppsSettingsThatOpen(),
     );
 }
 
@@ -382,6 +384,7 @@ function scanningAgain(string $code, StacksInMemory $stacks, AKeychainInMemory $
         new Introducing(),
         new Remembering($stacks, $sessions),
         FrozenClock::at(Instant::atEpochSeconds(SCANNED_AT)),
+        new AppsSettingsThatOpen(),
     ), 'The attic');
 }
 

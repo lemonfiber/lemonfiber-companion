@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAnUpgradeReads;
 use Modules\Operator\Internal\Presenters\HowTheQualityReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -58,6 +60,7 @@ use function view;
 #[Concealed]
 final class ChoosingHowGood extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -92,6 +95,7 @@ final class ChoosingHowGood extends NativeComponent
         private readonly UpgradingTheLibrary $upgrades,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

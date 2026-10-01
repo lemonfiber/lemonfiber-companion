@@ -3,6 +3,12 @@
 <x-operator::content>
     <x-design::title>{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</x-design::title>
     <x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>
+    @if ($this->went()->isPutRightInTheAppsSettings())
+        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        @if ($this->theSettingsWouldNotOpen)
+            <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
+        @endif
+    @endif
 
     @if ($this->isSignedIn())
         {{-- Straight to what they came for, rather than telling them where to

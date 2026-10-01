@@ -72,6 +72,12 @@ final readonly class Obstacle
             : $this->kind->remedy();
     }
 
+    /** Whether its remedy is a switch on this app's page in the phone's settings. */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this->kind->isPutRightInTheAppsSettings();
+    }
+
     /**
      * The two versions that disagreed, which its sentences name.
      *

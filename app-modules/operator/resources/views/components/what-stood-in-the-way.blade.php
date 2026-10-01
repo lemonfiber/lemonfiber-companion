@@ -16,6 +16,15 @@
          leaving and returning, which is named separately as what a screen must
          not rely on. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="{{ $askAgain }}" />
+
+    {{-- Beside asking again, where the remedy is a switch in the phone's
+         settings: one tap to the switch rather than a hunt for it. --}}
+    @if ($went->isPutRightInTheAppsSettings())
+        <x-operator::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        @if ($settingsWouldNotOpen)
+            <x-operator::note>{{ __('connection.settings_would_not_open') }}</x-operator::note>
+        @endif
+    @endif
 @else
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}

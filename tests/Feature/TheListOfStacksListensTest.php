@@ -22,6 +22,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
@@ -90,6 +91,7 @@ function aTabThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $st
             $hearing,
             $capture,
         ),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -110,6 +112,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         ACaptureInMemory::inFront(),
         $standings,
         WhatThePhoneKeeps::nothingYet(),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
@@ -26,6 +27,7 @@ use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
@@ -74,6 +76,7 @@ use function view;
 #[Concealed]
 final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use HearsWhereTheWalkIs {
         HearsWhereTheWalkIs::stop insteadof FindsItsWayAround;
     }
@@ -108,6 +111,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         private readonly HearingTheWalk $hearingTheWalk,
         private readonly Clock $clock,
         private readonly Capture $capture,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

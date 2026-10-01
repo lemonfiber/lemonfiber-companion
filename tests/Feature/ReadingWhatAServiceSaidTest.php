@@ -26,6 +26,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\StacksInMemory;
@@ -109,6 +110,7 @@ function theLogScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         AZoneThatIsSet::to('Europe/Amsterdam'),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),

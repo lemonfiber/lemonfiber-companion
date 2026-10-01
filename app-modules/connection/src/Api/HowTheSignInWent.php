@@ -233,6 +233,17 @@ enum HowTheSignInWent: string
     }
 
     /**
+     * Whether its remedy is a switch on this app's page in the phone's settings.
+     *
+     * The sign-in's own name for the obstacle that {@see KindOfObstacle::isPutRightInTheAppsSettings()}
+     * answers for, so the screen offers the way there for the same one.
+     */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this === self::TheNetworkIsNotPermitted;
+    }
+
+    /**
      * Whether offering a password is worth putting in front of them at all.
      *
      * Asked of the standing rather than decided here, which is the point: this

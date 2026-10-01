@@ -21,6 +21,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
@@ -71,6 +72,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         ACaptureInMemory::inFront(),
         StandingsInMemory::working(),
         WhatThePhoneKeeps::nothingYet(),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -116,6 +118,7 @@ it('the word a frame opens on is drawn, with its age', function (): void {
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);

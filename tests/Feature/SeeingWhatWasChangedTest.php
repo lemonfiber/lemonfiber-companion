@@ -27,6 +27,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -88,6 +89,7 @@ function theRecordScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(THE_RECORD_IS_READ_AT)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

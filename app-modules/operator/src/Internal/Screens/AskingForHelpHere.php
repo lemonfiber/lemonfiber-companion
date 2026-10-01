@@ -19,10 +19,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
@@ -67,6 +69,7 @@ use function view;
 #[Concealed]
 final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -99,6 +102,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         private readonly Sharing $sharing,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

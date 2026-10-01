@@ -24,6 +24,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatMakesPairingCodes;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
@@ -89,6 +90,7 @@ function thePairingScreen(
         AZoneThatIsSet::to('Europe/Amsterdam'),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

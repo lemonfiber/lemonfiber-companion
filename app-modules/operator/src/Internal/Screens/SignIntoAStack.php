@@ -16,9 +16,11 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
@@ -70,6 +72,7 @@ use function view;
 #[Concealed]
 final class SignIntoAStack extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use FindsItsWayAround;
 
     /**
@@ -117,6 +120,7 @@ final class SignIntoAStack extends NativeComponent
         private readonly Admitting $admitting,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** What the operator has typed into the password field. */

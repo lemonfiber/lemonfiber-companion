@@ -31,6 +31,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\AStackThatTakesThemOut;
@@ -68,7 +69,7 @@ function theRemovalScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $member]);
 
     return $screen;
@@ -461,6 +462,7 @@ it('is offered for each member of the household, where who is in is read', funct
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding(theStackSomebodyLeaves())),
         app(Translator::class),
+        new AppsSettingsThatOpen(),
     );
     $household->setParams(['stack' => theStackSomebodyLeaves()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();

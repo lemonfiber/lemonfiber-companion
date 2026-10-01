@@ -14,10 +14,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
 use Modules\Operator\Internal\TheWayAround;
@@ -51,6 +53,7 @@ use function view;
 #[Concealed]
 final class WhatThisStackIsSetTo extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -86,6 +89,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         private readonly Adjusting $adjusting,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** What the operator has typed into the one field. */

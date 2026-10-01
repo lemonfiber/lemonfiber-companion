@@ -14,10 +14,12 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
@@ -47,6 +49,7 @@ use function view;
 #[Concealed]
 final class WhereThisGotTo extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use FindsItsWayAround;
@@ -65,6 +68,7 @@ final class WhereThisGotTo extends NativeComponent
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */

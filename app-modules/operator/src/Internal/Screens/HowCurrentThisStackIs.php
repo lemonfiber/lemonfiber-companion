@@ -12,10 +12,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
@@ -51,6 +53,7 @@ use function view;
 #[Concealed]
 final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -80,6 +83,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         private readonly KeepingCurrent $keeping,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

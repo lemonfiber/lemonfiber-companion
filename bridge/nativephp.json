@@ -152,6 +152,12 @@
             "description": "Say whether the platform refuses this app the local network on the way to one address"
         },
         {
+            "name": "Lemonfiber.Settings.Open",
+            "android": "app.lemonfiber.native.SettingsFunctions.Open",
+            "ios": "SettingsFunctions.Open",
+            "description": "Open this app's own page in the phone's settings, and say whether it opened"
+        },
+        {
             "name": "Lemonfiber.Clock.Zone",
             "android": "app.lemonfiber.native.ClockFunctions.Zone",
             "ios": "ClockFunctions.Zone",

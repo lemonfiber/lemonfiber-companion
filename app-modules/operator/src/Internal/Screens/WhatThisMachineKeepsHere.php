@@ -12,9 +12,11 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Storing;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
@@ -50,6 +52,7 @@ use function view;
 #[Concealed]
 final class WhatThisMachineKeepsHere extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -65,6 +68,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         private readonly Copying $copying,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

@@ -30,6 +30,7 @@ use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -101,6 +102,7 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
         ACaptureInMemory::inFront(),
         StandingsInMemory::working(),
         $keeping,
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -169,6 +171,7 @@ function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
+        new AppsSettingsThatOpen(),
     );
 }
 

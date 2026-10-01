@@ -268,6 +268,20 @@ enum KindOfObstacle: string
     }
 
     /**
+     * Whether its remedy is a switch on this app's page in the phone's settings.
+     *
+     * Decided here, once, for the reason {@see meansWeAreSignedOut()} is: a
+     * screen deciding which obstacles get a way to the settings would be a
+     * screen that comes to disagree with the one beside it. Only a refused
+     * local-network permission is put right there, and only a platform that
+     * asks that permission produces one.
+     */
+    public function isPutRightInTheAppsSettings(): bool
+    {
+        return $this === self::LocalNetworkIsNotPermitted;
+    }
+
+    /**
      * The identifier an operator can search for.
      *
      * The app's own, not the server's. `Code` says codes are declared beside

@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Household\Internal\LetsGoOfARefusedSession;
+use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowWhatAMemberAskedForReads;
 use Modules\Household\Internal\Presenters\HowWhatAMemberIsOwedReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeOwed;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -68,6 +70,7 @@ use function view;
 #[Concealed]
 final class WhatYouAreOwed extends NativeComponent
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
 
     /**
@@ -97,6 +100,7 @@ final class WhatYouAreOwed extends NativeComponent
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

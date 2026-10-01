@@ -19,9 +19,11 @@ use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
@@ -65,6 +67,7 @@ use function view;
 #[Concealed]
 final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -96,6 +99,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         private readonly PuttingBack $puttingBack,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**

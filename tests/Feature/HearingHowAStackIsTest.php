@@ -42,6 +42,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -154,6 +155,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         $window,
         $standings,
         WhatThePhoneKeeps::nothingYet(),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -450,6 +452,7 @@ it('draws the summary it heard where the device would not keep the word', functi
         ACaptureInMemory::inFront(),
         StandingsInMemory::refusing(),
         WhatThePhoneKeeps::nothingYet(),
+        new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->listen();

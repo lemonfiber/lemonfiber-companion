@@ -31,6 +31,7 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -92,7 +93,7 @@ function theRepairsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatWouldBePutRight($mending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatWouldBePutRight($mending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;

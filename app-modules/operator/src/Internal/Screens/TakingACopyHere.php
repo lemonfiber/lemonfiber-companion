@@ -17,8 +17,10 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -56,6 +58,7 @@ use function view;
 #[Concealed]
 final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
 {
+    use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
 
@@ -81,6 +84,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /**
