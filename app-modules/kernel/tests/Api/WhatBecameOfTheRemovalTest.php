@@ -26,7 +26,7 @@ final readonly class WhichArmTheRemovalTook
 }
 
 /** Which arm an answer took, and what it carried. */
-function whichArmTheRemovalTook(WhatBecameOfTheRemoval $became): string
+function theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval $became): string
 {
     return $became->either(
         underway: static fn(Job $job): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('underway:%s', $job->shown())),
@@ -40,11 +40,11 @@ function whichArmTheRemovalTook(WhatBecameOfTheRemoval $became): string
 it('takes the arm it was made on, and carries what it was made with', function (): void {
     $removal = ARemoval::carriedOut(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: false, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of());
 
-    expect(whichArmTheRemovalTook(WhatBecameOfTheRemoval::underway(Job::named('j-1'))))->toBe('underway:j-1')
-        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::answered($removal)))->toBe('answered:Anna')
-        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::ended()))->toBe('ended')
-        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::refused('Nobody is called Anna here')))->toBe('refused:Nobody is called Anna here')
-        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
+    expect(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::underway(Job::named('j-1'))))->toBe('underway:j-1')
+        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::answered($removal)))->toBe('answered:Anna')
+        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::ended()))->toBe('ended')
+        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::refused('Nobody is called Anna here')))->toBe('refused:Nobody is called Anna here')
+        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal with nothing said', function (): void {

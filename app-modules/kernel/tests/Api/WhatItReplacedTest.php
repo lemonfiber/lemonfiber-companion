@@ -20,7 +20,7 @@ final readonly class WhatWasReplaced
 }
 
 /** Which case a replaced value is, and what it holds. */
-function whatWasReplaced(WhatItReplaced $replaced): string
+function theWordForWhatWasReplaced(WhatItReplaced $replaced): string
 {
     return $replaced->whichever(
         held: static fn(string $value): WhatWasReplaced => new WhatWasReplaced(sprintf('held:%s', $value)),
@@ -32,9 +32,9 @@ function whatWasReplaced(WhatItReplaced $replaced): string
 it('keeps what it held, that nothing was set, or that a credential is withheld, and where it came from', function (): void {
     $from = WhoPutItThere::operator();
 
-    expect(whatWasReplaced(WhatItReplaced::held('8096', $from)))->toBe('held:8096')
-        ->and(whatWasReplaced(WhatItReplaced::nothingSet($from)))->toBe('nothing')
-        ->and(whatWasReplaced(WhatItReplaced::withheld($from)))->toBe('withheld')
+    expect(theWordForWhatWasReplaced(WhatItReplaced::held('8096', $from)))->toBe('held:8096')
+        ->and(theWordForWhatWasReplaced(WhatItReplaced::nothingSet($from)))->toBe('nothing')
+        ->and(theWordForWhatWasReplaced(WhatItReplaced::withheld($from)))->toBe('withheld')
         ->and(WhatItReplaced::withheld($from)->from())->toBe($from);
 });
 

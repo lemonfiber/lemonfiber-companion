@@ -93,6 +93,25 @@ final readonly class TestsAndNaming
                 }
                 PHP, 'G10 —'),
 
+            // Planted where `G10`'s other fixture is, and for its reason: the
+            // clash is only a failure once something loads the file and asks
+            // whether the helper's name is a class, so the rule reads text.
+            Fixture::suite('G10', 'tests/Support/Fixtures/AHelperNamedLikeItsClassTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                final readonly class WhatTheFixtureSaid
+                {
+                    public function __construct(public string $said) {}
+                }
+
+                function whatTheFixtureSaid(): string
+                {
+                    return new WhatTheFixtureSaid('planted')->said;
+                }
+                PHP, 'no test helper shares its name'),
+
             Fixture::suite('G5', 'app-modules/health/tests/Fixtures/AssertsTest.php', <<<'PHP'
                 <?php
 

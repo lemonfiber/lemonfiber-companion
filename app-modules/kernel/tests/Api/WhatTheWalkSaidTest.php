@@ -22,7 +22,7 @@ final readonly class WhichArmTheWalkTook
 }
 
 /** Which arm an answer about a walk takes, and what it carried there. */
-function whichArmTheWalkTook(WhatTheWalkSaid $said): string
+function theWordForWhichArmTheWalkTook(WhatTheWalkSaid $said): string
 {
     return $said->either(
         nothing: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('nothing'),
@@ -36,9 +36,9 @@ function whichArmTheWalkTook(WhatTheWalkSaid $said): string
 it('keeps the five things a subscription can answer about a walk apart', function (): void {
     $line = ALineItSaid::withoutDetail(WalkthroughStep::Grabbing, 'Sending the release to the download client');
 
-    expect(whichArmTheWalkTook(WhatTheWalkSaid::nothing()))->toBe('nothing')
-        ->and(whichArmTheWalkTook(WhatTheWalkSaid::aSignOfLife()))->toBe('alive')
-        ->and(whichArmTheWalkTook(WhatTheWalkSaid::said($line)))->toBe('said grabbing: Sending the release to the download client')
-        ->and(whichArmTheWalkTook(WhatTheWalkSaid::closed()))->toBe('closed')
-        ->and(whichArmTheWalkTook(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
+    expect(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::nothing()))->toBe('nothing')
+        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::aSignOfLife()))->toBe('alive')
+        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::said($line)))->toBe('said grabbing: Sending the release to the download client')
+        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::closed()))->toBe('closed')
+        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
 });

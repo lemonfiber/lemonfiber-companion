@@ -89,6 +89,38 @@ function helpersByName(): array
 }
 
 /**
+ * Every class-like a test file declares, and every function, by lower-cased
+ * namespaced name.
+ *
+ * Lower-cased because that is how PHP looks a class up: `whichArm()` and
+ * `WhichArm` are one name to `class_exists()`, and so to anything that reflects
+ * a test file's functions as though they might be classes.
+ *
+ * @return array{classes: array<string, string>, functions: array<string, string>} name => the file declaring it
+ */
+function namesTestFilesDeclare(): array
+{
+    $found = ['classes' => [], 'functions' => []];
+
+    foreach (testSources() as $path => $source) {
+        $namespace = preg_match('/^namespace\s+([^;]+);/m', $source, $matched) === 1 ? sprintf('%s\\', $matched[1]) : '';
+
+        preg_match_all('/^(?:(?:final|readonly|abstract)\s+)*(?:class|interface|trait|enum)\s+([A-Za-z_][A-Za-z0-9_]*)/m', $source, $classes);
+        preg_match_all('/^function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/m', $source, $functions);
+
+        foreach ($classes[1] as $name) {
+            $found['classes'][strtolower(sprintf('%s%s', $namespace, $name))] = $path;
+        }
+
+        foreach ($functions[1] as $name) {
+            $found['functions'][strtolower(sprintf('%s%s', $namespace, $name))] = $path;
+        }
+    }
+
+    return $found;
+}
+
+/**
  * Whether a source calls one of PHPUnit's assertions.
  *
  * Read as a call rather than as text, because `assert` followed by a capital is
@@ -352,6 +384,32 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
         . "application promises. And a grab-bag file name is how a test file acquires\n"
         . 'everything, for the same reason H1 refuses Manager (H7, H1).',
         implode("\n  ", $offenders),
+    ));
+});
+
+it('G10 — no test helper shares its name with a class, whatever the case', function (): void {
+    $declared = namesTestFilesDeclare();
+    $clashes = [];
+
+    expect($declared['functions'])->not->toBe([], 'no test file declares a helper, so this rule read nothing');
+
+    foreach ($declared['functions'] as $name => $path) {
+        if (array_key_exists($name, $declared['classes']) || class_exists($name) || interface_exists($name)) {
+            $clashes[] = sprintf('%s in %s', $name, $path);
+        }
+    }
+
+    sort($clashes);
+
+    expect($clashes)->toBe([], sprintf(
+        "These helpers share their name with a class:\n  %s\n\n"
+        . 'PHP looks a class up without regard to case, so `whichArm()` beside `WhichArm` '
+        . 'is one name to anything that asks whether a class exists. Pest\'s architecture '
+        . 'rules ask exactly that of every function in a file they read, and judge the '
+        . 'function as the class: the run reports a class that is final as not final, '
+        . 'and only when the test file is loaded in the same process. Name the helper '
+        . 'for what it answers rather than for the type it builds (G10).',
+        implode("\n  ", $clashes),
     ));
 });
 

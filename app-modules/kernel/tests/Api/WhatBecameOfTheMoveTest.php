@@ -26,7 +26,7 @@ final readonly class WhereTheMoveGotTo
 }
 
 /** Which arm an answer took, and what it carried, folded to one line. */
-function whereTheMoveGotTo(WhatBecameOfTheMove $became): string
+function theWordForWhereTheMoveGotTo(WhatBecameOfTheMove $became): string
 {
     return $became->either(
         underway: static fn(Job $job): WhereTheMoveGotTo => new WhereTheMoveGotTo(sprintf('underway %s', $job->shown())),
@@ -40,11 +40,11 @@ function whereTheMoveGotTo(WhatBecameOfTheMove $became): string
 it('takes each arm it was built on, and no other', function (): void {
     $move = AMove::at(Stance::Applied, TheStandingBeside::of(ThePortsMoved::of(), ''));
 
-    expect(whereTheMoveGotTo(WhatBecameOfTheMove::underway(Job::named('j-1'))))->toBe('underway j-1')
-        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::answered($move)))->toBe('answered applied')
-        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::ended()))->toBe('ended')
-        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::refused('Nothing here to take over')))->toBe('refused Nothing here to take over')
-        ->and(whereTheMoveGotTo(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
+    expect(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::underway(Job::named('j-1'))))->toBe('underway j-1')
+        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::answered($move)))->toBe('answered applied')
+        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::ended()))->toBe('ended')
+        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::refused('Nothing here to take over')))->toBe('refused Nothing here to take over')
+        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal that does not say why', function (): void {
