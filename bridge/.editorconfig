@@ -12,6 +12,9 @@ max_line_length = 110
 indent_size = 4
 indent_style = space
 insert_final_newline = true
+# A renderer's entry point is `Render`, the name NativePHP's generated
+# registration calls; the same exception `detekt.yml` makes.
+ktlint_function_naming_ignore_when_annotated_with = Composable
 
 [*.kts]
 max_line_length = 110

@@ -9,10 +9,10 @@
 #
 # The NativePHP half is read from the installed `vendor/nativephp/mobile`, so
 # the bridge is checked against the package the app is built with. One stand-in
-# is written here: `NativeElementBridge`, NativePHP's renderer, which the two
-# files below name and the bridge never does. The real one draws in the rest of
-# the renderer and, through it, the PHP runtime's headers, which the package
-# does not ship.
+# is written here: `NativeElementBridge`, NativePHP's renderer, which the files
+# below name and the bridge's own renderer sends its events through. The real
+# one draws in the rest of the renderer and, through it, the PHP runtime's
+# headers, which the package does not ship.
 #
 # The deployment target and language mode are read from NativePHP's Xcode
 # project, which is the target the bridge is compiled into.
@@ -27,10 +27,16 @@ cd "$(dirname "$0")/.."
 xcode=vendor/nativephp/mobile/resources/xcode
 
 # What the bridge names from NativePHP: `BridgeFunction`, `BridgeError` and
-# `BridgeResponse` in the first, `LaravelBridge` in the second.
+# `BridgeResponse` in the first, `LaravelBridge` in the second, the node a
+# renderer draws in the third, and the theme it draws in from `mobile-ui`, with
+# the font resolver the theme reads.
+ui=vendor/nativephp/mobile-ui/resources/ios
 nativephp=(
     "${xcode}/NativePHP/Bridge/BridgeRouter.swift"
     "${xcode}/NativePHP/Bridge/NativePHP.swift"
+    "${xcode}/NativePHP/NativeRender/NativeUINode.swift"
+    "${ui}/NativeUITheme.swift"
+    "${ui}/NativeUIFontResolver.swift"
 )
 
 for source in "${nativephp[@]}"; do
@@ -64,6 +70,7 @@ final class NativeElementBridge {
     static func unregisterRegion() {}
     static func postTreeUpdateFromRegion() {}
     static func sendNativeEvent(eventName: String, payloadJson: String) {}
+    static func sendSelectChangeEvent(_ callbackId: Int, nodeId: Int, value: String) {}
 }
 SWIFT
 

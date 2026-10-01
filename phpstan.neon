@@ -204,6 +204,12 @@ parameters:
                 # NativePHP components are extended by the framework's own
                 # contract; a component that did not extend it is not a screen.
                 - Native\Mobile\Edge\NativeComponent
+                # A native element a plugin adds to the tree, and the Blade tag
+                # that draws it. The framework resolves a plugin's element by
+                # its type and serialises it through the base class, so an
+                # element that did not extend it would never reach the phone.
+                - Native\Mobile\Edge\Element
+                - Native\Mobile\Edge\Components\Native\NativeBladeComponent
                 # A Blade component, for the reason a screen extends its own
                 # base: the framework instantiates it and reads `render()` off
                 # it. It is also what avoids the alternative — an anonymous

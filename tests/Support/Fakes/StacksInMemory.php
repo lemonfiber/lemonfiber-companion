@@ -156,4 +156,15 @@ final class StacksInMemory implements Stacks
     {
         return $this->held->knows($stack);
     }
+
+    public function putInOrder(StackId ...$order): bool
+    {
+        if ($this->refusing instanceof WhyAStackCannotBeRemembered) {
+            return false;
+        }
+
+        $this->held = $this->held->inTheOrderOf(...$order);
+
+        return true;
+    }
 }

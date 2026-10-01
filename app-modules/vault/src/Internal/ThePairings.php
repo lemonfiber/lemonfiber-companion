@@ -49,6 +49,12 @@ final readonly class ThePairings
         return new self($this->stacks->without($stack), $this->removing);
     }
 
+    /** These, with the stacks in the order the operator put them. */
+    public function inTheOrderOf(StackId ...$order): self
+    {
+        return new self($this->stacks->inTheOrderOf(...$order), $this->removing);
+    }
+
     /** These, with the removal of this stack begun. */
     public function removing(StackId $stack): self
     {

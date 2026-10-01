@@ -55,6 +55,14 @@
 
     <x-design::note>{{ __('settings.keep_readings_is') }}</x-design::note>
 
+    {{-- The order every list of stacks follows. A row is dragged into place,
+         or moved one place at a time with a screen reader's actions. --}}
+    <x-design::section :label="__('settings.stacks')">
+        <x-design::row :headline="__('settings.stack_order')" />
+    </x-design::section>
+
+    <x-design::order :rows="$this->stacksInOrder()" change="putStacksInOrder" :label="__('settings.stack_order')" :move-up="'settings.move_up'" :move-down="'settings.move_down'" />
+
     {{-- Every reading, setting and marker, and never a pairing or a session.
          Asked on this screen rather than in a dialog, where the question can
          say what goes and what stays. --}}

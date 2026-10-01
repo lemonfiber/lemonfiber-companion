@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
+use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
@@ -19,7 +22,10 @@ use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
@@ -30,6 +36,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -44,6 +51,7 @@ function thePhonesSettingsOver(
     ?AKeychainInMemory $keychain = null,
     ?KeepingTheLastReading $readings = null,
     ?ForgetsEverythingKept $everything = null,
+    ?Stacks $stacks = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
     $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
@@ -53,6 +61,7 @@ function thePhonesSettingsOver(
         $keychain ?? AKeychainInMemory::working(),
         $readings ?? WhatThePhoneKeeps::nothingYet(),
         new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking),
+        $stacks ?? StacksInMemory::working(),
     );
 }
 
@@ -269,4 +278,68 @@ it('clears every reading, setting and marker, and draws every setting at its sta
         ->and($store->forgetEverything()->howMany())->toBe(0)
         ->and($standings->forgetEverything()->howMany())->toBe(0)
         ->and($left->forgetEverything()->howMany())->toBe(0);
+});
+
+/** Two stacks on the phone, the loft paired first. */
+function theLoftAndTheAttic(): StacksInMemory
+{
+    return StacksInMemory::holding(
+        Stack::of(StackId::of(Nonce::of(str_repeat('a', Nonce::SHORTEST))), StackName::of('The loft'), Address::of('https://192.168.1.42'), Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))),
+        Stack::of(StackId::of(Nonce::of(str_repeat('b', Nonce::SHORTEST))), StackName::of('The attic'), Address::of('https://192.168.1.43'), Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS))),
+    );
+}
+
+/**
+ * Every node of a frame, the frame's own first.
+ *
+ * @param array<mixed> $node
+ *
+ * @return list<array<mixed>>
+ */
+function nodesOfTheSettings(array $node): array
+{
+    $found = [$node];
+    $children = is_array($node['children'] ?? null) ? $node['children'] : [];
+
+    foreach ($children as $child) {
+        $found = [...$found, ...(is_array($child) ? nodesOfTheSettings($child) : [])];
+    }
+
+    return $found;
+}
+
+/**
+ * What the list to put in order carries, as the phone is handed it.
+ *
+ * @return array<mixed>
+ */
+function theOrderAsDrawn(HowThisPhoneIsSet $screen): array
+{
+    foreach (nodesOfTheSettings(WhatTheDeviceWouldDraw::tree($screen)) as $node) {
+        if (($node['type'] ?? null) === Reorderable::TYPE && is_array($node['props'] ?? null)) {
+            return $node['props'];
+        }
+    }
+
+    return [];
+}
+
+it('offers the stacks under Stack order in their order, with the moves a screen reader offers', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), stacks: theLoftAndTheAttic());
+    $drawn = theOrderAsDrawn($screen);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('settings.stacks'), __('settings.stack_order'))
+        ->and($drawn['names'] ?? null)->toBe(['The loft', 'The attic'])
+        ->and($drawn['move_up'] ?? null)->toBe([__('settings.move_up', ['name' => 'The loft']), __('settings.move_up', ['name' => 'The attic'])])
+        ->and($drawn['move_down'] ?? null)->toBe([__('settings.move_down', ['name' => 'The loft']), __('settings.move_down', ['name' => 'The attic'])])
+        ->and($drawn['keys'] ?? null)->toBe([str_repeat('a', Nonce::SHORTEST), str_repeat('b', Nonce::SHORTEST)]);
+});
+
+it('puts the stacks in the order the list sent, passing over a key that names no stack', function (): void {
+    $stacks = theLoftAndTheAttic();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), stacks: $stacks);
+
+    $screen->putStacksInOrder(Reorderable::sent(['', str_repeat('b', Nonce::SHORTEST), str_repeat('a', Nonce::SHORTEST)]));
+
+    expect(theOrderAsDrawn($screen)['names'] ?? null)->toBe(['The attic', 'The loft']);
 });

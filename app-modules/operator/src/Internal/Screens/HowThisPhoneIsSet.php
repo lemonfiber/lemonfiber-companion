@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use InvalidArgumentException;
+use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Health\Api\KeepingTheLastReading;
@@ -13,6 +15,8 @@ use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
@@ -52,11 +56,20 @@ final class HowThisPhoneIsSet extends NativeComponent
     /** Whether the operator is being asked whether to clear saved data. */
     public bool $confirmingTheClear = false;
 
+    /**
+     * The stacks as Stack order last drew them, read once rather than on every
+     * draw: reading the pairings is a trip to the platform's secure store.
+     *
+     * @var list<array{key: string, name: string}>|null
+     */
+    public ?array $stacksShown = null;
+
     public function __construct(
         private readonly LockingAfter $locking,
         private readonly SecureStorage $storage,
         private readonly KeepingTheLastReading $readings,
         private readonly ClearingWhatThePhoneKeeps $clearing,
+        private readonly Stacks $stacks,
     ) {}
 
     /** Whether the phone keeps nothing between launches, having nowhere safe to. */
@@ -158,12 +171,65 @@ final class HowThisPhoneIsSet extends NativeComponent
         $this->readingsKept = null;
     }
 
+    /**
+     * The stacks in the operator's order, as the list draws them: each one's
+     * key and its name.
+     *
+     * @return list<array{key: string, name: string}>
+     */
+    public function stacksInOrder(): array
+    {
+        if ($this->stacksShown !== null) {
+            return $this->stacksShown;
+        }
+
+        $this->stacksShown = [];
+
+        foreach ($this->stacks->configured() as $stack) {
+            $this->stacksShown[] = ['key' => $stack->id()->stored(), 'name' => $stack->name()->shown()];
+        }
+
+        return $this->stacksShown;
+    }
+
+    /**
+     * The operator put the stacks in a new order; every list follows it.
+     *
+     * An order that could not be kept leaves the one before in force, and the
+     * list draws that one again.
+     */
+    public function putStacksInOrder(string $sent): void
+    {
+        $order = [];
+
+        foreach (Reorderable::keysIn($sent) as $key) {
+            $order = [...$order, ...$this->stackNamed($key)];
+        }
+
+        $this->stacks->putInOrder(...$order);
+        $this->stacksShown = null;
+    }
+
     public function render(): View
     {
         return view('operator::how-this-phone-is-set');
     }
 
     /** Keep the operator's choice, which lets go of every reading older than it now. */
+    /**
+     * The stack a key names, or none where it is not one.
+     *
+     * @return list<StackId>
+     */
+    private function stackNamed(string $key): array
+    {
+        try {
+            return [StackId::rememberedAs($key)];
+        } catch (InvalidArgumentException) {
+            return [];
+        }
+    }
+
     private function keptFor(HowLongReadingsAreKept $kept): HowLongReadingsAreKept
     {
         $this->readingsKept = $this->readings->keepFor($kept);

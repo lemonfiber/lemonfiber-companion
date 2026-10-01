@@ -34,6 +34,7 @@ let package = Package(
                 "LocalNetworkFunctions.swift",
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
+                "ReorderableRenderer.swift",
             ]
         ),
         .testTarget(
@@ -95,6 +96,11 @@ let package = Package(
             name: "WhatTheOperatorSaidTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/WhatTheOperatorSaidTests"
+        ),
+        .testTarget(
+            name: "ReorderingTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ReorderingTests"
         ),
     ]
 )
