@@ -27,9 +27,6 @@
             :note="$this->answer()->offered === '' ? '' : __('stacks.itself.offered', ['version' => $this->answer()->offered])"
         />
     @endif
-    @if ($this->answer()->changed !== '')
-        <x-design::body>{{ $this->answer()->changed }}</x-design::body>
-    @endif
     @if ($this->answer()->untold !== '')
         <x-design::note>{{ $this->answer()->untold }}</x-design::note>
     @endif

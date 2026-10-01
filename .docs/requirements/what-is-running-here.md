@@ -21,8 +21,9 @@ requirement is right and this page is a defect.
 | `N14-R7` | A version or changelog that could not be read is told apart from being current | `WhereThisCopyStands::CheckFailed` is its own case, drawn with the stack's reason, and a reading this app cannot read is an obstacle, drawn as one. On the versions screen, `HowTheNotesStand` carries the record's own standing: `Pending` is drawn as notes not written yet and `Stale` as notes out of step, each with what that means, and `HowTheVersionsRead` draws the running release's notes only where the standing is `Current`. `SeeingWhichVersionsRunTest` holds both to never drawing the notes |
 | `N14-R8` | This surface is not used to update the services | The screen says so, and points nowhere that updates a service |
 
-Where a newer version is out, the screen draws it with what its release notes
-say it changed.
+Where a newer version is out, the screen names it and says what updating to it
+brings. Release notes are not drawn here: the running release's are drawn,
+grouped, on the versions screen.
 
 ## Versions
 

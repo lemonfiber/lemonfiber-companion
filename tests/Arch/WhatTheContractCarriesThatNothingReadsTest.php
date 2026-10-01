@@ -866,6 +866,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'version running and how it was installed (`N14-R1`), and a path adds nothing a phone can act on.',
     ],
     [
+        'path' => 'SelfUpdateEnvelope.changed',
+        'because' => 'The newest release\'s notes as its release page words them, in markdown. About names the '
+            . 'newer version and what updating to it brings (`N14-R5`); the running release\'s notes are drawn '
+            . 'grouped on the versions screen from the `changelog` block (`N14-R4`, `N14-R7`). Drawn here, this '
+            . 'text arrived as one unparsed run of markdown, longer than the screen could scroll past.',
+    ],
+    [
         'path' => 'SelfUpdateEnvelope.configuration',
         'because' => 'Whether a named version can read this machine\'s configuration. It is filled only where a '
             . 'version was asked for, and this app asks for none.',
