@@ -17,6 +17,10 @@ concurrency:
 
 env:
   PHP_VERSION: '8.5'
+  # The cache key a proven tree is recorded under, before the tree itself. The
+  # proof carries the coverage report that proved the tree, so a run that
+  # skips the suite on it still hands SonarCloud that tree's coverage.
+  PROVED_TREE: ci-proved-tree-with-coverage
   # What lets `composer install` reach `plugins.nativephp.com`.
   #
   # `nativephp/mobile-local-notifications` is a paid first-party plugin served
@@ -56,6 +60,7 @@ jobs:
     # `code` starts the PHP gates. The step below writes every one of them.
     outputs:
       tree: ${{ steps.tree.outputs.tree }}
+      proved: ${{ steps.proved.outputs.cache-hit }}
       code: ${{ steps.diff.outputs.code }}
       typecheck: ${{ steps.diff.outputs.typecheck }}
       kotlin: ${{ steps.diff.outputs.kotlin }}
@@ -71,17 +76,17 @@ jobs:
       # as it was — a stacked branch whose base was squash-merged, a base that
       # moved only where the branch already agreed — names the same tree. A
       # tree every gate already passed on is not tested again: the gates take
-      # the path a documentation change takes, and the SonarCloud gate reads
-      # that as a pass. The proof is recorded by `proved-tree` below, only once
-      # every gate passed on it, and a branch can read its own proofs and
-      # `main`'s, never another branch's.
+      # the path a documentation change takes, and SonarCloud reads the
+      # coverage report the proof carries. The proof is recorded by
+      # `proved-tree` below, only once every gate passed on it, and a branch can
+      # read its own proofs and `main`'s, never another branch's.
       - id: tree
         run: echo "tree=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
       - id: proved
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .ci-proved
-          key: ci-proved-tree-${{ steps.tree.outputs.tree }}
+          key: ${{ env.PROVED_TREE }}-${{ steps.tree.outputs.tree }}
           lookup-only: true
       - id: diff
         env:
@@ -645,15 +650,17 @@ jobs:
     # should not report a red tick that nobody can fix.
     #
     # It reads the report `tests` wrote rather than running the suite again.
-    # Where `tests` skipped because nothing but documentation changed, there is
-    # no report and no code for one to be about: on a pull request the scan
-    # runs without it, because `sonarcloud` is required there, and on `main`
-    # it skips, because an analysis of `main` without a report would set the
+    # Where `tests` skipped because every gate already passed on this tree, it
+    # reads the report that proved the tree, which the proof carries. Where
+    # `tests` skipped because nothing but documentation changed, there is no
+    # report and no code for one to be about: on a pull request the scan runs
+    # without it, because `sonarcloud` is required there, and on `main` it
+    # skips, because an analysis of `main` without a report would set the
     # project's coverage to nothing. Where `tests` failed, this skips: the pull
     # request is already blocked on `tests and coverage`, and a scan without
     # coverage would read every new line as untested.
-    needs: tests
-    if: ${{ !cancelled() && (needs.tests.result == 'success' || (needs.tests.result == 'skipped' && github.event_name != 'push')) && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    needs: [scope, tests]
+    if: ${{ !cancelled() && (needs.tests.result == 'success' || (needs.tests.result == 'skipped' && (github.event_name != 'push' || needs.scope.outputs.proved == 'true'))) && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -670,6 +677,22 @@ jobs:
         with:
           name: coverage-report
           path: coverage
+
+      # The same two reports, from the run that proved this tree. A proof is
+      # only ever written with them, so one that is missing is a failure here
+      # rather than a scan that reads every line as untested.
+      - name: The coverage and test report that proved this tree
+        if: needs.tests.result == 'skipped' && needs.scope.outputs.proved == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .ci-proved
+          key: ${{ env.PROVED_TREE }}-${{ needs.scope.outputs.tree }}
+          fail-on-cache-miss: true
+      - name: Where the scan reads the proof's report
+        if: needs.tests.result == 'skipped' && needs.scope.outputs.proved == 'true'
+        run: |
+          mkdir -p coverage
+          cp .ci-proved/coverage/clover.xml .ci-proved/coverage/junit.xml coverage/
 
       # A Dependabot run reads its secrets from the Dependabot store rather than
       # the Actions store, and `SONAR_TOKEN` lives only in the second. The
@@ -827,7 +850,13 @@ jobs:
         run: |
           mkdir -p .ci-proved
           printf '%s\n' "${TREE}" > .ci-proved/tree
+      # The coverage and test report that proved the tree, kept with the proof
+      # so a run that skips the suite on this tree hands SonarCloud the same.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: coverage-report
+          path: .ci-proved/coverage
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .ci-proved
-          key: ci-proved-tree-${{ needs.scope.outputs.tree }}
+          key: ${{ env.PROVED_TREE }}-${{ needs.scope.outputs.tree }}
