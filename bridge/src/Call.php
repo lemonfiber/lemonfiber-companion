@@ -156,6 +156,16 @@ enum Call: string
      */
     case LinkStatus = 'Lemonfiber.Link.Status';
 
+    /**
+     * Say whether the platform refuses this app the local network on the way to one address.
+     *
+     * Only the refusal is reported. The platform says why a path cannot be
+     * taken, and one reason of them is asked for: that this app has not been
+     * allowed onto the local network. Neither the address nor anything about
+     * the network goes into the answer or a log line.
+     */
+    case LocalNetworkProbe = 'Lemonfiber.LocalNetwork.Probe';
+
     case Zone = 'Lemonfiber.Clock.Zone';
 
     /**

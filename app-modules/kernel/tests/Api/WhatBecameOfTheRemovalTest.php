@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemovalSaysNothing;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
@@ -32,7 +33,7 @@ function whichArmTheRemovalTook(WhatBecameOfTheRemoval $became): string
         answered: static fn(ARemoval $removal): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('answered:%s', $removal->who()->name())),
         ended: static fn(): WhichArmTheRemovalTook => new WhichArmTheRemovalTook('ended'),
         refused: static fn(string $because): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheRemovalTook => new WhichArmTheRemovalTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -43,7 +44,7 @@ it('takes the arm it was made on, and carries what it was made with', function (
         ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::answered($removal)))->toBe('answered:Anna')
         ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::ended()))->toBe('ended')
         ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::refused('Nobody is called Anna here')))->toBe('refused:Nobody is called Anna here')
-        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whichArmTheRemovalTook(WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal with nothing said', function (): void {

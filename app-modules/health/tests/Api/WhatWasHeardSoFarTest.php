@@ -10,6 +10,7 @@ use function it;
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
@@ -50,7 +51,7 @@ function whatStoppedIt(WhatWasHeardSoFar $heard): string
 {
     return $heard->stoppedBy(
         nothing: static fn(): WhatTheScreenHolds => new WhatTheScreenHolds('nothing'),
-        met: static fn(Obstacle $why): WhatTheScreenHolds => new WhatTheScreenHolds($why->value),
+        met: static fn(Obstacle $why): WhatTheScreenHolds => new WhatTheScreenHolds($why->kind()->value),
     )->said;
 }
 
@@ -149,7 +150,7 @@ it('holds a summary from before a close as of when it arrived, and waits out the
 it('says what stopped a subscription, holds what came before it as not current, and waits out the break', function (): void {
     $heard = WhatWasHeardSoFar::nothingYet()
         ->after(WhatWasHeard::said(aSummaryThatSays(HowItStands::Critical)), secondsIn(0))
-        ->after(WhatWasHeard::met(Obstacle::StackDidNotAnswer), secondsIn(40));
+        ->after(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), secondsIn(40));
 
     expect(whatStoppedIt($heard))->toBe('no_answer')
         ->and(theSummaryHeld($heard))->toBe('critical as of 0')
@@ -161,7 +162,7 @@ it('says what stopped a subscription, holds what came before it as not current, 
 it('forgets what stopped it once a subscription opens again, and the old summary stays not current', function (): void {
     $heard = WhatWasHeardSoFar::nothingYet()
         ->after(WhatWasHeard::said(aSummaryThatSays(HowItStands::Broken)), secondsIn(0))
-        ->after(WhatWasHeard::met(Obstacle::StackDidNotAnswer), secondsIn(40))
+        ->after(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), secondsIn(40))
         ->after(WhatWasHeard::nothing(), secondsIn(50));
 
     expect(whatStoppedIt($heard))->toBe('nothing')
@@ -172,7 +173,7 @@ it('forgets what stopped it once a subscription opens again, and the old summary
 
 it('forgets what stopped it when the stream closes on its own', function (): void {
     $heard = WhatWasHeardSoFar::nothingYet()
-        ->after(WhatWasHeard::met(Obstacle::CredentialWasRefused), secondsIn(0))
+        ->after(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), secondsIn(0))
         ->after(WhatWasHeard::closed(), secondsIn(10));
 
     expect(whatStoppedIt($heard))->toBe('nothing')
@@ -203,7 +204,7 @@ it('holds nothing as current once nobody can see it, and opens again the moment 
 
 it('keeps what stopped it while nobody can see it', function (): void {
     $heard = WhatWasHeardSoFar::nothingYet()
-        ->after(WhatWasHeard::met(Obstacle::StackDidNotAnswer), secondsIn(0))
+        ->after(WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), secondsIn(0))
         ->wentAway();
 
     expect(whatStoppedIt($heard))->toBe('no_answer')

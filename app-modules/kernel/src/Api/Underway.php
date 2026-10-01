@@ -19,7 +19,7 @@ use Closure;
  * states of the world, and an operator is told which.
  *
  * **There is no third arm for *it refused the action itself*.** A stack that
- * answered and declined is `Obstacle::CredentialWasRefused` or a refusal
+ * answered and declined is `Obstacle::of(KindOfObstacle::CredentialWasRefused)` or a refusal
  * carried on the outcome — not a state between started and not started. Adding
  * one here would put a fourth screen between the operator and a yes they have
  * already given.

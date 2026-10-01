@@ -7,6 +7,7 @@ use Modules\Kernel\Api\ADeviceToWatchOn;
 use Modules\Kernel\Api\APossibleCause;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -154,11 +155,11 @@ it('advice with nothing listed says so, and says nothing strains playback by say
 });
 
 it('a stack that could not be asked is not advice with nothing in it', function (): void {
-    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::StackDidNotAnswer));
+    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $answer = $screen->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([
             $answer->devices, $answer->onlyAtHome, $answer->nothingIsInstalled, $answer->strainingPreset,
@@ -178,7 +179,7 @@ it('a session that has ended is not advice with nothing in it', function (): voi
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseAdviceIsRead()->id()))->toBeFalse();
@@ -197,7 +198,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('asking again asks the machine again', function (): void {
-    $advising = AStackThatAdvises::met(Obstacle::DeviceHasNoNetwork);
+    $advising = AStackThatAdvises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theAdviceScreen($advising);
 
     $screen->answer();
@@ -208,7 +209,7 @@ it('asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theAdviceScreen(AStackThatAdvises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

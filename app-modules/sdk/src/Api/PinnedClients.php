@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Sdk\Internal\WhatTheReachMet;
+use Throwable;
 
 /**
  * The one place in this application that opens a connection to a stack.
@@ -55,5 +58,11 @@ final readonly class PinnedClients implements Clients
             $session->forTheHeader(),
             $stack->presents()->forComparingByEye(),
         );
+    }
+
+    /** What the reach says by itself; {@see ClientsThatAskTheDevice} is what asks the device. */
+    public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
+    {
+        return WhatTheReachMet::byItself($why);
     }
 }

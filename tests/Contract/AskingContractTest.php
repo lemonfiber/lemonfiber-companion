@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -194,7 +195,7 @@ function whatItSaid(Asking $asking): string
         said: static fn(Report $report): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay(
             sprintf('%s with %d', $report->overall()->value, $report->findings()->count()),
         ),
-        met: static fn(Obstacle $why): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -217,7 +218,7 @@ it('an adapter answers a verdict it cannot build with an obstacle', function ():
         MockClient::destroyGlobal();
         MockClient::global([MockResponse::make((string) json_encode(aDegradedStackWhoseVerdictIs($verdict)))]);
 
-        expect(whatItSaid(new Questions(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+        expect(whatItSaid(new Questions(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 
@@ -237,14 +238,14 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
     // perfectly. Everything else is the machine, and the remedy is to go and
     // look at it.
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAsking($answered, $why) as $which => $make) {
-            expect(whatItSaid($make()))->toBe($why->value, sprintf('%s, %s', $which, $why->value));
+            expect(whatItSaid($make()))->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });

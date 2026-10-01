@@ -6,6 +6,7 @@ use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -158,9 +159,9 @@ it('N1-R10 — tells the three things the operator can meet at a door apart', fu
     // row is a different sentence and a different remedy, and only the first is
     // answered by typing the password again.
     $table = [
-        [Obstacle::CredentialWasRefused, HowTheSignInWent::CredentialWasRefused, true],
-        [Obstacle::TooManyAttempts, HowTheSignInWent::TooManyAttempts, false],
-        [Obstacle::StackDidNotAnswer, HowTheSignInWent::StackDidNotAnswer, false],
+        [Obstacle::of(KindOfObstacle::CredentialWasRefused), HowTheSignInWent::CredentialWasRefused, true],
+        [Obstacle::of(KindOfObstacle::TooManyAttempts), HowTheSignInWent::TooManyAttempts, false],
+        [Obstacle::of(KindOfObstacle::StackDidNotAnswer), HowTheSignInWent::StackDidNotAnswer, false],
     ];
 
     foreach ($table as [$met, $shown, $worthRetrying]) {
@@ -171,9 +172,9 @@ it('N1-R10 — tells the three things the operator can meet at a door apart', fu
 
         $screen->offer();
 
-        expect($screen->went())->toBe($shown, $met->value)
-            ->and($screen->went()->isWorthAnotherAttempt())->toBe($worthRetrying, $met->value)
-            ->and($screen->went())->not->toBe(HowTheSignInWent::SignedIn, $met->value);
+        expect($screen->went())->toBe($shown, $met->kind()->value)
+            ->and($screen->went()->isWorthAnotherAttempt())->toBe($worthRetrying, $met->kind()->value)
+            ->and($screen->went())->not->toBe(HowTheSignInWent::SignedIn, $met->kind()->value);
     }
 });
 
@@ -182,7 +183,7 @@ it('answers a device with no network as a stack that did not answer', function (
     // nothing about their password is known, and the thing to look at is the
     // machine and the network it is on.
     $screen = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::DeviceHasNoNetwork)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))),
         'the-operators-password',
     );
 
@@ -196,7 +197,7 @@ it('says a changed certificate is not the machine paired, and offers pairing it 
     // to. Checking the machine is on would send the operator to one that is
     // working; offering the password would send it to whatever is answering.
     $screen = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::StackIsNotTheOnePaired)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired))),
         'the-operators-password',
     );
 
@@ -216,7 +217,7 @@ it('says an address the stack does not listen on is refused, and offers pairing 
     // carried: the same password would be refused the same way, and what fixes
     // it is the address pairing again gives this app.
     $screen = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::AddressIsNotTheStacks)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::AddressIsNotTheStacks))),
         'the-operators-password',
     );
 
@@ -248,7 +249,7 @@ it('N4-R17 — a network the app is not allowed onto is not a stack that is off'
     // operator's hand. Folded in, somebody spends an afternoon on a stack that
     // is working perfectly.
     $screen = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::LocalNetworkIsNotPermitted)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))),
         'the-operators-password',
     );
 
@@ -351,12 +352,12 @@ it('N1-R10 — takes the kernel\'s judgement about what a button can help with',
     // set: some obstacles cannot arise from signing in at all. What
     // must hold is that where both have an opinion, it is the same one.
     foreach ([
-        Obstacle::CredentialWasRefused,
-        Obstacle::TooManyAttempts,
-        Obstacle::StackDidNotAnswer,
-        Obstacle::StackIsNotTheOnePaired,
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
+        Obstacle::of(KindOfObstacle::TooManyAttempts),
+        Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+        Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired),
     ] as $why) {
-        expect(HowTheSignInWent::met($why)->standing())->toBe($why->standing(), $why->value);
+        expect(HowTheSignInWent::met($why)->standing())->toBe($why->standing(), $why->kind()->value);
     }
 });
 
@@ -365,7 +366,7 @@ it('puts the screen back to asking once the operator has gone and acted', functi
     // leave the screen and navigate in again, which is the app making them do
     // its bookkeeping.
     $screen = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::StackDidNotAnswer)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
         'the-operators-password',
     );
 
@@ -394,7 +395,7 @@ it('offers the password field only where typing one could help, on the screen to
     expect($open->mayTry())->toBeTrue();
 
     $counting = typedPassword(
-        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::TooManyAttempts)),
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::TooManyAttempts))),
         'the-operators-password',
     );
     $counting->offer();
@@ -467,14 +468,14 @@ it('offers the way onwards only to somebody who actually got in', function (): v
     // offers no password field either, and offering to show a report to
     // somebody who never got in would be the screen answering a question
     // nobody asked.
-    foreach ([Obstacle::CredentialWasRefused, Obstacle::TooManyAttempts, Obstacle::StackDidNotAnswer] as $met) {
+    foreach ([Obstacle::of(KindOfObstacle::CredentialWasRefused), Obstacle::of(KindOfObstacle::TooManyAttempts), Obstacle::of(KindOfObstacle::StackDidNotAnswer)] as $met) {
         $screen = typedPassword(
             signInScreen(ADoorThatWasKnockedOn::refusing($met)),
             'the-operators-password',
         );
         $screen->offer();
 
-        expect($screen->isSignedIn())->toBeFalse($met->value);
+        expect($screen->isSignedIn())->toBeFalse($met->kind()->value);
     }
 });
 

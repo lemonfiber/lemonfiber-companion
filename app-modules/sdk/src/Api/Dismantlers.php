@@ -18,7 +18,6 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RoomSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -32,6 +31,7 @@ use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack what taking lemonfiber off would come to, and to do it.
@@ -65,8 +65,8 @@ final readonly class Dismantlers implements TakingLemonfiberOff
             return WhatWasFoundOfTheUninstall::found(Uninstalls::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheUninstall::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing) {
-            return WhatWasFoundOfTheUninstall::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing $why) {
+            return WhatWasFoundOfTheUninstall::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -85,8 +85,8 @@ final readonly class Dismantlers implements TakingLemonfiberOff
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheUninstall::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -96,8 +96,8 @@ final readonly class Dismantlers implements TakingLemonfiberOff
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing) {
-            return WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing $why) {
+            return WhatBecameOfTheUninstall::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -131,8 +131,8 @@ final readonly class Dismantlers implements TakingLemonfiberOff
     {
         try {
             return WhatBecameOfTheUninstall::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheUninstall::met(WhatTheReachMet::byItself($why));
         }
     }
 

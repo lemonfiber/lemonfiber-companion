@@ -18,7 +18,6 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemovalSaysNothing;
 use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\Session;
@@ -28,6 +27,7 @@ use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack to take somebody out of the household.
@@ -59,8 +59,8 @@ final readonly class Removers implements RemovingSomebody
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheRemoval::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -77,8 +77,8 @@ final readonly class Removers implements RemovingSomebody
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheRemoval::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -88,8 +88,8 @@ final readonly class Removers implements RemovingSomebody
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RemovalIsUnreadable|RemovalSaysNothing) {
-            return WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RemovalIsUnreadable|RemovalSaysNothing $why) {
+            return WhatBecameOfTheRemoval::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -123,8 +123,8 @@ final readonly class Removers implements RemovingSomebody
     {
         try {
             return WhatBecameOfTheRemoval::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheRemoval::met(WhatTheReachMet::byItself($why));
         }
     }
 

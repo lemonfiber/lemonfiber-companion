@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Cataloguing;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheCatalogueSaid;
@@ -54,8 +53,8 @@ final readonly class Cataloguers implements Cataloguing
                 refused: WhatTheCatalogueSaid::refused(...),
                 met: WhatTheCatalogueSaid::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|CatalogueIsUnreadable) {
-            return WhatTheCatalogueSaid::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|CatalogueIsUnreadable $why) {
+            return WhatTheCatalogueSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

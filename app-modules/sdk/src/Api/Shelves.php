@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\HoldingIsUnnamed;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SentenceSaysNothing;
 use Modules\Kernel\Api\Session;
@@ -44,7 +45,7 @@ final readonly class Shelves implements Watching
     {
         return $whose->either(
             operator: static fn(): WhatTheyMayWatch
-                => WhatTheyMayWatch::refused(Obstacle::NotForThisAccount),
+                => WhatTheyMayWatch::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
             member: fn(string $member): WhatTheyMayWatch => $this->read($stack, $session, $member),
         );
     }
@@ -64,8 +65,8 @@ final readonly class Shelves implements Watching
             return Holdings::in($envelope);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyMayWatch::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ShelfIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing) {
-            return WhatTheyMayWatch::refused(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ShelfIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing $why) {
+            return WhatTheyMayWatch::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

@@ -6,10 +6,12 @@ namespace Modules\Dx\Api;
 
 use Lemonfiber\Sdk\Client;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\PinnedClients;
+use Throwable;
 
 /**
  * A client for a stack that is not running, built out of the real one.
@@ -78,5 +80,16 @@ final readonly class ClientsThatReachNothing implements Clients
         );
 
         return $client;
+    }
+
+    /**
+     * What the reach says by itself, never what the phone says.
+     *
+     * The machine stood in for is not on any network, so the phone's network
+     * and its local-network permission have nothing to say about it.
+     */
+    public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
+    {
+        return $this->pinned->whatStoodInTheWay($stack, $why);
     }
 }

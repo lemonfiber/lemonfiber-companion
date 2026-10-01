@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowLettingItGoIsGoing;
 use Modules\Kernel\Api\HowTheOfferToLetGoIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -134,7 +135,7 @@ function howAskingWhatItCostsWent(StoppingSeeding $stopping): string
 {
     return $stopping->whatItWouldCost(aStackThatSeeds(), Session::of('a-session-not-a-secret'), ADownloadHeld::named('Show.Season1'))->either(
         started: static fn(Job $job): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->name),
+        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
     )->said;
 }
 
@@ -153,7 +154,7 @@ function whatTheOfferToLetGoSaid(StoppingSeeding $stopping): string
             $offer->agreement(),
         )),
         ended: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('ended'),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->name),
+        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
     )->said;
 }
 
@@ -162,7 +163,7 @@ function howStoppingSeedingWasAgreed(StoppingSeeding $stopping): string
 {
     return $stopping->stop(aStackThatSeeds(), Session::of('a-session-not-a-secret'), theSameOfferToLetGo())->either(
         started: static fn(Job $job): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->name),
+        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
     )->said;
 }
 
@@ -178,7 +179,7 @@ function whatBecameOfLettingItGo(StoppingSeeding $stopping): string
             $gone->wasRehearsed()->value,
         )),
         ended: static fn(): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid('ended'),
-        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->name),
+        met: static fn(Obstacle $why): WhatStoppingSeedingSaid => new WhatStoppingSeedingSaid($why->kind()->name),
     )->said;
 }
 
@@ -196,15 +197,15 @@ it('comes away from asking what it would cost with the job the stack named', fun
 
 it('comes away from asking with the obstacle rather than a job where the stack would not take it on', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"nothing holds it"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [aStopTakenOn(' '), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
-        expect(howAskingWhatItCostsWent(aReleaserAnswered($answered)))->toBe($why->name)
-            ->and(howAskingWhatItCostsWent(AStackThatStopsSeeding::met($why)))->toBe($why->name);
+        expect(howAskingWhatItCostsWent(aReleaserAnswered($answered)))->toBe($why->kind()->name)
+            ->and(howAskingWhatItCostsWent(AStackThatStopsSeeding::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -241,7 +242,7 @@ it('reads an offer that leaves the cost out altogether as saying nothing', funct
 
 it('an offer this app cannot read is a stack that did not answer, never a shorter offer', function (array $download, array $changed): void {
     expect(whatTheOfferToLetGoSaid(aReleaserAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfLettingItGo($download, $changed))))))
-        ->toBe(Obstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'a blank agreement' => [[], ['agreement' => ' ']],
     'no agreement' => [[], ['agreement' => null]],
@@ -258,7 +259,7 @@ it('an offer this app cannot read is a stack that did not answer, never a shorte
 
 it('an answer that is not an offer at all is a stack that did not answer', function (): void {
     expect(whatTheOfferToLetGoSaid(aReleaserAnswered(MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'stop-seeding', 'data' => 'nothing'])))))
-        ->toBe(Obstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('an offer still being worked out is its own answer', function (): void {
@@ -278,14 +279,14 @@ it('an offer the stack no longer has a job for is ended, not unreachable and not
 
 it('asking after an offer tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"nothing holds it"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfStoppingSeeding($answered, HowTheOfferToLetGoIsGoing::met($why), HowLettingItGoIsGoing::met($why)) as $which => $build) {
-            expect(whatTheOfferToLetGoSaid($build()))->toBe($why->name, $which);
+            expect(whatTheOfferToLetGoSaid($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -298,15 +299,15 @@ it('comes away from a yes with the job the stack named', function (): void {
 
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"another offer"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [aStopTakenOn(' '), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"another offer"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
-        expect(howStoppingSeedingWasAgreed(aReleaserAnswered($answered)))->toBe($why->name)
-            ->and(howStoppingSeedingWasAgreed(AStackThatStopsSeeding::offeringButRefusing(theSameOfferToLetGo(), $why)))->toBe($why->name);
+        expect(howStoppingSeedingWasAgreed(aReleaserAnswered($answered)))->toBe($why->kind()->name)
+            ->and(howStoppingSeedingWasAgreed(AStackThatStopsSeeding::offeringButRefusing(theSameOfferToLetGo(), $why)))->toBe($why->kind()->name);
     }
 });
 
@@ -324,7 +325,7 @@ it('reads what became of the download, and whether it was only rehearsed', funct
 
 it('a finished yes that does not say what became of the download is a stack that did not answer', function (?array $gone): void {
     expect(whatBecameOfLettingItGo(aReleaserAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfLettingItGo(gone: $gone))))))
-        ->toBe(Obstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'said as nothing' => [null],
     'without saying whether it was rehearsed' => [['bytes' => 4_000, 'name' => 'Show.Season1']],
@@ -350,14 +351,14 @@ it('stopping the stack no longer has a job for is ended, not unreachable and not
 
 it('asking after stopping tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"still held"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"still held"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfStoppingSeeding($answered, HowTheOfferToLetGoIsGoing::met($why), HowLettingItGoIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfLettingItGo($build()))->toBe($why->name, $which);
+            expect(whatBecameOfLettingItGo($build()))->toBe($why->kind()->name, $which);
         }
     }
 });

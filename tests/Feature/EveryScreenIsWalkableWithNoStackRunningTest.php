@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
-use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
@@ -153,7 +153,7 @@ function whatNoAnswerLooksLike(): array
     return [
         theSignedOutSentence(),
         theExpiredSentence(),
-        whateverTheCatalogueSays(Obstacle::StackDidNotAnswer->said()),
+        whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said()),
     ];
 }
 
@@ -326,7 +326,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
             continue;
         }
 
-        $met = in_array(whateverTheCatalogueSays(Obstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
+        $met = in_array(whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
 
         // An obstacle never takes the action away. A screen that
         // reported the failure and offered nothing leaves an operator whose

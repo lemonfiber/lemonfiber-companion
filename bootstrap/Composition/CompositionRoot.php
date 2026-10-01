@@ -20,6 +20,7 @@ use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
 use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Link as TheLink;
+use Lemonfiber\Native\LocalNetwork as TheLocalNetworkProbe;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
@@ -29,6 +30,7 @@ use Modules\Connection\Api\TheLock;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Device\Api\PlatformAuth;
+use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScanner;
@@ -103,6 +105,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
+use Modules\Kernel\Api\TheLocalNetwork;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WalkingThrough;
@@ -120,6 +123,7 @@ use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\ClientsThatAskTheDevice;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
@@ -140,7 +144,6 @@ use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Pairers;
-use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
@@ -254,7 +257,10 @@ final class CompositionRoot extends ServiceProvider
         // `modules/sdk` is the only manifest that requires the SDK, and
         // `NothingReachesAStackUnpinnedTest` refuses any other file that names
         // its transport. This line is where those two facts meet the container.
-        $this->app->bind(Clients::class, PinnedClients::class);
+        //
+        // Over the phone's own answers about its network, so that a stack that
+        // went silent is told apart from a phone that has no way to it.
+        $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
 
         // The kernel's name for the same thing, so a capability can say *a way
         // to reach a stack* without naming the SDK (`A7`). One binding rather
@@ -594,6 +600,11 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Networking::class,
             static fn(): Networking => new PlatformNetwork(new TheLink()),
+        );
+
+        $this->app->bind(
+            TheLocalNetwork::class,
+            static fn(): TheLocalNetwork => new PlatformLocalNetwork(new TheLocalNetworkProbe()),
         );
 
         // Which zone the phone's clock is set to, asked each time rather than

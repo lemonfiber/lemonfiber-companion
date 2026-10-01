@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
@@ -139,11 +140,11 @@ it('a stack holding no credentials says there are none', function (): void {
 });
 
 it('a stack that could not be asked is not a stack holding none', function (): void {
-    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::StackDidNotAnswer));
+    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $answer = $screen->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([$answer->held, $answer->summary, $answer->against, $answer->notAgainst])->toBe([[], '', [], []])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('stacks.credentials.none'));
@@ -160,7 +161,7 @@ it('a session that has ended is not a stack holding none', function (): void {
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseCredentialsAreRead()->id()))->toBeFalse();
@@ -179,7 +180,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('asking again asks the machine again', function (): void {
-    $safekeeping = AStackThatHoldsCredentials::met(Obstacle::DeviceHasNoNetwork);
+    $safekeeping = AStackThatHoldsCredentials::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theCredentialsScreen($safekeeping);
 
     $screen->answer();
@@ -190,7 +191,7 @@ it('asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theCredentialsScreen(AStackThatHoldsCredentials::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

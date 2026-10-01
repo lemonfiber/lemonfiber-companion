@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Obstacle;
@@ -79,7 +80,7 @@ final readonly class Opening
             // belongs to the screen.
             return $this->network->isConnected()
                 ? Launch::ready($stack->id())
-                : Launch::blockedBy(Obstacle::DeviceHasNoNetwork);
+                : Launch::blockedBy(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
         }
 
         // No stack paired, which is a first run rather than a fault.

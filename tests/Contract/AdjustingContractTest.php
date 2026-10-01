@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
@@ -196,7 +197,7 @@ function howAChangeReadsAsText(Adjusting $adjusting, bool $agreeing = false): st
                 )),
             )->said),
         refused: static fn(Obstacle $why): WhatAChangeCameBackAs
-            => new WhatAChangeCameBackAs(sprintf('refused:%s', $why->value)),
+            => new WhatAChangeCameBackAs(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -218,7 +219,7 @@ it('the fake and the adapter both refuse rather than answer with nothing', funct
     MockClient::global([MockResponse::make(['nothing' => 'the contract knows'], 500)]);
 
     expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer')
-        ->and(howAChangeReadsAsText(AStackToldToChangeSomething::met(Obstacle::StackDidNotAnswer)))
+        ->and(howAChangeReadsAsText(AStackToldToChangeSomething::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toBe('refused:no_answer');
 });
 

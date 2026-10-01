@@ -7,6 +7,7 @@ use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Kernel\Api\AFormatInForce;
 use Modules\Kernel\Api\APresetInForce;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OneKindUpgraded;
@@ -390,13 +391,13 @@ it('offers no second yes once an upgrade was carried out', function (): void {
 });
 
 it('says what stood in the way of an upgrade, and what to do, inside the screen', function (): void {
-    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)), AStackThatUpgrades::met(Obstacle::StackDidNotAnswer));
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)), AStackThatUpgrades::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     $screen->describe();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()))
-        ->and($drawn)->toContain(__(Obstacle::StackDidNotAnswer->remedy()))
+    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()))
         ->and($drawn)->toContain('Balanced')
         ->and([$screen->upgrading?->kinds, $screen->upgrading?->headingSaid, $screen->upgrading?->went->cameBack()])->toBe([[], '', false])
         ->and($screen->mayUpgrade())->toBeFalse();
@@ -404,7 +405,7 @@ it('says what stood in the way of an upgrade, and what to do, inside the screen'
 
 it('reads an upgrade whose credential was refused as a session that ended, and lets it go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)), AStackThatUpgrades::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)), AStackThatUpgrades::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     $screen->describe();
 
@@ -424,19 +425,19 @@ it('asks nothing about an upgrade once the session has ended', function (): void
 });
 
 it('says what stood in the way of a choice rather than that it was not made', function (): void {
-    $choosing = AStackThatChoosesQuality::met(Obstacle::StackDidNotAnswer);
+    $choosing = AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'maximum');
 
     $screen->choose();
 
-    expect($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->answer()->becameSaid)->toBe('')
         ->and($screen->mayConfirm())->toBeFalse();
 });
 
 it('lets the session go when a choice is refused on the credential', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::CredentialWasRefused), keychain: $keychain), 'maximum');
+    $screen = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain), 'maximum');
 
     $screen->choose();
 
@@ -455,11 +456,11 @@ it('asks nothing when choosing once the session has ended', function (): void {
 });
 
 it('a stack that could not be asked is not a stack with nothing chosen', function (): void {
-    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::StackDidNotAnswer));
+    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $answer = $screen->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and([$answer->presets, $answer->music->format, $answer->becameSaid, $answer->heldBecause, $answer->customised])
         ->toBe([[], '', '', [], false])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('quality.no_presets'));
@@ -467,7 +468,7 @@ it('a stack that could not be asked is not a stack with nothing chosen', functio
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseQualityIsDrawn()->id()))->toBeFalse();
@@ -504,21 +505,21 @@ it('asks the machine once a frame, and again when asked to, forgetting every yes
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('the way here and the way back are routes', function (): void {
-    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
         ->and(NativeRouter::resolve(TheMenu::Quality->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view, with what was typed', function (): void {
-    $view = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::DeviceHasNoNetwork)), 'maximum', 'movies')->render();
+    $view = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))), 'maximum', 'movies')->render();
 
     expect($view->name())->toBe('operator::choosing-how-good')
         ->and([$view->getData()['preset'] ?? null, $view->getData()['kind'] ?? null])->toBe(['maximum', 'movies']);

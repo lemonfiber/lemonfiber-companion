@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWouldBeUpdated;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowThisCopyGotThere;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SelfChecking;
@@ -129,7 +130,7 @@ function everythingTheCopySays(SelfChecking $checking): string
             $copy->brings()->carries(),
             $copy->brings()->afterwards(),
         )),
-        met: static fn(Obstacle $why): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -146,14 +147,14 @@ it('comes away with how it was installed, the command that would update it, and 
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingAboutItself($answered, $why) as $which => $make) {
-            expect(everythingTheCopySays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheCopySays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -162,7 +163,7 @@ it('an installation this app cannot read is an obstacle, never one lemonfiber ca
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItself('snap')))]);
 
-    expect(everythingTheCopySays(new Inspectors(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheCopySays(new Inspectors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the update endpoint about the running copy, and nothing else', function (): void {

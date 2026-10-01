@@ -14,6 +14,7 @@ use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhichEnvelopeAnEndpointAnswersWith;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -214,8 +215,8 @@ it('N1-R10 — a machine that is not answering reaches the obstacle for it', fun
     }
 
     expect($met[AStandInStack::Answering->value])->toBeNull()
-        ->and($met[AStandInStack::NotAnswering->value])->toBe(Obstacle::StackDidNotAnswer)
-        ->and($met[AStandInStack::RefusingTheSession->value])->toBe(Obstacle::CredentialWasRefused);
+        ->and($met[AStandInStack::NotAnswering->value])->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer))
+        ->and($met[AStandInStack::RefusingTheSession->value])->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused));
 });
 
 it('finds endpoints to ask about', function (): void {

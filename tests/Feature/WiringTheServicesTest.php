@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -147,13 +148,13 @@ it('says so where the machine runs nothing to wire', function (): void {
 });
 
 it('a machine that does not answer what it runs draws what stood in the way, and asks again for both', function (): void {
-    $supervising = AStackThatSupervises::met(Obstacle::StackDidNotAnswer);
+    $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')));
     $screen = theWiringScreen($wiring, supervising: $supervising);
     $screen->wire();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+    expect($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toBe([__('health.ask_again')]);
 
     $screen->again();
@@ -167,7 +168,7 @@ it('a machine that does not answer what it runs draws what stood in the way, and
 it('a session the stack refuses on opening signs this device out before anything is wired', function (): void {
     $keychain = AKeychainInMemory::working();
     $wiring = AStackThatWires::answering();
-    $screen = theWiringScreen($wiring, keychain: $keychain, supervising: AStackThatSupervises::met(Obstacle::CredentialWasRefused));
+    $screen = theWiringScreen($wiring, keychain: $keychain, supervising: AStackThatSupervises::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
         ->and($keychain->isHolding(theStackWhoseServicesAreWired()->id()))->toBeFalse()
@@ -339,12 +340,12 @@ it('starts a second run afresh, letting go of the one it followed', function ():
 });
 
 it('a run the stack could not be reached for is an obstacle that can be asked again', function (): void {
-    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer), WhatBecameOfTheWiring::underway(Job::named('j-1')));
+    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWiring::underway(Job::named('j-1')));
     $screen = theScreenAfterWiring($wiring);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howItIsGoing()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+    expect($screen->howItIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
     $screen->again();
@@ -382,7 +383,7 @@ it('asking again before anything was drawn reads the services, and starts nothin
 });
 
 it('asking again lets go of an obstacle met starting a run, and does not start one', function (): void {
-    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer));
+    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $screen = theWiringScreen($wiring);
     $screen->wire();
 
@@ -397,7 +398,7 @@ it('asking again lets go of an obstacle met starting a run, and does not start o
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theWiringScreen(AStackThatWires::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theWiringScreen(AStackThatWires::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
     $screen->wire();
 
     expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()

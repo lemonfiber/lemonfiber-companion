@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -139,7 +141,7 @@ function everyDoor(MockResponse $answered, ?Obstacle $why = null): array
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Admissions(new PinnedDoors());
+            return new Admissions(new PinnedDoors(), new PinnedClients());
         },
     ];
 }
@@ -164,7 +166,7 @@ function whatHappenedAt(Admitting $door, ?Credential $said = null): string
             opened: static fn(Session $session, Instant $until): WhatTheDoorDid => new WhatTheDoorDid(
                 sprintf('opened %s until %d', $session->forTheHeader(), $until->epochSeconds()),
             ),
-            refused: static fn(Obstacle $why): WhatTheDoorDid => new WhatTheDoorDid($why->value),
+            refused: static fn(Obstacle $why): WhatTheDoorDid => new WhatTheDoorDid($why->kind()->value),
         )->said;
 }
 
@@ -181,18 +183,18 @@ it('N1-R10 — tells a refused password from a door that has stopped listening',
     // answered by trying again, and a stack that is not answering is not — and
     // where the door is counting attempts, trying again extends the wait.
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"wait"}', 429), Obstacle::TooManyAttempts],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"wait"}', 429), Obstacle::of(KindOfObstacle::TooManyAttempts)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make()->throw(static fn(): Unreachable
-            => Unreachable::whenAsking('/api/session', 'Connection refused')), Obstacle::StackDidNotAnswer],
+            => Unreachable::whenAsking('/api/session', 'Connection refused')), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make()->throw(static fn(): CertificateWasRefused
-            => CertificateWasRefused::whenAsking('/api/session', str_repeat('c', 64), str_repeat('b', 64))), Obstacle::StackIsNotTheOnePaired],
+            => CertificateWasRefused::whenAsking('/api/session', str_repeat('c', 64), str_repeat('b', 64))), Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyDoor($answered, $why) as $which => $make) {
-            expect(whatHappenedAt($make()))->toBe($why->value, sprintf('%s, %s', $which, $why->value));
+            expect(whatHappenedAt($make()))->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });

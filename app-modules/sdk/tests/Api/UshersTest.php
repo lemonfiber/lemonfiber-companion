@@ -108,7 +108,7 @@ function whereItGot(WhatBecameOfTheInvitation $became): string
         answered: static fn(AnInvitation $invitation): WhereTheUshersGot => new WhereTheUshersGot(sprintf('answered:%s:%s', $invitation->toHand()->name(), $invitation->standing()->value)),
         ended: static fn(): WhereTheUshersGot => new WhereTheUshersGot('ended'),
         refused: static fn(string $because): WhereTheUshersGot => new WhereTheUshersGot(sprintf('refused:%s', $because)),
-        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->name)),
+        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
     )->said;
 }
 
@@ -286,7 +286,7 @@ it('hands on the stack\'s own sentence where it refuses the asking or the naming
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'invitation', 'data' => []]), 202), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode(['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
+        [MockResponse::make((string) json_encode(['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']]), 202), 'met:VersionsDisagree'],
         [nothingAnswering(), 'met:StackDidNotAnswer'],
     ];
 
@@ -357,7 +357,7 @@ it('reads who is in off the household the operator\'s requests are read from, an
 
                 return new WhereTheUshersGot(implode(',', $names));
             },
-            met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->name)),
+            met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
         )->said;
 
         expect($said)->toBe($expected, $expected)
@@ -374,7 +374,7 @@ it('answers work it cannot ask after, and a household it cannot read, as a stack
     $followed = whereItGot(theUshersAnswering(nothingAnswering())->whatBecameOf($stack, $session, Job::named('j-1')));
     $read = theUshersAnswering(nothingAnswering())->whoIsIn($stack, $session)->either(
         found: static fn(TheMembers $members): WhereTheUshersGot => new WhereTheUshersGot(sprintf('found:%d', $members->count())),
-        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->name)),
+        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->kind()->name)),
     )->said;
 
     expect($followed)->toBe('met:StackDidNotAnswer')

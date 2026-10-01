@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ASeriesCounted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchOfASeasonIsHere;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -77,7 +78,7 @@ function everythingTheTraceSays(Tracing $tracing): string
             nothingAskedFor: static fn(): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay('nothing asked for'),
             followed: static fn(WhatTheTraceFound $found): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay(whatWasFound($found)),
         )->said)),
-        met: static fn(Obstacle $why): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheTraceTurnedOutToSay => new WhatTheTraceTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -156,14 +157,14 @@ it('reads nothing asked for as an answer of its own, on both', function (): void
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfFollowingAnItem($answered, TracesToFollow::aSeriesStuckDownloading(), $why) as $which => $make) {
-            expect(everythingTheTraceSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheTraceSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -175,7 +176,7 @@ it('a trace this app cannot read is an obstacle, never a trace half-drawn', func
         'coverage' => ['have' => 12, 'wanted' => 10, 'unmonitored' => 0, 'seasons' => []],
     ]]))]);
 
-    expect(everythingTheTraceSays(new Followers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheTraceSays(new Followers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the trace endpoint, naming what to follow', function (): void {

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HowFarItGot;
 use Modules\Kernel\Api\HowMuchOfASeasonIsHere;
 use Modules\Kernel\Api\HowMuchOfItIsHere;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stage;
@@ -148,9 +149,9 @@ it('names a catalogue key for every case', function (): void {
 it('takes the arm for what came back', function (): void {
     $fold = static fn(WhatWasFoundOfTheTrace $answer): string => $answer->either(
         found: static fn(WhereItGotTo $trace): WhichTraceArm => new WhichTraceArm(sprintf('found:%s', $trace->item())),
-        met: static fn(Obstacle $why): WhichTraceArm => new WhichTraceArm(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichTraceArm => new WhichTraceArm(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheTrace::found(WhereItGotTo::nothingAskedFor('Dune'))))->toBe('found:Dune')
-        ->and($fold(WhatWasFoundOfTheTrace::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasFoundOfTheTrace::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

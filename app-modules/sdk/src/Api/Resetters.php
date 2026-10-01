@@ -20,7 +20,6 @@ use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -67,8 +66,8 @@ final readonly class Resetters implements ResettingTheConfiguration
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -84,8 +83,8 @@ final readonly class Resetters implements ResettingTheConfiguration
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -99,8 +98,8 @@ final readonly class Resetters implements ResettingTheConfiguration
                 refused: HowTheResetIsGoing::refused(...),
                 met: HowTheResetIsGoing::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ResetIsUnreadable|ARevertCannotBeShown) {
-            return HowTheResetIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ResetIsUnreadable|ARevertCannotBeShown $why) {
+            return HowTheResetIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

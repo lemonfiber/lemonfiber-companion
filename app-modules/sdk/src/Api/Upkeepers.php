@@ -17,7 +17,6 @@ use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\KeepingCurrent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -60,8 +59,8 @@ final readonly class Upkeepers implements KeepingCurrent
             return WhatIsCurrent::stands(Standings::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsCurrent::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
-            return WhatIsCurrent::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed $why) {
+            return WhatIsCurrent::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -81,8 +80,8 @@ final readonly class Upkeepers implements KeepingCurrent
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -92,8 +91,8 @@ final readonly class Upkeepers implements KeepingCurrent
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheUpdateIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
-            return HowTheUpdateIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed $why) {
+            return HowTheUpdateIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

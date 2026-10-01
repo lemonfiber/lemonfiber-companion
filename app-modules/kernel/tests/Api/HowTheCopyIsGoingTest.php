@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\HowACopyPaced;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\TheCopies;
@@ -31,7 +32,7 @@ function howTheCopyIsGoingReads(HowTheCopyIsGoing $going): string
         stillRunning: static fn(): WhichArmTheCopyTook => new WhichArmTheCopyTook('running'),
         done: static fn(ACopyTaken $report): WhichArmTheCopyTook => new WhichArmTheCopyTook(sprintf('done:%d', $report->pace()->moved())),
         ended: static fn(): WhichArmTheCopyTook => new WhichArmTheCopyTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheCopyTook => new WhichArmTheCopyTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheCopyTook => new WhichArmTheCopyTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -47,5 +48,5 @@ it('takes the arm for each state, and carries the report and the obstacle', func
     expect(howTheCopyIsGoingReads(HowTheCopyIsGoing::stillRunning()))->toBe('running')
         ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::done($report)))->toBe('done:42')
         ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::ended()))->toBe('ended')
-        ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

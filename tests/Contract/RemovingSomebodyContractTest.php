@@ -8,6 +8,7 @@ use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemovingSomebody;
@@ -150,7 +151,7 @@ function everythingTheRemovalSays(WhatBecameOfTheRemoval $became): string
         },
         ended: static fn(): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo('ended'),
         refused: static fn(string $because): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo($why->value),
+        met: static fn(Obstacle $why): WhatTakingThemOutCameTo => new WhatTakingThemOutCameTo($why->kind()->value),
     )->said;
 }
 
@@ -215,11 +216,11 @@ it('sends the name alone for the cost, and the name with a yes and a key for the
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         // A fault on the stack's side, even one with a sentence, is not its refusal.
-        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -230,7 +231,7 @@ it('tells a session that has ended from a stack that is not answering', function
 
         foreach ($ways as $which => $make) {
             expect(everythingTheRemovalSays($make()->wouldRemove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), SomebodyInTheHousehold::called('anna'))))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -259,14 +260,14 @@ it('hands on a refusal in the stack\'s own words, whenever it arrives', function
 });
 
 it('says the stack did not answer where a refusal carries no sentence, or the stack itself failed', function (): void {
-    $silent = MockResponse::make('', 409, ['Content-Type' => 'text/plain']);
+    $silent = MockResponse::make('', 422, ['Content-Type' => 'text/plain']);
     $failed = MockResponse::make('It broke', 503, ['Content-Type' => 'text/plain']);
     $removing = everyWayOfTakingSomebodyOut($silent, $failed)['the adapter']();
 
     expect(everythingTheRemovalSays($removing->wouldRemove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), SomebodyInTheHousehold::called('anna'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value)
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value)
         ->and(everythingTheRemovalSays($removing->wouldRemove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), SomebodyInTheHousehold::called('anna'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('says the stack has no outcome for work it no longer knows', function (): void {
@@ -295,7 +296,7 @@ it('refuses a removal whose reach is a word this app has no case for', function 
     $removing = everyWayOfTakingSomebodyOut(MockResponse::make((string) json_encode($body)))['the adapter']();
 
     expect(everythingTheRemovalSays($removing->whatBecameOf(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), Job::named('j-1'))))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

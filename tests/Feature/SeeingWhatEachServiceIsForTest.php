@@ -7,6 +7,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -139,11 +140,11 @@ it('says a stack that declares nothing and has dropped nothing does, which is an
 });
 
 it('a stack that could not be asked is not a stack that declares nothing', function (): void {
-    $screen = theCatalogueScreen(AStackThatCatalogues::met(Obstacle::StackDidNotAnswer));
+    $screen = theCatalogueScreen(AStackThatCatalogues::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $said = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->answer()->went->cameBack())->toBeFalse()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->answer()->services)->toBe([])
         ->and($screen->answer()->dropped)->toBe([])
         ->and($said)->not->toContain(__('stacks.catalogue.nothing_declared'));
@@ -158,7 +159,7 @@ it('says a stack that cannot read its own description in its words, apart from o
     $keychain = AKeychainInMemory::working();
     $screen = theCatalogueScreen(AStackThatCatalogues::refusing($why), $keychain);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
-    $unreachable = WhatTheDeviceWouldDraw::by(theCatalogueScreen(AStackThatCatalogues::met(Obstacle::StackDidNotAnswer)));
+    $unreachable = WhatTheDeviceWouldDraw::by(theCatalogueScreen(AStackThatCatalogues::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
 
     expect($screen->answer()->went->cameBack())->toBeTrue()
         ->and($screen->answer()->refused?->said)->toBe('This stack file could not be read')
@@ -170,7 +171,7 @@ it('says a stack that cannot read its own description in its words, apart from o
         ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => 'expected `=`, found newline at line 3 column 9']))
         ->and($drawn->said())->toContain(__('stacks.catalogue.same_answer'))
         ->and($drawn->said())->not->toContain(__('stacks.catalogue.nothing_declared'))
-        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
         ->and($unreachable->said())->not->toContain(__('stacks.catalogue.refused'))
         ->and($unreachable->offers())->toContain(__('health.ask_again'))
@@ -189,7 +190,7 @@ it('asks for a session where this device holds none, and asks the stack nothing'
 
 it('lets go of a session the stack refused', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theCatalogueScreen(AStackThatCatalogues::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theCatalogueScreen(AStackThatCatalogues::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseCatalogueIsShown()->id()))->toBeFalse();

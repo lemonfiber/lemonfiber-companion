@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -41,8 +40,8 @@ final readonly class Quartermasters implements Rationing
             return WhatTheLineWasFound::shared(HowTheLineIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheLineWasFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|BandwidthIsUnreadable) {
-            return WhatTheLineWasFound::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|BandwidthIsUnreadable $why) {
+            return WhatTheLineWasFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
@@ -29,7 +30,7 @@ function whichArmWasHeard(WhatWasHeard $heard): string
         alive: static fn(): WhichArmWasHeard => new WhichArmWasHeard('alive'),
         said: static fn(TheHealthSummary $summary): WhichArmWasHeard => new WhichArmWasHeard(sprintf('said %s', $summary->standing()->value)),
         closed: static fn(): WhichArmWasHeard => new WhichArmWasHeard('closed'),
-        met: static fn(Obstacle $why): WhichArmWasHeard => new WhichArmWasHeard(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmWasHeard => new WhichArmWasHeard(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -38,5 +39,5 @@ it('keeps the five things a subscription can answer apart', function (): void {
         ->and(whichArmWasHeard(WhatWasHeard::aSignOfLife()))->toBe('alive')
         ->and(whichArmWasHeard(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Stopped, 0, '', WhatStoppedMoving::nothing()))))->toBe('said stopped')
         ->and(whichArmWasHeard(WhatWasHeard::closed()))->toBe('closed')
-        ->and(whichArmWasHeard(WhatWasHeard::met(Obstacle::CredentialWasRefused)))->toBe('met credential_refused');
+        ->and(whichArmWasHeard(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe('met credential_refused');
 });

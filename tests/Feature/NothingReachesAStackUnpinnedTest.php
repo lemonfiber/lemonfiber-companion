@@ -132,6 +132,10 @@ const MAY_NAME_A_CLIENT = [
         . 'no body to open a connection with. It says what the one file that can open one '
         . 'answers with, which is what lets that file be substituted at all: without it '
         . 'every adapter names the concrete class and the seam does not exist.',
+    'app-modules/sdk/src/Api/ClientsThatAskTheDevice.php' => 'ADR-0018, N1-R20 — it builds '
+        . 'nothing. It asks `PinnedClients` for a client, which is therefore pinned before it '
+        . 'arrives, and hands it straight on; what it adds is asking the phone why a stack was '
+        . 'silent, which opens no connection to a stack.',
     'app-modules/dx/src/Api/ClientsThatReachNothing.php' => 'ADR-0018, N1-R20, Q-R72 — it '
         . 'builds nothing. It asks `PinnedClients` for a client, which is therefore pinned '
         . 'before it arrives, and attaches a mock to the connector so no request reaches a '

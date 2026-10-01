@@ -19,13 +19,13 @@ use Modules\Kernel\Api\HandoffSaysNothing;
 use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheDoorSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack to hand one person's device over, and follows it.
@@ -50,8 +50,8 @@ final readonly class Connectors implements HandingOverADevice
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheHandoff::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheHandoff::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -61,8 +61,8 @@ final readonly class Connectors implements HandingOverADevice
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandoffIsUnreadable|HandoffSaysNothing|InvitationSaysNothing|TheDoorSaysNothing) {
-            return WhatBecameOfTheHandoff::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandoffIsUnreadable|HandoffSaysNothing|InvitationSaysNothing|TheDoorSaysNothing $why) {
+            return WhatBecameOfTheHandoff::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -93,8 +93,8 @@ final readonly class Connectors implements HandingOverADevice
     {
         try {
             return WhatBecameOfTheHandoff::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheHandoff::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheHandoff::met(WhatTheReachMet::byItself($why));
         }
     }
 

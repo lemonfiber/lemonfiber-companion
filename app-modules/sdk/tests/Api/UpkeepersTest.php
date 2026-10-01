@@ -15,6 +15,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Releases;
@@ -88,7 +89,7 @@ function whatTheAdapterMade(MockResponse $answer): string
         // meeting a payload it could read.
         stands: static fn(): WhatTheTakingTurnedOutToBe => new WhatTheTakingTurnedOutToBe('a reading'),
         met: static fn(Obstacle $why): WhatTheTakingTurnedOutToBe
-            => new WhatTheTakingTurnedOutToBe($why->name),
+            => new WhatTheTakingTurnedOutToBe($why->kind()->name),
     )->said;
 }
 
@@ -179,12 +180,12 @@ it('says which of the two readings it wants', function (): void {
 
 it('N1-R10 — tells a credential that was refused from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
-        expect(whatTheAdapterMade($answered))->toBe($why->name);
+        expect(whatTheAdapterMade($answered))->toBe($why->kind()->name);
     }
 });
 
@@ -203,7 +204,7 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
     ];
 
     foreach ($unreadable as $said) {
-        expect(whatTheAdapterMade(MockResponse::make($said)))->toBe(Obstacle::StackDidNotAnswer->name);
+        expect(whatTheAdapterMade(MockResponse::make($said)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
     }
 });
 
@@ -239,8 +240,8 @@ it('N1-R10 — a refused taking is told apart from a stack that did not answer',
     $refused = whatTakingItMade(MockResponse::make('{"error":"no"}', 401));
     $silent = whatTakingItMade(MockResponse::make('{"error":"gone"}', 500));
 
-    expect(whatBecameOfTheTaking($refused))->toBe(Obstacle::CredentialWasRefused->name)
-        ->and(whatBecameOfTheTaking($silent))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheTaking($refused))->toEqual(KindOfObstacle::CredentialWasRefused->name)
+        ->and(whatBecameOfTheTaking($silent))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('N2-R14 — an acknowledgement this side cannot read is an obstacle too', function (): void {
@@ -251,7 +252,7 @@ it('N2-R14 — an acknowledgement this side cannot read is an obstacle too', fun
         (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => []]),
     ));
 
-    expect(whatBecameOfTheTaking($unreadable))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheTaking($unreadable))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 /**
@@ -320,7 +321,7 @@ function whatBecameOfTheTaking(Underway $underway): string
         started: static fn(Job $job): WhatTheTakingTurnedOutToBe
             => new WhatTheTakingTurnedOutToBe($job->shown()),
         met: static fn(Obstacle $why): WhatTheTakingTurnedOutToBe
-            => new WhatTheTakingTurnedOutToBe($why->name),
+            => new WhatTheTakingTurnedOutToBe($why->kind()->name),
     )->said;
 }
 

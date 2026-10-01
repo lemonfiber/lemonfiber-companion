@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheOriginsWere;
 use Modules\Kernel\Api\WhereTheServicesComeFrom;
@@ -24,7 +25,7 @@ function whatTheOriginsSaid(WhatTheOriginsWere $answer): string
 {
     return $answer->either(
         origins: static fn(WhereTheServicesComeFrom $origins): WhichArmTheOriginsTook => new WhichArmTheOriginsTook(sprintf('origins:%d', $origins->count())),
-        met: static fn(Obstacle $why): WhichArmTheOriginsTook => new WhichArmTheOriginsTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheOriginsTook => new WhichArmTheOriginsTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -33,6 +34,6 @@ it('a stack declaring nothing is an answer, not an obstacle', function (): void 
 });
 
 it('carries what the operator met where the stack could not be asked', function (): void {
-    expect(whatTheOriginsSaid(WhatTheOriginsWere::met(Obstacle::StackDidNotAnswer)))
-        ->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+    expect(whatTheOriginsSaid(WhatTheOriginsWere::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
+        ->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

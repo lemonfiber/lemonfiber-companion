@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
@@ -37,7 +38,7 @@ function theStackWhoseMenuIsOpened(): Stack
 function aTabWithTheMenu(): HowCurrentThisStackIs
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::DeviceHasNoNetwork), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -47,7 +48,7 @@ function aTabWithTheMenu(): HowCurrentThisStackIs
 function aScreenTheMenuOpens(): WhatTheWordsMean
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::DeviceHasNoNetwork), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

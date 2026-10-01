@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowACopyPaced;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
@@ -374,11 +375,11 @@ it('says a copy the stack has no outcome for is not known, rather than failed', 
 });
 
 it('says what stood in the way of a copy the stack would not take, and asks again from the start', function (): void {
-    $copying = AStackThatTakesCopies::met(Obstacle::StackDidNotAnswer);
+    $copying = AStackThatTakesCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = aCopyAgreedTo($copying);
 
-    expect(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+    expect(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -389,8 +390,8 @@ it('says what stood in the way of a copy the stack would not take, and asks agai
 it('lets go of a session the stack refused, while taking or while asking after', function (bool $whileAsking): void {
     $keychain = AKeychainInMemory::working();
     $copying = $whileAsking
-        ? AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::met(Obstacle::CredentialWasRefused))
-        : AStackThatTakesCopies::met(Obstacle::CredentialWasRefused);
+        ? AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)))
+        : AStackThatTakesCopies::met(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = aCopyAgreedTo($copying, $keychain);
 
     if ($whileAsking) {
@@ -428,11 +429,11 @@ it('lets go of a session refused while it follows a copy after the session is go
 });
 
 it('offers nothing to copy where the services could not be listed, and says what stood in the way', function (): void {
-    $screen = theCopyingScreen(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning()), AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
+    $screen = theCopyingScreen(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning()), AStackThatSupervises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->offers())->not->toContain(__('stacks.copy.the_whole_stack'))
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->copyTheService('sonarr');
 

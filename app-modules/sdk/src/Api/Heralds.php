@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Telling;
@@ -41,8 +40,8 @@ final readonly class Heralds implements Telling
             return WhatTheAlertsWere::told(WhatIsTold::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheAlertsWere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable) {
-            return WhatTheAlertsWere::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable $why) {
+            return WhatTheAlertsWere::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

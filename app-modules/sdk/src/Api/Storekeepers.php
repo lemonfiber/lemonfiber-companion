@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Storing;
@@ -45,8 +44,8 @@ final readonly class Storekeepers implements Storing
             return WhatWasFoundKept::kept(WhatIsStored::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundKept::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StoredIsUnreadable) {
-            return WhatWasFoundKept::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StoredIsUnreadable $why) {
+            return WhatWasFoundKept::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

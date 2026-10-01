@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -133,7 +134,7 @@ it('N2-R21 — a machine that could not be asked reports no strangers, not none'
     // the obstacle rather than instead of it: a screen that showed *nothing
     // else is running here* over an unreachable machine would be answering a
     // question nobody got to ask.
-    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($screen->answer()->went->met)->not->toBe('')
         ->and($screen->answer()->running)->toBe([])
@@ -149,10 +150,10 @@ it('N1-R3 — an obstacle that is not a refused credential leaves the session st
     // Reported the wrong way round, the screen draws the sign-in prompt instead
     // of the obstacle: somebody whose phone has no signal is told to sign in,
     // which is advice for a problem they do not have and hides the one they do.
-    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said());
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('N1-R44 — a session that has ended is not a machine running nothing', function (): void {
@@ -173,7 +174,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // the next frame resumes it, is refused again, and the operator reads a
     // sign-in prompt over a device that still believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeTrue();
 
@@ -207,14 +208,14 @@ it('refuses a route parameter that is not text', function (): void {
     // parameter array is untyped. Anything that is not a string names no stack,
     // which is the same situation as a route with nothing in that segment. The
     // three screens either side of this one make the same assertion.
-    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('N1-R3 — asking again after an obstacle asks the machine again', function (): void {
-    $supervising = AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork);
+    $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theStrangersScreen($supervising);
 
     $screen->answer();

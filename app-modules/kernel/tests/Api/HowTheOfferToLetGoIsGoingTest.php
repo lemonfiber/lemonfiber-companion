@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\HowTheOfferToLetGoIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 
@@ -27,7 +28,7 @@ function howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing $going): strin
         stillRunning: static fn(): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook('running'),
         offering: static fn(WhatLettingItGoCosts $offer): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook(sprintf('offered:%s', $offer->agreement())),
         ended: static fn(): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheOfferToLetGoTook => new WhichArmTheOfferToLetGoTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -37,5 +38,5 @@ it('takes the arm for each state, and carries the offer and the obstacle', funct
     expect(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::stillRunning()))->toBe('running')
         ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::offering($offer)))->toBe('offered:stop-seeding-show-season1')
         ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::ended()))->toBe('ended')
-        ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::met(Obstacle::CredentialWasRefused)))->toBe(sprintf('met:%s', Obstacle::CredentialWasRefused->value));
+        ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

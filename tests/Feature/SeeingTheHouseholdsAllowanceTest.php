@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Sentence;
@@ -69,9 +70,9 @@ it('says there is nothing to tell where the core said nothing', function (): voi
 });
 
 it('says what stopped the reading, and asks again from nothing', function (): void {
-    $screen = theAllowanceScreen(AMemberWhoIsOwed::met(Obstacle::StackDidNotAnswer));
+    $screen = theAllowanceScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -82,7 +83,7 @@ it('offers signing in where no session is held, and lets go of one the stack ref
     expect(theAllowanceScreen(AMemberWhoIsOwed::owedNothing(), signedIn: false)->answer()->went->isSignedIn)->toBeFalse();
 
     $keychain = AKeychainInMemory::working();
-    $screen = theAllowanceScreen(AMemberWhoIsOwed::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theAllowanceScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseAllowanceIsRead()->id()))->toBeFalse();

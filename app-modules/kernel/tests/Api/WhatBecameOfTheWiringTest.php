@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\TheWiringSaysNothing;
@@ -31,7 +32,7 @@ function whereTheWiringGotTo(WhatBecameOfTheWiring $became): string
         answered: static fn(TheWiring $wiring): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('answered %s', $wiring->judged()->value)),
         ended: static fn(): WhereTheWiringGotTo => new WhereTheWiringGotTo('ended'),
         refused: static fn(string $because): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhereTheWiringGotTo => new WhereTheWiringGotTo(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -42,7 +43,7 @@ it('takes each arm it was built on, and no other', function (): void {
         ->and(whereTheWiringGotTo(WhatBecameOfTheWiring::answered($wiring)))->toBe('answered assessed')
         ->and(whereTheWiringGotTo(WhatBecameOfTheWiring::ended()))->toBe('ended')
         ->and(whereTheWiringGotTo(WhatBecameOfTheWiring::refused('Nothing here to wire')))->toBe('refused Nothing here to wire')
-        ->and(whereTheWiringGotTo(WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met %s', Obstacle::StackDidNotAnswer->value));
+        ->and(whereTheWiringGotTo(WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
 });
 
 it('refuses a refusal that does not say why', function (): void {

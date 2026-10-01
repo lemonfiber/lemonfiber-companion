@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AnUpgradeDescribed;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -58,8 +57,8 @@ final readonly class Upgraders implements UpgradingTheLibrary
             return WhatTheUpgradeCameTo::said(WhatAnUpgradeComesTo::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheUpgradeCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
-            return WhatTheUpgradeCameTo::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+            return WhatTheUpgradeCameTo::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

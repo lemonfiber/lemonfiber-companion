@@ -12,6 +12,7 @@ final readonly class WhyNothingWasSaid
     private function __construct(
         public string $met,
         public string $remedy,
+        private ?Obstacle $why = null,
     ) {}
 
     public static function nothingStoppedIt(): self
@@ -21,6 +22,16 @@ final readonly class WhyNothingWasSaid
 
     public static function because(Obstacle $why): self
     {
-        return new self($why->said(), $why->remedy());
+        return new self($why->said(), $why->remedy(), $why);
+    }
+
+    /**
+     * What both sentences are filled with: the facts the obstacle was met with, or nothing.
+     *
+     * @return array<string, int>
+     */
+    public function filling(): array
+    {
+        return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
     }
 }

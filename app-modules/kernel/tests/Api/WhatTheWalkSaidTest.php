@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ALineItSaid;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatTheWalkSaid;
@@ -28,7 +29,7 @@ function whichArmTheWalkTook(WhatTheWalkSaid $said): string
         alive: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('alive'),
         said: static fn(ALineItSaid $line): WhichArmTheWalkTook => new WhichArmTheWalkTook(sprintf('said %s: %s', $line->step()->value, $line->said())),
         closed: static fn(): WhichArmTheWalkTook => new WhichArmTheWalkTook('closed'),
-        met: static fn(Obstacle $why): WhichArmTheWalkTook => new WhichArmTheWalkTook(sprintf('met %s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheWalkTook => new WhichArmTheWalkTook(sprintf('met %s', $why->kind()->value)),
     )->said;
 }
 
@@ -39,5 +40,5 @@ it('keeps the five things a subscription can answer about a walk apart', functio
         ->and(whichArmTheWalkTook(WhatTheWalkSaid::aSignOfLife()))->toBe('alive')
         ->and(whichArmTheWalkTook(WhatTheWalkSaid::said($line)))->toBe('said grabbing: Sending the release to the download client')
         ->and(whichArmTheWalkTook(WhatTheWalkSaid::closed()))->toBe('closed')
-        ->and(whichArmTheWalkTook(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)))->toBe('met no_answer');
+        ->and(whichArmTheWalkTook(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
 });

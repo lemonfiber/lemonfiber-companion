@@ -13,6 +13,7 @@ use Modules\Kernel\Api\ASignedInDevice;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -275,12 +276,12 @@ it('goes back to offering the code where the stack has no outcome for the one as
 
 it('says what stood in the way, and lets go of a session the stack refused', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::met(Obstacle::StackDidNotAnswer)), keychain: $keychain);
+    $screen = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), keychain: $keychain);
     $screen->show();
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
-    $refusing = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::met(Obstacle::CredentialWasRefused)), keychain: $keychain);
+    $refusing = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
     $refusing->show();
 
     expect($keychain->isHolding(theStackADeviceConnectsTo()->id()))->toBeFalse();

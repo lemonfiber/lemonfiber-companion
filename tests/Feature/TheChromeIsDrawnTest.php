@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -62,7 +63,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowThisStackIs(
-        AStackThatWasAsked::met(Obstacle::DeviceHasNoNetwork),
+        AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(),
@@ -78,8 +79,8 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
     // What stood between this frame and the machine, and
     // what to do about it — both, because what happened is a fact about the
     // world and what to do about it is advice.
-    expect($drawn->said())->toContain(__(Obstacle::DeviceHasNoNetwork->said()))
-        ->and($drawn->said())->toContain(__(Obstacle::DeviceHasNoNetwork->remedy()))
+    expect($drawn->said())->toContain(__(KindOfObstacle::DeviceHasNoNetwork->said()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::DeviceHasNoNetwork->remedy()))
         // The four readings of this machine, drawn by the platform's own bar.
         // Asserted by their labels because that is what somebody sees and what
         // a screen reader says; the icons and the routes are the bar's own.

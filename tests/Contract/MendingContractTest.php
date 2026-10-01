@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Mending;
@@ -170,7 +171,7 @@ function whatStartingSaid(Mending $mending): string
         started: static fn(Job $job): WhatTheRepairTurnedOutToSay
             => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
         met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-            => new WhatTheRepairTurnedOutToSay($why->value),
+            => new WhatTheRepairTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -198,7 +199,7 @@ function whatTheHandleSaid(Mending $mending): string
             },
             ended: static fn(): WhatTheRepairTurnedOutToSay => new WhatTheRepairTurnedOutToSay('ended'),
             met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->value),
+                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
         )->said;
 }
 
@@ -280,13 +281,13 @@ it('a job the stack no longer has is ended, not unreachable and not running', fu
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfMending($answered, static fn(): Mending => AStackThatWouldMend::met($why)) as $which => $make) {
-            expect(whatStartingSaid($make()))->toBe($why->value, sprintf('%s, %s', $which, $why->value));
+            expect(whatStartingSaid($make()))->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });
@@ -317,7 +318,7 @@ it('N1-R10 — an answer this app cannot read is the machine, not the session', 
     MockClient::global([MockResponse::make('not json at all')]);
 
     expect(whatStartingSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('N1-R10 — a refused session while reading a handle is still a refused session', function (): void {
@@ -329,7 +330,7 @@ it('N1-R10 — a refused session while reading a handle is still a refused sessi
     MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
 
     expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
-        ->toBe(Obstacle::CredentialWasRefused->value);
+        ->toEqual(KindOfObstacle::CredentialWasRefused->value);
 });
 
 it('a handle that answers with something unreadable is the machine', function (): void {
@@ -337,7 +338,7 @@ it('a handle that answers with something unreadable is the machine', function ()
     MockClient::global([MockResponse::make('not json at all')]);
 
     expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 /** A yes against the listing both implementations answer with. */
@@ -467,7 +468,7 @@ function whatWasDone(Mending $mending): string
             },
             ended: static fn(): WhatTheRepairTurnedOutToSay => new WhatTheRepairTurnedOutToSay('ended'),
             met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->value),
+                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
         )->said;
 }
 
@@ -483,7 +484,7 @@ it('N2-R5 — agreeing is its own act, and answers a handle like every other', f
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
                 => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
             met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->value),
+                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
         )->said;
 
         expect($said)->toBe(sprintf('started %s', AStackThatWouldMend::THE_JOB), $which);
@@ -565,10 +566,10 @@ it('N1-R10 — a refused agreement is a refused session, not a broken machine', 
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
                 => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
             met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->value),
+                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
         )->said;
 
-    expect($said)->toBe(Obstacle::CredentialWasRefused->value);
+    expect($said)->toEqual(KindOfObstacle::CredentialWasRefused->value);
 });
 
 it('an agreement the far end answers unreadably is the machine', function (): void {
@@ -581,25 +582,25 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
                 => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
             met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
-                => new WhatTheRepairTurnedOutToSay($why->value),
+                => new WhatTheRepairTurnedOutToSay($why->kind()->value),
         )->said;
 
-    expect($said)->toBe(Obstacle::StackDidNotAnswer->value);
+    expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('N1-R10 — reading what was done can meet an obstacle of its own', function (): void {
     // Time passes between agreeing and reading, which is exactly where a
     // session ends underneath somebody.
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
 
-        expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->value, $why->value);
+        expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->value, $why->kind()->value);
     }
 });
 

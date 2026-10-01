@@ -39,14 +39,17 @@ use Tests\Support\Catalogue;
 /**
  * The words this app declares ordinary, and why each is.
  *
- * Empty because nothing has needed one yet. A word earns a line when an
- * operator would read it in a sentence and not need it explained — and the
- * reason is the line's whole job: it is what somebody reads before adding the
- * next one.
+ * A word earns a line when an operator would read it in a sentence and not
+ * need it explained — and the reason is the line's whole job: it is what
+ * somebody reads before adding the next one.
  *
  * @var array<string, string>
  */
-const WORDS_AN_OPERATOR_ALREADY_KNOWS = [];
+const WORDS_AN_OPERATOR_ALREADY_KNOWS = [
+    'API' => 'Somebody running a stack of their own meets it on every release note and update '
+        . 'screen, and the one sentence that uses it names both version numbers, so nothing in '
+        . 'it hangs on the letters.',
+];
 
 /**
  * Whether a line was written to be read rather than looked up.

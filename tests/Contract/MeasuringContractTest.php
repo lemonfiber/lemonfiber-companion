@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFreshAReadingIs;
 use Modules\Kernel\Api\HowMuchRoomAVolumeHas;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -195,7 +196,7 @@ function everythingTheRoomSays(Measuring $measuring): string
 
             return new WhatTheRoomTurnedOutToSay(implode(' | ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -220,14 +221,14 @@ it('N12-R1, N12-R2, N12-R3, N12-R6, N12-R10 — comes away with the volumes, the
 
 it('N1-R44 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingHowFull($answered, $why) as $which => $make) {
-            expect(everythingTheRoomSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheRoomSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -236,7 +237,7 @@ it('N12-R10 — a level this app cannot read is an obstacle, never a comfortable
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsRoom('roomy')))]);
 
-    expect(everythingTheRoomSays(new Surveyors(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheRoomSays(new Surveyors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

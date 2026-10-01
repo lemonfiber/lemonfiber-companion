@@ -11,6 +11,7 @@ use Modules\Kernel\Api\APresetInForce;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -232,7 +233,7 @@ function howTheQualityReadsAsText(ChoosingQuality $choosing): string
 {
     return $choosing->inForceOn(theMachineWhoseQualityIsChosen(), theSessionQualityIsChosenOn())->either(
         found: static fn(TheQualityChosen $chosen): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(theQualityAsText($chosen)),
-        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->value)),
+        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -248,7 +249,7 @@ function howAChoiceCameBackAsText(WhatTheChoiceCameTo $came): string
             $made->applied()->saidOnTheScreen(),
             $made->applied()->detail(),
         )),
-        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->value)),
+        met: static fn(Obstacle $why): WhatTheQualityCameBackAs => new WhatTheQualityCameBackAs(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -319,7 +320,7 @@ foreach (everyWayOfReadingTheQuality() as $name => $build) {
 
 it('the fake and the adapter both refuse rather than answer with nothing', function (): void {
     expect(howTheQualityReadsAsText(gradersAnswering(['nothing' => 'the contract knows'], 500)))->toBe('refused:no_answer')
-        ->and(howTheQualityReadsAsText(AStackThatChoosesQuality::met(Obstacle::StackDidNotAnswer)))->toBe('refused:no_answer');
+        ->and(howTheQualityReadsAsText(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('refused:no_answer');
 });
 
 it('the fake keeps choosing apart from confirming', function (): void {

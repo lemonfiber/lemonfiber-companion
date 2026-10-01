@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
@@ -26,9 +27,9 @@ final readonly class WhichArmTheMeasuringTook
 it('N12-R10 — a machine that could not be asked is never one with room to spare', function (): void {
     $fold = static fn(WhatWasMeasured $answer): string => $answer->either(
         measured: static fn(WhereTheRoomWent $room): WhichArmTheMeasuringTook => new WhichArmTheMeasuringTook(sprintf('measured:%s', $room->stands()->value)),
-        met: static fn(Obstacle $why): WhichArmTheMeasuringTook => new WhichArmTheMeasuringTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheMeasuringTook => new WhichArmTheMeasuringTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasMeasured::measured(WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), halted: false))))->toBe('measured:ample')
-        ->and($fold(WhatWasMeasured::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasMeasured::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

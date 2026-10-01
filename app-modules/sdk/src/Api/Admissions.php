@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -45,7 +46,7 @@ use Modules\Kernel\Api\Whose;
  * | {@see PasswordWasRefused} | `CredentialWasRefused` — offer another attempt |
  * | {@see TooManyAttempts} | `TooManyAttempts` — wait, and do not attempt |
  * | {@see CertificateWasRefused} | `StackIsNotTheOnePaired` — this is not the machine paired with; nothing was sent, the password included |
- * | {@see RequestFailed}, {@see Unreachable}, {@see UnreadableResponse} | `StackDidNotAnswer` |
+ * | {@see RequestFailed}, {@see Unreachable}, {@see UnreadableResponse} | what {@see Clients::whatStoodInTheWay()} says stood in the way |
  *
  * **Nothing here reads a timestamp.** The SDK hands over the ending as a count
  * of seconds, which is what lets this file convert with a named constructor and
@@ -63,7 +64,7 @@ use Modules\Kernel\Api\Whose;
  */
 final readonly class Admissions implements Admitting
 {
-    public function __construct(private Doors $doors) {}
+    public function __construct(private Doors $doors, private Clients $clients) {}
 
     public function admit(Stack $stack, Credential $said): Admitted
     {
@@ -72,7 +73,7 @@ final readonly class Admissions implements Admitting
         try {
             $opened = $door->open($said->forTheExchange());
         } catch (CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why) {
-            return Admitted::refused($this->met($why));
+            return Admitted::refused($this->met($stack, $why));
         }
 
         return Admitted::opening(
@@ -93,19 +94,19 @@ final readonly class Admissions implements Admitting
      * they left one method with four ways out (`H8`).
      *
      * A `match` rather than six `catch` blocks, so the mapping reads as one
-     * table. `RequestFailed`, `Unreachable` and `UnreadableResponse` share an
-     * answer: each means the operator did not get in and nothing about their
-     * password is known, which is *the stack did not answer* rather than *the
-     * credential was refused*. The remedy on that screen — check the machine is
-     * on and on this network — is the right one for each.
+     * table. `RequestFailed`, `Unreachable` and `UnreadableResponse` go to
+     * one place: each means the operator did not get in and nothing about
+     * their password is known, so none of them is *the credential was
+     * refused*. {@see Clients::whatStoodInTheWay()} decides which obstacle it
+     * is, the same way every other reach of a stack does.
      */
-    private function met(CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
+    private function met(Stack $stack, CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
     {
         return match (true) {
-            $why instanceof PasswordWasRefused => Obstacle::CredentialWasRefused,
-            $why instanceof TooManyAttempts => Obstacle::TooManyAttempts,
-            $why instanceof CertificateWasRefused => Obstacle::StackIsNotTheOnePaired,
-            default => Obstacle::StackDidNotAnswer,
+            $why instanceof PasswordWasRefused => Obstacle::of(KindOfObstacle::CredentialWasRefused),
+            $why instanceof TooManyAttempts => Obstacle::of(KindOfObstacle::TooManyAttempts),
+            $why instanceof CertificateWasRefused => Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired),
+            default => $this->clients->whatStoodInTheWay($stack, $why),
         };
     }
 }

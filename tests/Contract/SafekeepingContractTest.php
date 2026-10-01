@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
@@ -143,7 +144,7 @@ function everythingTheCredentialsSay(Safekeeping $safekeeping): string
 
             return new WhatTheCredentialsTurnedOutToSay(implode("\n", $lines));
         },
-        met: static fn(Obstacle $why): WhatTheCredentialsTurnedOutToSay => new WhatTheCredentialsTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheCredentialsTurnedOutToSay => new WhatTheCredentialsTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -169,14 +170,14 @@ it('never carries a value the stack revealed beside the list', function (): void
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingWhatIsHeld($answered, $why) as $which => $make) {
-            expect(everythingTheCredentialsSay($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheCredentialsSay($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -185,7 +186,7 @@ it('a state this app cannot read is an obstacle, never a credential drawn as wor
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItHolds('expired')))]);
 
-    expect(everythingTheCredentialsSay(new Keyholders(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheCredentialsSay(new Keyholders(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the credentials endpoint, and nothing that would reveal or replace one', function (): void {

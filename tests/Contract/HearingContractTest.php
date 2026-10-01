@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
@@ -33,6 +34,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhereEachOpenResumed;
 
 // The Hearing contract, run against the adapter and against the fake.
 //
@@ -218,7 +220,7 @@ function whatWasHeardAsAWord(WhatWasHeard $heard): string
         alive: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('alive'),
         said: static fn(TheHealthSummary $summary): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord(aSummaryAsAWord($summary)),
         closed: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('closed'),
-        met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->value),
+        met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->kind()->value),
     )->said;
 }
 
@@ -339,14 +341,14 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     // A connection that was never made is asked after twice more before it is
     // reported, so a stack that cannot be heard answers all three times.
     $table = [
-        [[MockResponse::make('{"error":"no"}', 401)], Obstacle::CredentialWasRefused],
-        [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::StackDidNotAnswer],
-        [[$unreachable, $unreachable, $unreachable], Obstacle::StackDidNotAnswer],
+        [[MockResponse::make('{"error":"no"}', 401)], Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [[$unreachable, $unreachable, $unreachable], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfListening($answered, [WhatWasHeard::met($why)]) as $which => $make) {
-            expect(whatWakesHear($make(), 1))->toBe([$why->value], sprintf('%s, %s', $which, $why->value));
+            expect(whatWakesHear($make(), 1))->toBe([$why->kind()->value], sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });
@@ -366,9 +368,9 @@ it('cannot hear a summary it cannot read, and says so as a stack that did not an
     ] as $said) {
         foreach (everyWayOfListening(
             [MockResponse::make($said)],
-            [WhatWasHeard::met(Obstacle::StackDidNotAnswer)],
+            [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
         ) as $which => $make) {
-            expect(whatWakesHear($make(), 1))->toBe([Obstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
         }
     }
 });
@@ -442,7 +444,7 @@ it('leaves every other stack\'s stream open when one stack could not be heard', 
     // its bytes are read, and a stream opened again would have been a third
     // request.
     expect(array_map(whatWasHeardAsAWord(...), [$first, $second, $again]))
-        ->toBe(['nothing', Obstacle::StackDidNotAnswer->value, 'closed']);
+        ->toBe(['nothing', KindOfObstacle::StackDidNotAnswer->value, 'closed']);
 
     $stack->assertSentCount(2);
 });
@@ -461,9 +463,26 @@ it('opens a stream that ended again, once it has said that it ended', function (
         aSummaryAsAWord(theFillingSummary()),
         'closed',
         'healthy, 0 wanting, worst "", {}',
-    ]);
+    ])->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
+});
 
-    $stack->assertSentCount(2);
+it('resumes a stream it could not read after the last event it carried, and forgets that once let go of', function (): void {
+    // Only the adapter can be asked this. What the stack said while no stream
+    // was open is heard on the next one, rather than skipped; a screen that
+    // let go of every stream starts again from the start.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(anEvent('dashboard', 'not an envelope')),
+        MockResponse::make(''),
+        MockResponse::make(''),
+    ]);
+    $hearing = new Listeners(new PinnedClients());
+
+    whatWakesHear($hearing, 2);
+    $hearing->letGo();
+    whatWakesHear($hearing, 1);
+
+    expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1', null]);
 });
 
 it('opens again straight after a stream that ended having said nothing', function (): void {
@@ -492,7 +511,7 @@ it('holds nothing after a summary it could not read, so the next wake opens agai
     ]);
 
     expect(whatWakesHear(new Listeners(new PinnedClients()), 2))->toBe([
-        Obstacle::StackDidNotAnswer->value,
+        KindOfObstacle::StackDidNotAnswer->value,
         'healthy, 0 wanting, worst "", {}',
     ]);
 });
@@ -575,7 +594,7 @@ function whatWakesHearOfAStart(Hearing $hearing, int $wakes): array
         $heard[] = $hearing->whatAStartWaitsOn(aStackToListenTo(), theSessionItListensWith())->either(
             saying: static fn(string $line): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord(sprintf('saying "%s"', $line)),
             nothingNew: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('nothing new'),
-            met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->value),
+            met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->kind()->value),
         )->said;
     }
 
@@ -607,20 +626,20 @@ it('cannot hear a start line that is blank or not text, and says so as a stack t
     foreach ([aStartLine('   '), aStartLine(['waiting' => 'for sonarr']), anEvent('start', 'not json at all')] as $said) {
         foreach (everyWayOfHearingAStart(
             [MockResponse::make($said)],
-            [WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer)],
+            [WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
         ) as $which => $make) {
-            expect(whatWakesHearOfAStart($make(), 1))->toBe([Obstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesHearOfAStart($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
         }
     }
 });
 
 it('tells a session the stack refused from a stack that could not be heard, while a start runs', function (): void {
     foreach ([
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ] as [$answered, $why]) {
         foreach (everyWayOfHearingAStart([$answered], [WhatAStartWaitsOn::met($why)]) as $which => $make) {
-            expect(whatWakesHearOfAStart($make(), 1))->toBe([$why->value], $which);
+            expect(whatWakesHearOfAStart($make(), 1))->toBe([$why->kind()->value], $which);
         }
     }
 });
@@ -675,7 +694,7 @@ it('holds no start stream after a line it could not read, so the next ask opens 
     ]);
 
     expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 2))
-        ->toBe([Obstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"']);
+        ->toBe([KindOfObstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"']);
 
     $stack->assertSentCount(2);
 });

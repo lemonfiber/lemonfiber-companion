@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -87,7 +88,7 @@ function howTheBundleWasAskedFor(AskingForHelp $helping): string
 {
     return $helping->ask(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), aBundleAskedFor())->either(
         started: static fn(Job $job): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
+        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
     )->said;
 }
 
@@ -99,7 +100,7 @@ function whatBecameOfTheBundle(AskingForHelp $helping): string
         done: static fn(ABundle $bundle): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(WhatABundleSays::of($bundle)),
         refused: static fn(ARefusalInItsWords $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('ended'),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
+        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
     )->said;
 }
 
@@ -121,17 +122,17 @@ it('comes away from asking for a bundle with the job the stack named', function 
 
 it('comes away from a bundle that was not taken on with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'support', 'job' => ' ']]), 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'support', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheBundleWasAskedFor(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name)
-            ->and(howTheBundleWasAskedFor(AStackThatBundles::met($why)))->toBe($why->name);
+        expect(howTheBundleWasAskedFor(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
+            ->and(howTheBundleWasAskedFor(AStackThatBundles::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -174,14 +175,14 @@ it('a bundle the stack refused is its refusal, in its words, with what it named'
 
 it('asking after a bundle tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForABundle($answered, HowTheBundleIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfTheBundle($build()))->toBe($why->name, $which);
+            expect(whatBecameOfTheBundle($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -190,7 +191,7 @@ it('a bundle this app cannot read is a stack that did not answer, never a shorte
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(WhatABundleSays::envelope(['bytes' => -1])))]);
 
-    expect(whatBecameOfTheBundle(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheBundle(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('asking after a bundle names the handle asking for it answered', function (): void {
@@ -214,7 +215,7 @@ function whatFetchingTheBundleCameTo(AskingForHelp $helping): string
 {
     return $helping->fetch(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))->either(
         fetched: static fn(ABundleFile $file): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
-        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
+        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->kind()->name),
     )->said;
 }
 
@@ -229,12 +230,12 @@ it('comes away from a bundle it could not fetch with the obstacle rather than a 
     MockClient::destroyGlobal();
     MockClient::global([$answered]);
 
-    expect(whatFetchingTheBundleCameTo(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name)
-        ->and(whatFetchingTheBundleCameTo(AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::ended(), $why)))->toBe($why->name);
+    expect(whatFetchingTheBundleCameTo(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
+        ->and(whatFetchingTheBundleCameTo(AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::ended(), $why)))->toBe($why->kind()->name);
 })->with([
-    'a refused session' => [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-    'an account that may not ask' => [MockResponse::make('{"error":"no"}', 403), Obstacle::NotForThisAccount],
-    'a bundle no longer there' => [MockResponse::make('{"error":"gone"}', 404), Obstacle::StackDidNotAnswer],
+    'a refused session' => [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    'an account that may not ask' => [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'a bundle no longer there' => [MockResponse::make('{"error":"gone"}', 404), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
 it('the fake remembers each written bundle it was asked for the file of', function (): void {

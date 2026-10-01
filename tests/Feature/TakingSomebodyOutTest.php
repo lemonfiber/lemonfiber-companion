@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -287,7 +288,7 @@ it('tells work the stack has no outcome for apart before the yes and after it', 
 it('says whether they were taken out could not be read where the yes met something, and never sends it again on its own', function (): void {
     $removing = AStackThatTakesThemOut::answering(...[
         ...theRemovalWorkThenIts(whatTakingAnnaOutCosts()),
-        WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer),
+        WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         WhatBecameOfTheRemoval::underway(Job::named('j-2')),
     ]);
     $screen = annasCostReadOn($removing);
@@ -295,7 +296,7 @@ it('says whether they were taken out could not be read where the yes met somethi
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.removal.unread_after_yes', ['name' => 'anna']))
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
     $screen->again();
@@ -307,7 +308,7 @@ it('says whether they were taken out could not be read where the yes met somethi
 it('asks after the same work again where following it met something, without drawing a yes it never sent', function (): void {
     $removing = AStackThatTakesThemOut::answering(
         WhatBecameOfTheRemoval::underway(Job::named('j-1')),
-        WhatBecameOfTheRemoval::met(Obstacle::StackDidNotAnswer),
+        WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         WhatBecameOfTheRemoval::underway(Job::named('j-1')),
     );
     $screen = theRemovalScreen($removing);
@@ -374,7 +375,7 @@ it('a session that has ended asks the stack nothing', function (): void {
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackSomebodyLeaves()->id()))->toBeFalse();
@@ -384,7 +385,7 @@ it('holds each state and only its own', function (): void {
     $running = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::underway(Job::named('j-1'))));
     $refused = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::refused('Nobody is called anna here')));
     $ended = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::ended()));
-    $met = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::StackDidNotAnswer));
+    $met = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $signedOut = theRemovalScreen(AStackThatTakesThemOut::answering(), signedIn: false);
     $nobody = theRemovalScreen(AStackThatTakesThemOut::answering(), member: ' ');
     $cost = annasCostReadOn(AStackThatTakesThemOut::answering(...theRemovalWorkThenIts(whatTakingAnnaOutCosts(2, 'Slow'))));
@@ -393,7 +394,7 @@ it('holds each state and only its own', function (): void {
     expect(everythingTheRemovalScreenHolds($running->answer()))->toBe(nothingHeldOfTheRemoval(['isWorking' => true]))
         ->and(everythingTheRemovalScreenHolds($refused->answer()))->toBe(nothingHeldOfTheRemoval(['refusal' => 'Nobody is called anna here']))
         ->and(everythingTheRemovalScreenHolds($ended->answer()))->toBe(nothingHeldOfTheRemoval(['hasEnded' => true]))
-        ->and(everythingTheRemovalScreenHolds($met->answer()))->toBe(nothingHeldOfTheRemoval(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+        ->and(everythingTheRemovalScreenHolds($met->answer()))->toBe(nothingHeldOfTheRemoval(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and(everythingTheRemovalScreenHolds($signedOut->answer()))->toBe(nothingHeldOfTheRemoval(['cameBack' => false, 'isSignedIn' => false]))
         ->and(everythingTheRemovalScreenHolds($nobody->answer()))->toBe(nothingHeldOfTheRemoval(['name' => '', 'namesNobody' => true]))
         ->and(everythingTheRemovalScreenHolds($cost->answer()))->toBe(nothingHeldOfTheRemoval([

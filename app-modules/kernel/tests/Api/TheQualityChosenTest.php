@@ -10,6 +10,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\AFormatInForce;
 use Modules\Kernel\Api\APresetInForce;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\ThePresetsInForce;
@@ -114,11 +115,11 @@ it('tells the quality found from what stood in the way', function (): void {
     $chosen = TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false);
     $found = static fn(WhatWasFoundOfTheQuality $answer): string => $answer->either(
         found: static fn(TheQualityChosen $read): WhichArmTheQualityTook => new WhichArmTheQualityTook($read === $chosen ? 'found' : 'another'),
-        met: static fn(Obstacle $why): WhichArmTheQualityTook => new WhichArmTheQualityTook($why->value),
+        met: static fn(Obstacle $why): WhichArmTheQualityTook => new WhichArmTheQualityTook($why->kind()->value),
     )->said;
 
     expect($found(WhatWasFoundOfTheQuality::found($chosen)))->toBe('found')
-        ->and($found(WhatWasFoundOfTheQuality::met(Obstacle::StackDidNotAnswer)))->toBe('no_answer');
+        ->and($found(WhatWasFoundOfTheQuality::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('no_answer');
 });
 
 it('keys what became of a choice by the stack\'s own word', function (): void {

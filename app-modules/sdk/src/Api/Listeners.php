@@ -23,7 +23,6 @@ use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemedySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -34,6 +33,7 @@ use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
 
 /**
  * The one place this application holds a stack's event stream open.
@@ -65,6 +65,12 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * any of them, so the next attempt opens a new connection, and every other
  * stack's stream stays open.
  *
+ * **A stream opened again resumes where the last one left off.** Where the
+ * stream let go of carried event identifiers, the one opened in its place asks
+ * for what came after the last of them, so what the stack said in between is
+ * heard rather than skipped. Letting go of every stream forgets where each left
+ * off.
+ *
  * **A stream that ends is said to have ended once.** The call that finds the
  * end hands back what arrived before it, and the next hands back `closed`
  * without opening anything. The screen decides when to open again, on the
@@ -90,7 +96,12 @@ final class Listeners implements Hearing
     /** @var array<string, true> the stacks whose stream ended and has not been said to have ended */
     private array $ended = [];
 
-    public function __construct(private readonly Clients $clients) {}
+    private WhereTheStreamsLeftOff $leftOff;
+
+    public function __construct(private readonly Clients $clients)
+    {
+        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
+    }
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard
     {
@@ -117,6 +128,7 @@ final class Listeners implements Hearing
             // ask. There is no end to report here: a start's lines stop when
             // the start does, and the job being followed says when that was.
             if ($arrived->ended) {
+                $this->keepWhereItLeftOff($which);
                 unset($this->held[$which]);
             }
 
@@ -125,10 +137,10 @@ final class Listeners implements Hearing
                 : WhatAStartWaitsOn::nothingNew();
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatAStartWaitsOn::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing $why) {
             $this->letGoOf($which);
 
-            return WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer);
+            return WhatAStartWaitsOn::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -136,6 +148,7 @@ final class Listeners implements Hearing
     {
         $this->held = [];
         $this->ended = [];
+        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
 
         return WhatWasHeard::closed();
     }
@@ -149,13 +162,10 @@ final class Listeners implements Hearing
             return $this->heard($which, $this->heldFor($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
-        } catch (
-            Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted
-            |SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing
-        ) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing $why) {
             $this->letGoOf($which);
 
-            return WhatWasHeard::met(Obstacle::StackDidNotAnswer);
+            return WhatWasHeard::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -168,16 +178,28 @@ final class Listeners implements Hearing
     /** Let go of one stack's stream, leaving every other stack's open. */
     private function letGoOf(string $which): void
     {
+        $this->keepWhereItLeftOff($which);
         unset($this->held[$which], $this->ended[$which]);
     }
 
+    /** Where one stack's stream left off, kept for the stream opened in its place. */
+    private function keepWhereItLeftOff(string $which): void
+    {
+        if (array_key_exists($which, $this->held)) {
+            $this->leftOff = $this->leftOff->keeping($which, $this->held[$which]);
+        }
+    }
+
+    /** A stream for this stack, resuming after the last event its previous one carried. */
     private function opened(Stack $stack, Session $session): AStreamHeldOpen
     {
+        $after = $this->leftOff->forTheStack($stack->id()->stored());
+
         return new AStreamHeldOpen(
             $this->clients->client($stack, $session)
                 ->eventSource(Duration::ofMilliseconds(self::NO_LONGER_THAN_MS))
-                ->open(null),
-            new SseParser(),
+                ->open($after),
+            new SseParser($after),
         );
     }
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
@@ -22,7 +23,7 @@ function whatCameBackAboutTheStall(WhatIsStuck $answer): string
     return $answer->either(
         these: static fn(Stalled $stalled): WhatTheStallSaid
             => new WhatTheStallSaid(sprintf('%d stuck', $stalled->count())),
-        met: static fn(Obstacle $why): WhatTheStallSaid => new WhatTheStallSaid($why->value),
+        met: static fn(Obstacle $why): WhatTheStallSaid => new WhatTheStallSaid($why->kind()->value),
     )->said;
 }
 
@@ -37,8 +38,8 @@ it('N2-R9 — a listing takes the arm that renders rows', function (): void {
 });
 
 it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
-    expect(whatCameBackAboutTheStall(WhatIsStuck::met(Obstacle::StackDidNotAnswer)))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(whatCameBackAboutTheStall(WhatIsStuck::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('nothing stuck is not the same answer as a stack that could not be asked', function (): void {
@@ -46,6 +47,6 @@ it('nothing stuck is not the same answer as a stack that could not be asked', fu
     // a phone in flight mode report a house where everything is arriving
     // normally, which is the one wrong answer nobody would go and check.
     expect(whatCameBackAboutTheStall(WhatIsStuck::these(Stalled::nothing())))->toBe('0 stuck')
-        ->and(whatCameBackAboutTheStall(WhatIsStuck::met(Obstacle::DeviceHasNoNetwork)))
-        ->toBe(Obstacle::DeviceHasNoNetwork->value);
+        ->and(whatCameBackAboutTheStall(WhatIsStuck::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))))
+        ->toEqual(KindOfObstacle::DeviceHasNoNetwork->value);
 });

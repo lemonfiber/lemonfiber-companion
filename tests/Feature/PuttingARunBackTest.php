@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -353,8 +354,8 @@ it('offers nothing to agree to where the record could not be read, and lets go o
 
     expect($puttingBack->agreed())->toBe([]);
 })->with([
-    'not answering' => [Obstacle::StackDidNotAnswer, true],
-    'refused' => [Obstacle::CredentialWasRefused, false],
+    'not answering' => [Obstacle::of(KindOfObstacle::StackDidNotAnswer), true],
+    'refused' => [Obstacle::of(KindOfObstacle::CredentialWasRefused), false],
 ]);
 
 it('puts back exactly the run it showed, and says it is running without drawing progress nobody measured', function (): void {
@@ -484,14 +485,14 @@ it('says a run the stack has no outcome for is not known, rather than failed', f
 
 it('says what stood in the way of a yes the stack refused, and reads the record afresh', function (): void {
     $history = AStackThatKeepsARecord::with(aRecordHoldingTheRun());
-    $puttingBack = AStackThatPutsRunsBack::met(Obstacle::StackDidNotAnswer);
+    $puttingBack = AStackThatPutsRunsBack::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePuttingARunBackScreen($history, $puttingBack);
     $screen->answer();
     $screen->agree();
 
-    expect(everythingPuttingTheRunBackShows($screen->done()))->toBe(nothingReportedOfTheRun(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+    expect(everythingPuttingTheRunBackShows($screen->done()))->toBe(nothingReportedOfTheRun(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($screen->isWorking())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -509,7 +510,7 @@ it('says a run the stack would not put back in its words, apart from a stack tha
     );
     $screen = aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::refused($why));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
-    $unreachable = thePuttingARunBackScreen(AStackThatKeepsARecord::with(aRecordHoldingTheRun()), AStackThatPutsRunsBack::met(Obstacle::StackDidNotAnswer));
+    $unreachable = thePuttingARunBackScreen(AStackThatKeepsARecord::with(aRecordHoldingTheRun()), AStackThatPutsRunsBack::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $unreachable->answer();
     $unreachable->agree();
 
@@ -524,7 +525,7 @@ it('says a run the stack would not put back in its words, apart from a stack tha
         ->and($drawn->said())->toContain('Everything before it was put back; this region is still in the file.')
         ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => '/srv/stack/compose.yaml: permission denied']))
         ->and($drawn->said())->toContain(__('stacks.run_back.refused_same_answer'))
-        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('stacks.record.road_in'))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
         ->and(WhatTheDeviceWouldDraw::by($unreachable)->said())->not->toContain(__('stacks.run_back.refused'))
@@ -571,8 +572,8 @@ it('reads the record afresh when asked again before a yes', function (): void {
 it('lets go of a session refused while putting back or asking after', function (bool $whileAsking): void {
     $keychain = AKeychainInMemory::working();
     $puttingBack = $whileAsking
-        ? AStackThatPutsRunsBack::saying(HowPuttingARunBackIsGoing::met(Obstacle::CredentialWasRefused))
-        : AStackThatPutsRunsBack::met(Obstacle::CredentialWasRefused);
+        ? AStackThatPutsRunsBack::saying(HowPuttingARunBackIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)))
+        : AStackThatPutsRunsBack::met(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = thePuttingARunBackScreen(AStackThatKeepsARecord::with(aRecordHoldingTheRun()), $puttingBack, $keychain);
     $screen->answer();
     $screen->agree();

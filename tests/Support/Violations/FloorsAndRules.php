@@ -181,8 +181,8 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F14',
                 'app-modules/operator/resources/views/components/what-stood-in-the-way.blade.php',
-                '{{ __($went->remedy) }}',
-                '{{ __($went->remedyish) }}',
+                '{{ __($went->remedy, $went->filling()) }}',
+                '{{ __($went->remedyish, $went->filling()) }}',
                 'every step a component takes',
                 'remedyish',
             ),

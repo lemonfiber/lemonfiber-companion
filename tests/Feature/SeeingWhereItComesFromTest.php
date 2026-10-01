@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ImageDigest;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -116,15 +117,15 @@ it('a machine declaring nothing is an answer rather than a gap', function (): vo
 });
 
 it('a stack that could not be asked is not a machine declaring nothing', function (): void {
-    $answer = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->services)->toBe([]);
 });
 
 it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
-    $answer = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
@@ -142,7 +143,7 @@ it('N1-R44 — a session that has ended is not a machine declaring nothing', fun
 
 it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseOriginsAreRead()->id()))->toBeTrue();
 
@@ -165,7 +166,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('N1-R3 — asking again asks the machine again', function (): void {
-    $provenance = AStackThatNamesItsOrigins::met(Obstacle::DeviceHasNoNetwork);
+    $provenance = AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theOriginsScreen($provenance);
 
     $screen->answer();
@@ -176,7 +177,7 @@ it('N1-R3 — asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

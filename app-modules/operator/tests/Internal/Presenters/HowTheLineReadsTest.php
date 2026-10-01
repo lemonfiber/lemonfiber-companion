@@ -10,6 +10,7 @@ use function it;
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -39,6 +40,6 @@ it('draws each place the line can stand with its own tone', function (WhereTheLi
 ]);
 
 it('reads a line nobody could ask about as unknown', function (): void {
-    expect(new HowTheLineReads()->met(Obstacle::StackDidNotAnswer)->tone)->toBe(Tone::Unknown->value)
+    expect(new HowTheLineReads()->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->tone)->toBe(Tone::Unknown->value)
         ->and(new HowTheLineReads()->signedOut()->tone)->toBe(Tone::Unknown->value);
 });

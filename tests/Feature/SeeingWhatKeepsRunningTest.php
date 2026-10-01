@@ -8,6 +8,7 @@ use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowTheHandoverWent;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -169,10 +170,10 @@ it('a machine that keeps nothing running is an answer rather than a gap', functi
 it('N1-R10 — a stack that could not be asked is not a machine hosting nothing', function (): void {
     // The collapse this surface exists to refuse. Both draw an empty list, and
     // only one of them means everything is fine.
-    $answer = theHostingScreen(AStackThatHosts::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->commands)->toBe([])
         ->and($answer->keptBySaid)->toBe('')
         ->and($answer->instead)->toBe('')
@@ -197,7 +198,7 @@ it('N1-R10 — a device holding no session asks somebody to sign in', function (
 it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
     // A phone with no signal told to sign in is given advice for a problem it
     // does not have, over the one it does.
-    $answer = theHostingScreen(AStackThatHosts::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
@@ -207,7 +208,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // refused again, and draw a sign-in prompt over a device that still
     // believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeTrue();
 
@@ -234,7 +235,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('N1-R3 — asking again asks the machine again', function (): void {
-    $stack = AStackThatHosts::met(Obstacle::DeviceHasNoNetwork);
+    $stack = AStackThatHosts::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theHostingScreen($stack);
 
     $screen->answer();
@@ -245,7 +246,7 @@ it('N1-R3 — asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
@@ -320,7 +321,7 @@ it('offers neither on a machine this product cannot configure', function (): voi
 });
 
 it('offers neither where the machine could not be asked, or nobody is signed in', function (): void {
-    expect(theHostingScreen(AStackThatHosts::met(Obstacle::StackDidNotAnswer))->answer()->handsOver)->toBeFalse()
+    expect(theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer()->handsOver)->toBeFalse()
         ->and(theHostingScreen(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart()), signedIn: false)->answer()->handsOver)->toBeFalse();
 });
 
@@ -511,14 +512,14 @@ it('a refusal is shown in the stack\'s own words, as something that did not happ
 
 it('an act that never got an answer says what was met, and a refused credential lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), HowTheHandoverWent::met(Obstacle::CredentialWasRefused));
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), HowTheHandoverWent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
     $screen = theHostingScreen($stack, $keychain);
 
     $screen->wouldInstall('watch');
     $screen->agree();
 
     expect($screen->handedOver?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
-        ->and($screen->handedOver?->metSaid)->toBe(Obstacle::CredentialWasRefused->said())
+        ->and($screen->handedOver?->metSaid)->toEqual(KindOfObstacle::CredentialWasRefused->said())
         ->and($screen->handedOver?->refused)->toBe('')
         ->and(whatAnActThatDidNotHappenStillSays($screen->handedOver))->toBe([])
         ->and($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeFalse();

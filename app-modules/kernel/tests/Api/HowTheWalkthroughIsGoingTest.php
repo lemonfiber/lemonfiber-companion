@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheLinesItSaid;
 use Modules\Kernel\Api\WhatWasWalked;
@@ -30,7 +31,7 @@ function whichWayItIsGoing(HowTheWalkthroughIsGoing $going): string
         stillRunning: static fn(): WhichGoingArm => new WhichGoingArm('running'),
         done: static fn(AWalkthrough $walk): WhichGoingArm => new WhichGoingArm(sprintf('done:%s', $walk->state()->value)),
         ended: static fn(): WhichGoingArm => new WhichGoingArm('ended'),
-        met: static fn(Obstacle $why): WhichGoingArm => new WhichGoingArm(sprintf('met:%s', $why->name)),
+        met: static fn(Obstacle $why): WhichGoingArm => new WhichGoingArm(sprintf('met:%s', $why->kind()->name)),
     )->said;
 }
 
@@ -48,5 +49,5 @@ it('says each of its four states through its own arm', function (): void {
     expect(whichWayItIsGoing(HowTheWalkthroughIsGoing::stillRunning()))->toBe('running')
         ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::done($walk)))->toBe('done:complete')
         ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::ended()))->toBe('ended')
-        ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe('met:StackDidNotAnswer');
+        ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met:StackDidNotAnswer');
 });

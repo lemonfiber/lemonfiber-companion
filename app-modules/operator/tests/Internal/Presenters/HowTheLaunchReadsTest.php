@@ -7,6 +7,7 @@ namespace Modules\Operator\Tests\Internal\Presenters;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StackId;
@@ -14,6 +15,8 @@ use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
 
 use function sprintf;
 use function str_repeat;
+
+use Tests\Support\AnObstacleOfEachKind;
 
 /**
  * The four a launch can be, kept apart on the way to a template.
@@ -36,8 +39,9 @@ it('says no machine is paired, which is not an obstacle', function (): void {
 it('says what stood in the way, by a key built from the obstacle', function (): void {
     // Every case, because the key is derived rather than listed — so a seventh
     // obstacle needs no edit here, and must not arrive without a catalogue line.
-    foreach (Obstacle::cases() as $why) {
-        $blocked = new HowTheLaunchReads()->blockedBy($why);
+    foreach (AnObstacleOfEachKind::all() as $met) {
+        $why = $met->kind();
+        $blocked = new HowTheLaunchReads()->blockedBy($met);
 
         // That the key resolves is `EveryDerivedKeyResolvesTest`'s job — it has
         // the application container and this does not. Here the claim is only
@@ -66,5 +70,5 @@ it('tells blocked from unpaired, which both have no stack to open on', function 
     // reading only `opensOn` would draw the same frame for a first run and for
     // a stack that could not be reached.
     expect(new HowTheLaunchReads()->unpaired()->isPaired)
-        ->not->toBe(new HowTheLaunchReads()->blockedBy(Obstacle::StackDidNotAnswer)->isPaired);
+        ->not->toBe(new HowTheLaunchReads()->blockedBy(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPaired);
 });

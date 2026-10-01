@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
@@ -79,8 +80,8 @@ it('says what each need is called on a screen', function (): void {
 it('answers the arm it was built with', function (): void {
     $rehearsal = WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()));
     $found = static fn(WhatStartingItWouldComeTo $said): WhatARehearsalAnswered => new WhatARehearsalAnswered($said === $rehearsal ? 'found' : 'another');
-    $met = static fn(Obstacle $why): WhatARehearsalAnswered => new WhatARehearsalAnswered($why->value);
+    $met = static fn(Obstacle $why): WhatARehearsalAnswered => new WhatARehearsalAnswered($why->kind()->value);
 
     expect(WhatTheRehearsalFound::found($rehearsal)->either($found, $met)->said)->toBe('found')
-        ->and(WhatTheRehearsalFound::met(Obstacle::StackDidNotAnswer)->either($found, $met)->said)->toBe(Obstacle::StackDidNotAnswer->value);
+        ->and(WhatTheRehearsalFound::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->either($found, $met)->said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });

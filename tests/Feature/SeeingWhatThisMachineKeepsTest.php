@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -143,14 +144,14 @@ it('N6-R7 — a value the stack sends beside a secret never reaches the glass', 
 
 it('N6-R9 — no copy taken and a list that could not be read are different sentences on the glass', function (): void {
     $none = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->said();
-    $unread = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::StackDidNotAnswer));
+    $unread = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $unreadDrawn = WhatTheDeviceWouldDraw::by($unread)->said();
 
     expect($none)->toContain(__('stacks.keeps.no_copies'))
         ->and($none)->not->toContain(__('stacks.keeps.copies_unread'))
         ->and($unreadDrawn)->toContain(__('stacks.keeps.copies_unread'))
-        ->and($unreadDrawn)->toContain(__(Obstacle::StackDidNotAnswer->said()))
-        ->and($unreadDrawn)->toContain(__(Obstacle::StackDidNotAnswer->remedy()))
+        ->and($unreadDrawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($unreadDrawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()))
         // Nothing to put back where nothing was listed: only taking a copy
         // and asking again are offered.
         ->and(WhatTheDeviceWouldDraw::by($unread)->offers())->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')])
@@ -199,10 +200,10 @@ it('offers nothing to put back where no copy has been taken', function (): void 
 
 it('a stack that could not be asked is not a machine keeping nothing, and its copies are not asked', function (): void {
     $copying = twoCopies();
-    $answer = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::StackDidNotAnswer), $copying)->answer();
+    $answer = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $copying)->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->roots)->toBe([])
         ->and($answer->kept)->toBe([])
@@ -224,7 +225,7 @@ it('N1-R44 — a session that has ended is not a machine keeping nothing', funct
 
 it('N3-R13 — a credential refused for what is kept signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::CredentialWasRefused), twoCopies(), $keychain);
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), twoCopies(), $keychain);
 
     expect($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeTrue();
 
@@ -235,7 +236,7 @@ it('N3-R13 — a credential refused for what is kept signs this device out and l
 
 it('N3-R13 — a credential refused for the copies lets the session go as well', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->copies->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeFalse()
@@ -245,10 +246,10 @@ it('N3-R13 — a credential refused for the copies lets the session go as well',
 
 it('N1-R3 — copies that could not be read for another reason leave the session standing', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::StackDidNotAnswer), $keychain);
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
 
     expect($screen->answer()->copies->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->copies->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->answer()->copies->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeTrue();
 });
 
@@ -270,7 +271,7 @@ it('each reading is asked once for a frame, about the machine the route names', 
 
 it('N1-R3 — asking again asks both again', function (): void {
     $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
-    $copying = AStackThatListsItsCopies::met(Obstacle::DeviceHasNoNetwork);
+    $copying = AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theKeepingScreen($storing, $copying);
 
     $screen->answer();
@@ -282,7 +283,7 @@ it('N1-R3 — asking again asks both again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::DeviceHasNoNetwork), twoCopies());
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), twoCopies());
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

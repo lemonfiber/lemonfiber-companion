@@ -10,6 +10,7 @@ use function it;
 use Modules\Health\Api\WhatTheWalkSaidSoFar;
 use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatTheWalkSaid;
@@ -117,7 +118,7 @@ it('holds a step from before a close as of when it arrived, and waits out the br
 it('holds a step as not current once the stream could not be read, and waits out the break', function (): void {
     $heard = WhatTheWalkSaidSoFar::nothingYet()
         ->after(aStepAt(WalkthroughStep::Scanning), secondsIntoTheWalk(0))
-        ->after(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer), secondsIntoTheWalk(40));
+        ->after(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), secondsIntoTheWalk(40));
 
     expect(theStepHeld($heard))->toBe('scanning as of 0')
         ->and($heard->isListening())->toBeFalse()

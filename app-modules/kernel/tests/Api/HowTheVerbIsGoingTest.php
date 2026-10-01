@@ -9,6 +9,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
@@ -31,7 +32,7 @@ function howTheVerbIsGoingReads(HowTheVerbIsGoing $going): string
         stillRunning: static fn(): WhichArmTheVerbTook => new WhichArmTheVerbTook('running'),
         done: static fn(WhatTheVerbCameTo $report): WhichArmTheVerbTook => new WhichArmTheVerbTook(sprintf('done:%s', $report->was()->value)),
         ended: static fn(): WhichArmTheVerbTook => new WhichArmTheVerbTook('ended'),
-        met: static fn(Obstacle $why): WhichArmTheVerbTook => new WhichArmTheVerbTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheVerbTook => new WhichArmTheVerbTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -46,6 +47,6 @@ it('takes the arm for each state, and carries the report and the obstacle', func
     expect(howTheVerbIsGoingReads(HowTheVerbIsGoing::stillRunning()))->toBe('running')
         ->and(howTheVerbIsGoingReads(HowTheVerbIsGoing::done($report)))->toBe('done:carried_out')
         ->and(howTheVerbIsGoingReads(HowTheVerbIsGoing::ended()))->toBe('ended')
-        ->and(howTheVerbIsGoingReads(HowTheVerbIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value))
+        ->and(howTheVerbIsGoingReads(HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value))
         ->and(count($report->whatDidNotComeBack()))->toBe(0);
 });

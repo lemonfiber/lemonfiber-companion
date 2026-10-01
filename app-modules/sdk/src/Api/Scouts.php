@@ -20,7 +20,6 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\MovingInBy;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheMoveSaysNothing;
@@ -28,6 +27,7 @@ use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack what is already on its machine, and moves in beside it.
@@ -67,8 +67,8 @@ final readonly class Scouts implements MovingIn
             return WhatWasFoundAlreadyHere::found(WhatIsAlreadyHere::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundAlreadyHere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable) {
-            return WhatWasFoundAlreadyHere::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable $why) {
+            return WhatWasFoundAlreadyHere::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -81,8 +81,8 @@ final readonly class Scouts implements MovingIn
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheMove::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -96,8 +96,8 @@ final readonly class Scouts implements MovingIn
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
-            return WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatBecameOfTheMove::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -107,8 +107,8 @@ final readonly class Scouts implements MovingIn
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MoveIsUnreadable|TheMoveSaysNothing) {
-            return WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MoveIsUnreadable|TheMoveSaysNothing $why) {
+            return WhatBecameOfTheMove::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -142,8 +142,8 @@ final readonly class Scouts implements MovingIn
     {
         try {
             return WhatBecameOfTheMove::underway(Handles::in($envelope));
-        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return WhatBecameOfTheMove::met(WhatTheReachMet::byItself($why));
         }
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -89,7 +90,7 @@ function everythingTheCopiesSay(Copying $copying): string
 
             return new WhatTheCopiesTurnedOutToSay(sprintf('%d: %s', count($copies), implode(', ', $names)));
         },
-        met: static fn(Obstacle $why): WhatTheCopiesTurnedOutToSay => new WhatTheCopiesTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheCopiesTurnedOutToSay => new WhatTheCopiesTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -110,14 +111,14 @@ it('N6-R9 — an empty list is an answer, and one that could not be read is not'
     }
 
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForTheCopies($answered, $why) as $which => $make) {
-            expect(everythingTheCopiesSay($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheCopiesSay($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -126,7 +127,7 @@ it('N6-R9 — a copy with no name is an obstacle, never a shorter list', functio
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCopies(['lemonfiber-20260924-0300-full', ''])))]);
 
-    expect(everythingTheCopiesSay(new Copyists(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheCopiesSay(new Copyists(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

@@ -8,6 +8,7 @@ use Closure;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowTheHandoverWent;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -63,7 +64,7 @@ final class AStackThatHosts implements Hosting
     {
         return new self(
             static fn(): WhatKeepsRunning => WhatKeepsRunning::keeps($running),
-            $handingOver ?? HowTheHandoverWent::met(Obstacle::StackDidNotAnswer),
+            $handingOver ?? HowTheHandoverWent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         );
     }
 

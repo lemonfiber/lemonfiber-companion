@@ -21,7 +21,7 @@ use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
-use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -71,8 +71,8 @@ final readonly class Guards implements Guarding
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
-            return Underway::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -82,8 +82,8 @@ final readonly class Guards implements Guarding
             return $this->standing($this->clients->client($stack, $session)->whatBecameOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable) {
-            return HowTheGuardIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {
+            return HowTheGuardIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -97,8 +97,8 @@ final readonly class Guards implements Guarding
             return $this->standing($this->clients->client($stack, $session)->letGoOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable) {
-            return HowTheGuardIsGoing::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {
+            return HowTheGuardIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -130,7 +130,7 @@ final readonly class Guards implements Guarding
         $met = WhatARefusalMeant::obstacle($why);
         $said = $why instanceof RequestFailed ? $why->said() : null;
 
-        return $met !== Obstacle::StackDidNotAnswer || $said === null
+        return $met->kind() !== KindOfObstacle::StackDidNotAnswer || $said === null
             ? HowTheGuardIsGoing::met($met)
             : HowTheGuardIsGoing::refused($said);
     }

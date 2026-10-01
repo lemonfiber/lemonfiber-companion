@@ -18,8 +18,8 @@
 
     @if ($this->summary()->met !== '')
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->summary()->met) }}</x-design::strong>
-            <x-design::body>{{ __($this->summary()->remedy) }}</x-design::body>
+            <x-design::strong>{{ __($this->summary()->met, $this->summary()->filling) }}</x-design::strong>
+            <x-design::body>{{ __($this->summary()->remedy, $this->summary()->filling) }}</x-design::body>
         </x-design::notice>
     @endif
 

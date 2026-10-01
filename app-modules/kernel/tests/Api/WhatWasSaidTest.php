@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
@@ -22,7 +23,7 @@ function whatCameBackAboutTheService(WhatWasSaid $answer): string
     return $answer->either(
         this_: static fn(Scrollback $scrollback): WhatTheReadSaid
             => new WhatTheReadSaid(sprintf('%d lines', $scrollback->count())),
-        met: static fn(Obstacle $why): WhatTheReadSaid => new WhatTheReadSaid($why->value),
+        met: static fn(Obstacle $why): WhatTheReadSaid => new WhatTheReadSaid($why->kind()->value),
     )->said;
 }
 
@@ -38,8 +39,8 @@ it('N2-R10 — a window takes the arm that renders lines', function (): void {
 });
 
 it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
-    expect(whatCameBackAboutTheService(WhatWasSaid::met(Obstacle::StackDidNotAnswer)))
-        ->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(whatCameBackAboutTheService(WhatWasSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
+        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('a silent service is not the same answer as a stack that could not be asked', function (): void {
@@ -49,6 +50,6 @@ it('a silent service is not the same answer as a stack that could not be asked',
     $window = Scrollback::of(ServiceId::called('gluetun'), HowManyLines::of(10));
 
     expect(whatCameBackAboutTheService(WhatWasSaid::this($window)))->toBe('0 lines')
-        ->and(whatCameBackAboutTheService(WhatWasSaid::met(Obstacle::DeviceHasNoNetwork)))
-        ->toBe(Obstacle::DeviceHasNoNetwork->value);
+        ->and(whatCameBackAboutTheService(WhatWasSaid::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))))
+        ->toEqual(KindOfObstacle::DeviceHasNoNetwork->value);
 });

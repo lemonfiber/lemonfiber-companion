@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\NamedOnTheManifest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -573,7 +574,7 @@ it('says after the configuration went that reaching the machine again needs it s
 it('says an unread answer after the configuration\'s yes is the way in having gone, lets the session go, and keeps the pairing', function (): void {
     $keychain = AKeychainInMemory::working();
     $stacks = StacksInMemory::holding(theMachineLemonfiberLeaves());
-    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(WhichRemoval::Configuration), WhatBecameOfTheUninstall::underway(Job::named('j-1')), WhatBecameOfTheUninstall::met(Obstacle::CredentialWasRefused));
+    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(WhichRemoval::Configuration), WhatBecameOfTheUninstall::underway(Job::named('j-1')), WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
     $screen = theTakingItOffScreen($removing, keychain: $keychain, stacks: $stacks);
     $screen->choose('configuration');
     $screen->answer();
@@ -584,7 +585,7 @@ it('says an unread answer after the configuration\'s yes is the way in having go
     expect($drawn->said())->toContain(__('uninstall.unread_after_yes'))
         ->and($drawn->said())->toContain(__('uninstall.after_configuration'))
         ->and($drawn->said())->not->toContain(__('connection.session_has_ended'))
-        ->and($drawn->said())->not->toContain(__(Obstacle::CredentialWasRefused->said()))
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::CredentialWasRefused->said()))
         ->and($keychain->isHolding(theMachineLemonfiberLeaves()->id()))->toBeFalse()
         ->and($stacks->holdsAny())->toBeTrue()
         ->and(everythingTheUninstallScreenHolds($screen->answer()))->toBe(nothingHeldOfTakingItOff(['wasAgreed' => true, 'endsThisSession' => true]));
@@ -636,13 +637,13 @@ it('draws a refusal in the stack\'s words, and offers choosing again rather than
 
 it('says whether it was taken off could not be read where the yes met something, and never sends it again on its own', function (): void {
     $keychain = AKeychainInMemory::working();
-    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer));
+    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $screen = aRemovalChosenAndRead($removing, WhichRemoval::Services, keychain: $keychain);
     $screen->goAhead();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('uninstall.unread_after_yes'))
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->not->toContain(__('uninstall.after_configuration'))
         ->and($drawn->offers())->toContain(__('health.ask_again'))
         ->and($keychain->isHolding(theMachineLemonfiberLeaves()->id()))->toBeTrue();
@@ -657,7 +658,7 @@ it('asks after the same work again where following it met something, and changes
     $removing = aStackReadingTheRemoval(
         aReadingOfTakingItOff(),
         WhatBecameOfTheUninstall::underway(Job::named('j-1')),
-        WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer),
+        WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         WhatBecameOfTheUninstall::underway(Job::named('j-1')),
     );
     $screen = aRemovalChosenAndRead($removing, WhichRemoval::Services);
@@ -670,7 +671,7 @@ it('asks after the same work again where following it met something, and changes
     $screen->chooseAgain();
 
     expect($removing->asked())->toBe(['read:services', 'take:services:services-3-lines:go_ahead_now', 'after:j-1', 'after:j-1'])
-        ->and($met->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($met->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->tier)->toBe('services')
         ->and($screen->agreedTo)->toBe('services')
         ->and($screen->following)->toBe('j-1');
@@ -731,7 +732,7 @@ it('a session that has ended asks the stack nothing, before the yes and at it', 
 
 it('a credential the stack refused while reading signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theTakingItOffScreen(AStackThatTakesItOff::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theTakingItOffScreen(AStackThatTakesItOff::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
     $screen->choose('stop');
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
@@ -742,14 +743,14 @@ it('holds each state and only its own', function (): void {
     $four = theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()));
     $four->chooseAgain();
     $read = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff()), WhichRemoval::Services);
-    $met = aRemovalChosenAndRead(AStackThatTakesItOff::met(Obstacle::StackDidNotAnswer), WhichRemoval::Services);
+    $met = aRemovalChosenAndRead(AStackThatTakesItOff::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhichRemoval::Services);
     $signedOut = theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()), signedIn: false);
     $signedOut->choose('services');
     $running = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::underway(Job::named('j-1'))), WhichRemoval::Services);
     $running->goAhead();
     $refused = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::refused('No')), WhichRemoval::Services);
     $refused->goAhead();
-    $metAfter = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::met(Obstacle::StackDidNotAnswer)), WhichRemoval::Services);
+    $metAfter = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), WhichRemoval::Services);
     $metAfter->goAhead();
     $done = aRemovalChosenAndRead(aStackTakingItOffTo(aReadingOfTakingItOff(), WhereTakingItOffGot::partial(
         NamedOnTheManifest::under('gone', 'lemonfiber-gluetun'),
@@ -776,11 +777,11 @@ it('holds each state and only its own', function (): void {
 
     expect(everythingTheUninstallScreenHolds($four->answer()))->toBe(nothingHeldOfTakingItOff(['chosen' => false]))
         ->and(everythingTheUninstallScreenHolds($read->answer()))->toBe(nothingHeldOfTakingItOff(['reading' => theServicesReadingAsHeld()]))
-        ->and(everythingTheUninstallScreenHolds($met->answer()))->toBe(nothingHeldOfTakingItOff(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+        ->and(everythingTheUninstallScreenHolds($met->answer()))->toBe(nothingHeldOfTakingItOff(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and(everythingTheUninstallScreenHolds($signedOut->answer()))->toBe(nothingHeldOfTakingItOff(['cameBack' => false, 'isSignedIn' => false]))
         ->and(everythingTheUninstallScreenHolds($running->answer()))->toBe(nothingHeldOfTakingItOff(['wasAgreed' => true, 'isWorking' => true]))
         ->and(everythingTheUninstallScreenHolds($refused->answer()))->toBe(nothingHeldOfTakingItOff(['wasAgreed' => true, 'refusal' => 'No']))
-        ->and(everythingTheUninstallScreenHolds($metAfter->answer()))->toBe(nothingHeldOfTakingItOff(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said(), 'wasAgreed' => true]))
+        ->and(everythingTheUninstallScreenHolds($metAfter->answer()))->toBe(nothingHeldOfTakingItOff(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said(), 'wasAgreed' => true]))
         ->and(everythingTheUninstallScreenHolds($done->answer()))->toBe(nothingHeldOfTakingItOff([
             'wasAgreed' => true,
             'reading' => theServicesReadingAsHeld(),

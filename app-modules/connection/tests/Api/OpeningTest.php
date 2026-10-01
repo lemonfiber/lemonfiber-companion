@@ -11,6 +11,7 @@ use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
@@ -39,7 +40,7 @@ function howItOpened(Opening $opening): string
 {
     return $opening->found()->either(
         unpaired: static fn(): Code => Code::of('unpaired'),
-        blocked: static fn(Obstacle $why): Code => Code::of(sprintf('blocked-%s', $why->value)),
+        blocked: static fn(Obstacle $why): Code => Code::of(sprintf('blocked-%s', $why->kind()->value)),
         ready: static fn(StackId $stack): Code => Code::of(sprintf('ready-%s', $stack->stored())),
     )->shown();
 }
@@ -79,7 +80,7 @@ it('a paired device with no network opens blocked, naming the network', function
         ADeviceOnANetwork::withNothingToReachOver(),
     );
 
-    expect(howItOpened($opening))->toBe(sprintf('blocked-%s', Obstacle::DeviceHasNoNetwork->value));
+    expect(howItOpened($opening))->toBe(sprintf('blocked-%s', KindOfObstacle::DeviceHasNoNetwork->value));
 });
 
 it('a first run is never asked about the network', function (): void {

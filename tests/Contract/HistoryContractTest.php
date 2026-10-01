@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -184,7 +185,7 @@ function everythingTheRecordSays(History $history): string
 
             return new WhatTheRecordTurnedOutToSay(implode(' | ', $rows));
         },
-        met: static fn(Obstacle $why): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheRecordTurnedOutToSay => new WhatTheRecordTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -212,14 +213,14 @@ it('N11-R9 — a stack that changed nothing answers with an empty record, not an
 
 it('N11-R9 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForTheRecord($answered, $why) as $which => $make) {
-            expect(everythingTheRecordSays($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheRecordSays($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -230,7 +231,7 @@ it('N11-R9 — a record this app cannot read is an obstacle, not a shorter recor
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackKeepingARecordSends('mostly')))]);
 
-    expect(everythingTheRecordSays(new Recorders(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheRecordSays(new Recorders(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
@@ -389,12 +390,12 @@ it('writes nothing until the stack has answered with a description', function ()
 });
 
 it('never sends a write again that met an obstacle: asking again describes', function (): void {
-    $helping = AStackThatBundles::whichGatheredOnceThenMet(HowTheBundleIsGoing::done(WhatABundleSays::described()), Obstacle::StackDidNotAnswer);
+    $helping = AStackThatBundles::whichGatheredOnceThenMet(HowTheBundleIsGoing::done(WhatABundleSays::described()), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = aBundleDescribedOnTheScreen($helping);
     $screen->write();
 
     expect($screen->handle)->toBeNull()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said());
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 
     $screen->again();
     $screen->answer();
@@ -467,13 +468,13 @@ it('says a bundle revealing nothing, missing nothing and placed nowhere, in word
 });
 
 it('draws what stood in the way of describing, and asking again describes again', function (): void {
-    $helping = AStackThatBundles::met(Obstacle::StackDidNotAnswer);
+    $helping = AStackThatBundles::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theHelpScreen($helping);
     $screen->describe();
 
-    expect($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->handle)->toBeNull()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
     $screen->answer();
@@ -483,14 +484,14 @@ it('draws what stood in the way of describing, and asking again describes again'
 
 it('lets go of a session the stack refused, whether asking or asking after', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theHelpScreen(AStackThatBundles::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theHelpScreen(AStackThatBundles::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
     $screen->describe();
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeFalse();
 
     $keychain = AKeychainInMemory::working();
-    $refusing = AStackThatBundles::whichGathered(HowTheBundleIsGoing::met(Obstacle::CredentialWasRefused));
+    $refusing = AStackThatBundles::whichGathered(HowTheBundleIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
     $screen = theHelpScreen($refusing, $keychain);
     $screen->describe();
     $screen->whileItRuns();
@@ -501,7 +502,7 @@ it('lets go of a session the stack refused, whether asking or asking after', fun
 
 it('keeps a session through an obstacle that says nothing about it', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theHelpScreen(AStackThatBundles::met(Obstacle::StackDidNotAnswer), $keychain);
+    $screen = theHelpScreen(AStackThatBundles::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
     $screen->describe();
 
     expect($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeTrue();
@@ -604,14 +605,14 @@ it('says what stood in the way of fetching the file, hands nothing over, and kee
     $keychain = AKeychainInMemory::working();
     $sheet = AShareSheetThatWasOffered::working();
     $screen = aBundleWrittenOnTheScreen(
-        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::StackDidNotAnswer),
+        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $sheet,
         $keychain,
     );
     $screen->handOver();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->handing)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->handing)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($sheet->handedOver())->toBe([])
         ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeTrue()
         ->and($screen->answer()->isWritten)->toBeTrue()
@@ -622,12 +623,12 @@ it('says what stood in the way of fetching the file, hands nothing over, and kee
 it('lets go of a session the stack refused while the file was fetched', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = aBundleWrittenOnTheScreen(
-        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::CredentialWasRefused),
+        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::of(KindOfObstacle::CredentialWasRefused)),
         keychain: $keychain,
     );
     $screen->handOver();
 
-    expect($screen->handing)->toBe(Obstacle::CredentialWasRefused->said())
+    expect($screen->handing)->toEqual(KindOfObstacle::CredentialWasRefused->said())
         ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeFalse();
 });
 

@@ -11,7 +11,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Whose;
-use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\ClientsThatAskTheDevice;
 use Modules\Vault\Api\PlatformStacks;
 
 // The register that goes red if the suite is ever pointed at a stand-in.
@@ -102,7 +102,7 @@ function theFirstStackThisDeviceHolds(): Stack
 }
 
 it('resolves the real adapter, because nothing asked for a stand-in', function (): void {
-    expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(PinnedClients::class);
+    expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(ClientsThatAskTheDevice::class);
 });
 
 it('has a provider that binds nothing while the switch is off', function (): void {
@@ -136,7 +136,7 @@ it('binds nothing when the application has no configuration at all', function ()
     // failing rather than as the rest of the run coming apart.
     app()->instance('config', $settings);
 
-    expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(PinnedClients::class);
+    expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(ClientsThatAskTheDevice::class);
 });
 
 it('Q-R72 — binds every stand-in when one is asked for', function (): void {

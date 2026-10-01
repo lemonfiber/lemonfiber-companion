@@ -11,8 +11,11 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Sdk\Api\ClientsThatAskTheDevice;
 use Modules\Sdk\Api\PinnedClients;
 use Tests\Support\Fakes\AClientForWhicheverStack;
+use Tests\Support\Fakes\ADeviceOnANetwork;
+use Tests\Support\Fakes\ALocalNetworkThat;
 
 // The Reaching contract, run against the adapter and against the fake.
 //
@@ -65,6 +68,14 @@ dataset('every way of reaching a stack', [
     // client with the socket taken out, so it should satisfy every clause the
     // adapter does — and if it ever does not, the divergence is the bug.
     'the stand-in' => [fn(): Reaching => new ClientsThatReachNothing(new PinnedClients())],
+    // What ships: the pinned client, with the phone asked why a stack was
+    // silent. It hands the pinned client on, so it is held to every clause
+    // the pinned client is.
+    'the clients that ask the device' => [fn(): Reaching => new ClientsThatAskTheDevice(
+        new PinnedClients(),
+        ADeviceOnANetwork::connected(),
+        ALocalNetworkThat::letsItThrough(),
+    )],
 ]);
 
 it('N1-R11 — builds a separate client per stack', function (Reaching $reaching): void {

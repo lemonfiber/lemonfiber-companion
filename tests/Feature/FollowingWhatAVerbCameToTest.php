@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -371,21 +372,21 @@ it('does not ask after a handle it holds without the verb it was sent for', func
 it('says what stood in the way of a verb that could not be delivered', function (): void {
     $supervising = AStackThatSupervises::withButRefusing(
         WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial),
-        Obstacle::StackDidNotAnswer,
+        Obstacle::of(KindOfObstacle::StackDidNotAnswer),
     );
     $screen = theScreenAVerbIsFollowedFrom($supervising);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
-    expect($screen->whatItCameTo()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->whatItCameTo()->isWorking)->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($supervising->followed())->toBe([]);
 });
 
 it('says what stood in the way of asking after it, and lets go of a session refused there', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::CredentialWasRefused)), keychain: $keychain);
+    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
@@ -396,12 +397,12 @@ it('says what stood in the way of asking after it, and lets go of a session refu
 
 it('keeps the session where asking after a verb could not reach the machine', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::DeviceHasNoNetwork)), keychain: $keychain);
+    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))), keychain: $keychain);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
 
-    expect($screen->whatItCameTo()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theMachineAVerbIsFollowedOn()->id()))->toBeTrue();
 });
 
@@ -434,7 +435,7 @@ it('says the session ended where a verb was agreed to on a device no longer sign
 });
 
 it('asks after the verb again, and reads the machine again, when asked to', function (): void {
-    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::DeviceHasNoNetwork));
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen = theScreenAVerbIsFollowedFrom($supervising);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
@@ -511,7 +512,7 @@ it('keeps the last line where a wake heard nothing new, or could not hear the st
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
     $hearing = AStackThatSpeaksUp::whileItStarts(
         WhatAStartWaitsOn::saying('Waiting for the database'),
-        WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer),
+        WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
     $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
 

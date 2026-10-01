@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\WhatACopyHolds;
@@ -32,7 +33,7 @@ function whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound $found): stri
     return $found->either(
         listed: static fn(WhatPuttingItBackWouldDo $listing): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('listed:%s', $listing->agreement())),
         refused: static fn(ARefusalInItsWords $why): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('refused:%s', $why->summary())),
-        met: static fn(Obstacle $why): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheRehearsedRestoreTook => new WhichArmTheRehearsedRestoreTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -50,5 +51,5 @@ it('takes the listing arm for a listing, the refusal arm for a refusal and the o
     expect(whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound::listed($listing)))->toBe('listed:restore-0f3a')
         ->and(whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound::refused(ARefusalInItsWords::said('This backup is from a newer lemonfiber', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:This backup is from a newer lemonfiber')
-        ->and(whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and(whatTheRehearsedRestoreFound(WhatTheRestoreRehearsalFound::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

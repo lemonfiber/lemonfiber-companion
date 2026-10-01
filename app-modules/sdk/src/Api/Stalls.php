@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\ALimitSaysNothing;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stalling;
@@ -64,8 +63,8 @@ final readonly class Stalls implements Stalling
             return WhatIsStuck::these(Stoppages::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsStuck::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StuckIsUnreadable|ALimitSaysNothing) {
-            return WhatIsStuck::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StuckIsUnreadable|ALimitSaysNothing $why) {
+            return WhatIsStuck::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

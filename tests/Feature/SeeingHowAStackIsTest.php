@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -38,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AnObstacleOfEachKind;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -313,14 +315,15 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
     // Asked here off the enum rather than listed, so a case that starts or
     // stops ending a session moves between the two cases by itself.
     $standing = array_values(array_filter(
-        Obstacle::cases(),
-        static fn(Obstacle $why): bool => ! $why->meansWeAreSignedOut(),
+        AnObstacleOfEachKind::all(),
+        static fn(Obstacle $met): bool => ! $met->meansWeAreSignedOut(),
     ));
 
     expect($standing)->not->toBe([], 'every obstacle now ends a session, which cannot be right');
 
-    foreach ($standing as $why) {
-        $screen = theHealthScreen(AStackThatWasAsked::met($why));
+    foreach ($standing as $met) {
+        $why = $met->kind();
+        $screen = theHealthScreen(AStackThatWasAsked::met($met));
 
         expect($screen->answer()->went->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->answer()->went->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
@@ -951,7 +954,7 @@ it('N3-R13 — a credential the stack refused signs this device out', function (
     // no, so whatever this device is holding is not a session any more — the
     // identity was removed, the password changed, or the stack rebuilt.
     $keychain = AKeychainInMemory::working();
-    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine.
@@ -966,7 +969,7 @@ it('N3-R13 — and the session is let go of, not merely hidden', function (): vo
     // next frame and refused again, so the operator would be looking at a
     // sign-in prompt over a device that still believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue();
 
@@ -979,15 +982,15 @@ it('N3-R13 — no other obstacle throws the session away', function (): void {
     // A walk out of wifi must not look like being thrown out of the house. The
     // five that leave a session standing are asked off the enum, so a case that
     // starts ending one moves itself into the case above.
-    foreach (Obstacle::cases() as $why) {
-        if ($why->meansWeAreSignedOut()) {
+    foreach (AnObstacleOfEachKind::all() as $met) {
+        if ($met->meansWeAreSignedOut()) {
             continue;
         }
 
         $keychain = AKeychainInMemory::working();
-        theHealthScreen(AStackThatWasAsked::met($why), $keychain)->answer();
+        theHealthScreen(AStackThatWasAsked::met($met), $keychain)->answer();
 
-        expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue($why->value);
+        expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue($met->kind()->value);
     }
 });
 

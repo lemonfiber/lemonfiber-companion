@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Session;
@@ -84,8 +85,8 @@ final class AStackThatPutsCopiesBack implements PuttingBack
     {
         return new self(
             static fn(): WhatTheRestoreRehearsalFound => WhatTheRestoreRehearsalFound::refused($why),
-            static fn(): Underway => Underway::met(Obstacle::StackDidNotAnswer),
-            static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::met(Obstacle::StackDidNotAnswer),
+            static fn(): Underway => Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
+            static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         );
     }
 

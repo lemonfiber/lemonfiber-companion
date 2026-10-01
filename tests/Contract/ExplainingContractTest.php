@@ -7,6 +7,7 @@ use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -114,7 +115,7 @@ function everythingTheWordsSay(Explaining $explaining): string
 
             return new WhatTheWordsTurnedOutToSay(implode(' / ', $said));
         },
-        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -131,14 +132,14 @@ it('comes away with every word, both glosses and every other name, in order', fu
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForTheWords($answered, $why) as $which => $make) {
-            expect(everythingTheWordsSay($make()))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingTheWordsSay($make()))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -147,7 +148,7 @@ it('a word this app cannot read is an obstacle, never a word half-explained', fu
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItsWordsMean(seedingMeans: ' ')))]);
 
-    expect(everythingTheWordsSay(new Explainers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingTheWordsSay(new Explainers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the explain endpoint naming no word, which is how the whole glossary is asked for', function (): void {
@@ -225,7 +226,7 @@ function everythingOneWordSays(Explaining $explaining, string $word): string
             $entry->explains(AWordInUse::named($word)) ? 'explains it' : 'explains something else',
         )),
         unexplained: static fn(): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay('no entry'),
-        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->value),
+        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -247,14 +248,14 @@ it('a word the stack does not explain is its answer, never an obstacle', functio
 
 it('asking for one word tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForOneWord($answered, $why) as $which => $make) {
-            expect(everythingOneWordSays($make(), 'grabbed'))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+            expect(everythingOneWordSays($make(), 'grabbed'))->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -263,7 +264,7 @@ it('a word asked for that this app cannot read is an obstacle, never a word half
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode([...whatAStackSaysOfOneWord(), 'data' => ['word' => 'grab']]))]);
 
-    expect(everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed'))->toBe(Obstacle::StackDidNotAnswer->value);
+    expect(everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed'))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
 it('asks the explain endpoint naming the one word, as it was drawn', function (): void {

@@ -9,6 +9,7 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AnUpgradeDescribed;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OneKindUpgraded;
 use Modules\Kernel\Api\QualitySaysNothing;
@@ -86,9 +87,9 @@ it('tells an upgrade from what stood in the way of it', function (): void {
     $upgrade = TheUpgrade::described();
     $arm = static fn(WhatTheUpgradeCameTo $came): string => $came->either(
         said: static fn(TheUpgrade $read): WhichArmTheUpgradeTook => new WhichArmTheUpgradeTook($read === $upgrade ? 'said' : 'another'),
-        met: static fn(Obstacle $why): WhichArmTheUpgradeTook => new WhichArmTheUpgradeTook($why->value),
+        met: static fn(Obstacle $why): WhichArmTheUpgradeTook => new WhichArmTheUpgradeTook($why->kind()->value),
     )->said;
 
     expect($arm(WhatTheUpgradeCameTo::said($upgrade)))->toBe('said')
-        ->and($arm(WhatTheUpgradeCameTo::met(Obstacle::StackDidNotAnswer)))->toBe('no_answer');
+        ->and($arm(WhatTheUpgradeCameTo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('no_answer');
 });

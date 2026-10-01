@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowSeriousALineIs;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Said;
@@ -464,7 +465,7 @@ it('N2-R10 — asks for as much as a phone shows, and for this service', functio
 });
 
 it('N1-R10 — a stack that could not be asked says which of the six it met', function (): void {
-    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
 
     expect($screen->howMany())->toBe(0)
         // Meeting an obstacle is not losing the session: the device asked and
@@ -472,8 +473,8 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         // front of an operator whose session works, and the sign-in branch comes
         // first in the template — so which of the six was met is never reached.
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->answer()->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be a window over, so no claim is made about an edge.
         ->and($screen->answer()->isAWindow)->toBeFalse()
         ->and($screen->answer()->bound)->toBe(0)
@@ -568,7 +569,7 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     // by absence of an error, because a screen that kept its held window would
     // hand back the same lines and leave somebody tapping a button that changes
     // nothing.
-    $saying = AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork);
+    $saying = AServiceThatSpoke::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theLogScreen($saying);
 
     $screen->answer();
@@ -597,7 +598,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // make them itself: a fold cannot forget anything, and a session left in the
     // store is resumed on the next frame and refused again.
     $keychain = AKeychainInMemory::working();
-    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
     expect($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 
@@ -621,10 +622,10 @@ it('N3-R13 — an obstacle that is not a refused credential leaves the session a
     // in flight mode has not lost its pairing, and forgetting the session would
     // make somebody sign in again to read a log they were already entitled to.
     $keychain = AKeychainInMemory::working();
-    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork), keychain: $keychain);
+    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), keychain: $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });
 

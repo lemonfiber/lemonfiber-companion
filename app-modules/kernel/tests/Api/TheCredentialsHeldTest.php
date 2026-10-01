@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\CredentialSaysNothing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\TheCredentialsHeld;
@@ -71,9 +72,9 @@ it('keeps every credential in the stack\'s order, with the store beside them', f
 it('a stack that could not be asked never holds an empty list', function (): void {
     $fold = static fn(WhatWasFoundOfTheCredentials $answer): string => $answer->either(
         found: static fn(TheCredentialsHeld $held): WhichArmTheCredentialsTook => new WhichArmTheCredentialsTook(sprintf('found:%d', $held->count())),
-        met: static fn(Obstacle $why): WhichArmTheCredentialsTook => new WhichArmTheCredentialsTook(sprintf('met:%s', $why->value)),
+        met: static fn(Obstacle $why): WhichArmTheCredentialsTook => new WhichArmTheCredentialsTook(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
     expect($fold(WhatWasFoundOfTheCredentials::found(TheCredentialsHeld::of(aStoreThatProtects()))))->toBe('found:0')
-        ->and($fold(WhatWasFoundOfTheCredentials::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
+        ->and($fold(WhatWasFoundOfTheCredentials::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

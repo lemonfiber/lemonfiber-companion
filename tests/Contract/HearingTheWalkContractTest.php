@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearingTheWalk;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -22,6 +23,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatNarrates;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhereEachOpenResumed;
 
 // The HearingTheWalk contract, run against the adapter and against the fake.
 //
@@ -159,7 +161,7 @@ function whatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
         alive: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('alive'),
         said: static fn(ALineItSaid $line): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord(aLineHeardAsAWord($line)),
         closed: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('closed'),
-        met: static fn(Obstacle $why): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord($why->value),
+        met: static fn(Obstacle $why): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord($why->kind()->value),
     )->said;
 }
 
@@ -245,14 +247,14 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     // A connection that was never made is asked after twice more before it is
     // reported, so a stack that cannot be heard answers all three times.
     $table = [
-        [[MockResponse::make('{"error":"no"}', 401)], Obstacle::CredentialWasRefused],
-        [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::StackDidNotAnswer],
-        [[$unreachable, $unreachable, $unreachable], Obstacle::StackDidNotAnswer],
+        [[MockResponse::make('{"error":"no"}', 401)], Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [[$unreachable, $unreachable, $unreachable], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfFollowingAWalk($answered, [WhatTheWalkSaid::met($why)]) as $which => $make) {
-            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([$why->value], sprintf('%s, %s', $which, $why->value));
+            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([$why->kind()->value], sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });
@@ -267,9 +269,9 @@ it('cannot hear a step it cannot read, and says so as a stack that did not answe
     ] as $said) {
         foreach (everyWayOfFollowingAWalk(
             [MockResponse::make($said)],
-            [WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)],
+            [WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
         ) as $which => $make) {
-            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([Obstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
         }
     }
 });
@@ -315,9 +317,7 @@ it('opens a stream that ended again, once it has said that it ended', function (
         aLineHeardAsAWord(theSearchingLine()),
         'closed',
         aLineHeardAsAWord(theDownloadingLine()),
-    ]);
-
-    $stack->assertSentCount(2);
+    ])->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
 });
 
 it('opens again straight after a stream that ended having said nothing', function (): void {
@@ -346,11 +346,24 @@ it('holds nothing after a step it could not read, so the next wake opens again',
     ]);
 
     expect(whatWakesOfTheWalkHear(new Narrators(new PinnedClients()), 2))->toBe([
-        Obstacle::StackDidNotAnswer->value,
+        KindOfObstacle::StackDidNotAnswer->value,
         aLineHeardAsAWord(theDownloadingLine()),
-    ]);
+    ])->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
+});
 
-    $stack->assertSentCount(2);
+it('forgets where the stream left off once let go of', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aStepEvent(aSearchingStep())),
+        MockResponse::make(''),
+    ]);
+    $hearing = new Narrators(new PinnedClients());
+
+    whatWakesOfTheWalkHear($hearing, 1);
+    $hearing->letGo();
+    whatWakesOfTheWalkHear($hearing, 1);
+
+    expect(WhereEachOpenResumed::in($stack))->toBe([null, null]);
 });
 
 it('stands in for a stack with steps the contract would accept', function (): void {

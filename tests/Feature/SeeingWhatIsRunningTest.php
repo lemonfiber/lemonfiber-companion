@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWouldBeUpdated;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowThisCopyGotThere;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -146,10 +147,10 @@ it('says what an update brings and leaves behind, and that the services are upda
 });
 
 it('a stack that could not be asked is not a copy that is up to date', function (): void {
-    $answer = theCopyScreen(AStackThatChecksItself::met(Obstacle::StackDidNotAnswer))->answer();
+    $answer = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
-        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([
             $answer->running, $answer->installedSaid, $answer->owner, $answer->standsSaid, $answer->offered, $answer->out,
@@ -168,7 +169,7 @@ it('a session that has ended is not a copy that is up to date', function (): voi
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseCopyIsRead()->id()))->toBeFalse();
@@ -187,7 +188,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
 });
 
 it('asking again asks the machine again', function (): void {
-    $checking = AStackThatChecksItself::met(Obstacle::DeviceHasNoNetwork);
+    $checking = AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theCopyScreen($checking);
 
     $screen->answer();
@@ -198,7 +199,7 @@ it('asking again asks the machine again', function (): void {
 });
 
 it('refuses a route parameter that is not text', function (): void {
-    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theCopyScreen(AStackThatChecksItself::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);

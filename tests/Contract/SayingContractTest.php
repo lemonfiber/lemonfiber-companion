@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Said;
@@ -181,7 +182,7 @@ function everyLineOf(Saying $saying): string
             return new WhatTheServiceTurnedOutToSay(implode(' | ', $rows));
         },
         met: static fn(Obstacle $why): WhatTheServiceTurnedOutToSay
-            => new WhatTheServiceTurnedOutToSay($why->value),
+            => new WhatTheServiceTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -202,7 +203,7 @@ function whatTheWindowClaims(Saying $saying): string
             $scrollback->isAWindow() ? 'a window' : 'the whole',
         )),
         met: static fn(Obstacle $why): WhatTheServiceTurnedOutToSay
-            => new WhatTheServiceTurnedOutToSay($why->value),
+            => new WhatTheServiceTurnedOutToSay($why->kind()->value),
     )->said;
 }
 
@@ -235,14 +236,14 @@ it('N2-R10, G3-R10 — names the service and says the view is a window rather th
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfReadingAService($answered, $why) as $which => $make) {
-            expect(everyLineOf($make()))->toBe($why->value, $which);
+            expect(everyLineOf($make()))->toBe($why->kind()->value, $which);
         }
     }
 });
@@ -260,8 +261,8 @@ it('a line this app cannot read is a stack that did not answer', function (): vo
         ])),
     );
 
-    foreach (everyWayOfReadingAService($answered, Obstacle::StackDidNotAnswer) as $which => $make) {
-        expect(everyLineOf($make()))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfReadingAService($answered, Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        expect(everyLineOf($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });
 

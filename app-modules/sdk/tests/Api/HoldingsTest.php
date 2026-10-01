@@ -87,7 +87,7 @@ function whatTheShelfHeld(mixed $data): array
             return new WhatAShelfReadingCameTo($lines);
         },
         refused: static fn(Obstacle $why): WhatAShelfReadingCameTo
-            => new WhatAShelfReadingCameTo([$why->value]),
+            => new WhatAShelfReadingCameTo([$why->kind()->value]),
     )->rows;
 }
 

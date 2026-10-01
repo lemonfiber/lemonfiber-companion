@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Measuring;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasMeasured;
@@ -44,8 +43,8 @@ final readonly class Surveyors implements Measuring
             return WhatWasMeasured::measured(WhereTheRoomIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasMeasured::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SpaceIsUnreadable) {
-            return WhatWasMeasured::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SpaceIsUnreadable $why) {
+            return WhatWasMeasured::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

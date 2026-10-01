@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ResettingTheConfiguration;
@@ -104,7 +105,7 @@ function howThePreviewWasAskedFor(ResettingTheConfiguration $resetting): string
 {
     return $resetting->wouldRevert(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'))->either(
         started: static fn(Job $job): WhatResettingSaid => new WhatResettingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->name),
+        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
     )->said;
 }
 
@@ -113,7 +114,7 @@ function howTheResetWasAgreed(ResettingTheConfiguration $resetting): string
 {
     return $resetting->revert(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'), AResetAgreed::to(WhatAResetSays::previewed()))->either(
         started: static fn(Job $job): WhatResettingSaid => new WhatResettingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->name),
+        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
     )->said;
 }
 
@@ -125,7 +126,7 @@ function whatBecameOfResetting(ResettingTheConfiguration $resetting, string $job
         done: static fn(TheReset $reset): WhatResettingSaid => new WhatResettingSaid(whatTheResetReportSays($reset)),
         refused: static fn(ARefusalInItsWords $why): WhatResettingSaid => new WhatResettingSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhatResettingSaid => new WhatResettingSaid('ended'),
-        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->name),
+        met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->kind()->name),
     )->said;
 }
 
@@ -137,18 +138,18 @@ it('comes away from asking for a preview with the job the stack named', function
 
 it('comes away from a preview the stack would not take on with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"no"}', 403), Obstacle::NotForThisAccount],
-        [MockResponse::make('{"error":"busy"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [aResetTakenOn(' '), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howThePreviewWasAskedFor(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name)
-            ->and(howThePreviewWasAskedFor(AStackThatResets::met($why)))->toBe($why->name);
+        expect(howThePreviewWasAskedFor(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
+            ->and(howThePreviewWasAskedFor(AStackThatResets::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -160,17 +161,17 @@ it('comes away from a yes with the job the stack named', function (): void {
 
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"busy"}', 409), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [aResetTakenOn(' '), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheResetWasAgreed(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name)
-            ->and(howTheResetWasAgreed(AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), $why)))->toBe($why->name);
+        expect(howTheResetWasAgreed(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
+            ->and(howTheResetWasAgreed(AStackThatResets::previewingButRefusing(HowTheResetIsGoing::done(WhatAResetSays::previewed()), $why)))->toBe($why->kind()->name);
     }
 });
 
@@ -203,7 +204,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(WhatAResetSays::envelope(confirmed: false, changed: $changed)))]);
 
-    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no word on whether it was carried out' => [['confirmed' => 'yes']],
     'no files' => [['reverted' => null]],
@@ -226,7 +227,7 @@ it('a report missing a part altogether is a stack that did not answer, never a s
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($envelope))]);
 
-    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with(['confirmed', 'reverted', 'reverted_connections']);
 
 it('a reset the stack refused is its refusal, in its words, with what it named', function (): void {
@@ -262,15 +263,15 @@ it('a reset the stack no longer has a job for is ended, not unreachable and not 
 
 it('asking after a reset tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"no"}', 403), Obstacle::NotForThisAccount],
-        [MockResponse::make('', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfResetting($answered, HowTheResetIsGoing::met($why), HowTheResetIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfResetting($build()))->toBe($why->name, $which);
+            expect(whatBecameOfResetting($build()))->toBe($why->kind()->name, $which);
         }
     }
 });

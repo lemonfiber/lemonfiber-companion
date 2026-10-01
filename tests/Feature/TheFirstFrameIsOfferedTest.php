@@ -7,8 +7,8 @@ use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -419,7 +419,7 @@ it('draws the frame the surface registered, by name', function (): void {
 
 it('N1-R37 — a launch with no network says so, and says what to do', function (): void {
     // The half of the requirement that producing the answer does not satisfy.
-    // `Obstacle::DeviceHasNoNetwork` existed from the day the obstacles were
+    // `Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)` existed from the day the obstacles were
     // written and nothing produced one; then something did, and for a while
     // nothing showed it. Either way the operator meets a stack that will not
     // answer and is sent to a cupboard to look at a machine that is fine.
@@ -432,8 +432,8 @@ it('N1-R37 — a launch with no network says so, and says what to do', function 
         ),
     );
 
-    expect($screen->howItOpened()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->howItOpened()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy());
+    expect($screen->howItOpened()->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+        ->and($screen->howItOpened()->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy());
 });
 
 it('N1-R37 — the stacks are still shown to a device with no network', function (): void {

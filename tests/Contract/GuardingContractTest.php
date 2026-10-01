@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -103,7 +104,7 @@ function howTheGuardWasAskedFor(Guarding $guarding): string
 {
     return $guarding->guard(aStackThatGuardsItsData(), Session::of('a-session-not-a-secret'), aGuardForTwoForms())->either(
         started: static fn(Job $job): WhatGuardingSaid => new WhatGuardingSaid(sprintf('following %s', $job->shown())),
-        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->name),
+        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->kind()->name),
     )->said;
 }
 
@@ -121,7 +122,7 @@ function whereTheGuardStands(HowTheGuardIsGoing $going): string
         refused: static fn(string $said): WhatGuardingSaid => new WhatGuardingSaid(sprintf('refused|%s', $said)),
         ended: static fn(): WhatGuardingSaid => new WhatGuardingSaid('ended'),
         unknown: static fn(): WhatGuardingSaid => new WhatGuardingSaid('unknown'),
-        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->name),
+        met: static fn(Obstacle $why): WhatGuardingSaid => new WhatGuardingSaid($why->kind()->name),
     )->said;
 }
 
@@ -151,17 +152,17 @@ it('sends the action the guard is asked by, naming every form', function (): voi
 
 it('comes away from a guard that was not taken on with the obstacle rather than a job', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'watch', 'job' => ' ']]), 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'watch', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheGuardWasAskedFor(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
-        expect(howTheGuardWasAskedFor(AStackThatGuards::met($why)))->toBe($why->name);
+        expect(howTheGuardWasAskedFor(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
+        expect(howTheGuardWasAskedFor(AStackThatGuards::met($why)))->toBe($why->kind()->name);
     }
 });
 
@@ -205,8 +206,8 @@ it('a guard that never started carries the stack\'s own reason, from an error or
         expect(whatBecameOfTheGuard($build()))->toBe('refused|No data location is configured, so there is nothing to guard.', $which);
     }
 })->with([
-    'an error' => [MockResponse::make((string) json_encode(whatAStackSaysOfAGuardItCouldNotStart()), 409)],
-    'prose' => [MockResponse::make('No data location is configured, so there is nothing to guard.', 409)],
+    'an error' => [MockResponse::make((string) json_encode(whatAStackSaysOfAGuardItCouldNotStart()), 422)],
+    'prose' => [MockResponse::make('No data location is configured, so there is nothing to guard.', 422)],
 ]);
 
 it('a guard ended without an outcome is ended, and one the stack no longer knows is unknown', function (): void {
@@ -221,15 +222,15 @@ it('a guard ended without an outcome is ended, and one the stack no longer knows
 
 it('asking after a guard tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"not yours"}', 403), Obstacle::NotForThisAccount],
-        [MockResponse::make('', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"not yours"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+        [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfGuarding($answered, HowTheGuardIsGoing::met($why)) as $which => $build) {
-            expect(whatBecameOfTheGuard($build()))->toBe($why->name, sprintf('%s / %s', $which, $why->name));
+            expect(whatBecameOfTheGuard($build()))->toBe($why->kind()->name, sprintf('%s / %s', $which, $why->kind()->name));
         }
     }
 });
@@ -238,7 +239,7 @@ it('a report this app cannot read is a stack that did not answer, never a guard 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfAGuard($changed)))]);
 
-    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no word on whether it stopped them' => [['stopped' => 'yes']],
     'no reason' => [['reason' => ' ']],
@@ -252,7 +253,7 @@ it('a payload with no data is a stack that did not answer', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'watch', 'data' => 'gone']))]);
 
-    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('lets a guard go by its name, and answers where it then stands', function (): void {
@@ -276,8 +277,8 @@ it('lets a guard go by its name, and answers where it then stands', function ():
 it('letting go of a guard the stack no longer knows is unknown, and a refusal is what the operator met', function (): void {
     foreach ([
         [MockResponse::make('{"error":"No work in this run goes by that name."}', 404), 'unknown'],
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused->name],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer->name],
+        [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused->name],
+        [MockResponse::make('not json at all'), KindOfObstacle::StackDidNotAnswer->name],
     ] as [$answered, $said]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\MakingPairingCodes;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -124,7 +125,7 @@ function saidOfTheCode(WhatBecameOfThePairingCode $became): string
         )),
         ended: static fn(): WhatAskingForACodeSaid => new WhatAskingForACodeSaid('ended'),
         refused: static fn(string $because): WhatAskingForACodeSaid => new WhatAskingForACodeSaid(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatAskingForACodeSaid => new WhatAskingForACodeSaid($why->name),
+        met: static fn(Obstacle $why): WhatAskingForACodeSaid => new WhatAskingForACodeSaid($why->kind()->name),
     )->said;
 }
 
@@ -170,7 +171,7 @@ it('reads an address with nothing to say about it as having no caution', functio
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
     $said = 'lemonfiber has not been served encrypted on your network, so a phone has nothing to reach';
-    $refused = static fn(): MockResponse => MockResponse::make($said, 409, ['Content-Type' => 'text/plain']);
+    $refused = static fn(): MockResponse => MockResponse::make($said, 422, ['Content-Type' => 'text/plain']);
     $fake = AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::refused($said));
 
     MockClient::destroyGlobal();
@@ -186,20 +187,20 @@ it('hands on a refusal in the stack\'s own words, asking or following', function
 
 it('tells a refused session and a silent stack from a refusal', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfAskingForACode($answered, WhatBecameOfThePairingCode::met($why)) as $which => $build) {
-            expect(whatBecameOfTheCode($build()))->toBe($why->name, $which);
+            expect(whatBecameOfTheCode($build()))->toBe($why->kind()->name, $which);
         }
 
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toBe($why->name);
-        expect(howTheCodeWasAskedFor(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met($why))))->toBe($why->name);
+        expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toBe($why->kind()->name);
+        expect(howTheCodeWasAskedFor(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met($why))))->toBe($why->kind()->name);
     }
 });
 
@@ -207,7 +208,7 @@ it('an asking answered with a handle it cannot follow is a stack that did not an
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'companion-pair', 'job' => ' ']]), 202)]);
 
-    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('a code still being made is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
@@ -226,7 +227,7 @@ it('a code this app cannot read is a stack that did not answer, never a code wit
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith($changed)))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no material' => [['material' => 'here']],
     'no expiry' => [['material' => ['address' => 'https://den.local:8443', 'expires' => 'soon']]],
@@ -241,7 +242,7 @@ it('a payload that is not a pairing at all is a stack that did not answer', func
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'pairing', 'data' => 'nothing']))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('the fake counts each asking and names the handle each following asked by', function (): void {

@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -182,11 +183,11 @@ it('N1-R44 — a device with no session for it asks nothing', function (): void 
 });
 
 it('N1-R10 — an obstacle is what stood in the way, with what to do about it', function (): void {
-    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork));
+    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $answer = $screen->answer();
 
-    expect($answer->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($answer->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+    expect($answer->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+        ->and($answer->went->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy())
         // Signed in, and the listing is empty because nothing was read — not
         // because the machine is running nothing.
         ->and($answer->went->isSignedIn)->toBeTrue()
@@ -207,7 +208,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
     // frame resumes it, is refused again, and the operator reads a sign-in
     // prompt over a device that still believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
 
@@ -233,15 +234,15 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
     // and forgetting the session there would make somebody sign in again to
     // start a service they were entitled to start all along.
     $keychain = AKeychainInMemory::working();
-    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork), $keychain);
+    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
 });
 
 it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
-    $supervising = AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork);
+    $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theServicesScreen($supervising);
 
     $screen->answer();

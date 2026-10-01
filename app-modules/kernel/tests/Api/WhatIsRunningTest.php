@@ -16,6 +16,7 @@ use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
+use Tests\Support\AnObstacleOfEachKind;
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
 function whatTheRunningVerbsCostHere(): Disturbances
@@ -39,7 +40,7 @@ function whatCameBackAboutWhatRuns(WhatIsRunning $answer): string
     return $answer->either(
         these: static fn(Daemons $daemons): WhatTheListingSaid
             => new WhatTheListingSaid(sprintf('%d running', $daemons->count())),
-        met: static fn(Obstacle $why): WhatTheListingSaid => new WhatTheListingSaid($why->value),
+        met: static fn(Obstacle $why): WhatTheListingSaid => new WhatTheListingSaid($why->kind()->value),
     )->said;
 }
 
@@ -75,7 +76,7 @@ it('a stack running nothing is an answer and not a gap', function (): void {
 });
 
 it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
-    foreach (Obstacle::cases() as $why) {
-        expect(whatCameBackAboutWhatRuns(WhatIsRunning::met($why)))->toBe($why->value);
+    foreach (AnObstacleOfEachKind::all() as $why) {
+        expect(whatCameBackAboutWhatRuns(WhatIsRunning::met($why)))->toBe($why->kind()->value);
     }
 });

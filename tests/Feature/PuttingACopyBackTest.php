@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
@@ -274,11 +275,11 @@ it('says a copy that lists nothing inside it does', function (): void {
 });
 
 it('offers nothing to agree to where the stack would not list the copy', function (): void {
-    $puttingBack = AStackThatPutsCopiesBack::met(Obstacle::StackDidNotAnswer);
+    $puttingBack = AStackThatPutsCopiesBack::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePuttingBackScreen($puttingBack);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+    expect(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($drawn->offers())->not->toContain(__('stacks.put_back.put_it_back'))
         ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'));
 
@@ -293,7 +294,7 @@ it('says a copy the stack will not list in its words, apart from a stack that co
     $keychain = AKeychainInMemory::working();
     $screen = thePuttingBackScreen($puttingBack, $keychain);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
-    $unreachable = WhatTheDeviceWouldDraw::by(thePuttingBackScreen(AStackThatPutsCopiesBack::met(Obstacle::StackDidNotAnswer)));
+    $unreachable = WhatTheDeviceWouldDraw::by(thePuttingBackScreen(AStackThatPutsCopiesBack::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
 
     expect(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['refused' => [
         'This backup is from a newer lemonfiber',
@@ -306,7 +307,7 @@ it('says a copy the stack will not list in its words, apart from a stack that co
         ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => 'the backup is 2.0.0, this is 0.9.0']))
         ->and($drawn->said())->toContain(__('stacks.put_back.same_answer'))
         ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'))
-        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('stacks.copy.see_the_copies'))
         ->and($drawn->offers())->not->toContain(__('stacks.put_back.put_it_back'))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
@@ -356,7 +357,7 @@ it('says a yes the stack stopped on a problem in its words, offers reading the l
         ->and($drawn->said())->toContain('The backup could not be unpacked')
         ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => '/srv/stack/config: permission denied']))
         ->and($drawn->said())->toContain(__('stacks.put_back.same_answer'))
-        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('stacks.put_back.look_again'))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'));
 
@@ -398,7 +399,7 @@ it('asks for a session rather than a listing where this device holds none', func
 
 it('lets go of a session the stack refused while listing', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::met(Obstacle::CredentialWasRefused), $keychain);
+    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackACopyGoesBackOn()->id()))->toBeFalse();
@@ -507,14 +508,14 @@ it('says a restore the stack has no outcome for is not known, rather than failed
 });
 
 it('says what stood in the way of a yes the stack refused, and asks for the listing afresh', function (): void {
-    $puttingBack = AStackThatPutsCopiesBack::listingButRefusing(aListingOfTheCopy(toTheNewRoot()), Obstacle::StackDidNotAnswer);
+    $puttingBack = AStackThatPutsCopiesBack::listingButRefusing(aListingOfTheCopy(toTheNewRoot()), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePuttingBackScreen($puttingBack);
     $screen->answer();
     $screen->agree();
 
-    expect(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['cameBack' => false, 'met' => Obstacle::StackDidNotAnswer->said()]))
+    expect(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($screen->isWorking())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
 
@@ -552,8 +553,8 @@ it('asks for the listing afresh when asked again before a yes', function (): voi
 it('lets go of a session refused while putting back or asking after', function (bool $whileAsking): void {
     $keychain = AKeychainInMemory::working();
     $puttingBack = $whileAsking
-        ? AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::met(Obstacle::CredentialWasRefused))
-        : AStackThatPutsCopiesBack::listingButRefusing(aListingOfTheCopy(toTheNewRoot()), Obstacle::CredentialWasRefused);
+        ? AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)))
+        : AStackThatPutsCopiesBack::listingButRefusing(aListingOfTheCopy(toTheNewRoot()), Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = thePuttingBackScreen($puttingBack, $keychain);
     $screen->answer();
     $screen->agree();

@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
@@ -368,7 +369,7 @@ function whereItStands(KeepingCurrent $keeping): string
                 implode(',', $history),
             ));
         },
-        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
+        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
     )->said;
 }
 
@@ -386,7 +387,7 @@ function howItWasTaken(KeepingCurrent $keeping, TakingAnUpdate $agreed): string
         started: static fn(Job $job): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay(
             sprintf('following %s', $job->shown()),
         ),
-        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
+        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
     )->said;
 }
 
@@ -449,14 +450,14 @@ it('N2-R17 — names only the services an update would actually change', functio
 
 it('N1-R10 — tells a credential that was refused from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfKeepingCurrent($answered, $why) as $which => $build) {
-            expect(whereItStands($build()))->toBe($why->name, $which);
+            expect(whereItStands($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -486,14 +487,14 @@ it('comes away from a take that did not happen with the obstacle rather than a j
     // follow work that was never started — which is the one thing an operator
     // cannot tell by looking.
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfKeepingCurrent($answered, $why) as $which => $build) {
-            expect(howItWasTaken($build(), theUpdateTheOperatorAgreedTo()))->toBe($why->name, $which);
+            expect(howItWasTaken($build(), theUpdateTheOperatorAgreedTo()))->toBe($why->kind()->name, $which);
         }
     }
 });
@@ -569,7 +570,7 @@ function whatTheTakingSaid(KeepingCurrent $keeping): string
                 return new WhatTheUpkeepTurnedOutToSay(implode(' ', $said));
             },
             ended: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('ended'),
-            met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
+            met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->kind()->name),
         )->said;
 }
 
@@ -638,14 +639,14 @@ it('an update the stack no longer has a job for is ended, not unreachable and no
 
 it('N1-R10 — asking after an update tells a refused session from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfFollowingAnUpdate($answered, HowTheUpdateIsGoing::met($why)) as $which => $build) {
-            expect(whatTheTakingSaid($build()))->toBe($why->name, $which);
+            expect(whatTheTakingSaid($build()))->toBe($why->kind()->name, $which);
         }
     }
 });

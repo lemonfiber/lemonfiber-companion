@@ -13,7 +13,6 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Explaining;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundOfTheWords;
@@ -50,8 +49,8 @@ final readonly class Explainers implements Explaining
             return WhatWasFoundOfTheWords::found(TheWordsExplained::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheWords::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable) {
-            return WhatWasFoundOfTheWords::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
+            return WhatWasFoundOfTheWords::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -67,8 +66,8 @@ final readonly class Explainers implements Explaining
             return WhatWasSaidOfOneWord::explained(TheWordsExplained::one($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedAWord($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable) {
-            return WhatWasSaidOfOneWord::met(Obstacle::StackDidNotAnswer);
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
+            return WhatWasSaidOfOneWord::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

@@ -6,6 +6,7 @@ use Lemonfiber\Sdk\Http\ActionRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OneKindUpgraded;
@@ -102,7 +103,7 @@ function howAnUpgradeReadsAsText(WhatTheUpgradeCameTo $came): string
 
             return new WhatTheUpgradeCameBackAs(sprintf('%s:%s', $upgrade->wasCarriedOut() ? 'carried out' : 'described', implode(';', $kinds)));
         },
-        met: static fn(Obstacle $why): WhatTheUpgradeCameBackAs => new WhatTheUpgradeCameBackAs(sprintf('refused:%s', $why->value)),
+        met: static fn(Obstacle $why): WhatTheUpgradeCameBackAs => new WhatTheUpgradeCameBackAs(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -166,7 +167,7 @@ foreach (everyWayOfDescribingAnUpgrade() as $name => $build) {
 
 it('the fake and the adapter both refuse rather than answer with nothing', function (): void {
     expect(anUpgradeDescribedWith(['nothing' => 'the contract knows']))->toBe('refused:no_answer')
-        ->and(howAnUpgradeReadsAsText(AStackThatUpgrades::met(Obstacle::StackDidNotAnswer)->upgrade(
+        ->and(howAnUpgradeReadsAsText(AStackThatUpgrades::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->upgrade(
             theMachineWhoseLibraryIsUpgraded(),
             theSessionAnUpgradeIsAskedOn(),
             anUpgradeToAgreeTo(),

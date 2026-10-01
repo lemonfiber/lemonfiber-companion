@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -152,7 +153,7 @@ function everythingTheInvitingSays(WhatBecameOfTheInvitation $became): string
         },
         ended: static fn(): WhatTheInvitingCameTo => new WhatTheInvitingCameTo('ended'),
         refused: static fn(string $because): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('refused %s', $because)),
-        met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->value),
+        met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
     )->said;
 }
 
@@ -188,9 +189,9 @@ it('rehearses and invites, each answered with the work to follow', function (): 
 
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -201,7 +202,7 @@ it('tells a session that has ended from a stack that is not answering', function
 
         foreach ($ways as $which => $make) {
             expect(everythingTheInvitingSays($make()->takeThePasswordOff(aStackToInviteSomebodyTo(), Session::of('a-session-not-a-secret'), SomebodyInTheHousehold::called('anna'))))
-                ->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+                ->toBe($why->kind()->value, sprintf('%s / %s', $which, $why->kind()->value));
         }
     }
 });
@@ -256,7 +257,7 @@ it('reads who is in, joined or still invited', function (): void {
 
                 return new WhatTheInvitingCameTo(implode(',', $found));
             },
-            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->value),
+            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
         )->said;
 
         expect($said)->toBe('anna:joined,bob:invited', $which);
@@ -265,16 +266,16 @@ it('reads who is in, joined or still invited', function (): void {
 
 it('tells a household that could not be read from nobody in', function (): void {
     $ways = [
-        'the fake' => static fn(): Inviting => AStackThatInvites::answering()->readingAs(Obstacle::StackDidNotAnswer),
+        'the fake' => static fn(): Inviting => AStackThatInvites::answering()->readingAs(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         'the adapter' => everyWayOfInviting(MockResponse::make('{"error":"gone"}', 500))['the adapter'],
     ];
 
     foreach ($ways as $which => $make) {
         $said = $make()->whoIsIn(aStackToInviteSomebodyTo(), Session::of('a-session-not-a-secret'))->either(
             found: static fn(TheMembers $members): WhatTheInvitingCameTo => new WhatTheInvitingCameTo(sprintf('%d found', count($members))),
-            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->value),
+            met: static fn(Obstacle $why): WhatTheInvitingCameTo => new WhatTheInvitingCameTo($why->kind()->value),
         )->said;
 
-        expect($said)->toBe(Obstacle::StackDidNotAnswer->value, $which);
+        expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });

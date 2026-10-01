@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -79,7 +80,7 @@ function aTabThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $st
 {
     $keychain = signedIntoBoth();
     $screen = new HowCurrentThisStackIs(
-        AStackThatKeepsCurrent::met(Obstacle::DeviceHasNoNetwork),
+        AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(
             StacksInMemory::holding(theCellar(), theShed()),
@@ -101,7 +102,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
     $keychain = signedIntoBoth();
     $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
     $screen = new HowThisStackIs(
-        AStackThatWasAsked::met(Obstacle::StackDidNotAnswer),
+        AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
         $own,

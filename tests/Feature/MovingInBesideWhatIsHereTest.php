@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ARecord;
 use Modules\Kernel\Api\AServiceAdopted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -494,13 +495,13 @@ it('leaves an answer where it is and moves nothing', function (): void {
 });
 
 it('an act the stack could not be reached for is an obstacle beside the survey, that can be asked again', function (): void {
-    $movingIn = AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::StackDidNotAnswer));
+    $movingIn = AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $screen = theScreenForMovingIn($movingIn);
     $screen->wouldMoveIn('replace');
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howTheMoveIsGoing()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($drawn->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+    expect($screen->howTheMoveIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->toContain(__('stacks.already_here.modes'))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
@@ -512,7 +513,7 @@ it('an act the stack could not be reached for is an obstacle beside the survey, 
 
 it('a credential the stack refused when moving in signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theScreenForMovingIn(AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::CredentialWasRefused)), keychain: $keychain);
+    $screen = theScreenForMovingIn(AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
     $screen->wouldMoveIn('adopt');
 
     expect($screen->howTheMoveIsGoing()->went->isSignedIn)->toBeFalse()

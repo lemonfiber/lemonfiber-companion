@@ -12,7 +12,7 @@ Lemonfiber.Storage.Forget        Lemonfiber.Telling.ScheduleRecurring
 Lemonfiber.Scanning.Read         Lemonfiber.Telling.CancelAll
                                  Lemonfiber.Telling.Pending
 Lemonfiber.Link.Status           Lemonfiber.Telling.ClearBadge
-                                 Lemonfiber.Telling.Standing
+Lemonfiber.LocalNetwork.Probe    Lemonfiber.Telling.Standing
 Lemonfiber.Handover.Offer        Lemonfiber.Telling.Ask
 Lemonfiber.Handover.OfferFile
 ```

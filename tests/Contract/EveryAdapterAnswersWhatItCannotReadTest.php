@@ -53,6 +53,7 @@ use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -895,7 +896,7 @@ function whatACallAnswered(Closure $ask): string
     try {
         $met = theObstacleIn($ask());
 
-        return $met instanceof Obstacle ? $met->value : 'what was read';
+        return $met instanceof Obstacle ? $met->kind()->value : 'what was read';
     } catch (LogicException|RuntimeException|TypeError $escaped) {
         return sprintf('%s, escaped as an exception', $escaped::class);
     }
@@ -950,7 +951,7 @@ it('turns every spoiled answer into an outcome rather than an exception', functi
 });
 
 it('answers a stack that could not be asked as one that did not answer', function (string $which, Closure $ask): void {
-    expect(whatACallAnsweredToNothing($ask))->toBe(Obstacle::StackDidNotAnswer->value, sprintf(
+    expect(whatACallAnsweredToNothing($ask))->toEqual(KindOfObstacle::StackDidNotAnswer->value, sprintf(
         '%s did not answer a stack nothing answered for with the obstacle for one. An adapter '
         . 'catches what the SDK raises when nothing answers and answers with that obstacle, '
         . 'beside every other failure it answers the same way.',
@@ -963,7 +964,7 @@ it('answers a stack that could not be asked as one that did not answer', functio
 });
 
 it('answers a machine that is not the one paired as exactly that', function (string $which, Closure $ask): void {
-    expect(whatACallAnsweredToAStranger($ask))->toBe(Obstacle::StackIsNotTheOnePaired->value, sprintf(
+    expect(whatACallAnsweredToAStranger($ask))->toEqual(KindOfObstacle::StackIsNotTheOnePaired->value, sprintf(
         '%s did not answer a peer presenting another certificate with the obstacle for a stack that '
         . 'is not the one paired. An adapter catches the refusal the SDK raises for it beside the '
         . 'refusals it hands to the one place that decides what a refusal meant.',

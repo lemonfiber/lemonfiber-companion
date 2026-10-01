@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -245,7 +246,7 @@ function whatAMemberWasOwed(Owing $owing): string
             return new WhatAMemberCameAwayWith(sprintf('told:%s', implode('|', $lines)));
         },
         refused: static fn(Obstacle $why): WhatAMemberCameAwayWith
-            => new WhatAMemberCameAwayWith(sprintf('refused:%s', $why->value)),
+            => new WhatAMemberCameAwayWith(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -301,7 +302,7 @@ it('N3-R3 — tells a stack that would not say from a member with nothing to be 
     // was not yours to ask* as *there is nothing to tell you*.
     $refused = MockResponse::make('{"error":"no"}', 403);
 
-    foreach (everyWayOfBeingOwed($refused, [], Obstacle::NotForThisAccount) as $which => $build) {
+    foreach (everyWayOfBeingOwed($refused, [], Obstacle::of(KindOfObstacle::NotForThisAccount)) as $which => $build) {
         expect(whatAMemberWasOwed($build()))->toBe('refused:not_for_this_account', $which);
     }
 
@@ -310,21 +311,21 @@ it('N3-R3 — tells a stack that would not say from a member with nothing to be 
 
 it('N1-R10 — says the same about a reading it could not get', function (): void {
     $table = [
-        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         // A blank line among real ones is something this app cannot show, and
         // the member meets the same thing as an answer that never arrived.
         [
             MockResponse::make((string) json_encode(whatAStackSendsOneMember(['   ']))),
-            Obstacle::StackDidNotAnswer,
+            Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         ],
     ];
 
     foreach ($table as [$answered, $why]) {
         foreach (everyWayOfBeingOwed($answered, [], $why) as $which => $build) {
             expect(whatAMemberWasOwed($build()))
-                ->toBe(sprintf('refused:%s', $why->value), sprintf('%s, %s', $which, $why->value));
+                ->toBe(sprintf('refused:%s', $why->kind()->value), sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
 });
@@ -387,7 +388,7 @@ function whatAMemberAskedFor(Owing $owing): string
             return new WhatAMemberSawOfTheirRequests(sprintf('told:%s', implode('|', $rows)));
         },
         refused: static fn(Obstacle $why): WhatAMemberSawOfTheirRequests
-            => new WhatAMemberSawOfTheirRequests(sprintf('refused:%s', $why->value)),
+            => new WhatAMemberSawOfTheirRequests(sprintf('refused:%s', $why->kind()->value)),
     )->said;
 }
 
@@ -441,7 +442,7 @@ it('N3-R6 — tells a stack that would not say from a member who has asked for n
     MockClient::global([MockResponse::make('{"error":"no"}', 403)]);
 
     expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))->toBe('refused:not_for_this_account')
-        ->and(whatAMemberAskedFor(AMemberWhoIsOwed::met(Obstacle::NotForThisAccount)))
+        ->and(whatAMemberAskedFor(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount))))
         ->toBe('refused:not_for_this_account')
         ->and(whatAMemberAskedFor(AMemberWhoIsOwed::owedNothing()))->toBe('told:');
 });
@@ -453,9 +454,9 @@ it('N1-R10 — says the same about a list of requests it could not read', functi
     $short = whatAStackSendsOneMemberWhoHasAsked([['id' => 1, 'state' => 'waiting-for-approval']]);
 
     $table = [
-        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
-        [MockResponse::make((string) json_encode($short)), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode($short)), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -463,7 +464,7 @@ it('N1-R10 — says the same about a list of requests it could not read', functi
         MockClient::global([$answered]);
 
         expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))
-            ->toBe(sprintf('refused:%s', $why->value));
+            ->toBe(sprintf('refused:%s', $why->kind()->value));
     }
 });
 

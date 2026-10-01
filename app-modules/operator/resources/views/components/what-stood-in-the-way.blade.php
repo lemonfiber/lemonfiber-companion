@@ -8,8 +8,8 @@
     {{-- What stood in the way and what to do about it, both off the obstacle —
          so no screen describes a condition differently from the one beside
          it. --}}
-    <x-operator::emphasis>{{ __($went->met) }}</x-operator::emphasis>
-    <x-design::body>{{ __($went->remedy) }}</x-design::body>
+    <x-operator::emphasis>{{ __($went->met, $went->filling()) }}</x-operator::emphasis>
+    <x-design::body>{{ __($went->remedy, $went->filling()) }}</x-design::body>
 
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
