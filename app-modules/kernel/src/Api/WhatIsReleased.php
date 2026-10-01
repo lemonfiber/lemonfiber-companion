@@ -7,42 +7,33 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * The newest version released, and what its release notes say it changed.
+ * The newest version released.
  *
- * Both are empty where the stack said nothing: the check could not read a
- * version, or the release carried no notes.
+ * Empty where the stack said nothing: the check could not read a version.
  */
 final readonly class WhatIsReleased
 {
-    private function __construct(private string $version, private string $changed) {}
+    private function __construct(private string $version) {}
 
-    /** What the stack said was released; a blank sentence is refused, an empty one is not said. */
-    public static function said(string $version, string $changed): self
+    /** What the stack said was released; a blank version is refused, an empty one is not said. */
+    public static function said(string $version): self
     {
-        foreach (['offered' => $version, 'changed' => $changed] as $field => $said) {
-            if ($said !== '' && trim($said) === '') {
-                throw ItselfSaysNothing::about($field);
-            }
+        if ($version !== '' && trim($version) === '') {
+            throw ItselfSaysNothing::about('offered');
         }
 
-        return new self($version, $changed);
+        return new self($version);
     }
 
     /** Nothing released that the stack could name. */
     public static function nothing(): self
     {
-        return new self('', '');
+        return new self('');
     }
 
     /** The newest version released, or empty. */
     public function version(): string
     {
         return $this->version;
-    }
-
-    /** What that version says it changed, as its release page words it, or empty. */
-    public function changed(): string
-    {
-        return $this->changed;
     }
 }

@@ -70,6 +70,7 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\ResettingTheConfiguration;
@@ -104,6 +105,7 @@ use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
@@ -480,6 +482,7 @@ final class CompositionRoot extends ServiceProvider
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.
         $this->app->bind(SelfChecking::class, Inspectors::class);
+        $this->app->bind(ReadingVersions::class, Chroniclers::class);
 
         // Who gets in: the credentials, which app to watch on, and the front
         // door, each read beside the rest and bound for the same reason.

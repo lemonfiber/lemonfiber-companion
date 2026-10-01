@@ -246,6 +246,25 @@ return [
         'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
     ],
 
+    // Welke versies een machine draait, bereikt vanaf Over. Elke versie wordt
+    // uitgelegd waar ze staat, en notities die niet bij deze kopie horen worden
+    // gezegd voor wat ze zijn in plaats van weggelaten.
+    'versions' => [
+        'road_in' => 'Wat er draait',
+        'title' => 'Versies',
+        'lemonfiber' => 'lemonfiber :version',
+        'lemonfiber_means' => 'Het programma op de machine dat de services opzet en deze app antwoordt.',
+        'stack' => 'Stack :version',
+        'stack_means' => 'De services die lemonfiber draait en hoe ze verbonden zijn, zoals deze versie ze meelevert.',
+        'engine' => 'Container-engine :version',
+        'engine_unknown' => 'Container-engine onbekend',
+        'engine_means' => 'Wat elke service in een eigen container draait. Zonder dit start er niets.',
+        'notes_pending' => 'Nog geen notities geschreven',
+        'notes_pending_means' => 'Deze versie is uit, en wat ze veranderde is nog niet opgeschreven.',
+        'notes_stale' => 'Notities lopen niet gelijk',
+        'notes_stale_means' => 'De notities in deze kopie horen niet bij deze versie, dus ze worden niet getoond.',
+    ],
+
     // Een bewaker op de gegevenslocatie, die blijft zolang zijn scherm ernaar
     // vraagt. Elke regel houdt hem apart van wat de machine host.
     'guard' => [

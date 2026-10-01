@@ -416,12 +416,6 @@ enum WireField: string implements NamesAWireField
     case Installed = 'installed';
 
     /**
-     * What the version on offer says it changed, on a `self-update`; and what
-     * one install or removal did to the machine, on a `hosting`.
-     */
-    case Changed = 'changed';
-
-    /**
      * Where somebody is sent: a service beside the front door, or the one
      * address an invitation hands over. Either way the machine's own text.
      */
@@ -442,6 +436,34 @@ enum WireField: string implements NamesAWireField
      * nobody claimed in time.
      */
     case Withdrawn = 'withdrawn';
+
+    /**
+     * The release record, which the `update` and `version` envelopes both
+     * carry: the release running, and every release the record holds.
+     */
+    case Changelog = 'changelog';
+
+    /** What one release is called, in the release record either envelope carries. */
+    case Version = 'version';
+
+    /**
+     * What a release delivers, in the stack's own prose.
+     *
+     * Optional on the wire, and a release the generator had nothing to say
+     * about is a state rather than a defect — read into the two arms of
+     * {@see \Modules\Kernel\Api\WhatAReleaseDelivers} so that nothing said
+     * and nothing to print cannot be confused on a row.
+     */
+    case Delivers = 'delivers';
+
+    /** Whether somebody in the house would notice a release. */
+    case UserFacing = 'user_facing';
+
+    /**
+     * The version of the stack: the one a copy was taken from, in `bundle`,
+     * and the one a copy of lemonfiber operates, in `version`.
+     */
+    case Stack = 'stack';
 
     /**
      * What an action wrote: what became of each service an update touched, and

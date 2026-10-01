@@ -26,6 +26,7 @@ use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
@@ -1038,6 +1039,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Stage::class => 'stage',
     HowItStopped::class => 'stall',
     AgainstThePins::class => 'state',
+    HowTheNotesStand::class => 'state',
     HowItEnded::class => 'ending',
     HowToUndoIt::class => 'reversal',
     Awaiting::class => 'until',

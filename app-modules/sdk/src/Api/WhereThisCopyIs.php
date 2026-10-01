@@ -53,7 +53,7 @@ final readonly class WhereThisCopyIs
             self::text($data, WireField::Running),
             HowThisCopyGotThere::by(self::installed($data), self::optional($data, SelfUpdateField::Owner)),
             self::standing($data),
-            WhatIsReleased::said(self::optional($data, WireField::Offered), self::optional($data, WireField::Changed)),
+            WhatIsReleased::said(self::optional($data, WireField::Offered)),
             self::optional($data, SelfUpdateField::Untold),
             self::updatedBy($data),
             WhatAnUpdateWouldBring::said(self::text($data, SelfUpdateField::Carries), self::text($data, SelfUpdateField::Afterwards)),

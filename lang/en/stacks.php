@@ -317,6 +317,25 @@ return [
         'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
     ],
 
+    // Which versions a machine runs, reached from About. Each version is
+    // explained where it is shown, and notes that do not describe this copy
+    // are said as what they are rather than left out.
+    'versions' => [
+        'road_in' => 'What is running',
+        'title' => 'Versions',
+        'lemonfiber' => 'lemonfiber :version',
+        'lemonfiber_means' => 'The program on the machine that sets up the services and answers this app.',
+        'stack' => 'Stack :version',
+        'stack_means' => 'The services lemonfiber runs and how they are connected, as this version ships them.',
+        'engine' => 'Container engine :version',
+        'engine_unknown' => 'Container engine not known',
+        'engine_means' => 'What runs each service in a container of its own. Nothing starts without it.',
+        'notes_pending' => 'Notes not written yet',
+        'notes_pending_means' => 'This version is out, and what it changed has not been written down yet.',
+        'notes_stale' => 'Notes out of step',
+        'notes_stale_means' => 'The notes this copy carries do not match the version it is, so they are not shown.',
+    ],
+
     // A guard on the data location, held while its screen asks. Every line
     // keeps it apart from what the machine hosts: it lives only while the
     // screen asks about it, and says so before it starts and while it runs.

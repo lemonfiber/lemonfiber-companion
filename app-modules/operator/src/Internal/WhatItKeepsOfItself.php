@@ -34,6 +34,12 @@ final readonly class WhatItKeepsOfItself
         return new self($stack);
     }
 
+    /** Which versions this machine runs, and what the running release changed. */
+    public function versions(): string
+    {
+        return AStacksScreen::Versions->forTheStack($this->stack);
+    }
+
     /** What this machine has changed about itself. */
     public function record(): string
     {

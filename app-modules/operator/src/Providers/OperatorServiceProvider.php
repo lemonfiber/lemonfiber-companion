@@ -53,6 +53,7 @@ use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Modules\Operator\Internal\Screens\WhichAppToWatchOn;
+use Modules\Operator\Internal\Screens\WhichVersionsRunHere;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -286,8 +287,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // the path.
             Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where('service', '.+');
 
-            // Which version of lemonfiber runs, apart from the services' updates.
+            // Which version of lemonfiber runs, apart from the services' updates,
+            // and the versions under it, reached from there.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
+            Router::native(AStacksScreen::Versions->value, WhichVersionsRunHere::class);
 
             // Who gets in: what it holds to let services in, which app the
             // household watches on, where they come in, and asking somebody

@@ -51,7 +51,7 @@ function theSameCopy(): ThisCopyOfLemonfiber
         '0.15.0',
         HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Homebrew, 'brew'),
         WhereThisCopyStands::ManagedExternally,
-        WhatIsReleased::said('0.16.0', '## New\n- Plugins'),
+        WhatIsReleased::said('0.16.0'),
         '',
         HowItWouldBeUpdated::byRunning('brew upgrade lemonfiber'),
         WhatAnUpdateWouldBring::said('The program, and the stack definition it ships with', 'Your settings and library are left alone; the stack restarts'),
@@ -114,13 +114,12 @@ function everythingTheCopySays(SelfChecking $checking): string
 {
     return $checking->checkedOn(aStackThatKnowsItsOwnVersion(), Session::of('a-session-not-a-secret'))->either(
         found: static fn(ThisCopyOfLemonfiber $copy): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay(sprintf(
-            '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s',
+            '%s|%s|%s|%s|%s|%s|%s|%s|%s',
             $copy->running(),
             $copy->gotThere()->installed()->value,
             $copy->gotThere()->owner(),
             $copy->stands()->value,
             $copy->released()->version(),
-            $copy->released()->changed(),
             $copy->untold(),
             $copy->updatedBy()->either(
                 byRunning: static fn(string $command): WhatTheCopyTurnedOutToSay => new WhatTheCopyTurnedOutToSay(sprintf('run %s', $command)),
@@ -139,7 +138,7 @@ it('comes away with how it was installed, the command that would update it, and 
 
     foreach (everyWayOfAskingAboutItself($answered) as $which => $make) {
         expect(everythingTheCopySays($make()))->toBe(
-            '0.15.0|homebrew|brew|managed-externally|0.16.0|## New\n- Plugins||run brew upgrade lemonfiber|The program, and the stack definition it ships with|Your settings and library are left alone; the stack restarts',
+            '0.15.0|homebrew|brew|managed-externally|0.16.0||run brew upgrade lemonfiber|The program, and the stack definition it ships with|Your settings and library are left alone; the stack restarts',
             $which,
         );
     }

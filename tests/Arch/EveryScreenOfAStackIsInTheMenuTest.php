@@ -12,9 +12,11 @@ use Modules\Stacks\Api\AStacksScreen;
 // moment it exists. A screen that needs more than the stack — one service, one
 // copy, one word — is opened from the screen that shows that thing, and is not
 // asked about. A step is a screen reached only from the screen that begins it,
-// named below with where that is; the list may shrink and may not grow.
+// and a detail a screen reached from the screen whose one thing it details;
+// each is named below with where that is. The list may shrink, and grows only
+// where the spec's menu page names another.
 
-/** The screens reached from another screen rather than the menu, and from where. */
+/** The steps and details reached from another screen rather than the menu, and from where. */
 const REACHED_FROM_THEIR_SCREEN = [
     'Guard' => 'guarding where the data is kept is begun from After a restart, and held while that screen asks',
     'Copy' => 'taking a copy is begun from Backups, and from Uninstall',
@@ -22,6 +24,7 @@ const REACHED_FROM_THEIR_SCREEN = [
     'SignIn' => 'signing in is offered by the screen that found the session ended',
     'Owed' => 'a member of the household\'s own screen, which the household surface draws',
     'Shelf' => 'a member of the household\'s own screen, which the household surface draws',
+    'Versions' => 'Versions details what About says is running, and is reached from About',
 ];
 
 it('F18 — every screen of one stack is a tab, a menu item, or a step named with where it begins', function (): void {
@@ -51,5 +54,5 @@ it('names only screens a stack has as steps, and does not let the steps grow', f
     $names = array_map(static fn(AStacksScreen $screen): string => $screen->name, AStacksScreen::cases());
 
     expect(array_diff(array_keys(REACHED_FROM_THEIR_SCREEN), $names))->toBe([])
-        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(6);
+        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(7);
 });

@@ -53,7 +53,7 @@ function whatUpdatingBrings(): WhatAnUpdateWouldBring
 /** A copy lemonfiber's installer put there, with a newer version out and a command to take it. */
 function aCopyWithANewerVersion(): ThisCopyOfLemonfiber
 {
-    return ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Installer, ''), WhereThisCopyStands::UpdateAvailable, WhatIsReleased::said('0.16.0', 'Plugins can be installed from the phone'), '', HowItWouldBeUpdated::byRunning('lemonfiber update self'), whatUpdatingBrings());
+    return ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Installer, ''), WhereThisCopyStands::UpdateAvailable, WhatIsReleased::said('0.16.0'), '', HowItWouldBeUpdated::byRunning('lemonfiber update self'), whatUpdatingBrings());
 }
 
 /** A copy whose installation nobody could tell, whose check failed, with a reason and no command. */
@@ -88,8 +88,7 @@ it('says which version runs, how it was installed, and names the newer release t
         ->and($drawn)->toContain(__(HowLemonfiberWasInstalled::Installer->saidOnTheScreen()))
         ->and($drawn)->toContain(__('stacks.itself.is_out', ['version' => '0.16.0']))
         ->and($drawn)->not->toContain(__(WhereThisCopyStands::UpdateAvailable->saidOnTheScreen()))
-        ->and($drawn)->not->toContain(__('stacks.itself.offered', ['version' => '0.16.0']))
-        ->and($drawn)->toContain('Plugins can be installed from the phone');
+        ->and($drawn)->not->toContain(__('stacks.itself.offered', ['version' => '0.16.0']));
 });
 
 it('an installation nobody could tell and a check that failed are said, never read as replaceable or current', function (): void {
@@ -108,7 +107,7 @@ it('shows the command to run at the machine, and offers nothing that would run i
 
     expect($drawn)->toContain(__('stacks.itself.run_at_the_machine'))
         ->and($drawn)->toContain('lemonfiber update self')
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')]);
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.versions.road_in'), __('health.ask_again')]);
 });
 
 it('shows why there is no command where there is none, instead of a command', function (): void {
@@ -118,12 +117,19 @@ it('shows why there is no command where there is none, instead of a command', fu
 });
 
 it('says who owns a copy another tool keeps up to date', function (): void {
-    $brew = ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Homebrew, 'brew'), WhereThisCopyStands::ManagedExternally, WhatIsReleased::said('0.16.0', ''), '', HowItWouldBeUpdated::byRunning('brew upgrade lemonfiber'), whatUpdatingBrings());
+    $brew = ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Homebrew, 'brew'), WhereThisCopyStands::ManagedExternally, WhatIsReleased::said('0.16.0'), '', HowItWouldBeUpdated::byRunning('brew upgrade lemonfiber'), whatUpdatingBrings());
     $drawn = WhatTheDeviceWouldDraw::by(theCopyScreen(AStackThatChecksItself::with($brew)))->said();
 
     expect($drawn)->toContain(__('stacks.itself.owner', ['owner' => 'brew']))
         ->and($drawn)->toContain(__(WhereThisCopyStands::ManagedExternally->saidOnTheScreen()))
         ->and($drawn)->toContain('brew upgrade lemonfiber');
+});
+
+it('leads to which versions run, and what the running release changed', function (): void {
+    $screen = theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.versions.road_in'))
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->versions()))->not->toBeNull();
 });
 
 it('says what an update brings and leaves behind, and that the services are updated elsewhere', function (): void {
@@ -142,8 +148,8 @@ it('a stack that could not be asked is not a copy that is up to date', function 
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([
             $answer->running, $answer->installedSaid, $answer->owner, $answer->standsSaid, $answer->offered, $answer->out,
-            $answer->changed, $answer->untold, $answer->command, $answer->instead, $answer->carries, $answer->afterwards,
-        ])->toBe(['', '', '', '', '', '', '', '', '', '', '', '']);
+            $answer->untold, $answer->command, $answer->instead, $answer->carries, $answer->afterwards,
+        ])->toBe(['', '', '', '', '', '', '', '', '', '', '']);
 });
 
 it('a session that has ended is not a copy that is up to date', function (): void {

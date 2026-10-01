@@ -51,7 +51,6 @@ final readonly class HowThisCopyReads
             // The newest release said as what it is, where it is newer than
             // this one: the heading names it rather than that one exists.
             out: $copy->stands() === WhereThisCopyStands::UpdateAvailable ? $copy->released()->version() : '',
-            changed: $copy->released()->changed(),
             untold: $copy->untold(),
             command: $command->said,
             instead: $instead->said,
@@ -94,7 +93,6 @@ final readonly class HowThisCopyReads
             tone: Tone::Unknown->value,
             offered: '',
             out: '',
-            changed: '',
             untold: '',
             command: '',
             instead: '',

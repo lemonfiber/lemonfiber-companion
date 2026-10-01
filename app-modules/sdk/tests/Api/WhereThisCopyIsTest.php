@@ -59,13 +59,12 @@ function theCopyRead(array $data): string
     $copy = WhereThisCopyIs::in(selfUpdateSaying($data));
 
     return sprintf(
-        '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s',
+        '%s|%s|%s|%s|%s|%s|%s|%s|%s',
         $copy->running(),
         $copy->gotThere()->installed()->value,
         $copy->gotThere()->owner(),
         $copy->stands()->value,
         $copy->released()->version(),
-        $copy->released()->changed(),
         $copy->untold(),
         $copy->updatedBy()->either(
             byRunning: static fn(string $command): WhatTheCopyCarried => new WhatTheCopyCarried(sprintf('run %s', $command)),
@@ -82,12 +81,12 @@ it('stands in for a stack with a payload the contract would accept', function ()
 });
 
 it('reads a plain copy, with every optional sentence empty', function (): void {
-    expect(theCopyRead(aPlainCopy()))->toBe('0.15.0|installer||current||||-|The program|Settings are kept');
+    expect(theCopyRead(aPlainCopy()))->toBe('0.15.0|installer||current|||-|The program|Settings are kept');
 });
 
 it('reads optional sentences where they are said, and absent or null as empty', function (): void {
-    expect(theCopyRead([...aPlainCopy(), 'owner' => 'brew', 'offered' => '0.16.0', 'changed' => '- Plugins', 'untold' => 'Checked an hour ago']))->toBe('0.15.0|installer|brew|current|0.16.0|- Plugins|Checked an hour ago|-|The program|Settings are kept')
-        ->and(theCopyRead([...aPlainCopy(), 'owner' => null, 'offered' => null, 'changed' => null, 'untold' => null]))->toBe('0.15.0|installer||current||||-|The program|Settings are kept');
+    expect(theCopyRead([...aPlainCopy(), 'owner' => 'brew', 'offered' => '0.16.0', 'changed' => '- Plugins', 'untold' => 'Checked an hour ago']))->toBe('0.15.0|installer|brew|current|0.16.0|Checked an hour ago|-|The program|Settings are kept')
+        ->and(theCopyRead([...aPlainCopy(), 'owner' => null, 'offered' => null, 'changed' => null, 'untold' => null]))->toBe('0.15.0|installer||current|||-|The program|Settings are kept');
 });
 
 it('reads the command where there is one, the reason where there is not, and the command where both came', function (): void {
@@ -126,5 +125,5 @@ it('refuses a required sentence that is missing, blank or not text, and an optio
 })->with([
     ['running', 'absent'], ['running', ' '], ['installed', 'absent'], ['standing', 7],
     ['carries', 'absent'], ['afterwards', ''],
-    ['owner', ' '], ['offered', 7], ['changed', ' '], ['untold', ' '], ['command', ' '], ['instead', false],
+    ['owner', ' '], ['offered', 7], ['untold', ' '], ['command', ' '], ['instead', false],
 ]);

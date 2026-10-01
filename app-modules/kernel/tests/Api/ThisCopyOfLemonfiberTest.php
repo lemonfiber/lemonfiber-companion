@@ -34,7 +34,7 @@ it('keeps everything it was reported with', function (): void {
     $gotThere = HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Cargo, 'cargo');
     $by = HowItWouldBeUpdated::byRunning('cargo install lemonfiber');
     $brings = WhatAnUpdateWouldBring::said('The program', 'Settings are kept');
-    $released = WhatIsReleased::said('0.16.0', '- Plugins');
+    $released = WhatIsReleased::said('0.16.0');
     $copy = ThisCopyOfLemonfiber::reported('0.15.0', $gotThere, WhereThisCopyStands::UpdateAvailable, $released, 'Checked an hour ago', $by, $brings);
 
     expect([$copy->running(), $copy->gotThere(), $copy->stands(), $copy->released(), $copy->untold(), $copy->updatedBy(), $copy->brings()])

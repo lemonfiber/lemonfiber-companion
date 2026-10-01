@@ -266,7 +266,7 @@ final readonly class TheBundle
         return WhenABundleWasTaken::at(
             self::text($taken, WireField::At),
             self::text($taken, BundleField::Lemonfiber),
-            self::text($taken, BundleField::Stack),
+            self::text($taken, WireField::Stack),
         );
     }
 
