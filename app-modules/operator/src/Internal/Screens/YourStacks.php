@@ -190,16 +190,18 @@ final class YourStacks extends NativeComponent
     }
 
     /**
-     * Leave the sequence, landing on pairing.
+     * Leave the sequence, landing on why the app reaches the local network.
      *
-     * Leaving has to land on pairing rather than on
-     * nothing, and this is why the exit is a step rather than a route: an
-     * operator who skipped arrives where the sequence was going, on the screen
-     * they were already on, with the same two controls the last step offers.
+     * Leaving has to land on pairing rather than on nothing, and this is why
+     * the exit is a step rather than a route: an operator who skipped arrives
+     * where the sequence was going, on the screen they were already on. It
+     * lands one step short of pairing, on the app's reason for the local
+     * network, because pairing is where the platform asks and nobody is to meet
+     * that prompt unexplained.
      */
     public function skipAhead(): void
     {
-        $this->firstRunAt = WhereTheFirstRunIs::Pairing;
+        $this->firstRunAt = WhereTheFirstRunIs::TheLocalNetwork;
     }
 
     /**

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use function count;
+
+use Modules\Kernel\Api\Permission;
+
 use function sprintf;
 
 /**
@@ -37,7 +40,18 @@ enum WhereTheFirstRunIs: string
      */
     case AtTheMachine = 'at_the_machine';
 
-    /** The pairing itself, which is where leaving early also lands. */
+    /**
+     * Why the app reaches the local network, before the platform asks.
+     *
+     * Pairing is the first reach of a stack, and on a platform that asks
+     * permission before an app reaches the local network, the prompt comes with
+     * it. The app's own reason, and what still works without it, come first, so
+     * the prompt is never the first word on the subject. Leaving early lands
+     * here rather than past it.
+     */
+    case TheLocalNetwork = 'the_local_network';
+
+    /** The pairing itself. */
     case Pairing = 'pairing';
 
     /**
@@ -90,6 +104,17 @@ enum WhereTheFirstRunIs: string
         return $next < count($cases) ? $cases[$next] : $this;
     }
 
+    /**
+     * Whether leaving early would skip anything from here.
+     *
+     * Only before the local-network step: leaving lands on that step, so from
+     * it a way to leave would be a control that does nothing.
+     */
+    public function mayBeSkipped(): bool
+    {
+        return $this->step() < self::TheLocalNetwork->step();
+    }
+
     /** Whether this step is the pairing, which is what a screen draws last. */
     public function isThePairing(): bool
     {
@@ -100,7 +125,7 @@ enum WhereTheFirstRunIs: string
      * The key a screen translates for what this step is about.
      *
      * Built from the case rather than written beside it, which is
-     * {@see \Modules\Kernel\Api\Permission::reason()}'s shape and its
+     * {@see Permission::reason()}'s shape and its
      * argument: a key spelled twice is a key that drifts, and the drift shows
      * up on the glass rather than in a run. The cost is that `L7` cannot see a
      * derived key, which is what `EveryDerivedKeyResolvesTest`'s table is for —
@@ -108,7 +133,9 @@ enum WhereTheFirstRunIs: string
      */
     public function said(): string
     {
-        return sprintf('onboarding.%s', $this->value);
+        return $this === self::TheLocalNetwork
+            ? Permission::LocalNetwork->reason()
+            : sprintf('onboarding.%s', $this->value);
     }
 
     /**
@@ -121,6 +148,8 @@ enum WhereTheFirstRunIs: string
      */
     public function explained(): string
     {
-        return sprintf('onboarding.%s_explained', $this->value);
+        return $this === self::TheLocalNetwork
+            ? Permission::LocalNetwork->alternative()
+            : sprintf('onboarding.%s_explained', $this->value);
     }
 }

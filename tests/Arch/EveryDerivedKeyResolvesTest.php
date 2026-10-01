@@ -583,7 +583,9 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
             ->and($why->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->name);
     }
 
-    foreach (WhereTheFirstRunIs::cases() as $at) {
+    // The local-network step reads the permission's own sentences rather than
+    // a copy of them under `onboarding.`, so it is the one step not derived.
+    foreach (array_filter(WhereTheFirstRunIs::cases(), static fn(WhereTheFirstRunIs $at): bool => $at !== WhereTheFirstRunIs::TheLocalNetwork) as $at) {
         expect($at->said())->toBe(sprintf('onboarding.%s', $at->value), $at->name)
             ->and($at->explained())->toBe(sprintf('onboarding.%s_explained', $at->value), $at->name);
     }
