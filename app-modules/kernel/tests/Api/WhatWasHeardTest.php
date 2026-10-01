@@ -23,7 +23,7 @@ final readonly class WhichArmWasHeard
 }
 
 /** Which arm an answer takes, and what it carried there. */
-function whichArmWasHeard(WhatWasHeard $heard): string
+function theWordForWhichArmWasHeard(WhatWasHeard $heard): string
 {
     return $heard->either(
         nothing: static fn(): WhichArmWasHeard => new WhichArmWasHeard('nothing'),
@@ -35,9 +35,9 @@ function whichArmWasHeard(WhatWasHeard $heard): string
 }
 
 it('keeps the five things a subscription can answer apart', function (): void {
-    expect(whichArmWasHeard(WhatWasHeard::nothing()))->toBe('nothing')
-        ->and(whichArmWasHeard(WhatWasHeard::aSignOfLife()))->toBe('alive')
-        ->and(whichArmWasHeard(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Stopped, 0, '', WhatStoppedMoving::nothing()))))->toBe('said stopped')
-        ->and(whichArmWasHeard(WhatWasHeard::closed()))->toBe('closed')
-        ->and(whichArmWasHeard(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe('met credential_refused');
+    expect(theWordForWhichArmWasHeard(WhatWasHeard::nothing()))->toBe('nothing')
+        ->and(theWordForWhichArmWasHeard(WhatWasHeard::aSignOfLife()))->toBe('alive')
+        ->and(theWordForWhichArmWasHeard(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Stopped, 0, '', WhatStoppedMoving::nothing()))))->toBe('said stopped')
+        ->and(theWordForWhichArmWasHeard(WhatWasHeard::closed()))->toBe('closed')
+        ->and(theWordForWhichArmWasHeard(WhatWasHeard::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe('met credential_refused');
 });

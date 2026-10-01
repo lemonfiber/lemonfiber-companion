@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StartSaysNothing;
@@ -14,20 +15,14 @@ use Modules\Kernel\Api\WhatAStartWaitsOn;
 
 use function sprintf;
 
-/** One line carried out of an arm. */
-final readonly class WhichArmAStartTook
-{
-    public function __construct(public string $said) {}
-}
-
 /** Which arm an answer about a start takes, and what it carried there. */
 function whichArmAStartTook(WhatAStartWaitsOn $heard): string
 {
     return $heard->either(
-        saying: static fn(string $line): WhichArmAStartTook => new WhichArmAStartTook(sprintf('saying %s', $line)),
-        nothingNew: static fn(): WhichArmAStartTook => new WhichArmAStartTook('nothing new'),
-        met: static fn(Obstacle $why): WhichArmAStartTook => new WhichArmAStartTook(sprintf('met %s', $why->kind()->value)),
-    )->said;
+        saying: static fn(string $line): Code => Code::of(sprintf('saying %s', $line)),
+        nothingNew: static fn(): Code => Code::of('nothing new'),
+        met: static fn(Obstacle $why): Code => Code::of(sprintf('met %s', $why->kind()->value)),
+    )->shown();
 }
 
 it('says the line the stack sent, trimmed, and nothing new when nothing arrived', function (): void {

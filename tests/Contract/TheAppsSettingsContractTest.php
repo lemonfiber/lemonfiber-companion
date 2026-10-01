@@ -31,7 +31,7 @@ final readonly class WhatOpeningTheSettingsCameTo
 }
 
 /** What asking came to, as a word. */
-function whatOpeningTheSettingsCameTo(WhetherTheSettingsOpened $opened): string
+function theWordForWhatOpeningTheSettingsCameTo(WhetherTheSettingsOpened $opened): string
 {
     return $opened->either(
         opened: static fn(): WhatOpeningTheSettingsCameTo => new WhatOpeningTheSettingsCameTo('opened'),
@@ -52,11 +52,11 @@ dataset('every phone that would not open them', [
 ]);
 
 it('says the page opened where the phone opened it', function (TheAppsSettings $settings): void {
-    expect(whatOpeningTheSettingsCameTo($settings->open()))->toBe('opened');
+    expect(theWordForWhatOpeningTheSettingsCameTo($settings->open()))->toBe('opened');
 })->with('every phone that opens the app\'s settings');
 
 it('says the page would not open where the phone would not', function (TheAppsSettings $settings): void {
-    expect(whatOpeningTheSettingsCameTo($settings->open()))->toBe('would not');
+    expect(theWordForWhatOpeningTheSettingsCameTo($settings->open()))->toBe('would not');
 })->with('every phone that would not open them');
 
 it('asks lemonfiber\'s own call for the page', function (): void {

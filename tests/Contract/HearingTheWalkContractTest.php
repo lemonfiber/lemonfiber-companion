@@ -154,7 +154,7 @@ final readonly class WhatTheWalkSaidAsAWord
 }
 
 /** Every field of what the walk said, as one line, whichever arm it took. */
-function whatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
+function theWordForWhatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
 {
     return $said->either(
         nothing: static fn(): WhatTheWalkSaidAsAWord => new WhatTheWalkSaidAsAWord('nothing'),
@@ -184,7 +184,7 @@ function whatWakesOfTheWalkHear(HearingTheWalk $hearing, int $wakes): array
     $heard = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard[] = whatTheWalkSaidAsAWord($hearing->whereItIs(aStackAWalkRunsOn(), theSessionAWalkIsFollowedWith()));
+        $heard[] = theWordForWhatTheWalkSaidAsAWord($hearing->whereItIs(aStackAWalkRunsOn(), theSessionAWalkIsFollowedWith()));
     }
 
     return $heard;
@@ -287,7 +287,7 @@ it('closes when let go of, and opens again the next time it is asked', function 
         $hearing = $make();
 
         expect(whatWakesOfTheWalkHear($hearing, 1))->toHaveCount(1)
-            ->and(whatTheWalkSaidAsAWord($hearing->letGo()))->toBe('closed', $which)
+            ->and(theWordForWhatTheWalkSaidAsAWord($hearing->letGo()))->toBe('closed', $which)
             ->and(whatWakesOfTheWalkHear($hearing, 1))->toBe(['downloading: Downloading Sintel (nothing particular)'], $which);
     }
 });
