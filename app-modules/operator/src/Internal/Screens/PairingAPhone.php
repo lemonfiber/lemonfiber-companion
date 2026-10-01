@@ -18,6 +18,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -49,7 +50,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class PairingAPhone extends NativeComponent
+final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -127,6 +128,12 @@ final class PairingAPhone extends NativeComponent
     public function whileItRuns(): void
     {
         $this->going = null;
+    }
+
+    /** Whether the stack still held a handle for the work when it last answered. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->following !== null;
     }
 
     /** Read the code held against the clock, or ask after the one being made. */
