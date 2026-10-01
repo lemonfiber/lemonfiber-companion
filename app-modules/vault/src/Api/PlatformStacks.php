@@ -4,30 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Vault\Api;
 
-use function array_is_list;
-use function array_key_exists;
-
-use InvalidArgumentException;
-
-use function is_array;
-use function is_string;
-use function json_decode;
-use function json_encode;
-
 use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
-use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Configured;
-use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Remembered;
+use Modules\Kernel\Api\RemovalsUnderWay;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\StacksBeingRemoved;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
-use Modules\Vault\Internal\KeptInAShape;
 use Modules\Vault\Internal\KeptUnder;
+use Modules\Vault\Internal\ThePairings;
+use Modules\Vault\Internal\ThePairingsAsWritten;
 use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 /**
@@ -62,11 +53,8 @@ use Modules\Vault\Internal\WhetherAnythingIsHeld;
  * that parse — would produce a stack list assembled from something nobody
  * wrote, which is an app offering to operate a machine it cannot name.
  */
-final readonly class PlatformStacks implements Stacks
+final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
 {
-    /** The shape this build writes, and the only one it reads. */
-    private const int SHAPE = 1;
-
     /**
      * What the record holds once every pairing has been forgotten.
      *
@@ -94,14 +82,16 @@ final readonly class PlatformStacks implements Stacks
      *
      * {@see holdsAny()} is the one question where the distinction already
      * matters enough to be made, because getting it wrong there unlocks the app.
+     *
+     * A stack whose removal has begun is left out, whether or not its pairing
+     * has been let go of yet: it is in no list from the moment its removal is
+     * written down, because a removal is one act to the operator however many
+     * steps it takes. The removals are kept in the same record, so leaving them
+     * out costs no second read.
      */
     public function configured(): Configured
     {
-        return $this->store->read(KeptUnder::Stacks->value)->either(
-            found: fn(string $written): Configured => $this->read($written),
-            nothing: static fn(): Configured => Configured::none(),
-            refused: static fn(): Configured => Configured::none(),
-        );
+        return $this->pairings()->listed();
     }
 
     /**
@@ -150,7 +140,9 @@ final readonly class PlatformStacks implements Stacks
         // Folded into what is already there rather than written on its own, so
         // that re-pairing replaces a machine instead of adding a second row —
         // the rule lives in `Configured::with()` and this does not restate it.
-        $written = json_encode(KeptInAShape::written(self::SHAPE, $this->shaped($this->configured()->with($stack))));
+        // Pairing a stack again is the operator taking it back, so a removal
+        // of it that had not finished is over with it.
+        $written = ThePairingsAsWritten::written($this->pairings()->pairing($stack));
 
         // Every part of the record is a string this build validated on its way
         // into a value type, so there is no input an operator can supply that
@@ -168,6 +160,47 @@ final readonly class PlatformStacks implements Stacks
         );
     }
 
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $pairings = $this->pairings();
+
+        if (! $pairings->stacks->knows($stack)) {
+            return Forgotten::nothing();
+        }
+
+        return $this->kept($pairings->unpairing($stack)) ? Forgotten::rows(1) : Forgotten::nothing();
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return $this->store->read(KeptUnder::Stacks->value)->either(
+            found: static fn(string $written): WhetherAnythingIsHeld => ThePairingsAsWritten::read($written)->stacks->knows($stack)
+                ? WhetherAnythingIsHeld::itIs()
+                : WhetherAnythingIsHeld::itIsNot(),
+            nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+        )->held;
+    }
+
+    /**
+     * Write down that removing this stack has begun, in the record of the
+     * pairing it removes, so the two are one read and cannot disagree.
+     */
+    public function begin(StackId $stack): bool
+    {
+        return $this->kept($this->pairings()->removing($stack));
+    }
+
+    public function underWay(): StacksBeingRemoved
+    {
+        return $this->pairings()->removing;
+    }
+
+    public function finished(StackId $stack): bool
+    {
+        return $this->kept($this->pairings()->removed($stack));
+    }
+
     /** What one of the store's refusals means in the terms this application reasons in. */
     private static function meaning(WhyNothingWasKept $why): WhyAStackCannotBeRemembered
     {
@@ -177,172 +210,41 @@ final readonly class PlatformStacks implements Stacks
         };
     }
 
-    /**
-     * The record's fields as they go into the store, beside its shape.
-     *
-     * The address is taken with `forTheClient()` rather than by letting
-     * `json_encode` reach `Address::jsonSerialize()`, which answers with a
-     * placeholder on purpose. Writing it down has to be a deliberate
-     * act in one visible place, and this is the place.
-     *
-     * @return array{stacks: list<array{id: string, name: string, address: string, fingerprint: string}>}
-     */
-    private function shaped(Configured $record): array
+    /** The record as the store holds it; one that cannot be read holds nothing. */
+    private function pairings(): ThePairings
     {
-        $stacks = [];
-
-        foreach ($record as $held) {
-            $stacks[] = [
-                'id' => $held->id()->stored(),
-                'name' => $held->name()->shown(),
-                'address' => $held->at()->forTheClient(),
-                'fingerprint' => $held->presents()->forComparingByEye(),
-            ];
-        }
-
-        return ['stacks' => $stacks];
+        return $this->store->read(KeptUnder::Stacks->value)->either(
+            found: static fn(string $written): ThePairings => ThePairingsAsWritten::read($written),
+            nothing: static fn(): ThePairings => ThePairings::none(),
+            refused: static fn(): ThePairings => ThePairings::none(),
+        );
     }
 
     /**
-     * What the store was holding, or nothing this app is willing to act on.
+     * Write the record down in place of the one before, and say whether it was.
      *
-     * Every refusal below answers `Configured::none()` rather than raising.
-     * A launch is not a place to throw: the operator opened an app, and the
-     * honest thing to show them is the screen for a device with no stack
-     * configured, which is a screen that tells them what to do next.
+     * A record with no pairing and no removal under way is let go of rather
+     * than written empty: a phone paired with nothing holds nothing, and the
+     * lock reads it so.
      */
-    private function read(string $written): Configured
+    private function kept(ThePairings $pairings): bool
     {
-        $rows = $this->rowsIn(json_decode($written, associative: true));
+        if ($pairings->isEmpty()) {
+            return $this->store->forget(KeptUnder::Stacks->value)->either(
+                done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+                refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            )->held;
+        }
 
-        return $rows === null ? Configured::none() : $this->rebuilt($rows);
+        $written = ThePairingsAsWritten::written($pairings);
+
+        if ($written === false) {
+            return false;
+        }
+
+        return $this->store->keep(KeptUnder::Stacks->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+            done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+        )->held;
     }
-
-    /**
-     * The stack rows a record holds, where it is a record this build wrote.
-     *
-     * Separated from reading them because the two decide different things: this
-     * one is about the envelope — is this our shape, does it hold a list — and
-     * {@see rebuilt()} is about what is inside. Together they were one method
-     * with four ways out, which is the shape SonarCloud names `S1142` and is
-     * right to: a reader counting the exits is a reader who has lost the thread.
-     *
-     * Answers the rows or nothing, rather than a `bool` beside a second read of
-     * the same array. `C2` is about a published signature; this is private, and
-     * a predicate here would narrow nothing for the analyser, so the caller
-     * would re-check what this had just established.
-     *
-     * @return list<mixed>|null
-     */
-    private function rowsIn(mixed $found): ?array
-    {
-        if (! KeptInAShape::isIn($found, self::SHAPE)) {
-            return null;
-        }
-
-        if (! array_key_exists('stacks', $found)) {
-            return null;
-        }
-
-        $rows = $found['stacks'];
-
-        return is_array($rows) && array_is_list($rows) ? $rows : null;
-    }
-
-    /**
-     * The rows as stacks, or nothing if any of them is not one.
-     *
-     * All or nothing, rather than skipping the rows that will not parse. A
-     * half-read list is an app showing an operator some of their machines with
-     * no sign that the rest are missing, and the missing one is the stack they
-     * are looking for often enough to matter.
-     *
-     * The types refuse their own bad input — a blank name, a digest of the
-     * wrong length, an address that is not one — and every one of those
-     * refusals is a `Throwable` here rather than a condition to re-check. A
-     * second copy of each rule in this method is a second place for them to
-     * disagree.
-     *
-     * @param list<mixed> $rows
-     */
-    private function rebuilt(array $rows): Configured
-    {
-        $stacks = [];
-
-        foreach ($rows as $row) {
-            if (! is_array($row)) {
-                return Configured::none();
-            }
-
-            $stack = $this->stackFrom($row);
-
-            if (! $stack instanceof Stack) {
-                return Configured::none();
-            }
-
-            $stacks[] = $stack;
-        }
-
-        return Configured::of(...$stacks);
-    }
-
-    /**
-     * One row as a stack, or nothing where it is not one.
-     *
-     * @param array<mixed> $row
-     */
-    private function stackFrom(array $row): ?Stack
-    {
-        $id = $this->text($row, 'id');
-        $name = $this->text($row, 'name');
-        $address = $this->text($row, 'address');
-        $fingerprint = $this->text($row, 'fingerprint');
-
-        if ($id === null || $name === null || $address === null || $fingerprint === null) {
-            return null;
-        }
-
-        // `InvalidArgumentException` rather than `Throwable`, which `C6` refuses
-        // and is right to: every refusal this can legitimately meet is one of
-        // the four value types saying the row is not one — a blank name, a
-        // digest of the wrong length, an address with no scheme, an identifier
-        // that is empty — and all four are that family. Anything outside it is
-        // a bug in this method, and absorbing those is how a misspelled call
-        // comes to be reported as a corrupt record.
-        try {
-            return Stack::of(
-                StackId::rememberedAs($id),
-                StackName::of($name),
-                Address::of($address),
-                Fingerprint::of($fingerprint),
-            );
-        } catch (InvalidArgumentException) {
-            return null;
-        }
-    }
-
-    /**
-     * One named part of a row, where the row has it and it is text.
-     *
-     * Named rather than read with `??`, which `C9` refuses: `$row['id'] ?? null`
-     * reads as a default and is really a suppressed notice, and the two are
-     * indistinguishable at the call site.
-     *
-     * @param array<mixed> $row
-     */
-    private function text(array $row, string $part): ?string
-    {
-        if (! array_key_exists($part, $row)) {
-            return null;
-        }
-
-        $value = $row[$part];
-
-        if (! is_string($value)) {
-            return null;
-        }
-
-        return $value;
-    }
-
 }

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use function array_any;
 use function array_key_exists;
+use function count;
 
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\StackId;
@@ -85,6 +88,31 @@ final class WorkLeftRunningInMemory implements WorkLeftRunning
     }
 
     /** One entry per stack and kind, as the adapter keeps one key per stack and kind. */
+    public function forgetEverything(): Forgotten
+    {
+        $held = count($this->held);
+        $this->held = [];
+
+        return Forgotten::rows($held);
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $forgotten = Forgotten::nothing();
+
+        foreach (KindOfWork::cases() as $work) {
+            $forgotten = $forgotten->beside(Forgotten::rows(array_key_exists($this->under($stack, $work), $this->held) ? 1 : 0));
+            $this->forget($stack, $work);
+        }
+
+        return $forgotten;
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return array_any(KindOfWork::cases(), fn(KindOfWork $work): bool => array_key_exists($this->under($stack, $work), $this->held));
+    }
+
     private function under(StackId $stack, KindOfWork $work): string
     {
         return sprintf('%s|%s', $work->value, $stack->stored());

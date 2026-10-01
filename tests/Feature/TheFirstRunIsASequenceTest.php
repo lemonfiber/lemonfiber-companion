@@ -67,6 +67,7 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
+        WhatThePhoneKeeps::nothingToFinish(),
     );
 }
 

@@ -2,16 +2,24 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\EveryStoreThePhoneKeeps;
+use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeptFor;
+use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\LockAfter;
+use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
@@ -22,6 +30,8 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -33,13 +43,17 @@ function thePhonesSettingsOver(
     ?ConnectionSettingsInMemory $kept = null,
     ?AKeychainInMemory $keychain = null,
     ?KeepingTheLastReading $readings = null,
+    ?ForgetsEverythingKept $everything = null,
 ): HowThisPhoneIsSet {
-    return new HowThisPhoneIsSet(new LockingAfter(
-        ASealInMemory::working(),
-        $kept ?? ConnectionSettingsInMemory::empty(),
-        $device,
-        FrozenClock::at(Instant::atEpochSeconds(0)),
-    ), $keychain ?? AKeychainInMemory::working(), $readings ?? WhatThePhoneKeeps::nothingYet());
+    $kept ??= ConnectionSettingsInMemory::empty();
+    $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+
+    return new HowThisPhoneIsSet(
+        $locking,
+        $keychain ?? AKeychainInMemory::working(),
+        $readings ?? WhatThePhoneKeeps::nothingYet(),
+        new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking),
+    );
 }
 
 /** When the settings are opened, in the readings tests below. */
@@ -212,4 +226,47 @@ it('ignores a choice of how long readings are kept it does not offer', function 
 
     expect($readings->keptFor()->is(KeptFor::ThirtyDays))->toBeTrue()
         ->and($screen->typingDays)->toBeFalse();
+});
+
+it('asks on this screen before it clears saved data, and keeps it when told to', function (): void {
+    $kept = ConnectionSettingsInMemory::empty();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), $kept);
+    $screen->lockAfterIs(LockAfter::OneHour->name);
+
+    $before = WhatTheDeviceWouldDraw::by($screen);
+    $screen->askToClear();
+    $asking = WhatTheDeviceWouldDraw::by($screen);
+    $screen->keepSavedData();
+
+    expect($before->said())->toContain(__('settings.saved_data'))
+        ->and($before->offers())->toContain(__('settings.clear_saved_data'))
+        ->and($before->said())->not->toContain(__('settings.clear_confirm'))
+        ->and($asking->said())->toContain(__('settings.clear_confirm'))
+        ->and($asking->offers())->toContain(__('settings.clear'))
+        ->and($asking->offers())->toContain(__('settings.keep_it'))
+        ->and($screen->lockAfter()->said)->toBe(LockAfter::OneHour->said())
+        ->and($kept->forgetEverything()->howMany())->toBe(1);
+});
+
+it('clears every reading, setting and marker, and draws every setting at its standard', function (): void {
+    $device = ADeviceThatKnowsYou::unlocked();
+    $kept = ConnectionSettingsInMemory::empty();
+    [$readings, $store] = readingsADayAndSixtyDaysOld($kept);
+    $stack = StackId::of(Nonce::of(str_repeat('e', Nonce::SHORTEST)));
+    $standings = StandingsInMemory::working()->lastHeard($stack, HowItStands::Healthy, Instant::atEpochSeconds(WHEN_THE_SETTINGS_OPEN));
+    $left = WorkLeftRunningInMemory::working()->leftBefore($stack, KindOfWork::Walkthrough, Job::named('a-walk'));
+    $screen = thePhonesSettingsOver($device, $kept, readings: $readings, everything: new EveryStoreThePhoneKeeps($kept, $store, $standings, $left));
+
+    $screen->lockAfterIs(LockAfter::OneHour->name);
+    $screen->keepReadingsFor(KeptFor::NinetyDays->name);
+    $screen->askToClear();
+    $screen->clearSavedData();
+
+    expect($screen->confirmingTheClear)->toBeFalse()
+        ->and($screen->lockAfter()->said)->toBe(LockAfter::Immediately->said())
+        ->and($readings->keptFor()->is(KeptFor::ThirtyDays))->toBeTrue()
+        ->and($device->allowedAway())->toBe(0)
+        ->and($store->forgetEverything()->howMany())->toBe(0)
+        ->and($standings->forgetEverything()->howMany())->toBe(0)
+        ->and($left->forgetEverything()->howMany())->toBe(0);
 });

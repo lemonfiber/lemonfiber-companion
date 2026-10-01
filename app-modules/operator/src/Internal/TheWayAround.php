@@ -111,6 +111,40 @@ final readonly class TheWayAround
     }
 
     /**
+     * Where the app lands once this stack is removed from the phone: the next
+     * stack in the operator's order, or the first where it was the last, or
+     * the opening screen where it was the only one, which is then a first run.
+     *
+     * Asked before the removal, while the stack is still in the order.
+     */
+    public function afterRemoving(Stack $removed): string
+    {
+        $before = [];
+        $after = [];
+        $passed = false;
+
+        foreach ($this->stacks->configured() as $stack) {
+            if ($stack->is($removed)) {
+                $passed = true;
+
+                continue;
+            }
+
+            if ($passed) {
+                $after[] = $stack;
+
+                continue;
+            }
+
+            $before[] = $stack;
+        }
+
+        $next = [...$after, ...$before];
+
+        return $next === [] ? AScreenWithoutAStack::TheList->value : $this->choosingLeadsTo($next[0]);
+    }
+
+    /**
      * Where choosing a stack from that list leads: its sign-in where this
      * phone holds no session for it, its health for the operator, and what a
      * member is owed for a member.

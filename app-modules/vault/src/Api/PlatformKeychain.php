@@ -11,6 +11,7 @@ use Lemonfiber\Native\WhyNothingWasKept;
 use function mb_strpos;
 use function mb_substr;
 
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
@@ -19,6 +20,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Vault\Internal\KeptUnder;
+use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 use function sprintf;
 
@@ -97,6 +99,27 @@ final readonly class PlatformKeychain implements SecureStorage
         $this->store->forget($this->keyFor($stack));
 
         return Kept::safely();
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        return $this->store->read($this->keyFor($stack))->either(
+            found: fn(): Forgotten => $this->store->forget($this->keyFor($stack))->either(
+                done: static fn(): Forgotten => Forgotten::rows(1),
+                refused: static fn(): Forgotten => Forgotten::nothing(),
+            ),
+            nothing: static fn(): Forgotten => Forgotten::nothing(),
+            refused: static fn(): Forgotten => Forgotten::nothing(),
+        );
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return $this->store->read($this->keyFor($stack))->either(
+            found: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+            nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+        )->held;
     }
 
     /**

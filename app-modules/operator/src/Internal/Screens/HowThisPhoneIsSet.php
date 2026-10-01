@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\DaysAsked;
@@ -48,10 +49,14 @@ final class HowThisPhoneIsSet extends NativeComponent
     /** Whether the count typed was not one readings can be kept for. */
     public bool $daysRefused = false;
 
+    /** Whether the operator is being asked whether to clear saved data. */
+    public bool $confirmingTheClear = false;
+
     public function __construct(
         private readonly LockingAfter $locking,
         private readonly SecureStorage $storage,
         private readonly KeepingTheLastReading $readings,
+        private readonly ClearingWhatThePhoneKeeps $clearing,
     ) {}
 
     /** Whether the phone keeps nothing between launches, having nowhere safe to. */
@@ -126,6 +131,31 @@ final class HowThisPhoneIsSet extends NativeComponent
             allowed: fn(HowLongReadingsAreKept $kept): HowLongReadingsAreKept => $this->keptFor($kept),
             refused: fn(): HowLongReadingsAreKept => $this->refuseTheDays(),
         );
+    }
+
+    /** The operator asked to clear saved data; they are asked whether they mean it, on this screen. */
+    public function askToClear(): void
+    {
+        $this->confirmingTheClear = true;
+    }
+
+    /** The operator kept their saved data. */
+    public function keepSavedData(): void
+    {
+        $this->confirmingTheClear = false;
+    }
+
+    /**
+     * The operator cleared saved data.
+     *
+     * The settings drawn were among it, so each is read again for the next frame.
+     */
+    public function clearSavedData(): void
+    {
+        $this->clearing->clear();
+        $this->confirmingTheClear = false;
+        $this->lockAfter = null;
+        $this->readingsKept = null;
     }
 
     public function render(): View

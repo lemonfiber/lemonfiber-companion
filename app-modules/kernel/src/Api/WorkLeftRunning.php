@@ -32,8 +32,12 @@ namespace Modules\Kernel\Api;
  * Every answer is {@see WhatAReturnFinds} and none raises, which is `C1`: a
  * device that cannot keep a handle has lost the way back to the work and not
  * the work, and a screen says that rather than failing.
+ *
+ * **It is let go of with everything else kept.** A handle is a marker the
+ * phone keeps about a stack, so clearing what the phone keeps clears it; the
+ * work itself is on the stack and runs on.
  */
-interface WorkLeftRunning
+interface WorkLeftRunning extends ForgetsAStack, ForgetsEverythingKept
 {
     /** What a screen for this kind of work on this stack finds on opening. */
     public function whatWasLeft(StackId $stack, KindOfWork $work): WhatAReturnFinds;

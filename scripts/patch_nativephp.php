@@ -53,6 +53,121 @@ declare(strict_types=1);
  */
 const WHAT_THIS_REWRITES = [
     [
+        // The navigation stack can start over at one screen. Removing a stack
+        // from the phone leaves every screen of it below the one the removal
+        // was asked on, and a stack that is gone cannot be drawn: going back
+        // into one would be a screen with nothing to draw. The package can
+        // push, pop and swap the top screen; this lets a screen replace the
+        // whole stack, which is the only way off every screen of a stack at
+        // once.
+        'in' => '/../vendor/nativephp/mobile/src/Edge/NavigationIntent.php',
+        'ships' => <<<'SHIPS'
+    const RESTART = 'restart';
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    const RESTART = 'restart';
+
+    const RESET = 'reset';
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Edge/NativeComponent.php',
+        'ships' => <<<'SHIPS'
+        $this->flushDispatchedEvents();
+        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, $uri, $data);
+        $this->publishFinalState();
+        $this->stop();
+
+        return $this;
+    }
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        $this->flushDispatchedEvents();
+        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, $uri, $data);
+        $this->publishFinalState();
+        $this->stop();
+
+        return $this;
+    }
+
+    public function replaceTheWholeStack(string $uri, array $data = []): static
+    {
+        if ($this->nativeParentComponent !== null) {
+            $this->rootScreen()->replaceTheWholeStack($uri, $data);
+
+            return $this;
+        }
+
+        $this->flushDispatchedEvents();
+        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::RESET, $uri, $data);
+        $this->publishFinalState();
+        $this->stop();
+
+        return $this;
+    }
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Edge/NativeRouter.php',
+        'ships' => <<<'SHIPS'
+                case NavigationIntent::EXIT_WEB:
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                case NavigationIntent::RESET:
+                    static::debugLog("RESET: resolving uri={$intent->uri}");
+                    try {
+                        $resolved = static::resolve($intent->uri);
+                    } catch (\Throwable $e) {
+                        static::debugLog('RESET binding FAILED: '.$e->getMessage());
+                        $component->renderErrorScreen($e);
+                        $freshPush = false;
+                        $reenterCurrentScreen = true;
+
+                        break;
+                    }
+
+                    if ($resolved === null) {
+                        $this->unmountComponent($component);
+                        $this->stack = [];
+
+                        return $intent->uri;
+                    }
+
+                    while (! empty($this->stack)) {
+                        $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
+                        array_pop($this->stack);
+                    }
+
+                    $this->deferredTransition = $intent->transition ?? Transition::Fade;
+
+                    try {
+                        $next = $this->createComponent($resolved['class'], $resolved['params'], $intent->data);
+                        if (! empty($resolved['layout'])) {
+                            $next->setLayout($resolved['layout']);
+                        }
+
+                        $this->stack[] = [
+                            'component' => $next,
+                            'uri' => $intent->uri,
+                            'params' => $resolved['params'],
+                        ];
+                    } catch (\Throwable $e) {
+                        static::debugLog('RESET FAILED: '.$e->getMessage());
+
+                        return null;
+                    }
+
+                    $freshPush = true;
+                    break;
+
+                case NavigationIntent::EXIT_WEB:
+BECOMES,
+    ],
+    [
         // A bundle carrying development dependencies is a bigger bundle, and
         // the copy that assembles it passes no timeout of its own — so it takes
         // Laravel's default sixty seconds, which a debug build exceeds. Sixty

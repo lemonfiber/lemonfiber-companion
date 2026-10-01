@@ -38,6 +38,7 @@ use Modules\Device\Api\PlatformZone;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
+use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Adjusting;
@@ -55,6 +56,7 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
@@ -82,6 +84,7 @@ use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Rehearsing;
+use Modules\Kernel\Api\RemovalsUnderWay;
 use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
@@ -192,6 +195,9 @@ final class CompositionRoot extends ServiceProvider
 
     /** The tag every store of what the phone keeps is registered under. */
     private const string WHAT_THE_PHONE_KEEPS = 'what-the-phone-keeps';
+
+    /** The tag every keeper of one stack is registered under. */
+    private const string WHAT_IS_KEPT_OF_A_STACK = 'what-is-kept-of-a-stack';
 
     public function register(): void
     {
@@ -336,7 +342,7 @@ final class CompositionRoot extends ServiceProvider
         // last said, but which work a screen left running there.
         $this->app->bind(
             WorkLeftRunning::class,
-            static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore()),
+            static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore(), new PlatformStacks(new PlatformStore())),
         );
 
         // The two keys that seal what the phone keeps, in the same store and
@@ -381,11 +387,31 @@ final class CompositionRoot extends ServiceProvider
         // was sealed under the old key cannot be opened under the new one. A
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
-        $this->app->tag([HealthReadingsKept::class, SettingsKept::class], self::WHAT_THE_PHONE_KEEPS);
+        $this->app->tag(
+            [HealthReadingsKept::class, SettingsKept::class, Standings::class, WorkLeftRunning::class],
+            self::WHAT_THE_PHONE_KEEPS,
+        );
         $this->app->when(EveryStoreThePhoneKeeps::class)
             ->needs(ForgetsEverythingKept::class)
             ->giveTagged(self::WHAT_THE_PHONE_KEEPS);
         $this->app->bind(ForgetsEverythingKept::class, EveryStoreThePhoneKeeps::class);
+
+        // Every keeper of one stack, asked as one when the stack is removed
+        // from the phone: the pairing first, so the stack leaves every list at
+        // once, then the session, the readings and the markers. What was begun
+        // is recorded in the same secure store as the pairing it removes.
+        $this->app->tag(
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Standings::class, WorkLeftRunning::class],
+            self::WHAT_IS_KEPT_OF_A_STACK,
+        );
+        $this->app->when(EveryKeeperOfAStack::class)
+            ->needs(ForgetsAStack::class)
+            ->giveTagged(self::WHAT_IS_KEPT_OF_A_STACK);
+        $this->app->bind(ForgetsAStack::class, EveryKeeperOfAStack::class);
+        $this->app->bind(
+            RemovalsUnderWay::class,
+            static fn(): RemovalsUnderWay => new PlatformStacks(new PlatformStore()),
+        );
 
         // Whether this device is on a network at all, which is the one question
         // about reaching a stack that can be answered without sending anything.

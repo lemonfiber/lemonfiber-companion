@@ -44,7 +44,7 @@
         <x-design::row
             :headline="__($stackSettings->said())"
             :answers-to="__($stackSettings->said())"
-            :goes="$stackSettings->goes()"
+            :goes="$stackSettings->screen()->forTheStack($stack->id())"
             :icon="$stackSettings->glyph()"
             :ios-icon="$stackSettings->iosGlyph()"
         />

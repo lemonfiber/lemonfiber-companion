@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
 use Modules\Operator\Internal\TheTabs;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -32,6 +33,7 @@ it('F18 — every screen of one stack is a tab, a menu item, or a step named wit
         ...array_map(static fn(TheMenu $item): string => $item->screen()->name, TheMenu::cases()),
         ...array_map(static fn(TheTabs $tab): string => $tab->screen()->name, TheTabs::cases()),
         ...array_keys(REACHED_FROM_THEIR_SCREEN),
+        new TheStacksSettingsInTheMenu()->screen()->name,
     ];
     $stranded = [];
 

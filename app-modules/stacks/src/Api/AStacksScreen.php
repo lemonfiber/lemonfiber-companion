@@ -84,6 +84,9 @@ enum AStacksScreen: string
     /** Everything this machine is set to, as the machine itself lists it. */
     case Settings = '/stacks/{stack}/settings';
 
+    /** What this phone keeps of this machine, and taking it off the phone. */
+    case OnThisPhone = '/stacks/{stack}/on-this-phone';
+
     /**
      * One thing this machine runs, and the verbs about it.
      *

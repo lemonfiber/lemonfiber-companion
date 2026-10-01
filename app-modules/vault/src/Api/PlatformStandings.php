@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use function array_key_exists;
+use function count;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -13,6 +14,7 @@ use function json_encode;
 
 use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\WhenAValueMayBeRead;
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Noted;
@@ -23,6 +25,7 @@ use Modules\Kernel\Api\Standings;
 use Modules\Vault\Internal\KeptInAShape;
 use Modules\Vault\Internal\KeptUnder;
 use Modules\Vault\Internal\TheRowsHeld;
+use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 /**
  * The word each stack's one line last said, kept in the platform's own store.
@@ -76,21 +79,66 @@ final readonly class PlatformStandings implements Standings
         $record = $this->whatEachStackSaid()->rows;
         $record[$stack->stored()] = ['standing' => $standing->value, 'at' => $at->epochSeconds()];
 
+        return $this->kept($record) ? Noted::downAt($at) : Noted::notKept();
+    }
+
+    public function forgetEverything(): Forgotten
+    {
+        $held = count($this->whatEachStackSaid()->rows);
+
+        return $this->store->forget(KeptUnder::Standings->value)->either(
+            done: static fn(): Forgotten => Forgotten::rows($held),
+            refused: static fn(): Forgotten => Forgotten::nothing(),
+        );
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $record = $this->whatEachStackSaid()->rows;
+
+        if (! array_key_exists($stack->stored(), $record)) {
+            return Forgotten::nothing();
+        }
+
+        unset($record[$stack->stored()]);
+
+        return $this->kept($record) ? Forgotten::rows(1) : Forgotten::nothing();
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return $this->store->read(KeptUnder::Standings->value)->either(
+            found: fn(string $written): WhetherAnythingIsHeld => array_key_exists($stack->stored(), $this->rowsIn(json_decode($written, associative: true)))
+                ? WhetherAnythingIsHeld::itIs()
+                : WhetherAnythingIsHeld::itIsNot(),
+            nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+        )->held;
+    }
+
+    /**
+     * Write the record down in place of the one before, and say whether it was.
+     *
+     * Which of the two refusals it was is deliberately not carried. A word
+     * that could not be written down costs the list one row's word until
+     * the stack's screen hears it again, so there is nothing for an
+     * operator to do differently about a store with no keystore than about
+     * a store that would not open.
+     *
+     * @param array<mixed> $record
+     */
+    private function kept(array $record): bool
+    {
         $written = json_encode(KeptInAShape::written(self::SHAPE, ['standings' => $record]));
 
         if ($written === false) {
-            return Noted::notKept();
+            return false;
         }
 
-        // Which of the two refusals it was is deliberately not carried. A word
-        // that could not be written down costs the list one row's word until
-        // the stack's screen hears it again, so there is nothing for an
-        // operator to do differently about a store with no keystore than about
-        // a store that would not open.
         return $this->store->keep(KeptUnder::Standings->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
-            done: static fn(): Noted => Noted::downAt($at),
-            refused: static fn(): Noted => Noted::notKept(),
-        );
+            done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+        )->held;
     }
 
     /**

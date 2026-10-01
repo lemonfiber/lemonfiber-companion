@@ -30,8 +30,11 @@ namespace Modules\Kernel\Api;
  * **Nothing kept here may confirm an action.** {@see Reading::mayConfirmAnAction()}
  * is where that is answered: everything this port answers is retained by
  * construction, read from a store rather than from a stack.
+ *
+ * **It is let go of with everything else kept.** A word is a marker the
+ * phone keeps about a stack, so clearing what the phone keeps clears it.
  */
-interface Standings
+interface Standings extends ForgetsAStack, ForgetsEverythingKept
 {
     /**
      * The word this stack's one line last said, or that nothing has been heard yet.

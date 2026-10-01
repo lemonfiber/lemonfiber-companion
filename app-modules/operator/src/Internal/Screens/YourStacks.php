@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Illuminate\View\View;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Connection\Api\Opening;
+use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatWasKeptAtOpening;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
@@ -135,6 +136,7 @@ final class YourStacks extends NativeComponent
         private readonly KeepingTheLastReading $keeping,
         private readonly Hearing $hearing,
         private readonly Capture $capture,
+        private readonly RemovingAStack $removing,
     ) {}
 
     /**
@@ -421,13 +423,15 @@ final class YourStacks extends NativeComponent
      *
      * The opening's housekeeping, done on the first frame of this screen, which
      * is built only past the lock: nothing kept is read, cleared or drawn while
-     * the app is locked. The seal is asked first, before anything kept is opened, and a
-     * key made afresh clears every store; then every reading kept longer than
-     * a reading is kept for is let go of.
+     * the app is locked. A removal the app was stopped in the middle of is
+     * finished first; then the seal is asked, before anything kept is opened,
+     * and a key made afresh clears every store; then every reading kept longer
+     * than readings are kept for is let go of.
      */
     public function savedDataWasCleared(): bool
     {
         if (! $this->saved instanceof WhatWasKeptAtOpening) {
+            $this->removing->finishWhatWasLeft();
             $this->saved = $this->clearing->onOpening();
             $this->keeping->forgetTheOld($this->clock->now());
         }

@@ -6,14 +6,30 @@ use Bootstrap\Composition\EveryStoreThePhoneKeeps;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfWork;
+use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\Showing;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
+use Modules\Vault\Api\PlatformStacks;
+use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Tests\Support\AKeptDatabase;
+use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WorkLeftRunningInMemory;
 
 // The ForgetsEverythingKept contract, run against every store and against all
 // of them together.
@@ -91,5 +107,54 @@ it('forgets the settings a settings store keeps, and says how much that was', fu
 
         expect($store->forgetEverything()->howMany())->toBe(1, $which)
             ->and($store->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+/** A stack this phone is paired with, for the markers below. Named for this file. */
+function aStackWithMarkers(string $seed): Stack
+{
+    return Stack::of(
+        StackId::of(Nonce::of(str_repeat($seed, Nonce::SHORTEST))),
+        StackName::of(sprintf('Stack %s', $seed)),
+        Address::of('https://192.168.1.44'),
+        Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
+    );
+}
+
+it('forgets the word every stack last said, and says how many', function (): void {
+    foreach ([
+        'the platform store' => static fn(): PlatformStandings => new PlatformStandings(APlatformStore::working()),
+        'the fake' => static fn(): StandingsInMemory => StandingsInMemory::working(),
+    ] as $which => $made) {
+        $standings = $made();
+
+        foreach (['a', 'b'] as $seed) {
+            $standings->remember(aStackWithMarkers($seed)->id(), HowItStands::Healthy, Instant::atEpochSeconds(1_790_000_000));
+        }
+
+        expect($standings->forgetEverything()->howMany())->toBe(2, $which)
+            ->and($standings->lastKnownOf(aStackWithMarkers('a')->id()))->toEqual(Showing::waiting())
+            ->and($standings->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+it('forgets the work left running on every stack, and says how much', function (): void {
+    $store = APlatformStore::working();
+    $stacks = new PlatformStacks($store);
+
+    foreach (['a', 'b'] as $seed) {
+        $stacks->remember(aStackWithMarkers($seed));
+    }
+
+    foreach ([
+        'the platform store' => new PlatformWorkLeftRunning($store, $stacks),
+        'the fake' => WorkLeftRunningInMemory::working(),
+    ] as $which => $left) {
+        foreach (['a', 'b'] as $seed) {
+            $left->remember(aStackWithMarkers($seed)->id(), KindOfWork::Walkthrough, Job::named(sprintf('walk-%s', $seed)));
+        }
+
+        expect($left->forgetEverything()->howMany())->toBe(2, $which)
+            ->and($left->forgetEverything()->howMany())->toBe(0, $which);
     }
 });

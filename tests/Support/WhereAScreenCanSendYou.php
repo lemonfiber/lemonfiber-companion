@@ -21,6 +21,7 @@ use function is_string;
 
 use Modules\Operator\Internal\Screens\FindsItsWayAround;
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 
 use function preg_match;
@@ -171,6 +172,7 @@ final readonly class WhereAScreenCanSendYou
             ...array_map(static fn(TheMenu $item): string => sprintf('AStacksScreen::%s', $item->screen()->name), TheMenu::cases()),
             'AScreenWithoutAStack::NotHereYet',
             'AScreenWithoutAStack::Settings',
+            sprintf('AStacksScreen::%s', new TheStacksSettingsInTheMenu()->screen()->name),
         ];
     }
 

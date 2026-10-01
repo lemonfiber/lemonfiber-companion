@@ -25,7 +25,7 @@ namespace Modules\Kernel\Api;
  * paired machine is a screen this app does not have, and a port method nothing
  * calls is a promise no adapter has been held to. It arrives with the screen.
  */
-interface Stacks
+interface Stacks extends ForgetsAStack
 {
     /**
      * What this device is configured for, as of now.
