@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Modules\Operator\Internal\Screens\FindsItsWayAround;
-use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Tests\Support\Screens;
 
 // F17 — every operator screen about a stack carries the side menu and the
@@ -15,12 +14,14 @@ use Tests\Support\Screens;
 // carries it too. A screen is about a stack when it answers which stack it is about,
 // and it carries the menu by using the trait that hands NativePHP the drawer.
 // A screen that goes without names itself below with why, and the list may
-// shrink and may not grow.
+// not grow.
 
-/** The screens about a stack that go without the menu, and why each does. */
-const WITHOUT_THE_MENU = [
-    SignIntoAStack::class => 'signing in shows the stack switcher and nothing else of the bar, until the stack has let the operator in',
-];
+/**
+ * The screens about a stack that go without the menu, and why each does.
+ *
+ * @var array<class-string, string>
+ */
+const WITHOUT_THE_MENU = [];
 
 it('F17 — every operator screen about a stack carries the menu, or is named with why it does not', function (): void {
     $wrong = [];
@@ -49,7 +50,7 @@ it('F17 — every operator screen about a stack carries the menu, or is named wi
 });
 
 it('does not let the screens without the menu grow', function (): void {
-    expect(count(WITHOUT_THE_MENU))->toBeLessThanOrEqual(1);
+    expect(WITHOUT_THE_MENU)->toBe([]);
 });
 
 it('F17 — every operator screen about a stack carries the list of stacks', function (): void {

@@ -23,6 +23,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The password exchanged once, and the three things that can
 // come back.
@@ -477,6 +478,13 @@ it('offers the way onwards only to somebody who actually got in', function (): v
 
         expect($screen->isSignedIn())->toBeFalse($met->kind()->value);
     }
+});
+
+it('carries the menu, ending in Stack settings and App settings, so a stack that will not let the operator in can still be removed', function (): void {
+    $screen = signInScreen(aDoorThatOpens());
+    $offers = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers();
+
+    expect(array_slice($offers, -2))->toBe([__('navigation.menu.stack_settings'), __('navigation.menu.app_settings')]);
 });
 
 it('renders the frame it is named for', function (): void {
