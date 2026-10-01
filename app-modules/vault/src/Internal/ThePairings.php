@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StacksBeingRemoved;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
 /** Every pairing this phone holds, and every stack whose removal from it has begun. */
 final readonly class ThePairings
@@ -17,6 +18,18 @@ final readonly class ThePairings
     public static function none(): self
     {
         return new self(Configured::none(), StacksBeingRemoved::none());
+    }
+
+    /** A record that is there and could not be read, which nothing may be written over. */
+    public static function heldBack(WhyTheStacksAreHeldBack $why): self
+    {
+        return new self(Configured::heldBack($why), StacksBeingRemoved::none());
+    }
+
+    /** Whether the record could not be read, so writing one down would replace stacks still in it. */
+    public function isHeldBack(): bool
+    {
+        return $this->stacks->isHeldBack();
     }
 
     /** Whether there is nothing to write down: no pairing, and no removal under way. */

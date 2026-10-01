@@ -6,12 +6,13 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 
 /**
  * What the app found when it opened, as the fields a template reads.
  *
- * `F2`: data in, view model out. The three methods are the three arms
+ * `F2`: data in, view model out. The four methods are the four arms
  * is insisted on, so a test states a launch and reads a screen rather
  * than arranging a device and a network to produce one.
  */
@@ -20,7 +21,7 @@ final readonly class HowTheLaunchReads
     /** No machine is paired, which is a first run rather than a fault. */
     public function unpaired(): WhatTheLaunchWas
     {
-        return new WhatTheLaunchWas(isPaired: false, met: '', remedy: '', opensOn: '');
+        return new WhatTheLaunchWas(isPaired: false, met: '', remedy: '', opensOn: '', isHeldBack: false);
     }
 
     /**
@@ -38,12 +39,30 @@ final readonly class HowTheLaunchReads
             met: $why->said(),
             remedy: $why->remedy(),
             opensOn: '',
+            isHeldBack: false,
         );
     }
 
     /** A machine is paired and ready to be asked. */
     public function readyFor(StackId $stack): WhatTheLaunchWas
     {
-        return new WhatTheLaunchWas(isPaired: true, met: '', remedy: '', opensOn: $stack->stored());
+        return new WhatTheLaunchWas(isPaired: true, met: '', remedy: '', opensOn: $stack->stored(), isHeldBack: false);
+    }
+
+    /**
+     * The stacks are still on the phone and could not be read this launch.
+     *
+     * Paired, because the record is there; what stood in the way is said with
+     * what to do about it, and nothing is offered that would write over it.
+     */
+    public function heldBack(WhyTheStacksAreHeldBack $why): WhatTheLaunchWas
+    {
+        return new WhatTheLaunchWas(
+            isPaired: true,
+            met: $why->said(),
+            remedy: $why->remedy(),
+            opensOn: '',
+            isHeldBack: true,
+        );
     }
 }

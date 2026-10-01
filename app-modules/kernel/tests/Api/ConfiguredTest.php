@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Modules\Kernel\Tests\Api;
 
 use function array_map;
+use function count;
 use function expect;
 use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -17,7 +19,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
+use function sprintf;
 use function str_repeat;
 
 /**
@@ -157,4 +161,38 @@ it('reads a retained list back, collapsing an identifier written twice', functio
 
 it('reads an empty retained list as a device introduced to nothing', function (): void {
     expect(Configured::of()->isEmpty())->toBeTrue();
+});
+
+/** Which arm a record answered, as a word. Named for this file (`G10`). */
+function whatTheRecordHolds(Configured $record): string
+{
+    return $record->either(
+        listed: static fn(Configured $listed): Code => Code::of(sprintf('listed-%d', count(namesIn($listed)))),
+        heldBack: static fn(WhyTheStacksAreHeldBack $why): Code => Code::of(sprintf('held-back-%s', $why->value)),
+    )->shown();
+}
+
+it('a record held back lists nothing and is not empty', function (WhyTheStacksAreHeldBack $why): void {
+    $record = Configured::heldBack($why);
+
+    expect(namesIn($record))->toBe([])
+        ->and($record->isEmpty())->toBeFalse()
+        ->and($record->isHeldBack())->toBeTrue()
+        ->and(whatTheRecordHolds($record))->toBe(sprintf('held-back-%s', $why->value));
+})->with(WhyTheStacksAreHeldBack::cases());
+
+it('a record that could be read is listed, and is not held back', function (): void {
+    $record = Configured::of(stack('a'), stack('b', 'The shed'));
+
+    expect($record->isHeldBack())->toBeFalse()
+        ->and(whatTheRecordHolds($record))->toBe('listed-2');
+});
+
+it('stays held back however it is changed', function (): void {
+    $record = Configured::heldBack(WhyTheStacksAreHeldBack::ANewerAppWroteThem);
+
+    expect($record->with(stack('a'))->isHeldBack())->toBeTrue()
+        ->and($record->with(stack('a'))->with(stack('a', 'The attic'))->isHeldBack())->toBeTrue()
+        ->and($record->without(stack('a')->id())->isHeldBack())->toBeTrue()
+        ->and($record->inTheOrderOf(stack('a')->id())->isHeldBack())->toBeTrue();
 });

@@ -22,3 +22,14 @@ it('knows a record only in the shape it was asked about', function (string $read
     'no shape at all' => ['{"stacks":[]}', false],
     'not a record' => ['"shape"', false],
 ]);
+
+it('knows a record written in a later shape than the one it was asked about', function (string $read, bool $newer): void {
+    expect(KeptInAShape::isNewerThan(json_decode($read, associative: true), 1))->toBe($newer);
+})->with([
+    'a later shape' => ['{"shape":2}', true],
+    'the shape asked about' => ['{"shape":1}', false],
+    'an earlier shape' => ['{"shape":0}', false],
+    'a shape that is not a number' => ['{"shape":"2"}', false],
+    'no shape at all' => ['{"stacks":[]}', false],
+    'not a record' => ['"shape"', false],
+]);

@@ -81,6 +81,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\TheMenu;
@@ -150,6 +151,10 @@ function everyDerivedKey(): array
         KindOfObstacle::class => aPairPerCase(
             KindOfObstacle::cases(),
             static fn(KindOfObstacle $why): array => [$why->said(), $why->remedy()],
+        ),
+        WhyTheStacksAreHeldBack::class => aPairPerCase(
+            WhyTheStacksAreHeldBack::cases(),
+            static fn(WhyTheStacksAreHeldBack $why): array => [$why->said(), $why->remedy()],
         ),
         WhereTheCodeGot::class => aPairPerCase(
             WhereTheCodeGot::cases(),

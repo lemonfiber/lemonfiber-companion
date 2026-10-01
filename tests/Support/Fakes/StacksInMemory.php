@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
 /**
  * The configured stacks, held for as long as a test runs.
@@ -85,6 +86,21 @@ final class StacksInMemory implements Stacks
         return new self($why);
     }
 
+    /**
+     * A device whose record is there and could not be read this launch.
+     *
+     * It lists nothing and writes nothing, the way the platform's store does
+     * for a record it holds back: a pairing is refused as a store that would
+     * not take it, and nothing is let go of or put in order.
+     */
+    public static function heldBack(WhyTheStacksAreHeldBack $why): self
+    {
+        $device = new self(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
+        $device->held = Configured::heldBack($why);
+
+        return $device;
+    }
+
     public function configured(): Configured
     {
         $this->asked++;
@@ -154,7 +170,7 @@ final class StacksInMemory implements Stacks
 
     public function keepsAnythingOf(StackId $stack): bool
     {
-        return $this->held->knows($stack);
+        return $this->held->isHeldBack() || $this->held->knows($stack);
     }
 
     public function putInOrder(StackId ...$order): bool

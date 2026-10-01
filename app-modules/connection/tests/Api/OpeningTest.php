@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
 use function sprintf;
 use function str_repeat;
@@ -35,15 +36,24 @@ function aPairedMachine(string $seed = 'a'): Stack
     );
 }
 
-/** Which of the three the launch came to, as a word. Named for this file (`G10`). */
+/** Which of the four the launch came to, as a word. Named for this file (`G10`). */
 function howItOpened(Opening $opening): string
 {
     return $opening->found()->either(
         unpaired: static fn(): Code => Code::of('unpaired'),
         blocked: static fn(Obstacle $why): Code => Code::of(sprintf('blocked-%s', $why->kind()->value)),
         ready: static fn(StackId $stack): Code => Code::of(sprintf('ready-%s', $stack->stored())),
+        heldBack: static fn(WhyTheStacksAreHeldBack $why): Code => Code::of(sprintf('held-back-%s', $why->value)),
     )->shown();
 }
+
+it('a device whose stacks could not be read opens held back, not unpaired', function (WhyTheStacksAreHeldBack $why): void {
+    // Read as unpaired, the first run would offer a pairing that writes a new
+    // record over the stacks still on the phone.
+    $opening = new Opening(StacksInMemory::heldBack($why), ADeviceOnANetwork::withNothingToReachOver());
+
+    expect(howItOpened($opening))->toBe(sprintf('held-back-%s', $why->value));
+})->with(WhyTheStacksAreHeldBack::cases());
 
 it('a device with no stack opens unpaired, which is not a fault', function (): void {
     // A first run rather than a failure to reach. Reporting it as an obstacle

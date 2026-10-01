@@ -37,8 +37,12 @@
              never evaluates it, the sequence cannot be re-entered and nothing
              has to remember that it was finished. --}}
         <x-operator::first-run :at="$this->firstRunIsAt()" on="goOn()" leave="skipAhead()" />
-    @else
-        {{-- A row that is tapped, not a button that is pressed: a list of
+    @elseif (! $this->howItOpened()->isHeldBack)
+        {{-- Not where the stacks are held back: the notice above says why they
+             cannot be listed, and an empty list under it would read as a phone
+             holding nothing.
+
+             A row that is tapped, not a button that is pressed: a list of
              machines is not a list of calls to action. The row says what it
              is about, and a reader hears *open this machine* while the eye
              reads the machine's state.

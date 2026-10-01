@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
 /**
  * What the app found when it opened, decided once.
@@ -21,7 +23,11 @@ use Modules\Kernel\Api\Stacks;
  * once the lock has opened, so nothing here runs before the device's own
  * authentication — and nothing reaches a network before it either.
  *
- * Pairing is asked first, because a device with no stack has nothing to reach
+ * Whether the record could be read at all is asked before anything else. A
+ * record held back is stacks still on the phone that this launch cannot list,
+ * and it is neither a first run nor a stack to reach.
+ *
+ * Pairing is asked next, because a device with no stack has nothing to reach
  * and no reason to ask the network anything. A first run goes to a
  * screen offering pairing, and reporting it as a failure to reach would be the
  * app describing its own first run as a fault.
@@ -43,7 +49,7 @@ use Modules\Kernel\Api\Stacks;
  * without sending anything, and having no network is the one thing that is.
  *
  * A query rather than a command, so it answers rather than refuses (`M1`):
- * *what did the app find* has no failure case, only three answers, and two of
+ * *what did the app find* has no failure case, only four answers, and two of
  * them are ordinary.
  */
 final readonly class Opening
@@ -56,6 +62,15 @@ final readonly class Opening
     /** Ask, in the order the requirements put the questions. */
     public function found(): Launch
     {
+        return $this->stacks->configured()->either(
+            listed: fn(Configured $configured): Launch => $this->foundAmong($configured),
+            heldBack: static fn(WhyTheStacksAreHeldBack $why): Launch => Launch::heldBack($why),
+        );
+    }
+
+    /** What a launch found among the stacks it could list. */
+    private function foundAmong(Configured $configured): Launch
+    {
         // Walked rather than counted and then walked. `isEmpty()` followed by a
         // read of the first entry is the same question asked twice, and the
         // second answer needs a branch for a case the first ruled out — which
@@ -66,7 +81,7 @@ final readonly class Opening
         // emphatic that two stacks are not interchangeable — but the answer to
         // *which one is this launch about*, which the screen needs before it can
         // say anything. An operator with four machines meets the list.
-        foreach ($this->stacks->configured() as $stack) {
+        foreach ($configured as $stack) {
             // Asked here rather than above the loop, so a first run never puts
             // the question at all. An unpaired device has nowhere to send
             // anything, and telling somebody their wifi is off when what they
