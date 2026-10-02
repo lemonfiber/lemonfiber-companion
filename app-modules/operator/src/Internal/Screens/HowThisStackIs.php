@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
@@ -87,6 +89,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowThisStackIs extends NativeComponent
 {
     use OffersTheAppsSettings;

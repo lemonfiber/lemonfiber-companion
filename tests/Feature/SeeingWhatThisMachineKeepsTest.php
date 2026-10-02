@@ -359,3 +359,18 @@ it('copies asked after the session ended between the two frames are a session th
         ->and($screen->copiesFound?->names)->toBe([])
         ->and($copying->askings())->toBe(0);
 });
+
+it('reads what is kept again once a minute, and the copies on the frame after', function (): void {
+    $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
+    $copying = twoCopies();
+    $screen = theKeepingScreen($storing, $copying);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    $screen->whileOpen();
+    WhatTheDeviceWouldDraw::by($screen);
+    $kept = [$storing->askings(), $copying->askings()];
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($kept)->toBe([2, 1])
+        ->and([$storing->askings(), $copying->askings()])->toBe([2, 2]);
+});

@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
@@ -58,6 +60,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class ChoosingHowGood extends NativeComponent
 {
     use OffersTheAppsSettings;

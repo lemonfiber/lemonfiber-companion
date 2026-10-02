@@ -8,10 +8,12 @@ use Illuminate\View\View;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
@@ -75,6 +77,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatThisStackRuns extends NativeComponent
 {
     use OffersTheAppsSettings;

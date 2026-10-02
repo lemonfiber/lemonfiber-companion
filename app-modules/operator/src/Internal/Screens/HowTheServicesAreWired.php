@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\View\View;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -17,6 +18,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -53,6 +55,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;

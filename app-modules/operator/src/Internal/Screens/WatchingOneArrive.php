@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Obstacle;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkingThrough;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Operator\Internal\AsText;
@@ -75,6 +77,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;

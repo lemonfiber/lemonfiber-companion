@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\MovingInBy;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -60,6 +62,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatIsAlreadyOnThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;

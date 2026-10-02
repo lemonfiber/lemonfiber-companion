@@ -6,6 +6,8 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -14,6 +16,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
@@ -23,6 +26,7 @@ use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -51,6 +55,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
@@ -109,6 +114,20 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     {
         $this->answered = null;
         $this->lastUpdated = null;
+    }
+
+    /**
+     * Look again at what is behind while nothing is being updated.
+     *
+     * Only the reading of what is behind: an update this screen took is
+     * followed on its own cadence while it runs, and what it came to is held.
+     */
+    #[Poll(HowOftenAScreenLooks::WHILE_OPEN_MS)]
+    public function whileOpen(): void
+    {
+        if (! $this->lastUpdate()->isWorking) {
+            $this->answered = null;
+        }
     }
 
     /**

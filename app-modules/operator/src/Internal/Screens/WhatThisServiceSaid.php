@@ -13,6 +13,7 @@ use function is_string;
 
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Zone;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -69,6 +71,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisServiceSaid extends NativeComponent
 {
     use OffersTheAppsSettings;

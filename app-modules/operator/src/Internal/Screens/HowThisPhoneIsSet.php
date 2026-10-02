@@ -12,11 +12,13 @@ use Modules\Connection\Api\LockingAfter;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\DaysAsked;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
@@ -33,6 +35,7 @@ use function view;
  * is made, so what is drawn is always what is in force.
  */
 #[Lazy]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class HowThisPhoneIsSet extends NativeComponent
 {
     /** How long the app may be away before the lock asks again, once read. */

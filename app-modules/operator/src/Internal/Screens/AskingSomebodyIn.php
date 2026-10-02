@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Inviting;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
@@ -75,6 +77,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;

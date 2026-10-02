@@ -14,8 +14,10 @@ use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -61,6 +63,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class PairByTyping extends NativeComponent
 {
     /**

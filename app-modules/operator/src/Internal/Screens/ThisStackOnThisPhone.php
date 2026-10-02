@@ -7,7 +7,9 @@ namespace Modules\Operator\Internal\Screens;
 use Illuminate\View\View;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Edge\NativeComponent;
@@ -23,6 +25,7 @@ use function view;
  * operator's order, or on a first run where there is none: every screen of a
  * stack that is gone is gone with it.
  */
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class ThisStackOnThisPhone extends NativeComponent
 {
     use FindsItsWayAround;

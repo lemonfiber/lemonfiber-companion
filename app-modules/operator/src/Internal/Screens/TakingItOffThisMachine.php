@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -62,6 +64,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;

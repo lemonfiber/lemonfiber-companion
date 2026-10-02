@@ -7,6 +7,8 @@ namespace Modules\Operator\Internal\Screens;
 use Illuminate\View\View;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenTheLockAsks;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
@@ -35,6 +37,7 @@ use function view;
  * of one, it builds that one now.
  */
 #[Lazy]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class Locked extends NativeComponent
 {
     /** Whether the screen under this awaits the outcome of something it sent. */

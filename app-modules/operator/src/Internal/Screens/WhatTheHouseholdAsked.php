@@ -9,6 +9,7 @@ use function count;
 use Illuminate\View\View;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -18,8 +19,10 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Wanting;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHouseholdsAskingReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -62,8 +65,10 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatTheHouseholdAsked extends NativeComponent
 {
+    use LooksAgainWhileOpen;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

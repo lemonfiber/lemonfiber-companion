@@ -549,6 +549,26 @@ it('N2-R18 — asks after an update again only while it runs', function (): void
         ->and($finished->followed())->toHaveCount(1);
 });
 
+it('reads what is behind again while it is open, and leaves an update it is following to its own cadence', function (): void {
+    $idle = AStackThatKeepsCurrent::with(anEveningWorthSpending());
+    $screen = theUpkeepScreen($idle);
+    $screen->answer();
+    $screen->whileOpen();
+    $screen->answer();
+
+    $running = AStackThatKeepsCurrent::with(anEveningWorthSpending());
+    $following = aScreenThatTookTheUpdate($running);
+    WhatTheDeviceWouldDraw::by($following);
+    $askedBefore = $running->askings();
+    $followedBefore = count($running->followed());
+    $following->whileOpen();
+    WhatTheDeviceWouldDraw::by($following);
+
+    expect($idle->askings())->toBe(2)
+        ->and($running->askings())->toBe($askedBefore)
+        ->and($running->followed())->toHaveCount($followedBefore);
+});
+
 it('N2-R18 — asking again asks after the update again', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
     $screen = aScreenThatTookTheUpdate($keeping);

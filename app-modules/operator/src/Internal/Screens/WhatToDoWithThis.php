@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -100,6 +102,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
