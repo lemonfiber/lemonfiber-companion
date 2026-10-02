@@ -129,6 +129,61 @@ it('offers the stacks to narrow by only where more than one is paired', function
         ->and($two)->toContain(__('news.all_stacks'), 'The loft', 'The cabin');
 });
 
+it('shows one stack when asked, and every stack again for a stack it does not hold', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $phone = new APhoneLookingAtWhatIsNew($home, $away);
+    $phone->listing->lists($home->id(), whatItLists([], [11 => 'Bluey']));
+    $phone->listing->lists($away->id(), whatItLists([], [5 => 'Up']));
+    $first = $phone->opens();
+    WhatTheDeviceWouldDraw::by($first);
+    WhatTheDeviceWouldDraw::by($first);
+    $phone->listing->lists($home->id(), whatItLists([], [12 => 'Dune', 11 => 'Bluey']));
+    $phone->listing->lists($away->id(), whatItLists([], [6 => 'Heat', 5 => 'Up']));
+
+    $screen = $phone->opens();
+    $screen->showStack($away->id()->stored());
+    $narrowed = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->showStack('a stack this phone does not hold');
+    WhatTheDeviceWouldDraw::by($screen);
+    $every = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($narrowed)->toContain('Heat')
+        ->and($narrowed)->not->toContain('Dune')
+        ->and($every)->toContain('Heat', 'Dune');
+});
+
+it('says a request it has no title for as a request', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $phone = new APhoneLookingAtWhatIsNew($home);
+    $phone->listing->lists($home->id(), whatItLists([], [11 => 'Bluey']));
+    WhatTheDeviceWouldDraw::by($phone->opens());
+    $phone->listing->lists($home->id(), whatItLists([], [12 => '', 11 => 'Bluey']));
+
+    $said = WhatTheDeviceWouldDraw::by($phone->opens())->said();
+
+    expect($said)->toContain(__('news.kind_one.request'), 'Request · The loft');
+});
+
+it('opens nothing for a kind, a stack or an item it was not showing', function (string $stack, string $kind, string $named): void {
+    $home = aStackWithNews('a', 'The loft');
+    $phone = new APhoneLookingAtWhatIsNew($home);
+    $phone->listing->lists($home->id(), whatItLists(['0.17.0']));
+    WhatTheDeviceWouldDraw::by($phone->opens());
+    $phone->listing->lists($home->id(), whatItLists(['0.18.0', '0.17.0']));
+    $screen = $phone->opens();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    $screen->open($stack === '' ? $home->id()->stored() : $stack, $kind, $named);
+
+    expect($screen->getNavigationIntent())->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($phone->opens())->said())->toContain('lemonfiber 0.18.0');
+})->with([
+    'a kind there is not' => ['', 'rumour', '0.18.0'],
+    'a stack the phone does not hold' => ['a stack this phone does not hold', 'update', '0.18.0'],
+    'an item the stack did not list' => ['', 'update', '0.19.0'],
+]);
+
 it('puts a stack it could not reach first, with when the phone last heard from it', function (): void {
     $home = aStackWithNews('a', 'The loft');
     $phone = new APhoneLookingAtWhatIsNew($home);

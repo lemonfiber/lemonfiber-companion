@@ -60,14 +60,15 @@ function theSameNews(): TheNewsOfAStack
 }
 
 /**
- * The payload a stack sends for that, or with these requests, these kinds unread and this onset.
+ * The payload a stack sends for that, or with these requests, these kinds unread and this onset, and any field replaced.
  *
  * @param list<array<string, mixed>> $requests
  * @param list<string>               $unread
+ * @param array<mixed>               $replacing fields of `data` said otherwise
  *
  * @return array<string, mixed>
  */
-function whatAStackListsAsNew(array $requests = [], array $unread = ['requests'], string $onset = '1759400000'): array
+function whatAStackListsAsNew(array $requests = [], array $unread = ['requests'], string $onset = '1759400000', array $replacing = []): array
 {
     return [
         'api_version' => 1,
@@ -80,6 +81,7 @@ function whatAStackListsAsNew(array $requests = [], array $unread = ['requests']
             'requests' => $requests,
             'problems' => [['check' => 'service.sonarr', 'onset' => $onset, 'summary' => 'Sonarr is stopped']],
             'unread' => $unread,
+            ...$replacing,
         ],
     ];
 }
@@ -170,6 +172,20 @@ it('refuses an onset that is not a number of seconds, rather than guessing when'
 
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::StackDidNotAnswer->value);
 })->with(['yesterday', '-1759400000', '17594e5', '99999999999999999999']);
+
+it('refuses a list it cannot read whole, rather than showing part of it as everything new', function (array $data): void {
+    $payload = whatAStackListsAsNew(replacing: $data);
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode($payload))]);
+
+    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::StackDidNotAnswer->value);
+})->with([
+    'an unread kind that is not a word' => [['unread' => [7]]],
+    'a request without its number' => [['requests' => [['title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
+    'a request numbered in words' => [['requests' => [['number' => 'twelve', 'title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
+    'a request without who asked' => [['requests' => [['number' => 12, 'title' => 'Dune']], 'unread' => []]],
+    'a release without its version' => [['updates' => [['delivers' => 'Plugins']]]],
+]);
 
 it('asks the news endpoint, and nothing else', function (): void {
     MockClient::destroyGlobal();

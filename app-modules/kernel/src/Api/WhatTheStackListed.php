@@ -7,9 +7,6 @@ namespace Modules\Kernel\Api;
 use function array_values;
 
 use ArrayIterator;
-
-use function count;
-
 use IteratorAggregate;
 use Traversable;
 
@@ -57,11 +54,6 @@ final readonly class WhatTheStackListed implements IteratorAggregate
     public function wasRead(): bool
     {
         return $this->read;
-    }
-
-    public function count(): int
-    {
-        return count($this->items);
     }
 
     /** @return Traversable<int, TItem> */
