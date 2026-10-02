@@ -365,6 +365,18 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The tunnel\'s exit and whether traffic leaves through it. VPN verification reaches this app as findings in the doctor report, and a failed one as an affected item of the health summary.',
     ],
     [
+        'path' => 'DashboardEnvelope.health.affected[].onset',
+        'because' => 'When the check went wrong. `N27-R19` orders problems by it to say which are new, '
+            . 'and What\'s new reads it from `/api/news` and the stream\'s `news` event, where the stack '
+            . 'names the same moment. The health summary draws what is wrong, not since when.',
+    ],
+    [
+        'path' => 'DoctorEnvelope.findings[].onset',
+        'because' => 'When the check went wrong, the same moment `/api/news` carries for it. What\'s new '
+            . 'reads it there (`N27-R19`); the diagnosis screen draws each finding\'s verdict and remedy, '
+            . 'and no requirement asks it to say since when.',
+    ],
+    [
         'path' => 'DoctorEnvelope.findings[].said',
         'because' => 'A summary line beside the meaning. `N2-R3` has a finding carry its code, its meaning '
             . 'and its remedy, and a second sentence saying roughly the meaning again is the core being '
