@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\News\Tests\Api;
 
+use function array_map;
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
@@ -83,4 +85,22 @@ it('marks every kind where the choice was sealed under a key that is gone', func
 
     expect(whichAreMarked(markingOver($seal, $kept)))->toBe([true, true, true])
         ->and($kept->forget($sealed)->howMany())->toBe(1);
+});
+
+it('lists the kinds a stack marks, in the order they are declared', function (): void {
+    $marking = markingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    $all = $marking->marked(theStackWhoseKindsAreChosen());
+    $marking->markNoLonger(theStackWhoseKindsAreChosen(), KindOfNews::Request);
+
+    $after = $marking->marked(theStackWhoseKindsAreChosen());
+
+    expect(iterator_to_array($all, preserve_keys: false))->toBe([KindOfNews::Update, KindOfNews::Request, KindOfNews::Problem])
+        ->and(iterator_to_array($after, preserve_keys: false))->toBe([KindOfNews::Update, KindOfNews::Problem])
+        ->and($after->include(KindOfNews::Problem))->toBeTrue()
+        ->and($after->include(KindOfNews::Request))->toBeFalse();
+});
+
+it('names each kind on a screen by a key of its own', function (): void {
+    expect(array_map(static fn(KindOfNews $kind): string => $kind->saidOnTheScreen(), KindOfNews::cases()))
+        ->toBe(['news.kind.update', 'news.kind.request', 'news.kind.problem']);
 });
