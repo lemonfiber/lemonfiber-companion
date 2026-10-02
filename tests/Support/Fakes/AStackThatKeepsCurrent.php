@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatIsCurrent;
@@ -80,6 +81,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
             Services::none(),
             HowServicesTookIt::none(),
             HowTheNotesStand::Current,
+            TheStackEdits::none(),
         ));
     }
 

@@ -681,10 +681,19 @@ enum WireField: string implements NamesAWireField
 
     /**
      * Where a file is: where a support bundle was written, absent on a run
-     * that only described it, and a file a reset reverts, within the stack
-     * directory.
+     * that only described it, and a stack file the operator edited, within the
+     * stack directory.
      */
     case Path = 'path';
+
+    /**
+     * The lines of a stack file the operator edited that differ from
+     * lemonfiber's own, the operator's marked `-` and lemonfiber's `+`.
+     */
+    case Diff = 'diff';
+
+    /** The stack files the operator edited, kept as they set them by a start or an update. */
+    case StackEdits = 'stack_edits';
 
     /**
      * What a service that has ended exited with, absent while it runs: on a

@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARevertCannotBeShown;
+use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -98,7 +99,7 @@ final readonly class Resetters implements ResettingTheConfiguration
                 refused: HowTheResetIsGoing::refused(...),
                 met: HowTheResetIsGoing::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ResetIsUnreadable|ARevertCannotBeShown $why) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ResetIsUnreadable|ARevertCannotBeShown|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
             return HowTheResetIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

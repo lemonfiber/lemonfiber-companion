@@ -18,19 +18,19 @@ use function count;
 final readonly class TheReset
 {
     private function __construct(
-        private EditsReverted $edits,
+        private TheStackEdits $edits,
         private ConnectionsReverted $connections,
         private bool $carriedOut,
     ) {}
 
     /** What putting the configuration back would revert; nothing was written. */
-    public static function previewed(EditsReverted $edits, ConnectionsReverted $connections): self
+    public static function previewed(TheStackEdits $edits, ConnectionsReverted $connections): self
     {
         return new self($edits, $connections, carriedOut: false);
     }
 
     /** What putting the configuration back reverted, the operator having said yes. */
-    public static function carriedOut(EditsReverted $edits, ConnectionsReverted $connections): self
+    public static function carriedOut(TheStackEdits $edits, ConnectionsReverted $connections): self
     {
         return new self($edits, $connections, carriedOut: true);
     }
@@ -42,7 +42,7 @@ final readonly class TheReset
     }
 
     /** The files whose edits go, or went. */
-    public function edits(): EditsReverted
+    public function edits(): TheStackEdits
     {
         return $this->edits;
     }

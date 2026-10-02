@@ -12,11 +12,10 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ResetEnvelope;
-use Modules\Kernel\Api\AnEditReverted;
 use Modules\Kernel\Api\ConnectionsReverted;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\TheReset;
 use Modules\Sdk\Api\Fields\ResetField;
+use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -27,10 +26,10 @@ use Modules\Sdk\Internal\Wire;
  * screen told *carried out* on the strength of having asked would say so of a
  * reset the stack only previewed.
  *
- * Every file is read with its path and its diff, and every connection by its
- * name. A diff may be empty, which is how the stack says the two files differ
- * in no line it can show; one that is absent or not text is refused, as is a
- * list that is not a list.
+ * Every file is read by {@see StackEditsSent}, with its path and its diff, and
+ * every connection by its name. A diff may be empty, which is how the stack
+ * says the two files differ in no line it can show; one that is absent or not
+ * text is refused, as is a list that is not a list.
  */
 final readonly class WhatAResetReverts
 {
@@ -47,7 +46,7 @@ final readonly class WhatAResetReverts
             throw ResetIsUnreadable::missing(WireField::Data);
         }
 
-        $edits = EditsReverted::these(...self::edits($data));
+        $edits = StackEditsSent::in($data, ResetField::Reverted);
         $connections = ConnectionsReverted::these(...self::connections($data));
 
         return self::confirmed($data)
@@ -79,30 +78,6 @@ final readonly class WhatAResetReverts
         }
 
         return $data[WireField::Confirmed->value];
-    }
-
-    /**
-     * Every file whose edits go, in the stack's order.
-     *
-     * @param  array<array-key, mixed> $data
-     * @return list<AnEditReverted>
-     */
-    private static function edits(array $data): array
-    {
-        $found = [];
-
-        foreach (self::listed($data, ResetField::Reverted) as $position => $edit) {
-            if (! is_array($edit)) {
-                throw ResetIsUnreadable::entry(ResetField::Reverted, $position);
-            }
-
-            $found[] = AnEditReverted::at(
-                self::text($edit, WireField::Path, $position),
-                self::text($edit, ResetField::Diff, $position),
-            );
-        }
-
-        return $found;
     }
 
     /**
@@ -147,17 +122,4 @@ final readonly class WhatAResetReverts
         return $listed;
     }
 
-    /**
-     * A field one file must carry, as text, which may be empty.
-     *
-     * @param array<array-key, mixed> $edit
-     */
-    private static function text(array $edit, NamesAWireField $field, int $position): string
-    {
-        if (! array_key_exists($field->value, $edit) || ! is_string($edit[$field->value])) {
-            throw ResetIsUnreadable::entry(ResetField::Reverted, $position);
-        }
-
-        return $edit[$field->value];
-    }
 }

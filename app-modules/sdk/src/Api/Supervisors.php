@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -133,7 +134,7 @@ final readonly class Supervisors implements Supervising
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheVerbIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
             return HowTheVerbIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

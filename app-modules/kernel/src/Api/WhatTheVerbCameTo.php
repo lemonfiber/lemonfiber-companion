@@ -31,6 +31,7 @@ final readonly class WhatTheVerbCameTo
         private WhereTheServicesEndedUp $services,
         private TheServicesLeftOut $leftOut,
         private ThePortsHeld $portsHeld,
+        private TheStackEdits $edits,
         private ?HowTheStackIsRunning $condition = null,
         private ?string $held = null,
     ) {}
@@ -41,8 +42,9 @@ final readonly class WhatTheVerbCameTo
         WhereTheServicesEndedUp $services,
         TheServicesLeftOut $leftOut,
         ThePortsHeld $portsHeld,
+        TheStackEdits $edits,
     ): self {
-        return new self($was, $services, $leftOut, $portsHeld);
+        return new self($was, $services, $leftOut, $portsHeld, $edits);
     }
 
     /** What the stack reported of a start it declined to run, with the reason it gave; a blank reason is refused. */
@@ -52,18 +54,19 @@ final readonly class WhatTheVerbCameTo
         TheServicesLeftOut $leftOut,
         ThePortsHeld $portsHeld,
         string $why,
+        TheStackEdits $edits,
     ): self {
         if (trim($why) === '') {
             throw TheHoldSaysNothing::whereAReasonWasOwed();
         }
 
-        return new self($was, $services, $leftOut, $portsHeld, held: $why);
+        return new self($was, $services, $leftOut, $portsHeld, $edits, held: $why);
     }
 
     /** The same report, with what the stack says those services amount to. */
     public function amountingTo(HowTheStackIsRunning $condition): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $condition, $this->held);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $condition, $this->held);
     }
 
     /** Whether it was a rehearsal, which changed nothing, or the verb itself. */
@@ -82,6 +85,17 @@ final readonly class WhatTheVerbCameTo
     public function leftOut(): TheServicesLeftOut
     {
         return $this->leftOut;
+    }
+
+    /**
+     * The stack files the operator edited, which it left as they set them.
+     *
+     * Not a problem with the run: a file somebody edited is theirs, and the
+     * stack wrote around it rather than over it.
+     */
+    public function editsKept(): TheStackEdits
+    {
+        return $this->edits;
     }
 
     /** The ports it wanted that something else on the machine already holds. */

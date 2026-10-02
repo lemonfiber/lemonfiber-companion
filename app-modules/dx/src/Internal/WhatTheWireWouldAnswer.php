@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\WireField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -385,8 +386,33 @@ final readonly class WhatTheWireWouldAnswer
         return [
             'api_version' => Api::VERSION,
             'kind' => WhatTheContractDeclares::kindOf($envelope),
-            'data' => WhatAStackWouldSay::inside($envelope),
+            'data' => self::withEditsThatRead(WhatAStackWouldSay::inside($envelope)),
         ];
+    }
+
+    /**
+     * A payload whose stack files the operator edited carry diffs that read.
+     *
+     * The declaration types a diff as text, and a synthesised one is a word
+     * with no mark on it, which no reader can place as the operator's line or
+     * lemonfiber's. Corrected the way {@see aResetThatReads()} corrects a
+     * reset's, wherever a payload carries the list.
+     */
+    private static function withEditsThatRead(mixed $data): mixed
+    {
+        $under = WireField::StackEdits->value;
+
+        if (! is_array($data) || ! array_key_exists($under, $data) || ! is_array($data[$under])) {
+            return $data;
+        }
+
+        $corrected = [];
+
+        foreach ($data[$under] as $edit) {
+            $corrected[] = self::anEditThatReads($edit);
+        }
+
+        return [...$data, $under => $corrected];
     }
 
     /**

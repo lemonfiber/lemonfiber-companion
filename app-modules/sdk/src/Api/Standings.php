@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Internal\Changelogs;
 use Modules\Sdk\Internal\Changes;
 use Modules\Sdk\Internal\Endings;
+use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -52,10 +53,11 @@ final readonly class Standings
         $went = Endings::in($data);
         $inUse = Changelogs::running($changelog);
         $notes = Changelogs::standing($changelog);
+        $edits = StackEditsSent::in($data, WireField::StackEdits);
 
-        return $inUse instanceof Release
-            ? Upkeep::runningOn($pins, $inUse, $history, $changing, $stuck, $went, $notes)
-            : Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes);
+        $upkeep = Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes, $edits);
+
+        return $inUse instanceof Release ? $upkeep->runningOn($inUse) : $upkeep;
     }
 
     /** @param Envelope<mixed> $envelope */

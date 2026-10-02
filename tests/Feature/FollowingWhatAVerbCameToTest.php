@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
@@ -32,6 +34,7 @@ use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\Presenters\HowAStackEditReads;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -115,6 +118,7 @@ function aVerbThatRan(WhereAServiceEndedUp ...$services): WhatTheVerbCameTo
         WhereTheServicesEndedUp::of(...$services),
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
+        TheStackEdits::none(),
     );
 }
 
@@ -268,6 +272,7 @@ it('says a start the stack declined, with the stack\'s reason, and names nothing
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         'This machine is on its battery.',
+        TheStackEdits::none(),
     );
 
     $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($declined))));
@@ -285,6 +290,7 @@ it('labels a rehearsal as one, in the tense of what would happen, and names noth
         WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(),
+        TheStackEdits::none(),
     );
 
     $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($rehearsed)));
@@ -329,6 +335,7 @@ it('names what the plan left out with what each needed, and what holds each port
         WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media-server')),
+        TheStackEdits::none(),
     )->amountingTo(HowTheStackIsRunning::Active);
 
     $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($started))));
@@ -583,3 +590,49 @@ it('keeps the line it has where the session went between the sending and the lis
     expect($hearing->asked())->toBe(0)
         ->and($screen->waitsOn)->toBe('');
 });
+
+it('says a file the operator edited is kept, with what lemonfiber would change in it and what the marks mean', function (): void {
+    $started = WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::CarriedOut,
+        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy)),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        TheStackEdits::these(
+            AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"),
+            AStackEdit::at('env/sonarr.env', ''),
+        ),
+    );
+
+    $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($started))));
+
+    expect($drawn)->toContain(
+        whatTheCatalogueSays('stacks.edits.heading'),
+        whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']),
+        whatTheCatalogueSays('stacks.edits.would_change'),
+        '- image: mine',
+        '+ image: ours',
+        whatTheCatalogueSays('stacks.edits.legend'),
+        whatTheCatalogueSays('stacks.edits.kept', ['path' => 'env/sonarr.env']),
+    );
+    // The file whose difference no line shows says only that it is kept: the
+    // legend is said once, under the file that has lines.
+    expect(array_count_values($drawn)[whatTheCatalogueSays('stacks.edits.legend')])->toBe(1);
+});
+
+it('says nothing about edited files where the stack left none', function (): void {
+    $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(
+        aVerbThatRan(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy)),
+    ))));
+
+    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.edits.heading'));
+});
+
+it('marks a diff\'s lines with the marks its legend names, in every language', function (string $locale): void {
+    app()->setLocale($locale);
+    $theirs = explode(' ', whatTheCatalogueSays(HowAStackEditReads::THEIRS, ['line' => 'x']))[0];
+    $lemonfibers = explode(' ', whatTheCatalogueSays(HowAStackEditReads::LEMONFIBERS, ['line' => 'x']))[0];
+
+    expect(whatTheCatalogueSays('stacks.edits.legend'))->toContain(sprintf(' %s ', $theirs))
+        ->and(whatTheCatalogueSays('stacks.edits.legend'))->toContain(sprintf(' %s ', $lemonfibers))
+        ->and($theirs)->not->toBe($lemonfibers);
+})->with(['en', 'nl']);

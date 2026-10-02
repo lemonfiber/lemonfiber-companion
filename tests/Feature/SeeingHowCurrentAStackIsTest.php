@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\Whose;
@@ -65,9 +67,8 @@ function theStackWhoseUpkeepIsRead(): Stack
 /** The same evening, where one of the two services will not come back as it was. */
 function anEveningWithSomethingPermanentInIt(): Upkeep
 {
-    return Upkeep::runningOn(
+    return Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         // One of the two, deliberately. A fixture where every service is
@@ -76,7 +77,8 @@ function anEveningWithSomethingPermanentInIt(): Upkeep
         Services::these(ServiceId::called('sonarr')),
         whatLastNightCameTo(),
         HowTheNotesStand::Current,
-    );
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()));
 }
 
 /**
@@ -86,9 +88,8 @@ function anEveningWithSomethingPermanentInIt(): Upkeep
  */
 function anEveningWorthSpending(HowTheNotesStand $notes = HowTheNotesStand::Current): Upkeep
 {
-    return Upkeep::runningOn(
+    return Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
             Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
@@ -97,7 +98,8 @@ function anEveningWorthSpending(HowTheNotesStand $notes = HowTheNotesStand::Curr
         Services::none(),
         whatLastNightCameTo(),
         $notes,
-    );
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
 }
 
 /**
@@ -140,7 +142,7 @@ function theUpkeepScreen(
 /** The update's own report, finished, saying this of each service it touched. */
 function aReportSaying(HowServicesTookIt $went): HowTheUpdateIsGoing
 {
-    return HowTheUpdateIsGoing::done(Upkeep::reported(AgainstThePins::Current, Releases::none(), Services::none(), Services::none(), $went, HowTheNotesStand::Current));
+    return HowTheUpdateIsGoing::done(Upkeep::reported(AgainstThePins::Current, Releases::none(), Services::none(), Services::none(), $went, HowTheNotesStand::Current, TheStackEdits::none()));
 }
 
 /** The screen once 4.1.0 has been taken and the cadence has asked after it once. */
@@ -190,6 +192,7 @@ it('marks a withdrawn release in the history rather than dropping it', function 
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     )));
 
     $history = $screen->answer()->history;
@@ -207,15 +210,15 @@ it('N2-R16 — says so where the stack is running one that was taken back', func
     // would leave an operator reading a screen that says nothing is wrong.
     // And no update is offered onto the pins that release carries, though
     // the stack says a service would move: taking them is taking the release.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
-        Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
         Releases::none(),
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
-    )));
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()))));
 
     expect($screen->answer()->runningWasWithdrawn)->toBeTrue()
         ->and($screen->answer()->running)->toBe('4.0.17')
@@ -290,6 +293,7 @@ it('asking again where nothing is offered leaves the update already being asked 
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     )));
     $screen->asking = $held;
 
@@ -629,6 +633,7 @@ it('N2-R20 — offers taking one only where the stack said there is one', functi
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     )));
 
     expect($waiting->answer()->offer)->toBeInstanceOf(TakingAnUpdate::class)
@@ -736,6 +741,7 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     )))->answer();
 
     expect($answer->running)->toBe(WhatTheStackIsOn::NOT_NAMED)
@@ -771,15 +777,15 @@ it('N2-R18 — reads what needs attention before what is fine', function (): voi
 
 it('says whether the household will notice what the release carrying the pins changed', function (): void {
     $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->inUse;
-    $chore = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
+    $chore = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
-        Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         Releases::none(),
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
-    )))->answer()->inUse;
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()))))->answer()->inUse;
 
     expect($noticed?->theHouseholdWouldNotice)->toBeTrue()
         ->and($noticed?->deliversSaid)->toBe('Adds series search.')
@@ -929,4 +935,33 @@ it('draws what the running release changed where the notes describe it, and with
         ->and($drawn)->toContain(__('updates.what_it_changed', ['version' => '4.1.0']))
         ->and($drawn)->not->toContain(__('stacks.versions.notes_stale'))
         ->and($drawn)->not->toContain(__('stacks.versions.notes_pending'));
+});
+
+it('says the files the operator edited are kept, with what the update would change in them', function (): void {
+    $upkeep = Upkeep::reported(
+        AgainstThePins::UpdatesAvailable,
+        Releases::none(),
+        Services::these(ServiceId::called('sonarr')),
+        Services::none(),
+        whatLastNightCameTo(),
+        HowTheNotesStand::Current,
+        TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n")),
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
+
+    $drawn = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
+
+    expect($drawn)->toContain(
+        __('stacks.edits.heading'),
+        __('stacks.edits.kept', ['path' => 'compose.yaml']),
+        __('stacks.edits.would_change'),
+        '- image: mine',
+        '+ image: ours',
+        __('stacks.edits.legend'),
+    );
+});
+
+it('says nothing about edited files where the update leaves none', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending())))->said();
+
+    expect($drawn)->not->toContain(__('stacks.edits.heading'));
 });

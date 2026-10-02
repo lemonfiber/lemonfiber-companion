@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
@@ -18,6 +19,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -25,6 +27,8 @@ use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
+use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
+use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceLeftOutAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceNotBackAsShown;
@@ -48,6 +52,7 @@ function aVerbWithNoReport(HowTheReadingWent $went, bool $wasAsked = true, bool 
         leftOutSaid: null,
         leftOut: [],
         portsHeld: [],
+        editsKept: [],
     );
 }
 
@@ -62,6 +67,7 @@ function aRestartThatLeftOneBehind(WhetherItWasRehearsed $was): WhatTheVerbCameT
         ),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Usenet, Forms::these(Form::called('hunt')))),
         ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media-server')),
+        TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n")),
     )->amountingTo(HowTheStackIsRunning::Partial);
 }
 
@@ -90,6 +96,10 @@ it('draws a restart that left one behind whole, naming it with where it stood', 
         leftOutSaid: 'health.came_to.left_out',
         leftOut: [new AServiceLeftOutAsShown('qBittorrent', 'health.rehearsal.needs.usenet', ['hunt'])],
         portsHeld: [new APortHeldAsShown('8989', 'sonarr', 'media-server')],
+        editsKept: [new AnEditAsShown('compose.yaml', [
+            new ADiffLineAsShown('stacks.edits.theirs', 'image: mine'),
+            new ADiffLineAsShown('stacks.edits.lemonfibers', 'image: ours'),
+        ])],
     ));
 });
 
@@ -109,6 +119,7 @@ it('says a declined start with its reason, and names nothing as not back', funct
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         'Autostart was never asked for.',
+        TheStackEdits::none(),
     );
     $read = new HowAVerbEndedReads()->done($declined, WhatToDoWithIt::Start);
 
@@ -137,6 +148,7 @@ it('says a start that brought everything back did, with nothing to name, and say
         WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
+        TheStackEdits::none(),
     );
     $complete = new HowAVerbEndedReads()->done($everything->amountingTo(HowTheStackIsRunning::Active), WhatToDoWithIt::Start);
     $unsaid = new HowAVerbEndedReads()->done($everything, WhatToDoWithIt::Start);

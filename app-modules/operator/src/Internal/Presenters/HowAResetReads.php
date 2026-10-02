@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\ALineOfADiff;
-use Modules\Kernel\Api\AnEditReverted;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheReset;
-use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
-use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsWorded;
@@ -75,12 +71,6 @@ final readonly class HowAResetReads
     /** The stack's report: what putting the configuration back would revert, or reverted. */
     public function reported(TheReset $reset): AResetAsShown
     {
-        $edits = [];
-
-        foreach ($reset->edits() as $edit) {
-            $edits[] = $this->edit($edit);
-        }
-
         return new AResetAsShown(
             went: HowTheReadingWent::itCameBack(),
             isWorking: false,
@@ -90,29 +80,8 @@ final readonly class HowAResetReads
             changesNothing: $reset->changesNothing(),
             mayBeAgreedTo: ! $this->afterTheYes && $reset->mayBeAgreedTo(),
             words: $this->words($reset->wasCarriedOut()),
-            edits: $edits,
+            edits: new HowAStackEditReads()->these($reset->edits()),
             connections: [...$reset->connections()],
-        );
-    }
-
-    /** One file, with every line marked as whose it is. */
-    private function edit(AnEditReverted $edit): AnEditAsShown
-    {
-        $lines = [];
-
-        foreach ($edit as $line) {
-            $lines[] = $this->line($line);
-        }
-
-        return new AnEditAsShown(path: $edit->path(), lines: $lines);
-    }
-
-    /** One line, marked as the operator's or lemonfiber's. */
-    private function line(ALineOfADiff $line): ADiffLineAsShown
-    {
-        return new ADiffLineAsShown(
-            said: $line->isTheirs() ? 'stacks.reset.theirs' : 'stacks.reset.lemonfibers',
-            line: $line->text(),
         );
     }
 

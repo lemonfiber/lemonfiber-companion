@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\NothingToTake;
@@ -11,8 +12,10 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Tests\Support\TheWordCarriedOut;
 
 /** A release in the record, standing or withdrawn. */
 function aReleaseInTheRecord(string $version, bool $withdrawn = false): Release
@@ -23,15 +26,15 @@ function aReleaseInTheRecord(string $version, bool $withdrawn = false): Release
 /** A reading running `4.1.0`, saying what the pins say and moving what it is given. */
 function aReadingWhosePinsSay(AgainstThePins $pins, Services $changing, bool $runningWithdrawn = false): Upkeep
 {
-    return Upkeep::runningOn(
+    return Upkeep::reported(
         $pins,
-        aReleaseInTheRecord('4.1.0', $runningWithdrawn),
         Releases::these(aReleaseInTheRecord('4.1.0', $runningWithdrawn), aReleaseInTheRecord('4.0.16')),
         $changing,
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
-    );
+        TheStackEdits::none(),
+    )->runningOn(aReleaseInTheRecord('4.1.0', $runningWithdrawn));
 }
 
 it('says there is an update to take only where the pins say one is available', function (): void {
@@ -98,6 +101,7 @@ it('keeps a withdrawn release in the history rather than dropping it', function 
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     );
 
     $said = [];
@@ -108,4 +112,35 @@ it('keeps a withdrawn release in the history rather than dropping it', function 
 
     expect($said)->toBe(['4.0.17:withdrawn', '4.0.16:standing'])
         ->and($upkeep->runningAWithdrawnRelease())->toBeFalse();
+});
+
+it('keeps everything it read when it is told which release is running', function (): void {
+    $edits = TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"));
+    $went = HowServicesTookIt::none();
+    $read = Upkeep::reported(
+        AgainstThePins::Partial,
+        Releases::these(aReleaseInTheRecord('4.0.16')),
+        Services::these(ServiceId::called('sonarr')),
+        Services::these(ServiceId::called('jellyfin')),
+        $went,
+        HowTheNotesStand::Stale,
+        $edits,
+    );
+    $running = $read->runningOn(aReleaseInTheRecord('4.1.0'));
+
+    expect($running->againstThePins())->toBe(AgainstThePins::Partial)
+        ->and($running->history())->toEqual($read->history())
+        ->and($running->changing())->toEqual($read->changing())
+        ->and($running->cannotBePutBack())->toEqual($read->cannotBePutBack())
+        ->and($running->howItWent())->toBe($went)
+        ->and($running->notes())->toBe(HowTheNotesStand::Stale)
+        ->and($running->editsKept())->toBe($edits)
+        ->and($running->inUse(
+            named: static fn(Release $release): TheWordCarriedOut => new TheWordCarriedOut($release->version()),
+            unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
+        )->said)->toBe('4.1.0')
+        ->and($read->inUse(
+            named: static fn(Release $release): TheWordCarriedOut => new TheWordCarriedOut($release->version()),
+            unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
+        )->said)->toBe('unstated');
 });

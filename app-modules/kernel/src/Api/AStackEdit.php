@@ -23,20 +23,23 @@ use Traversable;
 use function trim;
 
 /**
- * One file the operator edited, and the lines putting it back changes.
+ * A stack file the operator edited, and the lines where it differs from lemonfiber's own.
  *
  * The stack's diff holds the operator's lines marked `-` and lemonfiber's
  * marked `+`, with the matching head and tail left out. It is read line by
  * line here, and a line carrying neither mark is refused rather than drawn: a
- * line an operator cannot place on either side tells them nothing about what
- * they would lose.
+ * line an operator cannot place on either side tells them nothing about which
+ * of the two it is.
+ *
+ * One shape wherever the stack reports an edit: a file a reset reverts, and a
+ * file a start or an update leaves as the operator set it.
  *
  * A file with no lines is one whose difference no line can show, which the
  * stack says with an empty diff.
  *
  * @implements IteratorAggregate<int, ALineOfADiff>
  */
-final readonly class AnEditReverted implements Countable, IteratorAggregate
+final readonly class AStackEdit implements Countable, IteratorAggregate
 {
     /** How the stack marks the operator's line. */
     private const string THEIRS = '- ';
@@ -51,7 +54,7 @@ final readonly class AnEditReverted implements Countable, IteratorAggregate
     public static function at(string $path, string $diff): self
     {
         if (trim($path) === '') {
-            throw ARevertCannotBeShown::withoutAPath();
+            throw AStackEditCannotBeShown::withoutAPath();
         }
 
         $lines = [];
@@ -93,6 +96,6 @@ final readonly class AnEditReverted implements Countable, IteratorAggregate
             return ALineOfADiff::lemonfibers(mb_substr($line, mb_strlen(self::LEMONFIBERS)));
         }
 
-        throw ARevertCannotBeShown::unmarked($position);
+        throw AStackEditCannotBeShown::unmarked($position);
     }
 }
