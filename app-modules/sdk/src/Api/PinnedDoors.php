@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Admission;
 use Modules\Kernel\Api\Stack;
+use Modules\Sdk\Internal\HowLongACallWaits;
 
 /**
  * The one place a door to a stack is opened.
@@ -41,6 +42,7 @@ final readonly class PinnedDoors implements Doors
         return Admission::at(
             $stack->at()->forTheClient(),
             $stack->presents()->forComparingByEye(),
+            HowLongACallWaits::ordinarily(),
         );
     }
 }

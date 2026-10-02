@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use Closure;
+
 use function expect;
 use function it;
 
+use Lemonfiber\Sdk\Admission;
+use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Exception\ConfigurationProblem;
+use Lemonfiber\Sdk\Http\LemonfiberConnector;
+use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -15,7 +21,9 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Timeout;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\PinnedDoors;
 
 use function str_repeat;
 
@@ -99,4 +107,25 @@ it('builds a separate client per stack, so no reading can be attributed to the w
     $elsewhere = $clients->client(aPairedStack(at: 'https://10.0.0.7:8443'), aSession());
 
     expect($loft)->not->toBe($elsewhere);
+});
+
+/**
+ * How long a connection the SDK was handed waits for a call, in seconds.
+ *
+ * Read off the connector, which holds the wait every call it sends shares; a
+ * call that waited it out would take the test that long.
+ */
+function howLongItWaits(Client|Admission $holdingAConnector): float
+{
+    $connector = Closure::bind(static fn(Client|Admission $held): LemonfiberConnector => $held->connector, null, $holdingAConnector::class)($holdingAConnector);
+
+    return Closure::bind(static fn(LemonfiberConnector $held): Duration => $held->wait, null, LemonfiberConnector::class)($connector)->inSeconds();
+}
+
+it('gives every client and every door the wait the app keeps for a call to a stack', function (): void {
+    $client = new PinnedClients()->client(aPairedStack(), aSession());
+    $door = new PinnedDoors()->door(aPairedStack());
+
+    expect(howLongItWaits($client))->toBe((float) Timeout::ordinary()->inSeconds())
+        ->and(howLongItWaits($door))->toBe((float) Timeout::ordinary()->inSeconds());
 });

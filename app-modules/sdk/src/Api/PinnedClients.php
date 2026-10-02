@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Sdk\Internal\HowLongACallWaits;
 use Modules\Sdk\Internal\WhatTheReachMet;
 use Throwable;
 
@@ -57,6 +58,7 @@ final readonly class PinnedClients implements Clients
             $stack->at()->forTheClient(),
             $session->forTheHeader(),
             $stack->presents()->forComparingByEye(),
+            HowLongACallWaits::ordinarily(),
         );
     }
 
