@@ -6,7 +6,7 @@ namespace Modules\Sdk\Api;
 
 use function array_is_list;
 use function array_key_exists;
-use function ctype_digit;
+use function filter_var;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -25,6 +25,8 @@ use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Internal\Wire;
+
+use function preg_match;
 
 /**
  * Reads the `news-items` envelope into what a stack lists that could be new.
@@ -157,13 +159,17 @@ final readonly class WhatIsListedAsNew
             $item = self::entry($problem, NewsItemsField::Problems, WireField::Check, $position);
             $onset = self::text($item, NewsItemsField::Problems, NewsItemsField::Onset, $position);
 
-            if (! ctype_digit($onset)) {
+            $seconds = filter_var($onset, FILTER_VALIDATE_INT);
+
+            // Digits and nothing else, as `Records` reads a change's `at`, and
+            // within an integer, which a long enough run of digits is not.
+            if (preg_match('/^\d+$/', $onset) !== 1 || $seconds === false) {
                 throw NewsIsUnreadable::item(NewsItemsField::Problems, NewsItemsField::Onset, $position);
             }
 
             $read[] = new AProblemListed(
                 Check::of(self::text($item, NewsItemsField::Problems, WireField::Check, $position)),
-                Instant::atEpochSeconds((int) $onset),
+                Instant::atEpochSeconds($seconds),
                 self::text($item, NewsItemsField::Problems, WireField::Summary, $position),
             );
         }

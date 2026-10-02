@@ -163,13 +163,13 @@ it('answers a stack that did not answer the same way through both', function ():
     }
 });
 
-it('refuses an onset that is not a number of seconds, rather than guessing when', function (): void {
-    $payload = whatAStackListsAsNew(onset: 'yesterday');
+it('refuses an onset that is not a number of seconds, rather than guessing when', function (string $onset): void {
+    $payload = whatAStackListsAsNew(onset: $onset);
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::StackDidNotAnswer->value);
-});
+})->with(['yesterday', '-1759400000', '17594e5', '99999999999999999999']);
 
 it('asks the news endpoint, and nothing else', function (): void {
     MockClient::destroyGlobal();
