@@ -20,6 +20,11 @@ use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhichTab;
 use Modules\Kernel\Api\Whose;
+use Modules\News\Api\AnItem;
+use Modules\News\Api\KindOfNews;
+use Modules\News\Api\Noticing;
+use Modules\News\Api\TheItems;
+use Modules\News\Internal\NewsOfAStack;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
@@ -30,6 +35,7 @@ use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -67,6 +73,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the platform keychain' => new PlatformKeychain(APlatformStore::working()),
         'the fake keychain' => AKeychainInMemory::working(),
         'the readings' => new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
         'the platform work' => new PlatformWorkLeftRunning($store, new PlatformStacks($store)),
@@ -82,6 +89,12 @@ function everyKeeperHoldingTwoStacks(): array
     }
 
     return [...$keepers, 'every keeper together' => new EveryKeeperOfAStack($pairings, $words)];
+}
+
+/** What notices what is new on a stack, over this seal and a store of its own. */
+function whatNoticesNewsOver(ASealInMemory $seal): Noticing
+{
+    return new Noticing(new NewsOfAStack($seal, NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))));
 }
 
 /** Have a keeper hold something for this stack, through its own port. */
@@ -101,6 +114,12 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
 
     if ($keeper instanceof KeepingTheLastReading) {
         $keeper->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1));
+
+        return;
+    }
+
+    if ($keeper instanceof Noticing) {
+        $keeper->whatIsNewIn($stack->id(), TheItems::of(KindOfNews::Request, AnItem::aRequest(1)));
 
         return;
     }
@@ -152,6 +171,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'news whose keys cannot be read' => whatNoticesNewsOver(ASealInMemory::thatWillNotOpen()),
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);
     }
