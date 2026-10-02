@@ -32,6 +32,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
+use Modules\Operator\Internal\ShowsWhatTheYesWillRun;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AStartLineAsShown;
@@ -108,6 +109,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
     use FollowsWhatTheVerbCameTo;
+    use ShowsWhatTheYesWillRun;
     use FindsItsWayAround;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
@@ -223,6 +225,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 
         if ($agreed->doing()->asksFirst()) {
             $this->asking = $agreed;
+            $this->rehearseTheQuestion($agreed);
 
             return;
         }
@@ -245,6 +248,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         }
 
         $this->asking = null;
+        $this->forgetTheRehearsal();
 
         $this->send($agreed);
     }
@@ -253,6 +257,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     public function neverMind(): void
     {
         $this->asking = null;
+        $this->forgetTheRehearsal();
     }
 
     /**
@@ -324,6 +329,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     public function whileItSettles(): void
     {
         $this->listenWhileItStarts();
+        $this->followTheRehearsal();
 
         if ($this->awaitsAnOutcome()) {
             $this->cameTo = null;

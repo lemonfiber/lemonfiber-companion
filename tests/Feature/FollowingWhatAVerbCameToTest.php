@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFootprint;
+use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\AStackEdit;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
+use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
@@ -539,11 +541,14 @@ it('does not ask after an earlier verb once a later one could not be sent', func
     $keychain->forget(theMachineAVerbIsFollowedOn()->id());
     $screen->agree();
     $keychain->keep(theMachineAVerbIsFollowedOn()->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    // What was asked after before this point is each question's rehearsal; the
+    // restart's own handle is the one that must not be asked after from here on.
+    $askedAfterSoFar = count($supervising->followed());
     $screen->again();
 
     expect($screen->whatItCameTo()->wasAsked)->toBeFalse()
         ->and($supervising->whatItWasToldToDo())->toHaveCount(1)
-        ->and($supervising->followed())->toBe([]);
+        ->and($supervising->followed())->toHaveCount($askedAfterSoFar);
 });
 
 it('a verb that has finished is not polled for, and neither is a standing listing', function (): void {
@@ -710,3 +715,105 @@ it('marks a diff\'s lines with the marks its legend names, in every language', f
         ->and(whatTheCatalogueSays('stacks.edits.legend'))->toContain(sprintf(' %s ', $lemonfibers))
         ->and($theirs)->not->toBe($lemonfibers);
 })->with(['en', 'nl']);
+
+/** What the stack's rehearsal of restarting Sonarr reported. */
+function aRehearsedRestartOfSonarr(): WhatTheVerbCameTo
+{
+    return WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::Rehearsed,
+        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'restart', 'sonarr'),
+    );
+}
+
+/**
+ * Ask to restart Sonarr, which needs a yes, and draw the question.
+ *
+ * @return list<string>
+ */
+function whatAskingToRestartSonarrDrew(WhatToDoWithThis $screen): array
+{
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+    return WhatTheDeviceWouldDraw::by($screen)->said();
+}
+
+it('shows the command a yes will run before the yes, from the stack\'s own rehearsal of it', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aRehearsedRestartOfSonarr()));
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $drawn = whatAskingToRestartSonarrDrew($screen);
+
+    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.will_run'), $drawn))->toBe('docker compose restart sonarr')
+        ->and($supervising->whatItWasAskedToRehearse())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))])
+        // Rehearsing is not the yes: nothing is carried out until it is given.
+        ->and($supervising->whatItWasToldToDo())->toBe([]);
+});
+
+it('shows the command once the stack has finished working out the rehearsal, and nothing before', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $drawn = whatAskingToRestartSonarrDrew($screen);
+
+    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($screen->rehearsalOfTheYes)->toBe(AStackThatSupervises::THE_JOB)
+        ->and($screen->asking())->not->toBeNull();
+});
+
+it('asks the question without the command where the stack would not rehearse it', function (Underway|HowTheVerbIsGoing $refused): void {
+    $supervising = $refused instanceof Underway
+        ? AStackThatSupervises::withButRefusing(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial), Obstacle::of(KindOfObstacle::StackDidNotAnswer))
+        : aStoppedSonarrThatCameTo($refused);
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $drawn = whatAskingToRestartSonarrDrew($screen);
+
+    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($screen->asking())->not->toBeNull()
+        ->and($screen->rehearsalOfTheYes)->toBeNull();
+})->with([
+    'refused' => [Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    'forgotten' => [HowTheVerbIsGoing::ended()],
+    'met asking after it' => [HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+]);
+
+it('never shows, before the yes, a command from a report that was not a rehearsal', function (): void {
+    $carriedOut = WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::CarriedOut,
+        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'restart', 'sonarr'),
+    );
+    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($carriedOut)));
+
+    expect(whatAskingToRestartSonarrDrew($screen))->not->toContain(whatTheCatalogueSays('stacks.command.will_run'));
+});
+
+it('puts the rehearsal away with the question, whichever way it is answered', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aRehearsedRestartOfSonarr()));
+    $agreed = theScreenAVerbIsFollowedFrom($supervising);
+    $declined = theScreenAVerbIsFollowedFrom($supervising);
+
+    whatAskingToRestartSonarrDrew($agreed);
+    $agreed->agree();
+    whatAskingToRestartSonarrDrew($declined);
+    $declined->neverMind();
+
+    expect($agreed->willRun)->toBe('')
+        ->and($declined->willRun)->toBe('')
+        ->and($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
+});
+
+it('rehearses nothing for a start, which asks no question', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+
+    whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom($supervising));
+
+    expect($supervising->whatItWasAskedToRehearse())->toBe([]);
+});

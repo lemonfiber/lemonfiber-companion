@@ -506,8 +506,23 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
 
 it('N3-R13 — a credential refused on the verb lets the session go too', function (): void {
     // The half a read cannot reach. A stack that refuses a credential the
-    // moment somebody taps stop is the same signed-out device as one that
-    // refuses it on a read, and this is the call that happens on the tap.
+    // moment somebody taps start is the same signed-out device as one that
+    // refuses it on a read, and this is the call that happens on the tap. A
+    // start asks no question, so nothing is asked of the stack before it.
+    $keychain = AKeychainInMemory::working();
+    $supervising = AStackThatSupervises::withButRefusing(
+        WhatAMachineRuns::twoThings(),
+        Obstacle::of(KindOfObstacle::CredentialWasRefused),
+    );
+    $screen = theThingScreen($supervising, keychain: $keychain);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+
+    expect($supervising->whatItWasToldToDo())->toHaveCount(1)
+        ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
+});
+
+it('lets the session go where the stack refuses it on the rehearsal asked before a yes', function (): void {
     $keychain = AKeychainInMemory::working();
     $supervising = AStackThatSupervises::withButRefusing(
         WhatAMachineRuns::twoThings(),
@@ -516,9 +531,9 @@ it('N3-R13 — a credential refused on the verb lets the session go too', functi
     $screen = theThingScreen($supervising, keychain: $keychain);
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
-    $screen->agree();
 
-    expect($supervising->whatItWasToldToDo())->toHaveCount(1)
+    expect($supervising->whatItWasAskedToRehearse())->toHaveCount(1)
+        ->and($supervising->whatItWasToldToDo())->toBe([])
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
 
