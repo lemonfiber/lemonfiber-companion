@@ -21,4 +21,14 @@ enum KindOfNews: string
 
     /** A check the stack found wrong. */
     case Problem = 'problem';
+
+    /** The key for what the kind is called on a screen, many of it. */
+    public function saidOnTheScreen(): string
+    {
+        return match ($this) {
+            self::Update => 'news.kind.update',
+            self::Request => 'news.kind.request',
+            self::Problem => 'news.kind.problem',
+        };
+    }
 }

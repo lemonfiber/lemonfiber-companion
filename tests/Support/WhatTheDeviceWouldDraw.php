@@ -87,7 +87,7 @@ final readonly class WhatTheDeviceWouldDraw
      * A button, a tappable row and a chip. A list row is operated only when it
      * is given something to do, which {@see isOperated()} reads off the node.
      */
-    private const array OPERATED = ['button', 'pressable', 'chip'];
+    private const array OPERATED = ['button', 'pressable', 'chip', 'toggle'];
 
     /** The list row, a control only when something handles its press. */
     private const string LIST_ROW = 'list_item';

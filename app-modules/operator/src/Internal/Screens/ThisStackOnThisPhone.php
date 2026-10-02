@@ -10,7 +10,10 @@ use Modules\Connection\Api\WhatBecameOfRemoving;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\KindOfNews;
+use Modules\News\Api\MarkingAsNew;
 use Modules\Operator\Internal\TheWayAround;
+use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -44,7 +47,11 @@ final class ThisStackOnThisPhone extends NativeComponent
     /** Whether the removal could not begin, and nothing was removed. */
     public bool $removalRefused = false;
 
-    public function __construct(private readonly TheWayAround $around, private readonly RemovingAStack $removing) {}
+    public function __construct(
+        private readonly TheWayAround $around,
+        private readonly RemovingAStack $removing,
+        private readonly MarkingAsNew $marking,
+    ) {}
 
     public function stack(): Stack
     {
@@ -52,6 +59,49 @@ final class ThisStackOnThisPhone extends NativeComponent
     }
 
     /** The operator asked to remove the stack; they are asked whether they mean it, on this page. */
+    /**
+     * Each kind the stack can mark as new, and whether it does.
+     *
+     * @return list<AKindOfNewsAsShown>
+     */
+    public function kindsOfNews(): array
+    {
+        $marked = $this->marking->marked($this->stack()->id());
+        $shown = [];
+
+        foreach (KindOfNews::cases() as $kind) {
+            $shown[] = new AKindOfNewsAsShown($kind->value, $kind->saidOnTheScreen(), $marked->include($kind));
+        }
+
+        return $shown;
+    }
+
+    /**
+     * Mark a kind as new, or no longer, as its switch now stands.
+     *
+     * Set to where the switch stands rather than turned over, because the
+     * platform hands the switch's state back with every change it reports, one
+     * it reports as it draws the switch included, and a kind that flipped on
+     * each would end up wherever the count of reports left it. A name the page
+     * never drew changes nothing.
+     */
+    public function markAsNew(string $kind, bool $isMarked): void
+    {
+        $chosen = KindOfNews::tryFrom($kind);
+
+        if (! $chosen instanceof KindOfNews) {
+            return;
+        }
+
+        if ($isMarked) {
+            $this->marking->mark($this->stack()->id(), $chosen);
+
+            return;
+        }
+
+        $this->marking->markNoLonger($this->stack()->id(), $chosen);
+    }
+
     public function askToRemove(): void
     {
         $this->confirmingTheRemoval = true;

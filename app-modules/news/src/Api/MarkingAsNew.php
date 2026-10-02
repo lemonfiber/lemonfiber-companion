@@ -18,6 +18,21 @@ final readonly class MarkingAsNew
 {
     public function __construct(private NewsOfAStack $news) {}
 
+    /** Every kind the stack marks as new, in the order the kinds are declared. */
+    public function marked(StackId $stack): TheKindsMarked
+    {
+        $kept = $this->news->of($stack);
+        $marked = [];
+
+        foreach (KindOfNews::cases() as $kind) {
+            if ($kept->isMarked($kind)) {
+                $marked[] = $kind;
+            }
+        }
+
+        return TheKindsMarked::these(...$marked);
+    }
+
     /** Whether the stack marks this kind as new. */
     public function isMarked(StackId $stack, KindOfNews $kind): bool
     {

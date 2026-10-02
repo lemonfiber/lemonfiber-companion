@@ -3,6 +3,18 @@
 <x-operator::content>
     <x-design::title>{{ __('navigation.menu.stack_settings') }}</x-design::title>
 
+    {{-- Which kinds this stack marks as new: all three until switched off.
+         A kind switched off loses its marks at once, and starts again from
+         what is current when it is switched on. --}}
+    <x-design::section :label="__('news.kinds_heading')">
+        @forelse ($this->kindsOfNews() as $kind)
+            <x-design::toggle :label="__($kind->said)" :on="$kind->isMarked" tap="markAsNew('{{ $kind->kind }}')" />
+        @empty
+            {{-- Unreachable while the kinds are three: the list is every kind there is. --}}
+        @endforelse
+    </x-design::section>
+    <x-design::note>{{ __('news.kinds_explained') }}</x-design::note>
+
     <x-design::section>
         <x-design::row :headline="__('settings.remove_from_phone')" tap="askToRemove()" />
     </x-design::section>

@@ -94,6 +94,8 @@ const WHAT_A_COMPONENT_IS = [
     'bottom-nav-item' => true,
     // Tapped to choose which part of a list is showing.
     'chip' => true,
+    // A switch is operated, and it says its label and whether it is on.
+    'toggle' => true,
     // Dragged into order, or moved with a screen reader's actions.
     'lemonfiber-reorderable' => true,
 ];

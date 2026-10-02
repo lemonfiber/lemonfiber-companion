@@ -19,6 +19,7 @@ And the values they take and give:
 | `AnItem` | One update, request or problem, by what names and orders it among its kind |
 | `TheItems` | Every item of one kind a stack holds, newest first, and what is newer than one of them |
 | `WhatIsNew` | The items of one kind on one stack that are new, newest first |
+| `TheKindsMarked` | The kinds a stack marks as new |
 | `NotAnItem` | Why something could not be made an item |
 
 **The first sight of a kind records what is current as seen.** A stack read for
