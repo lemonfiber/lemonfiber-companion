@@ -28,6 +28,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatChoosesQuality;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -254,7 +255,7 @@ function gradersAnswering(mixed $body, int $status = 200): Graders
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make($body, $status)]);
 
-    return new Graders(new PinnedClients());
+    return new Graders(new PinnedClients(), SequencedEntropy::counting());
 }
 
 /** Choosing through the adapter, answered with the body given. */

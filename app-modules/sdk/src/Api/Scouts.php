@@ -78,6 +78,7 @@ final readonly class Scouts implements MovingIn
             return $this->underway($this->clients->client($stack, $session)->act(
                 Api::action($by->asked()),
                 [UpdateField::Confirm->value => false],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);

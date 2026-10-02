@@ -64,6 +64,7 @@ final readonly class Resetters implements ResettingTheConfiguration
             return Underway::as(Handles::in($client->act(
                 Api::action(WhatToChange::BackToItsOwn->asked()),
                 [UpdateField::Confirm->value => false],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));

@@ -12,6 +12,8 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Adjusting;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
@@ -32,7 +34,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Adjustments implements Adjusting
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function wouldBe(Stack $stack, Session $session, WhatToSet $asked): WhatTheStackMadeOfIt
     {
@@ -62,11 +64,15 @@ final readonly class Adjustments implements Adjusting
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->act(Api::action(WhatToChange::Setting->asked()), [
-                'key' => $asked->key,
-                'value' => $asked->value,
-                'agreed' => $agreed,
-            ]);
+            $envelope = $client->act(
+                Api::action(WhatToChange::Setting->asked()),
+                [
+                    'key' => $asked->key,
+                    'value' => $asked->value,
+                    'agreed' => $agreed,
+                ],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
 
             // Inside the same `try` as the call, for {@see Arrangements}'
             // reason: an answer the client fetched and this side could not

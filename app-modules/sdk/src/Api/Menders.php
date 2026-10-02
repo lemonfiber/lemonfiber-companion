@@ -72,7 +72,10 @@ final readonly class Menders implements Mending
         $client = $this->clients->client($stack, $session);
 
         try {
-            return Underway::as(Handles::in($client->repair(Asking::offer())));
+            return Underway::as(Handles::in($client->repair(
+                Asking::offer(),
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {

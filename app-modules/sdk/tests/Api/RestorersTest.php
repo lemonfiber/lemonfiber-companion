@@ -80,7 +80,7 @@ function theRequestTheRestorerSent(MockClient $mock): PendingRequest
     return $sent;
 }
 
-it('asks what putting a copy back would do by naming it, and nothing else', function (): void {
+it('asks what putting a copy back would do by naming it, under a key of its own', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
 
@@ -88,11 +88,11 @@ it('asks what putting a copy back would do by naming it, and nothing else', func
 
     $sent = theRequestTheRestorerSent($mock);
 
-    // No yes and no key: without the yes the stack reads the copy and changes
-    // nothing, and a key would name an attempt at nothing.
+    // No yes: without it the stack reads the copy and changes nothing. The
+    // key is there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/restore')
         ->and($sent->body()?->all())->toBe(['archive' => 'lemonfiber-20260924-0300-full'])
-        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
 it('puts the copy back against the listing it was shown, re-pointing only where the listing said so', function (WhereTheDataGoes $data, bool $repoint): void {

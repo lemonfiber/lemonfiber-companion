@@ -22,6 +22,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatMakesPairingCodes;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -99,7 +100,7 @@ function everyWayOfAskingForACode(MockResponse $answered, WhatBecameOfThePairing
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Pairers(new PinnedClients());
+            return new Pairers(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -161,7 +162,7 @@ it('reads an address with nothing to say about it as having no caution', functio
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith(['caution' => $caution])))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toEndWith('https://den.local:8443||expired at its time');
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEndWith('https://den.local:8443||expired at its time');
 })->with(['null' => [null]]);
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
@@ -171,12 +172,12 @@ it('hands on a refusal in the stack\'s own words, asking or following', function
 
     MockClient::destroyGlobal();
     MockClient::global([$refused()]);
-    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toBe(sprintf('refused %s', $said))
+    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toBe(sprintf('refused %s', $said))
         ->and(howTheCodeWasAskedFor($fake))->toBe(sprintf('refused %s', $said));
 
     MockClient::destroyGlobal();
     MockClient::global([$refused()]);
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toBe(sprintf('refused %s', $said))
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toBe(sprintf('refused %s', $said))
         ->and(whatBecameOfTheCode($fake))->toBe(sprintf('refused %s', $said));
 });
 
@@ -194,7 +195,7 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
 
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
-        expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toBe($why->kind()->name);
+        expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name);
         expect(howTheCodeWasAskedFor(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::met($why))))->toBe($why->kind()->name);
     }
 });
@@ -203,7 +204,7 @@ it('an asking answered with a handle it cannot follow is a stack that did not an
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'companion-pair', 'job' => ' ']]), 202)]);
 
-    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('a code still being made is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
@@ -222,7 +223,7 @@ it('a code this app cannot read is a stack that did not answer, never a code wit
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith($changed)))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no material' => [['material' => 'here']],
     'no expiry' => [['material' => ['address' => 'https://den.local:8443', 'expires' => 'soon']]],
@@ -237,7 +238,7 @@ it('a payload that is not a pairing at all is a stack that did not answer', func
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'pairing', 'data' => 'nothing']))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('the fake counts each asking and names the handle each following asked by', function (): void {

@@ -23,6 +23,7 @@ use Modules\Sdk\Api\Upgraders;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatUpgrades;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -108,7 +109,7 @@ function upgradersAnswering(mixed $body, int $status = 200): Upgraders
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make($body, $status)]);
 
-    return new Upgraders(new PinnedClients());
+    return new Upgraders(new PinnedClients(), SequencedEntropy::counting());
 }
 
 /** Describing through the adapter, answered with the body given. */

@@ -11,9 +11,10 @@ namespace Modules\Kernel\Api;
  * arrived since, so asking again is how the proof is read. Acting and following
  * are one port for the reason {@see KeepingCurrent} gives.
  *
- * **No key rides on the asking.** The first asking writes down when the code
- * was given, and every one after reads that back: two askings are one hand-off,
- * which is what a key would be for.
+ * **Each asking carries a key of its own**, as every action this app sends
+ * does, so one asking sent again where its answer was lost is one asking. Two
+ * askings are still one hand-off: the first writes down when the code was
+ * given, and every one after reads that back.
  */
 interface HandingOverADevice
 {

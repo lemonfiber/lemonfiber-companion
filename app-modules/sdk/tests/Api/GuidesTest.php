@@ -28,6 +28,7 @@ use Saloon\Http\Faking\MockResponse;
 
 use function str_repeat;
 
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 
@@ -56,7 +57,7 @@ function aGuideAnswering(array $body, int $status = 200): Guides
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($body), $status)]);
 
-    return new Guides(new PinnedClients());
+    return new Guides(new PinnedClients(), SequencedEntropy::counting());
 }
 
 /** What starting a walk came to, as a line. */

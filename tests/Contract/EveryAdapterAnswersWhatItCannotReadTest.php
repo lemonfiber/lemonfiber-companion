@@ -338,9 +338,9 @@ function everyAdapterCallThatReads(): array
 
     return [
         'Adjustments::wouldBe' => static fn(): object
-            => new Adjustments($clients)->wouldBe($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
+            => new Adjustments($clients, $entropy)->wouldBe($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
         'Adjustments::agreedTo' => static fn(): object
-            => new Adjustments($clients)->agreedTo($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
+            => new Adjustments($clients, $entropy)->agreedTo($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
         'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
@@ -371,11 +371,11 @@ function everyAdapterCallThatReads(): array
             => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),
         'Followers::tracedOn' => static fn(): object
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
-        'Graders::inForceOn' => static fn(): object => new Graders($clients)->inForceOn($stack, $session),
+        'Graders::inForceOn' => static fn(): object => new Graders($clients, $entropy)->inForceOn($stack, $session),
         'Graders::choose' => static fn(): object
-            => new Graders($clients)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
+            => new Graders($clients, $entropy)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
         'Graders::confirm' => static fn(): object
-            => new Graders($clients)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
+            => new Graders($clients, $entropy)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
         'Guards::guard' => static fn(): object
             => new Guards($clients, $entropy)->guard($stack, $session, AGuardAskedFor::of(Forms::these(Form::called('media')))),
         'Guards::whatBecameOf' => static fn(): object
@@ -383,9 +383,9 @@ function everyAdapterCallThatReads(): array
         'Guards::letGo' => static fn(): object
             => new Guards($clients, $entropy)->letGo($stack, $session, Job::named('a-job')),
         'Guides::walk' => static fn(): object
-            => new Guides($clients)->walk($stack, $session, WhatToWalk::called('Sintel')),
+            => new Guides($clients, $entropy)->walk($stack, $session, WhatToWalk::called('Sintel')),
         'Guides::whatBecameOf' => static fn(): object
-            => new Guides($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+            => new Guides($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
         'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
@@ -395,12 +395,12 @@ function everyAdapterCallThatReads(): array
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
         'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
         'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
-        'Pairers::make' => static fn(): object => new Pairers($clients)->make($stack, $session),
-        'Connectors::handOver' => static fn(): object => new Connectors($clients)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
+        'Pairers::make' => static fn(): object => new Pairers($clients, $entropy)->make($stack, $session),
+        'Connectors::handOver' => static fn(): object => new Connectors($clients, $entropy)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
         'Connectors::whatBecameOf' => static fn(): object
-            => new Connectors($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+            => new Connectors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Pairers::whatBecameOf' => static fn(): object
-            => new Pairers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+            => new Pairers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -476,14 +476,14 @@ function everyAdapterCallThatReads(): array
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
         'TheirOwn::theirRequests' => static fn(): object => new TheirOwn($clients)->theirRequests($stack, $session)->asked(),
         'Upgraders::whatItWouldComeTo' => static fn(): object
-            => new Upgraders($clients)->whatItWouldComeTo($stack, $session),
+            => new Upgraders($clients, $entropy)->whatItWouldComeTo($stack, $session),
         'Upgraders::upgrade' => static fn(): object
-            => new Upgraders($clients)->upgrade($stack, $session, AnUpgradeDescribed::by(TheUpgrade::described())),
-        'Upkeepers::standing' => static fn(): object => new Upkeepers($clients)->standing($stack, $session),
+            => new Upgraders($clients, $entropy)->upgrade($stack, $session, AnUpgradeDescribed::by(TheUpgrade::described())),
+        'Upkeepers::standing' => static fn(): object => new Upkeepers($clients, $entropy)->standing($stack, $session),
         'Upkeepers::take' => static fn(): object
-            => new Upkeepers($clients)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
+            => new Upkeepers($clients, $entropy)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
         'Upkeepers::whatBecameOf' => static fn(): object
-            => new Upkeepers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+            => new Upkeepers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Wirers::wire' => static fn(): object => new Wirers($clients, $entropy)->wire($stack, $session),
         'Wirers::whatBecameOf' => static fn(): object => new Wirers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Ushers::whoIsIn' => static fn(): object => new Ushers($clients, $entropy)->whoIsIn($stack, $session),

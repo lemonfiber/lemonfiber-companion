@@ -63,7 +63,7 @@ function theRequestTheReleaserSent(MockClient $mock): PendingRequest
     return $sent;
 }
 
-it('asks what stopping seeding would cost by naming the download, and nothing else', function (): void {
+it('asks what stopping seeding would cost by naming the download, under a key of its own', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
 
@@ -71,11 +71,11 @@ it('asks what stopping seeding would cost by naming the download, and nothing el
 
     $sent = theRequestTheReleaserSent($mock);
 
-    // No offer and no key: without the offer's name the stack states the
-    // cost and lets nothing go, and a key would name an attempt at nothing.
+    // No offer: without the offer's name the stack states the cost and lets
+    // nothing go. The key is there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/stop-seeding')
         ->and($sent->body()?->all())->toBe(['download' => 'Show.Season1'])
-        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
 it('stops seeding against the offer it was shown, naming the offer as the yes and never a blanket confirm', function (): void {

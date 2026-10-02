@@ -25,6 +25,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -162,7 +163,7 @@ function everyWayOfPuttingAChange(array $body, ?Obstacle $why = null): array
             MockClient::destroyGlobal();
             MockClient::global([MockResponse::make($body)]);
 
-            return new Adjustments(new PinnedClients());
+            return new Adjustments(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -213,7 +214,7 @@ it('the fake and the adapter both refuse rather than answer with nothing', funct
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(['nothing' => 'the contract knows'], 500)]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer')
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer')
         ->and(howAChangeReadsAsText(AStackToldToChangeSomething::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toBe('refused:no_answer');
 });
@@ -239,7 +240,7 @@ it('a setting that holds nothing yet is not a setting that holds a blank', funct
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(aChangeAnsweredWithNothingHeldYet())]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe('LIBRARY_PATH:-> /data/films:cheap:pending');
 });
 
@@ -250,7 +251,7 @@ it('a stance the contract has not got is refused rather than guessed at', functi
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange(stance: 'mostly'))]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('a cost the contract has not got is refused rather than read as cheap', function (): void {
@@ -259,21 +260,21 @@ it('a cost the contract has not got is refused rather than read as cheap', funct
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange(cost: 'free'))]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('an answer carrying no review at all is refused rather than read as no change', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(aChangeAnsweredWithNoReview())]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('an answer whose data is not a table is refused', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'config', 'data' => 'a review'])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('a blocked change carries the reason and an applied one carries none', function (): void {
@@ -300,7 +301,7 @@ it('agreeing reaches the same door with the answer read the same way', function 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange(stance: 'applied'))]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients()), agreeing: true))
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting()), agreeing: true))
         ->toBe('LIBRARY_PATH:/data/media->/data/films:cheap:applied');
 });
 
@@ -329,7 +330,7 @@ it('carries the stack\'s own sentence when a change was blocked', function (): v
     // Read off the stance rather than off the presence of a refusal: a stack
     // that sent a sentence beside `applied` has contradicted itself, and
     // taking the sentence would put a reason under the word saying it worked.
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe('LIBRARY_PATH:/data/media->/nowhere:consequential:blocked');
 });
 
@@ -349,7 +350,7 @@ it('a `from` that is not text is refused rather than printed', function (): void
         ],
     ])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('a `from` that is explicitly null is a setting holding nothing yet', function (): void {
@@ -371,7 +372,7 @@ it('a `from` that is explicitly null is a setting holding nothing yet', function
         ],
     ])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe('LIBRARY_PATH:-> /data/films:cheap:pending');
 });
 
@@ -388,7 +389,7 @@ it('a change that is not a table is refused', function (): void {
         ],
     ])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
 });
 
 it('a change naming no setting is refused rather than drawn nameless', function (): void {
@@ -436,7 +437,7 @@ it('asks for a review without agreeing to it', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange())]);
 
-    new Adjustments(new PinnedClients())->wouldBe(
+    new Adjustments(new PinnedClients(), SequencedEntropy::counting())->wouldBe(
         theMachineBeingChanged(),
         theSessionBehindAChange(),
         WhatToSet::to('LIBRARY_PATH', '/data/films'),
@@ -459,7 +460,7 @@ it('agrees to exactly what it was shown', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange())]);
 
-    new Adjustments(new PinnedClients())->agreedTo(
+    new Adjustments(new PinnedClients(), SequencedEntropy::counting())->agreedTo(
         theMachineBeingChanged(),
         theSessionBehindAChange(),
         WhatToSet::to('LIBRARY_PATH', '/data/films'),

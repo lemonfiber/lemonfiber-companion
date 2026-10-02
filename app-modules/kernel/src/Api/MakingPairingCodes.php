@@ -11,9 +11,9 @@ namespace Modules\Kernel\Api;
  * gives. It takes a stack and a session rather than a client, so the session
  * and the pinning cannot be paired up wrongly by a caller.
  *
- * **No key rides on the asking.** A key names an attempt at changing a stack,
- * and a pairing code changes nothing: each asking makes fresh material, and
- * asking twice is two codes, of which the newer is the one shown.
+ * **Each asking carries a key of its own**, as every action this app sends
+ * does, so one asking sent again where its answer was lost makes one code.
+ * Asking twice is two codes, of which the newer is the one shown.
  */
 interface MakingPairingCodes
 {

@@ -24,6 +24,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatWalksThrough;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheContractAccepts;
@@ -145,7 +146,7 @@ function everyWayOfWalkingThrough(MockResponse $answered, HowTheWalkthroughIsGoi
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Guides(new PinnedClients());
+            return new Guides(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -163,7 +164,7 @@ function everyWayOfNotWalkingThrough(MockResponse $answered, Obstacle $why): arr
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Guides(new PinnedClients());
+            return new Guides(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -332,7 +333,7 @@ function whatAStartSent(WhatToWalk $asked): PendingRequest
     MockClient::destroyGlobal();
     $mock = MockClient::global([theHandleAWalkAnswers()]);
 
-    howTheWalkStarted(new Guides(new PinnedClients()), $asked);
+    howTheWalkStarted(new Guides(new PinnedClients(), SequencedEntropy::counting()), $asked);
 
     $sent = $mock->getLastPendingRequest();
 
@@ -358,7 +359,7 @@ it('asks after the handle the start answered', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([theHandleAWalkAnswers()]);
 
-    whatTheWalkBecame(new Guides(new PinnedClients()));
+    whatTheWalkBecame(new Guides(new PinnedClients(), SequencedEntropy::counting()));
 
     expect($mock->getLastPendingRequest()?->getUrl())->toEndWith(sprintf('/api/jobs/%s', AStackThatWalksThrough::THE_JOB));
 });
@@ -367,7 +368,7 @@ it('refuses a finished walk it cannot read as a stack that did not answer', func
     MockClient::destroyGlobal();
     MockClient::global([aFinishedWalk([...WalkthroughsToFollow::theWalkThatWorkedAsAStackSendsIt(), 'state' => 'wandering'])]);
 
-    expect(whatTheWalkBecame(new Guides(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheWalkBecame(new Guides(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

@@ -72,6 +72,7 @@ final readonly class Restorers implements PuttingBack
             $envelope = $client->act(
                 Api::action(WhatToDoWithACopy::PutBack->asked()),
                 [RestoreField::Archive->value => $copy->name()],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return WhatTheRestoreRehearsalFound::listed(TheRestore::listedIn($envelope, $copy));

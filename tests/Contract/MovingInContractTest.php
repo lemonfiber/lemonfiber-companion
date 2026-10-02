@@ -465,7 +465,7 @@ it('moves in as agreed, answered with the work to follow', function (): void {
     }
 });
 
-it('asks the question without a yes or a key, and the yes with both, by lemonfiber\'s name for each act', function (MovingInBy $by): void {
+it('asks the question without a yes and the yes with one, each under a key of its own, by lemonfiber\'s name for each act', function (MovingInBy $by): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([theHandleAMoveIsAnsweredWith(), theHandleAMoveIsAnsweredWith()]);
     $scouts = new Scouts(new PinnedClients(), SequencedEntropy::counting());
@@ -475,14 +475,15 @@ it('asks the question without a yes or a key, and the yes with both, by lemonfib
 
     expect($asked?->getUrl())->toEndWith(sprintf('/api/actions/%s', $by->asked()))
         ->and($asked?->body()?->all())->toBe(['confirm' => false])
-        ->and($asked?->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+        ->and($asked?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 
     $scouts->moveIn(aStackToSurvey(), Session::of('a-session-not-a-secret'), AMoveAgreed::after(aMoveStagedBy($by)));
     $agreed = $mock->getLastPendingRequest();
 
     expect($agreed?->getUrl())->toEndWith(sprintf('/api/actions/%s', $by->asked()))
         ->and($agreed?->body()?->all())->toBe(['confirm' => true])
-        ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
+        ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull()
+        ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBe($asked?->headers()->get(Api::IDEMPOTENCY_HEADER));
 })->with(MovingInBy::cases());
 
 it('keeps following work the stack is still carrying out', function (): void {

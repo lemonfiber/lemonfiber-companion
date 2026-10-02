@@ -64,7 +64,7 @@ function theRequestTheResetterSent(MockClient $mock): PendingRequest
     return $sent;
 }
 
-it('asks what putting the configuration back would revert without a yes, and without a key', function (): void {
+it('asks what putting the configuration back would revert without a yes, under a key of its own', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
 
@@ -72,11 +72,11 @@ it('asks what putting the configuration back would revert without a yes, and wit
 
     $sent = theRequestTheResetterSent($mock);
 
-    // A key would name an attempt at nothing: without the yes the stack
-    // compares and writes nothing.
+    // Without the yes the stack compares and writes nothing. The key is
+    // there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/reset')
         ->and($sent->body()?->all())->toBe(['confirm' => false])
-        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+        ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
 it('puts the configuration back with the yes, under a key', function (): void {

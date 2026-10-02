@@ -58,6 +58,7 @@ final readonly class Releasers implements StoppingSeeding
             return Underway::as(Handles::in($client->act(
                 Api::action(WhatToDoWithADownload::StopSeeding->asked()),
                 [StopSeedingField::Download->value => $download->name()],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
