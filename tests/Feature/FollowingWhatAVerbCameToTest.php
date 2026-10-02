@@ -132,7 +132,9 @@ function whatStartingSonarrDrew(WhatToDoWithThis $screen): array
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
 
-    return WhatTheDeviceWouldDraw::by($screen)->said();
+    // The frame after the tick reads what is running, which the verb changed,
+    // and the frame after that asks what the verb came to.
+    return WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 }
 
 /**
@@ -168,8 +170,10 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
         ->toContain(__('health.came_to.running'));
 
     $screen->whileItSettles();
+    $screen->render();
     $screen->whatItCameTo();
     $screen->whileItSettles();
+    $screen->render();
     $screen->whatItCameTo();
 
     expect($supervising->followed())->toHaveCount(2)
@@ -182,6 +186,7 @@ it('asks after the verb once a frame, however often the template reads it', func
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->again();
+    $screen->render();
     $screen->whatItCameTo();
     $screen->whatItCameTo();
 
@@ -250,7 +255,7 @@ it('lets a stop the stack did not sum up stand on its own', function (): void {
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
     $screen->whileItSettles();
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.heading'), $drawn))->toBe(whatTheCatalogueSays('health.came_to.stopped'))
         ->and($screen->whatItCameTo()->amountsToSaid)->toBe('');
@@ -319,7 +324,7 @@ it('does not judge a stop by what came back', function (): void {
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
     $screen->whileItSettles();
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($screen->whatItCameTo()->namesWhatDidNotComeBack)->toBeFalse();
     expect($drawn)->toContain(whatTheCatalogueSays('health.came_to.stopped'), whatTheCatalogueSays('health.running.inactive'));
@@ -431,6 +436,7 @@ it('says what stood in the way of asking after it, and lets go of a session refu
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
+    $screen->render();
 
     expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theMachineAVerbIsFollowedOn()->id()))->toBeFalse();
@@ -442,6 +448,7 @@ it('keeps the session where asking after a verb could not reach the machine', fu
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
+    $screen->render();
 
     expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theMachineAVerbIsFollowedOn()->id()))->toBeTrue();
@@ -455,6 +462,7 @@ it('says the session ended where it ended between sending a verb and asking afte
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $keychain->forget(theMachineAVerbIsFollowedOn()->id());
     $screen->whileItSettles();
+    $screen->render();
 
     expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
         ->and($screen->whatItCameTo()->wasAsked)->toBeTrue()
@@ -481,13 +489,19 @@ it('asks after the verb again, and reads the machine again, when asked to', func
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->whileItSettles();
+    $screen->render();
     $screen->whatItCameTo();
     $screen->answer();
     $askings = $supervising->askings();
 
+    // As the frames draw it: what is running on the first, and what the verb
+    // came to on the next.
     $screen->again();
-    $screen->whatItCameTo();
+    $screen->render();
     $screen->answer();
+    $screen->whatItCameTo();
+    $screen->render();
+    $screen->whatItCameTo();
 
     expect($supervising->followed())->toHaveCount(2)
         ->and($supervising->askings())->toBe($askings + 1);
@@ -518,12 +532,21 @@ it('a verb that has finished is not polled for, and neither is a standing listin
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::ended());
     $screen = theScreenAVerbIsFollowedFrom($supervising);
 
+    // The listing drawn before the verb was known to have ended is read
+    // once more, and then neither is asked after again.
     whatStartingSonarrDrew($screen);
-    $askings = $supervising->askings();
     $screen->whileItSettles();
+    $screen->render();
     $screen->answer();
+    $askings = $supervising->askings();
+    $followed = count($supervising->followed());
+    $screen->whileItSettles();
+    $screen->render();
+    $screen->answer();
+    $screen->whatItCameTo();
 
-    expect($supervising->askings())->toBe($askings);
+    expect($supervising->askings())->toBe($askings)
+        ->and($supervising->followed())->toHaveCount($followed);
 });
 
 it('draws what the stack says a start is waiting for, in place of its own sentence, newest first', function (): void {

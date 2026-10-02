@@ -44,13 +44,30 @@ trait FollowsWhatTheVerbCameTo
     /** What became of the verb sent here, or that none was. */
     public function whatItCameTo(): HowTheVerbWent
     {
-        return $this->cameTo ??= $this->followed();
+        if ($this->cameTo instanceof HowTheVerbWent) {
+            return $this->cameTo;
+        }
+
+        // Asking after a verb is a reading of the stack, and a frame that
+        // has read it already asks on the next one. The frame that waits
+        // draws the verb as running.
+        if ($this->took !== null && ! $this->mayReadItsStack()) {
+            return new HowAVerbEndedReads()->running();
+        }
+
+        return $this->cameTo = $this->followed();
     }
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
+    /**
+     * The same question this screen's cadence asks, answered from what it last heard.
+     *
+     * A handle whose report has not come back yet counts as work in flight.
+     */
     public function awaitsAnOutcome(): bool
     {
-        return $this->whatItCameTo()->isWorking;
+        $heard = $this->cameTo;
+
+        return $heard instanceof HowTheVerbWent ? $heard->isWorking : $this->took !== null;
     }
 
     abstract public function stack(): Stack;
@@ -72,6 +89,9 @@ trait FollowsWhatTheVerbCameTo
 
         $this->tellIt($sent);
     }
+
+    /** Whether this frame may take another reading of the stack, which taking it promises. */
+    abstract private function mayReadItsStack(): bool;
 
     /**
      * Send the verb agreed to, and hold what to follow it by.
