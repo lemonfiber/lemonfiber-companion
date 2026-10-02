@@ -140,6 +140,7 @@ function aReplacementAt(Stance $stance, string ...$stillRunning): AMove
         WhatWasNamed::of('would_stop', 'sonarr'),
         WhatWasNamed::of('stopped', 'radarr'),
         WhatWasNamed::of('still_running', ...$stillRunning),
+        '5c3a1d20',
     ));
 }
 
@@ -320,7 +321,7 @@ it('says nothing is left behind where an import leaves nothing', function (): vo
 
 it('draws each stance as given, and only applied as done', function (Stance $stance, string $said, bool $mayBeAgreed): void {
     $screen = theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered($stance === Stance::Blocked
-        ? AMove::blocked('Nothing here to stand in place of', TheReplacement::of('', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running')))
+        ? AMove::blocked('Nothing here to stand in place of', TheReplacement::of('', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running'), ''))
         : aReplacementAt($stance))));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 

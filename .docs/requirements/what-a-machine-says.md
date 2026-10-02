@@ -26,7 +26,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N2-R4` | The app states what else a repair affects — a blank effect is worse than a missing one | `EffectSaysNothing` |
 | `N2-R5` | Confirming is not viewing: a repair is not carried out without a confirmation distinct from having read it | `Confirmed` |
-| `N2-R6` | A repair confirmed against one reading is not carried out against another | `Carried` |
+| `N2-R6` | A repair confirmed against one reading is not carried out against another, and is offered again | The stack refuses a yes whose offer has moved as `REPAIR-1`; `Menders` reads that as `HowTheRepairIsGoing::moved()` in the stack's words, and `WhatWouldBePutRight` lets go of the yes, asks for the offer again and draws the stack's words above it |
 
 ## Starting and stopping
 

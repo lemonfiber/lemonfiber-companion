@@ -16,6 +16,9 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
+use Modules\Operator\Internal\Presenters\HowARefusalReads;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Repair;
@@ -131,6 +134,14 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      * again, which forgets the listing it was given for.
      */
     public ?string $yesTo = null;
+
+    /**
+     * Why the last yes was refused because its offer moved, in the stack's words.
+     *
+     * Drawn above the offer as it stands now, so the operator reads what moved
+     * before agreeing again. Cleared by a fresh yes and by looking again.
+     */
+    public ?ARefusalAsShown $movedOn = null;
 
     public function __construct(
         private readonly Mending $mending,
@@ -323,6 +334,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function lookAgain(): void
     {
+        $this->movedOn = null;
         $this->agreed = false;
         $this->yesTo = null;
         $this->handle = null;
@@ -401,6 +413,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                         $this->agreed = true;
                         $this->yesTo = null;
                         $this->carriedOut = null;
+                        $this->movedOn = null;
 
                         return new HowAnOfferOfRepairsReads()->stillWorkingItOut();
                     },
@@ -443,6 +456,15 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                         $this->letGoOfTheSession($why, $stack);
 
                         return new HowAMendingReads()->met($why);
+                    },
+                    // Refused and re-offered: the yes was given for an offer
+                    // that has moved, so everything held for it is let go and
+                    // the offer is asked for again, under what the stack said.
+                    moved: function (ARefusalInItsWords $why): WhatThisStackPutRight {
+                        $this->lookAgain();
+                        $this->movedOn = new HowARefusalReads()->inItsWords($why);
+
+                        return new HowAMendingReads()->ended();
                     },
                 ),
             notHeld: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),

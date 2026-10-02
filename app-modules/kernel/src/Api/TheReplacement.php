@@ -12,6 +12,11 @@ use function count;
  * The services it would stop, the ones it stopped, and the ones that would not
  * stop and are still up. Nothing is deleted: the old setup can be started
  * again. A project of `''` is the stack naming none.
+ *
+ * It names its offer: `agreement` is the name of what it would stop, and the
+ * yes to a replacement is that name, so a container started since it was read
+ * is refused rather than stopped unseen. `''` where the stack named no offer,
+ * which is a stack that takes a bare confirmation instead.
  */
 final readonly class TheReplacement
 {
@@ -20,12 +25,19 @@ final readonly class TheReplacement
         private WhatWasNamed $wouldStop,
         private WhatWasNamed $stopped,
         private WhatWasNamed $stillRunning,
+        private string $agreement,
     ) {}
 
     /** What the stack said, as it said it. */
-    public static function of(string $project, WhatWasNamed $wouldStop, WhatWasNamed $stopped, WhatWasNamed $stillRunning): self
+    public static function of(string $project, WhatWasNamed $wouldStop, WhatWasNamed $stopped, WhatWasNamed $stillRunning, string $agreement): self
     {
-        return new self($project, $wouldStop, $stopped, $stillRunning);
+        return new self($project, $wouldStop, $stopped, $stillRunning, trim($agreement));
+    }
+
+    /** The name of the offer this answers, or `''` where the stack named none. */
+    public function agreement(): string
+    {
+        return $this->agreement;
     }
 
     /** The project that would be stood in place of, or `''` where the stack named none. */

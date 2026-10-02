@@ -121,6 +121,14 @@
             <x-design::action label="{{ __('health.look_again') }}" tap="lookAgain()" tone="tonal" />
         @endif
     @else
+        {{-- The last yes was refused because the offer moved: what the stack
+             said comes first, then the offer as it stands now. --}}
+        @if ($this->movedOn !== null)
+            <x-design::card>
+                <x-operator::refused-in-its-words :refused="$this->movedOn" />
+            </x-design::card>
+        @endif
+
         @forelse ($this->offer()->repairs as $repair)
             <x-design::card>
                 {{-- All three clauses, in this order, and before anything asks

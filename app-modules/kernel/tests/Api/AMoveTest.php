@@ -65,7 +65,7 @@ function everyWayOfMovingIn(): array
         'adopting' => [TheAdoption::of('media', WhatWasNamed::of('back_up'), ''), MovingInBy::Adopting, 'adopting media'],
         'importing' => [TheImport::of('media', TheRecords::of(), TheRecords::of(), WhatIsUnsupported::none()), MovingInBy::Importing, 'importing media'],
         'standing beside' => [TheStandingBeside::of(ThePortsMoved::of(), '/srv/beside.yml'), MovingInBy::StandingBeside, 'beside /srv/beside.yml'],
-        'replacing' => [TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running')), MovingInBy::Replacing, 'replacing media'],
+        'replacing' => [TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running'), ''), MovingInBy::Replacing, 'replacing media'],
     ];
 }
 
@@ -162,14 +162,16 @@ it('keeps what replacing would stop, stopped, and could not stop', function (): 
         WhatWasNamed::of('would_stop', 'sonarr'),
         WhatWasNamed::of('stopped', 'radarr'),
         WhatWasNamed::of('still_running', 'tautulli'),
+        ' 5c3a1d20 ',
     );
 
     expect([
         $replacement->project(),
+        $replacement->agreement(),
         implode(',', iterator_to_array($replacement->wouldStop(), preserve_keys: false)),
         implode(',', iterator_to_array($replacement->stopped(), preserve_keys: false)),
         implode(',', iterator_to_array($replacement->stillRunning(), preserve_keys: false)),
-    ])->toBe(['media', 'sonarr', 'radarr', 'tautulli']);
+    ])->toBe(['media', '5c3a1d20', 'sonarr', 'radarr', 'tautulli']);
 });
 
 it('names things in the stack\'s order, and refuses a blank one by the field it came from', function (): void {
@@ -181,6 +183,6 @@ it('names things in the stack\'s order, and refuses a blank one by the field it 
 });
 
 it('says a replacement left something running only where something would not stop', function (): void {
-    expect(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running', 'tautulli'))->leftSomethingRunning())->toBeTrue()
-        ->and(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running'))->leftSomethingRunning())->toBeFalse();
+    expect(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running', 'tautulli'), '')->leftSomethingRunning())->toBeTrue()
+        ->and(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running'), '')->leftSomethingRunning())->toBeFalse();
 });

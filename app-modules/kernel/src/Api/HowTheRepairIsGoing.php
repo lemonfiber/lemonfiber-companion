@@ -42,6 +42,7 @@ final readonly class HowTheRepairIsGoing
         private ?WhatWasMended $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?ARefusalInItsWords $moved = null,
     ) {}
 
     /** The stack is still carrying out what it was agreed to. */
@@ -76,21 +77,36 @@ final readonly class HowTheRepairIsGoing
     }
 
     /**
-     * Say what happens in each of the four, and get back what you built.
+     * The stack refused the yes because the offer it was given for has moved.
+     *
+     * An answer rather than a failure: nothing was carried out, and the repair
+     * agreed to was offered against a reading that no longer stands. The
+     * stack's words say what moved, and the next thing owed is the offer as it
+     * stands now rather than a report that the yes did not work.
+     */
+    public static function moved(ARefusalInItsWords $why): self
+    {
+        return new self(moved: $why);
+    }
+
+    /**
+     * Say what happens in each of the five, and get back what you built.
      *
      * @template TRunning of object
      * @template TDone of object
      * @template TEnded of object
      * @template TMet of object
+     * @template TMoved of object
      *
-     * @param Closure(): TRunning           $stillRunning
-     * @param Closure(WhatWasMended): TDone $done
-     * @param Closure(): TEnded             $ended
-     * @param Closure(Obstacle): TMet       $met
+     * @param Closure(): TRunning                  $stillRunning
+     * @param Closure(WhatWasMended): TDone        $done
+     * @param Closure(): TEnded                    $ended
+     * @param Closure(Obstacle): TMet              $met
+     * @param Closure(ARefusalInItsWords): TMoved  $moved
      *
-     * @return TRunning|TDone|TEnded|TMet
+     * @return TRunning|TDone|TEnded|TMet|TMoved
      */
-    public function either(Closure $stillRunning, Closure $done, Closure $ended, Closure $met): object
+    public function either(Closure $stillRunning, Closure $done, Closure $ended, Closure $met, Closure $moved): object
     {
         // The order is the meaning, as {@see HowTheOfferIsGoing::either()} sets
         // out: being unable to reach the stack outranks anything believed about
@@ -98,6 +114,7 @@ final readonly class HowTheRepairIsGoing
         // answering now.
         return match (true) {
             $this->met instanceof Obstacle => $met($this->met),
+            $this->moved instanceof ARefusalInItsWords => $moved($this->moved),
             $this->running => $stillRunning(),
             $this->done instanceof WhatWasMended => $done($this->done),
             default => $ended(),

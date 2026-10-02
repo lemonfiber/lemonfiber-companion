@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
@@ -24,10 +25,12 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\SequencedEntropy;
@@ -124,6 +127,7 @@ function whatAStackOffering(): array
         'data' => [
             'acted' => false,
             'agreement' => 'agreement-a-test-can-name',
+            'rehearsed' => false,
             // Empty rather than absent: a stack that found nothing beyond what
             // it can put right still sends the field, and a fixture leaving it
             // out would let a reader that never looks at it pass.
@@ -364,6 +368,7 @@ function whatAStackThatActedSends(): array
         'data' => [
             'acted' => true,
             'agreement' => 'agreement-a-test-can-name',
+            'rehearsed' => false,
             'beyond' => [],
             'offered' => [],
             'mended' => [
@@ -464,6 +469,8 @@ function whatWasDone(Mending $mending): string
             ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
             met: static fn(Obstacle $why): TheWordCarriedOut
                 => new TheWordCarriedOut($why->kind()->value),
+            moved: static fn(ARefusalInItsWords $why): TheWordCarriedOut
+                => new TheWordCarriedOut(sprintf('moved: %s', $why->summary())),
         )->said;
 }
 
@@ -621,3 +628,44 @@ it('stands in for a stack with payloads the contract would accept', function ():
         );
     }
 });
+
+/** What a stack answers when work ended on a refusal carrying `$code`, in its own words. */
+function aJobThatEndedRefused(RefusalCode $code): MockResponse
+{
+    return MockResponse::make((string) json_encode([
+        'api_version' => 1,
+        'kind' => 'error',
+        'data' => [
+            'code' => $code->value,
+            'severity' => 'warning',
+            'state' => 'guided',
+            'summary' => 'What you agreed to is not what is offered now',
+            'meaning' => 'The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.',
+            'remedies' => [],
+        ],
+    ]), $code->status());
+}
+
+it('reads a yes refused because its offer moved as that, in the stack\'s own words', function (): void {
+    $ways = everyWayOfMending(
+        aJobThatEndedRefused(RefusalCode::Stale),
+        static fn(): Mending => AStackThatWouldMend::whoseOfferMoved(theSameOffer(), ARefusalInItsWords::said(
+            'What you agreed to is not what is offered now',
+            'The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.',
+            WhatTheRefusalNamed::nothing(),
+        )),
+    );
+
+    foreach ($ways as $which => $make) {
+        expect(whatWasDone($make()))->toBe('moved: What you agreed to is not what is offered now', $which);
+    }
+});
+
+it('reads any other refusal that ends a repair as what was met, not as a moved offer', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([aJobThatEndedRefused(RefusalCode::MovedOn)]);
+
+    expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))
+        ->toBe(KindOfObstacle::StackDidNotAnswer->value);
+});
+

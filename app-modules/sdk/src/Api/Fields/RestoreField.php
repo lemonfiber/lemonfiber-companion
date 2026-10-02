@@ -21,7 +21,7 @@ enum RestoreField: string implements NamesAWireField
     /** Which copy to put back, by the name the listing of copies gave it. */
     case Archive = 'archive';
 
-    /** The listing a yes is given for, quoted back by its name. */
+    /** The listing a yes is given for, quoted back by its name; a replacement's yes quotes its offer by the same word. */
     case Offer = 'offer';
 
     /** The operator's yes to putting the copy's data somewhere other than where it came from. */

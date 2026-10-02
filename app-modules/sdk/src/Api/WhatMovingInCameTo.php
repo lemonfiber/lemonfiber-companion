@@ -145,6 +145,7 @@ final readonly class WhatMovingInCameTo
             WhatAMoveCarries::named($data, ReplacementField::WouldStop, $kind),
             WhatAMoveCarries::named($data, WireField::Stopped, $kind),
             WhatAMoveCarries::named($data, ReplacementField::StillRunning, $kind),
+            WhatAMoveCarries::optional($data, WireField::Agreement, $kind),
         ));
     }
 
