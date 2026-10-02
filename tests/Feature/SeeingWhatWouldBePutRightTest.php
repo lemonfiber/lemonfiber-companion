@@ -782,4 +782,3 @@ it('puts what the stack said about a moved offer away once the operator answers 
     expect($before)->toContain('What you agreed to is not what is offered now')
         ->and($screen->movedOn)->toBeNull();
 })->with(['agreeing', 'looking again']);
-

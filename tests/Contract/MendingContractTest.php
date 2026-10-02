@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
@@ -30,7 +31,6 @@ use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
-use Lemonfiber\Sdk\Generated\RefusalCode;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\SequencedEntropy;
@@ -668,4 +668,3 @@ it('reads any other refusal that ends a repair as what was met, not as a moved o
     expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(KindOfObstacle::StackDidNotAnswer->value);
 });
-

@@ -14,10 +14,10 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheImport;
 use Modules\Kernel\Api\ThePortsMoved;
-use Modules\Kernel\Api\TheStandingBeside;
-use Modules\Kernel\Api\TheReplacement;
 use Modules\Kernel\Api\TheRecords;
 use Modules\Kernel\Api\ThereIsNothingToAgreeTo;
+use Modules\Kernel\Api\TheReplacement;
+use Modules\Kernel\Api\TheStandingBeside;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatWasNamed;
 

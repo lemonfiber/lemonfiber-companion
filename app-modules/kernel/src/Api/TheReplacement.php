@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function count;
+use function trim;
 
 /**
  * What standing in place of a setup already here came to, or would come to.
