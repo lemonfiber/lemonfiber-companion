@@ -8,7 +8,9 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Sdk\Api\Clients;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
@@ -226,6 +228,65 @@ function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): C
 }
 
 /**
+ * The stand-ins switched on, and the list every read a client of theirs is sent is written to.
+ *
+ * @return ArrayObject<int, string>
+ */
+function theStandInsWithTheirReadsWrittenDown(): ArrayObject
+{
+    config(['dx.stands_in' => true]);
+    app()->register(new DxServiceProvider(app()), force: true);
+
+    $reads = new ArrayObject();
+    $standIn = app()->make(Clients::class);
+    app()->bind(Clients::class, static fn(): Clients => clientsThatWriteDownTheirReads($standIn, $reads));
+
+    return $reads;
+}
+
+/**
+ * Every frame that read a stack more than once while the Doing screen follows a start, and every read.
+ *
+ * A frame the screen's own poll leads to is the poll and the render after it,
+ * as the device takes them in one request. The start itself is the operator's
+ * act and not a read, so the count begins on the first tick after it.
+ *
+ * A form the stand-in lists, because it runs no services; drawn twice
+ * first, as the screen takes its forms a frame after what is running.
+ *
+ * @return array{0: list<string>, 1: list<string>}
+ */
+function theFramesFollowingAVerbThatReadTwice(): array
+{
+    $reads = theStandInsWithTheirReadsWrittenDown();
+    $screen = app()->make(WhereAScreenCanSendYou::read()->screensTheRouterServes()['AStacksScreen::Doing']);
+
+    if (! $screen instanceof WhatToDoWithThis) {
+        return [['the router serves no Doing screen'], []];
+    }
+
+    $screen->setParams(['stack' => theStackThisWalkLooksAt(), 'service' => 'Id']);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+
+    $twice = [];
+    $all = [];
+
+    foreach ([1, 2, 3, 4] as $frame) {
+        $reads->exchangeArray([]);
+        $screen->whileItSettles();
+        WhatTheDeviceWouldDraw::by($screen);
+        $all = [...$all, ...$reads->getArrayCopy()];
+
+        if (count($reads) > 1) {
+            $twice[] = sprintf('frame %d — %s', $frame, implode(', ', $reads->getArrayCopy()));
+        }
+    }
+
+    return [$twice, $all];
+}
+
+/**
  * Every frame of a routed screen that read a stack more than once, and how many reads there were in all.
  *
  * Three frames of each, on one screen, as the device draws them while the
@@ -237,13 +298,7 @@ function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): C
  */
 function theFramesThatReadTwice(): array
 {
-    config(['dx.stands_in' => true]);
-    app()->register(new DxServiceProvider(app()), force: true);
-
-    $reads = new ArrayObject();
-    $standIn = app()->make(Clients::class);
-    app()->bind(Clients::class, static fn(): Clients => clientsThatWriteDownTheirReads($standIn, $reads));
-
+    $reads = theStandInsWithTheirReadsWrittenDown();
     $served = WhereAScreenCanSendYou::read()->screensTheRouterServes();
     $twice = [];
     $readAtAll = 0;
@@ -279,6 +334,20 @@ it('no frame of a screen the router serves reads a stack more than once', functi
             "These frames read a stack more than once:\n  %s\n\n"
             . 'A frame reads a stack once and draws everything from what came back. A second '
             . 'reading is taken on a frame of its own (N1-R65).',
+            implode("\n  ", $twice),
+        ));
+});
+
+it('no frame of the Doing screen reads a stack more than once while it follows a verb', function (): void {
+    [$twice, $all] = theFramesFollowingAVerbThatReadTwice();
+
+    $askedAfter = array_filter($all, static fn(string $read): bool => str_contains($read, '/api/jobs/'));
+
+    expect($askedAfter)->not->toBe([], 'the start was never asked after, so nothing was counted')
+        ->and($twice)->toBe([], sprintf(
+            "These frames read a stack more than once while a verb was followed:\n  %s\n\n"
+            . 'The poll decides from what the screen last heard, and the frame it leads to '
+            . 'asks after the verb or reads what is running, not both.',
             implode("\n  ", $twice),
         ));
 });

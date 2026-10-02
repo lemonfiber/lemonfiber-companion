@@ -121,6 +121,13 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public string $waitsOn = '';
 
+    /**
+     * Whether what is running was last read before the verb being followed ended.
+     *
+     * `public` so the screen holds it between frames.
+     */
+    public bool $listingTrailsTheVerb = false;
+
     public function __construct(
         private readonly Supervising $supervising,
         private readonly Rehearsing $rehearsing,
@@ -304,14 +311,27 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * is actually settling, which is what keeps this from being the polling
      * that is refused: a finished report and a stack whose services are all
      * in standing states answer the same thing however often they are read.
+     *
+     * It decides from what it last heard and reads nothing itself, so the
+     * frame it leads to reads the stack once: while a verb runs, the frame
+     * asks after the verb alone, and once the verb has ended, the next frame
+     * reads what is running again.
      */
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
         $this->listenWhileItStarts();
 
-        if ($this->whatItCameTo()->isWorking || $this->answer()->isSettling) {
-            $this->again();
+        if ($this->awaitsAnOutcome()) {
+            $this->cameTo = null;
+            $this->listingTrailsTheVerb = true;
+
+            return;
+        }
+
+        if ($this->listingTrailsTheVerb || $this->answered?->isSettling === true) {
+            $this->listingTrailsTheVerb = false;
+            $this->answered = null;
         }
     }
 
@@ -392,7 +412,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $stack = $this->stack();
         $sent = $this->sent;
 
-        if (! $this->whatItCameTo()->isWorking || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
+        if (! $this->awaitsAnOutcome() || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
             $this->hearing->letGo();
 
             return;
