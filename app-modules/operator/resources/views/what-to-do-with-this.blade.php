@@ -94,6 +94,7 @@
                     :went="$this->whatItCameTo()->went"
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
+                <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
             @elseif ($this->whatItCameTo()->isWorking)
                 @if ($this->waitsOn !== '')
                     {{-- The stack's own line for what the start is waiting for,

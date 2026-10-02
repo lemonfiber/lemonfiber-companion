@@ -597,6 +597,28 @@ it('N1-R10 — a take the stack refused says what stood in the way, and follows 
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
+it('offers taking the same update again where other work held the stack, and takes it only when tapped', function (): void {
+    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackIsBusy));
+    $screen = aScreenThatTookTheUpdate($keeping);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
+        ->and($keeping->taken())->toHaveCount(1);
+
+    $screen->tryAgain();
+
+    expect($keeping->taken())->toHaveCount(2)
+        ->and($keeping->taken()[1])->toEqual($keeping->taken()[0]);
+});
+
+it('does not offer an update again where anything but other work stood in its way', function (): void {
+    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = aScreenThatTookTheUpdate($keeping);
+    $screen->tryAgain();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
+        ->and($keeping->taken())->toHaveCount(1);
+});
+
 it('N1-R10 — asking after an update says what stood in the way', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 

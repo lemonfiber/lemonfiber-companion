@@ -120,6 +120,15 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public bool $agreed = false;
 
+    /**
+     * The check of the repair last agreed to, while that yes has not been taken.
+     *
+     * So a yes other work held can be sent again for the same repair, against
+     * the listing still held. Cleared once the stack takes it, and by looking
+     * again, which forgets the listing it was given for.
+     */
+    public ?string $yesTo = null;
+
     public function __construct(
         private readonly Mending $mending,
         private readonly SecureStorage $storage,
@@ -141,7 +150,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
     {
-        if (! $this->answer()->went->isSignedIn) {
+        if (! $this->offer()->went->isSignedIn) {
             return false;
         }
 
@@ -154,7 +163,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     }
 
     /**
-     * What this stack said it would put right.
+     * What this stack said it would put right, asked once per frame.
      *
      * One accessor rather than one per field, the same as {@see done()} beside
      * it — and the symmetry is worth having for its own sake: a template asking
@@ -167,7 +176,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function offer(): WhatTheStackWouldPutRight
     {
-        return $this->answer();
+        return $this->answered ??= $this->ask();
     }
 
     /** Whether the operator has agreed to something on this listing. */
@@ -219,6 +228,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
 
         foreach ($offer->repairs() as $repair) {
             if ($repair->answers()->is($check)) {
+                $this->yesTo = $named;
                 $this->sendTheYes($offer, $repair);
 
                 return;
@@ -311,10 +321,36 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     public function lookAgain(): void
     {
         $this->agreed = false;
+        $this->yesTo = null;
         $this->handle = null;
         $this->offered = null;
         $this->answered = null;
         $this->carriedOut = null;
+    }
+
+    /**
+     * Send the request other work held again: the yes, or asking what it would put right.
+     *
+     * Only where other work held the stack, for
+     * {@see \Modules\Operator\Internal\FollowsWhatTheVerbCameTo::tryAgain()}'s
+     * reason. A yes is sent for the same repair against the listing still
+     * held; with no yes outstanding, the request held was the question.
+     */
+    public function tryAgain(): void
+    {
+        if ($this->answered?->went->wasHeldByOtherWork() !== true) {
+            return;
+        }
+
+        $yesTo = $this->yesTo;
+
+        if ($yesTo === null) {
+            $this->lookAgain();
+
+            return;
+        }
+
+        $this->agreeTo($yesTo);
     }
 
     /**
@@ -360,6 +396,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                     started: function (Job $job): WhatTheStackWouldPutRight {
                         $this->handle = $job->shown();
                         $this->agreed = true;
+                        $this->yesTo = null;
                         $this->carriedOut = null;
 
                         return new HowAnOfferOfRepairsReads()->stillWorkingItOut();
@@ -409,16 +446,10 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         );
     }
 
-    /** What came back, asked once per frame. */
-    private function answer(): WhatTheStackWouldPutRight
-    {
-        return $this->answered ??= $this->ask();
-    }
-
     /**
      * Resume the session, then ask the stack.
      *
-     * Split from {@see answer()} because the two are different questions —
+     * Split from {@see Offer()} because the two are different questions —
      * when to ask, and what asking produced — and because `H8` counts the doors
      * either would otherwise have.
      */

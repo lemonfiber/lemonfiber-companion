@@ -56,6 +56,24 @@ trait FollowsWhatTheVerbCameTo
     abstract public function stack(): Stack;
 
     /**
+     * Send the verb that was agreed to again, where other work held the stack.
+     *
+     * Only then: the stack turned it away before acting on it, so nothing it
+     * did is done twice. Sent as it was agreed to, under a new key, and only
+     * because the operator tapped for it.
+     */
+    public function tryAgain(): void
+    {
+        $sent = $this->sent;
+
+        if (! $sent instanceof AgreedTo || ! $this->whatItCameTo()->went->wasHeldByOtherWork()) {
+            return;
+        }
+
+        $this->tellIt($sent);
+    }
+
+    /**
      * Send the verb agreed to, and hold what to follow it by.
      *
      * Just sent, it is running, and the cadence asks after it from there. A

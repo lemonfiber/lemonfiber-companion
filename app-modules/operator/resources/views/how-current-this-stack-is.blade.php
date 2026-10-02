@@ -177,6 +177,7 @@
             :went="$this->lastUpdate()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
+        <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
     @elseif ($this->lastUpdate()->isWorking)
         <x-design::standing
             :said="__('updates.still_updating')"

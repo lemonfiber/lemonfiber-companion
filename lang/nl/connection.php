@@ -25,6 +25,7 @@ return [
     'version_mismatch_older_action' => 'Er is niets uit gelezen. Werk lemonfiber op de machine bij.',
     'busy' => 'Deze stack is met ander werk bezig.',
     'busy_action' => 'Er is niets veranderd. Probeer het opnieuw zodra het klaar is.',
+    'try_again' => 'Opnieuw proberen',
     'paired' => 'Gekoppeld aan :stack',
     'pairing_refused' => 'Die koppelingslink is geweigerd. Vraag een nieuwe aan op de stack.',
     'fingerprint_changed' => 'Het certificaat van deze stack is gewijzigd. Koppel opnieuw vanaf de stack zelf voordat je verdergaat.',

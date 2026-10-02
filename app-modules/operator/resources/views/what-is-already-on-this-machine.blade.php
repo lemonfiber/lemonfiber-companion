@@ -171,6 +171,7 @@
             :went="$this->howTheMoveIsGoing()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
+        <x-operator::try-again :went="$this->howTheMoveIsGoing()->went" tap="tryAgain()" />
     @endif
 
     {{-- Looking again reads the survey, and asks after work still being
