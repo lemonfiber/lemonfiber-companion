@@ -366,14 +366,14 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'DashboardEnvelope.health.affected[].onset',
-        'because' => 'When the check went wrong. `N27-R19` orders problems by it to say which are new, '
-            . 'and What\'s new reads it from `/api/news` and the stream\'s `news` event, where the stack '
-            . 'names the same moment. The health summary draws what is wrong, not since when.',
+        'because' => 'When the check went wrong. `N27-R19` says which problems are new by it, and '
+            . '`/api/news` carries the same moment for each problem, so that read is where it is taken. '
+            . 'The health summary draws what is wrong, not since when.',
     ],
     [
         'path' => 'DoctorEnvelope.findings[].onset',
-        'because' => 'When the check went wrong, the same moment `/api/news` carries for it. What\'s new '
-            . 'reads it there (`N27-R19`); the diagnosis screen draws each finding\'s verdict and remedy, '
+        'because' => 'When the check went wrong, the same moment `/api/news` carries for it, which is '
+            . 'where `N27-R19` takes it. The diagnosis screen draws each finding\'s verdict and remedy, '
             . 'and no requirement asks it to say since when.',
     ],
     [
