@@ -6,8 +6,6 @@ namespace Modules\Wayfinding\Api;
 
 use Modules\Stacks\Api\AStacksScreen;
 
-use function str_replace;
-
 /**
  * Every screen that is not about one stack, and the one place its path is written.
  *
@@ -45,23 +43,12 @@ enum AScreenWithoutAStack: string
     /** Typing it, for a camera that is refused or absent. */
     case PairByTyping = '/pair/typed';
 
-    /**
-     * A screen this version of the app does not have yet, saying so.
-     *
-     * The segment names which one, as {@see WhatIsNotHereYet} spells it, so
-     * the menu keeps its item and opening it is not a dead end.
-     */
-    case NotHereYet = '/not-yet/{what}';
+    /** What is new on every stack this phone holds. */
+    case WhatsNew = '/whats-new';
 
     /** The lock, put over whatever was on the glass when the device stood it again. */
     case Locked = '/locked';
 
     /** How this phone is set: the lock, readings, the order of the stacks and what is kept. */
     case Settings = '/settings';
-
-    /** This screen's path, saying which item this version of the app does not have yet. */
-    public function saying(WhatIsNotHereYet $what): string
-    {
-        return str_replace('{what}', $what->value, $this->value);
-    }
 }

@@ -349,6 +349,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
+            $endpoint === Api::NEWS_ENDPOINT => WhatIsNewAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('news-items')), self::WHEN_A_CHANGE_WAS_MADE),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),

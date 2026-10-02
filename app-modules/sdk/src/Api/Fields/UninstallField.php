@@ -51,9 +51,6 @@ enum UninstallField: string implements NamesAWireField
     /** Whether every source a removal needed answered. */
     case Complete = 'complete';
 
-    /** What could not be read, each in the words of whatever refused. */
-    case Unread = 'unread';
-
     /** Whether the data location is on a network share or a drive that unplugs. */
     case Volume = 'volume';
 

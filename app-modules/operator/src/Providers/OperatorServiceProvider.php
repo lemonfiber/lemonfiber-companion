@@ -19,7 +19,6 @@ use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\Locked;
-use Modules\Operator\Internal\Screens\NotInThisVersionYet;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PairingAPhone;
@@ -35,6 +34,7 @@ use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
+use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
@@ -146,7 +146,7 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // What this version of the app does not have yet, which the menu
             // keeps its items for and which says so when opened.
-            Router::native(AScreenWithoutAStack::NotHereYet->value, NotInThisVersionYet::class);
+            Router::native(AScreenWithoutAStack::WhatsNew->value, WhatIsNewOnEveryStack::class);
 
             // The lock, which the navigation stack builds in place of any
             // screen while the device's lock stands, and puts over the screen

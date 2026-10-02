@@ -87,6 +87,7 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\ReadingNews;
 use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\RemovalsUnderWay;
@@ -152,6 +153,7 @@ use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
+use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
@@ -563,6 +565,7 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Safekeeping::class, Keyholders::class);
         $this->app->bind(Advising::class, Advisers::class);
         $this->app->bind(Welcoming::class, Doorkeepers::class);
+        $this->app->bind(ReadingNews::class, Newsreaders::class);
 
         // Asking somebody in goes through the same door as every other action,
         // and the address it answers with is drawn as a code by an encoder

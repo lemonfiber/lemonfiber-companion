@@ -49,7 +49,4 @@ enum TraceField: string implements NamesAWireField
 
     /** The wanted parts not here yet. */
     case Outstanding = 'outstanding';
-
-    /** An episode's number within its season. */
-    case Number = 'number';
 }

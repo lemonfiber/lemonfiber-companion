@@ -85,7 +85,6 @@ use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
-use Modules\Wayfinding\Api\WhatIsNotHereYet;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhatAMemberFindsInTheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
@@ -460,10 +459,6 @@ function everyDerivedKey(): array
         TheMenu::class => aPairPerCase(
             TheMenu::cases(),
             static fn(TheMenu $item): array => [$item->said()],
-        ),
-        WhatIsNotHereYet::class => aPairPerCase(
-            WhatIsNotHereYet::cases(),
-            static fn(WhatIsNotHereYet $item): array => [$item->said()],
         ),
         NotACountOfDays::class => aPairPerCase(
             NotACountOfDays::cases(),

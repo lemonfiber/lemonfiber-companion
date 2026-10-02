@@ -50,6 +50,14 @@ use Native\Mobile\Edge\NativeComponent;
 trait HearsHowTheStackIs
 {
     /**
+     * What a screen opening this one hands it to have what is wrong opened out.
+     *
+     * What's new opens a problem here, and the operator arrives on the list of
+     * what is wrong rather than having to ask for it.
+     */
+    public const string WHATS_WRONG_OPENED = 'whats_wrong_opened';
+
+    /**
      * What the subscription has said so far, and whether it still stands.
      *
      * `public` for the reason {@see HowThisStackIs::$answered} is: it is what
@@ -62,6 +70,7 @@ trait HearsHowTheStackIs
 
     public function mount(): void
     {
+        $this->expanded = $this->expanded || $this->data(self::WHATS_WRONG_OPENED) === true;
         $this->listen();
     }
 

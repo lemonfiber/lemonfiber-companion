@@ -168,7 +168,7 @@ final readonly class Traces
                 $episode = self::table($part, TraceField::Outstanding);
                 $outstanding[] = AnEpisodeNotHereYet::numbered(
                     self::count($episode, TraceField::Season),
-                    self::count($episode, TraceField::Number),
+                    self::count($episode, WireField::Number),
                     self::text($episode, WireField::Title),
                     self::stage($episode, WireField::Stage),
                 );

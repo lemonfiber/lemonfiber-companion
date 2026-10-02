@@ -139,6 +139,7 @@ use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
+use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Quartermasters;
@@ -366,6 +367,7 @@ function everyAdapterCallThatReads(): array
             => new Dismantlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
+        'Newsreaders::newsOn' => static fn(): object => new Newsreaders($clients)->newsOn($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
         'Explainers::wordOn' => static fn(): object
             => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),

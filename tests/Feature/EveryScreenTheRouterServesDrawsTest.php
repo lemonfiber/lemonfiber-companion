@@ -19,6 +19,7 @@ use Saloon\Http\Faking\Fixture;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Saloon\Http\Request;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -183,11 +184,17 @@ it('F15 — every screen the router serves draws something when it is drawn', fu
  * read. Each is answered by the stand-in exactly as it would have been, and a
  * request the stand-in has no answer for as a stack that failed.
  *
- * @param ArrayObject<int, string> $reads
+ * A read the client sends again because a stack did not answer is the same
+ * read, and is written down once: the client sends the one request it was
+ * handed each time it tries, and a screen that reads twice hands it two.
+ *
+ * @param ArrayObject<int, string>     $reads
+ * @param WeakMap<Request, true>       $tried every request already written down
  */
-function theStandInsAnswer(PendingRequest $asked, ?MockClient $answering, ArrayObject $reads): MockResponse|Fixture
+function theStandInsAnswer(PendingRequest $asked, ?MockClient $answering, ArrayObject $reads, WeakMap $tried): MockResponse|Fixture
 {
-    if ($asked->getMethod()->value === 'GET' && $asked->config()->get('stream') !== true) {
+    if ($asked->getMethod()->value === 'GET' && $asked->config()->get('stream') !== true && ! $tried->offsetExists($asked->getRequest())) {
+        $tried[$asked->getRequest()] = true;
         $reads->append($asked->getUrl());
     }
 
@@ -206,17 +213,24 @@ function theStandInsAnswer(PendingRequest $asked, ?MockClient $answering, ArrayO
 function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): Clients
 {
     return new readonly class ($standIn, $reads) implements Clients {
+        /** @var WeakMap<Request, true> */
+        private WeakMap $tried;
+
         /** @param ArrayObject<int, string> $reads */
-        public function __construct(private Clients $standIn, private ArrayObject $reads) {}
+        public function __construct(private Clients $standIn, private ArrayObject $reads)
+        {
+            $this->tried = new WeakMap();
+        }
 
         public function client(Stack $stack, Session $session): Client
         {
             $client = $this->standIn->client($stack, $session);
             $answering = Closure::bind(static fn(Client $built): ?MockClient => $built->connector->getMockClient(), null, Client::class)($client);
             $reads = $this->reads;
+            $tried = $this->tried;
 
             return $client->withMockClient(new MockClient([
-                '*' => static fn(PendingRequest $asked): MockResponse|Fixture => theStandInsAnswer($asked, $answering, $reads),
+                '*' => static fn(PendingRequest $asked): MockResponse|Fixture => theStandInsAnswer($asked, $answering, $reads, $tried),
             ]));
         }
 

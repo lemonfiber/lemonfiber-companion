@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Wayfinding\Api\Screens;
 
-use Modules\Wayfinding\Api\WhatIsNotHereYet;
 use Modules\Wayfinding\Api\WhoTheMenuIsFor;
 use Modules\Wayfinding\Internal\ThePhonesSettingsInTheMenu;
 use Modules\Wayfinding\Internal\TheRowsOfTheMenu;
 use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
+use Modules\Wayfinding\Internal\TheWhatsNewInTheMenu;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\UI\Builders\Drawer;
 
@@ -44,7 +44,7 @@ trait FindsItsWayAroundAStack
         return Drawer::make(view('wayfinding::the-menu', [
             'stack' => $this->stack(),
             'rows' => TheRowsOfTheMenu::for($this->menuIsFor ??= $this->around->whoTheMenuIsFor($this->stack())),
-            'whatsNew' => WhatIsNotHereYet::WhatsNew,
+            'whatsNew' => new TheWhatsNewInTheMenu(),
             'stackSettings' => new TheStacksSettingsInTheMenu(),
             'appSettings' => new ThePhonesSettingsInTheMenu(),
         ]))

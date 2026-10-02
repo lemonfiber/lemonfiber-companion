@@ -28,6 +28,7 @@ use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
+use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PairingField;
 use Modules\Sdk\Api\Fields\PreviewField;
@@ -97,6 +98,7 @@ function everyFieldNamedOnTheWire(): array
         ...LogField::cases(),
         ...MigrationField::cases(),
         ...MusicField::cases(),
+        ...NewsItemsField::cases(),
         ...OutboundField::cases(),
         ...PairingField::cases(),
         ...PreviewField::cases(),

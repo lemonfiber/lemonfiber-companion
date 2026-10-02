@@ -25,5 +25,4 @@ return [
     'the_device_would_not_offer' => 'This phone would not offer a way to send it.',
     'the_device_would_not_offer_action' => 'The report is on the screen above; you can copy it by hand.',
     'share_diagnostics' => 'Send a report to someone helping you',
-    'not_in_this_version' => 'This isn\'t in this version of the app yet.',
 ];

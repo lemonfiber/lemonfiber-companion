@@ -594,3 +594,15 @@ function whatTheTopCalls(string $key): string
 
     return is_string($said) ? $said : '';
 }
+
+it('opens on what is wrong opened out where What\'s new opened it on a problem', function (): void {
+    $asked = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
+    $asked->screen->setData([HowThisStackIs::WHATS_WRONG_OPENED => true]);
+    $asked->screen->mount();
+
+    $plain = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
+    $plain->screen->mount();
+
+    expect($asked->screen->expanded)->toBeTrue()
+        ->and($plain->screen->expanded)->toBeFalse();
+});
