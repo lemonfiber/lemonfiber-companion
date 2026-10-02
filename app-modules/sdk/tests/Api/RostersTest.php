@@ -12,7 +12,6 @@ use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -54,7 +53,7 @@ function aRosterSaying(array $data): Envelope
  */
 function theRosterIn(Envelope $envelope): Daemons
 {
-    return Rosters::in($envelope, Forms::none());
+    return Rosters::in($envelope);
 }
 
 /**
@@ -206,33 +205,13 @@ it('reads what the stack says it all amounts to', function (): void {
     expect($daemons->count())->toBe(1);
 });
 
-it('N2-R7 — carries the forms it is handed, and neither the forms the reading asked about nor the profiles', function (): void {
-    // The `status` envelope's `forms` are the forms the reading was asked
-    // about, and each row's `profile` is a compose profile. Neither is the
-    // list of forms a verb can be asked for by, so neither may become one: a
-    // form here is only ever one the stack's list of forms named.
-    $daemons = Rosters::in(
-        aRosterSaying(aRosterOf(['profile' => 'media'])),
-        Forms::these(Form::called('library'), Form::called('full')),
-    );
-
-    $named = [];
-
-    foreach ($daemons->forms() as $form) {
-        $named[] = $form->named();
-    }
-
-    expect($named)->toBe(['library', 'full']);
-});
-
 it('ignores the forms the reading asked about, whatever shape they arrive in', function (): void {
     // Not read, so not refused: a reader that checked a field it does not use
     // would turn a stack that sent something odd there into a listing nobody
     // can act on, for a fact nothing on the screen shows.
     $daemons = theRosterIn(aRosterSaying([...aRosterOf(), 'forms' => 'downloads']));
 
-    expect($daemons->count())->toBe(1)
-        ->and($daemons->forms()->count())->toBe(0);
+    expect($daemons->count())->toBe(1);
 });
 
 it('reads a service that ended by the constructor that says so', function (): void {

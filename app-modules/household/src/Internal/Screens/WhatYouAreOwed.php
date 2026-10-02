@@ -14,6 +14,7 @@ use Modules\Household\Internal\Presenters\HowWhatAMemberAskedForReads;
 use Modules\Household\Internal\Presenters\HowWhatAMemberIsOwedReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeOwed;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
+use Modules\Household\Internal\ViewModels\WhatTheirRequestsTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -25,6 +26,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatTheyAreOwed;
+use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -74,7 +77,7 @@ final class WhatYouAreOwed extends NativeComponent
     use LetsGoOfARefusedSession;
 
     /**
-     * What came back, once the frame has asked.
+     * What came back, once the frame has asked: both halves of one reading.
      *
      * `public`, which is what `NativeComponent`'s property syncing needs to
      * reach: since 4.5.1 it writes only public, non-static properties, and a
@@ -82,19 +85,7 @@ final class WhatYouAreOwed extends NativeComponent
      * it holds. It is also what fills the view's data, so the compiled
      * template finds the variable rather than an undefined one.
      */
-    public ?WhatAMemberTurnedOutToBeOwed $answered = null;
-
-    /**
-     * What they have asked for, once the frame has asked.
-     *
-     * Held beside {@see $answered} rather than folded into it, because they are
-     * two answers to two questions: a stack that said what somebody is owed and
-     * could not say what they asked for has answered half, and one field for both
-     * would have to throw one away to report the other.
-     *
-     * `public` for {@see $answered}'s reason.
-     */
-    public ?WhatAMemberTurnedOutToHaveAsked $listed = null;
+    public ?WhatTheirRequestsTurnedOutToBe $readings = null;
 
     public function __construct(
         private readonly Owing $owing,
@@ -132,20 +123,19 @@ final class WhatYouAreOwed extends NativeComponent
      */
     public function again(): void
     {
-        $this->answered = null;
-        $this->listed = null;
+        $this->readings = null;
     }
 
-    /** What came back, asked once per frame. */
+    /** What they are owed, from the one reading a frame takes. */
     public function answer(): WhatAMemberTurnedOutToBeOwed
     {
-        return $this->answered ??= $this->ask();
+        return $this->readings()->owed;
     }
 
-    /** What they have asked this machine for, asked once per frame. */
+    /** What they have asked this machine for, from that same reading. */
     public function requests(): WhatAMemberTurnedOutToHaveAsked
     {
-        return $this->listed ??= $this->list();
+        return $this->readings()->asked;
     }
 
     /** The way back to the machine this reading is about. */
@@ -179,51 +169,49 @@ final class WhatYouAreOwed extends NativeComponent
     }
 
     /**
-     * Resume the session, ask the stack, and flatten what came back.
+     * Both halves of the reading, asked for once and held until asked again.
      *
-     * Split from {@see answer()} because the two are different questions — when
-     * to ask, and what asking produced.
+     * One reading because they come back on one answer: asking once for what
+     * they are owed and again for what they asked would read the same answer
+     * twice in a frame.
      */
-    private function ask(): WhatAMemberTurnedOutToBeOwed
+    private function readings(): WhatTheirRequestsTurnedOutToBe
+    {
+        return $this->readings ??= $this->ask();
+    }
+
+    /** Resume the session, ask the stack, and flatten both halves of what came back. */
+    private function ask(): WhatTheirRequestsTurnedOutToBe
     {
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatAMemberTurnedOutToBeOwed => $this->asked($stack, $session),
-            notHeld: static fn(): WhatAMemberTurnedOutToBeOwed
-                => new HowWhatAMemberIsOwedReads()->signedOut(),
+            held: fn(Session $session): WhatTheirRequestsTurnedOutToBe => $this->asked($stack, $session),
+            notHeld: static fn(): WhatTheirRequestsTurnedOutToBe => new WhatTheirRequestsTurnedOutToBe(
+                new HowWhatAMemberIsOwedReads()->signedOut(),
+                new HowWhatAMemberAskedForReads()->signedOut(),
+            ),
         );
     }
 
-    /**
-     * Resume the session, ask what they asked for, and flatten what came back.
-     *
-     * Its own resume rather than one shared with {@see ask()}. A session is not
-     * held on this screen between the two — holding one is the thing this surface
-     * spends its shape avoiding — and the store is on this device, so asking it
-     * twice in a frame costs a read rather than a round trip.
-     */
-    private function list(): WhatAMemberTurnedOutToHaveAsked
+    /** What the stack said of both halves. */
+    private function asked(Stack $stack, Session $session): WhatTheirRequestsTurnedOutToBe
     {
-        $stack = $this->stack();
+        $read = $this->owing->theirRequests($stack, $session);
 
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatAMemberTurnedOutToHaveAsked => $this->listed($stack, $session),
-            notHeld: static fn(): WhatAMemberTurnedOutToHaveAsked
-                => new HowWhatAMemberAskedForReads()->signedOut(),
-        );
+        return new WhatTheirRequestsTurnedOutToBe($this->owedFrom($read->owed(), $stack), $this->askedFrom($read->asked(), $stack));
     }
 
-    /** What the stack said, or what the member met instead. */
-    private function asked(Stack $stack, Session $session): WhatAMemberTurnedOutToBeOwed
+    /** What they are owed, or what the member met instead. */
+    private function owedFrom(WhatTheyAreOwed $owed, Stack $stack): WhatAMemberTurnedOutToBeOwed
     {
-        return $this->owing->toHandOver($stack, $session)->either(
+        return $owed->either(
             told: static fn(Sentences $said): WhatAMemberTurnedOutToBeOwed
                 => new HowWhatAMemberIsOwedReads()->these($said),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeOwed {
                 // A credential refused on this read is the same signed-out
                 // device as one refused on any other, and a fold cannot forget
-                // anything — so the store is told here, where the obstacle is
+                // anything, so the store is told here, where the obstacle is
                 // still in hand.
                 $this->letGoOfTheSession($why, $stack);
 
@@ -233,16 +221,15 @@ final class WhatYouAreOwed extends NativeComponent
     }
 
     /** What they asked for, or what the member met instead. */
-    private function listed(Stack $stack, Session $session): WhatAMemberTurnedOutToHaveAsked
+    private function askedFrom(WhatTheyAsked $asked, Stack $stack): WhatAMemberTurnedOutToHaveAsked
     {
-        return $this->owing->whatTheyAsked($stack, $session)->either(
+        return $asked->either(
             told: static fn(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
                 => new HowWhatAMemberAskedForReads()->these($wanted),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToHaveAsked {
-                // Told here as well as on the reading beside it, and not because
-                // either is unsure: a fold cannot forget anything, and whichever
-                // of the two met the refusal is the one holding the obstacle when
-                // the store has to hear about it. Letting go twice is letting go.
+                // Told here as well as on the half beside it: whichever half met
+                // the refusal is the one holding the obstacle when the store has
+                // to hear about it. Letting go twice is letting go.
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowWhatAMemberAskedForReads()->met($why);

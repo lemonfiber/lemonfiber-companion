@@ -55,6 +55,9 @@
 
     <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" />
     <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
+@elseif ($this->thing()->waits)
+    {{-- Not a service of this name, and the forms are read on the next
+         frame: nothing is said about it until they are. --}}
 @elseif (! $this->thing()->isRun())
     {{-- A route naming something the machine is not running. Real rather
          than defensive: a list tapped a moment before the stack changed,
@@ -166,7 +169,9 @@
             <x-design::heading>{{ __('health.rehearsal.heading') }}</x-design::heading>
             <x-design::note>{{ __('health.rehearsal.nothing_started') }}</x-design::note>
 
-            @if (! $this->rehearsal()->went->cameBack())
+            @if ($this->rehearsal() === null)
+                {{-- Rehearsed on the next frame. --}}
+            @elseif (! $this->rehearsal()->went->cameBack())
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->rehearsal()->went"
@@ -251,6 +256,10 @@
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-operator::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />

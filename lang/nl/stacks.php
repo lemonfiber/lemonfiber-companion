@@ -726,6 +726,7 @@ return [
         'copies' => 'Kopieën van de stack',
         'no_copies' => 'Er is nog geen kopie gemaakt',
         'copies_unread' => 'De kopieën konden niet opgesomd worden',
+        'reading_copies' => 'De kopieën lezen…',
         'take_a_copy' => 'Maak een kopie',
         'put_back' => 'Zet deze kopie terug',
         'put_back_that' => 'Zet :copy terug',

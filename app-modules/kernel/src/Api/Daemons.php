@@ -30,11 +30,9 @@ use Traversable;
  * decided, and the two disagree the first time the machine weighs something
  * differently.
  *
- * **The forms are carried beside the services**, because what is asked for is start,
- * stop and restart *by form* as well as by service, and a form with no service
- * running in it still exists — a stack whose `library` form is wholly stopped
- * has a form an operator wants to start, and deriving the list from the rows
- * would lose exactly that one.
+ * **The forms the stack has are not here.** They are a reading of their own
+ * ({@see Supervising::formsOn()}), taken on a frame of its own by a screen that
+ * needs them. The forms *running* are, because the listing names them.
  *
  * Empty is a legitimate value: a stack that runs nothing is `Inactive`, which
  * is a state rather than a missing list.
@@ -46,7 +44,6 @@ final readonly class Daemons implements IteratorAggregate
     /** @param array<int, Daemon> $daemons */
     private function __construct(
         private HowTheStackIsRunning $running,
-        private Forms $forms,
         private Disturbances $disturbs,
         private array $daemons,
         private ?Forms $active = null,
@@ -61,11 +58,10 @@ final readonly class Daemons implements IteratorAggregate
      */
     public static function of(
         HowTheStackIsRunning $running,
-        Forms $forms,
         Disturbances $disturbs,
         Daemon ...$daemons,
     ): self {
-        return new self($running, $forms, $disturbs, array_values($daemons));
+        return new self($running, $disturbs, array_values($daemons));
     }
 
     /**
@@ -79,7 +75,7 @@ final readonly class Daemons implements IteratorAggregate
      */
     public static function none(Disturbances $disturbs): self
     {
-        return new self(HowTheStackIsRunning::Inactive, Forms::none(), $disturbs, []);
+        return new self(HowTheStackIsRunning::Inactive, $disturbs, []);
     }
 
     /**
@@ -91,7 +87,7 @@ final readonly class Daemons implements IteratorAggregate
      */
     public function asked(Forms $active, TheServicesLeftOut $leftOut): self
     {
-        return new self($this->running, $this->forms, $this->disturbs, $this->daemons, $active, $leftOut);
+        return new self($this->running, $this->disturbs, $this->daemons, $active, $leftOut);
     }
 
     /** The forms running, as the stack counts them; none where it named none. */
@@ -110,12 +106,6 @@ final readonly class Daemons implements IteratorAggregate
     public function running(): HowTheStackIsRunning
     {
         return $this->running;
-    }
-
-    /** The forms this stack has, whether or not anything in them is running. */
-    public function forms(): Forms
-    {
-        return $this->forms;
     }
 
     /**

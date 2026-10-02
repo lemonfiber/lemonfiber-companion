@@ -29,6 +29,7 @@ use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
@@ -82,6 +83,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     }
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
 
     /** What is typed into the box, walked only when asked to. Public for {@see WhatThisServiceSaid::$looking}'s reason. */
@@ -217,13 +219,20 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::watching-one-arrive');
     }
 
     /** What became of the walkthrough started here, asked once per frame. */
     public function answer(): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->answered ??= $this->followed();
+        if (! $this->answered instanceof WhatTheWalkthroughTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->followed();
+        }
+
+        return $this->answered;
     }
 
     /** Where this screen's words are explained from. */

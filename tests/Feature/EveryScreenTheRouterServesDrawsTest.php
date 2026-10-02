@@ -2,11 +2,21 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Client;
 use Modules\Dx\Providers\DxServiceProvider;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Sdk\Api\Clients;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
+use Saloon\Exceptions\NoMockResponseFoundException;
+use Saloon\Http\Faking\Fixture;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -161,4 +171,114 @@ it('F15 — every screen the router serves draws something when it is drawn', fu
         . 'the field empty and nothing anywhere says why.',
         implode("\n  ", $wrong),
     ));
+});
+
+/**
+ * What the stand-in answers one request with, written down where it is a read.
+ *
+ * A read is a request that is not an action and not a stream: an action is an
+ * act of the operator's, and a stream held open is taken from rather than
+ * read. Each is answered by the stand-in exactly as it would have been, and a
+ * request the stand-in has no answer for as a stack that failed.
+ *
+ * @param ArrayObject<int, string> $reads
+ */
+function theStandInsAnswer(PendingRequest $asked, ?MockClient $answering, ArrayObject $reads): MockResponse|Fixture
+{
+    if ($asked->getMethod()->value === 'GET' && $asked->config()->get('stream') !== true) {
+        $reads->append($asked->getUrl());
+    }
+
+    try {
+        return $answering instanceof MockClient ? $answering->guessNextResponse($asked) : MockResponse::make('', 500);
+    } catch (NoMockResponseFoundException) {
+        return MockResponse::make('', 500);
+    }
+}
+
+/**
+ * The stand-in machines, with every read a client of theirs is sent written down.
+ *
+ * @param ArrayObject<int, string> $reads
+ */
+function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): Clients
+{
+    return new readonly class ($standIn, $reads) implements Clients {
+        /** @param ArrayObject<int, string> $reads */
+        public function __construct(private Clients $standIn, private ArrayObject $reads) {}
+
+        public function client(Stack $stack, Session $session): Client
+        {
+            $client = $this->standIn->client($stack, $session);
+            $answering = Closure::bind(static fn(Client $built): ?MockClient => $built->connector->getMockClient(), null, Client::class)($client);
+            $reads = $this->reads;
+
+            return $client->withMockClient(new MockClient([
+                '*' => static fn(PendingRequest $asked): MockResponse|Fixture => theStandInsAnswer($asked, $answering, $reads),
+            ]));
+        }
+
+        public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
+        {
+            return $this->standIn->whatStoodInTheWay($stack, $why);
+        }
+    };
+}
+
+/**
+ * Every frame of a routed screen that read a stack more than once, and how many reads there were in all.
+ *
+ * Three frames of each, on one screen, as the device draws them while the
+ * screen stays open. A screen with two readings takes the second on a frame of
+ * its own, so the first three frames are where a second read in one frame
+ * would be. A named function for {@see whatThisScreenDraws()}'s reason.
+ *
+ * @return array{0: list<string>, 1: int}
+ */
+function theFramesThatReadTwice(): array
+{
+    config(['dx.stands_in' => true]);
+    app()->register(new DxServiceProvider(app()), force: true);
+
+    $reads = new ArrayObject();
+    $standIn = app()->make(Clients::class);
+    app()->bind(Clients::class, static fn(): Clients => clientsThatWriteDownTheirReads($standIn, $reads));
+
+    $served = WhereAScreenCanSendYou::read()->screensTheRouterServes();
+    $twice = [];
+    $readAtAll = 0;
+
+    foreach (everyRouteTheAppServes(theStackThisWalkLooksAt()) as $case => $params) {
+        $screen = array_key_exists($case, $served) ? app()->make($served[$case]) : null;
+
+        if (! $screen instanceof NativeComponent) {
+            continue;
+        }
+
+        $screen->setParams($params);
+
+        foreach ([1, 2, 3] as $frame) {
+            $reads->exchangeArray([]);
+            WhatTheDeviceWouldDraw::by($screen);
+            $readAtAll += count($reads);
+
+            if (count($reads) > 1) {
+                $twice[] = sprintf('%s, frame %d — %s', $case, $frame, implode(', ', $reads->getArrayCopy()));
+            }
+        }
+    }
+
+    return [$twice, $readAtAll];
+}
+
+it('no frame of a screen the router serves reads a stack more than once', function (): void {
+    [$twice, $readAtAll] = theFramesThatReadTwice();
+
+    expect($readAtAll)->toBeGreaterThan(0, 'no screen read a stack, so nothing was counted')
+        ->and($twice)->toBe([], sprintf(
+            "These frames read a stack more than once:\n  %s\n\n"
+            . 'A frame reads a stack once and draws everything from what came back. A second '
+            . 'reading is taken on a frame of its own (N1-R65).',
+            implode("\n  ", $twice),
+        ));
 });

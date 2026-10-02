@@ -52,18 +52,6 @@ trait AsksWhatTheStackIsRunning
     protected ?WhatThisStackRunsTurnedOutToBe $answered = null;
 
     /**
-     * Ask the stack again, because the operator said so.
-     *
-     * The action an obstacle must not take away: a control is not
-     * hidden because the stack is unreachable, and an obstacle screen with
-     * nothing on it leaves leaving and returning as the only road back.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
-
-    /**
      * Resume the session, ask the stack, and flatten what came back.
      *
      * Named for the act rather than for the field it fills, because the two

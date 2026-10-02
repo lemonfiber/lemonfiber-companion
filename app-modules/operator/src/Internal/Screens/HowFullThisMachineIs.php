@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRoomReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheRoomTurnedOutToBe;
@@ -51,6 +52,7 @@ final class HowFullThisMachineIs extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
 
     /**
@@ -103,13 +105,20 @@ final class HowFullThisMachineIs extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::how-full-this-machine-is');
     }
 
     /** What came back, asked once per frame. */
     public function answer(): TheRoomTurnedOutToBe
     {
-        return $this->answered ??= $this->ask();
+        if (! $this->answered instanceof TheRoomTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->ask();
+        }
+
+        return $this->answered;
     }
 
     /** Where this screen's words are explained from. */

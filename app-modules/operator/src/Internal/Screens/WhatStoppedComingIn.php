@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
@@ -69,6 +70,7 @@ final class WhatStoppedComingIn extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
 
     /**
@@ -142,6 +144,8 @@ final class WhatStoppedComingIn extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::what-stopped-coming-in');
     }
 
@@ -157,7 +161,12 @@ final class WhatStoppedComingIn extends NativeComponent
      */
     public function answer(): WhatStoppedTurnedOutToBe
     {
-        return $this->answered ??= $this->ask();
+        if (! $this->answered instanceof WhatStoppedTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->ask();
+        }
+
+        return $this->answered;
     }
 
     /** Where one stalled item got to, followed through every service. */

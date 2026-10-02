@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -86,22 +87,29 @@ final readonly class Supervisors implements Supervising
         try {
             $envelope = $client->read(Api::STATUS_ENDPOINT);
 
-            // Two readings, because the forms are not on the first. The status
-            // envelope's `forms` are the forms that reading asked about — none,
-            // for the whole stack — and a service's profile is not a form, so
-            // the forms a verb can be asked for by come only from their own
-            // endpoint. Both inside the same `try` as the requests, the
-            // argument {@see Stalls::stoppedOn()} makes: a listing whose forms
-            // could not be read is not one to present as a stack that has
-            // none.
-            return WhatIsRunning::these(
-                Rosters::in($envelope, Repertoires::in($client->read(Api::FORMS_ENDPOINT))),
-                Rosters::whatElseIsRunning($envelope),
-            );
+            return WhatIsRunning::these(Rosters::in($envelope), Rosters::whatElseIsRunning($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RosterIsUnreadable|RepertoireIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RosterIsUnreadable $why) {
             return WhatIsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    /**
+     * Every form the stack declares, off the one answer that lists them.
+     *
+     * The status envelope's `forms` are the forms that reading asked about —
+     * none, for the whole stack — and a service's profile is not a form, so
+     * the forms a verb can be asked for by come only from their own endpoint.
+     */
+    public function formsOn(Stack $stack, Session $session): WhatFormsThereAre
+    {
+        try {
+            return WhatFormsThereAre::these(Repertoires::in($this->clients->client($stack, $session)->read(Api::FORMS_ENDPOINT)));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatFormsThereAre::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RepertoireIsUnreadable $why) {
+            return WhatFormsThereAre::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

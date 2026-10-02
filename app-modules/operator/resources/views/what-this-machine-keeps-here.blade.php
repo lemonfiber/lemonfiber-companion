@@ -35,9 +35,16 @@
         @endforelse
     </x-design::section>
 
-    @if ($this->answer()->copies->went->cameBack())
+    @if ($this->copiesAreBeingRead())
+        {{-- This frame read what the machine keeps, so the copies are read on
+             the next one. --}}
         <x-design::section :label="__('stacks.keeps.copies')">
-            @forelse ($this->answer()->copies->names as $name)
+            <x-design::row :headline="__('stacks.keeps.reading_copies')" />
+        </x-design::section>
+        <x-operator::the-next-frame />
+    @elseif ($this->copies()->went->cameBack())
+        <x-design::section :label="__('stacks.keeps.copies')">
+            @forelse ($this->copies()->names as $name)
                 {{-- Putting a copy back is offered for a copy the stack listed
                      and for nothing else, and it opens on what putting it back
                      would do rather than doing it. --}}
@@ -59,20 +66,20 @@
              brings its own ask-again and this screen already has one. --}}
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.keeps.copies_unread') }}</x-design::strong>
-            @if ($this->answer()->copies->went->isSignedIn)
-                <x-design::body>{{ __($this->answer()->copies->went->met, $this->answer()->copies->went->filling()) }}</x-design::body>
-                <x-design::body>{{ __($this->answer()->copies->went->remedy, $this->answer()->copies->went->filling()) }}</x-design::body>
+            @if ($this->copies()->went->isSignedIn)
+                <x-design::body>{{ __($this->copies()->went->met, $this->copies()->went->filling()) }}</x-design::body>
+                <x-design::body>{{ __($this->copies()->went->remedy, $this->copies()->went->filling()) }}</x-design::body>
             @else
                 <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
             @endif
         </x-design::notice>
-        @if ($this->answer()->copies->went->isPutRightInTheAppsSettings())
+        @if ($this->copies()->went->isPutRightInTheAppsSettings())
             <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
             @endif
         @endif
-        @unless ($this->answer()->copies->went->isSignedIn)
+        @unless ($this->copies()->went->isSignedIn)
             <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
         @endunless
     @endif

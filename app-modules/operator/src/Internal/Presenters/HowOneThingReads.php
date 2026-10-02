@@ -8,6 +8,7 @@ use function in_array;
 
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
@@ -28,19 +29,38 @@ use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
  */
 final readonly class HowOneThingReads
 {
-    /** What the listing says about one name in it. */
-    public function of(WhatThisStackRunsTurnedOutToBe $listing, string $named): WhatOneThingIs
+    /**
+     * What the listing says about one name in it, where a service goes by it.
+     *
+     * Asked first, so a service wins over a form of the same name.
+     */
+    public function service(WhatThisStackRunsTurnedOutToBe $listing, string $named): ?WhatOneThingIs
     {
         $service = $this->row($listing, $named);
 
-        if ($service instanceof WhatOneServiceSays) {
-            // A host-managed service takes no verb at all, and the row already
-            // knows it — the verbs are about what this stack runs, and a verb
-            // about something it does not would be refused by the machine.
-            return new WhatOneThingIs($named, verbs: $service->isOurs ? $service->verbs : [], service: $service);
+        if (! $service instanceof WhatOneServiceSays) {
+            return null;
         }
 
-        return in_array($named, $listing->forms, strict: true)
+        // A host-managed service takes no verb at all, and the row already
+        // knows it — the verbs are about what this stack runs, and a verb
+        // about something it does not would be refused by the machine.
+        return new WhatOneThingIs($named, verbs: $service->isOurs ? $service->verbs : [], service: $service);
+    }
+
+    /**
+     * What one name no service goes by comes to, against the forms the stack declares.
+     *
+     * Forms not yet read, or that could not be, leave the thing waiting: the
+     * screen draws it once it knows, rather than calling a form nothing.
+     */
+    public function form(string $named, ?TheFormsAsFound $forms): WhatOneThingIs
+    {
+        if (! $forms instanceof TheFormsAsFound || ! $forms->went->cameBack()) {
+            return new WhatOneThingIs($named, waits: true);
+        }
+
+        return in_array($named, $forms->names, strict: true)
             // A form has no state of its own to ask, so it takes all three:
             // what a form is, is several services at once, and the stack is the
             // thing that knows which of them a verb will reach.

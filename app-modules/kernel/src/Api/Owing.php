@@ -40,16 +40,12 @@ interface Owing
     public function toHandOver(Stack $stack, Session $session): WhatTheyAreOwed;
 
     /**
-     * What this stack says the signed-in member has asked it for.
+     * What they are owed and what they have asked for, from one reading.
      *
-     * Beside {@see toHandOver()} rather than folded into it, because they are two
-     * answers and a screen can be given one without the other: a stack that said
-     * what somebody is owed and nothing about what they asked for has answered
-     * half, and a single type carrying both would have no way to say so.
-     *
-     * Narrowed by the core the same way, and answering {@see WhatTheyAsked}
-     * rather than raising for {@see toHandOver()}'s reason — a stack that is
-     * asleep and a stack that declines are ordinary states of the world.
+     * The two come back on one answer, so a screen showing both reads it once
+     * rather than once for each. Each half keeps an outcome of its
+     * own: a stack that said what somebody is owed and nothing about what they
+     * asked for has answered half, and {@see WhatTheirAskingSaid} says so.
      */
-    public function whatTheyAsked(Stack $stack, Session $session): WhatTheyAsked;
+    public function theirRequests(Stack $stack, Session $session): WhatTheirAskingSaid;
 }

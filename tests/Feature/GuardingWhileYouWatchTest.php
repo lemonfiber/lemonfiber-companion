@@ -78,7 +78,7 @@ function theGuardScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -356,14 +356,30 @@ it('a handle held without the guard it was for asks after nothing, and says none
         ->and($guarding->followed())->toBe([]);
 });
 
-it('asks for the forms once a frame, however often the frame reads them', function (): void {
-    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+it('asks for the forms once, however often the screen reads them, and never what is running', function (): void {
+    $supervising = AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), $supervising);
     $screen->answer();
     $screen->answer();
     $screen->choosing();
 
-    expect($supervising->askings())->toBe(1);
+    expect($supervising->formsAskings())->toBe(1)
+        ->and($supervising->askings())->toBe(0);
+});
+
+it('keeps the forms it read when asked again, and asks again for forms that could not be read', function (): void {
+    $read = AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull());
+    $unread = AStackThatSupervises::withNothingRunning()->whoseFormsMeet(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+
+    foreach ([$read, $unread] as $supervising) {
+        $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), $supervising);
+        $screen->answer();
+        $screen->again();
+        $screen->answer();
+    }
+
+    expect($read->formsAskings())->toBe(1)
+        ->and($unread->formsAskings())->toBe(2);
 });
 
 it('lets go through nothing when the session was let go before the screen was left', function (): void {

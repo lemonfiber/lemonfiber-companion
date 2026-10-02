@@ -832,6 +832,7 @@ return [
         'no_copies' => 'No copy has been taken',
         // Never drawn as an empty list.
         'copies_unread' => 'The copies could not be listed',
+        'reading_copies' => 'Reading the copies…',
         'take_a_copy' => 'Take a copy',
         // On every copy listed, and on nothing else: a copy the stack did not
         // list is not one it offers to put back.

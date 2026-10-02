@@ -24,12 +24,16 @@ use Modules\Kernel\Api\WhatToDoWithIt;
  */
 final readonly class WhatOneThingIs
 {
-    /** @param list<WhatToDoWithIt> $verbs what the thing may be told to do */
+    /**
+     * @param list<WhatToDoWithIt> $verbs what the thing may be told to do
+     * @param bool                 $waits whether what it is waits for the forms, read on the next frame
+     */
     public function __construct(
         public string $named,
         public bool $isAForm = false,
         public array $verbs = [],
         public ?WhatOneServiceSays $service = null,
+        public bool $waits = false,
     ) {}
 
     /** Whether the machine is running anything of that name at all. */

@@ -31,4 +31,10 @@ final readonly class HowAGlossReads
 
         return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', asks: $goes->ofItself()->wordAbout($drawn));
     }
+
+    /** A word drawn as it came, while the glossary waits for the next frame. */
+    public function waiting(AWordInUse $drawn): AGlossAsShown
+    {
+        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', waits: true);
+    }
 }

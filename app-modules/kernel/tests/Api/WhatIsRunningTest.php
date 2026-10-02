@@ -5,8 +5,6 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
-use Modules\Kernel\Api\Form;
-use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -54,7 +52,6 @@ function aServiceThatIsRunning(): Daemon
 it('N2-R7 — a listing takes the arm that renders rows', function (): void {
     $daemons = Daemons::of(
         HowTheStackIsRunning::Active,
-        Forms::these(Form::called('downloads')),
         whatTheRunningVerbsCostHere(),
         aServiceThatIsRunning(),
     );

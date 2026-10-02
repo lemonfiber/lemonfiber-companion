@@ -10,7 +10,6 @@ use function it;
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -63,7 +62,7 @@ it('says what leans on a service by the name the listing gives it, and by its id
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
     );
-    $listing = Daemons::of(HowTheStackIsRunning::Degraded, Forms::none(), WhatAMachineRuns::whatTheVerbsCost(), $gluetun, $qbittorrent);
+    $listing = Daemons::of(HowTheStackIsRunning::Degraded, WhatAMachineRuns::whatTheVerbsCost(), $gluetun, $qbittorrent);
 
     expect(new HowAServiceReads()->in($gluetun, $listing)->leaning)->toBe(['qBittorrent', 'unlisted']);
 });

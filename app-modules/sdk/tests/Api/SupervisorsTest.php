@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Api;
 
 use function afterEach;
+
+use Closure;
+
 use function expect;
 use function is_string;
 use function it;
@@ -283,17 +286,20 @@ it('N2-R7 — asks for a start at the same door as a stop', function (): void {
     expect($sent->getUrl())->toEndWith('/api/actions/up');
 });
 
-it('N1-R17 — reads what is running, then the forms the stack declares, each at its own endpoint', function (): void {
-    // Two readings and in this order. The status envelope's `forms` are the
-    // forms that reading asked about — none — so the forms a verb can be asked
-    // for by are read where the stack lists them, and nowhere else.
+/**
+ * Every address one reading asked, in order.
+ *
+ * @param Closure(Supervisors): mixed $reading
+ * @param list<MockResponse>          $answers
+ *
+ * @return list<string>
+ */
+function whatOneReadingAsked(Closure $reading, array $answers): array
+{
     MockClient::destroyGlobal();
-    $mock = MockClient::global([
-        MockResponse::make((string) json_encode(whatAStackRunningNothingSends())),
-        MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends())),
-    ]);
+    $mock = MockClient::global($answers);
 
-    new Supervisors(new PinnedClients(), SequencedEntropy::counting())->running(theSupervisedStack(), Session::of('a-session-not-a-secret'));
+    $reading(new Supervisors(new PinnedClients(), SequencedEntropy::counting()));
 
     $asked = [];
 
@@ -301,9 +307,30 @@ it('N1-R17 — reads what is running, then the forms the stack declares, each at
         $asked[] = $response->getPendingRequest()->getUrl();
     }
 
-    expect($asked)->toHaveCount(2)
-        ->and($asked[0])->toEndWith(Api::STATUS_ENDPOINT)
-        ->and($asked[1])->toEndWith(Api::FORMS_ENDPOINT);
+    return $asked;
+}
+
+it('reads what is running at its own endpoint and nothing else', function (): void {
+    $asked = whatOneReadingAsked(
+        static fn(Supervisors $supervisors): mixed => $supervisors->running(theSupervisedStack(), Session::of('a-session-not-a-secret')),
+        [MockResponse::make((string) json_encode(whatAStackRunningNothingSends()))],
+    );
+
+    expect($asked)->toHaveCount(1)
+        ->and($asked[0])->toEndWith(Api::STATUS_ENDPOINT);
+});
+
+it('reads the forms the stack declares where it lists them, and nowhere else', function (): void {
+    // The status envelope's `forms` are the forms that reading asked about —
+    // none — so the forms a verb can be asked for by are read where the stack
+    // lists them.
+    $asked = whatOneReadingAsked(
+        static fn(Supervisors $supervisors): mixed => $supervisors->formsOn(theSupervisedStack(), Session::of('a-session-not-a-secret')),
+        [MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends()))],
+    );
+
+    expect($asked)->toHaveCount(1)
+        ->and($asked[0])->toEndWith(Api::FORMS_ENDPOINT);
 });
 
 it('asks after a verb by the name its handle carries, and carries no key', function (): void {

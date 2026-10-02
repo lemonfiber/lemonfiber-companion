@@ -340,34 +340,27 @@ it('asks for no requests where this device holds no session for the machine', fu
         // field.
         ->and($screen->requests()->met)->toBe('')
         ->and($screen->requests()->remedy)->toBe('')
-        ->and($owing->listings())->toBe(0);
+        ->and($owing->askings())->toBe(0);
 });
 
-it('N1-R65 — asks for their requests once per frame, and again when told to', function (): void {
-    // Counted apart from the sentences, because they are two questions: one
-    // counter for both would let a screen ask one of them twice and the other
-    // not at all while the total looked right.
+it('reads both halves once, whichever is drawn first, and again when told to', function (): void {
+    // One reading answers both, so drawing what they asked for and what they
+    // are owed asks the stack once.
     $owing = AMemberWhoIsOwed::owedAndAsking(whatThisMemberIsTold(), whatThisMemberAskedFor());
     $screen = theOwedScreen($owing);
 
     $screen->requests();
-    $screen->requests();
-
-    expect($owing->listings())->toBe(1)
-        ->and($owing->askings())->toBe(0);
-
     $screen->answer();
+    $screen->requests();
 
     expect($owing->askings())->toBe(1);
 
-    // `again()` forgets both, so a frame after it asks both afresh. Forgetting
-    // one would leave a screen showing a new reading beside a stale one.
+    // `again()` forgets both, so a frame after it reads both afresh, together.
     $screen->again();
-    $screen->requests();
     $screen->answer();
+    $screen->requests();
 
-    expect($owing->listings())->toBe(2)
-        ->and($owing->askings())->toBe(2);
+    expect($owing->askings())->toBe(2);
 });
 
 it('N3-R13 — a refused credential met on the requests read lets the session go too', function (): void {

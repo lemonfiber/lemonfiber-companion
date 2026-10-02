@@ -807,7 +807,7 @@ it('draws each step as the glossary\'s word for it, explained in place', functio
     $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
         AWord::explained('search', 'Looking through the indexers for a release', '')->writtenAs(WhatElseItIsCalled::formsOf('searching')),
     ));
-    $drawn = WhatTheDeviceWouldDraw::by(aScreenThatWalked(
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(aScreenThatWalked(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatWorked())),
         explaining: $explaining,
     ))->said();

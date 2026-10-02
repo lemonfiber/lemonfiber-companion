@@ -103,7 +103,6 @@ function theSameRunning(): Daemons
 {
     return Daemons::of(
         HowTheStackIsRunning::Degraded,
-        Forms::these(Form::called('library'), Form::called('full')),
         whatTheSupervisedVerbsCost(),
         Daemon::called(
             'Jellyfin',
@@ -261,17 +260,21 @@ function whatAStackDeclaringFormsSends(): array
 /**
  * What the far end answers where those two are what it runs.
  *
- * Two answers, in the order the adapter asks: what is running, and then the
- * forms the stack declares.
- *
  * @return list<MockResponse>
  */
 function aRunningAnswer(): array
 {
-    return [
-        MockResponse::make((string) json_encode(whatAStackRunningSends())),
-        MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends())),
-    ];
+    return [MockResponse::make((string) json_encode(whatAStackRunningSends()))];
+}
+
+/**
+ * What the far end answers where it is asked for the forms it declares.
+ *
+ * @return list<MockResponse>
+ */
+function aDeclaringAnswer(): array
+{
+    return [MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends()))];
 }
 
 /** What the far end answers where it took a verb on. */
@@ -296,7 +299,7 @@ function everyWayOfSupervising(array $answered, ?Obstacle $why = null): array
     return [
         'the fake' => static fn(): Supervising => $why instanceof Obstacle
             ? AStackThatSupervises::met($why)
-            : AStackThatSupervises::with(theSameRunning()),
+            : AStackThatSupervises::with(theSameRunning())->declaring(Forms::these(Form::called('library'), Form::called('full'))),
         'the adapter' => static function () use ($answered): Supervising {
             MockClient::destroyGlobal();
             MockClient::global($answered);
@@ -372,19 +375,19 @@ it('carries the stack\'s own judgement rather than one worked out from the rows'
 });
 
 /**
- * The forms a listing came to, as one line to compare.
+ * The forms a stack declares, as one line to compare.
  *
- * Every row on the wire names its profile, so a profile read as a form would
- * show up here: a control that asks a stack for something it has never heard
- * of. The forms read off the wrong field would show up as none.
+ * Every row of the status answer names its profile, so a profile read as a
+ * form would show up here: a control that asks a stack for something it has
+ * never heard of. The forms read off the wrong field would show up as none.
  */
 function theFormsIn(Supervising $supervising): string
 {
-    return $supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
-        these: static function (Daemons $daemons): TheWordCarriedOut {
+    return $supervising->formsOn(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
+        these: static function (Forms $declared): TheWordCarriedOut {
             $forms = [];
 
-            foreach ($daemons->forms() as $form) {
+            foreach ($declared as $form) {
                 $forms[] = $form->named();
             }
 
@@ -399,17 +402,15 @@ it('N2-R7 — the forms are the ones the stack declares, and no profile is one o
     // The status envelope says it was asked about no form and each service
     // names its profile; the stack's list of forms names `library` and `full`.
     // Only the last is a form a verb can be asked for by.
-    foreach (everyWayOfSupervising(aRunningAnswer()) as $which => $make) {
+    foreach (everyWayOfSupervising(aDeclaringAnswer()) as $which => $make) {
         expect(theFormsIn($make()))->toBe('forms: library, full', $which);
     }
 });
 
 it('N18-R9 — forms that could not be read are a stack that did not answer, not one with none', function (): void {
-    // The listing arrived and the forms did not. Reading that as a stack that
-    // declares no forms would take every form control off the screen and say
-    // nothing about why; a stack that did not answer is the honest sentence.
-    $running = MockResponse::make((string) json_encode(whatAStackRunningSends()));
-
+    // The forms did not arrive. Reading that as a stack that declares no
+    // forms would take every form control off the screen and say nothing
+    // about why; a stack that did not answer is the honest sentence.
     $table = [
         'refused' => MockResponse::make('{"error":"gone"}', 500),
         'a form with no id' => MockResponse::make((string) json_encode([
@@ -420,7 +421,7 @@ it('N18-R9 — forms that could not be read are a stack that did not answer, not
     ];
 
     foreach ($table as $case => $forms) {
-        foreach (everyWayOfSupervising([$running, $forms], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        foreach (everyWayOfSupervising([$forms], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
             expect(theFormsIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
         }
     }
@@ -514,9 +515,7 @@ it('an answer this app cannot read is a stack that did not answer', function ():
         ]),
     );
 
-    $declared = MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends()));
-
-    foreach (everyWayOfSupervising([$answered, $declared], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
         expect(everythingRunningIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });

@@ -106,19 +106,20 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
     // screen to start, and a listing assembled from the rows would not have it.
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
-        Forms::these(Form::called('library'), Form::called('full')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService(),
     );
 
-    expect(theServicesScreen(AStackThatSupervises::with($running))->answer()->forms)
-        ->toBe(['library', 'full']);
+    $screen = theServicesScreen(AStackThatSupervises::with($running)->declaring(WhatAMachineRuns::libraryAndFull()));
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    expect($screen->forms()?->names)->toBe(['library', 'full']);
 });
 
 it('N2-R7 — draws a control for each form the stack declares', function (): void {
     // The stack declares `library` and `full`, and a control is drawn for
     // each, so the form an operator opens this screen to start is on it.
-    $frame = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())));
+    $frame = WhatTheDeviceWouldDraw::onTheSecondFrame(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull())));
 
     expect($frame->offers())->toContain('library')
         ->and($frame->offers())->toContain('full')
@@ -128,20 +129,63 @@ it('N2-R7 — draws a control for each form the stack declares', function (): vo
 it('a stack that declares no forms says that, rather than that nothing is set up', function (): void {
     $none = Daemons::of(
         HowTheStackIsRunning::Active,
-        Forms::none(),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService(),
     );
 
-    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with($none)))->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theServicesScreen(AStackThatSupervises::with($none)))->said();
 
     expect($drawn)->toContain('This stack declares no forms');
+});
+
+it('reads the forms on the frame after what is running, and asks for that frame at once', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
+    $screen = theServicesScreen($supervising);
+
+    $first = WhatTheDeviceWouldDraw::by($screen);
+    $asked = [$supervising->askings(), $supervising->formsAskings()];
+    $waited = $screen->waitsForTheNextFrame();
+    $second = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($asked)->toBe([1, 0])
+        ->and($first->offers())->not->toContain('library')
+        ->and($waited)->toBeTrue()
+        ->and($screen->waitsForTheNextFrame())->toBeFalse()
+        ->and([$supervising->askings(), $supervising->formsAskings()])->toBe([1, 1])
+        ->and($second->offers())->toContain('library');
+});
+
+it('keeps the forms while what is running is read again', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
+    $screen = theServicesScreen($supervising);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    $screen->again();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect([$supervising->askings(), $supervising->formsAskings()])->toBe([2, 1])
+        ->and($drawn->offers())->toContain('library');
+});
+
+it('forms that could not be read stop the screen on the next frame, and are asked again with it', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->whoseFormsMeet(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = theServicesScreen($supervising);
+
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $waited = $screen->waitsForTheNextFrame();
+    $stopped = WhatTheDeviceWouldDraw::by($screen);
+    $screen->again();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    expect($waited)->toBeTrue()
+        ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($stopped->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($supervising->formsAskings())->toBe(2);
 });
 
 it('N1-R27 — looks again only while something is settling', function (): void {
     $settling = Daemons::of(
         HowTheStackIsRunning::Partial,
-        Forms::these(Form::called('library')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService('sonarr', HowAServiceRuns::Starting),
     );
@@ -344,7 +388,6 @@ function aStackWithTwoThingsNobodyAskedFor(): Daemons
 {
     return Daemons::of(
         HowTheStackIsRunning::Active,
-        Forms::these(Form::called('library')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService('sonarr')->broughtInBy(Forms::these(Form::called('library'))),
         WhatAMachineRuns::aService('caddy', HowAServiceRuns::Absent),
@@ -383,7 +426,6 @@ it('folds what no running form asked for away at the foot, counted, quiet and wi
 it('keeps a service a running form asked for and has not got among the rest, with its warning', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(Daemons::of(
         HowTheStackIsRunning::Degraded,
-        Forms::these(Form::called('library')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService('jellyfin', HowAServiceRuns::Absent)->broughtInBy(Forms::these(Form::called('library'))),
     )));

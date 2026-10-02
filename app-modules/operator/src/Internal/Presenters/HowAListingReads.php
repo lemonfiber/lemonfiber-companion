@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 
 /**
  * What asking a stack what it is running comes to, as fields a template reads.
  *
- * **The forms are carried whether or not anything in them is running.** A form
- * with everything stopped is the one an operator came here to start, and a
- * listing assembled from the rows would not have it.
+ * **The forms are folded apart from the listing**, because they are read apart
+ * from it, on a frame of their own. A form with everything stopped is the one
+ * an operator came here to start, and a listing assembled from the rows would
+ * not have it.
  *
  * **Whether anything is settling is decided over the rows, once.** The screen's
  * cadence reads it and the template states it, and those two have to agree:
@@ -32,16 +35,7 @@ final readonly class HowAListingReads
      */
     public function signedOut(): WhatThisStackRunsTurnedOutToBe
     {
-        return new WhatThisStackRunsTurnedOutToBe(
-            went: HowTheReadingWent::theSessionEnded(),
-            services: [],
-            forms: [],
-            overall: '',
-            isSettling: false,
-            disturbs: null,
-            active: [],
-            leftOut: [],
-        );
+        return $this->stoppedBy(HowTheReadingWent::theSessionEnded());
     }
 
     /** The stack answered, and this is what it is running. */
@@ -63,12 +57,6 @@ final readonly class HowAListingReads
             $settling = $settling || $row->isSettling;
         }
 
-        $forms = [];
-
-        foreach ($daemons->forms() as $form) {
-            $forms[] = $form->named();
-        }
-
         // The overall comes off the listing rather than off the rows, so what
         // the stack amounts to is decided where the stack said it — a fold that
         // dropped a row could never quietly turn a degraded machine into a
@@ -76,7 +64,6 @@ final readonly class HowAListingReads
         return new WhatThisStackRunsTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             services: $rows,
-            forms: $forms,
             overall: $daemons->running()->saidOnTheScreen(),
             isSettling: $settling,
             disturbs: $daemons->disturbs(),
@@ -103,15 +90,44 @@ final readonly class HowAListingReads
      */
     public function met(Obstacle $why): WhatThisStackRunsTurnedOutToBe
     {
+        return $this->stoppedBy(HowTheReadingWent::somethingStopped($why));
+    }
+
+    /** A listing that did not come back, for the reason given. */
+    public function stoppedBy(HowTheReadingWent $went): WhatThisStackRunsTurnedOutToBe
+    {
         return new WhatThisStackRunsTurnedOutToBe(
-            went: HowTheReadingWent::somethingStopped($why),
+            went: $went,
             services: [],
-            forms: [],
             overall: '',
             isSettling: false,
             disturbs: null,
             active: [],
             leftOut: [],
         );
+    }
+
+    /** The stack listed the forms it declares, which may be none. */
+    public function forms(Forms $forms): TheFormsAsFound
+    {
+        $names = [];
+
+        foreach ($forms as $form) {
+            $names[] = $form->named();
+        }
+
+        return new TheFormsAsFound(HowTheReadingWent::itCameBack(), $names);
+    }
+
+    /** It did not, and this is what the operator met. */
+    public function formsMet(Obstacle $why): TheFormsAsFound
+    {
+        return new TheFormsAsFound(HowTheReadingWent::somethingStopped($why), []);
+    }
+
+    /** The session ended before the forms were asked. */
+    public function formsSignedOut(): TheFormsAsFound
+    {
+        return new TheFormsAsFound(HowTheReadingWent::theSessionEnded(), []);
     }
 }

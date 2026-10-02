@@ -107,6 +107,19 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
+     * The frame after this screen's first, the way the device renders it.
+     *
+     * A frame reads a stack once, so what a screen reads second is on this
+     * frame and not the first.
+     */
+    public static function onTheSecondFrame(NativeComponent $screen): self
+    {
+        self::by($screen);
+
+        return self::by($screen);
+    }
+
+    /**
      * The tree this screen hands the device, whole: types, layouts and props,
      * for what the words on it leave out.
      *

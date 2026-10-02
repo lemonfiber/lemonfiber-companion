@@ -26,13 +26,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatTheGuardSaw;
-use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\AsksWhatFormsItHas;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
+use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
-use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
@@ -61,7 +61,8 @@ use function view;
  * started, with the stack's reason; it was let go without seeing anything; or
  * the stack no longer knows it. Each is drawn in words of its own.
  *
- * The forms it can guard are the ones the stack declares, read once per frame.
+ * The forms it can guard are the ones the stack declares, read once and held
+ * while the screen is open; what the stack is running is never asked here.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -70,7 +71,7 @@ use function view;
 final class GuardingWhileYouWatch extends NativeComponent
 {
     use OffersTheAppsSettings;
-    use AsksWhatTheStackIsRunning;
+    use AsksWhatFormsItHas;
     use FindsItsWayAround;
 
     /**
@@ -124,16 +125,16 @@ final class GuardingWhileYouWatch extends NativeComponent
         return view('operator::guarding-while-you-watch');
     }
 
-    /** The forms a guard can be asked for, asked once per frame. */
-    public function answer(): WhatThisStackRunsTurnedOutToBe
+    /** The forms a guard can be asked for, asked once and held while the screen is open. */
+    public function answer(): TheFormsAsFound
     {
-        return $this->answered ??= $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+        return $this->formsFound ??= $this->askWhatFormsItHas($this->stack(), $this->storage, $this->supervising);
     }
 
     /** The forms a guard can be asked for, and which are named. */
     public function choosing(): WhatTheGuardWouldGuard
     {
-        return new HowAGuardReads()->choosing($this->answer()->forms, $this->naming);
+        return new HowAGuardReads()->choosing($this->answer()->names, $this->naming);
     }
 
     /**
@@ -144,7 +145,7 @@ final class GuardingWhileYouWatch extends NativeComponent
      */
     public function choose(string $form): void
     {
-        if (! in_array($form, $this->answer()->forms, strict: true)) {
+        if (! in_array($form, $this->answer()->names, strict: true)) {
             return;
         }
 
@@ -216,10 +217,10 @@ final class GuardingWhileYouWatch extends NativeComponent
         }
     }
 
-    /** Ask the stack again: the forms, and where the guard stands. */
+    /** Ask the stack again where the guard stands, and the forms where they could not be read. */
     public function again(): void
     {
-        $this->answered = null;
+        $this->formsAgain();
         $this->lastGuard = null;
     }
 

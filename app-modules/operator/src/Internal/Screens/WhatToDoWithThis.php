@@ -24,13 +24,13 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
+use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AStartLineAsShown;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
@@ -103,7 +103,7 @@ use function view;
 final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
-    use AsksWhatTheStackIsRunning;
+    use TakesItsFormsAFrameLater;
     use FollowsWhatTheVerbCameTo;
     use FindsItsWayAround;
 
@@ -139,7 +139,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->answered ??= $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+        return $this->listingOf($this->stack(), $this->storage, $this->supervising);
     }
 
     /**
@@ -162,21 +162,31 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public function thing(): WhatOneThingIs
     {
-        $named = $this->param('service');
+        $said = $this->param('service');
+        $named = is_string($said) ? trim($said) : '';
+        $reads = new HowOneThingReads();
 
-        return new HowOneThingReads()->of($this->answer(), is_string($named) ? trim($named) : '');
+        // The forms are asked only where the name is not a service's, and on
+        // the frame after the listing.
+        return $reads->service($this->answer(), $named)
+            ?? $reads->form($named, $this->formsOf($this->stack(), $this->storage, $this->supervising));
     }
 
     /**
      * What starting this form would come to, as the stack rehearses it.
      *
-     * Asked only where the template draws a form, and once a frame. Shown
-     * before the verbs, so what a start would bring up and leave out is on
-     * the screen before anybody starts it; nothing is started by asking.
+     * Asked only where the template draws a form, on a frame that has not
+     * read the stack already, and nothing until then. Shown before the verbs,
+     * so what a start would bring up and leave out is on the screen before
+     * anybody starts it; nothing is started by asking.
      */
-    public function rehearsal(): WhatStartingItWouldShow
+    public function rehearsal(): ?WhatStartingItWouldShow
     {
-        return $this->rehearsed ??= $this->rehearse(Form::called($this->thing()->named));
+        if ($this->rehearsed instanceof WhatStartingItWouldShow || ! $this->mayReadItsStack()) {
+            return $this->rehearsed;
+        }
+
+        return $this->rehearsed = $this->rehearse(Form::called($this->thing()->named));
     }
 
     /**
@@ -316,6 +326,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     {
         $this->answered = null;
         $this->cameTo = null;
+        $this->formsAgain();
     }
 
     /**
@@ -331,6 +342,8 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::what-to-do-with-this');
     }
 

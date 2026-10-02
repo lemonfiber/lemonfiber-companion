@@ -44,6 +44,15 @@ interface Supervising
     public function running(Stack $stack, Session $session): WhatIsRunning;
 
     /**
+     * The forms this stack has, a reading of its own.
+     *
+     * Apart from {@see running()} because they are another answer: a frame
+     * reads a stack once, so a screen that needs both takes this one on a frame
+     * of its own and holds it, while what is running is read again.
+     */
+    public function formsOn(Stack $stack, Session $session): WhatFormsThereAre;
+
+    /**
      * Do what the operator agreed to, or come away with a reason.
      *
      * Answers {@see Underway} — the same value a repair answers with — because
