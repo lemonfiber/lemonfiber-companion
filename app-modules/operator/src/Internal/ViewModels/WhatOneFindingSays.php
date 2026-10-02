@@ -104,4 +104,10 @@ final readonly class WhatOneFindingSays
     {
         return $this->meaning !== '';
     }
+
+    /** A finding that says nothing to try is one that explains itself and names no remedy: the card says so. */
+    public function saysNothingToTry(): bool
+    {
+        return $this->explainsItself() && $this->remedies->count() === 0;
+    }
 }

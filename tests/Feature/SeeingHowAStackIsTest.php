@@ -217,6 +217,43 @@ it('N2-R3 — says so where the machine knows what is wrong and has nothing to s
         ->and(__('health.nothing_to_try'))->not->toBe('health.nothing_to_try');
 });
 
+/** A finding that explains itself and names no remedy, about the check named. */
+function aFindingWithNothingToTry(string $check): Finding
+{
+    return Finding::of(
+        Check::of($check),
+        Category::Vpn,
+        'Torrent traffic leaves through the tunnel',
+        Conclusion::Failed,
+        WhatTheCheckSaid::wentWrong(
+            Code::of('VPN-3'),
+            'Your address was visible to the swarm',
+            Remedies::none(),
+            Severity::Critical,
+            Standing::Remediable,
+            WhatItSaysUnderneath::none(),
+        ),
+        WhoPutItThere::bundled(),
+    );
+}
+
+it('offers somebody to ask once, at the foot of the findings, where any said nothing to try', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        aFindingWithNothingToTry('vpn.egress-match'),
+        aFindingWithNothingToTry('vpn.killswitch'),
+    ))));
+    $offered = array_filter(WhatTheDeviceWouldDraw::by($screen)->offers(), static fn(mixed $said): bool => $said === __('device.share_diagnostics'));
+
+    expect($offered)->toHaveCount(1)
+        ->and($screen->goes()->help())->toBe(AStacksScreen::Help->forTheStack(theStackBeingLookedAt()->id()));
+});
+
+it('offers nobody to ask where every finding names something to try', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('device.share_diagnostics'));
+});
+
 it('says nothing it was not told about a check that passed', function (): void {
     // A passing check has no meaning to explain and no remedy to offer.
     // Inventing a sentence for one would be this app writing words the machine

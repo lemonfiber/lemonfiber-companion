@@ -273,6 +273,32 @@ it('lets go of the stream when the screen stops, and holds what it heard as not 
     expect($listening->stream->asked())->toBe(2);
 });
 
+it('offers somebody to ask under what it counts, where an item said nothing to try', function (): void {
+    $nothingToTry = TheHealthSummary::of(
+        HowItStands::Broken,
+        1,
+        'The disk is full',
+        WhatStoppedMoving::nothing(),
+        AnAffectedItem::of(Check::of('disk.space'), Severity::Error, 'The disk is full', 'Nothing new can be downloaded', Remedies::none(), WhatFollowedFromIt::of()),
+    );
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said($nothingToTry)));
+    $listening->wakesAt(0);
+    $folded = WhatTheDeviceWouldDraw::by($listening->screen)->offers();
+
+    $listening->screen->expand();
+
+    expect($folded)->not->toContain(__('device.share_diagnostics'))
+        ->and(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->toContain(__('device.share_diagnostics'));
+});
+
+it('offers nobody to ask under what it counts where every item names something to try', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
+    $listening->wakesAt(0);
+    $listening->screen->expand();
+
+    expect(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->not->toContain(__('device.share_diagnostics'));
+});
+
 it('opens the line out to what it counts, and folds it back', function (): void {
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
     $listening->wakesAt(0);
