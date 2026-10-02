@@ -24,7 +24,6 @@ final readonly class WhatOneServiceTookItSays
         public string $service,
         public string $endingSaid,
         public string $undoSaid,
-        public bool $arrived,
         public bool $undoCarriesTheDataWithIt,
     ) {}
 }

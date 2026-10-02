@@ -22,7 +22,6 @@ final readonly class HowATakenUpdateReads
             service: $took->service()->named(),
             endingSaid: $took->ending()->saidOnTheScreen(),
             undoSaid: $took->undo()->saidOnTheScreen(),
-            arrived: $took->ending()->arrived(),
             undoCarriesTheDataWithIt: $took->undo()->carriesTheDataWithIt(),
         );
     }

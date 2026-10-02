@@ -20,8 +20,8 @@ return [
         'not-reached' => 'Started, but it has not answered',
     ],
     'undo' => [
-        'rollback' => 'Go back to the previous version',
-        'restore' => 'Restore the snapshot taken first',
+        'rollback' => 'Can be undone by going back to the previous version',
+        'restore' => 'Can be undone by putting back the snapshot taken first',
     ],
     'about_to_take' => 'About to update the services',
     'would_change' => '{1} One service will stop and start again|[2,*] :count services will stop and start again',

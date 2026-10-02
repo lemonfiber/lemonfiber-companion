@@ -17,8 +17,8 @@ return [
         'not-reached' => 'Gestart, maar geeft geen antwoord',
     ],
     'undo' => [
-        'rollback' => 'Terug naar de vorige versie',
-        'restore' => 'Zet de eerst gemaakte momentopname terug',
+        'rollback' => 'Kan ongedaan worden gemaakt door terug te gaan naar de vorige versie',
+        'restore' => 'Kan ongedaan worden gemaakt door de eerst gemaakte momentopname terug te zetten',
     ],
     'about_to_take' => 'Op het punt de diensten bij te werken',
     'would_change' => '{1} Eén dienst stopt en start opnieuw|[2,*] :count diensten stoppen en starten opnieuw',

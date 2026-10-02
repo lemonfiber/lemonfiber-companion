@@ -215,18 +215,18 @@
                      to look in the wrong place. --}}
                 <x-design::body>{{ __($took->endingSaid) }}</x-design::body>
 
-                @unless ($took->arrived)
-                    {{-- Which way back, named. A rollback and a restore
-                         are not one offer, and the app says the one the stack
-                         named rather than the word they have in common. --}}
-                    <x-design::note>{{ __($took->undoSaid) }}</x-design::note>
+                {{-- Which way back, named, on every service the update moved,
+                     whether it arrived or not: each one can be undone. A
+                     rollback and a restore are not one offer, and the app says
+                     the one the stack named rather than the word they have in
+                     common. --}}
+                <x-design::note>{{ __($took->undoSaid) }}</x-design::note>
 
-                    @if ($took->undoCarriesTheDataWithIt)
-                        {{-- The difference worth knowing before agreeing: a
-                             restore undoes more than the update did. --}}
-                        <x-design::note>{{ __('updates.undo_carries_data') }}</x-design::note>
-                    @endif
-                @endunless
+                @if ($took->undoCarriesTheDataWithIt)
+                    {{-- The difference worth knowing before agreeing: a
+                         restore undoes more than the update did. --}}
+                    <x-design::note>{{ __('updates.undo_carries_data') }}</x-design::note>
+                @endif
             </x-design::card>
         @empty
             <x-design::body>{{ __('updates.touched_nothing') }}</x-design::body>
