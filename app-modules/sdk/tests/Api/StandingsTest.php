@@ -78,6 +78,7 @@ function anUpkeepSaying(array $data): Envelope
 function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently = []): array
 {
     return [
+        'rehearsed' => false,
         'state' => 'current',
         'applied' => [],
         'changes' => [],

@@ -70,6 +70,7 @@ function whatAStackSaysOfItsLine(string $restraint = 'cap-warning'): array
         'api_version' => 1,
         'kind' => 'bandwidth',
         'data' => [
+            'rehearsed' => false,
             'restraint' => $restraint,
             'means' => 'Close to the month\'s cap',
             'cautions' => ['Measured at night'],

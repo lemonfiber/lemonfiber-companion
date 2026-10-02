@@ -112,6 +112,7 @@ function whatAStackSaysOfItsQuality(
         'api_version' => 1,
         'kind' => 'quality',
         'data' => [
+            'rehearsed' => false,
             'choices' => $choices ?? [aPresetOnTheWire(), aPresetOnTheWire('movies', 'Maximum', transcodes: true)],
             'music' => $music,
             'disposition' => $disposition,
@@ -161,7 +162,7 @@ function whatAStackSaysOfAFormatChosen(?array $outcome = ['state' => 'started'],
     return [
         'api_version' => 1,
         'kind' => 'music',
-        'data' => ['choice' => aFormatOnTheWire(), 'disposition' => $disposition, 'outcome' => $outcome],
+        'data' => ['choice' => aFormatOnTheWire(), 'disposition' => $disposition, 'outcome' => $outcome, 'rehearsed' => false],
     ];
 }
 

@@ -91,6 +91,7 @@ function whatAHouseholdThatAskedSends(): array
         'api_version' => 1,
         'kind' => 'household',
         'data' => [
+            'rehearsed' => false,
             'available' => true,
             'findings' => [],
             'members' => [

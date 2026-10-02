@@ -35,6 +35,7 @@ final readonly class WhatAResetSays
     {
         return ['api_version' => 1, 'kind' => 'reset', 'data' => [
             'confirmed' => $confirmed,
+            'rehearsed' => false,
             'reverted' => [
                 ['path' => 'compose.yaml', 'diff' => self::THE_DIFF],
                 ['path' => 'env/sonarr.env', 'diff' => ''],

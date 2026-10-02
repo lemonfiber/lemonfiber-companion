@@ -74,7 +74,7 @@ function aPlainManifest(): array
  */
 function anUninstallPayload(array $manifest, array $removal = ['state' => 'surveyed']): array
 {
-    return ['manifest' => $manifest, 'removal' => $removal];
+    return ['rehearsed' => false, 'manifest' => $manifest, 'removal' => $removal];
 }
 
 /**

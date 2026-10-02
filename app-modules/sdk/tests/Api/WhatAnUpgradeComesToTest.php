@@ -52,5 +52,5 @@ it('names the kind that could not be read by where it sits in the list', functio
 });
 
 it('spoils a payload the contract would accept in one place only', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('UpgradeEnvelope', ['api_version' => 1, 'kind' => 'upgrade', 'data' => ['confirmed' => false, 'media' => [aKindCovered()]]]))->toBe([]);
+    expect(WhatTheContractAccepts::complaintsAbout('UpgradeEnvelope', ['api_version' => 1, 'kind' => 'upgrade', 'data' => ['confirmed' => false, 'media' => [aKindCovered()], 'rehearsed' => false]]))->toBe([]);
 });

@@ -68,6 +68,7 @@ function whatAMachineThatDidItSends(): array
         'kind' => 'hosting',
         'data' => [
             'manager' => 'launchd',
+            'rehearsed' => false,
             'commands' => [[
                 'name' => 'watch',
                 'command' => 'lemonfiber watch',

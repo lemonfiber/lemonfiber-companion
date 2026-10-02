@@ -131,6 +131,7 @@ function aDegradedStackWhoseVerdictIs(array $verdict): array
         'kind' => 'doctor',
         'data' => [
             'overall' => 'degraded',
+            'rehearsed' => false,
             'findings' => [[
                 'check' => 'disk.space',
                 'category' => 'storage',

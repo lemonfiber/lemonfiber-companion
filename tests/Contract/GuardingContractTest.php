@@ -63,6 +63,7 @@ function aGuardForTwoForms(): AGuardAskedFor
 function whatAStackReportsOfAGuard(array $changed = []): array
 {
     return ['api_version' => 1, 'kind' => 'watch', 'data' => [
+        'rehearsed' => false,
         'forms' => ['media', 'downloads'],
         'stopped' => false,
         'reason' => 'The data root at /srv/media is gone.',

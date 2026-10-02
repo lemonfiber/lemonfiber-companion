@@ -52,6 +52,15 @@ use Tests\Support\WhereAShapeHoldsItself;
 // requirement before it wants a screen, and the row is where that is said.
 
 /**
+ * Why `rehearsed` goes unread on every report this app never asks to rehearse.
+ *
+ * The one rehearsal this app asks for is a verb's, before its yes, and that
+ * report is a lifecycle, whose `rehearsed` is read. Every other action is sent
+ * without `dry_run`, so its report says `false` wherever this app reads it.
+ */
+const NEVER_ASKED_FOR_A_REHEARSAL = 'Whether the report was a rehearsal. This app sends this action without `dry_run`, so the answer is always that it was not; the one rehearsal it asks for is a verb\'s, read from the lifecycle report.';
+
+/**
  * Every path this app has read and decided not to read, and why.
  *
  * `path` names one place on one envelope exactly, and covers everything beneath
@@ -59,6 +68,102 @@ use Tests\Support\WhereAShapeHoldsItself;
  * person who made it.
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
+    [
+        'path' => 'AdoptionEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'BandwidthEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'BesideEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'BundleEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'CredentialsEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'DoctorEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'HeldEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'HostingEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'HouseholdEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'ImportEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'MusicEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'QualityEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'RemovalEnvelope.rehearsed',
+        'because' => 'Whether taking somebody out of the household was only rehearsed. `N13-R10` asks for that rehearsal, and the `remove` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
+    ],
+    [
+        'path' => 'RepairEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'ReplacementEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'ResetEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'RestoreEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'SpaceEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'StopSeedingEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'StoredEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'UninstallEnvelope.rehearsed',
+        'because' => 'Whether taking lemonfiber off was only rehearsed. `N13-R10` asks for that rehearsal, and the `uninstall` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'UpgradeEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
+    [
+        'path' => 'WatchEnvelope.rehearsed',
+        'because' => NEVER_ASKED_FOR_A_REHEARSAL,
+    ],
     [
         'path' => 'PairingEnvelope.material.fingerprint',
         'because' => 'The fingerprint the pairing line carries. The other phone reads it from the line it scans or types, and the operator compares the short form `compare` carries; the long hex is nothing a person checks by eye.',

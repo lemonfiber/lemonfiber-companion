@@ -67,6 +67,7 @@ function anOfferedRepair(array $changed = []): array
 function aListingOf(array $repair): array
 {
     return [
+        'rehearsed' => false,
         'acted' => false,
         'agreement' => 'agreement-a-test-can-name',
         'beyond' => [],
@@ -293,6 +294,7 @@ function anOutcomeOf(array $outcome): array
 function aRunOf(mixed $one): array
 {
     return [
+        'rehearsed' => false,
         'acted' => true,
         'agreement' => 'agreement-a-test-can-name',
         'beyond' => [],

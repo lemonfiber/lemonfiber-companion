@@ -87,10 +87,11 @@ function whereTheRestoredDataGoes(WhereTheDataGoes $data): string
 }
 
 it('stands in for a stack with payloads the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('RestoreEnvelope', ['api_version' => 1, 'kind' => 'restore', 'data' => ['would' => aRestoreListingSaying(), 'done' => null]]))->toBe([])
+    expect(WhatTheContractAccepts::complaintsAbout('RestoreEnvelope', ['api_version' => 1, 'kind' => 'restore', 'data' => ['would' => aRestoreListingSaying(), 'done' => null, 'rehearsed' => false]]))->toBe([])
         ->and(WhatTheContractAccepts::complaintsAbout('RestoreEnvelope', ['api_version' => 1, 'kind' => 'restore', 'data' => [
             'would' => aRestoreListingSaying(),
             'done' => ['from_version' => '0.9.0', 'relocated' => null, 'scope' => ['scope' => 'whole_stack']],
+            'rehearsed' => false,
         ]]))->toBe([]);
 });
 

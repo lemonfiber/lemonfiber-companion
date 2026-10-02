@@ -88,7 +88,7 @@ function aMember(string $name, array $requests): array
  */
 function aHouseholdOf(array $members): array
 {
-    return ['available' => true, 'findings' => [], 'members' => $members];
+    return ['rehearsed' => false, 'available' => true, 'findings' => [], 'members' => $members];
 }
 
 /**

@@ -37,6 +37,7 @@ function removalSaying(mixed $data): Envelope
 function aPlainRemoval(): array
 {
     return [
+        'rehearsed' => false,
         'name' => 'Anna',
         'confirmed' => false,
         'requests' => 2,

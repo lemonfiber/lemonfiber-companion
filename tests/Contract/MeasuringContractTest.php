@@ -90,6 +90,7 @@ function whatAStackSaysOfItsRoom(string $level = 'warning'): array
         'api_version' => 1,
         'kind' => 'space',
         'data' => [
+            'rehearsed' => false,
             'volumes' => [
                 ['role' => 'data', 'at' => '/srv/lemonfiber/data', 'point' => '/srv', 'free' => 40_000_000_000, 'limit' => 4_000_000_000_000, 'committed' => 60_000_000_000, 'projected' => 0, 'level' => 'warning', 'reading' => ['as' => 'live']],
                 ['role' => 'services', 'at' => '/srv/lemonfiber/config', 'point' => '', 'free' => null, 'limit' => null, 'committed' => 0, 'projected' => null, 'level' => 'unknown', 'reading' => ['as' => 'as_of', 'at' => 1_790_100_000]],

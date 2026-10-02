@@ -91,6 +91,7 @@ function whatAStackSaysOfTheRemoval(): array
         'api_version' => 1,
         'kind' => 'removal',
         'data' => [
+            'rehearsed' => false,
             'name' => 'Anna',
             'confirmed' => true,
             'requests' => 3,

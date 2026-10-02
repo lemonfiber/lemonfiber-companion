@@ -138,6 +138,7 @@ function whatAStackWithUpdatesSends(): array
         'data' => [
             'state' => 'partial',
             'confirmed' => true,
+            'rehearsed' => false,
             'in_flight' => [],
             'stack_edits' => [],
             'applied' => [
@@ -200,6 +201,7 @@ function whatAStackWithAnUpdateAvailableSends(): array
         'data' => [
             'state' => 'updates-available',
             'confirmed' => false,
+            'rehearsed' => false,
             'in_flight' => [],
             'stack_edits' => [],
             'applied' => [],
@@ -259,6 +261,7 @@ function whatAStackWithPendingNotesSends(): array
         'data' => [
             'state' => 'current',
             'confirmed' => false,
+            'rehearsed' => false,
             'in_flight' => [],
             'stack_edits' => [],
             'applied' => [],
@@ -690,6 +693,7 @@ function aStackWhoseRecordHolds(array $release): array
     return [
         'state' => 'updates-available',
         'confirmed' => false,
+        'rehearsed' => false,
         'in_flight' => [],
         'stack_edits' => [],
         'applied' => [],

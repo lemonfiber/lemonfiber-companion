@@ -37,6 +37,7 @@ function storedSaying(array $data): Envelope
 function whatALoftStores(): array
 {
     return [
+        'rehearsed' => false,
         'roots' => [['at' => '/srv/lemonfiber', 'what' => 'Everything the stack writes']],
         'kept' => [
             ['what' => 'The VPN credentials', 'at' => '/srv/lemonfiber/secrets/vpn', 'why' => 'So the tunnel can be raised', 'secret' => true],
