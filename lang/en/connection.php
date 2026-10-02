@@ -25,6 +25,7 @@ return [
     'version_mismatch_older_action' => 'Nothing was read from it. Update lemonfiber on the machine.',
     'busy' => 'This stack is busy with other work.',
     'busy_action' => 'Nothing was changed. Try again once it has finished.',
+    'try_again' => 'Try again',
     'paired' => 'Paired with :stack',
     'pairing_refused' => 'That pairing link was refused. Ask for a new one from the stack.',
     'fingerprint_changed' => "This stack's certificate has changed. Pair again from the stack itself before continuing.",

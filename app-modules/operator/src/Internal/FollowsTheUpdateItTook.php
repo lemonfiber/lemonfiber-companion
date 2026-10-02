@@ -38,6 +38,9 @@ trait FollowsTheUpdateItTook
     /** What became of it, once this frame has asked. */
     public ?HowTheLastUpdateWent $lastUpdated = null;
 
+    /** The update last sent, so a request other work held can be sent again as it was agreed to. */
+    public ?TakingAnUpdate $taken = null;
+
     /** What became of the update taken here, or that none was. */
     public function lastUpdate(): HowTheLastUpdateWent
     {
@@ -69,6 +72,22 @@ trait FollowsTheUpdateItTook
     abstract public function stack(): Stack;
 
     /**
+     * Take the update that was agreed to again, where other work held the stack.
+     *
+     * Only then, for {@see FollowsWhatTheVerbCameTo::tryAgain()}'s reason.
+     */
+    public function tryAgain(): void
+    {
+        $taken = $this->taken;
+
+        if (! $taken instanceof TakingAnUpdate || ! $this->lastUpdate()->went->wasHeldByOtherWork()) {
+            return;
+        }
+
+        $this->takeIt($taken);
+    }
+
+    /**
      * Take the update agreed to, and hold what to follow it by.
      *
      * Just taken, it is running, and the cadence asks after it from there. A
@@ -79,6 +98,7 @@ trait FollowsTheUpdateItTook
     {
         $stack = $this->stack();
         $this->took = null;
+        $this->taken = $taking;
 
         $this->lastUpdated = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheLastUpdateWent => $this->keeping->take($stack, $session, $taking)->either(

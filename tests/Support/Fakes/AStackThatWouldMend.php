@@ -63,11 +63,13 @@ final class AStackThatWouldMend implements Mending
      * @param Closure(): Underway            $started
      * @param Closure(): HowTheOfferIsGoing  $became
      * @param Closure(): HowTheRepairIsGoing $did
+     * @param ?Closure(): Underway           $agreeing what a yes is answered with, where it is not what the question was
      */
     private function __construct(
         private readonly Closure $started,
         private readonly Closure $became,
         private readonly Closure $did,
+        private readonly ?Closure $agreeing = null,
     ) {}
 
     /** A stack that takes the question on and answers with this listing. */
@@ -213,6 +215,23 @@ final class AStackThatWouldMend implements Mending
         return $this->carried;
     }
 
+    /**
+     * A stack that offers a listing and turns the yes away before acting on it.
+     *
+     * The question is taken on and the listing read; only the yes meets the
+     * obstacle, which is how other work holding the stack arrives: between
+     * the reading and the tap.
+     */
+    public static function refusingTheYes(Offer $offer, Obstacle $why): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+            static fn(): Underway => Underway::met($why),
+        );
+    }
+
     public function wouldPutRight(Stack $stack, Session $session): Underway
     {
         $this->askedAbout = $stack;
@@ -247,7 +266,7 @@ final class AStackThatWouldMend implements Mending
         $this->agreements++;
         $this->readSession($session);
 
-        return ($this->started)();
+        return ($this->agreeing ?? $this->started)();
     }
 
     public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing

@@ -386,6 +386,38 @@ it('says what stood in the way of a verb that could not be delivered', function 
         ->and($supervising->followed())->toBe([]);
 });
 
+it('offers the same verb again where other work held the stack, and sends it only when tapped', function (): void {
+    $supervising = AStackThatSupervises::withButRefusing(
+        WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial),
+        Obstacle::of(KindOfObstacle::StackIsBusy),
+    );
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
+        ->and($supervising->whatItWasToldToDo())->toHaveCount(1);
+
+    $screen->tryAgain();
+
+    expect($supervising->whatItWasToldToDo())->toHaveCount(2)
+        ->and($supervising->whatItWasToldToDo()[1])->toEqual($supervising->whatItWasToldToDo()[0]);
+});
+
+it('does not offer a verb again where anything but other work stood in its way', function (): void {
+    $supervising = AStackThatSupervises::withButRefusing(
+        WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial),
+        Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+    );
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->tryAgain();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
+        ->and($supervising->whatItWasToldToDo())->toHaveCount(1);
+});
+
 it('says what stood in the way of asking after it, and lets go of a session refused there', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);

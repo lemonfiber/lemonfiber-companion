@@ -34,6 +34,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What a repair does, what else it affects and whether it can be undone,
 // stated before anybody is asked to confirm.
@@ -352,6 +353,50 @@ it('N2-R5 — agreeing is a second act, and the screen stops showing the offer',
 
     expect($screen->wasAgreedTo())->toBeTrue()
         ->and($mending->agreements())->toBe(1);
+});
+
+it('offers the same yes again where other work held the stack, and sends it only when tapped', function (): void {
+    $mending = AStackThatWouldMend::refusingTheYes(aListingWorthReading(), Obstacle::of(KindOfObstacle::StackIsBusy));
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
+        ->and($mending->agreements())->toBe(1);
+
+    $screen->tryAgain();
+
+    expect($mending->agreements())->toBe(2)
+        ->and($mending->agreedTo()?->quoting())->toBe(aListingWorthReading()->named())
+        ->and($mending->agreedTo()?->repair()->answers()->shown())->toBe('storage.one-filesystem');
+});
+
+it('does not offer a yes again where anything but other work stood in its way', function (): void {
+    $mending = AStackThatWouldMend::refusingTheYes(aListingWorthReading(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $screen->tryAgain();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
+        ->and($mending->agreements())->toBe(1);
+});
+
+it('asks what it would put right again where other work held the question', function (): void {
+    $mending = AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackIsBusy));
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'));
+
+    $screen->tryAgain();
+    $screen->offer();
+
+    expect($mending->askings())->toBe(2)
+        ->and($mending->agreements())->toBe(0);
 });
 
 it('N2-R6 — the yes quotes the listing the operator was shown', function (): void {

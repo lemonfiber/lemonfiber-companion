@@ -18,6 +18,7 @@
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
         <x-design::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
+        <x-operator::try-again :went="$this->offer()->went" tap="tryAgain()" />
         @if ($this->offer()->went->isPutRightInTheAppsSettings())
             <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)

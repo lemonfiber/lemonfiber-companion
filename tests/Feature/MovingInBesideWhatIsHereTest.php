@@ -446,6 +446,48 @@ it('reads what is on the machine again once a move has done something, and not b
         ->and($screen->staged)->toBeNull();
 });
 
+it('offers the same move again where other work held the stack, and sends it only when tapped', function (): void {
+    $movingIn = aStackAnsweringTheMove(
+        WhatBecameOfTheMove::answered(anAdoptionAt(Stance::Pending)),
+        WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackIsBusy)),
+        WhatBecameOfTheMove::underway(Job::named('j-2')),
+    );
+    $screen = theScreenAfterAsking('adopt', $movingIn);
+    $screen->howTheMoveIsGoing();
+    $screen->moveIn();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
+        ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'move:adopt']);
+
+    $screen->tryAgain();
+
+    expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'move:adopt', 'move:adopt'])
+        ->and($screen->following)->toBe('j-2');
+});
+
+it('does not offer a move again where anything but other work stood in its way', function (): void {
+    $movingIn = aStackAnsweringTheMove(
+        WhatBecameOfTheMove::answered(anAdoptionAt(Stance::Pending)),
+        WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
+    );
+    $screen = theScreenAfterAsking('adopt', $movingIn);
+    $screen->howTheMoveIsGoing();
+    $screen->moveIn();
+    $screen->tryAgain();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
+        ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'move:adopt']);
+});
+
+it('asks what a mode would come to again where other work held the question', function (): void {
+    $movingIn = AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackIsBusy)));
+    $screen = theScreenForMovingIn($movingIn);
+    $screen->wouldMoveIn('adopt');
+    $screen->tryAgain();
+
+    expect($movingIn->acts())->toBe(['would:adopt', 'would:adopt']);
+});
+
 it('sends no yes without a pending answer on the screen', function (): void {
     $movingIn = aStackAnsweringTheMove(WhatBecameOfTheMove::answered(anAdoptionAt(Stance::Unchanged)));
     $fresh = theScreenForMovingIn($movingIn);

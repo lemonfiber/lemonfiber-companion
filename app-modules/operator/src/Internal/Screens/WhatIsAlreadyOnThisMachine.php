@@ -85,6 +85,9 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     /** Where moving in has got to, once this frame has asked. Public for {@see self::$answered}'s reason. */
     public ?TheMoveTurnedOutToBe $going = null;
 
+    /** The pending move last agreed to, so a yes other work held can be sent again for it. */
+    public ?AMove $agreedOn = null;
+
     public function __construct(
         private readonly MovingIn $movingIn,
         private readonly SecureStorage $storage,
@@ -155,6 +158,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         }
 
         $agreed = AMoveAgreed::after($staged);
+        $this->agreedOn = $staged;
         $this->staged = null;
 
         $this->going = $this->put(
@@ -166,10 +170,37 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     /** Leave the answer where it is and go back to the modes, moving nothing. */
     public function leaveIt(): void
     {
+        $this->agreedOn = null;
         $this->about = '';
         $this->following = null;
         $this->staged = null;
         $this->going = null;
+    }
+
+    /**
+     * Send the request other work held again: the yes, or asking what a mode would come to.
+     *
+     * Only where other work held the stack, for
+     * {@see \Modules\Operator\Internal\FollowsWhatTheVerbCameTo::tryAgain()}'s
+     * reason. A yes is sent for the same pending move it was agreed to on;
+     * with no yes outstanding, the request held was the question.
+     */
+    public function tryAgain(): void
+    {
+        if ($this->going?->went->wasHeldByOtherWork() !== true) {
+            return;
+        }
+
+        $agreedOn = $this->agreedOn;
+
+        if (! $agreedOn instanceof AMove) {
+            $this->wouldMoveIn($this->about);
+
+            return;
+        }
+
+        $this->staged = $agreedOn;
+        $this->moveIn();
     }
 
     /**

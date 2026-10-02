@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 
 /**
@@ -90,6 +91,18 @@ final readonly class HowTheReadingWent
     public function isPutRightInTheAppsSettings(): bool
     {
         return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
+    }
+
+    /**
+     * Whether other work held the stack, so the same request can be sent again once it is done.
+     *
+     * Nothing was changed: the stack turned the request away before acting on
+     * it. That is what makes sending it again sound, where a request the stack
+     * may have acted on is never sent twice.
+     */
+    public function wasHeldByOtherWork(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->is(KindOfObstacle::StackIsBusy);
     }
 
     /**
