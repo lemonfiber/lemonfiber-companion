@@ -119,6 +119,9 @@ use Modules\Kernel\Api\Welcoming;
 use Modules\Kernel\Api\WhereTheOperatorWas;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\News\Api\Noticing;
+use Modules\News\Internal\NewsKept;
+use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\Operator\Api\NotingWhereTheOperatorIs;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
@@ -398,6 +401,10 @@ final class CompositionRoot extends ServiceProvider
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
 
+        // What `news` keeps of each stack: the kinds marked as new and the
+        // newest of each seen, sealed by `news` before they reach it.
+        $this->app->bind(NewsKept::class, NewsInTheDatabase::class);
+
         // How long readings are kept is one of the phone's settings, kept in
         // `connection`'s row beside the lock's time away; `health` asks for it
         // through the kernel.
@@ -409,7 +416,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, SettingsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, SettingsKept::class, NewsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -422,7 +429,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

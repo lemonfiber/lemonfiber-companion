@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "27a7380d1f95b24a8f05b723d9eb4f16",
+    "content-hash": "eb4eca87e6a00722925c26ee15681cb6",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3634,6 +3634,44 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "The shared language: ports, values and outcomes. Depends on nothing.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/news",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/news",
+                "reference": "493f0487a788006fe93934dee90966c692f14a71"
+            },
+            "require": {
+                "illuminate/database": "^13.17",
+                "modules/kernel": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "capability"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\News\\": "src/",
+                    "Modules\\News\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "What is new on each stack: the kinds marked as new, the newest of each seen, and what is newer.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14705,6 +14743,7 @@
         "modules/health": 20,
         "modules/household": 20,
         "modules/kernel": 20,
+        "modules/news": 20,
         "modules/operator": 20,
         "modules/sdk": 20,
         "modules/seal": 20,

@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhichTab;
+use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
@@ -30,6 +31,7 @@ use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
@@ -89,6 +91,8 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the fake' => HealthReadingsInMemory::empty(),
         'the settings adapter' => new SettingsInTheDatabase(AKeptDatabase::migrated()),
         'the settings fake' => ConnectionSettingsInMemory::empty(),
+        'the news adapter' => new NewsInTheDatabase(AKeptDatabase::migrated()),
+        'the news fake' => NewsKeptInMemory::empty(),
         'every store together' => new EveryStoreThePhoneKeeps(HealthReadingsInMemory::empty(), HealthReadingsInMemory::empty()),
         'no store at all' => new EveryStoreThePhoneKeeps(),
     ];
@@ -174,5 +178,19 @@ it('forgets where the operator was on every stack, and says how many', function 
         expect($was->forgetEverything()->howMany())->toBe(2, $which)
             ->and($was->wasLastOn(aStackWithMarkers('b')->id()))->toBeFalse($which)
             ->and($was->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+it('forgets what a news store keeps of every stack, and says how much that was', function (): void {
+    foreach ([
+        'the news adapter' => static fn(): NewsInTheDatabase => new NewsInTheDatabase(AKeptDatabase::migrated()),
+        'the news fake' => static fn(): NewsKeptInMemory => NewsKeptInMemory::empty(),
+    ] as $which => $made) {
+        $store = $made();
+        $store->keep(SealedStack::of('the-loft'), SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(1_790_000_000));
+        $store->keep(SealedStack::of('the-shed'), SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(1_790_000_000));
+
+        expect($store->forgetEverything()->howMany())->toBe(2, $which)
+            ->and($store->forgetEverything()->howMany())->toBe(0, $which);
     }
 });

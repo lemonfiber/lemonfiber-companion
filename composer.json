@@ -32,6 +32,7 @@
         "modules/health": "dev-main",
         "modules/household": "dev-main",
         "modules/kernel": "dev-main",
+        "modules/news": "dev-main",
         "modules/operator": "dev-main",
         "modules/sdk": "dev-main",
         "modules/seal": "dev-main",

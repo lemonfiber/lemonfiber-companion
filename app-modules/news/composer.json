@@ -1,0 +1,26 @@
+{
+    "name": "modules/news",
+    "description": "What is new on each stack: the kinds marked as new, the newest of each seen, and what is newer.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "illuminate/database": "^13.17",
+        "modules/kernel": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\News\\": "src/",
+            "Modules\\News\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            },
+            "kind": "capability"
+        }
+    }
+}
