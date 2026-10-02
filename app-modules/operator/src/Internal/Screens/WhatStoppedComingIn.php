@@ -9,6 +9,7 @@ use function count;
 use Illuminate\View\View;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -16,8 +17,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
@@ -65,8 +68,10 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatStoppedComingIn extends NativeComponent
 {
+    use LooksAgainWhileItMoves;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;

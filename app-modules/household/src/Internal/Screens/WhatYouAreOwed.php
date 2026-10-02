@@ -16,6 +16,7 @@ use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeOwed;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Household\Internal\ViewModels\WhatTheirRequestsTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Requested;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
@@ -71,6 +73,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatYouAreOwed extends NativeComponent
 {
     use OffersTheAppsSettings;

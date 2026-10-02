@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Operator\Internal\AsksWhatFormsItHas;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -68,6 +70,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class GuardingWhileYouWatch extends NativeComponent
 {
     use OffersTheAppsSettings;

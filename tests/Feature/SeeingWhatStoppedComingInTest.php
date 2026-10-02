@@ -275,6 +275,22 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     expect($stalling->askings())->toBe(2);
 });
 
+it('reads what stopped again every few seconds, and keeps the words it explained', function (): void {
+    $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '', 'searching'),
+    ));
+    $screen = theStalledScreen($stalling, explaining: $explaining);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    $screen->whileItMoves();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($stalling->askings())->toBe(2)
+        ->and($explaining->askings())->toBe(1)
+        ->and($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']));
+});
+
 it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
     // The stalled screen makes the same two moves the others do, and it has to
     // make them itself: a fold cannot forget anything, and a session left in

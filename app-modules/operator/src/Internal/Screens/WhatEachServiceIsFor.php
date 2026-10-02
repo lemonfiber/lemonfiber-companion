@@ -8,12 +8,14 @@ use Illuminate\View\View;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCatalogue;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCatalogueReads;
@@ -42,6 +44,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatEachServiceIsFor extends NativeComponent
 {
     use OffersTheAppsSettings;

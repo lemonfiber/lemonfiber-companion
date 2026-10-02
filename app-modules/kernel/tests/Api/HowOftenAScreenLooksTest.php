@@ -20,5 +20,7 @@ it('declares each cadence once, in the milliseconds the platform counts and the 
         'while_work_runs' => [5_000, 5],
         'while_listening' => [2_000, 2],
         'after_a_break' => [10_000, 10],
+        'while_it_moves' => [5_000, 5],
+        'while_open' => [60_000, 60],
     ]);
 });

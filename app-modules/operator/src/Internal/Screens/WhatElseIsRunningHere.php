@@ -7,13 +7,16 @@ namespace Modules\Operator\Internal\Screens;
 use function count;
 
 use Illuminate\View\View;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowSomethingElseReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -49,8 +52,10 @@ use function view;
  * reached — three different situations with three different things to do.
  */
 #[Lazy]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatElseIsRunningHere extends NativeComponent
 {
+    use LooksAgainWhileOpen;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

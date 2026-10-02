@@ -12,10 +12,12 @@ use Modules\Connection\Api\WhatTheCodeSaysSoFar;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\AScreenWithoutAStack;
@@ -65,6 +67,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class PairByScanning extends NativeComponent
 {
     use OffersTheAppsSettings;

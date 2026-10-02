@@ -9,12 +9,14 @@ use Illuminate\View\View;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
@@ -51,6 +53,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
+#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisStackIsSetTo extends NativeComponent
 {
     use OffersTheAppsSettings;

@@ -21,12 +21,11 @@ use function intdiv;
  *
  * **This is not in tension with one-read-per-frame.** That rule refuses a screen that
  * reads again to fill in its own fields — four connections to draw one frame, on a
- * home network, to a machine that may be asleep. This is the narrow opposite
- * case: work the stack is already carrying out, where the answer genuinely
- * changes without anybody touching the phone, and where *ask again* as the only
- * road means an operator tapping a button to find out whether a thing they
- * started has finished. A cadence that runs only while the work runs is the
- * whole of what is asked for and no more.
+ * home network, to a machine that may be asleep. A cadence re-reads the
+ * screen's one reading where the answer changes without anybody touching the
+ * phone: work the stack is carrying out, and what a stack shows that moves on
+ * its own while the screen is open. Which screens those are is each screen's
+ * own declaration, {@see ItsContent}.
  */
 enum HowOftenAScreenLooks: string
 {
@@ -59,6 +58,25 @@ enum HowOftenAScreenLooks: string
      */
     case AfterABreak = 'after_a_break';
 
+    /**
+     * While a screen shows what moves second by second: traffic on the line,
+     * what is leaving, what stopped coming in and one download on its way.
+     *
+     * Five seconds, the cadence work the operator started is watched at: what
+     * these show is worth as much as the moment it was read.
+     */
+    case WhileItMoves = 'while_it_moves';
+
+    /**
+     * While a screen shows what changes on its own, but slowly: requests,
+     * allowances, room, copies, versions and history.
+     *
+     * A minute, because none of it changes from one second to the next, and a
+     * machine on a home network is asked once a minute for as long as the
+     * screen stays open rather than twelve times.
+     */
+    case WhileOpen = 'while_open';
+
     /** The interval, in the milliseconds `#[Poll]` counts. */
     public const int WHILE_WORK_RUNS_MS = 5_000;
 
@@ -68,6 +86,12 @@ enum HowOftenAScreenLooks: string
     /** The wait before a broken subscription is opened again, in milliseconds. */
     public const int AFTER_A_BREAK_MS = 10_000;
 
+    /** The interval a screen showing what moves second by second looks again, in milliseconds. */
+    public const int WHILE_IT_MOVES_MS = 5_000;
+
+    /** The interval a screen showing what changes slowly looks again, in milliseconds. */
+    public const int WHILE_OPEN_MS = 60_000;
+
     /** How long this cadence is, in the milliseconds the platform counts. */
     public function milliseconds(): int
     {
@@ -75,6 +99,8 @@ enum HowOftenAScreenLooks: string
             self::WhileWorkRuns => self::WHILE_WORK_RUNS_MS,
             self::WhileListening => self::WHILE_LISTENING_MS,
             self::AfterABreak => self::AFTER_A_BREAK_MS,
+            self::WhileItMoves => self::WHILE_IT_MOVES_MS,
+            self::WhileOpen => self::WHILE_OPEN_MS,
         };
     }
 

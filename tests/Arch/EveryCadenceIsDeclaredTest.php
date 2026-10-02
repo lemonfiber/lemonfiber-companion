@@ -3,6 +3,24 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Operator\Internal\Screens\FindsItsWayAround;
+use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
+use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
+use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
+use Modules\Operator\Internal\Screens\WhatLeavesHere;
+use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
+use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
+use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
+use Modules\Operator\Internal\Screens\WhatWasChangedHere;
+use Modules\Operator\Internal\Screens\WhereThisGotTo;
+use Native\Mobile\Attributes\Poll;
+use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
@@ -226,4 +244,104 @@ it('the cadences this app declares are each a whole number of seconds', function
         "These cadences are not a whole number of seconds:\n  %s\n",
         implode("\n  ", $ragged),
     ));
+});
+
+/**
+ * Whether a screen looks again at what it shows, by a poll of its own or one a trait gives it.
+ *
+ * The list of stacks the top bar opens is left out. Every screen draws it, and
+ * it listens only while it is open and only to the stacks it lists, so what it
+ * does says nothing about the screen beneath it.
+ *
+ * @param ReflectionClass<NativeComponent> $screen
+ */
+function looksAgainAtWhatItShows(ReflectionClass $screen): bool
+{
+    $chrome = new ReflectionClass(FindsItsWayAround::class);
+    $itsOwn = array_map(static fn(ReflectionMethod $method): string => $method->getName(), $chrome->getMethods());
+    return array_any($screen->getMethods(), fn(ReflectionMethod $method): bool => $method->getAttributes(Poll::class) !== [] && ! in_array($method->getName(), $itsOwn, strict: true));
+}
+
+it('every screen says whether what it shows changes on its own, and looks again only if it does', function (): void {
+    $wrong = [];
+    $read = 0;
+
+    foreach (Screens::all() as $screen) {
+        if (! $screen->isSubclassOf(NativeComponent::class)) {
+            continue;
+        }
+
+        $read++;
+        $said = $screen->getAttributes(ItsContent::class);
+
+        if (count($said) !== 1) {
+            $wrong[] = sprintf('%s — does not say whether what it shows changes on its own', $screen->getShortName());
+
+            continue;
+        }
+
+        $changes = $said[0]->newInstance()->does === WhatItShowsDoes::ChangesOnItsOwn;
+        $looks = looksAgainAtWhatItShows($screen);
+
+        if ($changes && ! $looks) {
+            $wrong[] = sprintf('%s — changes on its own and never looks again', $screen->getShortName());
+        }
+
+        if (! $changes && $looks) {
+            $wrong[] = sprintf('%s — changes only when asked and looks again anyway', $screen->getShortName());
+        }
+    }
+
+    expect($read)->toBeGreaterThan(0, 'no screen was read, so this rule found nothing')
+        ->and($wrong)->toBe([], sprintf(
+            "These screens and their cadences disagree:\n  %s\n\n"
+            . 'A screen whose content can change while it is open looks again on a cadence '
+            . '`HowOftenAScreenLooks` declares, and one whose content cannot never does. Each '
+            . "says which with `#[ItsContent]` (N1-R27).\n",
+            implode("\n  ", $wrong),
+        ));
+});
+
+/**
+ * The cadence a screen looks again at what it shows, in milliseconds, apart from following work it started.
+ *
+ * Read off the two methods that look again at what is shown, since a cadence
+ * of work being followed can have the same length.
+ *
+ * @param class-string<NativeComponent> $screen
+ *
+ * @return list<int>
+ */
+function theCadencesItLooksAgainAt(string $screen): array
+{
+    $looks = [];
+
+    foreach (new ReflectionClass($screen)->getMethods() as $method) {
+        if (! in_array($method->getName(), ['whileItMoves', 'whileOpen'], strict: true)) {
+            continue;
+        }
+
+        foreach ($method->getAttributes(Poll::class) as $poll) {
+            $looks[] = $poll->newInstance()->ms;
+        }
+    }
+
+    return $looks;
+}
+
+it('looks again every few seconds where what is shown moves, and once a minute where it changes slowly', function (): void {
+    $moving = [WhereThisGotTo::class, HowTheLineIsSharedHere::class, WhatLeavesHere::class, WhatStoppedComingIn::class];
+    $slow = [
+        HowCurrentThisStackIs::class, WhatTheHouseholdAsked::class, WhatTheHouseholdIsAllowed::class,
+        HowFullThisMachineIs::class, WhatThisMachineKeepsHere::class, WhatElseIsRunningHere::class,
+        WhatKeepsRunningHere::class, WhatIsRunningHere::class, WhatWasChangedHere::class,
+    ];
+
+    foreach ($moving as $screen) {
+        expect(theCadencesItLooksAgainAt($screen))->toBe([HowOftenAScreenLooks::WHILE_IT_MOVES_MS], $screen);
+    }
+
+    foreach ($slow as $screen) {
+        expect(theCadencesItLooksAgainAt($screen))->toBe([HowOftenAScreenLooks::WHILE_OPEN_MS], $screen);
+    }
 });

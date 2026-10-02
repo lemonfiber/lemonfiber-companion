@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WireVersion;
@@ -96,6 +98,7 @@ use function view;
  * here can be renamed without reading another module.
  */
 #[Lazy]
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class YourStacks extends NativeComponent
 {
     use OffersTheAppsSettings;

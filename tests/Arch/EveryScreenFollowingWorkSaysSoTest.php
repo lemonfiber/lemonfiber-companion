@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Native\Mobile\Attributes\Poll;
@@ -31,11 +32,20 @@ const IT_KEEPS_THE_CADENCE_AND_AWAITS_NOTHING = [
 /**
  * Whether a screen keeps the cadence work runs at.
  *
+ * Looking again at what moves on its own is as frequent and follows nothing,
+ * so the method that does it is left out by name.
+ *
  * @param ReflectionClass<object> $screen
  */
 function keepsTheCadenceWorkRunsAt(ReflectionClass $screen): bool
 {
+    $moving = new ReflectionClass(LooksAgainWhileItMoves::class);
+
     foreach ($screen->getMethods() as $method) {
+        if ($moving->hasMethod($method->getName())) {
+            continue;
+        }
+
         foreach ($method->getAttributes(Poll::class) as $poll) {
             if ($poll->newInstance()->ms === HowOftenAScreenLooks::WHILE_WORK_RUNS_MS) {
                 return true;
