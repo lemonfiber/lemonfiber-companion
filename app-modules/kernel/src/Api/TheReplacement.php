@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function count;
+
 /**
  * What standing in place of a setup already here came to, or would come to.
  *
@@ -48,5 +50,17 @@ final readonly class TheReplacement
     public function stillRunning(): WhatWasNamed
     {
         return $this->stillRunning;
+    }
+
+    /**
+     * Whether anything it stands in place of is still up.
+     *
+     * A replacement that left something running is not finished, whatever
+     * stance the stack gave it: two setups answering for one service is the
+     * state replacing exists to end.
+     */
+    public function leftSomethingRunning(): bool
+    {
+        return count($this->stillRunning) > 0;
     }
 }

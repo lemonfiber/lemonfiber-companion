@@ -132,14 +132,14 @@ function anImportAt(Stance $stance, ARecord ...$carried): AMove
     ));
 }
 
-/** What replacing came to, or would come to. */
-function aReplacementAt(Stance $stance): AMove
+/** What replacing came to, or would come to, with whatever would not stop still up. */
+function aReplacementAt(Stance $stance, string ...$stillRunning): AMove
 {
     return AMove::at($stance, TheReplacement::of(
         'media',
         WhatWasNamed::of('would_stop', 'sonarr'),
         WhatWasNamed::of('stopped', 'radarr'),
-        WhatWasNamed::of('still_running', 'tautulli'),
+        WhatWasNamed::of('still_running', ...$stillRunning),
     ));
 }
 
@@ -335,15 +335,33 @@ it('draws each stance as given, and only applied as done', function (Stance $sta
     [Stance::Applied, 'stacks.moving_in.stance.applied', false],
 ]);
 
-it('says what replacing would stop, or what it stopped and what would not stop', function (): void {
+it('says what replacing would stop, or what would not stop ahead of what it stopped', function (): void {
     $pending = theMoveDrawn(theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Pending)))));
-    $applied = theMoveDrawn(theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Applied)))));
+    $applied = theMoveDrawn(theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Applied, 'tautulli')))));
 
     expect(theKeysOf($pending->lines))->toBe(['stacks.already_here.project', 'stacks.moving_in.would_stop'])
         ->and($pending->lines[0]->with)->toBe(['project' => 'media'])
         ->and($pending->lines[1]->with)->toBe(['service' => 'sonarr'])
-        ->and(theKeysOf($applied->lines))->toBe(['stacks.already_here.project', 'stacks.moving_in.stopped', 'stacks.moving_in.still_running'])
-        ->and([$applied->lines[1]->with, $applied->lines[2]->with])->toBe([['service' => 'radarr'], ['service' => 'tautulli']]);
+        ->and(theKeysOf($applied->lines))->toBe(['stacks.already_here.project', 'stacks.moving_in.still_running', 'stacks.moving_in.stopped'])
+        ->and([$applied->lines[1]->with, $applied->lines[2]->with])->toBe([['service' => 'tautulli'], ['service' => 'radarr']]);
+});
+
+it('does not call a replacement done while something it replaces is still running, whatever its stance says', function (): void {
+    $screen = theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Applied, 'tautulli'))));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    $unfinished = array_search(__('stacks.moving_in.stance.applied_still_running'), $drawn, strict: true);
+    $stillUp = array_search(__('stacks.moving_in.still_running', ['service' => 'tautulli']), $drawn, strict: true);
+    $stopped = array_search(__('stacks.moving_in.stopped', ['service' => 'radarr']), $drawn, strict: true);
+
+    expect(theMoveDrawn($screen)->stanceSaid)->toBe('stacks.moving_in.stance.applied_still_running')
+        ->and($drawn)->not->toContain(__('stacks.moving_in.stance.applied'))
+        ->and(is_int($unfinished) && is_int($stillUp) && is_int($stopped) && $stillUp < $stopped)->toBeTrue();
+});
+
+it('calls a replacement done where the stack applied it and nothing it replaces is still running', function (): void {
+    expect(theMoveDrawn(theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Applied)))))->stanceSaid)
+        ->toBe('stacks.moving_in.stance.applied');
 });
 
 it('says where each service listens and where that is written, once standing beside is done', function (): void {

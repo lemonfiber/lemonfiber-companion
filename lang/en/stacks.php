@@ -652,6 +652,9 @@ return [
             'pending' => 'Nothing has been done yet',
             'blocked' => 'The machine turned this away, and nothing was done',
             'applied' => 'Done',
+            // A replacement the stack applied while something it replaces is
+            // still up: never said to be done.
+            'applied_still_running' => 'Not finished: something it replaces is still running',
         ],
         // An import that carried nothing and one that has not run are both
         // quiet, and mean opposite things.

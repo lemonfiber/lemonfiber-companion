@@ -125,7 +125,7 @@ final readonly class HowAMoveReads
             $copyFirst[] = new ALineOfTheSurvey('stacks.moving_in.copies', ['path' => $path]);
         }
 
-        return $this->shown($move, $lines, $copyFirst);
+        return $this->shown($move, $lines, $copyFirst, $this->stance($move->stance()));
     }
 
     /** Importing: what could not come across first, then what did or would. */
@@ -183,20 +183,31 @@ final readonly class HowAMoveReads
             $lines[] = new ALineOfTheSurvey('stacks.moving_in.written', ['path' => $beside->written()]);
         }
 
-        return $this->shown($move, $lines, []);
+        return $this->shown($move, $lines, [], $this->stance($move->stance()));
     }
 
-    /** Replacing: what it would stop, or what it stopped and what would not stop. */
+    /**
+     * Replacing: what it would stop, or what would not stop and what it stopped.
+     *
+     * What would not stop leads, and a replacement the stack applied is not
+     * said to be done while anything it replaces is still up.
+     */
     private function replacing(AMove $move, TheReplacement $replacement): AMoveAsShown
     {
         $lines = $move->stance() === Stance::Pending
             ? $this->names('stacks.moving_in.would_stop', $replacement->wouldStop())
             : [
-                ...$this->names('stacks.moving_in.stopped', $replacement->stopped()),
                 ...$this->names('stacks.moving_in.still_running', $replacement->stillRunning()),
+                ...$this->names('stacks.moving_in.stopped', $replacement->stopped()),
             ];
+        $unfinished = $move->stance() === Stance::Applied && $replacement->leftSomethingRunning();
 
-        return $this->shown($move, [...$this->project($replacement->project()), ...$lines], []);
+        return $this->shown(
+            $move,
+            [...$this->project($replacement->project()), ...$lines],
+            [],
+            $unfinished ? 'stacks.moving_in.stance.applied_still_running' : $this->stance($move->stance()),
+        );
     }
 
     /**
@@ -204,13 +215,14 @@ final readonly class HowAMoveReads
      *
      * @param list<ALineOfTheSurvey> $lines
      * @param list<ALineOfTheSurvey> $copyFirst
+     * @param string                 $stanceSaid the catalogue key the stance is drawn with
      */
-    private function shown(AMove $move, array $lines, array $copyFirst): AMoveAsShown
+    private function shown(AMove $move, array $lines, array $copyFirst, string $stanceSaid): AMoveAsShown
     {
         $pending = $move->stance() === Stance::Pending;
 
         return new AMoveAsShown(
-            stanceSaid: $this->stance($move->stance()),
+            stanceSaid: $stanceSaid,
             refusal: $move->refusal(),
             leftBehindSaid: '',
             leftBehind: [],

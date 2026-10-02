@@ -563,6 +563,9 @@ return [
             'pending' => 'Er is nog niets gedaan',
             'blocked' => 'De machine wees dit af, en er is niets gedaan',
             'applied' => 'Gedaan',
+            // Een vervanging die de stack heeft uitgevoerd terwijl iets wat het
+            // vervangt nog draait: nooit gedaan genoemd.
+            'applied_still_running' => 'Niet klaar: iets wat het vervangt draait nog',
         ],
         'import' => [
             'not_run' => 'Er is nog niets overgezet: dit is wat importeren zou doen',
