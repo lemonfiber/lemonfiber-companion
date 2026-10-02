@@ -60,6 +60,8 @@
         @empty
             <x-design::body>{{ __('health.no_findings') }}</x-design::body>
         @endforelse
+
+        <x-operator::somebody-to-ask :cards="$this->summary()->affected" :goes="$this->goes()->help()" />
     @endif
 
     {{-- What stopped moving in the queue, worst first, one row per cause.
@@ -165,6 +167,8 @@
     @empty
         <x-design::body>{{ __('health.no_findings') }}</x-design::body>
     @endforelse
+
+    <x-operator::somebody-to-ask :cards="$this->findings()" :goes="$this->goes()->help()" />
 
     {{-- Said once, and only where a row is marked, so what an unmarked row
          is never has to be inferred. --}}

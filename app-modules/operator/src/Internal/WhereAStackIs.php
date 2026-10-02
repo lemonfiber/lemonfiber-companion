@@ -112,6 +112,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Updates->forTheStack($this->stack);
     }
 
+    /** Where a report about this machine is put together for somebody helping. */
+    public function help(): string
+    {
+        return AStacksScreen::Help->forTheStack($this->stack);
+    }
+
     /**
      * Where what this machine keeps about itself is: what it changed, what it
      * runs, what it sends and what it wakes somebody for.

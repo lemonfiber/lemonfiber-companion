@@ -36,4 +36,10 @@ final readonly class AnAffectedItemAsShown
         public string $check = '',
         public string $exited = '',
     ) {}
+
+    /** Whether the card says the stack suggested nothing to try, which is where somebody to ask is owed. */
+    public function saysNothingToTry(): bool
+    {
+        return $this->remedies === [];
+    }
 }
