@@ -11,6 +11,7 @@ use function it;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -40,6 +41,7 @@ it('takes the arm for each state, and carries the report and the obstacle', func
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
 
     expect(howTheVerbIsGoingReads(HowTheVerbIsGoing::stillRunning()))->toBe('running')

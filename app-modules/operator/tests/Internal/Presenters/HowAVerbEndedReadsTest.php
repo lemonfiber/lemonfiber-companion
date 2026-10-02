@@ -17,6 +17,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -53,6 +54,8 @@ function aVerbWithNoReport(HowTheReadingWent $went, bool $wasAsked = true, bool 
         leftOut: [],
         portsHeld: [],
         editsKept: [],
+        commandSaid: null,
+        command: '',
     );
 }
 
@@ -68,6 +71,7 @@ function aRestartThatLeftOneBehind(WhetherItWasRehearsed $was): WhatTheVerbCameT
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Usenet, Forms::these(Form::called('hunt')))),
         ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media-server')),
         TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n")),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     )->amountingTo(HowTheStackIsRunning::Partial);
 }
 
@@ -100,6 +104,8 @@ it('draws a restart that left one behind whole, naming it with where it stood', 
             new ADiffLineAsShown('stacks.edits.theirs', 'image: mine'),
             new ADiffLineAsShown('stacks.edits.lemonfibers', 'image: ours'),
         ])],
+        commandSaid: 'stacks.command.ran',
+        command: 'docker compose up -d',
     ));
 });
 
@@ -109,7 +115,9 @@ it('words a rehearsal as what would happen, and names nothing as not back', func
     expect($read->wasRehearsed)->toBeTrue()
         ->and($read->cameToSaid)->toBe('health.came_to.rehearsed')
         ->and($read->leftOutSaid)->toBe('health.came_to.would_be_left_out')
-        ->and($read->namesWhatDidNotComeBack)->toBeFalse();
+        ->and($read->namesWhatDidNotComeBack)->toBeFalse()
+        ->and($read->commandSaid)->toBe('stacks.command.will_run')
+        ->and($read->command)->toBe('docker compose up -d');
 });
 
 it('says a declined start with its reason, and names nothing as not back', function (): void {
@@ -125,7 +133,9 @@ it('says a declined start with its reason, and names nothing as not back', funct
 
     expect($read->cameToSaid)->toBe('health.came_to.declined')
         ->and($read->because)->toBe('Autostart was never asked for.')
-        ->and($read->namesWhatDidNotComeBack)->toBeFalse();
+        ->and($read->namesWhatDidNotComeBack)->toBeFalse()
+        ->and($read->commandSaid)->toBeNull()
+        ->and($read->command)->toBe('');
 });
 
 it('says a fetch was carried out, apart from a stop, and does not judge it by what came back', function (): void {
@@ -149,6 +159,7 @@ it('says a start that brought everything back did, with nothing to name, and say
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
     $complete = new HowAVerbEndedReads()->done($everything->amountingTo(HowTheStackIsRunning::Active), WhatToDoWithIt::Start);
     $unsaid = new HowAVerbEndedReads()->done($everything, WhatToDoWithIt::Start);

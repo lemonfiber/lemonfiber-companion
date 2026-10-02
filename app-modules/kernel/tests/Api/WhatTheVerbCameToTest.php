@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\TheHoldSaysNothing;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
@@ -37,6 +38,7 @@ function aRestartReported(WhereAServiceEndedUp ...$services): WhatTheVerbCameTo
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
 }
 
@@ -66,7 +68,7 @@ function whatItAmountsTo(WhatTheVerbCameTo $report): string
 function whetherTheReportRan(WhatTheVerbCameTo $report): string
 {
     return $report->whetherItRan(
-        ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+        ran: static fn(TheCommandLine $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('ran: %s', $command->asTyped())),
         declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
     )->said;
 }
@@ -106,7 +108,8 @@ it('says what those services amount to only where the stack said', function (): 
 });
 
 it('ran unless the stack declined, and a declined start carries its reason', function (): void {
-    expect(whetherTheReportRan(aRestartReported()))->toBe('ran')
+    expect(whetherTheReportRan(aRestartReported()))->toBe('ran: docker compose up -d')
+        ->and(whetherTheReportRan(aRestartReported()->amountingTo(HowTheStackIsRunning::Active)))->toBe('ran: docker compose up -d')
         ->and(whetherTheReportRan(aRestartDeclined('The stack was stopped on purpose.')))
         ->toBe('declined: The stack was stopped on purpose.');
 });
@@ -126,7 +129,7 @@ it('carries whether it was rehearsed, what was left out and which ports are held
     $leftOut = TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('hunt'))));
     $ports = ThePortsHeld::of(APortHeld::of(8096, 'jellyfin', 'media'));
     $reports = [
-        WhatTheVerbCameTo::reported(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, TheStackEdits::none())->amountingTo(HowTheStackIsRunning::Active),
+        WhatTheVerbCameTo::reported(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, TheStackEdits::none(), TheCommandLine::of('docker', 'compose', 'up', '-d'))->amountingTo(HowTheStackIsRunning::Active),
         WhatTheVerbCameTo::declined(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, 'Autostart was never asked for.', TheStackEdits::none())->amountingTo(HowTheStackIsRunning::Active),
     ];
 

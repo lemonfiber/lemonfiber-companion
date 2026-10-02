@@ -336,7 +336,8 @@ enum WireField: string implements NamesAWireField
 
     /**
      * What to type: how a long-running command is typed in a terminal, which
-     * is what hosting installs, and exactly what to type to update lemonfiber.
+     * is what hosting installs, exactly what to type to update lemonfiber, and
+     * the command line a start, a stop or a restart ran, word by word.
      */
     case Command = 'command';
 

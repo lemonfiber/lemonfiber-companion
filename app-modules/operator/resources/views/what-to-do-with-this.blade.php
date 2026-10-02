@@ -151,6 +151,14 @@
                 @empty
                     {{-- No port it wanted was held, which is the ordinary case. --}}
                 @endforelse
+
+                @if ($this->whatItCameTo()->commandSaid !== null)
+                    {{-- The exact command, at the foot where it does not lead:
+                         what somebody at a terminal checks the run against. A
+                         start the stack declined ran nothing, and has none. --}}
+                    <x-design::note>{{ __($this->whatItCameTo()->commandSaid) }}</x-design::note>
+                    <x-design::verbatim>{{ $this->whatItCameTo()->command }}</x-design::verbatim>
+                @endif
             @endif
         </x-design::card>
 

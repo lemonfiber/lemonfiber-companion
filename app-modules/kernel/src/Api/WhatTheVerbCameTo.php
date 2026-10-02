@@ -32,19 +32,20 @@ final readonly class WhatTheVerbCameTo
         private TheServicesLeftOut $leftOut,
         private ThePortsHeld $portsHeld,
         private TheStackEdits $edits,
+        private TheCommandLine|string $ranOrWhyNot,
         private ?HowTheStackIsRunning $condition = null,
-        private ?string $held = null,
     ) {}
 
-    /** What the stack reported of a verb it ran. */
+    /** What the stack reported of a verb it ran, with the command it ran it with. */
     public static function reported(
         WhetherItWasRehearsed $was,
         WhereTheServicesEndedUp $services,
         TheServicesLeftOut $leftOut,
         ThePortsHeld $portsHeld,
         TheStackEdits $edits,
+        TheCommandLine $command,
     ): self {
-        return new self($was, $services, $leftOut, $portsHeld, $edits);
+        return new self($was, $services, $leftOut, $portsHeld, $edits, $command);
     }
 
     /** What the stack reported of a start it declined to run, with the reason it gave; a blank reason is refused. */
@@ -60,13 +61,13 @@ final readonly class WhatTheVerbCameTo
             throw TheHoldSaysNothing::whereAReasonWasOwed();
         }
 
-        return new self($was, $services, $leftOut, $portsHeld, $edits, held: $why);
+        return new self($was, $services, $leftOut, $portsHeld, $edits, $why);
     }
 
     /** The same report, with what the stack says those services amount to. */
     public function amountingTo(HowTheStackIsRunning $condition): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $condition, $this->held);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition);
     }
 
     /** Whether it was a rehearsal, which changed nothing, or the verb itself. */
@@ -126,17 +127,20 @@ final readonly class WhatTheVerbCameTo
     }
 
     /**
-     * Whether the stack ran what it was asked, or declined and said why.
+     * Whether the stack ran what it was asked, with the command it ran, or declined and said why.
+     *
+     * The command is only there for a verb that ran: a start the stack
+     * declined ran nothing, so there is no command to show for it.
      *
      * @template T of object
      *
-     * @param Closure(): T       $ran
-     * @param Closure(string): T $declined
+     * @param Closure(TheCommandLine): T $ran
+     * @param Closure(string): T         $declined
      *
      * @return T
      */
     public function whetherItRan(Closure $ran, Closure $declined): object
     {
-        return $this->held === null ? $ran() : $declined($this->held);
+        return $this->ranOrWhyNot instanceof TheCommandLine ? $ran($this->ranOrWhyNot) : $declined($this->ranOrWhyNot);
     }
 }

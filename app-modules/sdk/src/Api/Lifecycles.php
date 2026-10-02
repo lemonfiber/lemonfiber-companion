@@ -6,12 +6,14 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
+use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\LifecycleEnvelope;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
@@ -25,16 +27,19 @@ use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
 use Throwable;
 
+use function trim;
+
 /**
  * The `lifecycle` envelope, as what a start, a stop or a restart came to.
  *
  * Whether it was a rehearsal, where each service it waited for ended up, what
- * the plan left out and the ports it found held are required, and every entry
- * must be what the contract says; anything else is refused with
- * {@see LifecycleIsUnreadable}, never defaulted. The condition and the reason
- * a start was declined are the contract's to leave out, and are read only
- * where it sent them. The ports found held default to none, which is the
- * contract's own default for a verb that starts nothing.
+ * the plan left out and the ports it found held are required, as is the
+ * command of a verb that ran; a start the stack declined ran nothing, so its
+ * command is not read. Every entry must be what the contract says; anything
+ * else is refused with {@see LifecycleIsUnreadable}, never defaulted. The
+ * condition and the reason a start was declined are the contract's to leave
+ * out, and are read only where it sent them. The ports found held default to
+ * none, which is the contract's own default for a verb that starts nothing.
  */
 final readonly class Lifecycles
 {
@@ -59,7 +64,7 @@ final readonly class Lifecycles
 
         $report = self::carries($data, WireField::Held)
             ? WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)), $edits)
-            : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits);
+            : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits, self::command($data));
 
         return self::condition($data, $report);
     }
@@ -74,6 +79,24 @@ final readonly class Lifecycles
     private static function payload(Envelope $envelope): mixed
     {
         return LifecycleEnvelope::in($envelope)->data;
+    }
+
+    /**
+     * The exact command the stack ran, word by word.
+     *
+     * @param array<mixed> $data
+     */
+    private static function command(array $data): TheCommandLine
+    {
+        $words = [];
+        $position = 0;
+
+        foreach (Required::rows($data, WireField::Command, LifecycleIsUnreadable::missing(WireField::Command)) as $word) {
+            $words[] = is_string($word) && trim($word) !== '' ? $word : throw LifecycleIsUnreadable::entry(WireField::Command, $position);
+            $position++;
+        }
+
+        return $words === [] ? throw LifecycleIsUnreadable::missing(WireField::Command) : TheCommandLine::of(...$words);
     }
 
     /**

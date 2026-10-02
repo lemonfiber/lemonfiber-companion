@@ -12,6 +12,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Sdk\Api\LifecycleIsUnreadable;
 use Modules\Sdk\Api\Lifecycles;
@@ -143,7 +144,7 @@ function theRestartRead(mixed $data): string
         implode(',', $leftOut),
         implode(',', $ports),
         $report->whetherItRan(
-            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            ran: static fn(TheCommandLine $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('ran: %s', $command->asTyped())),
             declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
         )->said,
     );
@@ -160,7 +161,7 @@ it('stands in for a stack with a payload the contract would accept', function ()
 
 it('reads what it amounts to, what did not come back, what was left out and which ports are held', function (): void {
     expect(theRestartRead(aRestartInFull()))
-        ->toBe('carried_out / partial / not back Sonarr:failed / left out qBittorrent:torrent / ports 8989:sonarr:media / ran');
+        ->toBe('carried_out / partial / not back Sonarr:failed / left out qBittorrent:torrent / ports 8989:sonarr:media / ran: docker compose restart');
 });
 
 it('reads a rehearsal as one', function (): void {
@@ -169,7 +170,12 @@ it('reads a rehearsal as one', function (): void {
 
 it('reads a start the stack declined, with its reason', function (): void {
     expect(theRestartRead([...aRestartInFull(), 'held' => 'This machine is on its battery.']))->toEndWith('/ declined: This machine is on its battery.')
-        ->and(theRestartRead([...aRestartInFull(), 'held' => null]))->toEndWith('/ ran');
+        ->and(theRestartRead([...aRestartInFull(), 'held' => null]))->toEndWith('/ ran: docker compose restart');
+});
+
+it('reads no command for a start the stack declined, since it ran nothing', function (): void {
+    expect(theRestartRead([...array_diff_key(aRestartInFull(), ['command' => true]), 'held' => 'This machine is on its battery.']))
+        ->toEndWith('/ declined: This machine is on its battery.');
 });
 
 it('reads a condition left out, or sent as nothing, as unsaid', function (): void {
@@ -208,6 +214,9 @@ it('refuses a payload that is not a table, or a part that is absent or not what 
     [[...aRestartInFull(), 'condition' => ''], 'condition'],
     [[...aRestartInFull(), 'held' => '  '], 'held'],
     [[...aRestartInFull(), 'held' => 7], 'held'],
+    [array_diff_key(aRestartInFull(), ['command' => true]), 'command'],
+    [[...aRestartInFull(), 'command' => 'docker compose restart'], 'command'],
+    [[...aRestartInFull(), 'command' => []], 'command'],
 ]);
 
 it('refuses an entry that is not what the contract says, naming its list and position', function (mixed $data, string $field): void {
@@ -225,6 +234,8 @@ it('refuses an entry that is not what the contract says, naming its list and pos
     [[...aRestartInFull(), 'port_conflicts' => [aPortTheRestartFoundHeld(), array_diff_key(aPortTheRestartFoundHeld(), ['port' => true])]], 'port_conflicts'],
     [[...aRestartInFull(), 'port_conflicts' => [aPortTheRestartFoundHeld(), aPortTheRestartFoundHeld(['wanted_by' => ' '])]], 'port_conflicts'],
     [[...aRestartInFull(), 'port_conflicts' => [aPortTheRestartFoundHeld(), aPortTheRestartFoundHeld(['held_by' => ''])]], 'port_conflicts'],
+    [[...aRestartInFull(), 'command' => ['docker', 7]], 'command'],
+    [[...aRestartInFull(), 'command' => ['docker', ' ']], 'command'],
 ]);
 
 it('refuses the first entry by its position, not as a list that is missing', function (): void {
