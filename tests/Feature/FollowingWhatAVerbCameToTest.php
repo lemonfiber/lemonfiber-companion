@@ -795,6 +795,22 @@ it('never shows, before the yes, a command from a report that was not a rehearsa
     expect(whatAskingToRestartSonarrDrew($screen))->not->toContain(whatTheCatalogueSays('stacks.command.will_run'));
 });
 
+it('shows no command before the yes where the rehearsal says the verb would run nothing', function (): void {
+    $declined = WhatTheVerbCameTo::declined(
+        WhetherItWasRehearsed::Rehearsed,
+        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        'another run is already working on this stack',
+        TheStackEdits::none(),
+    );
+    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($declined)));
+
+    expect(whatAskingToRestartSonarrDrew($screen))->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($screen->willRun)->toBe('')
+        ->and($screen->asking())->not->toBeNull();
+});
+
 it('puts the rehearsal away with the question, whichever way it is answered', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aRehearsedRestartOfSonarr()));
     $agreed = theScreenAVerbIsFollowedFrom($supervising);
