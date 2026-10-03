@@ -618,6 +618,12 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The profiles the verb activated, for `PreviewEnvelope.profiles`\'s reason.',
     ],
     [
+        'path' => 'LifecycleEnvelope.plan.running',
+        'because' => 'Which of the services were already running when the verb was asked for. It is drawn '
+            . 'before a start, from the rehearsal (`N18-R10`); after one, `services` says where each ended up '
+            . 'and is read, and a list of what was up beforehand would describe a moment already past.',
+    ],
+    [
         'path' => 'LifecycleEnvelope.plan.services',
         'because' => 'The services the plan named. Where the stack waited for them, `services` says where '
             . 'each ended up and is read; the plan\'s list beside it would name them twice. Where it did '

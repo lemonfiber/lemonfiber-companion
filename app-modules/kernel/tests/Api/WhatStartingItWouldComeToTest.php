@@ -18,6 +18,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TheRehearsalSaysNothing;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatTheRehearsalFound;
@@ -36,6 +37,7 @@ it('keeps what would start, what would be left out and the estimate, in the orde
             AServiceLeftOut::needing(ServiceId::called('nzbget'), 'NZBGet', WhatItWouldNeed::Usenet, Forms::none()),
         ),
         AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
+        WhatIsAlreadyRunning::these(Services::these(ServiceId::called('sabnzbd'))),
     );
     $leftOut = [...$rehearsal->leftOut()];
 
@@ -45,7 +47,16 @@ it('keeps what would start, what would be left out and the estimate, in the orde
         ->toBe(['qbittorrent', 'qBittorrent', WhatItWouldNeed::Torrent, 1])
         ->and([$leftOut[1]->name(), $leftOut[1]->needs()])->toBe(['NZBGet', WhatItWouldNeed::Usenet])
         ->and($rehearsal->footprint()->mebibytes())->toBe(700)
-        ->and($rehearsal->footprint()->unestimated()->count())->toBe(1);
+        ->and($rehearsal->footprint()->unestimated()->count())->toBe(1)
+        ->and($rehearsal->alreadyRunning()->holds(ServiceId::called('sabnzbd')))->toBeTrue();
+});
+
+it('says which services are already running where that was read, and none where it could not be', function (): void {
+    $read = WhatIsAlreadyRunning::these(Services::these(ServiceId::called('sabnzbd')));
+    $unread = WhatIsAlreadyRunning::couldNotBeRead();
+
+    expect([$read->wasRead(), $read->holds(ServiceId::called('sabnzbd')), $read->holds(ServiceId::called('sonarr'))])->toBe([true, true, false])
+        ->and([$unread->wasRead(), $unread->holds(ServiceId::called('sabnzbd'))])->toBe([false, false]);
 });
 
 it('keeps the services left out as a list however they are handed, and knows which they are', function (): void {
@@ -73,7 +84,7 @@ it('says what each need is called on a screen', function (): void {
 });
 
 it('answers the arm it was built with', function (): void {
-    $rehearsal = WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()));
+    $rehearsal = WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none()));
     $found = static fn(WhatStartingItWouldComeTo $said): TheWordCarriedOut => new TheWordCarriedOut($said === $rehearsal ? 'found' : 'another');
     $met = static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value);
 

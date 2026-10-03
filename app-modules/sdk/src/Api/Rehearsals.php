@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Generated\PreviewEnvelope;
 use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Internal\WhatWasLeftOut;
@@ -27,7 +28,8 @@ use function trim;
  * Reads the `preview` envelope into what starting a form would come to.
  *
  * The services, the services left out and the footprint are all required,
- * and every entry must be what the contract says; anything else is refused
+ * what is already running is read where the stack says it, and every entry
+ * must be what the contract says; anything else is refused
  * with {@see RehearsalIsUnreadable}, never defaulted. A service left out
  * needing something this app has no case for is refused too, because a
  * reason read as some other reason sends an operator to the wrong setting.
@@ -59,7 +61,29 @@ final readonly class Rehearsals
                 static fn(int $position): Throwable => RehearsalIsUnreadable::entry(WireField::Filtered, $position),
             ),
             self::footprint($data),
+            self::alreadyRunning($data),
         );
+    }
+
+    /**
+     * Which of the services that would start the stack says are already running.
+     *
+     * A stack that leaves it out says nothing about what is running, and no
+     * service is marked.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    private static function alreadyRunning(array $data): WhatIsAlreadyRunning
+    {
+        if (! array_key_exists(WireField::Running->value, $data)) {
+            return WhatIsAlreadyRunning::these(Services::none());
+        }
+
+        if ($data[WireField::Running->value] === null) {
+            return WhatIsAlreadyRunning::couldNotBeRead();
+        }
+
+        return WhatIsAlreadyRunning::these(self::services($data, WireField::Running));
     }
 
     /**

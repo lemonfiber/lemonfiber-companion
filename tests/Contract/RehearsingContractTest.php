@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\PinnedClients;
@@ -54,6 +55,7 @@ function theSameRehearsal(): WhatStartingItWouldComeTo
         Services::these(ServiceId::called('sabnzbd'), ServiceId::called('sonarr')),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('dl')))),
         AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
+        WhatIsAlreadyRunning::these(Services::these(ServiceId::called('sabnzbd'))),
     );
 }
 
@@ -74,6 +76,7 @@ function whatAStackRehearsingAStartSends(string $name = 'qBittorrent'): array
             'dropped' => [['profile' => 'torrent', 'needs' => 'torrent']],
             'filtered' => [['id' => 'qbittorrent', 'name' => $name, 'profile' => 'torrent', 'needs' => 'torrent', 'forms' => ['dl']]],
             'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr']],
+            'running' => ['sabnzbd'],
         ],
     ];
 }
@@ -112,7 +115,7 @@ function everythingTheRehearsalSays(Rehearsing $rehearsing): string
             $started = [];
 
             foreach ($rehearsal->wouldStart() as $service) {
-                $started[] = $service->named();
+                $started[] = sprintf($rehearsal->alreadyRunning()->holds($service) ? '%s (up)' : '%s', $service->named());
             }
 
             return new TheWordCarriedOut(sprintf(
@@ -130,7 +133,7 @@ it('comes away with what would start, each service left out with what it would n
     $answered = MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends()));
 
     foreach (everyWayOfRehearsingAStart($answered) as $which => $make) {
-        expect(everythingTheRehearsalSays($make()))->toBe('sabnzbd,sonarr / qBittorrent:torrent:1 / 700 MiB', $which);
+        expect(everythingTheRehearsalSays($make()))->toBe('sabnzbd (up),sonarr / qBittorrent:torrent:1 / 700 MiB', $which);
     }
 });
 

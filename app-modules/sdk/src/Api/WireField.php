@@ -323,8 +323,10 @@ enum WireField: string implements NamesAWireField
 
     /**
      * What is running: the version of the running copy of lemonfiber on the
-     * `self-update` envelope, and the release in use inside an `update`
-     * changelog, which is absent where the stack has not determined one.
+     * `self-update` envelope, the release in use inside an `update`
+     * changelog, which is absent where the stack has not determined one, and
+     * on a `preview` which of the services that would start are already up,
+     * null where the stack could not read it.
      */
     case Running = 'running';
 

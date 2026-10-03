@@ -196,8 +196,15 @@
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
             @else
+                @if ($this->rehearsal()->runningUnread)
+                    {{-- Said once, above a list that still says what would
+                         start, because the stack could not tell which of these
+                         are up already. --}}
+                    <x-design::note>{{ __('health.rehearsal.running_unread') }}</x-design::note>
+                @endif
+
                 @forelse ($this->rehearsal()->wouldStart as $service)
-                    <x-design::body>{{ __('health.rehearsal.would_start', ['name' => $service]) }}</x-design::body>
+                    <x-design::body>{{ __($service->said, ['name' => $service->name]) }}</x-design::body>
                 @empty
                     <x-design::body>{{ __('health.rehearsal.would_start_nothing') }}</x-design::body>
                 @endforelse
