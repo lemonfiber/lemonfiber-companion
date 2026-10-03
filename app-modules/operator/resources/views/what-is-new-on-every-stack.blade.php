@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('navigation.menu.whats_new')" />
+<x-operator::screen-opens :title="__('navigation.menu.whats_new')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
     {{-- The filters first, because what they leave shown is also what Mark all

@@ -20,6 +20,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -70,6 +71,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class PairByScanning extends NativeComponent
 {
+    use HasAWayBack;
     use OffersTheAppsSettings;
     /**
      * What the operator is calling this machine.

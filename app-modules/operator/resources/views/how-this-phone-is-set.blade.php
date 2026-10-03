@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('settings.title')" />
+<x-operator::screen-opens :title="__('settings.title')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
     {{-- First, because it changes what every setting below can do: with nowhere

@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('navigation.your_stacks')" />
+<x-operator::screen-opens :title="__('navigation.your_stacks')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
     {{-- What stood between this launch and the machine, shown rather

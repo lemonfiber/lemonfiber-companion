@@ -19,6 +19,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
@@ -38,6 +39,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class HowThisPhoneIsSet extends NativeComponent
 {
+    use HasAWayBack;
     /** How long the app may be away before the lock asks again, once read. */
     public ?LockAfter $lockAfter = null;
 
