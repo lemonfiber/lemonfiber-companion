@@ -18,10 +18,10 @@ use function json_decode;
 use const JSON_THROW_ON_ERROR;
 
 use Modules\Stacks\Api\AStacksScreen;
-use Modules\Wayfinding\Api\WhatIsNotHereYet;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\ThePhonesSettingsInTheMenu;
 use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
+use Modules\Wayfinding\Internal\TheWhatsNewInTheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
 
 use function sprintf;
@@ -80,12 +80,13 @@ it('gives What\'s new and the two settings an icon each platform has, and a labe
     $material = theIconsIn('material-icons');
     $symbols = theIconsIn('sf-symbols');
 
-    foreach ([...WhatIsNotHereYet::cases(), new TheStacksSettingsInTheMenu(), new ThePhonesSettingsInTheMenu()] as $item) {
+    foreach ([new TheWhatsNewInTheMenu(), new TheStacksSettingsInTheMenu(), new ThePhonesSettingsInTheMenu()] as $item) {
         expect($material)->toContain($item->glyph())
             ->and($symbols)->toContain($item->iosGlyph());
     }
 
-    expect(WhatIsNotHereYet::WhatsNew->said())->toBe('navigation.menu.whats_new')
+    expect(new TheWhatsNewInTheMenu()->said())->toBe('navigation.menu.whats_new')
+        ->and(new TheWhatsNewInTheMenu()->goes())->toBe('/whats-new')
         ->and(new TheStacksSettingsInTheMenu()->screen())->toBe(AStacksScreen::OnThisPhone)
         ->and(new ThePhonesSettingsInTheMenu()->said())->toBe('navigation.menu.app_settings')
         ->and(new ThePhonesSettingsInTheMenu()->appSettings())->toBe('/settings');

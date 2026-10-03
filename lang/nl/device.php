@@ -17,5 +17,4 @@ return [
     'the_device_would_not_offer' => 'Deze telefoon bood geen manier aan om het te versturen.',
     'the_device_would_not_offer_action' => 'Het rapport staat hierboven; je kunt het met de hand overnemen.',
     'share_diagnostics' => 'Stuur een rapport naar wie je helpt',
-    'not_in_this_version' => 'Dit zit nog niet in deze versie van de app.',
 ];

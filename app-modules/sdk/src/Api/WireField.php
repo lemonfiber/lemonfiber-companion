@@ -722,4 +722,17 @@ enum WireField: string implements NamesAWireField
 
     /** Whether an app is open source, where one is recommended or handed over. */
     case OpenSource = 'open_source';
+
+    /**
+     * The number something is filed under: an episode within its season, in a
+     * trace, and a request, in what a stack lists as new.
+     */
+    case Number = 'number';
+
+    /**
+     * What could not be read: the sources a removal reading did not get an
+     * answer from, in the words of whatever refused, and the kinds a stack
+     * could not list as new.
+     */
+    case Unread = 'unread';
 }

@@ -248,7 +248,7 @@ final readonly class Uninstalls
      */
     private static function confidence(array $confidence): HowMuchWasRead
     {
-        $unread = self::names($confidence, UninstallField::Unread);
+        $unread = self::names($confidence, WireField::Unread);
 
         return self::flag($confidence, UninstallField::Complete)
             ? HowMuchWasRead::everything(...$unread)
