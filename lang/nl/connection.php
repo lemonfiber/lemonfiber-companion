@@ -17,6 +17,8 @@ return [
     'credential_refused_action' => 'Meld je opnieuw aan. Opnieuw koppelen is niet nodig.',
     'media_server_unconfirmed' => 'Deze stack kon je account niet controleren bij de mediaserver.',
     'media_server_unconfirmed_action' => 'Er is niets aan je account veranderd. Probeer het opnieuw zodra de mediaserver draait.',
+    'household_unread' => 'Deze stack kon niet lezen wie er in het huishouden zit.',
+    'household_unread_action' => 'Er is niets veranderd. Probeer het over een poosje opnieuw.',
     'address_not_the_stacks' => 'Deze stack accepteerde het adres niet waarop deze app hem bereikte.',
     'address_not_the_stacks_action' => 'Koppel opnieuw vanaf de stack zelf, zodat deze app het adres heeft waarop hij antwoordt.',
     'encrypted' => 'Versleuteld, en gecontroleerd aan de hand van het certificaat waarmee je hebt gekoppeld.',

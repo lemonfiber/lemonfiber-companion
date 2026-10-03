@@ -310,7 +310,9 @@ enum HowTheSignInWent: string
             // The door is the one place that never asks the media server about an
             // account it has not yet admitted, so this cannot arrive here either;
             // the day it does, it is owed a state of its own rather than this one.
-            KindOfObstacle::MediaServerDidNotAnswer => self::StackDidNotAnswer,
+            KindOfObstacle::MediaServerDidNotAnswer,
+            // The door reads no household, so this cannot arrive here either.
+            KindOfObstacle::HouseholdCouldNotBeRead => self::StackDidNotAnswer,
         };
     }
 

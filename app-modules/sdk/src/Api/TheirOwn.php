@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatTheirAskingSaid;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 
 /**
  * What the stack says the signed-in member is owed.
@@ -96,8 +97,8 @@ final readonly class TheirOwn implements Owing
     {
         try {
             return WhatTheyAreOwed::told(Tellings::in($envelope));
-        } catch (UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing $why) {
-            return WhatTheyAreOwed::refused($this->clients->whatStoodInTheWay($stack, $why));
+        } catch (UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|SentenceSaysNothing $why) {
+            return WhatTheyAreOwed::refused(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 
@@ -114,8 +115,8 @@ final readonly class TheirOwn implements Owing
     {
         try {
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
-        } catch (UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt $why) {
-            return WhatTheyAsked::refused($this->clients->whatStoodInTheWay($stack, $why));
+        } catch (UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
+            return WhatTheyAsked::refused(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 }

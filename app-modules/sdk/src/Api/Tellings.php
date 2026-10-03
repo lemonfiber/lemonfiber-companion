@@ -66,7 +66,7 @@ final readonly class Tellings
         // could find out. Refused rather than reported, so it reaches whoever is
         // looking as the obstacle it is.
         if (self::couldNotBeRead($data)) {
-            throw HouseholdIsUnreadable::unread();
+            throw HouseholdWentUnread::atTheMediaServer();
         }
 
         $said = [];

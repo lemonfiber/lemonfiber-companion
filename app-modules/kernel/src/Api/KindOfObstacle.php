@@ -167,6 +167,16 @@ enum KindOfObstacle: string
     case MediaServerDidNotAnswer = 'media_server_unconfirmed';
 
     /**
+     * The stack answered, and could not read who is in the household.
+     *
+     * The stack is there and said why its list of people is empty, which is
+     * neither silence nor an empty household: its media server or its request
+     * service did not say. Nothing was changed, and asking again later is the
+     * whole remedy.
+     */
+    case HouseholdCouldNotBeRead = 'household_unread';
+
+    /**
      * The stack answered, and the address this app reached it at is not one it
      * says it is listening on.
      *
@@ -302,6 +312,7 @@ enum KindOfObstacle: string
             self::NotForThisAccount => 'COMPANION-NOT-FOR-THIS-ACCOUNT',
             self::TooManyAttempts => 'COMPANION-TOO-MANY-ATTEMPTS',
             self::MediaServerDidNotAnswer => 'COMPANION-MEDIA-SERVER-UNCONFIRMED',
+            self::HouseholdCouldNotBeRead => 'COMPANION-HOUSEHOLD-UNREAD',
             self::AddressIsNotTheStacks => 'COMPANION-ADDRESS-NOT-THE-STACKS',
             self::VersionsDisagree => 'COMPANION-VERSIONS-DISAGREE',
             self::StackIsBusy => 'COMPANION-STACK-BUSY',
@@ -332,6 +343,7 @@ enum KindOfObstacle: string
             // the account is wrong; an alarm here would send a member looking
             // for a fault in the one place there is none.
             self::MediaServerDidNotAnswer,
+            self::HouseholdCouldNotBeRead,
             // Other work holding the stack is the stack working; the refusal
             // clears itself once that work is done.
             self::StackIsBusy => Severity::Warning,
@@ -370,6 +382,7 @@ enum KindOfObstacle: string
             // The media server is the household's, on a machine this app does not
             // reach; the remedy is waiting for it, not a button.
             self::MediaServerDidNotAnswer,
+            self::HouseholdCouldNotBeRead,
             // Updating the app or the machine, and waiting for other work,
             // both happen where this app cannot act.
             self::VersionsDisagree,

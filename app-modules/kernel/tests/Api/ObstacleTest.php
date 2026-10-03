@@ -22,7 +22,7 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 
 use function sprintf;
 
-it('is the eleven an operator must be able to tell apart', function (): void {
+it('is the twelve an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -36,6 +36,7 @@ it('is the eleven an operator must be able to tell apart', function (): void {
         KindOfObstacle::NotForThisAccount,
         KindOfObstacle::TooManyAttempts,
         KindOfObstacle::MediaServerDidNotAnswer,
+        KindOfObstacle::HouseholdCouldNotBeRead,
         KindOfObstacle::AddressIsNotTheStacks,
         KindOfObstacle::VersionsDisagree,
         KindOfObstacle::StackIsBusy,
@@ -67,6 +68,7 @@ it('G4-R6 — names each one differently in the identifier an operator searches 
         'COMPANION-NOT-FOR-THIS-ACCOUNT',
         'COMPANION-TOO-MANY-ATTEMPTS',
         'COMPANION-MEDIA-SERVER-UNCONFIRMED',
+        'COMPANION-HOUSEHOLD-UNREAD',
         'COMPANION-ADDRESS-NOT-THE-STACKS',
         'COMPANION-VERSIONS-DISAGREE',
         'COMPANION-STACK-BUSY',

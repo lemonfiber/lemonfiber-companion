@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\SentenceSaysNothing;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
+use Modules\Sdk\Api\HouseholdWentUnread;
 use Modules\Sdk\Api\Tellings;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -133,7 +134,7 @@ it('N3-R3 — refuses a household the stack says it could not read, rather than 
     // false there is *why* the list is empty. Read as an empty house, it says
     // *there is nothing to tell you* to somebody nobody could find out about.
     expect(fn(): array => whatOneMemberIsTold(['available' => false, 'findings' => [], 'members' => []]))
-        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household');
+        ->toThrow(HouseholdWentUnread::class, 'could not read the household');
 });
 
 it('refuses a payload that is not a household at all', function (): void {

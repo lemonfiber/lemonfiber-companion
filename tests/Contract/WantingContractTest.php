@@ -370,6 +370,20 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
     }
 });
 
+it('tells a household the stack could not read from a stack that did not answer, and from a payload it cannot read', function (): void {
+    $unread = ['api_version' => 1, 'kind' => 'household', 'data' => ['available' => false, 'findings' => ['The request service did not answer.'], 'members' => [], 'rehearsed' => false]];
+    $table = [
+        [MockResponse::make((string) json_encode($unread)), Obstacle::of(KindOfObstacle::HouseholdCouldNotBeRead)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => 'a house'])), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfAskingTheHousehold($answered, $why) as $which => $make) {
+            expect(whatTheHouseholdSaid($make()))->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
+        }
+    }
+});
+
 it('answers exactly one way, and answers at all', function (): void {
     foreach (everyWayOfAskingTheHousehold(aHouseholdAnswer()) as $which => $make) {
         $arms = 0;

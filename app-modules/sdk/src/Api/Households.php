@@ -69,7 +69,7 @@ final readonly class Households
         // could find out. Refused rather than reported, so it reaches whoever is
         // looking as the obstacle it is.
         if (self::couldNotBeRead($data)) {
-            throw HouseholdIsUnreadable::unread();
+            throw HouseholdWentUnread::atTheMediaServer();
         }
 
         return self::wanted(self::rows($data, WireField::Members));
@@ -115,7 +115,7 @@ final readonly class Households
         // have asked for nothing. The guard is the same one the operator's entry
         // point above keeps, because the payload is the same payload.
         if (self::couldNotBeRead($data)) {
-            throw HouseholdIsUnreadable::unread();
+            throw HouseholdWentUnread::atTheMediaServer();
         }
 
         $members = self::rows($data, WireField::Members);
@@ -145,7 +145,7 @@ final readonly class Households
         // Nobody listed is not nobody in, where the stack could not read the
         // media server: the same guard the requests are read behind.
         if (self::couldNotBeRead($data)) {
-            throw HouseholdIsUnreadable::unread();
+            throw HouseholdWentUnread::atTheMediaServer();
         }
 
         $members = [];

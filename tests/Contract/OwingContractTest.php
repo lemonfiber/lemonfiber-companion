@@ -468,12 +468,12 @@ it('N3-R3 — a household the stack could not read reaches the member as a refus
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($unread))]);
 
-    expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))->toBe('refused:no_answer');
+    expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))->toBe('refused:household_unread');
 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($unread))]);
 
-    expect(whatAMemberWasOwed(new TheirOwn(new PinnedClients())))->toBe('refused:no_answer');
+    expect(whatAMemberWasOwed(new TheirOwn(new PinnedClients())))->toBe('refused:household_unread');
 });
 
 it('asks the stack it was given for both halves of their requests, once', function (): void {
