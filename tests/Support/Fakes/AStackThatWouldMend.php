@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Closure;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
 use Modules\Kernel\Api\HowTheRepairIsGoing;
@@ -182,6 +183,22 @@ final class AStackThatWouldMend implements Mending
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
             static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+        );
+    }
+
+    /**
+     * A stack that offers a listing and then refuses the yes because the offer moved.
+     *
+     * What a stack says when the reading a repair was agreed against has
+     * changed before it acted: nothing carried out, and the stack's words for
+     * what moved. Asked again, it offers the listing once more.
+     */
+    public static function whoseOfferMoved(Offer $offer, ARefusalInItsWords $why): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::moved($why),
         );
     }
 

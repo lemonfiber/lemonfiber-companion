@@ -114,6 +114,7 @@ function whatAStackSaysOfTakingItOff(array $removal): array
         'api_version' => 1,
         'kind' => 'uninstall',
         'data' => [
+            'rehearsed' => false,
             'manifest' => [
                 'tier' => 'configuration',
                 'removes' => 'Each service\'s configuration and lemonfiber\'s own state',

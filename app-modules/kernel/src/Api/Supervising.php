@@ -64,6 +64,16 @@ interface Supervising
     public function told(Stack $stack, Session $session, AgreedTo $agreed): Underway;
 
     /**
+     * Ask the stack to rehearse what the operator is being asked to agree to.
+     *
+     * The same verb, run by the stack as a rehearsal: it reports what it would
+     * do, the exact command included, and does none of it. Answered with a
+     * handle, as the verb itself is, and followed with {@see whatBecameOf()}.
+     * It changes nothing, so it may be asked again.
+     */
+    public function rehearsed(Stack $stack, Session $session, AgreedTo $agreed): Underway;
+
+    /**
      * What became of a verb, by the handle telling the stack answered.
      *
      * A read: it asks after work the stack already named, and asking twice

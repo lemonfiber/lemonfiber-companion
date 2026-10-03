@@ -93,6 +93,7 @@ function aHouseholdTellingWhose(array $row): array
 function aHouseholdTelling(array $owed): array
 {
     return [
+        'rehearsed' => false,
         'available' => true,
         'findings' => [],
         'members' => [[

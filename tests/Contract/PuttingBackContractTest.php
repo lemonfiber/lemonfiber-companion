@@ -72,6 +72,7 @@ function theCopyPutBack(): ACopy
 function whatAStackSaysOfPuttingItBack(array $would = [], ?array $done = null): array
 {
     return ['api_version' => 1, 'kind' => 'restore', 'data' => [
+        'rehearsed' => false,
         'would' => [
             'agreement' => 'restore-one-service-sonarr-0.9.0',
             'downgrade' => false,

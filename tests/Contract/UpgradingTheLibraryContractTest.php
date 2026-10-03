@@ -66,6 +66,7 @@ function whatAStackSaysOfAnUpgrade(bool $confirmed = false, ?array $media = null
         'api_version' => 1,
         'kind' => 'upgrade',
         'data' => [
+            'rehearsed' => false,
             'confirmed' => $confirmed,
             'media' => $media ?? [
                 ['media_type' => 'movies', 'preset' => 'Maximum', 'size_per_hour' => '~15 GB', 'outcome' => null],

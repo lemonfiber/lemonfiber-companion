@@ -196,7 +196,15 @@ final readonly class WhatARefusalMeant
             RefusalCode::NotALineCount,
             RefusalCode::NotAChoice,
             RefusalCode::Unrenderable,
-            RefusalCode::NoJobName => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            RefusalCode::NoJobName,
+            // An answer given for an offer or a listing that has since moved.
+            // The stack's words say what moved, and the adapter following the
+            // work it ended decides whether there is a fresh offer to read.
+            RefusalCode::Stale,
+            RefusalCode::MovedOn,
+            RefusalCode::OfferMoved,
+            RefusalCode::AnotherOffer,
+            RefusalCode::AnotherReading => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }
 

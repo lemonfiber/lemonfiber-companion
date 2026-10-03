@@ -67,6 +67,7 @@ function whatAStackSaysItHolds(string $state = 'stale'): array
         'api_version' => 1,
         'kind' => 'credentials',
         'data' => [
+            'rehearsed' => false,
             'held' => [
                 [
                     'name' => 'Indexer API key',

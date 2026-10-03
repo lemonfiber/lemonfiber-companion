@@ -62,6 +62,7 @@ function aStackThatSeeds(): Stack
 function whatAStackSaysOfLettingItGo(array $download = [], array $changed = [], ?array $gone = null): array
 {
     return ['api_version' => 1, 'kind' => 'stop-seeding', 'data' => [
+        'rehearsed' => false,
         'agreement' => 'stop-seeding-show-season1-4000',
         'download' => [
             'bytes' => 4_000,

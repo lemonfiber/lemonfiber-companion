@@ -40,6 +40,7 @@ function spaceSaying(mixed $data): Envelope
 function aMachineWithRoom(): array
 {
     return [
+        'rehearsed' => false,
         'volumes' => [aVolumeSaying()],
         'level' => 'ample',
         'halted' => false,

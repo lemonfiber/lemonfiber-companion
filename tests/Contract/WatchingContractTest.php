@@ -84,6 +84,7 @@ function whatAStackSendsAboutAShelf(array $holdings, bool $available = true, arr
         'api_version' => 1,
         'kind' => 'held',
         'data' => [
+            'rehearsed' => false,
             'id' => 'the-loft',
             'member' => 'ada',
             'available' => $available,

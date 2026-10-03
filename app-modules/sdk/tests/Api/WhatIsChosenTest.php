@@ -60,5 +60,5 @@ it('names the entry that could not be read by where it sits in the list', functi
 });
 
 it('spoils a payload the contract would accept in one place only', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('QualityEnvelope', ['api_version' => 1, 'kind' => 'quality', 'data' => ['choices' => [aChoiceInForce()], 'disposition' => 'shown', 'customised' => false]]))->toBe([]);
+    expect(WhatTheContractAccepts::complaintsAbout('QualityEnvelope', ['api_version' => 1, 'kind' => 'quality', 'data' => ['choices' => [aChoiceInForce()], 'disposition' => 'shown', 'customised' => false, 'rehearsed' => false]]))->toBe([]);
 });

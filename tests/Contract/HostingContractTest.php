@@ -93,6 +93,7 @@ function whatAHostingMachineSends(string $standingOfTheSecond = 'orphaned'): arr
         'api_version' => 1,
         'kind' => 'hosting',
         'data' => [
+            'rehearsed' => false,
             'manager' => 'launchd',
             'commands' => [
                 [
@@ -126,6 +127,7 @@ function whatAnUnsupportedMachineSends(bool $saysWhatToDoInstead = true): array
 {
     $data = [
         'manager' => 'unsupported',
+        'rehearsed' => false,
         'commands' => [
             [
                 'name' => 'Watching the library',
@@ -367,6 +369,7 @@ function whatAHandoverSends(array $changed = [], array $row = [], string ...$lef
     ];
     $data = [
         'manager' => 'systemd',
+        'rehearsed' => false,
         'caveat' => 'A user service runs while you are logged in.',
         'commands' => [
             [

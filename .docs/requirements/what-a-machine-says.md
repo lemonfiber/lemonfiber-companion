@@ -18,7 +18,7 @@ requirement is right and this page is a defect.
 | `G4-R7` | Where no remedy is known, the app says so and offers escalation | A card naming no remedy says *The stack did not suggest anything to try for this*, and `SomebodyToAsk` offers *Send a report to someone helping you* once, at the foot of the summary's items and of the findings, wherever any card said it; it opens the help screen, whose report covers every card at once |
 | `ARCH-R79` | Answers and their names are separated | `Ability` |
 | `N19-R3` | A stack file the operator edited is shown as edited and kept, never as drift | `AStackEdit`, one shape for every edit the stack reports: a file a reset reverts, and a file a start or an update leaves as the operator set it. `StackEditsSent` reads `stack_edits` off the `lifecycle` and `update` envelopes into `WhatTheVerbCameTo::editsKept()` and `Upkeep::editsKept()`, and the `edits-kept` component draws each with what lemonfiber would change in it and a legend for the marks, with no tone and nothing offered |
-| `N19-R1` | Where the app offers an action, it can show the command that performs it | After a start, a stop or a restart: `Lifecycles` reads `command` into `TheCommandLine`, which `WhatTheVerbCameTo::whetherItRan()` hands only to a verb that ran, and the outcome card draws it verbatim at its foot under "The command it ran", or "The command it will run" for a rehearsal, the words joined by spaces as the stack's terminal prints them. A start the stack declined ran nothing and shows none. Before the yes no command is shown, because no web action takes a rehearsal |
+| `N19-R1` | Where the app offers an action, it can show the command that performs it | After a start, a stop or a restart: `Lifecycles` reads `command` into `TheCommandLine`, which `WhatTheVerbCameTo::whetherItRan()` hands only to a verb that ran, and the outcome card draws it verbatim at its foot under "The command it ran", or "The command it will run" for a rehearsal, the words joined by spaces as the stack's terminal prints them. A start the stack declined ran nothing and shows none. Before the yes of a verb that asks first (a stop, a restart or a fetch), `ShowsWhatTheYesWillRun` asks the stack to rehearse that verb (`Supervising::rehearsed()`, the action with `dry_run`, under no key) and draws the command its rehearsal reports under "The command it will run" above the yes; nothing is drawn until the stack has said, nothing where it could not rehearse it, and never a command from a report that was not a rehearsal |
 
 ## Putting something right
 
@@ -26,7 +26,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N2-R4` | The app states what else a repair affects — a blank effect is worse than a missing one | `EffectSaysNothing` |
 | `N2-R5` | Confirming is not viewing: a repair is not carried out without a confirmation distinct from having read it | `Confirmed` |
-| `N2-R6` | A repair confirmed against one reading is not carried out against another | `Carried` |
+| `N2-R6` | A repair confirmed against one reading is not carried out against another, and is offered again | The stack refuses a yes whose offer has moved as `REPAIR-1`; `Menders` reads that as `HowTheRepairIsGoing::moved()` in the stack's words, and `WhatWouldBePutRight` lets go of the yes, asks for the offer again and draws the stack's words above it |
 
 ## Starting and stopping
 

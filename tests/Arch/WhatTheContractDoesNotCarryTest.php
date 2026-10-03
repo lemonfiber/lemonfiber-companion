@@ -147,21 +147,6 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'reading naming itself and the action taking that name back, as an uninstall\'s does.',
     ],
     [
-        'requirement' => 'N13-R10',
-        'asks' => 'to label a rehearsed removal of somebody from the household as a rehearsal',
-        // Named, and watched for the word the invitation already marks a
-        // rehearsal with: a person's removal able to be rehearsed would have to
-        // say so on this payload, and `confirmed: false` cannot.
-        'envelope' => 'RemovalEnvelope',
-        'field' => 'rehearsed',
-        'shape' => null,
-        'raised' => 'No action argument on the HTTP route asks for a rehearsal, so none can arrive, and the '
-            . '`removal` envelope carries no marker of one: `confirmed: false` is a reading nobody agreed '
-            . 'to and a rehearsal alike. The screen labels that reading as what taking them out would cost, '
-            . 'with nobody taken out, and never as a rehearsal, because nothing on the wire says one ran. '
-            . 'What closes this row is a rehearsal the route can be asked for and the payload saying it was one.',
-    ],
-    [
         'requirement' => 'N13-R19',
         'asks' => 'to state what taking somebody out of the household does to their watch history',
         // Named, and watched as a whole payload: the effect could arrive as a
@@ -169,30 +154,13 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // anything it does not say now is what closes this.
         'envelope' => 'RemovalEnvelope',
         'field' => null,
-        'shape' => 'array{\'asks-through-the-request-service\': bool, confirmed: bool, findings: list<string>, name: string, requests: int, revoked: \'everywhere\'|\'media-server-only\'|\'nothing\'}',
+        'shape' => 'array{\'asks-through-the-request-service\': bool, confirmed: bool, findings: list<string>, name: string, rehearsed: bool, requests: int, revoked: \'everywhere\'|\'media-server-only\'|\'nothing\'}',
         'raised' => '`D6-R9` has the effect on watch history stated before a removal is confirmed. The `removal` '
             . 'envelope carries what could not be done in `findings` and how many requests are destroyed '
             . 'in `requests`, and nothing that says the watch history goes with the account. A sentence '
             . 'written here would be this app asserting what the media server does with an account it '
             . 'removes, which `N2-R14` refuses. The screen states the requests as the stack counts them and '
             . 'every finding in its words, and says nothing about watch history.',
-    ],
-    [
-        'requirement' => 'N13-R10',
-        'asks' => 'to ask for a rehearsal of taking lemonfiber off, and label what it answers as one',
-        // Named, and watched as a whole payload. What is missing is an
-        // argument on the action's route, which no payload can show; the
-        // payload a rehearsal answers with is where a route that can be asked
-        // for one would say so, and anything it says that it does not say now
-        // sends somebody to read this row.
-        'envelope' => 'UninstallEnvelope',
-        'field' => null,
-        'shape' => 'array{manifest: array{agreement: string, backup?: string|null, bytes: int, coming: list<array{name: string, progress: int}>, confidence: array{complete: bool, unread: list<string>}, foreign: list<array{at: string, bytes: int, files: int}>, items: list<array{bytes?: int|null, kept?: string|null, name: string, secret: bool, sort: \'container\'|\'network\'|\'image\'|\'path\', what: string}>, keeps: string, outside: list<array{by_hand: string, found: bool, what: string, why: string}>, removes: string, tier: \'stop\'|\'services\'|\'configuration\'|\'media\', volume?: string|null}, removal: array{state: \'surveyed\'}|array{state: \'confirmed\'}|array{credentials: list<string>, gone: list<string>, state: \'complete\'}|array{credentials: list<string>, gone: list<string>, left: list<array{by_hand: string, name: string, why: string}>, state: \'partial\'}}',
-        'raised' => 'The `removal` state `confirmed` is the state an uninstall rehearsal ends in, and the screen '
-            . 'labels it as a rehearsal where it arrives. None can be asked for: the `uninstall` action '
-            . 'takes `tier`, `confirm`, `offer` and `wait`, and no argument on the HTTP route asks for a '
-            . 'rehearsal, so none arrives from this app. What closes this row is a rehearsal the route '
-            . 'can be asked for.',
     ],
     [
         'requirement' => 'N7-R11',
@@ -235,7 +203,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // closes this.
         'envelope' => 'UpgradeEnvelope',
         'field' => null,
-        'shape' => 'array{confirmed: bool, media: list<array{media_type: string, outcome?: array{state: \'started\'}|array{state: \'not-started\'}|array{detail: string, state: \'failed\'}|null, preset: string, size_per_hour: string}>}',
+        'shape' => 'array{confirmed: bool, media: list<array{media_type: string, outcome?: array{state: \'started\'}|array{state: \'not-started\'}|array{detail: string, state: \'failed\'}|null, preset: string, size_per_hour: string}>, rehearsed: bool}',
         'raised' => 'An upgrade is described kind by kind with the preset in force and what an hour of it '
             . 'costs, and nothing else. `D2-R7` asks for its cost stated, and a rate per hour is not a '
             . 'cost: nothing says how many hours the library holds, and `N2-R14` forbids working one out. '
@@ -247,7 +215,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // Named, and watched as a whole payload, for the row above's reason.
         'envelope' => 'QualityEnvelope',
         'field' => null,
-        'shape' => 'array{choices: list<array{means: string, needs_transcoding_here: bool, preset: string, resolution: string, scope: string, size_per_hour: string, transcoding: string}>, customised: bool, disposition: \'shown\'|\'recorded\'|\'rehearsed\'|\'held\'|\'reapplied\'|\'would-reapply\', music?: array{format: string, means: string, note: string, scope: string, size_per_hour: string, targets: string}|null, overwritten?: array{diff: string, path: string}|null}',
+        'shape' => 'array{choices: list<array{means: string, needs_transcoding_here: bool, preset: string, resolution: string, scope: string, size_per_hour: string, transcoding: string}>, customised: bool, disposition: \'shown\'|\'recorded\'|\'rehearsed\'|\'held\'|\'reapplied\'|\'would-reapply\', music?: array{format: string, means: string, note: string, scope: string, size_per_hour: string, targets: string}|null, overwritten?: array{diff: string, path: string}|null, rehearsed: bool}',
         'raised' => '`D2-R6` requires a changed preset to state that it affects future acquisitions only, and '
             . 'the `quality` envelope carries no such statement. A sentence written here would be this app '
             . 'asserting what the core does with a choice, which is the core\'s to say. The screen offers '
@@ -298,7 +266,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // which nothing serves over HTTP.
         'envelope' => 'WizardEnvelope',
         'field' => null,
-        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: array{from: mixed, value?: string|null, withheld: bool}}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
+        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: array{from: mixed, value?: string|null, withheld: bool}}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, rehearsed: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
         'raised' => 'What setup settled is carried whole only by `setup` — `data_root`, `protocols`, '
             . '`service_user` — and only the command line writes that kind; no read, action or endpoint '
             . 'answers with it. Setup\'s own read, `GET /api/setup`, answers with `wizard`, whose `plan` '

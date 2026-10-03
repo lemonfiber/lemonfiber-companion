@@ -27,6 +27,7 @@ function anOfferToLetGoSaying(array $download = [], mixed $goes = 'The copy in t
 {
     return new Envelope(1, 'stop-seeding', [
         'agreement' => 'stop-seeding-show-season1-4000',
+        'rehearsed' => false,
         'download' => [
             'bytes' => 4_000,
             'consequence' => 'Your ratio on it stops growing',
@@ -48,6 +49,7 @@ function aReportOfLettingGoSaying(array $gone): Envelope
 {
     return new Envelope(1, 'stop-seeding', [
         'agreement' => 'stop-seeding-show-season1-4000',
+        'rehearsed' => false,
         'download' => ['bytes' => 4_000, 'name' => 'Show.Season1', 'standing' => ['standing' => 'seeding', 'ratio' => 80]],
         'goes' => 'The copy in the downloads tree goes with it',
         'gone' => ['name' => 'Show.Season1', 'bytes' => 4_000, 'rehearsed' => false, ...$gone],

@@ -43,6 +43,7 @@ function bandwidthSaying(array $data): Envelope
 function aPlainLine(): array
 {
     return [
+        'rehearsed' => false,
         'restraint' => 'limited',
         'means' => 'The stack takes a share and leaves the rest',
         'cautions' => ['Measured at night'],

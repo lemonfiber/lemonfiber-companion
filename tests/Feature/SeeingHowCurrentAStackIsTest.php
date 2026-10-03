@@ -860,6 +860,7 @@ it('says whether the household will notice what the release carrying the pins ch
 function aStackJustUpdatedWithItsNotesPending(): array
 {
     return [
+        'rehearsed' => false,
         'state' => 'current',
         'confirmed' => false,
         'in_flight' => [],
@@ -885,6 +886,7 @@ function aStackJustUpdatedWithItsNotesPending(): array
 function aStackWithOneServiceBehindItsPin(): array
 {
     return [
+        'rehearsed' => false,
         'state' => 'updates-available',
         'confirmed' => false,
         'in_flight' => [],

@@ -9,6 +9,15 @@
     <x-design::title>{{ __('health.about_to', ['what' => $this->asking()->named()]) }}</x-design::title>
     <x-design::body>{{ __($this->asking()->doing()->saidOnTheScreen()) }}</x-design::body>
 
+    @if ($this->willRun !== '')
+        {{-- The exact command the yes will run, from the stack's own
+             rehearsal of it, read before agreeing rather than after. Nothing
+             is drawn until the stack has said, and nothing where it could
+             not: the question stands without it. --}}
+        <x-design::note>{{ __('stacks.command.will_run') }}</x-design::note>
+        <x-design::verbatim>{{ $this->willRun }}</x-design::verbatim>
+    @endif
+
     {{-- How long for, as the stack reported it. Said here because
          this is the moment it is any use: *a second* and *three minutes*
          are different decisions, and the decision is made before the verb

@@ -43,5 +43,6 @@ agreed to outlives the screen.
 `WhatTheContractDoesNotCarryTest` holds this against the `uninstall`
 envelope's shape, which the answer arriving changes.
 
-`N13-R10` is answered for what arrives. No argument on the HTTP route asks for a
-rehearsal, so the screen offers none; a stack that answers one is drawn as one.
+`N13-R10` is answered for what arrives. The `uninstall` action takes `dry_run`,
+and the screen does not ask for a rehearsal yet; a stack that answers one is
+drawn as one.

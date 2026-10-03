@@ -93,7 +93,7 @@ function aPass(string $category = 'storage'): array
  */
 function aRun(string $overall, array $findings): array
 {
-    return ['overall' => $overall, 'findings' => $findings];
+    return ['rehearsed' => false, 'overall' => $overall, 'findings' => $findings];
 }
 
 /** @return array<string, mixed> */

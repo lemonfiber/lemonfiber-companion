@@ -55,6 +55,9 @@ final class AStackThatSupervises implements Supervising
     /** @var list<AgreedTo> Everything it was told to do, in the order it was told. */
     private array $told = [];
 
+    /** @var list<AgreedTo> Everything it was asked to rehearse, in the order it was asked. */
+    private array $rehearsed = [];
+
     /** @var list<Job> Every handle it was asked after, in the order it was asked. */
     private array $followed = [];
 
@@ -282,6 +285,31 @@ final class AStackThatSupervises implements Supervising
         $this->told[] = $agreed;
 
         return ($this->acting)();
+    }
+
+    /**
+     * Rehearsals are answered as the verb would be, and counted apart from it.
+     *
+     * Not among {@see askings()}, which count readings and verbs: a rehearsal
+     * changes nothing, and a test about a verb being sent once must not count
+     * the question asked before the yes.
+     */
+    public function rehearsed(Stack $stack, Session $session, AgreedTo $agreed): Underway
+    {
+        $this->remember($stack, $session);
+        $this->rehearsed[] = $agreed;
+
+        return ($this->acting)();
+    }
+
+    /**
+     * Everything it was asked to rehearse, in order.
+     *
+     * @return list<AgreedTo>
+     */
+    public function whatItWasAskedToRehearse(): array
+    {
+        return $this->rehearsed;
     }
 
     public function formsOn(Stack $stack, Session $session): WhatFormsThereAre

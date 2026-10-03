@@ -84,6 +84,7 @@ function whatAFillingStackSaysOfItsHealth(): array
         'affected' => [[
             'check' => 'disk.space',
             'severity' => 'warning',
+            'onset' => '1759400000',
             'summary' => 'The disk is nearly full',
             'meaning' => 'New downloads will start failing soon',
             'remedies' => ['Make room', 'Add a disk'],

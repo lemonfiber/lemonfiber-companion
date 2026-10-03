@@ -243,6 +243,7 @@ it('stands in for a machine with a payload the contract would accept', function 
         'kind' => 'hosting',
         'data' => [
             'manager' => 'launchd',
+            'rehearsed' => false,
             'commands' => [aHostedRow('Watching', 'hosted')],
         ],
     ]))->toBe([], "The payload this suite reads is not one a stack would send.\n");

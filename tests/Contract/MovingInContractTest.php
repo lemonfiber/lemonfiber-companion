@@ -357,6 +357,7 @@ function whatAStackSaysAdoptingWouldComeTo(string $stance = 'pending'): array
         'api_version' => 1,
         'kind' => 'adoption',
         'data' => [
+            'rehearsed' => false,
             'project' => 'media',
             'stance' => $stance,
             'upgrades' => [[
@@ -441,7 +442,7 @@ function aMoveStagedBy(MovingInBy $by): AMove
         MovingInBy::Adopting => TheAdoption::of('', WhatWasNamed::of('back_up'), ''),
         MovingInBy::Importing => TheImport::of('', TheRecords::of(), TheRecords::of(), WhatIsUnsupported::none()),
         MovingInBy::StandingBeside => TheStandingBeside::of(ThePortsMoved::of(), ''),
-        MovingInBy::Replacing => TheReplacement::of('', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running')),
+        MovingInBy::Replacing => TheReplacement::of('', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running'), ''),
     });
 }
 
@@ -485,6 +486,17 @@ it('asks the question without a yes and the yes with one, each under a key of it
         ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull()
         ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBe($asked?->headers()->get(Api::IDEMPOTENCY_HEADER));
 })->with(MovingInBy::cases());
+
+it('agrees to a replacement by the offer it named, and to nothing else', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([theHandleAMoveIsAnsweredWith()]);
+    $named = AMove::at(Stance::Pending, TheReplacement::of('media', WhatWasNamed::of('would_stop', 'sonarr'), WhatWasNamed::of('stopped'), WhatWasNamed::of('still_running'), '5c3a1d20'));
+
+    new Scouts(new PinnedClients(), SequencedEntropy::counting())
+        ->moveIn(aStackToSurvey(), Session::of('a-session-not-a-secret'), AMoveAgreed::after($named));
+
+    expect($mock->getLastPendingRequest()?->body()?->all())->toBe(['offer' => '5c3a1d20']);
+});
 
 it('keeps following work the stack is still carrying out', function (): void {
     MockClient::destroyGlobal();

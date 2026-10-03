@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheMoveSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
+use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -37,8 +38,10 @@ use Modules\Sdk\Internal\WhatTheReachMet;
  *
  * **Each way of moving in is one action read twice**, as {@see Upgraders}'
  * is: without the yes it says what it would come to and does nothing, and
- * with it it is carried out. `confirm` is the one argument either takes. The
- * stack answers both with a handle, which {@see self::whatBecameOf()} follows
+ * with it it is carried out. `confirm` is the yes, except to a replacement,
+ * whose yes is `offer`: the name of the offer that said what it would stop,
+ * from the stack's own answer without the yes. The stack answers both with a
+ * handle, which {@see self::whatBecameOf()} follows
  * to where the move stands, as {@see Ushers} follows an invitation.
  *
  * **The yes carries a key; the question does not**, for {@see Menders}'
@@ -92,7 +95,7 @@ final readonly class Scouts implements MovingIn
         try {
             return $this->underway($this->clients->client($stack, $session)->act(
                 Api::action($agreed->by()->asked()),
-                [UpdateField::Confirm->value => true],
+                $this->theYes($agreed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -132,6 +135,18 @@ final readonly class Scouts implements MovingIn
         } catch (NoSuchJob) {
             return WhatBecameOfTheMove::ended();
         }
+    }
+
+    /**
+     * The yes a move is sent with: the name of the offer where it was given one, a confirmation where not.
+     *
+     * @return array<string, bool|string>
+     */
+    private function theYes(AMoveAgreed $agreed): array
+    {
+        return $agreed->offer() === ''
+            ? [UpdateField::Confirm->value => true]
+            : [RestoreField::Offer->value => $agreed->offer()];
     }
 
     /**

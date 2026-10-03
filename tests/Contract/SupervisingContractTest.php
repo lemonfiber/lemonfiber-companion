@@ -42,6 +42,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Supervisors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -447,6 +448,59 @@ it('N2-R7 — takes the same verb about a whole form', function (): void {
     foreach (everyWayOfSupervising([aStartedAnswer()]) as $which => $make) {
         expect(whatCameOfSaying($make(), $agreed))->toBe(AStackThatSupervises::THE_JOB, $which);
     }
+});
+
+/** What came of asking the stack to rehearse a verb, as a word. */
+function whatCameOfRehearsing(Supervising $supervising, AgreedTo $agreed): string
+{
+    return $supervising->rehearsed(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed)->either(
+        started: static fn(Job $job): TheWordCarriedOut
+            => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut($why->kind()->value),
+    )->said;
+}
+
+it('takes a verb to rehearse and comes away with a name to ask about', function (): void {
+    $agreed = AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'));
+
+    foreach (everyWayOfSupervising([aStartedAnswer()]) as $which => $make) {
+        expect(whatCameOfRehearsing($make(), $agreed))->toBe(AStackThatSupervises::THE_JOB, $which);
+    }
+});
+
+it('says the same about a rehearsal it could not ask for', function (): void {
+    $agreed = AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'));
+
+    foreach (everyWayOfSupervising([MockResponse::make('', 500)], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
+        expect(whatCameOfRehearsing($make(), $agreed))->toBe(KindOfObstacle::StackDidNotAnswer->value, $which);
+    }
+});
+
+it('asks for a rehearsal as the same verb with `dry_run`, under a key of its own', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = [
+                $asked->getRequest()->resolveEndpoint(),
+                $asked->body()?->all(),
+                $asked->headers()->get('Idempotency-Key') !== null,
+            ];
+
+            return aStartedAnswer();
+        },
+    ]);
+
+    $supervising = new Supervisors(new PinnedClients(), SequencedEntropy::counting());
+    $agreed = AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'));
+    $supervising->rehearsed(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed);
+    $supervising->told(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed);
+
+    expect($sent)->toBe([
+        ['/api/actions/restart', ['services' => ['sonarr'], 'dry_run' => true], true],
+        ['/api/actions/restart', ['services' => ['sonarr']], true],
+    ]);
 });
 
 it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {

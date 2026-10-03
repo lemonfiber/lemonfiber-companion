@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -740,3 +742,43 @@ it('N3-R13 — and the session is let go of, handle and all', function (): void 
     expect($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeFalse()
         ->and($screen->isSignedIn())->toBeFalse();
 });
+
+/** What a stack says when the reading a repair was agreed against has moved. */
+function whatAStackSaysOfAMovedOffer(): ARefusalInItsWords
+{
+    return ARefusalInItsWords::said(
+        'What you agreed to is not what is offered now',
+        'The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.',
+        WhatTheRefusalNamed::nothing(),
+    );
+}
+
+it('refuses a yes whose offer moved and offers again, under the stack\'s own words', function (): void {
+    $mending = AStackThatWouldMend::whoseOfferMoved(aListingWorthReading(), whatAStackSaysOfAMovedOffer());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($drawn)->toContain('What you agreed to is not what is offered now')
+        ->and($drawn)->toContain('The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.')
+        ->and($drawn)->toContain('Move the library onto the larger disk')
+        // The offer as it stands now was asked for, and the yes was sent once.
+        ->and($mending->askings())->toBe(2)
+        ->and($mending->agreements())->toBe(1);
+});
+
+it('puts what the stack said about a moved offer away once the operator answers again', function (string $answer): void {
+    $mending = AStackThatWouldMend::whoseOfferMoved(aListingWorthReading(), whatAStackSaysOfAMovedOffer());
+    $screen = theRepairsScreen($mending);
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $before = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    $answer === 'agreeing' ? $screen->agreeTo('credentials.expired') : $screen->lookAgain();
+
+    expect($before)->toContain('What you agreed to is not what is offered now')
+        ->and($screen->movedOn)->toBeNull();
+})->with(['agreeing', 'looking again']);

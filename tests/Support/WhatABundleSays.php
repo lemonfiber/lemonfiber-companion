@@ -50,6 +50,7 @@ final readonly class WhatABundleSays
     {
         return [
             'bytes' => 48_213,
+            'rehearsed' => false,
             'would_go' => self::WOULD_GO,
             'contents' => self::contents(),
             ...$changed,

@@ -63,10 +63,10 @@ function everyMoveWithTwoOfEverything(): array
     $limit = ['what' => 'sonarr', 'because' => 'its indexers could not be read'];
 
     return [
-        'adoption' => ['project' => 'media', 'stance' => 'applied', 'upgrades' => [$upgrade, [...$upgrade, 'service' => 'radarr', 'backup_first' => false, 'refused' => true]], 'back_up' => ['/srv/sonarr', '/srv/radarr'], 'backed_up' => '/srv/copy.tar'],
-        'import' => ['project' => 'media', 'stance' => 'applied', 'carried' => [$record, [...$record, 'name' => 'SD']], 'would_carry' => [$record, $record], 'not_carried' => [$limit, [...$limit, 'what' => 'radarr']]],
-        'beside' => ['stance' => 'applied', 'ports' => [['service' => 'sonarr', 'from' => 8989, 'to' => 8990], ['service' => 'radarr', 'from' => 7878, 'to' => 7879]], 'written' => '/srv/beside.yml'],
-        'replacement' => ['project' => 'media', 'stance' => 'applied', 'would_stop' => ['sonarr', 'radarr'], 'stopped' => ['sonarr', 'radarr'], 'still_running' => ['tautulli', 'bazarr']],
+        'adoption' => ['project' => 'media', 'stance' => 'applied', 'upgrades' => [$upgrade, [...$upgrade, 'service' => 'radarr', 'backup_first' => false, 'refused' => true]], 'back_up' => ['/srv/sonarr', '/srv/radarr'], 'backed_up' => '/srv/copy.tar', 'rehearsed' => false],
+        'import' => ['project' => 'media', 'stance' => 'applied', 'carried' => [$record, [...$record, 'name' => 'SD']], 'would_carry' => [$record, $record], 'not_carried' => [$limit, [...$limit, 'what' => 'radarr']], 'rehearsed' => false],
+        'beside' => ['stance' => 'applied', 'ports' => [['service' => 'sonarr', 'from' => 8989, 'to' => 8990], ['service' => 'radarr', 'from' => 7878, 'to' => 7879]], 'written' => '/srv/beside.yml', 'rehearsed' => false],
+        'replacement' => ['project' => 'media', 'stance' => 'applied', 'would_stop' => ['sonarr', 'radarr'], 'stopped' => ['sonarr', 'radarr'], 'still_running' => ['tautulli', 'bazarr'], 'agreement' => '5c3a1d20', 'rehearsed' => false],
     ];
 }
 
@@ -144,11 +144,12 @@ function everythingTheMoveSays(AMove $move): string
             return new TheWordCarriedOut(sprintf('%s|%s', implode(',', $ports), $beside->written()));
         },
         replacing: static fn(TheReplacement $replacement): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
-            '%s|%s|%s|%s',
+            '%s|%s|%s|%s|%s',
             $replacement->project(),
             implode(',', iterator_to_array($replacement->wouldStop(), preserve_keys: false)),
             implode(',', iterator_to_array($replacement->stopped(), preserve_keys: false)),
             implode(',', iterator_to_array($replacement->stillRunning(), preserve_keys: false)),
+            $replacement->agreement(),
         )),
     )->said);
 }
@@ -172,7 +173,7 @@ it('reads every way of moving in by the kind it arrived as, with everything it c
         ->and(everythingTheMoveSays(WhatMovingInCameTo::in(aMoveSaying('beside', $moves['beside']))))
         ->toBe('beside|applied||sonarr 8989>8990,radarr 7878>7879|/srv/beside.yml')
         ->and(everythingTheMoveSays(WhatMovingInCameTo::in(aMoveSaying('replacement', $moves['replacement']))))
-        ->toBe('replace|applied||media|sonarr,radarr|sonarr,radarr|tautulli,bazarr');
+        ->toBe('replace|applied||media|sonarr,radarr|sonarr,radarr|tautulli,bazarr|5c3a1d20');
 });
 
 it('reads every stance as given, and a turned-away one with the stack\'s reason', function (string $kind): void {

@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
+use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -125,6 +126,27 @@ final readonly class Supervisors implements Supervising
                 // length of a method is a key a second statement can reach, and
                 // this method's whole obligation is that no second send ever
                 // sees the first one's name.
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
+
+            return Underway::as(Handles::in($envelope));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return Underway::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    public function rehearsed(Stack $stack, Session $session, AgreedTo $agreed): Underway
+    {
+        $client = $this->clients->client($stack, $session);
+
+        try {
+            // Under a key of its own, as every action is: a rehearsal changes
+            // nothing, and a key still names this asking apart from the yes.
+            $envelope = $client->act(
+                Api::action($agreed->doing()->asked()),
+                [...$this->about($agreed), LifecycleField::DryRun->value => true],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

@@ -33,6 +33,7 @@ function oneHolding(array $differently = []): array
 function whatAStackSaysAboutAShelf(array $differently = []): array
 {
     return [
+        'rehearsed' => false,
         'id' => 'the-loft',
         'member' => 'ada',
         'available' => true,

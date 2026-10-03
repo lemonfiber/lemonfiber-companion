@@ -71,6 +71,7 @@ function whatAStackSaysItKeeps(mixed $secret = true): array
         'api_version' => 1,
         'kind' => 'stored',
         'data' => [
+            'rehearsed' => false,
             'roots' => [['at' => '/srv/lemonfiber', 'what' => 'Everything the stack writes']],
             'kept' => [
                 ['what' => 'The VPN credentials', 'at' => '/srv/lemonfiber/secrets/vpn', 'why' => 'So the tunnel can be raised', 'secret' => $secret],

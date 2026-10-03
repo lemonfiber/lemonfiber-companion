@@ -95,6 +95,7 @@ function whatAStackSendsOneMember(array $owed): array
         'api_version' => 1,
         'kind' => 'household',
         'data' => [
+            'rehearsed' => false,
             'available' => true,
             'findings' => [],
             'members' => [[
@@ -136,6 +137,7 @@ function whatAStackSendsOneMemberWhoHasAsked(array $requests): array
         'api_version' => 1,
         'kind' => 'household',
         'data' => [
+            'rehearsed' => false,
             'available' => true,
             'findings' => [],
             'members' => [[
@@ -188,7 +190,7 @@ function whatAStackSendsAnOperator(): array
     return [
         'api_version' => 1,
         'kind' => 'household',
-        'data' => ['available' => true, 'findings' => [], 'members' => []],
+        'data' => ['available' => true, 'findings' => [], 'members' => [], 'rehearsed' => false],
     ];
 }
 

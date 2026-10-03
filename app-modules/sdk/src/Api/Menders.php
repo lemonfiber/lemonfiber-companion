@@ -12,7 +12,9 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Repair as Asking;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\EffectSaysNothing;
 use Modules\Kernel\Api\Entropy;
@@ -22,6 +24,7 @@ use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Mending;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -113,7 +116,7 @@ final readonly class Menders implements Mending
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
+            return $this->refused($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing $why) {
             return HowTheRepairIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
@@ -173,6 +176,23 @@ final readonly class Menders implements Mending
         } catch (NoSuchJob) {
             return HowTheRepairIsGoing::ended();
         }
+    }
+
+    /**
+     * What a yes the stack turned down came to.
+     *
+     * A yes refused because its offer moved is an answer to re-offer on, so it
+     * is read in the stack's words; every other refusal is what was met.
+     */
+    private function refused(CertificateWasRefused|RequestFailed $why): HowTheRepairIsGoing
+    {
+        return $why instanceof RequestFailed && $why->code() === RefusalCode::Stale
+            ? WhatARefusalMeant::inItsWords(
+                $why,
+                refused: static fn(ARefusalInItsWords $said): HowTheRepairIsGoing => HowTheRepairIsGoing::moved($said),
+                met: static fn(Obstacle $obstacle): HowTheRepairIsGoing => HowTheRepairIsGoing::met($obstacle),
+            )
+            : HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
     }
 
     /**

@@ -464,6 +464,11 @@ function everyAdapterCallThatReads(): array
         'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
         'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
         'Supervisors::formsOn' => static fn(): object => new Supervisors($clients, $entropy)->formsOn($stack, $session),
+        'Supervisors::rehearsed' => static fn(): object => new Supervisors($clients, $entropy)->rehearsed(
+            $stack,
+            $session,
+            AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr')),
+        ),
         'Supervisors::running' => static fn(): object => new Supervisors($clients, $entropy)->running($stack, $session),
         'Supervisors::told' => static fn(): object => new Supervisors($clients, $entropy)->told(
             $stack,
