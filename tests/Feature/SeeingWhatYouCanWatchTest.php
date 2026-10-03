@@ -310,6 +310,16 @@ it('offers the way back to the machine and to a renewed session', function (): v
         ->and($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack($stack));
 });
 
+it('ends with the way back to the machine for the operator, and with none for a member', function (): void {
+    $operator = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), whose: Whose::theOperator());
+    $member = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
+
+    expect($operator->goesBackToTheMachine())->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($operator)->offers())->toContain(__('household.back_to_the_machine'))
+        ->and($member->goesBackToTheMachine())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($member)->offers())->not->toContain(__('household.back_to_the_machine'));
+});
+
 it('is what the router serves under the shelf path', function (): void {
     $resolved = NativeRouter::resolve(
         AStacksScreen::Shelf->forTheStack(theStackAShelfIsReadFrom()->id()),
