@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('navigation.pairing')" />
+<x-operator::screen-opens :title="__('navigation.pairing')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
     <x-design::title>{{ __($this->headline(), ['stack' => $this->called()]) }}</x-design::title>
