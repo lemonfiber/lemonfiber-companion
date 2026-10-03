@@ -64,7 +64,9 @@
     <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
 @endif
 
-    {{-- The way back to the machine this reading is about, whatever became
-         of the reading. --}}
-    <x-design::link label="{{ __('household.back_to_the_machine') }}" :goes="$this->health()" />
+    {{-- The operator's way back to the machine this reading is about,
+         whatever became of the reading. --}}
+    @if ($this->goesBackToTheMachine())
+        <x-design::link label="{{ __('household.back_to_the_machine') }}" :goes="$this->health()" />
+    @endif
 </x-operator::content>

@@ -110,7 +110,7 @@ final class WhatYouCanWatch extends NativeComponent
         return $this->answered ??= $this->ask();
     }
 
-    /** The way back to the machine this reading is about. */
+    /** The operator's way back to the machine this reading is about. */
     public function health(): string
     {
         return AStacksScreen::Health->forTheStack($this->stack()->id());
