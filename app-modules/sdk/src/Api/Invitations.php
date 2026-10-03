@@ -85,7 +85,8 @@ final readonly class Invitations
     }
 
     /**
-     * The one address to send them, with the stack's caution about it where it has one.
+     * The one address to send them, with the stack's caution about it and the
+     * address that turns the invitation down, where it has them.
      *
      * @param array<mixed> $data
      */
@@ -97,7 +98,11 @@ final readonly class Invitations
             $caution = self::text($data, WireField::Caution);
         }
 
-        return AnAddressToHand::at(self::text($data, WireField::Address), $caution);
+        $url = self::text($data, WireField::Address);
+
+        return array_key_exists(InvitationField::Decline->value, $data) && $data[InvitationField::Decline->value] !== null
+            ? AnAddressToHand::declinable($url, $caution, self::text($data, InvitationField::Decline))
+            : AnAddressToHand::at($url, $caution);
     }
 
     /**

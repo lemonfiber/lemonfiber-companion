@@ -7,6 +7,9 @@ namespace Modules\Operator\Internal\Screens;
 use Closure;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\View\View;
+
+use function is_string;
+
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
@@ -84,6 +87,8 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     use ChoosesWhatAnInvitationAsks;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    /** The sentence the text handed over leads to the address that turns the invitation down with. */
+    private const string DECLINING = 'stacks.invitation.declining';
 
     /** Whose password the operator has asked to take off and not yet said yes to, or empty. */
     public string $member = '';
@@ -271,10 +276,13 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
         $toHand = $invitation->toHand();
 
-        $this->passedOn = $this->sharing->passOn(AnInvitationToPassOn::of($toHand, $this->catalogue->choice('stacks.invitation.covering', $toHand->hours(), [
+        $covering = $this->catalogue->choice('stacks.invitation.covering', $toHand->hours(), [
             'name' => $toHand->name(),
             'stack' => $this->stack()->name()->shown(),
-        ])))->either(
+        ]);
+        $declining = $this->catalogue->get(self::DECLINING);
+
+        $this->passedOn = $this->sharing->passOn(AnInvitationToPassOn::of($toHand, $covering, is_string($declining) ? $declining : self::DECLINING))->either(
             over: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('stacks.invitation.passed_on'),
             // One sentence for both refusals: whichever it was, nothing was
             // sent and the address is on the screen to hand over another way.

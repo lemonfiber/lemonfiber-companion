@@ -137,6 +137,15 @@ it('reads an invitation carried out, with its caution, what it granted, and who 
     );
 });
 
+it('reads the address that turns the invitation down, and none where it was sent as nothing or left out', function (): void {
+    $declined = Invitations::in(invitationSaying([...aPlainInvitation(), 'decline' => 'http://loft.local:5056/decline/abc']))->toHand()->address();
+
+    expect($declined->decline())->toBe('http://loft.local:5056/decline/abc')
+        ->and($declined->carried())->toBe('http://loft.local:8096')
+        ->and(Invitations::in(invitationSaying([...aPlainInvitation(), 'decline' => null]))->toHand()->address()->decline())->toBe('')
+        ->and(Invitations::in(invitationSaying(aPlainInvitation()))->toHand()->address()->decline())->toBe('');
+});
+
 it('reads a caution or an application sent as nothing as none, and a limit sent as nothing or left out as none', function (): void {
     $applied = [...whatAnInvitationApplied(), 'limit' => null];
     $unlimited = array_diff_key(whatAnInvitationApplied(), ['limit' => true]);

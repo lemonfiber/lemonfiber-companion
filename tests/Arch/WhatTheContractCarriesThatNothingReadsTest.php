@@ -618,13 +618,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The profiles the verb activated, for `PreviewEnvelope.profiles`\'s reason.',
     ],
     [
-        'path' => 'InvitationEnvelope.decline',
-        'because' => 'The address that declines the invitation, which an invitation carries beside the front '
-            . 'door (`G5-R14`). Handing it over with the invitation changes what the operator shares and how '
-            . 'it is worded (`N21-R2`, whose prose says this app hands over the one address it has), so it '
-            . 'is read in that change.',
-    ],
-    [
         'path' => 'LifecycleEnvelope.plan.running',
         'because' => 'Which of the services were already running when the verb was asked for. It is drawn '
             . 'before a start, from the rehearsal (`N18-R10`); after one, `services` says where each ended up '

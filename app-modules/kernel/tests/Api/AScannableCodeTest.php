@@ -14,6 +14,7 @@ use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\CodeIsNotSquare;
 use Modules\Kernel\Api\InvitationSaysNothing;
+use Modules\Kernel\Api\TheDoorSaysNothing;
 
 it('keeps a square of rows, top to bottom, and counts its side', function (): void {
     $code = AScannableCode::drawn(...['b' => '10', 'a' => '01']);
@@ -39,8 +40,20 @@ it('puts the address and its caution under the covering sentence, and the cautio
     $cautioned = AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change'), 72);
     $plain = AnInvitationToHand::to('anna', AnAddressToHand::at('http://loft.local:8096', ''), 72);
 
-    expect(AnInvitationToPassOn::of($cautioned, 'Come in')->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change")
-        ->and(AnInvitationToPassOn::of($plain, 'Come in')->text())->toBe("Come in\n\nhttp://loft.local:8096")
-        ->and(AnInvitationToPassOn::of($plain, 'Come in')->named())->toBe('anna')
-        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, ' '))->toThrow(InvitationSaysNothing::class, 'its `covering` blank');
+    expect(AnInvitationToPassOn::of($cautioned, 'Come in', 'Turn it down:')->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change")
+        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Turn it down:')->text())->toBe("Come in\n\nhttp://loft.local:8096")
+        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Turn it down:')->named())->toBe('anna')
+        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, ' ', 'Turn it down:'))->toThrow(InvitationSaysNothing::class, 'its `covering` blank')
+        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, 'Come in', ' '))->toThrow(InvitationSaysNothing::class, 'its `declining` blank');
+});
+
+it('ends the text with the address that turns the invitation down, on a line of its own under its sentence, and keeps it out of the code', function (): void {
+    $address = AnAddressToHand::declinable('http://192.168.1.42:8096', 'The number can change', 'http://192.168.1.42:5056/decline/abc');
+    $invitation = AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Turn it down:');
+
+    expect($invitation->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change\n\nTurn it down:\nhttp://192.168.1.42:5056/decline/abc")
+        ->and($address->carried())->toBe('http://192.168.1.42:8096')
+        ->and($address->decline())->toBe('http://192.168.1.42:5056/decline/abc')
+        ->and(AnAddressToHand::at('http://loft.local:8096', '')->decline())->toBe('')
+        ->and(fn(): AnAddressToHand => AnAddressToHand::declinable('http://192.168.1.42:8096', '', ' '))->toThrow(TheDoorSaysNothing::class, '`decline`');
 });

@@ -19,7 +19,7 @@ use function trim;
  */
 final readonly class AnAddressToHand
 {
-    private function __construct(private string $url, private string $caution) {}
+    private function __construct(private string $url, private string $caution, private string $decline = '') {}
 
     /** The address the stack sent, with what is worth knowing about it; a blank one is refused. */
     public static function at(string $url, string $caution): self
@@ -33,6 +33,24 @@ final readonly class AnAddressToHand
         }
 
         return new self($url, $caution);
+    }
+
+    /**
+     * The address the stack sent, with its caution and the address it gave for
+     * turning the invitation down; a blank one is refused.
+     *
+     * The decline address is handed over in the text beside the address, and
+     * never in a code of it.
+     */
+    public static function declinable(string $url, string $caution, string $decline): self
+    {
+        if (trim($decline) === '') {
+            throw TheDoorSaysNothing::about('decline');
+        }
+
+        $address = self::at($url, $caution);
+
+        return new self($address->url, $address->caution, $decline);
     }
 
     /** The stack sent no address. */
@@ -57,5 +75,11 @@ final readonly class AnAddressToHand
     public function caution(): string
     {
         return $this->caution;
+    }
+
+    /** The address that turns the invitation down, or empty where the stack gave none. */
+    public function decline(): string
+    {
+        return $this->decline;
     }
 }
