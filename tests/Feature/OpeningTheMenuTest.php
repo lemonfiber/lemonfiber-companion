@@ -7,15 +7,18 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\NotInThisVersionYet;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
-use Modules\Operator\Internal\TheMenu;
-use Modules\Operator\Internal\WhatIsNotHereYet;
-use Modules\Operator\Internal\WhereInTheMenu;
+use Modules\Wayfinding\Api\WhatIsNotHereYet;
+use Modules\Wayfinding\Api\WhoTheMenuIsFor;
+use Modules\Wayfinding\Internal\TheMenu;
+use Modules\Wayfinding\Internal\WhereInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -35,11 +38,24 @@ function theStackWhoseMenuIsOpened(): Stack
     );
 }
 
-/** A tab's screen: Updates, the root of what its tab draws. */
-function aTabWithTheMenu(): HowCurrentThisStackIs
+/** A keychain holding a session for the attic, opened for whoever is named, or none. */
+function theAtticSignedIntoBy(?Whose $whose): AKeychainInMemory
+{
+    $keychain = AKeychainInMemory::working();
+
+    if ($whose instanceof Whose) {
+        $keychain->keep(theStackWhoseMenuIsOpened()->id(), Session::of('a-session-not-a-secret'), $whose);
+    }
+
+    return $keychain;
+}
+
+/** A tab's screen: Updates, the root of what its tab draws, on a phone the operator is signed in from unless told otherwise. */
+function aTabWithTheMenu(?AKeychainInMemory $keychain = null): HowCurrentThisStackIs
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $keychain ??= theAtticSignedIntoBy(Whose::theOperator());
+    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -55,7 +71,7 @@ function aScreenTheMenuOpens(): WhatTheWordsMean
     return $screen;
 }
 
-it('draws the stack, the way to another stack and what is new, every group with every item under it, and the two settings, in the menu\'s order', function (): void {
+it('draws the operator the stack, the way to another stack and what is new, every group with every item under it, and the two settings, in the menu\'s order', function (): void {
     $screen = aTabWithTheMenu();
     $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
 
@@ -77,6 +93,41 @@ it('draws the stack, the way to another stack and what is new, every group with 
     expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe($expected)
         ->and($drawn->offers())->toBe($items)
         ->and($items)->toHaveCount(count(TheMenu::cases()) + 4);
+});
+
+it('draws only the stack, the way to another stack and the two settings where this phone holds no session for it', function (): void {
+    $screen = aTabWithTheMenu(theAtticSignedIntoBy(null));
+    $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
+    $items = [__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
+
+    expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe(['The attic', ...$items])
+        ->and($drawn->offers())->toBe($items);
+});
+
+it('draws a member what the stack owes them between the way to another stack and the two settings, and none of the operator\'s', function (): void {
+    $screen = aTabWithTheMenu(theAtticSignedIntoBy(Whose::member('ada')));
+    $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
+    $items = [
+        __('navigation.menu.switch_stack'),
+        __('household.yours'),
+        __('household.shelf'),
+        __('navigation.menu.stack_settings'),
+        __('navigation.menu.app_settings'),
+    ];
+
+    expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe(['The attic', ...$items])
+        ->and($drawn->offers())->toBe($items)
+        ->and($drawn->said())->not->toContain(__('navigation.menu.whats_new'));
+});
+
+it('reads whose menu it is once, rather than on every frame', function (): void {
+    $keychain = theAtticSignedIntoBy(Whose::theOperator());
+    $screen = aTabWithTheMenu($keychain);
+    $screen->drawerOverride();
+    $keychain->forget(theStackWhoseMenuIsOpened()->id());
+
+    expect(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toContain(__('navigation.menu.whats_new'))
+        ->and($screen->menuIsFor)->toBe(WhoTheMenuIsFor::TheOperator);
 });
 
 it('names the control that opens the menu in the operator\'s language', function (): void {

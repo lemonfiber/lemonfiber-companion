@@ -12,8 +12,8 @@ use function file_get_contents;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 
 use function preg_match;
 use function preg_match_all;
@@ -233,6 +233,25 @@ final readonly class Screens
         }
 
         return $found;
+    }
+
+    /**
+     * Every trait a class uses, and every trait those use in turn: a screen
+     * takes what a trait carries by way of another just as through one it names.
+     *
+     * @param ReflectionClass<object> $class
+     *
+     * @return list<ReflectionClass<object>>
+     */
+    public static function traitsOf(ReflectionClass $class): array
+    {
+        $traits = [];
+
+        foreach ($class->getTraits() as $trait) {
+            $traits = [...$traits, $trait, ...self::traitsOf($trait)];
+        }
+
+        return $traits;
     }
 
     /**

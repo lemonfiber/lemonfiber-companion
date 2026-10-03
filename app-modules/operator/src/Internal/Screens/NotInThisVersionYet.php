@@ -10,8 +10,8 @@ use function is_string;
 
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\WhatIsNotHereYet;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\WhatIsNotHereYet;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;

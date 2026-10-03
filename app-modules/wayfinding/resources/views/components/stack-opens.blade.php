@@ -7,4 +7,4 @@
     </native:top-bar-title>
 </native:top-bar>
 
-<x-operator::stacks-to-choose :stacks="$stacks" :choosing="$choosing" />
+<x-wayfinding::stacks-to-choose :stacks="$stacks" :choosing="$choosing" />

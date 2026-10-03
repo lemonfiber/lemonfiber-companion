@@ -172,7 +172,7 @@ final readonly class Templates
                 namespace Modules\Operator\Internal\Screens\Fixtures;
 
                 use Illuminate\View\View;
-                use Modules\Operator\Internal\AScreenWithoutAStack;
+                use Modules\Wayfinding\Api\AScreenWithoutAStack;
 
                 use function view;
 
@@ -226,7 +226,23 @@ final readonly class Templates
                         return 'the loft';
                     }
                 }
-                PHP, 'F17 — every operator screen about a stack carries the menu', 'AScreenWithoutTheMenu'),
+                PHP, 'F17 — every screen about a stack in either surface carries the menu', 'AScreenWithoutTheMenu'),
+
+            Fixture::suite('F17', 'app-modules/household/src/Internal/Screens/Fixtures/AMembersScreenWithoutTheMenu.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Household\Internal\Screens\Fixtures;
+
+                final readonly class AMembersScreenWithoutTheMenu
+                {
+                    public function stack(): string
+                    {
+                        return 'the loft';
+                    }
+                }
+                PHP, 'F17 — every screen about a stack in either surface carries the menu', 'AMembersScreenWithoutTheMenu'),
 
             Fixture::edit(
                 'F18',

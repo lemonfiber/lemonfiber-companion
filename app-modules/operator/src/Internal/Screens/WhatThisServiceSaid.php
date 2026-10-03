@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use function in_array;
 use function is_string;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\ItsContent;
@@ -26,13 +27,12 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Zone;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -135,7 +135,7 @@ final class WhatThisServiceSaid extends NativeComponent
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

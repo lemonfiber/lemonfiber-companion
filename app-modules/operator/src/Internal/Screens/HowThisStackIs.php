@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
@@ -29,17 +30,16 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\HearsHowTheStackIs;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
 use Modules\Operator\Internal\Presenters\HowAStackReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
-use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
@@ -161,7 +161,7 @@ final class HowThisStackIs extends NativeComponent
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

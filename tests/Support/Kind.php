@@ -27,13 +27,23 @@ enum Kind: string
     /** Navigation and screen composition. Holds the mutable component shapes. */
     case Surface = 'surface';
 
+    /**
+     * The way around a stack that every surface draws: its name in the top
+     * bar, the list of stacks it opens, and the menu beside it.
+     *
+     * Its own kind because two surfaces draw it and a surface may never name
+     * another. It renders and reaches the capabilities a surface reaches, and
+     * it is reached by the surfaces and by nothing else.
+     */
+    case Wayfinding = 'wayfinding';
+
     /** The one implementation that knows a specific outside thing. */
     case Adapter = 'adapter';
 
     /**
      * Takes the place of an adapter while somebody is working on the app.
      *
-     * Its own kind because it fits none of the five above and the difference
+     * Its own kind because it fits none of the six above and the difference
      * matters in every direction. It names other adapters, which an adapter may
      * not; it names the outside vocabulary, which only the one adapter that
      * owns each may; and it is absent from a release, which none of the others
@@ -76,7 +86,7 @@ enum Kind: string
                 'Carbon',
             ],
             // Renders, so it knows the platform. Never reaches a stack.
-            self::Design, self::Surface => [
+            self::Design, self::Surface, self::Wayfinding => [
                 'Lemonfiber\Sdk',
                 'Saloon',
                 'GuzzleHttp',
@@ -101,7 +111,8 @@ enum Kind: string
         return match ($this) {
             self::Kernel => [],
             self::Capability, self::Adapter, self::Design => [self::Kernel],
-            self::Surface => [self::Kernel, self::Design, self::Capability],
+            self::Wayfinding => [self::Kernel, self::Design, self::Capability],
+            self::Surface => [self::Kernel, self::Design, self::Capability, self::Wayfinding],
             // The adapters too, because standing in for one means holding the
             // real one: the stand-in asks it for what it would have built and
             // replaces only the part that reaches outside. Building its own
@@ -144,7 +155,7 @@ enum Kind: string
         return match ($this) {
             // Where the decisions are, and therefore where a surviving mutant
             // means a test that asserts nothing.
-            self::Kernel, self::Capability, self::Surface => 100,
+            self::Kernel, self::Capability, self::Surface, self::Wayfinding => 100,
             // A component holds state and an adapter forwards a call. Mutating
             // either measures the fake rather than the application, which is a
             // number that looks like rigour and is not. A stand-in is a fake by

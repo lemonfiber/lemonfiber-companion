@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use function array_any;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
@@ -20,16 +21,15 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\WhatTheHandoverDid;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAHandoverReads;
 use Modules\Operator\Internal\Presenters\HowHostingReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -119,7 +119,7 @@ final class WhatKeepsRunningHere extends NativeComponent
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

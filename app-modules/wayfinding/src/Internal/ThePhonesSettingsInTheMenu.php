@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Wayfinding\Internal;
+
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 
 /**
  * The item every stack's menu ends on: the phone's own settings.

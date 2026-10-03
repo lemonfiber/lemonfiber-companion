@@ -9,6 +9,7 @@
         "modules/design": "dev-main",
         "modules/kernel": "dev-main",
         "modules/stacks": "dev-main",
+        "modules/wayfinding": "dev-main",
         "nativephp/mobile": "^4.4"
     },
     "autoload": {

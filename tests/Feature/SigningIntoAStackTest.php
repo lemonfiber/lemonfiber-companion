@@ -16,8 +16,8 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -68,11 +68,12 @@ function signInScreen(
     ?string $named = null,
 ): SignIntoAStack {
     $stack = aStackToSignInto();
+    $keychain ??= AKeychainInMemory::working();
 
     $screen = new SignIntoAStack(
         $door,
-        $keychain ?? AKeychainInMemory::working(),
-        AroundThePhone::holding(StacksInMemory::holding($stack)),
+        $keychain,
+        AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );
 
@@ -487,6 +488,21 @@ it('carries the menu, ending in Stack settings and App settings, so a stack that
     $offers = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers();
 
     expect(array_slice($offers, -2))->toBe([__('navigation.menu.stack_settings'), __('navigation.menu.app_settings')]);
+});
+
+it('offers only the way to another stack and the two settings until signed in, and a member\'s menu once a member is', function (): void {
+    $screen = typedPassword(signInScreen(aDoorThatOpensForAMember()), 'the-members-password');
+    $before = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers();
+    $screen->offer();
+
+    expect($before)->toBe([__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')])
+        ->and(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toBe([
+            __('navigation.menu.switch_stack'),
+            __('household.yours'),
+            __('household.shelf'),
+            __('navigation.menu.stack_settings'),
+            __('navigation.menu.app_settings'),
+        ]);
 });
 
 it('renders the frame it is named for', function (): void {

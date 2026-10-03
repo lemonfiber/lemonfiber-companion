@@ -1,5 +1,5 @@
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
-<x-operator::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
+<x-wayfinding::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content :from-the-end="! $this->answer()->startsAtTheFirstError">

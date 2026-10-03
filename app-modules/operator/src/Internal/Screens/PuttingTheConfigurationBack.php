@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
@@ -23,12 +24,11 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -108,7 +108,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Where this machine's screens are. */

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Wayfinding\Api;
 
 use function array_key_exists;
 

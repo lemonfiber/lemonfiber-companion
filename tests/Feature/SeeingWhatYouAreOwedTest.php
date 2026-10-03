@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -107,7 +108,7 @@ function theOwedScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatYouAreOwed($owing, $keychain, StacksInMemory::holding($stack), new AppsSettingsThatOpen());
+    $screen = new WhatYouAreOwed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;

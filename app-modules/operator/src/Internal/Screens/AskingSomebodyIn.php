@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Closure;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -29,16 +30,15 @@ use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -136,7 +136,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     /** The stack this screen is about, read from the route on every frame. */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

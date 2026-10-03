@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal\ViewModels;
+namespace Modules\Wayfinding\Api;
 
 use function sprintf;
 

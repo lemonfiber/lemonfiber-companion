@@ -6,9 +6,9 @@ namespace Bootstrap\Composition\NativePHP;
 
 use Lemonfiber\Native\Events\TheLockMoved;
 use Modules\Connection\Api\TheLock;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\Screens\Locked;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeComponent;
 
 /**

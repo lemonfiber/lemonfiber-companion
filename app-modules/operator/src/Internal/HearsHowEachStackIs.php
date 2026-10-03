@@ -7,6 +7,9 @@ namespace Modules\Operator\Internal;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
+use Modules\Wayfinding\Api\HearingEachStack;
+use Modules\Wayfinding\Api\WhatEachStackSaidSoFar;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -47,7 +50,7 @@ trait HearsHowEachStackIs
             return;
         }
 
-        $this->heardFromEach = $this->hearingEach()->after($this->heardFromEachSoFar(), $this->configured());
+        $this->heardFromEach = $this->hearingEach()->after($this->heardFromEachSoFar(), ...$this->configured());
     }
 
     /**

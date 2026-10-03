@@ -21,12 +21,12 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\OffersTheAppsSettings;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -158,7 +158,7 @@ final class SignIntoAStack extends NativeComponent
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Whether the operator is in, which is when the way onwards is offered. */
@@ -312,9 +312,13 @@ final class SignIntoAStack extends NativeComponent
      * keeps which surface that comes to because the frame after the tap has to draw
      * a way onwards. Recorded before the store is asked, because what the stack said
      * about who is here is true whether or not this device found room for it.
+     *
+     * The menu is read again on the next frame, from the store, so it follows the
+     * session this device actually kept.
      */
     private function kept(Session $session, Whose $whose): HowTheSignInWent
     {
+        $this->menuIsFor = null;
         $this->given = $whose->either(
             operator: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::TheReport,
             member: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::WhatTheyAreOwed,

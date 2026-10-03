@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal\Screens;
+namespace Modules\Wayfinding\Api\Screens;
 
 use Modules\Kernel\Api\HowOftenAScreenLooks;
-use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\ViewModels\AStackToChooseAsShown;
-use Modules\Operator\Internal\WhatEachStackSaidSoFar;
+use Modules\Kernel\Api\StackId;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\TheStacksToChooseFrom;
+use Modules\Wayfinding\Api\WhatEachStackSaidSoFar;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -74,7 +75,7 @@ trait ChoosesAStack
     public function openTheStack(string $id): void
     {
         $this->choosingAStack = false;
-        $this->navigate($this->around->choosingLeadsTo($this->around->stackNamed($id)));
+        $this->navigate($this->around->choosingLeadsTo($this->around->stack(StackId::rememberedAs($id))));
     }
 
     /** Begin pairing another stack, which lets go as the screen stops. */
@@ -87,12 +88,10 @@ trait ChoosesAStack
     /**
      * The stacks to choose from, read only while the list is open, so a frame
      * with the list closed asks nothing of what the phone kept.
-     *
-     * @return list<AStackToChooseAsShown>
      */
-    public function stacksToChooseFrom(): array
+    public function stacksToChooseFrom(): TheStacksToChooseFrom
     {
-        return $this->choosingAStack ? $this->around->stacksToChooseFrom($this->stack()) : [];
+        return $this->choosingAStack ? $this->around->stacksToChooseFrom($this->stack()) : TheStacksToChooseFrom::none();
     }
 
     /**

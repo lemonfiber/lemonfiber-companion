@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Modules\Operator\Internal\TheMenu;
-use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
-use Modules\Operator\Internal\TheTabs;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheTabs;
+use Modules\Wayfinding\Internal\TheMenu;
+use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
 
 // F18 — every screen of one stack is a tab, a menu item, or a step of another.
 //

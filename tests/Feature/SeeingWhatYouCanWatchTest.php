@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
@@ -82,7 +83,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $keychain, StacksInMemory::holding($stack), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatYouCanWatch($watching, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -237,7 +238,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
     $screen = new WhatYouCanWatch(
         AShelfThatWasRead::holding(aShelfOfThree()),
         AKeychainInMemory::working(),
-        StacksInMemory::holding(theStackAShelfIsReadFrom()),
+        AroundThePhone::holding(StacksInMemory::holding(theStackAShelfIsReadFrom())),
         new AppsSettingsThatOpen(),
     );
     $screen->setParams(['stack' => 7]);

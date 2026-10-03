@@ -2,26 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Wayfinding\Api;
 
 use Illuminate\Contracts\Translation\Translator;
 
 use function is_string;
 
+use Modules\Design\View\Tone;
+use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WhereTheOperatorWas;
-use Modules\Operator\Internal\ViewModels\AStackToChooseAsShown;
 use Modules\Stacks\Api\AStacksScreen;
+use Native\Mobile\Edge\NativeComponent;
 
 /**
  * What a screen about one stack reads about the stacks this phone holds, what
- * its menu is called, where choosing another stack leads, and how each stack
- * stands while the list of them is open.
+ * its menu is called and whose it is, where choosing another stack leads, and
+ * how each stack stands while the list of them is open.
  *
  * Every screen about a stack is handed one, built by the container, and asks
  * it rather than the stacks themselves. The container builds each with a
@@ -49,9 +54,17 @@ final readonly class TheWayAround
      * The route's parameter arrives untyped, and anything that is not text
      * names no stack.
      */
-    public function stackNamed(mixed $named): Stack
+    public function stackOn(NativeComponent $screen): Stack
     {
-        return $this->stacks->configured()->stack(StackId::rememberedAs(is_string($named) ? $named : ''));
+        $named = $screen->param('stack');
+
+        return $this->stack(StackId::rememberedAs(is_string($named) ? $named : ''));
+    }
+
+    /** The stack this phone calls by that name, as it has it paired. */
+    public function stack(StackId $named): Stack
+    {
+        return $this->stacks->configured()->stack($named);
     }
 
     /** What a screen reader calls the control that opens the menu. */
@@ -62,29 +75,32 @@ final readonly class TheWayAround
         return is_string($said) ? $said : self::THE_MENU_IS_CALLED;
     }
 
+    /** Whose menu a screen about this stack draws, from whose session this phone holds for it. */
+    public function whoTheMenuIsFor(Stack $stack): WhoTheMenuIsFor
+    {
+        return WhoTheMenuIsFor::for($this->storage, $stack->id());
+    }
+
     /**
      * Every stack this phone holds, in its order, each with how it last stood
      * and whether it is the one a screen is about.
-     *
-     * @return list<AStackToChooseAsShown>
      */
-    public function stacksToChooseFrom(Stack $current): array
+    public function stacksToChooseFrom(Stack $current): TheStacksToChooseFrom
     {
-        $said = new WhatEachStackLastSaid($this->standings, $this->clock);
         $rows = [];
 
         foreach ($this->stacks->configured() as $stack) {
-            $line = $said->of($stack);
+            $standing = $this->lastStandingOf($stack);
             $rows[] = new AStackToChooseAsShown(
                 id: $stack->id()->stored(),
                 name: $stack->name()->shown(),
-                word: $line->word,
-                tone: $line->tone,
+                word: $standing->saidInAWord(),
+                tone: Tone::ofAStanding($standing)->value,
                 current: $stack->is($current),
             );
         }
 
-        return $rows;
+        return TheStacksToChooseFrom::of(...$rows);
     }
 
     /**
@@ -103,7 +119,7 @@ final readonly class TheWayAround
             }
         }
 
-        return $this->hearing->after($heard, $stacks);
+        return $this->hearing->after($heard, ...$stacks);
     }
 
     /** Every subscription the list of stacks holds let go of, because it closed or cannot be seen. */
@@ -173,10 +189,8 @@ final readonly class TheWayAround
      */
     public function choosingLeadsTo(Stack $stack): string
     {
-        $where = WhereAStackIs::of($stack->id());
-
         return match (WhereTappingLeads::for($this->storage, $stack->id())) {
-            WhereTappingLeads::TheSignIn => $where->signIn(),
+            WhereTappingLeads::TheSignIn => AStacksScreen::SignIn->forTheStack($stack->id()),
             WhereTappingLeads::TheReport => $this->onItsLastTab($stack),
             WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
         };
@@ -186,5 +200,26 @@ final readonly class TheWayAround
     public function onItsLastTab(Stack $stack): string
     {
         return TheTabs::kept($this->was->tabOf($stack->id()))->screen()->forTheStack($stack->id());
+    }
+
+    /**
+     * How the stack last stood, as this phone kept it, or unknown where nothing
+     * was kept or what was kept has gone out of date.
+     *
+     * Everything this reads came out of a store, so a live reading cannot
+     * arrive, and the arm the type has for one reads as never heard.
+     */
+    private function lastStandingOf(Stack $stack): HowItStands
+    {
+        $now = $this->clock->now();
+
+        return $this->standings->lastKnownOf($stack->id())->either(
+            waiting: static fn(): HowItStands => HowItStands::Unknown,
+            holding: static fn(Reading $reading): HowItStands => $reading->either(
+                live: static fn(): HowItStands => HowItStands::Unknown,
+                retained: static fn(object $standing, Instant $at): HowItStands
+                    => $standing instanceof HowItStands && WhatWasHeardSoFar::isStillCurrent($at, $now) ? $standing : HowItStands::Unknown,
+            ),
+        );
     }
 }

@@ -6,8 +6,8 @@ namespace Modules\Operator\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use Modules\Operator\Internal\TheTabs;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheTabs;
 
 use function view;
 

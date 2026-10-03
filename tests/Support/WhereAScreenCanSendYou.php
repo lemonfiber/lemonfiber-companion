@@ -20,8 +20,8 @@ use function is_file;
 use function is_string;
 
 use Modules\Operator\Internal\Screens\FindsItsWayAround;
-use Modules\Operator\Internal\TheMenu;
-use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
+use Modules\Wayfinding\Internal\TheMenu;
+use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 
 use function preg_match;

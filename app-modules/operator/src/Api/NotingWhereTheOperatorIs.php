@@ -10,7 +10,8 @@ use function is_string;
 
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhereTheOperatorWas;
-use Modules\Operator\Internal\TheTabs;
+use Modules\Operator\Internal\WhereTheTabsAreDrawn;
+use Modules\Wayfinding\Api\TheTabs;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -27,7 +28,7 @@ final readonly class NotingWhereTheOperatorIs
     /** Note where this screen is, where it is under a tab of a stack; say whether anything was kept. */
     public function cameToTheFront(NativeComponent $screen): bool
     {
-        $tab = TheTabs::owning($screen::class);
+        $tab = WhereTheTabsAreDrawn::owning($screen::class);
         $stack = $screen->param('stack');
 
         if (! $tab instanceof TheTabs || ! is_string($stack)) {
