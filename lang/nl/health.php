@@ -392,6 +392,8 @@ return [
         'heading' => 'Wat starten zou doen',
         'nothing_started' => 'Er is niets gestart. Dit is wat de stack zegt dat starten zou doen.',
         'would_start' => ':name zou starten',
+        'already_running' => ':name draait al',
+        'running_unread' => 'Of deze al draaien kon niet worden gelezen.',
         'would_start_nothing' => 'Er zou geen dienst starten.',
         'left_out' => ':name zou worden overgeslagen: :needs',
         'estimate' => 'De stack schat ongeveer :mib MiB geheugen. Dat is een schatting, geen meting.',

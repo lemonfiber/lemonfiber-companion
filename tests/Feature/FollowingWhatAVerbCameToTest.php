@@ -29,6 +29,7 @@ use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
+use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
@@ -83,7 +84,7 @@ function theScreenAVerbIsFollowedFrom(
 
     $screen = new WhatToDoWithThis(
         $supervising,
-        AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()))),
+        AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none()))),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         $hearing ?? AStackThatSpeaksUp::whileItStarts(),

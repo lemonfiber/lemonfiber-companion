@@ -25,6 +25,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
@@ -85,7 +86,7 @@ function theThingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none())));
+    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none())));
     $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), AStackThatSpeaksUp::whileItStarts(), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -616,13 +617,14 @@ it('renders its own view', function (): void {
     expect($screen->render()->name())->toBe('operator::what-to-do-with-this');
 });
 
-/** Starting `library` on a machine with no torrent credentials. */
-function aRehearsalOfStartingTheLibrary(): WhatStartingItWouldComeTo
+/** Starting `library` on a machine with no torrent credentials, and with nothing of it running unless told otherwise. */
+function aRehearsalOfStartingTheLibrary(?WhatIsAlreadyRunning $running = null): WhatStartingItWouldComeTo
 {
     return WhatStartingItWouldComeTo::rehearsed(
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
+        $running ?? WhatIsAlreadyRunning::these(Services::none()),
     );
 }
 
@@ -642,6 +644,28 @@ it('a form says what starting it would bring up and leave out, as a rehearsal, b
         ->and(is_int($rehearsed) && is_int($firstVerb) && $rehearsed < $firstVerb)->toBeTrue()
         ->and($rehearsing->asked())->toHaveCount(1)
         ->and($rehearsing->asked()[0]->named())->toBe('library');
+});
+
+it('a form says which of what it would start is already running, and not that it would start', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary(WhatIsAlreadyRunning::these(Services::these(ServiceId::called('jellyfin')))));
+    $drawn = WhatTheDeviceWouldDraw::by(everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library', rehearsing: $rehearsing)))->said();
+
+    expect(in_array(__('health.rehearsal.already_running', ['name' => 'jellyfin']), $drawn, strict: true))->toBeTrue()
+        ->and(in_array(__('health.rehearsal.would_start', ['name' => 'sonarr']), $drawn, strict: true))->toBeTrue()
+        ->and(in_array(__('health.rehearsal.would_start', ['name' => 'jellyfin']), $drawn, strict: true))->toBeFalse()
+        ->and(in_array(__('health.rehearsal.running_unread'), $drawn, strict: true))->toBeFalse();
+});
+
+it('a form whose running could not be read says so once, above a list that still says what would start', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary(WhatIsAlreadyRunning::couldNotBeRead()));
+    $drawn = WhatTheDeviceWouldDraw::by(everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library', rehearsing: $rehearsing)))->said();
+    $unread = array_keys($drawn, __('health.rehearsal.running_unread'), strict: true);
+
+    $firstToStart = array_search(__('health.rehearsal.would_start', ['name' => 'jellyfin']), $drawn, strict: true);
+
+    expect($unread)->toHaveCount(1)
+        ->and(is_int($firstToStart) && $unread[0] < $firstToStart)->toBeTrue()
+        ->and(in_array(__('health.rehearsal.would_start', ['name' => 'sonarr']), $drawn, strict: true))->toBeTrue();
 });
 
 it('a rehearsal that brings nothing up, leaves nothing out and takes nothing says so', function (): void {

@@ -10,6 +10,7 @@ use function implode;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\RehearsalIsUnreadable;
 use Modules\Sdk\Api\Rehearsals;
@@ -53,6 +54,7 @@ function aRehearsalInFull(): array
         'dropped' => [['profile' => 'torrent', 'needs' => 'torrent']],
         'filtered' => [aServiceItWouldLeaveOut()],
         'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr']],
+        'running' => ['sabnzbd'],
     ];
 }
 
@@ -94,6 +96,28 @@ it('reads what would start, every service left out with why, and the estimate wi
         ->toBe('sabnzbd,sonarr / qBittorrent:torrent:qbittorrent,NZBGet:usenet:nzbget / 700 MiB, none for sonarr');
 });
 
+it('reads which of what would start the stack says is already running', function (): void {
+    $running = Rehearsals::in(previewSaying(aRehearsalInFull()))->alreadyRunning();
+
+    expect($running->wasRead())->toBeTrue()
+        ->and($running->holds(ServiceId::called('sabnzbd')))->toBeTrue()
+        ->and($running->holds(ServiceId::called('sonarr')))->toBeFalse();
+});
+
+it('reads a stack that could not read what is running as having said so, and marks nothing', function (): void {
+    $running = Rehearsals::in(previewSaying([...aRehearsalInFull(), 'running' => null]))->alreadyRunning();
+
+    expect($running->wasRead())->toBeFalse()
+        ->and($running->holds(ServiceId::called('sabnzbd')))->toBeFalse();
+});
+
+it('reads a stack that does not say what is running as marking nothing', function (): void {
+    $running = Rehearsals::in(previewSaying(array_diff_key(aRehearsalInFull(), ['running' => true])))->alreadyRunning();
+
+    expect($running->wasRead())->toBeTrue()
+        ->and($running->holds(ServiceId::called('sabnzbd')))->toBeFalse();
+});
+
 it('reads a start that would bring nothing up, leave nothing out and take nothing', function (): void {
     $rehearsal = Rehearsals::in(previewSaying([...aRehearsalInFull(), 'services' => [], 'filtered' => [], 'footprint' => ['estimated_mib' => 0, 'unestimated' => []]]));
 
@@ -119,6 +143,7 @@ it('refuses a payload that is not a table, or a part that is absent or not what 
     [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => '700', 'unestimated' => []]], 'estimated_mib'],
     [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => -1, 'unestimated' => []]], 'estimated_mib'],
     [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => 700]], 'unestimated'],
+    [[...aRehearsalInFull(), 'running' => 'sabnzbd'], 'running'],
 ]);
 
 it('refuses the first service left out by its position, not as a list that is missing', function (): void {
@@ -133,6 +158,7 @@ it('refuses an entry that is not what the contract says, naming its list and pos
     [[...aRehearsalInFull(), 'services' => ['sabnzbd', ' ']], 'services'],
     [[...aRehearsalInFull(), 'services' => ['sabnzbd', 7]], 'services'],
     [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr', '']]], 'unestimated'],
+    [[...aRehearsalInFull(), 'running' => ['sabnzbd', ' ']], 'running'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), 'nzbget']], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), array_diff_key(aServiceItWouldLeaveOut(), ['needs' => true])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['name' => ' '])]], 'filtered'],

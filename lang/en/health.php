@@ -396,6 +396,8 @@ return [
         'heading' => 'What starting it would do',
         'nothing_started' => 'Nothing has started. This is what the stack says starting it would do.',
         'would_start' => ':name would start',
+        'already_running' => ':name is already running',
+        'running_unread' => 'Whether these are already running could not be read.',
         'would_start_nothing' => 'No service would start.',
         'left_out' => ':name would be left out: :needs',
         'estimate' => 'The stack estimates about :mib MiB of memory. That is its estimate, not a measurement.',

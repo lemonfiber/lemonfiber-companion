@@ -10,8 +10,9 @@ namespace Modules\Kernel\Api;
  * A rehearsal and nothing more: nothing was started by asking. The services
  * are the ones starting would bring up, the services left out are the ones
  * the stack would filter out of the form, each with what it would have
- * needed, and the footprint is the stack's estimate of what starting would
- * take. All of it is the stack's answer; this app holds no copy of what a
+ * needed, the footprint is the stack's estimate of what starting would
+ * take, and what is already running is which of those services the stack says
+ * are up now. All of it is the stack's answer; this app holds no copy of what a
  * form is.
  */
 final readonly class WhatStartingItWouldComeTo
@@ -20,11 +21,16 @@ final readonly class WhatStartingItWouldComeTo
         private Services $wouldStart,
         private TheServicesLeftOut $leftOut,
         private AFootprint $footprint,
+        private WhatIsAlreadyRunning $alreadyRunning,
     ) {}
 
-    public static function rehearsed(Services $wouldStart, TheServicesLeftOut $leftOut, AFootprint $footprint): self
-    {
-        return new self($wouldStart, $leftOut, $footprint);
+    public static function rehearsed(
+        Services $wouldStart,
+        TheServicesLeftOut $leftOut,
+        AFootprint $footprint,
+        WhatIsAlreadyRunning $alreadyRunning,
+    ): self {
+        return new self($wouldStart, $leftOut, $footprint, $alreadyRunning);
     }
 
     /** The services starting it would bring up. */
@@ -43,5 +49,11 @@ final readonly class WhatStartingItWouldComeTo
     public function footprint(): AFootprint
     {
         return $this->footprint;
+    }
+
+    /** Which of the services it would bring up the stack says are already running. */
+    public function alreadyRunning(): WhatIsAlreadyRunning
+    {
+        return $this->alreadyRunning;
     }
 }
