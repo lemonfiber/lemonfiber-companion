@@ -40,4 +40,7 @@ enum InvitationField: string implements NamesAWireField
 
     /** Resets that lapsed, switched off on the way past and kept, by account name. */
     case Suspended = 'suspended';
+
+    /** The address that turns the invitation down, where the stack gave one. */
+    case Decline = 'decline';
 }

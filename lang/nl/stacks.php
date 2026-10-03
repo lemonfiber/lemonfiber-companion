@@ -465,6 +465,7 @@ return [
         'passed_on' => 'Aan het delen van deze telefoon gegeven. Waar het daarna heen gaat is aan jou',
         'not_passed_on' => 'Deze telefoon bood geen manier om het door te geven. Er is niets verstuurd, en het adres staat hierboven om op een andere manier door te geven',
         'covering' => '{1} Je bent uitgenodigd in het huishouden op :stack, als :name. Open dit adres om je wachtwoord te kiezen. Het staat :count uur.|[0,*] Je bent uitgenodigd in het huishouden op :stack, als :name. Open dit adres om je wachtwoord te kiezen. Het staat :count uur.',
+        'declining' => 'Om deze uitnodiging af te slaan, open je in plaats daarvan dit adres:',
         'would_withdraw' => 'Uitnodigingen die niemand aannam, die dit zou intrekken',
         'withdrew' => 'Uitnodigingen die niemand aannam, onderweg ingetrokken',
         'nobody_withdrawn' => 'Geen',

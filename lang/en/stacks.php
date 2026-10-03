@@ -547,6 +547,7 @@ return [
         'passed_on' => 'Handed to the sharing on this phone. Where it goes from there is up to you',
         'not_passed_on' => 'This phone would not offer a way to pass it on. Nothing was sent, and the address is above to hand over another way',
         'covering' => '{1} You are invited into the household on :stack, as :name. Open this address to choose your password. It stands for :count hour.|[0,*] You are invited into the household on :stack, as :name. Open this address to choose your password. It stands for :count hours.',
+        'declining' => 'To turn this invitation down, open this address instead:',
         'would_withdraw' => 'Invitations nobody took up, which this would take back',
         'withdrew' => 'Invitations nobody took up, taken back on the way',
         'nobody_withdrawn' => 'None',

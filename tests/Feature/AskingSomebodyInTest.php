@@ -306,6 +306,24 @@ it('passes the invitation on with the address and its caution, and says it went 
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.invitation.passed_on'));
 });
 
+it('passes the address that turns the invitation down on after the address, under its own sentence', function (): void {
+    $sharing = AShareSheetThatWasOffered::working();
+    $toHand = AnInvitationToHand::to('anna', AnAddressToHand::declinable('http://192.168.1.42:8096', '', 'http://192.168.1.42:5056/decline/abc'), 72);
+    $inviting = AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(AnInvitation::carriedOut($toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotYet, WhoWasTakenBack::of(), WhoWasSwitchedOff::of())));
+    $screen = theInvitationScreen($inviting, $sharing);
+    $screen->name = 'anna';
+    $screen->offer();
+    $screen->passOn();
+    $declining = __('stacks.invitation.declining');
+
+    expect($declining)->toBeString()
+        ->and($sharing->passed()?->text())->toBe(sprintf(
+            "%s\n\nhttp://192.168.1.42:8096\n\n%s\nhttp://192.168.1.42:5056/decline/abc",
+            trans_choice('stacks.invitation.covering', 72, ['name' => 'anna', 'stack' => 'The loft']),
+            is_string($declining) ? $declining : '',
+        ));
+});
+
 it('says nothing was sent where the device would not pass it on, and keeps the address on the screen', function (): void {
     $inviting = AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(annasInvitation(rehearsed: false)));
     $screen = theInvitationScreen($inviting, AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer));
