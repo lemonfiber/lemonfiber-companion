@@ -84,3 +84,4 @@ requirement is right and this page is a defect.
 | `N3-R13` | A refused session is offered, refused, let go of, and signed into again | `LetsGoOfARefusedSession`, written once for the screens that need it |
 | `N3-R3` | Nothing rests on a template remembering | the value object is built first |
 | `N1-R7` | The password is exchanged once and never retained for re-sending | `SignIn` |
+| `N3-R18` | A member signs in on the same screen as the operator, with their household account's name and password, and a refusal does not say which of the two was not recognised | `SignIntoAStack`: a name left empty offers the stack's own password through `Admitting::admit()`, and a name typed offers both through `Admitting::admitAs()`. A refused pair is `HowTheSignInWent::ThePairWasRefused`, which names neither half. The name stays in its field after a refusal and is cleared once somebody is in |

@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -68,10 +69,23 @@ final readonly class Admissions implements Admitting
 
     public function admit(Stack $stack, Credential $said): Admitted
     {
+        return $this->exchanged($stack, null, $said);
+    }
+
+    public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted
+    {
+        return $this->exchanged($stack, $named, $said);
+    }
+
+    /** What came of offering at this stack's door: the credential alone, or with a member's name. */
+    private function exchanged(Stack $stack, ?AMembersName $named, Credential $said): Admitted
+    {
         $door = $this->doors->door($stack);
 
         try {
-            $opened = $door->open($said->forTheExchange());
+            $opened = $named instanceof AMembersName
+                ? $door->openAs($named->forTheExchange(), $said->forTheExchange())
+                : $door->open($said->forTheExchange());
         } catch (CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why) {
             return Admitted::refused($this->met($stack, $why));
         }

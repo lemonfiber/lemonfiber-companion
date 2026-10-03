@@ -43,4 +43,12 @@ interface Admitting
      * string: a string can be offered twice.
      */
     public function admit(Stack $stack, Credential $said): Admitted;
+
+    /**
+     * Offer a member's name with a credential, and come away with a session or with a reason.
+     *
+     * The stack tries its own password first and the household's accounts
+     * after, and a refusal does not say which of the two it did not recognise.
+     */
+    public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted;
 }
