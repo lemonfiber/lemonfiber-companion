@@ -30,6 +30,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
 // What a member is told before they ask for anything.
@@ -100,12 +101,13 @@ function theOwedScreen(
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
     bool $signedIn = true,
+    ?Whose $whose = null,
 ): WhatYouAreOwed {
     $stack = theStackAMemberReadsFrom();
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), $whose ?? Whose::theOperator());
     }
 
     $screen = new WhatYouAreOwed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
@@ -250,6 +252,16 @@ it('the way back to the machine and on to signing in are both routes', function 
         ->and($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack($named))
         ->and(NativeRouter::resolve($screen->health()))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->signIn()))->not->toBeNull();
+});
+
+it('ends with the way back to the machine for the operator, and with none for a member', function (): void {
+    $operator = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()));
+    $member = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()), whose: Whose::member('ada'));
+
+    expect($operator->goesBackToTheMachine())->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($operator)->offers())->toContain(__('household.back_to_the_machine'))
+        ->and($member->goesBackToTheMachine())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($member)->offers())->not->toContain(__('household.back_to_the_machine'));
 });
 
 it('N3-R4 — the screen is registered under the route that reaches it', function (): void {
