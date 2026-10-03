@@ -87,14 +87,14 @@ trait ShowsWhatTheYesWillRun
 
                 return AsText::nothing();
             },
+            // A report that was not a rehearsal is not a line the yes will run:
+            // whatever it ran has already run, and saying it before the yes would
+            // be saying it about the wrong thing.
             done: static fn(WhatTheVerbCameTo $report): AsText => $report->was() === WhetherItWasRehearsed::Rehearsed
                 ? $report->whetherItRan(
                     ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
                     declined: static fn(): AsText => AsText::nothing(),
                 )
-                // A report that was not a rehearsal is not a line the yes will run:
-                // whatever it ran has already run, and saying it before the yes
-                // would be saying it about the wrong thing.
                 : AsText::nothing(),
             ended: static fn(): AsText => AsText::nothing(),
             met: function (Obstacle $why) use ($stack): AsText {
