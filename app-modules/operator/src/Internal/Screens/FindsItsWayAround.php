@@ -4,35 +4,29 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Modules\Operator\Internal\ThePhonesSettingsInTheMenu;
-use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
-use Modules\Operator\Internal\TheTabs;
-use Modules\Operator\Internal\WhatIsNotHereYet;
-use Modules\Operator\Internal\WhereInTheMenu;
+use Modules\Operator\Internal\WhereTheTabsAreDrawn;
+use Modules\Wayfinding\Api\Screens\FindsItsWayAroundAStack;
+use Modules\Wayfinding\Api\TheTabs;
 use Native\Mobile\Edge\Layouts\Builders\TabBarOptions;
-use Native\Mobile\UI\Builders\Drawer;
-
-use function view;
+use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The side menu, on every screen about a stack that uses this.
+ * The way around, on an operator's screen about a stack, with its tabs.
  *
- * NativePHP asks a screen for `drawerOverride()` and draws what it answers
- * beside the screen, rendered against the screen, so a row's navigation is
- * the screen's own. A tab's screen is the root of what the phone draws for
- * it; every other screen about a stack is opened on top of one and has a back
- * button, which the menu control sits beside. The bottom bar is drawn on a
- * tab's screens only. The stack's name in the top bar, and the menu's first
- * row, open the list of stacks.
+ * A tab's screen is the root of what the phone draws for it; every other
+ * screen about a stack is opened on top of one and has a back button. The
+ * bottom bar is drawn on a tab's screens only.
+ *
+ * @phpstan-require-extends NativeComponent
  */
 trait FindsItsWayAround
 {
-    use ChoosesAStack;
+    use FindsItsWayAroundAStack;
 
     /** The tab this screen is drawn under, which the bar marks, or none. */
     public function itsTab(): ?TheTabs
     {
-        return TheTabs::owning(self::class);
+        return WhereTheTabsAreDrawn::owning(self::class);
     }
 
     /** The bar is hidden on a screen no tab owns. */
@@ -41,17 +35,8 @@ trait FindsItsWayAround
         return $this->itsTab() instanceof TheTabs ? null : TabBarOptions::make()->hidden();
     }
 
-    public function drawerOverride(): Drawer
+    protected function opensOnTopOfAnother(): bool
     {
-        return Drawer::make(view('operator::the-menu', [
-            'stack' => $this->stack(),
-            'whatsNew' => WhatIsNotHereYet::WhatsNew,
-            'groups' => WhereInTheMenu::cases(),
-            'stackSettings' => new TheStacksSettingsInTheMenu(),
-            'appSettings' => new ThePhonesSettingsInTheMenu(),
-        ]))
-            ->label($this->around->theMenuIsCalled())
-            ->besideBack(besideBack: ! TheTabs::drawnBy(self::class))
-            ->modal();
+        return ! WhereTheTabsAreDrawn::drawnBy(self::class);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
@@ -19,12 +20,11 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -99,7 +99,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

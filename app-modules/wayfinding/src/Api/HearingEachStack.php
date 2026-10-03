@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Wayfinding\Api;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -50,9 +51,8 @@ final readonly class HearingEachStack
      * Opens a stack's subscription where it is not open and its break has been
      * waited out. Taking sends nothing to the stack.
      *
-     * @param iterable<Stack> $stacks the stacks to listen to
      */
-    public function after(WhatEachStackSaidSoFar $heard, iterable $stacks): WhatEachStackSaidSoFar
+    public function after(WhatEachStackSaidSoFar $heard, Stack ...$stacks): WhatEachStackSaidSoFar
     {
         if (! $this->with->capture->isInFront()) {
             return $this->letGo($heard);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -22,12 +23,11 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -89,7 +89,7 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
     /** The stack this screen is about, read from the route on every frame. */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Where this machine's screens are. */

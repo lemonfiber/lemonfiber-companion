@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;

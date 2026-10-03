@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Concealed;
@@ -16,12 +17,11 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCatalogue;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCatalogueReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheCatalogueTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -73,7 +73,7 @@ final class WhatEachServiceIsFor extends NativeComponent
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Ask the machine again, which an obstacle must not take away. */

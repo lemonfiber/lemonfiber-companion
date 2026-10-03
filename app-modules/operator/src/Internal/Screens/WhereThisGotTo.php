@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ItsContent;
@@ -20,15 +21,14 @@ use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -81,7 +81,7 @@ final class WhereThisGotTo extends NativeComponent
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Follow what was typed instead; nothing typed follows nothing new. */

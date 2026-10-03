@@ -30,7 +30,7 @@ use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
-use Modules\Operator\Internal\TheMenu;
+use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;

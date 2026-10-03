@@ -21,7 +21,7 @@ use Modules\Kernel\Api\WhatIsReleased;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
-use Modules\Operator\Internal\TheMenu;
+use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;

@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Concealed;
@@ -20,14 +21,13 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -103,7 +103,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

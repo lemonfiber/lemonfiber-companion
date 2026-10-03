@@ -18,6 +18,14 @@ requirement is right and this page is a defect.
 | `N1-R46` | A stack that could not be asked is told apart from a credential that was refused | `HowTheSignInWent` and the obstacle folds |
 | `N1-R10` | Each obstacle is its own condition with its own remedy | `Obstacle`; `tests/Feature/EveryObstacleSaysSomethingOfItsOwnTest.php` |
 
+## A screen that knows the way around
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N28-R1` | Every screen about a stack has the stack's name in the top bar and a menu control | `FindsItsWayAroundAStack` in `app-modules/wayfinding`, which the operator's screens take through `FindsItsWayAround` and a member's through `FindsItsWayAroundTheHouse`; `tests/Arch/EveryScreenAboutAStackHasTheMenuTest.php` holds every screen in both surfaces that answers which stack it is about to it |
+| `N28-R2` | The stack's name opens the list of stacks | `ChoosesAStack`, the sheet every screen about a stack carries through that trait |
+| `N3-R9` | A member is not shown lifecycle controls, logs, credentials or diagnostics | the menu follows whose session this phone holds for the stack: nobody gets the list of stacks, Stack settings and the phone's settings; a member gets those with what they can ask for and what they can watch; only the operator gets what is new and the stack's own screens (`TheRowsOfTheMenu`) |
+
 ## A screen that does not talk to a machine behind your back
 
 | Requirement | What it asks | What keeps it |

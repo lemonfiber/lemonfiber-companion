@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Stack;
+use Modules\Wayfinding\Api\TheWayAround;
 
 /**
  * Where the app opens, asked once a run, and where a stack opens when it is chosen.

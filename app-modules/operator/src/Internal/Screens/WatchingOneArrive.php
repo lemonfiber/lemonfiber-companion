@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -28,17 +29,16 @@ use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\HearsWhereTheWalkIs;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -142,7 +142,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Walk through what was typed, or, with nothing typed, something the stack picks. */

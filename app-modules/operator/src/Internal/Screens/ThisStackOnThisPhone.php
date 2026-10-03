@@ -12,9 +12,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -55,7 +55,7 @@ final class ThisStackOnThisPhone extends NativeComponent
 
     public function stack(): Stack
     {
-        return $this->held ??= $this->around->stackNamed($this->param('stack'));
+        return $this->held ??= $this->around->stackOn($this);
     }
 
     /** The operator asked to remove the stack; they are asked whether they mean it, on this page. */

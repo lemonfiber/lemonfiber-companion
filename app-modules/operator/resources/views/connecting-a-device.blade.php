@@ -1,4 +1,4 @@
-<x-operator::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
+<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
     <x-design::title>{{ __('stacks.handoff.title') }}</x-design::title>

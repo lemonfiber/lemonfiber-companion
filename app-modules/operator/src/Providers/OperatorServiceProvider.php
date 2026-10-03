@@ -6,7 +6,6 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
@@ -60,6 +59,7 @@ use Modules\Operator\Internal\Screens\WhichVersionsRunHere;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereAStackOpens;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Override;
 
 /**

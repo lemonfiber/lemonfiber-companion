@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\View\Components;
+namespace Modules\Wayfinding\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use Modules\Operator\Internal\ViewModels\AStackToChooseAsShown;
+use Modules\Wayfinding\Api\TheStacksToChooseFrom;
 
 use function view;
 
@@ -20,16 +20,16 @@ use function view;
 final class StacksToChoose extends Component
 {
     /**
-     * @param list<AStackToChooseAsShown> $stacks   every stack to choose from, while the list is open
+     * @param TheStacksToChooseFrom      $stacks   every stack to choose from, while the list is open
      * @param bool                       $choosing whether the list is open
      */
     public function __construct(
-        public readonly array $stacks,
+        public readonly TheStacksToChooseFrom $stacks,
         public readonly bool $choosing,
     ) {}
 
     public function render(): View
     {
-        return view('operator::components.stacks-to-choose');
+        return view('wayfinding::components.stacks-to-choose');
     }
 }

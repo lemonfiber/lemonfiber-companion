@@ -1,6 +1,8 @@
-<native:top-bar title="{{ __('household.shelf') }}" />
+<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
+    <x-design::title>{{ __('household.shelf') }}</x-design::title>
+
 @if ($this->answer()->cameBack())
     {{-- One row per holding: the title, the kind under it, and the year at
          its end where the core had one. The kind is drawn under the title

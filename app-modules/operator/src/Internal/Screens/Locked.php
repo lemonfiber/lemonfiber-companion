@@ -10,7 +10,7 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenTheLockAsks;
-use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Override;

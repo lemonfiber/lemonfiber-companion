@@ -1,6 +1,8 @@
-<native:top-bar title="{{ __('household.yours') }}" />
+<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
+    <x-design::title>{{ __('household.yours') }}</x-design::title>
+
 @if ($this->answer()->cameBack())
     {{-- The core's own sentences, in the core's own order and wording.
          Rendered rather than translated: the household's rules are the core's

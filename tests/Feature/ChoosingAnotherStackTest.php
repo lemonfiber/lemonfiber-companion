@@ -14,10 +14,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
-use Modules\Operator\Internal\ViewModels\AStackToChooseAsShown;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\AStackToChooseAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -151,7 +151,7 @@ it('lists every stack in the phone\'s order with how it last stood, marks the cu
         __('navigation.switcher.add'),
         __('connection.encrypted'),
     ])->and($drawn->offers())->toBe(['The attic', 'The attic', 'The barn', __('navigation.switcher.add')])
-        ->and(array_map(static fn(AStackToChooseAsShown $stack): string => $stack->pressed(), $screen->stacksToChooseFrom()))
+        ->and(array_map(static fn(AStackToChooseAsShown $stack): string => $stack->pressed(), [...$screen->stacksToChooseFrom()]))
         ->toBe(['stopChoosingAStack()', sprintf("openTheStack('%s')", theBarnToChooseFrom()->id()->stored())]);
 });
 
@@ -165,7 +165,7 @@ it('marks the current stack with a check and says so to a screen reader, rather 
         __('navigation.switcher.add'),
     ]);
 
-    [$attic, $barn] = $screen->stacksToChooseFrom();
+    [$attic, $barn] = [...$screen->stacksToChooseFrom()];
 
     expect($attic->current)->toBeTrue()
         ->and([$attic->icon(), $attic->iosIcon(), $attic->tone()])->toBe(['check_circle', 'checkmark.circle.fill', ''])
@@ -175,7 +175,7 @@ it('marks the current stack with a check and says so to a screen reader, rather 
 });
 
 it('reads nothing of what the phone kept while the list is shut', function (): void {
-    expect(aTabToChooseFrom()->stacksToChooseFrom())->toBe([]);
+    expect(aTabToChooseFrom()->stacksToChooseFrom())->toHaveCount(0);
 });
 
 it('opens another stack where choosing it leads, and shuts the list as it does', function (?Whose $whose, string $leads): void {
@@ -203,7 +203,7 @@ it('only shuts the list when the current stack is chosen', function (): void {
     $screen = aTabToChooseFrom();
     $screen->chooseAStack();
 
-    [$attic] = $screen->stacksToChooseFrom();
+    [$attic] = [...$screen->stacksToChooseFrom()];
 
     expect($attic->pressed())->toBe('stopChoosingAStack()');
 

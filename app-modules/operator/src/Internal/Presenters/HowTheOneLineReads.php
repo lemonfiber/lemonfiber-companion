@@ -165,12 +165,7 @@ final readonly class HowTheOneLineReads
     /** The glyph a standing is drawn with: fine, something to look at, broken, or not known. */
     private function toneOf(HowItStands $shown): string
     {
-        return match ($shown) {
-            HowItStands::Healthy => Tone::Fine->value,
-            HowItStands::Advisory, HowItStands::Degraded, HowItStands::Stopped, HowItStands::Unconfigured => Tone::Attention->value,
-            HowItStands::Broken, HowItStands::Critical => Tone::Trouble->value,
-            HowItStands::Unknown => Tone::Unknown->value,
-        };
+        return Tone::ofAStanding($shown)->value;
     }
 
     private function counted(HowItStands $shown): string

@@ -132,25 +132,6 @@ it('the reading finds a poll however the attributes were grouped', function (): 
 });
 
 /**
- * Every trait a class uses, and every trait those use in turn: a screen polls
- * through a trait it takes by way of another just as through one it names.
- *
- * @param ReflectionClass<object> $class
- *
- * @return list<ReflectionClass<object>>
- */
-function everyTraitOf(ReflectionClass $class): array
-{
-    $traits = [];
-
-    foreach ($class->getTraits() as $trait) {
-        $traits = [...$traits, $trait, ...everyTraitOf($trait)];
-    }
-
-    return $traits;
-}
-
-/**
  * The screens a file that polls stands for.
  *
  * A screen's own file stands for itself. A trait carrying `#[Poll]` stands
@@ -170,7 +151,7 @@ function theScreensThatPollThrough(string $path): array
     $screens = [];
 
     foreach (Screens::all() as $screen) {
-        $traits = array_map(static fn(ReflectionClass $trait): string|false => $trait->getFileName(), everyTraitOf($screen));
+        $traits = array_map(static fn(ReflectionClass $trait): string|false => $trait->getFileName(), Screens::traitsOf($screen));
 
         if ($screen->getFileName() === $path || in_array($path, $traits, strict: true)) {
             $screens[] = $screen;

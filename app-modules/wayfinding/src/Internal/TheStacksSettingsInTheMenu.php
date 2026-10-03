@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Wayfinding\Internal;
 
 use Modules\Stacks\Api\AStacksScreen;
 

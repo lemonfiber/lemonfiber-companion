@@ -496,6 +496,11 @@ parameters:
                 # `internachi/modular` registers components from, so this
                 # reaches components and nothing else.
                 - app-modules/*/src/View/Components/*
+                # A trait the screens of both surfaces use, compiled into each
+                # screen that uses it. Its `drawerOverride()` is the framework's
+                # contract for a screen's drawer, asked for the way `render()`
+                # is, so it names its frame the way a screen does.
+                - app-modules/wayfinding/src/Api/Screens/*
                 - bootstrap/Composition/*
                 - config/*
                 - tests/*

@@ -39,7 +39,7 @@ final readonly class WhoGetsIn
     /** Where the household comes in. */
     public function frontDoor(): string
     {
-        return TheMenu::FrontDoor->screen()->forTheStack($this->stack);
+        return AStacksScreen::FrontDoor->forTheStack($this->stack);
     }
 
     /** Where somebody is asked in. */

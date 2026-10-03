@@ -24,7 +24,7 @@ use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHouseholdBegins;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
-use Modules\Operator\Internal\TheMenu;
+use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;

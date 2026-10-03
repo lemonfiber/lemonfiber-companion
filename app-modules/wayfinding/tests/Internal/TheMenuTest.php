@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Tests\Internal;
+namespace Modules\Wayfinding\Tests\Internal;
 
 use function array_filter;
 use function array_key_exists;
@@ -17,12 +17,12 @@ use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
 
-use Modules\Operator\Internal\TheMenu;
-use Modules\Operator\Internal\ThePhonesSettingsInTheMenu;
-use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
-use Modules\Operator\Internal\WhatIsNotHereYet;
-use Modules\Operator\Internal\WhereInTheMenu;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\WhatIsNotHereYet;
+use Modules\Wayfinding\Internal\TheMenu;
+use Modules\Wayfinding\Internal\ThePhonesSettingsInTheMenu;
+use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
+use Modules\Wayfinding\Internal\WhereInTheMenu;
 
 use function sprintf;
 

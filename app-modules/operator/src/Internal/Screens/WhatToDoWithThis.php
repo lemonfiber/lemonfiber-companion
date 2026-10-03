@@ -34,7 +34,6 @@ use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
 use Modules\Operator\Internal\ShowsWhatTheYesWillRun;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AStartLineAsShown;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -42,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
 use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -162,7 +162,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /**

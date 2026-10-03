@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb4eca87e6a00722925c26ee15681cb6",
+    "content-hash": "4c53dc68c7451ff09543b5ef238f25ea",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3562,13 +3562,14 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "4f38b078ab09516b86ea6f20691094ce83b3ed60"
+                "reference": "c3e474de54687d75e8a57ab56b8950b8941e27d1"
             },
             "require": {
                 "modules/connection": "dev-main",
                 "modules/design": "dev-main",
                 "modules/kernel": "dev-main",
                 "modules/stacks": "dev-main",
+                "modules/wayfinding": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3683,7 +3684,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "4ebbd483b735787c464883c4cb086a8e7b1255f9"
+                "reference": "bb910c1135b4ea0c4c3b9d3c993af2177ea4710a"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3693,6 +3694,7 @@
                 "modules/kernel": "dev-main",
                 "modules/stacks": "dev-main",
                 "modules/updates": "dev-main",
+                "modules/wayfinding": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "nativephp/mobile-ui": "^0.6",
                 "php": "^8.5"
@@ -3912,6 +3914,48 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "Secure storage and the app lock.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/wayfinding",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/wayfinding",
+                "reference": "914be8aef23bbe948ab196389cedefd945001cf7"
+            },
+            "require": {
+                "modules/design": "dev-main",
+                "modules/health": "dev-main",
+                "modules/kernel": "dev-main",
+                "modules/stacks": "dev-main",
+                "nativephp/mobile": "^4.4",
+                "nativephp/mobile-ui": "^0.6",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "wayfinding"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Wayfinding\\": "src/",
+                    "Modules\\Wayfinding\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "The way around a stack every surface draws: its name in the top bar, the list of stacks it opens, and the menu beside it.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14750,6 +14794,7 @@
         "modules/stacks": 20,
         "modules/updates": 20,
         "modules/vault": 20,
+        "modules/wayfinding": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadLetGo;
 use Modules\Kernel\Api\Concealed;
@@ -23,13 +24,12 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Operator\Internal\AwaitsAnOutcome;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
-use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -111,7 +111,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
      */
     public function stack(): Stack
     {
-        return $this->around->stackNamed($this->param('stack'));
+        return $this->around->stackOn($this);
     }
 
     /** Where this machine's screens are. */

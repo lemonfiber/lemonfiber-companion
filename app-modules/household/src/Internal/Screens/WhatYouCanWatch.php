@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
-use Modules\Household\Internal\LetsGoOfARefusedSession;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
@@ -20,13 +17,12 @@ use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -64,6 +60,7 @@ use function view;
 final class WhatYouCanWatch extends NativeComponent
 {
     use OffersTheAppsSettings;
+    use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
 
     /**
@@ -80,7 +77,7 @@ final class WhatYouCanWatch extends NativeComponent
     public function __construct(
         private readonly Watching $watching,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
 
@@ -92,11 +89,7 @@ final class WhatYouCanWatch extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackOn($this);
     }
 
     /**

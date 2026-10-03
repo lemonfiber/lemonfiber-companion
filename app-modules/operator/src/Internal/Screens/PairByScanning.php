@@ -20,9 +20,9 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyNothingWasScanned;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 

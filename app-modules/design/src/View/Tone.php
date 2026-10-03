@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Design\View;
 
+use Modules\Kernel\Api\HowItStands;
+
 /**
  * How a status reads, and the glyph that says so beside its words.
  *
@@ -30,6 +32,17 @@ enum Tone: string
 
     /** Nothing is wrong and nothing is there: a thing nobody asked for. */
     case Quiet = 'quiet';
+
+    /** The tone a stack's standing is drawn in, wherever it is said in a word. */
+    public static function ofAStanding(HowItStands $standing): self
+    {
+        return match ($standing) {
+            HowItStands::Healthy => self::Fine,
+            HowItStands::Advisory, HowItStands::Degraded, HowItStands::Stopped, HowItStands::Unconfigured => self::Attention,
+            HowItStands::Broken, HowItStands::Critical => self::Trouble,
+            HowItStands::Unknown => self::Unknown,
+        };
+    }
 
     /** The Material Symbol drawn on Android. */
     public function glyph(): string

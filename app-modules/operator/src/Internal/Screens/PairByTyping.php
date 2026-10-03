@@ -18,8 +18,8 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 

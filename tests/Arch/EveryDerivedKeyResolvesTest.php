@@ -84,10 +84,11 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\NotACountOfDays;
-use Modules\Operator\Internal\TheMenu;
-use Modules\Operator\Internal\WhatIsNotHereYet;
-use Modules\Operator\Internal\WhereInTheMenu;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
+use Modules\Wayfinding\Api\WhatIsNotHereYet;
+use Modules\Wayfinding\Internal\TheMenu;
+use Modules\Wayfinding\Internal\WhatAMemberFindsInTheMenu;
+use Modules\Wayfinding\Internal\WhereInTheMenu;
 use Tests\Support\Catalogue;
 use Tests\Support\Tree;
 
@@ -471,6 +472,10 @@ function everyDerivedKey(): array
         LockAfter::class => aPairPerCase(
             LockAfter::cases(),
             static fn(LockAfter $after): array => [$after->said()],
+        ),
+        WhatAMemberFindsInTheMenu::class => aPairPerCase(
+            WhatAMemberFindsInTheMenu::cases(),
+            static fn(WhatAMemberFindsInTheMenu $item): array => [$item->said()],
         ),
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),
