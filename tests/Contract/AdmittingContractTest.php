@@ -6,6 +6,7 @@ use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
@@ -16,9 +17,11 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
+use Saloon\Contracts\Body\BodyRepository;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -234,6 +237,46 @@ it('knocks on the stack it was handed, which is the half a screen cannot check',
 
     expect($door->knockedOn())->toBe($stack)
         ->and($door->knocks())->toBe(1);
+});
+
+it('offers a member\'s name beside the credential, and comes away with whose session the stack opened', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make((string) json_encode([
+        'api_version' => 1,
+        'kind' => 'admission',
+        'data' => ['member' => 'a7f3', 'token' => 'a-session-not-a-secret', 'until' => '2026-09-14T10:00:00'],
+    ]))]);
+    $whose = new Admissions(new PinnedDoors(), new PinnedClients())
+        ->admitAs(aStackWithADoor(), AMembersName::of('ada'), Credential::of('a-members-password'))
+        ->either(
+            opened: static fn(Session $session, Instant $until, Whose $whose): TheWordCarriedOut => $whose->either(
+                operator: static fn(): TheWordCarriedOut => new TheWordCarriedOut('the operator'),
+                member: static fn(string $id): TheWordCarriedOut => new TheWordCarriedOut($id),
+            ),
+            refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+        )->said;
+    $body = $mock->getLastPendingRequest()?->body();
+
+    expect($whose)->toBe('a7f3')
+        ->and($body instanceof BodyRepository ? $body->all() : [])->toBe(['name' => 'ada', 'password' => 'a-members-password']);
+});
+
+it('tells a name and password the stack did not recognise from a door that has stopped listening, as a member', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyDoor($answered, $why) as $which => $make) {
+            $said = $make()->admitAs(aStackWithADoor(), AMembersName::of('ada'), Credential::of('a-members-password'))->either(
+                opened: static fn(): TheWordCarriedOut => new TheWordCarriedOut('opened'),
+                refused: static fn(Obstacle $refused): TheWordCarriedOut => new TheWordCarriedOut($refused->kind()->value),
+            )->said;
+
+            expect($said)->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
+        }
+    }
 });
 
 it('stands in for a door with a payload the contract would accept', function (): void {

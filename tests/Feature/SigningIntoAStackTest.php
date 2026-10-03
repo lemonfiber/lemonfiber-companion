@@ -321,6 +321,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::NotYet, true, false],
         [HowTheSignInWent::SignedIn, false, false],
         [HowTheSignInWent::CredentialWasRefused, true, false],
+        [HowTheSignInWent::ThePairWasRefused, true, false],
         [HowTheSignInWent::TooManyAttempts, false, true],
         [HowTheSignInWent::StackDidNotAnswer, false, true],
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
@@ -503,6 +504,73 @@ it('offers only the way to another stack and the two settings until signed in, a
             __('navigation.menu.stack_settings'),
             __('navigation.menu.app_settings'),
         ]);
+});
+
+/** The screen with a member's name typed into it. */
+function typedName(SignIntoAStack $screen, string $said): SignIntoAStack
+{
+    $screen->__syncProperty('theirName', $said);
+
+    return $screen;
+}
+
+it('knocks as a member where a name was typed, and as the operator where it was left empty or only spaces', function (): void {
+    $member = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(ENDS_AT), Whose::member('a7f3'));
+    typedPassword(typedName(signInScreen($member), '  ada '), 'a-members-password')->offer();
+
+    foreach (['', '   '] as $nobody) {
+        $operator = aDoorThatOpens();
+        typedPassword(typedName(signInScreen($operator), $nobody), 'the-operators-password')->offer();
+
+        expect($operator->namedAs())->toBeNull()
+            ->and($operator->knocks())->toBe(1);
+    }
+
+    expect($member->namedAs())->toBe('ada')
+        ->and($member->knocks())->toBe(1);
+});
+
+it('says a name and password were not recognised, keeping the name and clearing the password', function (): void {
+    $screen = typedPassword(typedName(signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused))), 'ada'), 'a-members-password');
+    $screen->offer();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->went())->toBe(HowTheSignInWent::ThePairWasRefused)
+        ->and($screen->theirName)->toBe('ada')
+        ->and($screen->typed())->toBe('')
+        ->and($drawn)->toContain(__('connection.pair_was_refused', ['stack' => aStackToSignInto()->name()->shown()]))
+        ->and($drawn)->toContain(__('connection.pair_was_refused_action'));
+});
+
+it('asks to try again after a refusal, naming the password only where no name was typed', function (): void {
+    $refusing = static fn(): ADoorThatWasKnockedOn => ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused));
+    $member = typedPassword(typedName(signInScreen($refusing()), 'ada'), 'a-members-password');
+    $operator = typedPassword(signInScreen($refusing()), 'the-operators-password');
+    $member->offer();
+    $operator->offer();
+
+    expect(signInScreen(aDoorThatOpens())->offerLabel())->toBe('connection.sign_in')
+        ->and($member->offerLabel())->toBe('connection.member_try_again')
+        ->and(WhatTheDeviceWouldDraw::by($member)->said())->toContain(__('connection.member_try_again'))
+        ->and($operator->offerLabel())->toBe('connection.try_that_again')
+        ->and(typedName($member, '  ')->offerLabel())->toBe('connection.try_that_again');
+});
+
+it('clears the name once a member is in', function (): void {
+    $screen = typedPassword(typedName(signInScreen(aDoorThatOpensForAMember()), 'ada'), 'a-members-password');
+    $screen->offer();
+
+    expect($screen->isSignedIn())->toBeTrue()
+        ->and($screen->theirName)->toBe('');
+});
+
+it('asks for a member\'s name above the password, and says to leave it empty to sign in as the operator', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(signInScreen(aDoorThatOpens()))->said();
+    $name = array_search(__('connection.member_name_label'), $drawn, strict: true);
+    $password = array_search(__('connection.password_label'), $drawn, strict: true);
+
+    expect(is_int($name) && is_int($password) && $name < $password)->toBeTrue()
+        ->and($drawn)->toContain(__('connection.member_name_hint'));
 });
 
 it('renders the frame it is named for', function (): void {

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Instant;
@@ -99,6 +100,15 @@ final class SignIntoAStack extends NativeComponent
      * nothing to do with the password.
      */
     public string $typed = '';
+
+    /**
+     * The name a member typed, or nothing for the operator.
+     *
+     * Not a secret, so it stays in the field after a refusal, where the
+     * password does not. It is cleared once somebody is in, and never kept:
+     * the session says whose it is.
+     */
+    public string $theirName = '';
 
     /** What became of the attempt, once one has been made. */
     public HowTheSignInWent $went = HowTheSignInWent::NotYet;
@@ -217,13 +227,31 @@ final class SignIntoAStack extends NativeComponent
     }
 
     /**
+     * The words on the button that offers what was typed.
+     *
+     * After a refusal it asks for another try, and the name field decides which:
+     * with a name in it the name and password go again, and without one the
+     * operator's password does.
+     */
+    public function offerLabel(): string
+    {
+        return match (true) {
+            ! $this->went->isWorthAnotherAttempt() => 'connection.sign_in',
+            trim($this->theirName) === '' => 'connection.try_that_again',
+            default => 'connection.member_try_again',
+        };
+    }
+
+    /**
      * Offer what was typed, and say what happened.
      *
-     * The whole of the exchange in one method: the string becomes a credential here
-     * and nowhere else, the credential is spent by being offered, and what
-     * comes back is either a session this device keeps or a reason it did not.
+     * The operator's password alone where no name was typed, and a member's
+     * name with their password where one was. Either way the string becomes a
+     * credential at the moment it is offered, the credential is spent by being
+     * offered, and what comes back is either a session this device keeps or a
+     * reason it did not.
      *
-     * The field is cleared whatever happened, which is the half worth stating.
+     * The password field is cleared whatever happened, which is the half worth stating.
      * A password left in a field after a successful sign-in is a password on
      * the glass for as long as the screen is up; after a refusal it is a
      * password the next tap would offer again unchanged, which is a second
@@ -231,14 +259,10 @@ final class SignIntoAStack extends NativeComponent
      */
     public function offer(): void
     {
-        $said = Credential::of($this->typed);
-        $this->typed = '';
+        $named = trim($this->theirName);
 
-        $this->went = $this->admitting->admit($this->stack(), $said)->either(
-            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
-                => $this->kept($session, $whose),
-            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::met($why),
-        );
+        $this->went = $named === '' ? $this->asTheOperator() : $this->asAMember(AMembersName::of($named));
+        $this->theirName = $this->went->isSignedIn() ? '' : $this->theirName;
     }
 
     /**
@@ -327,6 +351,37 @@ final class SignIntoAStack extends NativeComponent
         return $this->storage->keep($this->stack()->id(), $session, $whose)->either(
             kept: static fn(): HowTheSignInWent => HowTheSignInWent::SignedIn,
             refused: static fn(WhySessionCannotBeKept $why): HowTheSignInWent => HowTheSignInWent::unkept($why),
+        );
+    }
+
+    /**
+     * The stack's own password, offered with no name.
+     *
+     * The field becomes a credential here, at the moment it is offered, and is
+     * cleared before the door is asked.
+     */
+    private function asTheOperator(): HowTheSignInWent
+    {
+        $said = Credential::of($this->typed);
+        $this->typed = '';
+
+        return $this->admitting->admit($this->stack(), $said)->either(
+            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
+                => $this->kept($session, $whose),
+            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::met($why),
+        );
+    }
+
+    /** A member's name and password, offered together, the password made a credential as it is offered. */
+    private function asAMember(AMembersName $named): HowTheSignInWent
+    {
+        $said = Credential::of($this->typed);
+        $this->typed = '';
+
+        return $this->admitting->admitAs($this->stack(), $named, $said)->either(
+            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
+                => $this->kept($session, $whose),
+            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::metWithAName($why),
         );
     }
 }

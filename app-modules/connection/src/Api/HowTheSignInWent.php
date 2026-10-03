@@ -60,6 +60,14 @@ enum HowTheSignInWent: string
     /** The stack said no to the password. Another attempt is the remedy. */
     case CredentialWasRefused = 'password_was_refused';
 
+    /**
+     * The name and password offered together were not recognised.
+     *
+     * Its own state rather than the password's, because a member typed two
+     * things and the stack does not say which of them it did not recognise.
+     */
+    case ThePairWasRefused = 'pair_was_refused';
+
     /** Too many wrong attempts; the door has stopped listening for a while. */
     case TooManyAttempts = 'too_many_attempts';
 
@@ -133,7 +141,7 @@ enum HowTheSignInWent: string
      */
     public function isWorthAnotherAttempt(): bool
     {
-        return $this === self::CredentialWasRefused;
+        return $this === self::CredentialWasRefused || $this === self::ThePairWasRefused;
     }
 
     /**
@@ -215,7 +223,7 @@ enum HowTheSignInWent: string
     public function standing(): Standing
     {
         return match ($this) {
-            self::NotYet, self::CredentialWasRefused => Standing::Actionable,
+            self::NotYet, self::CredentialWasRefused, self::ThePairWasRefused => Standing::Actionable,
             self::SignedIn => Standing::Suppressed,
             self::TooManyAttempts, self::StackDidNotAnswer => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
@@ -314,6 +322,17 @@ enum HowTheSignInWent: string
             // The door reads no household, so this cannot arrive here either.
             KindOfObstacle::HouseholdCouldNotBeRead => self::StackDidNotAnswer,
         };
+    }
+
+    /**
+     * What a door offered a member's name and a password came to.
+     *
+     * The same as {@see met()}, but for a refused credential, which with a name
+     * beside it is the pair the stack did not recognise.
+     */
+    public static function metWithAName(Obstacle $why): self
+    {
+        return $why->kind() === KindOfObstacle::CredentialWasRefused ? self::ThePairWasRefused : self::met($why);
     }
 
     /** What a surface shows for each reason the session could not be kept. */

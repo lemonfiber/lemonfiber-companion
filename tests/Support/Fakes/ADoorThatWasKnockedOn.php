@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -39,6 +40,9 @@ final class ADoorThatWasKnockedOn implements Admitting
 
     /** How many times, which is how a screen that asks twice is caught. */
     private int $knocks = 0;
+
+    /** The name it was last knocked on with, or nothing where none was given. */
+    private ?string $namedAs = null;
 
     /** @param Closure(): Admitted $answer */
     private function __construct(private readonly Closure $answer) {}
@@ -79,10 +83,30 @@ final class ADoorThatWasKnockedOn implements Admitting
         return $this->knocks;
     }
 
+    /**
+     * The name it was last knocked on with, or nothing where none was given.
+     *
+     * Held because a name is not a secret, and which door a screen knocked on
+     * is the whole of what tells the operator's sign-in from a member's.
+     */
+    public function namedAs(): ?string
+    {
+        return $this->namedAs;
+    }
+
+    public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted
+    {
+        $answer = $this->admit($stack, $said);
+        $this->namedAs = $named->forTheExchange();
+
+        return $answer;
+    }
+
     public function admit(Stack $stack, Credential $said): Admitted
     {
         $this->knockedOn = $stack;
         $this->knocks++;
+        $this->namedAs = null;
 
         // Read and dropped. The value is not carried anywhere — a fake holding
         // a password is the one place a test fixture could teach the habit of

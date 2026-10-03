@@ -33,6 +33,16 @@
 
     @if ($this->mayTry())
         <x-design::card>
+            {{-- A member's name, which the operator leaves empty: the stack
+                 decides from what was offered whose session it opens. --}}
+            <native:outlined-text-input
+                native:model="theirName"
+                label="{{ __('connection.member_name_label') }}"
+                supporting="{{ __('connection.member_name_hint') }}"
+                autocorrect="off"
+                autocapitalize="none"
+            />
+
             <native:outlined-text-input
                 native:model="typed"
                 label="{{ __('connection.password_label') }}"
@@ -41,7 +51,7 @@
                 secure
             />
 
-            <x-design::action label="{{ __($this->went()->isWorthAnotherAttempt() ? 'connection.try_that_again' : 'connection.sign_in') }}" :disabled="! $this->mayOffer()" tap="offer()" />
+            <x-design::action label="{{ __($this->offerLabel()) }}" :disabled="! $this->mayOffer()" tap="offer()" />
         </x-design::card>
     @endif
 </x-operator::content>
