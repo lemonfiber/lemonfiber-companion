@@ -15,7 +15,7 @@
          because the stack is unreachable. Without it the only way back is
          leaving and returning, which is named separately as what a screen must
          not rely on. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="{{ $askAgain }}" />
+    <x-operator::action label="{{ __('health.ask_again') }}" :tap="$askAgain" />
 
     {{-- Beside asking again, where the remedy is a switch in the phone's
          settings: one tap to the switch rather than a hunt for it. --}}

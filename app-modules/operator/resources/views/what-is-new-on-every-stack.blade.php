@@ -5,7 +5,7 @@
          seen clears. The stacks are offered only where there is more than one. --}}
     <x-design::chips>
         @forelse ($this->news()->kinds as $filter)
-            <x-design::chip label="{{ __($filter->said) }}" tap="{{ $filter->tap }}" :chosen="$filter->chosen" />
+            <x-design::chip label="{{ __($filter->said) }}" :tap="$filter->tap" :chosen="$filter->chosen" />
         @empty
             {{-- Nothing: every kind and each kind are always offered. --}}
         @endforelse
@@ -14,7 +14,7 @@
     @if ($this->news()->stacks !== [])
         <x-design::chips>
             @forelse ($this->news()->stacks as $filter)
-                <x-design::chip label="{{ $filter->said === '' ? $filter->name : __($filter->said) }}" tap="{{ $filter->tap }}" :chosen="$filter->chosen" />
+                <x-design::chip label="{{ $filter->said === '' ? $filter->name : __($filter->said) }}" :tap="$filter->tap" :chosen="$filter->chosen" />
             @empty
                 {{-- Nothing: this is drawn only where there are stacks to offer. --}}
             @endforelse
