@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhatWasWanted;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\WhatADecisionAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 
 /**
  * The one place this application asks a stack what the house wants.
@@ -72,8 +73,8 @@ final readonly class Requests implements Wanting
             return WhatWasWanted::these(Households::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasWanted::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt $why) {
-            return WhatWasWanted::met($this->clients->whatStoodInTheWay($stack, $why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
+            return WhatWasWanted::met(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 

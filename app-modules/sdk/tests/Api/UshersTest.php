@@ -333,7 +333,7 @@ it('reads who is in off the household the operator\'s requests are read from, an
     ]]];
     $table = [
         [MockResponse::make((string) json_encode($household)), 'anna'],
-        [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'available' => false]])), 'met:StackDidNotAnswer'],
+        [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'available' => false]])), 'met:HouseholdCouldNotBeRead'],
         [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'members' => [['name' => ' ', 'claimed' => true]]]])), 'met:StackDidNotAnswer'],
         [aRefusalAt(401, 'Who are you'), 'met:CredentialWasRefused'],
         [MockResponse::make('not json at all'), 'met:StackDidNotAnswer'],

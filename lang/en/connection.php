@@ -17,6 +17,8 @@ return [
     'credential_refused_action' => 'Sign in to it again. You do not need to pair again.',
     'media_server_unconfirmed' => 'This stack could not check your account with its media server.',
     'media_server_unconfirmed_action' => 'Nothing about your account has changed. Try again once the media server is running.',
+    'household_unread' => 'This stack could not read who is in the household.',
+    'household_unread_action' => 'Nothing has changed. Try again in a little while.',
     'address_not_the_stacks' => 'This stack did not accept the address this app reached it at.',
     'address_not_the_stacks_action' => 'Pair again from the stack itself, so this app holds the address it answers on.',
     'encrypted' => 'Encrypted, and checked against the certificate you paired with.',

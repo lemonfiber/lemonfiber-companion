@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
 use Modules\Sdk\Internal\WhatAnInvitationAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
@@ -71,8 +72,8 @@ final readonly class Ushers implements Inviting
             return WhatWasFoundOfTheMembers::found(Households::whoIsIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheMembers::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing $why) {
-            return WhatWasFoundOfTheMembers::met($this->clients->whatStoodInTheWay($stack, $why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|InvitationSaysNothing $why) {
+            return WhatWasFoundOfTheMembers::met(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 

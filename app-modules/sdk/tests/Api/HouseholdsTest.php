@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
+use Modules\Sdk\Api\HouseholdWentUnread;
 
 use function sprintf;
 
@@ -145,9 +146,9 @@ it('N3-R3 — refuses a household the stack says it could not read, rather than 
     $unread = householdSaying(['available' => false, 'findings' => [], 'members' => []]);
 
     expect(fn(): Requested => Households::in($unread))
-        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household')
+        ->toThrow(HouseholdWentUnread::class, 'could not read the household')
         ->and(fn(): Requested => Households::theirOwnIn($unread))
-        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household');
+        ->toThrow(HouseholdWentUnread::class, 'could not read the household');
 });
 
 it('reads a household the stack could read as the answer it is', function (): void {
@@ -631,7 +632,7 @@ it('reads everybody in the house, joined or still invited, in the stack\'s order
 });
 
 it('refuses to say who is in where the stack could not read the household, or the payload is not one', function (): void {
-    expect(fn(): string => whoWasFoundIn(householdSaying([...aHouseholdOf([]), 'available' => false])))->toThrow(HouseholdIsUnreadable::class, 'could not read the household')
+    expect(fn(): string => whoWasFoundIn(householdSaying([...aHouseholdOf([]), 'available' => false])))->toThrow(HouseholdWentUnread::class, 'could not read the household')
         ->and(fn(): string => whoWasFoundIn(new Envelope(1, 'household', 'a house')))->toThrow(HouseholdIsUnreadable::class, 'no `data`')
         ->and(fn(): string => whoWasFoundIn(householdSaying(['available' => true])))->toThrow(HouseholdIsUnreadable::class, 'no `members`');
 });
