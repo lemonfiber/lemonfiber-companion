@@ -29,6 +29,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatThePhoneKeeps;
 
 // The requests awaiting a decision are visible from a phone.
 //
@@ -79,7 +80,7 @@ function theRequestsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noRequestsYet());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -542,8 +543,11 @@ it('a session that ended between the reading and the decision sends nothing', fu
     $keychain->forget(theStackWhoseHouseholdIsRead()->id());
     $screen->approve('41');
 
+    // The session's end is said beside the reading that was read while it
+    // worked, which the phone kept, and nothing on it can be decided.
     expect($wanting->whatItWasToldWasDecided())->toBe([])
-        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
+        ->and($screen->answer()->askedNow->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->waitsForTheStack)->toBeTrue();
 });
 
 it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): void {

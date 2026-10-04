@@ -54,7 +54,7 @@ bootstrap/Composition/  the composition root, and nothing else
 app-modules/
   kernel/               ports, values, outcomes — depends on nothing
   design/               EDGE components and theme tokens
-  connection/ stacks/ services/ health/ backups/ updates/  capability
+  connection/ stacks/ services/ requests/ health/ backups/ updates/  capability
   operator/ household/                              surface
   sdk/ device/ vault/ codes/ seal/                  adapter
   dx/                                               stand-in

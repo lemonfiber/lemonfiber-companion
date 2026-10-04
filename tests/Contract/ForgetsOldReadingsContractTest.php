@@ -10,6 +10,8 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
+use Modules\Requests\Internal\RequestsKept;
+use Modules\Requests\Internal\Store\RequestsInTheDatabase;
 use Modules\Services\Internal\ListingsKept;
 use Modules\Services\Internal\Store\ListingsInTheDatabase;
 use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
@@ -30,7 +32,7 @@ use Tests\Support\Fakes\ReadingsInMemory;
 const WHEN_THE_OLD_AND_THE_NEW_WERE_READ = 1_790_000_000;
 
 /** A store holding one reading read a second before the moment, and one read at it. */
-function holdingAnOldAndANewReading(HealthReadingsKept|UpkeepReadingsKept|ListingsKept $store): void
+function holdingAnOldAndANewReading(HealthReadingsKept|UpkeepReadingsKept|ListingsKept|RequestsKept $store): void
 {
     $store->keep(SealedStack::of('the-loft'), SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(WHEN_THE_OLD_AND_THE_NEW_WERE_READ - 1));
     $store->keep(SealedStack::of('the-shed'), SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(WHEN_THE_OLD_AND_THE_NEW_WERE_READ));
@@ -51,6 +53,11 @@ it('lets go of every reading read before the moment, in every store it answers f
         },
         'the services adapter' => static function (): array {
             $store = new ListingsInTheDatabase(AKeptDatabase::migrated());
+
+            return [$store, [$store]];
+        },
+        'the requests adapter' => static function (): array {
+            $store = new RequestsInTheDatabase(AKeptDatabase::migrated());
 
             return [$store, [$store]];
         },
@@ -87,6 +94,7 @@ it('lets go of nothing where nothing is kept, and says so', function (): void {
         'the health adapter' => static fn(): ForgetsOldReadings => new HealthReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the updates adapter' => static fn(): ForgetsOldReadings => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => static fn(): ForgetsOldReadings => new ListingsInTheDatabase(AKeptDatabase::migrated()),
+        'the requests adapter' => static fn(): ForgetsOldReadings => new RequestsInTheDatabase(AKeptDatabase::migrated()),
         'the fake' => static fn(): ForgetsOldReadings => ReadingsInMemory::empty(),
         'no store at all' => static fn(): ForgetsOldReadings => new EveryStoreOfReadings(),
     ] as $which => $made) {

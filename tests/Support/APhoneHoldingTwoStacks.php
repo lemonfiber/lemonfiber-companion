@@ -25,6 +25,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\Whose;
+use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
@@ -51,6 +52,8 @@ final readonly class APhoneHoldingTwoStacks
 
     public ReadingsInMemory $listings;
 
+    public ReadingsInMemory $requests;
+
     public PlatformStacks $stacks;
 
     /** @var list<ForgetsAStack> */
@@ -62,12 +65,14 @@ final readonly class APhoneHoldingTwoStacks
         $this->readings = ReadingsInMemory::empty();
         $this->upkeeps = ReadingsInMemory::empty();
         $this->listings = ReadingsInMemory::empty();
+        $this->requests = ReadingsInMemory::empty();
         $this->stacks = new PlatformStacks($this->store);
 
         $keychain = new PlatformKeychain($this->store);
         $keeping = new KeepingTheLastReading(ASealInMemory::working(), $this->readings);
         $upkeep = new KeepingTheLastUpkeep(ASealInMemory::working(), $this->upkeeps);
         $listing = new KeepingWhatItRuns(ASealInMemory::working(), $this->listings, FrozenClock::at(Instant::atEpochSeconds(1)));
+        $asked = new KeepingWhatWasAsked(ASealInMemory::working(), $this->requests, FrozenClock::at(Instant::atEpochSeconds(1)));
         $standings = new PlatformStandings($this->store);
         $left = new PlatformWorkLeftRunning($this->store, $this->stacks);
 
@@ -78,12 +83,13 @@ final readonly class APhoneHoldingTwoStacks
             $keeping->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1));
             $upkeep->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1));
             $listing->keep($stack->id(), WhatIsKeptOfServices::aListingOfNothing());
+            $asked->keep($stack->id(), WhatIsKeptOfRequests::aReadingOfNothing());
             $standings->remember($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(1));
             $left->remember($stack->id(), KindOfWork::Walkthrough, Job::named(sprintf('a-walk-on-%s', $seed)));
         }
 
         // In the order the composition root registers them: the pairing first.
-        $this->keepers = [$this->stacks, $keychain, $keeping, $upkeep, $listing, $standings, $left];
+        $this->keepers = [$this->stacks, $keychain, $keeping, $upkeep, $listing, $asked, $standings, $left];
     }
 
     public function removing(): RemovingAStack

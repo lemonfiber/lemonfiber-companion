@@ -27,6 +27,7 @@ use Modules\News\Api\Noticing;
 use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\WhatEachStackLastNamed;
+use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
@@ -44,6 +45,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
+use Tests\Support\WhatIsKeptOfRequests;
 use Tests\Support\WhatIsKeptOfServices;
 use Tests\Support\WhatIsKeptOfUpdates;
 use Tests\Support\WhatThePhoneKeeps;
@@ -81,6 +83,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the readings' => new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty()),
         'the upkeep' => new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty()),
         'what it runs' => WhatThePhoneKeeps::noListingYet(),
+        'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
@@ -106,12 +109,13 @@ function whatNoticesNewsOver(ASealInMemory $seal): Noticing
 }
 
 /** Have a keeper of readings hold the newest reading of its kind for this stack. */
-function keepAReadingFor(KeepingTheLastReading|KeepingTheLastUpkeep|KeepingWhatItRuns $keeper, Stack $stack): Noted
+function keepAReadingFor(KeepingTheLastReading|KeepingTheLastUpkeep|KeepingWhatItRuns|KeepingWhatWasAsked $keeper, Stack $stack): Noted
 {
     return match (true) {
         $keeper instanceof KeepingTheLastReading => $keeper->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1)),
         $keeper instanceof KeepingTheLastUpkeep => $keeper->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1)),
         $keeper instanceof KeepingWhatItRuns => $keeper->keep($stack->id(), WhatIsKeptOfServices::aListingOfNothing()),
+        $keeper instanceof KeepingWhatWasAsked => $keeper->keep($stack->id(), WhatIsKeptOfRequests::aReadingOfNothing()),
     };
 }
 
@@ -130,7 +134,7 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
         return;
     }
 
-    if ($keeper instanceof KeepingTheLastReading || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns) {
+    if ($keeper instanceof KeepingTheLastReading || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns || $keeper instanceof KeepingWhatWasAsked) {
         keepAReadingFor($keeper, $stack);
 
         return;
@@ -191,6 +195,7 @@ it('says it may still keep something where its store cannot be read', function (
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'what it runs, whose keys cannot be read' => new KeepingWhatItRuns(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'what the household asked for, whose keys cannot be read' => new KeepingWhatWasAsked(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
         'news whose keys cannot be read' => whatNoticesNewsOver(ASealInMemory::thatWillNotOpen()),
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);

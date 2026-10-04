@@ -2,11 +2,34 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+    @if ($this->answer()->waitsForTheStack)
+        {{-- What the phone kept, said for what it is: how long ago it was
+             read, and above it what stopped the reading asked for now. Asking
+             again is the column's own, below. --}}
+        @if (! $this->answer()->askedNow->cameBack())
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->answer()->askedNow"
+                ask-again=""
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @endif
+        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
+
     {{-- What is waiting on the operator, said before the list. An
          operator who opened this screen because somebody in the house asked
          them to should not have to count rows to find out whether anything
          needs them. --}}
     <x-design::title>{{ trans_choice('household.waiting_count', $this->answer()->waiting) }}</x-design::title>
+
+    @if ($this->answer()->waitsForTheStack && $this->answer()->waiting > 0 && $this->turningDown() === null)
+        {{-- Approving and turning down are drawn on every row that waits and
+             cannot be used while the reading is one the phone kept, never
+             hidden. Said once, above the rows, rather than on each: the same
+             sentence on every card is one line read aloud again and again. --}}
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
 
     @if ($this->turningDown() !== null)
         {{-- A refusal owes the person who asked a sentence, and this is
@@ -29,9 +52,12 @@
 
         <x-design::action
             label="{{ __('household.turn_it_down') }}"
-            :disabled="! $this->mayDecline()"
+            :disabled="! $this->mayDecline() || $this->answer()->waitsForTheStack"
             tap="decline()"
         />
+        @if ($this->answer()->waitsForTheStack)
+            <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+        @endif
         <x-design::action label="{{ __('household.never_mind') }}" tap="neverMind()" tone="tonal" />
     @else
     @forelse ($this->answer()->requests as $request)
@@ -71,12 +97,14 @@
                     label="{{ __('household.approve') }}"
                     answers-to="{{ __('household.approve_that', ['title' => $request->title]) }}"
                     tap="approve('{{ $request->number }}')"
+                    :disabled="$this->answer()->waitsForTheStack"
                 />
                 <x-design::action
                     label="{{ __('household.turn_down') }}"
                     answers-to="{{ __('household.turn_down_that', ['title' => $request->title]) }}"
                     tap="wouldDecline('{{ $request->number }}')"
                     tone="tonal"
+                    :disabled="$this->answer()->waitsForTheStack"
                 />
             @endif
         </x-design::card>

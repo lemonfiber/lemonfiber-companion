@@ -127,6 +127,9 @@ use Modules\News\Internal\NewsKept;
 use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Api\NotingWhereTheOperatorIs;
+use Modules\Requests\Api\KeepingWhatWasAsked;
+use Modules\Requests\Internal\RequestsKept;
+use Modules\Requests\Internal\Store\RequestsInTheDatabase;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
@@ -510,6 +513,11 @@ final class CompositionRoot extends ServiceProvider
         // and the store walled inside it, bound as the health readings are.
         $this->app->bind(ListingsKept::class, ListingsInTheDatabase::class);
 
+        // The newest reading of what each stack's household asked for,
+        // `requests`'s own port and the store walled inside it, bound as the
+        // health readings are.
+        $this->app->bind(RequestsKept::class, RequestsInTheDatabase::class);
+
         // `connection`'s settings — how long the app may be away before the
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
@@ -532,7 +540,7 @@ final class CompositionRoot extends ServiceProvider
         // Every store of readings, registered under one tag and asked as one
         // to let go of what is older than readings are kept for. A kind of
         // reading is let go of for its age by adding its store here.
-        $this->app->tag([HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class], self::EVERY_STORE_OF_READINGS);
+        $this->app->tag([HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class], self::EVERY_STORE_OF_READINGS);
         $this->app->when(EveryStoreOfReadings::class)
             ->needs(ForgetsOldReadings::class)
             ->giveTagged(self::EVERY_STORE_OF_READINGS);
@@ -544,7 +552,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -557,7 +565,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)
