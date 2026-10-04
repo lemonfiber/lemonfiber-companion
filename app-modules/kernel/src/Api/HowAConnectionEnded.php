@@ -94,7 +94,7 @@ final readonly class HowAConnectionEnded
         return new self(WhereAConnectionStands::WouldWire, '', $ours, $yours);
     }
 
-    /** Which of the thirteen it is. */
+    /** Which of the fourteen it is. */
     public function state(): WhereAConnectionStands
     {
         return $this->state;
