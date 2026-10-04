@@ -150,7 +150,7 @@ final class HowThisStackIs extends NativeComponent
         private readonly Standings $standings,
         private readonly KeepingTheLastReading $keeping,
         protected readonly TheAppsSettings $settings,
-        private readonly Noticing $noticing,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**
