@@ -240,8 +240,8 @@ it('a code this app cannot read is a stack that did not answer, never a code wit
     expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 })->with([
     'no material' => [['material' => 'here']],
-    'no expiry' => [['material' => ['address' => 'https://den.local:8443', 'expires' => 'soon']]],
-    'no address' => [['material' => ['expires' => 1_790_813_400]]],
+    'no expiry' => [['material' => ['address' => 'https://den.local:8443', 'fingerprint' => str_repeat('0', Fingerprint::CHARACTERS), 'expires' => 'soon']]],
+    'no address' => [['material' => ['fingerprint' => str_repeat('0', Fingerprint::CHARACTERS), 'expires' => 1_790_813_400]]],
     'a blank line' => [['written' => '  ']],
     'no line' => [['written' => null]],
     'a blank compare code' => [['compare' => ' ']],
