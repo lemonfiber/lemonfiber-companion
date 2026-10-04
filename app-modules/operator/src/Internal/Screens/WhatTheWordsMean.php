@@ -23,8 +23,8 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheWordsRead;
 use Modules\Operator\Internal\ViewModels\AWordAskedAbout;
 use Modules\Operator\Internal\ViewModels\TheWordsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -81,8 +81,9 @@ final class WhatTheWordsMean extends NativeComponent
     public function __construct(
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
     /**
@@ -101,16 +102,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->open = $service;
     }
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame, for
-     * {@see WhatStoppedComingIn::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Open or close the longer gloss of the word at a place in the list as drawn.
@@ -164,11 +155,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->asked = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

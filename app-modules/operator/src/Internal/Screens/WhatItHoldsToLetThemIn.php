@@ -19,8 +19,8 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCredentialsRead;
 use Modules\Operator\Internal\ViewModels\TheCredentialsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -59,20 +59,11 @@ final class WhatItHoldsToLetThemIn extends NativeComponent
     public function __construct(
         private readonly Safekeeping $safekeeping,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatIsRunningHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
@@ -80,11 +71,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

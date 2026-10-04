@@ -36,9 +36,9 @@ use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -82,7 +82,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
     use HearsWhereTheWalkIs {
-        HearsWhereTheWalkIs::stop insteadof FindsItsWayAround;
+        HearsWhereTheWalkIs::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
@@ -111,12 +111,13 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         private readonly WalkingThrough $walking,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly WorkLeftRunning $leftRunning,
         private readonly HearingTheWalk $hearingTheWalk,
         private readonly Clock $clock,
         private readonly Capture $capture,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
     /**
@@ -139,11 +140,6 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         $this->took = $left === '' ? null : $left;
     }
 
-    /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Walk through what was typed, or, with nothing typed, something the stack picks. */
     public function walk(): void
@@ -208,11 +204,6 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         $this->listenToTheWalk();
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

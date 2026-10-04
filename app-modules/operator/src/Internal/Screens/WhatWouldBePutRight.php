@@ -27,9 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasMended;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
-use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
@@ -37,7 +35,6 @@ use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -75,11 +72,6 @@ use function view;
  * carried on the fold for it, so that screen will not have to ask the stack
  * again for what this one is already showing.
  *
- * **It holds the stack's event stream while it is in front**, through
- * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
- * wherever the operator is. Taking what the stream delivered sends nothing to
- * the stack.
- *
  * `Concealed` for the reason every stack-facing screen here is: what a machine
  * would put right says a good deal about what is on it.
  */
@@ -89,10 +81,6 @@ use function view;
 final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
-    use HoldsItsStacksStream {
-        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
-        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -158,22 +146,11 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     public function __construct(
         private readonly Mending $mending,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
@@ -382,18 +359,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         $this->agreeTo($yesTo);
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination, and {@see WhereAStackIs}
-     * is the only place that knows a stack's routes — six classes were each
-     * spelling `/stacks/%s/sign-in` for themselves, so a rename had to be found
-     * in all six and the one that was missed would be a button leading nowhere.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

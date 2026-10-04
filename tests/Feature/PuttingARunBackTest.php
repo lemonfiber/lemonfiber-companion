@@ -115,6 +115,7 @@ function thePuttingARunBackScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(A_RUN_IS_PUT_BACK_AT)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $stamp]);
 

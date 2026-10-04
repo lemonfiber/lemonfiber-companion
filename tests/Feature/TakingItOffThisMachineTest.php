@@ -82,7 +82,7 @@ function theTakingItOffScreen(AStackThatTakesItOff $removing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

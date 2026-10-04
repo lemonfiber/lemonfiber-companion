@@ -27,7 +27,7 @@ use Native\Mobile\Edge\NativeComponent;
  * for, so the first step it says is one this screen hears. It is let go of on
  * the first wake after the walk stops running.
  *
- * **Held only while somebody can see it**, for {@see HearsHowTheStackIs}'s
+ * **Held only while somebody can see it**, for {@see HoldsItsStacksStream}'s
  * reason: every wake asks the device whether the app is in front, and lets go
  * where it is not, and leaving the screen lets go too.
  *
@@ -55,28 +55,17 @@ trait HearsWhereTheWalkIs
         return new HowTheStageReads()->of($this->walkHeardSoFar(), $this->followsTheWalkWith()->clock->now());
     }
 
-    /**
-     * Let go of the subscription whenever this screen stops being the one in front.
-     *
-     * Every way off a screen ends here. What was heard stays, marked as no
-     * longer current. The list of stacks the top bar's name opens is let go of
-     * with it, having subscriptions of its own.
-     */
-    public function stop(): void
+    abstract public function stack(): Stack;
+
+    /** Let go of the walk's subscription as the screen stops, keeping what was heard as no longer current. */
+    protected function letGoOfWhatElseItHears(): void
     {
         $this->letGoOfTheWalk();
-        $this->letTheListOfStacksGo();
-
-        parent::stop();
     }
-
-    abstract public function stack(): Stack;
 
     /** The ports this screen follows a walk with, handed over by the screen that holds them. */
     abstract protected function followsTheWalkWith(): WhatTheWalkIsFollowedWith;
 
-    /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
-    abstract private function letTheListOfStacksGo(): void;
 
     /**
      * Start afresh for a walk about to begin: let go of anything held, and open the subscription.

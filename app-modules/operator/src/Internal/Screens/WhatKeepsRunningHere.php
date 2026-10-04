@@ -28,8 +28,8 @@ use Modules\Operator\Internal\Presenters\HowHostingReads;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -105,22 +105,11 @@ final class WhatKeepsRunningHere extends NativeComponent
     public function __construct(
         private readonly Hosting $hosting,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names — the argument
-     * {@see WhatStoppedComingIn::stack()} makes, and the same refusal for a
-     * route naming a stack this device has forgotten.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask the machine again.
@@ -190,16 +179,6 @@ final class WhatKeepsRunningHere extends NativeComponent
         $this->asking = null;
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination, and {@see WhereAStackIs} is
-     * the only place that knows a stack's routes.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

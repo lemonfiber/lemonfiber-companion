@@ -20,8 +20,8 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceReads;
 use Modules\Operator\Internal\ViewModels\TheAllowanceTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -50,21 +50,12 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
     public function __construct(
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** The stack this screen is about. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
-    /** Where this stack's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** Ask the stack again. */
     public function again(): void

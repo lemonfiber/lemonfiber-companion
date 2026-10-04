@@ -26,7 +26,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\TheWaysAround;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -65,7 +64,6 @@ function aTabToChooseFrom(?AKeychainInMemory $keychain = null, ?StandingsInMemor
         AroundThePhone::holding(StacksInMemory::holding($attic, theBarnToChooseFrom()), $standings, $sessions),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
         WhatThePhoneKeeps::noUpkeepYet(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
@@ -234,6 +232,7 @@ it('gives signing in to a stack the list of stacks and the menu, and not the bar
         AKeychainInMemory::working(),
         AroundThePhone::holding(StacksInMemory::holding($attic)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

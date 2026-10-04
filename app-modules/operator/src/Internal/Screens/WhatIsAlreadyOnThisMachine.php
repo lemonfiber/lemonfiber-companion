@@ -30,8 +30,8 @@ use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSurveyTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -94,20 +94,11 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     public function __construct(
         private readonly MovingIn $movingIn,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatIsRunningHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask the machine again, which an obstacle must not take away.
@@ -220,11 +211,6 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         }
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

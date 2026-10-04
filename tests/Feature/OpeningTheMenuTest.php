@@ -27,7 +27,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 use Tests\Support\WhatTheRouterHolds;
@@ -59,7 +58,7 @@ function aTabWithTheMenu(?AKeychainInMemory $keychain = null): HowCurrentThisSta
 {
     $stack = theStackWhoseMenuIsOpened();
     $keychain ??= theAtticSignedIntoBy(Whose::theOperator());
-    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
+    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -69,7 +68,7 @@ function aTabWithTheMenu(?AKeychainInMemory $keychain = null): HowCurrentThisSta
 function aScreenTheMenuOpens(): WhatTheWordsMean
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

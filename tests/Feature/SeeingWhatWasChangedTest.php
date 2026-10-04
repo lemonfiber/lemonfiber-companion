@@ -90,6 +90,7 @@ function theRecordScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(THE_RECORD_IS_READ_AT)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

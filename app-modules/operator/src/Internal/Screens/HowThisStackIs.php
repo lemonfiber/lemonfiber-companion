@@ -24,7 +24,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
@@ -33,7 +32,6 @@ use Modules\Operator\Internal\Presenters\HowAStackReads;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -89,10 +87,7 @@ use function view;
 final class HowThisStackIs extends NativeComponent
 {
     use OffersTheAppsSettings;
-    use HearsHowTheStackIs {
-        HearsHowTheStackIs::stop insteadof FindsItsWayAround;
-        HearsHowTheStackIs::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
+    use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -138,24 +133,11 @@ final class HowThisStackIs extends NativeComponent
     public function __construct(
         private readonly Asking $asking,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names — the same
-     * argument {@see SignIntoAStack::stack()} makes, and the same refusal for a
-     * route naming a stack this device has forgotten.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Each finding, as a row a template can read, in the order they were made.
@@ -301,20 +283,6 @@ final class HowThisStackIs extends NativeComponent
         return $this->goes()->logsOf(ServiceId::called($named));
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination. {@see WhereAStackIs} is the
-     * only place that knows a stack's routes, and it is built from the stack
-     * this screen is already about, so none of them can lead to another
-     * machine's. Three separate `somethingAreAt()` methods took this class to
-     * the twenty-method ceiling that is refused; the next destination the hub
-     * links to now costs no method here at all.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** Where one stopped item got to, followed through every service. */
     public function traceOf(string $item): string

@@ -96,6 +96,7 @@ function thePairingScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

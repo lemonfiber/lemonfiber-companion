@@ -111,6 +111,7 @@ function theLogScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         AZoneThatIsSet::to('Europe/Amsterdam'),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),

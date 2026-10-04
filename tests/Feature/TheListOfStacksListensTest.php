@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
@@ -23,13 +24,13 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 
 // The list of stacks the top bar's name opens says how each stack stands. On a
 // screen that holds no stream, what the phone kept goes out of date within
@@ -76,12 +77,12 @@ function signedIntoBoth(): AKeychainInMemory
     return $keychain;
 }
 
-/** The glossary on the cellar, a screen the menu opens that holds no stream, with the list listening through `$hearing`. */
-function aScreenThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $standings, ?ACaptureInMemory $capture = null): WhatTheWordsMean
+/** What a member can watch on the cellar, a screen that holds no stream, with the list listening through `$hearing`. */
+function aScreenThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $standings, ?ACaptureInMemory $capture = null): WhatYouCanWatch
 {
     $keychain = signedIntoBoth();
-    $screen = new WhatTheWordsMean(
-        AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
+    $screen = new WhatYouCanWatch(
+        AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(
             StacksInMemory::holding(theCellar(), theShed()),
@@ -109,7 +110,23 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($own, $clock, standings: $standings),
-        NoticingWhatIsNew::fromNothing(),
+    );
+    $screen->setParams(['stack' => theCellar()->id()->stored()]);
+
+    return $screen;
+}
+
+/** The words the menu opens on the cellar, whose own stream is `$own` and whose list listens through `$list`. */
+function theCellarsWords(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, StandingsInMemory $standings): WhatTheWordsMean
+{
+    $keychain = signedIntoBoth();
+    $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
+    $screen = new WhatTheWordsMean(
+        AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
+        $keychain,
+        AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
+        new AppsSettingsThatOpen(),
+        AroundThePhone::listening($own, $clock, standings: $standings),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -121,7 +138,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
  *
  * @return array<string, string>
  */
-function whatEachRowSays(WhatTheWordsMean $screen): array
+function whatEachRowSays(WhatYouCanWatch $screen): array
 {
     $said = [];
 
@@ -172,10 +189,10 @@ it('lets go of what it listens to however the list is shut, and when the screen 
     expect($hearing->asked())->toBe(2)
         ->and($hearing->lettingsGo())->toBe(1);
 })->with([
-    'shut by hand' => [static fn(WhatTheWordsMean $screen) => $screen->stopChoosingAStack()],
-    'a stack chosen' => [static fn(WhatTheWordsMean $screen) => $screen->openTheStack(theShed()->id()->stored())],
-    'a stack added' => [static fn(WhatTheWordsMean $screen) => $screen->addAStack()],
-    'the screen stopped' => [static fn(WhatTheWordsMean $screen) => $screen->stop()],
+    'shut by hand' => [static fn(WhatYouCanWatch $screen) => $screen->stopChoosingAStack()],
+    'a stack chosen' => [static fn(WhatYouCanWatch $screen) => $screen->openTheStack(theShed()->id()->stored())],
+    'a stack added' => [static fn(WhatYouCanWatch $screen) => $screen->addAStack()],
+    'the screen stopped' => [static fn(WhatYouCanWatch $screen) => $screen->stop()],
 ]);
 
 it('stays open when the screen stops, and listens again when it is back', function (): void {
@@ -200,10 +217,12 @@ it('lets go rather than listening while nobody can see the list', function (): v
         ->and($hearing->lettingsGo())->toBe(1);
 });
 
-it('does not ask the health screen\'s own stack twice, and leaves its stream alone when the list shuts', function (): void {
+it('does not ask an operator\'s screen\'s own stack twice, and leaves its stream alone when the list shuts', function (string $which): void {
     $own = AStackThatSpeaksUp::holdingOpen(theStackIsCritical());
     $list = AStackThatSpeaksUp::holdingOpen(theStackIsCritical());
-    $screen = theCellarsHealth($own, $list, StandingsInMemory::working());
+    $screen = $which === 'the health of the stack'
+        ? theCellarsHealth($own, $list, StandingsInMemory::working())
+        : theCellarsWords($own, $list, StandingsInMemory::working());
     $screen->listen();
     $screen->chooseAStack();
 
@@ -214,7 +233,7 @@ it('does not ask the health screen\'s own stack twice, and leaves its stream alo
         ->and($list->lettingsGo())->toBe(1)
         ->and($own->asked())->toBe(1)
         ->and($own->lettingsGo())->toBe(0);
-});
+})->with(['the health of the stack', 'the words the menu opens']);
 
 it('lets go of its own stream and the list\'s when the health screen stops', function (): void {
     $own = AStackThatSpeaksUp::holdingOpen(theStackIsCritical());

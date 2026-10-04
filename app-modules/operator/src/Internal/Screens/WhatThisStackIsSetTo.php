@@ -26,8 +26,8 @@ use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -91,8 +91,9 @@ final class WhatThisStackIsSetTo extends NativeComponent
         private readonly Arranging $arranging,
         private readonly Adjusting $adjusting,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
     /** What the operator has typed into the one field. */
@@ -101,10 +102,6 @@ final class WhatThisStackIsSetTo extends NativeComponent
         return $this->typed;
     }
 
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask again.
@@ -224,10 +221,6 @@ final class WhatThisStackIsSetTo extends NativeComponent
         return $proposed;
     }
 
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

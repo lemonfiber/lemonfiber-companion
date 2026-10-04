@@ -40,8 +40,8 @@ use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -119,9 +119,10 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         private readonly Encoding $encoding,
         private readonly Sharing $sharing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Translator $catalogue,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
     /**
@@ -138,11 +139,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         $this->name = $service;
     }
 
-    /** The stack this screen is about, read from the route on every frame. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask again, which an obstacle must not take away.
@@ -304,11 +300,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         }
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

@@ -76,7 +76,7 @@ function theHelpScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen());
+    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

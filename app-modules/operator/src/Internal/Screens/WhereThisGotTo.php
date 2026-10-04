@@ -27,8 +27,8 @@ use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -74,15 +74,11 @@ final class WhereThisGotTo extends NativeComponent
         private readonly Tracing $tracing,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Follow what was typed instead; nothing typed follows nothing new. */
     public function follow(): void
@@ -102,11 +98,6 @@ final class WhereThisGotTo extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

@@ -109,6 +109,7 @@ function theWalkthroughScreen(
         $clock ?? FrozenClock::at(secondsIntoFollowingAWalk(0)),
         $capture ?? ACaptureInMemory::inFront(),
         settings: new AppsSettingsThatOpen(),
+        listening: AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->mount();

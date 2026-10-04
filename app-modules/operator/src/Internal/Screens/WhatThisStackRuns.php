@@ -11,18 +11,14 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\News\Api\Noticing;
-use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -74,11 +70,6 @@ use function view;
  * network nothing the rest of the time — which is what keeps this from being
  * the polling that is refused.
  *
- * **It holds the stack's event stream while it is in front**, through
- * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
- * wherever the operator is. Taking what the stream delivered sends nothing to
- * the stack.
- *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
@@ -91,10 +82,6 @@ final class WhatThisStackRuns extends NativeComponent
 {
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
-    use HoldsItsStacksStream {
-        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
-        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -109,10 +96,9 @@ final class WhatThisStackRuns extends NativeComponent
     public function __construct(
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
     /**
@@ -133,18 +119,6 @@ final class WhatThisStackRuns extends NativeComponent
         return $this->formsOf($this->stack(), $this->storage, $this->supervising);
     }
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names — the argument
-     * {@see HowThisStackIs::stack()} makes, and the same refusal for a route
-     * naming a stack this device has forgotten.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Look again while the machine is settling into what it was told.
@@ -170,17 +144,6 @@ final class WhatThisStackRuns extends NativeComponent
         $this->showsWhatIsNotInstalled = ! $this->showsWhatIsNotInstalled;
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination, which is
-     * {@see WhatStoppedComingIn::goes()}'s argument: {@see WhereAStackIs} is
-     * the only place that knows a stack's routes.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

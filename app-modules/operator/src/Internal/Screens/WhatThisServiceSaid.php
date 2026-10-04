@@ -31,8 +31,8 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -120,23 +120,12 @@ final class WhatThisServiceSaid extends NativeComponent
     public function __construct(
         private readonly Saying $saying,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly LocalZone $here,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names — the argument
-     * {@see HowThisStackIs::stack()} makes, and the same refusal for a route
-     * naming a stack this device has forgotten.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * The service this screen is about.
@@ -254,16 +243,6 @@ final class WhatThisServiceSaid extends NativeComponent
         $this->unfolded = in_array($fold, $this->unfolded, strict: true) ? $open : [...$open, $fold];
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination, and {@see WhereAStackIs} is
-     * the only place that knows a stack's routes.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

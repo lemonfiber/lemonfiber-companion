@@ -86,7 +86,7 @@ function theStalledScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen());
+    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;

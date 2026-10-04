@@ -75,6 +75,7 @@ function signInScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
 
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);

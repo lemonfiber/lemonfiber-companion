@@ -36,7 +36,6 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Tests\Support\ALockScreen;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -49,8 +48,6 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -110,7 +107,6 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($stream, FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)), keeping: $keeping),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -170,17 +166,13 @@ function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         $clearing,
-        $keeping,
         $readings ?? WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)), keeping: $keeping),
     );
 }
 

@@ -15,16 +15,13 @@ use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -78,17 +75,13 @@ it('lists the stacks on the phone in the order they were put in', function (): v
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_LISTS_ARE_DRAWN)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_LISTS_ARE_DRAWN))),
     );
 
     expect(theStacksAmong(WhatTheDeviceWouldDraw::by($screen)->said()))->toBe(['The shed', 'The loft', 'The attic']);
@@ -100,6 +93,7 @@ it('offers the stacks to switch to in the order they were put in', function (): 
         AKeychainInMemory::working(),
         AroundThePhone::holding(threeStacksPutInOrder()),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => aStackInTheOrder('The loft', 'a')->id()->stored()]);
     $screen->chooseAStack();

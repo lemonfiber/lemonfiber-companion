@@ -115,6 +115,7 @@ function theInvitationScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         app(Translator::class),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

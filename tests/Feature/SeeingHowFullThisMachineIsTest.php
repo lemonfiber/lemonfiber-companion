@@ -106,7 +106,7 @@ function theRoomScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowFullThisMachineIs($measuring, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen());
+    $screen = new HowFullThisMachineIs($measuring, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

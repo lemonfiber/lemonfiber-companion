@@ -89,6 +89,7 @@ function theScreenAVerbIsFollowedFrom(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         $hearing ?? AStackThatSaysWhatItWaitsOn::saying(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 

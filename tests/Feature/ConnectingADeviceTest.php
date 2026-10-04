@@ -114,6 +114,7 @@ function theConnectingScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -318,6 +319,7 @@ it('is offered on each member\'s card, told apart by their name', function (): v
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $household->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();
@@ -335,6 +337,7 @@ it('opens asking somebody in with the name it was sent with already typed', func
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
     );
     $household->mount('Sam');
     $blank = clone $household;

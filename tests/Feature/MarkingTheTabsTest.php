@@ -25,7 +25,11 @@ use Modules\Kernel\Api\Whose;
 use Modules\News\Api\KindOfNews;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\Screens\WhatTheWordsMean;
+use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Wayfinding\Api\TheTabs;
 use Native\Mobile\Edge\NativeComponent;
@@ -35,15 +39,23 @@ use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\AServiceThatSpoke;
+use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatNarrates;
+use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
+use Tests\Support\Fakes\AStackThatWalksThrough;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\AStackThatWouldMend;
+use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -101,8 +113,7 @@ function theShedsHealthHearing(AStackThatSpeaksUp $stream, ?ASealInMemory $seal 
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
-        AroundThePhone::listening($stream, $clock, $window, $standings),
-        NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty()),
+        AroundThePhone::listening($stream, $clock, $window, $standings, noticing: NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty())),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -117,16 +128,55 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $around = AroundThePhone::holding(StacksInMemory::holding($stack));
     $listening = AroundThePhone::listening($stream, $clock);
-    $noticing = NoticingWhatIsNew::fromNothing();
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($tab) {
-        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
-        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
-        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing, WhatThePhoneKeeps::noUpkeepYet()),
-        TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet()),
+        TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
     };
     $screen->setParams(['stack' => $stack->id()->stored()]);
+
+    return $screen;
+}
+
+/**
+ * A screen on the shed that is no tab's own, hearing what the stream is scripted
+ * to say, on this clock, and following a walk and a start on these.
+ */
+function theShedsOtherScreenHearing(
+    string $which,
+    AStackThatSpeaksUp $stream,
+    FrozenClock $clock,
+    ?AStackThatNarrates $walk = null,
+    ?AStackThatSaysWhatItWaitsOn $start = null,
+): WhatToDoWithThis|WhatThisServiceSaid|WhatTheWordsMean|WatchingOneArrive {
+    $stack = theStackWhoseTabsAreMarked();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $around = AroundThePhone::holding(StacksInMemory::holding($stack));
+    $listening = AroundThePhone::listening($stream, $clock);
+    $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
+
+    $screen = match ($which) {
+        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening),
+        'what a service said' => new WhatThisServiceSaid(AServiceThatSpoke::met($offline), $keychain, $around, AZoneThatIsSet::to('Europe/Amsterdam'), new AppsSettingsThatOpen(), $listening),
+        'the words the menu opens' => new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        default => new WatchingOneArrive(
+            AStackThatWalksThrough::met($offline),
+            AStackThatExplainsItsWords::met($offline),
+            $keychain,
+            $around,
+            WorkLeftRunningInMemory::working(),
+            $walk ?? AStackThatNarrates::holdingOpen(),
+            $clock,
+            ACaptureInMemory::inFront(),
+            new AppsSettingsThatOpen(),
+            $listening,
+        ),
+    };
+    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'sonarr']);
 
     return $screen;
 }
@@ -227,7 +277,7 @@ it('marks the tabs on each tab\'s screen, which holds the stack\'s stream while 
         whatTheShedNamesAsNewest(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]]),
     ), $clock);
 
-    $screen->mount();
+    $screen->listen();
     $clock->moveTo(AScreenListening::secondsAfterOpening(2));
     $screen->listen();
 
@@ -238,6 +288,41 @@ it('marks the tabs on each tab\'s screen, which holds the stack\'s stream while 
         'updates' => ['badge' => '1', 'said' => trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.updates')])],
     ]);
 })->with(TheTabs::cases());
+
+it('marks the tabs on a screen no tab owns, which holds the stack\'s stream while it is in front', function (string $which): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $screen = theShedsOtherScreenHearing($which, AStackThatSpeaksUp::holdingOpen(
+        whatTheShedNamesAsNewest(['2.3.0'], [['disk.space', 1_790_000_000]]),
+        whatTheShedNamesAsNewest(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]]),
+    ), $clock);
+
+    $screen->listen();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $screen->listen();
+
+    expect(theMarksOnTheBar($screen))->toBe([
+        'health' => ['badge' => '1', 'said' => trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.health')])],
+        'repairs' => ['badge' => '', 'said' => ''],
+        'services' => ['badge' => '', 'said' => ''],
+        'updates' => ['badge' => '1', 'said' => trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.updates')])],
+    ]);
+})->with(['what to do with a service', 'what a service said', 'the words the menu opens', 'following a walk']);
+
+it('lets go of the stack\'s stream and of what else it hears when it stops', function (): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $stream = AStackThatSpeaksUp::holdingOpen();
+    $walk = AStackThatNarrates::holdingOpen();
+    $start = AStackThatSaysWhatItWaitsOn::saying();
+    $following = theShedsOtherScreenHearing('following a walk', $stream, $clock, walk: $walk);
+    $doing = theShedsOtherScreenHearing('what to do with a service', $stream, $clock, start: $start);
+
+    $following->stop();
+    $doing->stop();
+
+    expect($stream->lettingsGo())->toBe(2)
+        ->and($walk->lettingsGo())->toBe(1)
+        ->and($start->lettingsGo())->toBe(1);
+});
 
 it('keeps the marks it has where a wake names nothing new', function (): void {
     $listening = theShedsHealthHearing(AStackThatSpeaksUp::holdingOpen(

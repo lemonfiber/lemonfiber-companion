@@ -32,8 +32,8 @@ use Modules\Operator\Internal\Presenters\HowTheQualityReads;
 use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -97,20 +97,11 @@ final class ChoosingHowGood extends NativeComponent
         private readonly ChoosingQuality $choosing,
         private readonly UpgradingTheLibrary $upgrades,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatIsRunningHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask the machine again, and forget every answer and every yes on offer.
@@ -189,11 +180,6 @@ final class ChoosingHowGood extends NativeComponent
         return $this->described instanceof AnUpgradeDescribed;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

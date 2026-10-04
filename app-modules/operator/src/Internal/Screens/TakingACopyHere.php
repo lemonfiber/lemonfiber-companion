@@ -28,8 +28,8 @@ use Modules\Operator\Internal\Presenters\HowAScopeReads;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -86,26 +86,12 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         private readonly TakingCopies $copying,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame, for
-     * {@see WhatThisMachineKeepsHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

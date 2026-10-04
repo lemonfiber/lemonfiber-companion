@@ -15,6 +15,7 @@ use Modules\News\Internal\NewsOfAStack;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
@@ -54,6 +55,8 @@ final readonly class APhoneOnItsStackSettings
             AroundThePhone::holding($this->stacks, storage: $this->keychain),
             new RemovingAStack($journal, new EveryKeeperOfAStack($this->stacks, $this->keychain)),
             $this->marking,
+            AKeychainInMemory::working(),
+            AroundThePhone::listening(),
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

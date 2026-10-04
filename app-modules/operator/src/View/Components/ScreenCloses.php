@@ -26,14 +26,15 @@ use function view;
  *
  * A tab holding something new carries its count, drawn as text in the badge and
  * said with the tab's name to a screen reader, never shown by colour alone.
- * A screen that has heard nothing of what is new marks no tab.
+ * Every screen that draws the bar hands it the marks it has heard, and one
+ * that has heard nothing of what is new marks no tab.
  */
 final class ScreenCloses extends Component
 {
     public function __construct(
         public readonly WhereAStackIs $goes,
         public readonly ?TheTabs $here,
-        public readonly TheTabsAsMarked $marks = new TheTabsAsMarked(),
+        public readonly TheTabsAsMarked $marks,
     ) {}
 
     public function render(): View

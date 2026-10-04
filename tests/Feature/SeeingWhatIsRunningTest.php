@@ -78,7 +78,7 @@ function theCopyScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $settings ?? new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

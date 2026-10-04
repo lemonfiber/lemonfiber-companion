@@ -13,9 +13,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\News\Api\Noticing;
 
 /**
  * The ports a screen holding the stream reaches for, handed to it together.
+ *
+ * What hears the stream, the clock and whether anybody can see the screen,
+ * where what was heard is kept, and what answers how much is new by it.
  *
  * The traits that hold a stream are where they are used, and a screen is where
  * they arrive, so the screen is handed them in one value and a trait holding a
@@ -30,6 +34,7 @@ final readonly class WhatItListensWith
         public Capture $capture,
         public Standings $standings,
         public KeepingTheLastReading $keeping,
+        public Noticing $noticing,
     ) {}
 
     /**
