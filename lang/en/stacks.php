@@ -492,6 +492,8 @@ return [
         'compare' => 'When it is typed, the other phone shows this. Check that it matches.',
         'until' => 'It stops being good at :until.',
         'reaches' => 'The phone reaches this machine at :address.',
+        'replaced_at_the_machine' => 'Its certificate is replaced at the machine, not from here.',
+        'checked_differently' => 'This stack works out a different check code from this phone, so a phone that types this line cannot check it. Update lemonfiber or the app.',
         'expired' => 'This code has expired',
         'make_a_new_one' => 'Make a new one',
     ],

@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\PairingEnvelope;
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\APairingLine;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Sdk\Api\Fields\PairingField;
 use Modules\Sdk\Internal\Wire;
@@ -21,11 +22,12 @@ use Modules\Sdk\Internal\Wire;
  * Reads the `pairing` envelope into the pairing code the stack made.
  *
  * A static fold with no state, for {@see Tellings}' reason. It reads the line,
- * the compare code, the moment it stops being good, and the address with its
- * caution. The same moment written as a date and a time is not read: the
- * phone says it on its own clock. The fingerprint and the stack's identifier ride inside the line and
- * are the other phone's to read from it, and what replacing the certificate
- * would cost is said where the certificate is replaced.
+ * the fingerprint the material carries and the compare code folded from it,
+ * the moment it stops being good, the address with its caution, and what
+ * replacing the certificate would cost. The same moment written as a date and
+ * a time is not read: the phone says it on its own clock. The stack's
+ * identifier rides inside the line and is the other phone's to read from it.
+ * A fingerprint that is not one is refused by {@see Fingerprint::of()} itself.
  */
 final readonly class PairingCodes
 {
@@ -46,15 +48,17 @@ final readonly class PairingCodes
 
         return APairingCode::made(
             APairingLine::asWritten(self::text($data, WireField::Written)),
+            Fingerprint::of(self::text($material, PairingField::Fingerprint)),
             self::text($data, PairingField::Compare),
             Instant::atEpochSeconds(self::expires($material)),
             self::text($material, WireField::Address),
             self::caution($data),
+            self::text($data, PairingField::Replacing),
         );
     }
 
     /**
-     * The material the line was written from, which the address and the expiry are read out of.
+     * The material the line was written from, which the address, the fingerprint and the expiry are read out of.
      *
      * @param  array<array-key, mixed> $data
      * @return array<array-key, mixed>

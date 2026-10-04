@@ -50,6 +50,11 @@ use function view;
  * one is a tap away; the cadence that notices is a look at the clock, not a
  * question to the stack.
  *
+ * **A code nobody could check is not shown.** The phone that types the line
+ * works the check code out from the fingerprint, so one the stack worked out
+ * differently would never match; the code is let go of and the screen says
+ * why, instead of handing out a line that fails at the other end.
+ *
  * `Concealed` because a pairing code is on the glass.
  */
 #[Lazy]
@@ -69,6 +74,9 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
 
     /** Whether the code last shown here stopped being good, until another is asked for. */
     public bool $lapsed = false;
+
+    /** Whether the code the stack made carried a check code a phone works out differently, until another is asked for. */
+    public bool $checkedDifferently = false;
 
     /** The code the stack made, while this screen shows it. */
     private ?APairingCode $code = null;
@@ -117,6 +125,7 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         $this->drawn = null;
         $this->following = null;
         $this->lapsed = false;
+        $this->checkedDifferently = false;
 
         $this->going = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowThePairingCodeWent => $this->answered($this->pairing->make($stack, $session), $stack),
@@ -151,6 +160,7 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         return match (true) {
             $code instanceof APairingCode => $this->shown($code),
             $this->lapsed => new HowThePairingCodeReads()->expired(),
+            $this->checkedDifferently => new HowThePairingCodeReads()->checkedDifferently(),
             $this->following === null => new HowThePairingCodeReads()->notAsked(),
             default => $this->askedAfter($this->following),
         };
@@ -178,6 +188,13 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
             },
             made: function (APairingCode $code): HowThePairingCodeWent {
                 $this->following = null;
+
+                if (! $code->agreesOnTheCheckCode()) {
+                    $this->checkedDifferently = true;
+
+                    return new HowThePairingCodeReads()->checkedDifferently();
+                }
+
                 $this->code = $code;
 
                 return $this->shown($code);

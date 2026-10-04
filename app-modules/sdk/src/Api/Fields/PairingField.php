@@ -14,7 +14,7 @@ enum PairingField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The material itself, which the address and the expiry are read out of. */
+    /** The material itself, which the address, the fingerprint and the expiry are read out of. */
     case Material = 'material';
 
     /** The fingerprint in the short form a person compares. */
@@ -22,4 +22,10 @@ enum PairingField: string implements NamesAWireField
 
     /** When it stops being good, in seconds since the Unix epoch. */
     case Expires = 'expires';
+
+    /** The certificate's fingerprint, which the material carries and the short form is folded from. */
+    case Fingerprint = 'fingerprint';
+
+    /** What replacing the certificate would cost every paired phone, in words any surface can show. */
+    case Replacing = 'replacing';
 }

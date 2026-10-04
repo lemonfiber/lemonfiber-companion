@@ -98,6 +98,14 @@ it('N1-R51 — reads the same in a later version as in this one', function (): v
         ->and(glanceAt(ANOTHER_CERTIFICATE))->toBe('TRYJ-D4Q9-DE2V-74NB');
 });
 
+it('folds a fingerprint of all zeros and one of all fs to the codes every surface works out', function (): void {
+    // The two vectors the stack and every app are held to. A phone typing a
+    // line compares what it folds against what the stack showed, so a fold
+    // that agrees with itself and not with the stack fails every comparison.
+    expect(glanceAt(str_repeat('0', 64)))->toBe('22VK-KPHH-NKH9-TUWA')
+        ->and(glanceAt(str_repeat('f', 64)))->toBe('Z9JL-Q3PK-BZ6M-HRQZ');
+});
+
 it('N1-R51 — an anagram of a digest folds differently', function (): void {
     // The reason the fold is position-weighted. Without the index in the mix,
     // two bytes swapping places would produce the same groups — and a digest

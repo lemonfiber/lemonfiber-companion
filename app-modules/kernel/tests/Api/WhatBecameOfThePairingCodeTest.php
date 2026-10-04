@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\APairingLine;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -17,6 +18,7 @@ use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 
 use function sprintf;
+use function str_repeat;
 
 use Tests\Support\TheWordCarriedOut;
 
@@ -33,7 +35,7 @@ function whichArmThePairingCodeTook(WhatBecameOfThePairingCode $became): string
 }
 
 it('takes the arm it was made on, and no other', function (): void {
-    $code = APairingCode::made(APairingLine::asWritten('the line'), 'ABCD', Instant::atEpochSeconds(1), 'https://den.local:8443', '');
+    $code = APairingCode::made(APairingLine::asWritten('the line'), Fingerprint::of(str_repeat('0', Fingerprint::CHARACTERS)), 'ABCD', Instant::atEpochSeconds(1), 'https://den.local:8443', '', 'Every paired phone refuses it until it is paired again.');
 
     expect(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::underway(Job::named('pair-1'))))->toBe('underway pair-1')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::made($code)))->toBe('made ABCD')

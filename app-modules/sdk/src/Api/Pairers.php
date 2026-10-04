@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\FingerprintIsNotAFingerprint;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -61,7 +62,7 @@ final readonly class Pairers implements MakingPairingCodes
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|PairingIsUnreadable|PairingIsNotReadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|PairingIsUnreadable|PairingIsNotReadable|FingerprintIsNotAFingerprint $why) {
             return WhatBecameOfThePairingCode::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

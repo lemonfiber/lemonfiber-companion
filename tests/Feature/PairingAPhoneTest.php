@@ -56,15 +56,20 @@ function theStackAPhoneIsPairedWith(): Stack
     );
 }
 
-/** The code the stack makes, with or without a caution. */
-function theCodeTheStackMade(string $caution = 'That address is a number.'): APairingCode
+/** What the stack says replacing its certificate would cost. */
+const WHAT_REPLACING_IT_WOULD_COST = 'Every phone paired with this machine refuses it from then on, until it is paired again with new material.';
+
+/** The code the stack makes, with or without a caution, and with the check code it worked out. */
+function theCodeTheStackMade(string $caution = 'That address is a number.', string $compare = '22VK-KPHH-NKH9-TUWA'): APairingCode
 {
     return APairingCode::made(
         APairingLine::asWritten(THE_PAIRING_LINE),
-        '22VK-KPHH-NKH9-TUWA',
+        Fingerprint::of(str_repeat('0', Fingerprint::CHARACTERS)),
+        $compare,
         Instant::atEpochSeconds(THE_CODE_EXPIRES),
         'https://den.local:8443',
         $caution,
+        WHAT_REPLACING_IT_WOULD_COST,
     );
 }
 
@@ -140,6 +145,41 @@ it('shows the code drawn of the line, the line to type, the compare code, until 
         ->and($drawn)->toContain(__('stacks.pairing.reaches', ['address' => 'https://den.local:8443']))
         ->and($drawn)->toContain('That address is a number.')
         ->and($screen->following)->toBeNull();
+});
+
+it('says what replacing the certificate costs in the stack\'s words, then that it is replaced at the machine, and offers neither', function (): void {
+    $screen = thePairingScreen(AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::made(theCodeTheStackMade())));
+    $screen->make();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $inOrder = ['That address is a number.', WHAT_REPLACING_IT_WOULD_COST, __('stacks.pairing.replaced_at_the_machine')];
+
+    expect(array_values(array_filter($drawn->said(), static fn(string $line): bool => in_array($line, $inOrder, strict: true))))->toBe($inOrder)
+        ->and($drawn->offers())->not->toContain(WHAT_REPLACING_IT_WOULD_COST)
+        ->and($drawn->offers())->not->toContain(__('stacks.pairing.replaced_at_the_machine'));
+
+    foreach (['en', 'nl'] as $locale) {
+        expect(__('stacks.pairing.replaced_at_the_machine', locale: $locale))->not->toContain('lemonfiber');
+    }
+});
+
+it('shows no code whose check code this phone works out differently, and says why until another is asked for', function (): void {
+    $encoding = ACodeOfWhatItWasGiven::working();
+    $pairing = AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::made(theCodeTheStackMade(compare: 'Z9JL-Q3PK-BZ6M-HRQZ')));
+    $screen = thePairingScreen($pairing, encoding: $encoding);
+    $screen->make();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(__('stacks.pairing.checked_differently'))
+        ->and($said)->not->toContain(THE_PAIRING_LINE)
+        ->and($said)->not->toContain('Z9JL-Q3PK-BZ6M-HRQZ')
+        ->and($said)->not->toContain(__('stacks.pairing.compare'))
+        ->and($encoding->given())->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.pairing.make'));
+
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.pairing.checked_differently'))
+        ->and($pairing->asked())->toBe(1);
 });
 
 it('draws the code once rather than on every look', function (): void {

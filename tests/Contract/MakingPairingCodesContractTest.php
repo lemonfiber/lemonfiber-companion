@@ -48,6 +48,9 @@ function aStackAskedForACode(): Stack
     );
 }
 
+/** What a stack says replacing its certificate would cost every paired phone. */
+const WHAT_REPLACING_THE_CERTIFICATE_COSTS = 'Every phone paired with this machine refuses it from then on, until it is paired again with new material.';
+
 /** The line a stack writes, as the one a code carries. */
 const THE_LINE = '{"address":"https://den.local:8443","fingerprint":"abab","expires":1790813400,"stack":"000102030405060708090a0b0c0d0e0f"}';
 
@@ -62,14 +65,14 @@ function whatAStackAnswersACodeWith(array $changed = []): array
     return ['api_version' => 1, 'kind' => 'pairing', 'data' => [
         'material' => [
             'address' => 'https://den.local:8443',
-            'fingerprint' => str_repeat('ab', 32),
+            'fingerprint' => str_repeat('0', Fingerprint::CHARACTERS),
             'expires' => 1_790_813_400,
             'stack' => '000102030405060708090a0b0c0d0e0f',
         ],
         'written' => THE_LINE,
         'compare' => '22VK-KPHH-NKH9-TUWA',
         'until' => '2026-10-01T00:10:00',
-        'replacing' => 'The certificate this address presents was made by lemonfiber and nothing renews it.',
+        'replacing' => WHAT_REPLACING_THE_CERTIFICATE_COSTS,
         'caution' => 'That address is a number.',
         ...$changed,
     ]];
@@ -80,10 +83,12 @@ function theSameCode(): APairingCode
 {
     return APairingCode::made(
         APairingLine::asWritten(THE_LINE),
+        Fingerprint::of(str_repeat('0', Fingerprint::CHARACTERS)),
         '22VK-KPHH-NKH9-TUWA',
         Instant::atEpochSeconds(1_790_813_400),
         'https://den.local:8443',
         'That address is a number.',
+        WHAT_REPLACING_THE_CERTIFICATE_COSTS,
     );
 }
 
@@ -111,12 +116,14 @@ function saidOfTheCode(WhatBecameOfThePairingCode $became): string
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
         made: static fn(APairingCode $code): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
-            '%s|%s|%d|%s|%s|%s',
+            '%s|%s|%s|%d|%s|%s|%s|%s',
             $code->line()->carried(),
             $code->compare(),
+            $code->agreesOnTheCheckCode() ? 'checked alike' : 'checked differently',
             $code->expiresAt()->epochSeconds(),
             $code->address(),
             $code->caution(),
+            $code->replacing(),
             $code->hasExpiredBy(Instant::atEpochSeconds(1_790_813_400)) ? 'expired at its time' : 'still good at its time',
         )),
         ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
@@ -149,20 +156,27 @@ it('comes away from asking for a code with the job the stack named', function ()
     }
 });
 
-it('reads the code the stack made: the line, the compare code, the moment it stops being good, and the address with its caution', function (): void {
+it('reads the code the stack made: the line, the fingerprint and the compare code, the moment it stops being good, the address with its caution, and what replacing costs', function (): void {
     $made = MockResponse::make((string) json_encode(whatAStackAnswersACodeWith()));
 
     foreach (everyWayOfAskingForACode($made, WhatBecameOfThePairingCode::made(theSameCode())) as $which => $build) {
         expect(whatBecameOfTheCode($build()))
-            ->toBe(sprintf('%s|22VK-KPHH-NKH9-TUWA|1790813400|https://den.local:8443|That address is a number.|expired at its time', THE_LINE), $which);
+            ->toBe(sprintf('%s|22VK-KPHH-NKH9-TUWA|checked alike|1790813400|https://den.local:8443|That address is a number.|%s|expired at its time', THE_LINE, WHAT_REPLACING_THE_CERTIFICATE_COSTS), $which);
     }
+});
+
+it('reads a compare code folded differently from the fingerprint as it came, for the screen to refuse', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith(['compare' => 'Z9JL-Q3PK-BZ6M-HRQZ'])))]);
+
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toContain('|Z9JL-Q3PK-BZ6M-HRQZ|checked differently|');
 });
 
 it('reads an address with nothing to say about it as having no caution', function (mixed $caution): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith(['caution' => $caution])))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEndWith('https://den.local:8443||expired at its time');
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEndWith(sprintf('https://den.local:8443||%s|expired at its time', WHAT_REPLACING_THE_CERTIFICATE_COSTS));
 })->with(['null' => [null]]);
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
@@ -232,6 +246,10 @@ it('a code this app cannot read is a stack that did not answer, never a code wit
     'no line' => [['written' => null]],
     'a blank compare code' => [['compare' => ' ']],
     'a caution that is not words' => [['caution' => 7]],
+    'no replacing' => [['replacing' => null]],
+    'a blank replacing' => [['replacing' => ' ']],
+    'no fingerprint' => [['material' => ['address' => 'https://den.local:8443', 'expires' => 1_790_813_400, 'stack' => '000102030405060708090a0b0c0d0e0f']]],
+    'a fingerprint that is not one' => [['material' => ['address' => 'https://den.local:8443', 'fingerprint' => 'abab', 'expires' => 1_790_813_400, 'stack' => '000102030405060708090a0b0c0d0e0f']]],
 ]);
 
 it('a payload that is not a pairing at all is a stack that did not answer', function (): void {
