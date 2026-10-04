@@ -127,6 +127,7 @@ final readonly class HowTheWiringReads
             WhereAConnectionStands::WouldWire => 'stacks.wiring.state.would_wire',
             WhereAConnectionStands::WouldAdopt => 'stacks.wiring.state.would_adopt',
             WhereAConnectionStands::Observed => 'stacks.wiring.state.observed',
+            WhereAConnectionStands::Unmatched => 'stacks.wiring.state.unmatched',
             WhereAConnectionStands::Skipped => 'stacks.wiring.state.skipped',
             WhereAConnectionStands::Failed => 'stacks.wiring.state.failed',
             WhereAConnectionStands::Refused => 'stacks.wiring.state.refused',

@@ -99,6 +99,7 @@ function aRunOfEveryConnection(): TheWiring
         aConnectionEnded('K', HowAConnectionEnded::because(WhereAConnectionStands::Skipped, 'Radarr was not up yet')),
         aConnectionEnded('L', HowAConnectionEnded::failed('401 Unauthorized: the API key is wrong')),
         aConnectionEnded('M', HowAConnectionEnded::because(WhereAConnectionStands::Refused, 'Two arrs share one root folder')),
+        aConnectionEnded('N', HowAConnectionEnded::because(WhereAConnectionStands::Unmatched, 'NZBGet names no adapter lemonfiber pairs with Sonarr')),
     );
 }
 
@@ -206,8 +207,9 @@ it('draws every connection in the state the stack gave it, skipped apart from fa
         'stacks.wiring.state.skipped',
         'stacks.wiring.state.failed',
         'stacks.wiring.state.refused',
+        'stacks.wiring.state.unmatched',
     ])->and(array_map(static fn(AConnectionAsShown $connection): string => $connection->connection, $run->connections))
-        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'])
+        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.state.drifted'));
 });
 
@@ -216,8 +218,8 @@ it('shows a service\'s rejection and every reason in the stack\'s own words', fu
     $run = theRunDrawn($screen);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect([$run->connections[9]->said, $run->connections[10]->said, $run->connections[11]->said, $run->connections[12]->said])
-        ->toBe(['You declared it unmanaged', 'Radarr was not up yet', '401 Unauthorized: the API key is wrong', 'Two arrs share one root folder'])
+    expect([$run->connections[9]->said, $run->connections[10]->said, $run->connections[11]->said, $run->connections[12]->said, $run->connections[13]->said])
+        ->toBe(['You declared it unmanaged', 'Radarr was not up yet', '401 Unauthorized: the API key is wrong', 'Two arrs share one root folder', 'NZBGet names no adapter lemonfiber pairs with Sonarr'])
         ->and($run->connections[0]->said)->toBe('')
         ->and($drawn)->toContain('401 Unauthorized: the API key is wrong')
         ->and($drawn)->toContain('Radarr was not up yet');
@@ -366,7 +368,7 @@ it('asking again reads the services afresh and keeps the report a run came to', 
     $screen->again();
     $screen->answer();
 
-    expect(theRunDrawn($screen)->connections)->toHaveCount(13)
+    expect(theRunDrawn($screen)->connections)->toHaveCount(14)
         ->and($supervising->askings())->toBe(2)
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });

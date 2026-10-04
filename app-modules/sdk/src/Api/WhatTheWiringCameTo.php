@@ -140,6 +140,7 @@ final readonly class WhatTheWiringCameTo
                 self::optional($state, SeedField::Yours, $position),
             ),
             WhereAConnectionStands::Observed,
+            WhereAConnectionStands::Unmatched,
             WhereAConnectionStands::Skipped,
             WhereAConnectionStands::Refused => HowAConnectionEnded::because(
                 $said,

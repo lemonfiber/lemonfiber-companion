@@ -32,6 +32,7 @@ final readonly class HowAConnectionEnded
     /** The states that carry a reason. */
     private const array WITH_A_REASON = [
         WhereAConnectionStands::Observed,
+        WhereAConnectionStands::Unmatched,
         WhereAConnectionStands::Skipped,
         WhereAConnectionStands::Refused,
     ];
@@ -53,7 +54,7 @@ final readonly class HowAConnectionEnded
         return new self($state, '', '', '');
     }
 
-    /** Observed, skipped or refused, with the reason the stack gave; a blank reason is refused. */
+    /** Observed, unmatched, skipped or refused, with the reason the stack gave; a blank reason is refused. */
     public static function because(WhereAConnectionStands $state, string $reason): self
     {
         if (! in_array($state, self::WITH_A_REASON, strict: true)) {

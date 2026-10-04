@@ -721,6 +721,7 @@ return [
             'would_wire' => 'A run that writes would wire this',
             'would_adopt' => 'A run that writes would keep your value as the way it is meant to be',
             'observed' => 'Left alone, because you said to',
+            'unmatched' => 'Nothing lemonfiber does connects these two',
             'skipped' => 'Not wired yet: something it needs is not there, and a later run finishes it',
             'failed' => 'The service rejected it',
             'refused' => 'lemonfiber will not do this',

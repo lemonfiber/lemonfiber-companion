@@ -86,12 +86,12 @@ it('carries nothing beside a state that says nothing more', function (WhereAConn
     WhereAConnectionStands::Adopted, WhereAConnectionStands::Unmanaged, WhereAConnectionStands::WouldAdopt,
 ]);
 
-it('carries the reason for a connection observed, skipped or refused, and refuses a blank one', function (WhereAConnectionStands $state): void {
+it('carries the reason for a connection observed, unmatched, skipped or refused, and refuses a blank one', function (WhereAConnectionStands $state): void {
     $ended = HowAConnectionEnded::because($state, 'The operator declared it unmanaged');
 
     expect([$ended->state(), $ended->said(), $ended->ours(), $ended->yours()])->toBe([$state, 'The operator declared it unmanaged', '', ''])
         ->and(static fn(): HowAConnectionEnded => HowAConnectionEnded::because($state, ' '))->toThrow(TheWiringSaysNothing::class, '`reason`');
-})->with([WhereAConnectionStands::Observed, WhereAConnectionStands::Skipped, WhereAConnectionStands::Refused]);
+})->with([WhereAConnectionStands::Observed, WhereAConnectionStands::Unmatched, WhereAConnectionStands::Skipped, WhereAConnectionStands::Refused]);
 
 it('refuses a state built through a constructor that does not carry what it says', function (WhereAConnectionStands $state, string $through): void {
     $building = $through === 'plainly'
@@ -100,7 +100,7 @@ it('refuses a state built through a constructor that does not carry what it says
 
     expect($building)->toThrow(TheWiringSaysNothing::class, sprintf('`%s`', $state->value));
 })->with([
-    [WhereAConnectionStands::Failed, 'plainly'], [WhereAConnectionStands::Skipped, 'plainly'], [WhereAConnectionStands::Conflicted, 'plainly'],
+    [WhereAConnectionStands::Failed, 'plainly'], [WhereAConnectionStands::Skipped, 'plainly'], [WhereAConnectionStands::Unmatched, 'plainly'], [WhereAConnectionStands::Conflicted, 'plainly'],
     [WhereAConnectionStands::WouldWire, 'plainly'], [WhereAConnectionStands::Wired, 'because'], [WhereAConnectionStands::Failed, 'because'],
 ]);
 

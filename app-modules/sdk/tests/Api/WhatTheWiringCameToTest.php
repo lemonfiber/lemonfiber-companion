@@ -59,6 +59,7 @@ function aRunOfEveryState(): array
             ['connection' => 'Lidarr into Prowlarr', 'severity' => $informational, 'state' => ['state' => 'would-adopt']],
             ['connection' => 'Readarr into SABnzbd', 'severity' => $informational, 'state' => ['state' => 'observed', 'reason' => 'You declared it unmanaged']],
             ['connection' => 'Readarr into Prowlarr', 'severity' => $informational, 'state' => ['state' => 'refused', 'reason' => 'Two arrs share one root folder']],
+            ['connection' => 'Sonarr into NZBGet', 'severity' => $informational, 'state' => ['state' => 'unmatched', 'reason' => 'NZBGet names no adapter lemonfiber pairs with Sonarr']],
         ],
     ];
 }
@@ -135,6 +136,7 @@ it('reads every connection in its own state, with the stack\'s words and what a 
         'Lidarr into Prowlarr|would-adopt|||||',
         'Readarr into SABnzbd|observed|You declared it unmanaged||||',
         'Readarr into Prowlarr|refused|Two arrs share one root folder||||',
+        'Sonarr into NZBGet|unmatched|NZBGet names no adapter lemonfiber pairs with Sonarr||||',
     ]));
 });
 
