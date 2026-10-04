@@ -732,6 +732,12 @@ function aNewsEvent(array $changed = []): string
     return anEvent('news', json_encode(aNewestNamed($changed), JSON_THROW_ON_ERROR));
 }
 
+/** One news event carrying something other than a record as its data. */
+function aNewsEventWhoseDataIs(string $data): string
+{
+    return anEvent('news', json_encode([...aNewestNamed(), 'data' => $data], JSON_THROW_ON_ERROR));
+}
+
 /** What both implementations answer with, where a stack names that newest. */
 function theNewestThatStackNamed(bool $updatesRead = true): TheNewestNamed
 {
@@ -839,6 +845,15 @@ it('cannot hear a newest it cannot read, and says so as a stack that did not ans
     'an onset in words' => [['problems' => [['check' => 'disk.space', 'onset' => 'this morning']]]],
     'an unread kind that is not words' => [['unread' => [1]]],
 ]);
+
+it('cannot hear a newest whose data is not a record, and says so as a stack that did not answer', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(aNewsEventWhoseDataIs('nothing new'))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    ) as $which => $make) {
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+    }
+});
 
 it('stands in for a stack with the newest it names as the contract would accept', function (): void {
     foreach ([aNewestNamed(), aNewestNamed(['unread' => ['updates'], 'updates' => []])] as $said) {
