@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\News\Api\MarkingAsNew;
 use Modules\News\Api\Noticing;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
@@ -41,6 +42,6 @@ final readonly class NoticingWhatIsNew
 
     private static function newsOver(ASealInMemory $seal, NewsKeptInMemory $kept): NewsOfAStack
     {
-        return new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(0)));
+        return new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackLastNamed());
     }
 }

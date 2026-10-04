@@ -9,6 +9,7 @@ use Modules\Device\Api\SystemEntropy;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
@@ -26,11 +27,17 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\News\Api\Noticing;
+use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\Store\NewsInTheDatabase;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Services\Internal\Store\ListingsInTheDatabase;
@@ -178,5 +185,47 @@ it('writes a kept listing of what a stack runs to the database file with nothing
         ->and($onDisk)->toContain('services_readings')
         ->and($onDisk)->not->toContain(THE_SERVICE_ONLY_THE_KEPT_LISTING_NAMES)
         ->and($onDisk)->not->toContain('Nextcloud')
+        ->and($onDisk)->not->toContain(THE_STACK_WHOSE_HEALTH_IS_KEPT);
+});
+
+/** A release only the newest the stack names after its first reading holds, so finding it in the file finds what was heard. */
+const THE_RELEASE_ONLY_HEARD = '9.8.7-heard-and-never-kept';
+
+/** What a stack names as newest: these releases, and no request or problem. */
+function theNewestThatNamesReleases(string ...$releases): TheNewestNamed
+{
+    return new TheNewestNamed(
+        WhatTheStackListed::these(...array_map(AReleaseNamed::versioned(...), $releases)),
+        WhatTheStackListed::these(),
+        WhatTheStackListed::these(),
+    );
+}
+
+it('holds what a stack names as newest, and how much of it is new, in memory and writes none of it to the database file', function (): void {
+    $file = (string) tempnam(sys_get_temp_dir(), 'kept');
+    $database = aDatabaseFileMigrated($file);
+    $noticing = new Noticing(new NewsOfAStack(
+        new EncrypterSeal(new PlatformSealKeys(APlatformStore::working()), new SystemEntropy()),
+        new NewsInTheDatabase($database),
+        FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
+        new WhatEachStackLastNamed(),
+    ));
+    $stack = StackId::of(Nonce::of(THE_STACK_WHOSE_HEALTH_IS_KEPT));
+
+    $noticing->howMuchIsNew($stack, theNewestThatNamesReleases('2.3.0'));
+    $keptAtTheFirstReading = $database->table('news_kept')->get()->toJson();
+    $heard = $noticing->howMuchIsNew($stack, theNewestThatNamesReleases(THE_RELEASE_ONLY_HEARD, '2.3.0'))->howManyInAll();
+    $keptOnceHeard = $database->table('news_kept')->get()->toJson();
+    DB::disconnect('sqlite');
+    $onDisk = (string) file_get_contents($file);
+    unlink($file);
+
+    // The floor: the first reading records what is current as seen, so the
+    // file holds a row, and the second names one release that is new.
+    expect($heard)->toBe(1)
+        ->and($noticing->howMuchWasLastNamed($stack)->howManyInAll())->toBe(1)
+        ->and($onDisk)->toContain('news_kept')
+        ->and($keptOnceHeard)->toBe($keptAtTheFirstReading)
+        ->and($onDisk)->not->toContain(THE_RELEASE_ONLY_HEARD)
         ->and($onDisk)->not->toContain(THE_STACK_WHOSE_HEALTH_IS_KEPT);
 });

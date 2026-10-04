@@ -125,6 +125,7 @@ use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\News\Api\Noticing;
 use Modules\News\Internal\NewsKept;
 use Modules\News\Internal\Store\NewsInTheDatabase;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Api\NotingWhereTheOperatorIs;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
@@ -517,6 +518,12 @@ final class CompositionRoot extends ServiceProvider
         // newest of each seen, sealed by `news` before they reach it.
         $this->app->bind(NewsKept::class, NewsInTheDatabase::class);
 
+        // What each stack last named as newest, held in memory for the life of
+        // the process and never kept. A singleton, and it has to be: it is
+        // what one screen hears and the next screen draws, and the runtime
+        // keeps one process, and so one container, across every screen.
+        $this->app->singleton(WhatEachStackLastNamed::class);
+
         // How long readings are kept is one of the phone's settings, kept in
         // `connection`'s row beside the lock's time away, and asked for through
         // the kernel by what lets go of readings older than it.
@@ -537,7 +544,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, SettingsKept::class, NewsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
