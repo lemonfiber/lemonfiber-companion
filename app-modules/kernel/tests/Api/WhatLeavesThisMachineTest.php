@@ -49,7 +49,7 @@ function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
     )->said;
 }
 
-it('N10-R1 — keeps lemonfiber\'s requests and its services\' apart', function (): void {
+it('keeps lemonfiber\'s requests and its services\' apart', function (): void {
     $leaving = WhatLeavesThisMachine::of(
         OurRequests::of(aRequestOfOursAboutImages()),
         TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()), ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled())),
@@ -60,7 +60,7 @@ it('N10-R1 — keeps lemonfiber\'s requests and its services\' apart', function 
         ->and(iterator_to_array($leaving->theirs(), preserve_keys: false)[0]->service()->named())->toBe('my-fork');
 });
 
-it('N10-R12 — nothing leaving is an answer, and a stack that could not be asked is not', function (): void {
+it('nothing leaving is an answer, and a stack that could not be asked is not', function (): void {
     expect(whatWasFoundLeaving(WhatWasFoundLeaving::leaving(WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of()))))->toBe('leaving:0/0')
         ->and(whatWasFoundLeaving(WhatWasFoundLeaving::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));

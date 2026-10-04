@@ -20,11 +20,11 @@ function howTheRatioReads(ARatio $ratio): string
     )->said;
 }
 
-it('N12-R2 — reads hundredths as a person does', function (int $hundredths, string $reads): void {
+it('reads hundredths as a person does', function (int $hundredths, string $reads): void {
     expect(howTheRatioReads(ARatio::inHundredths($hundredths)))->toBe($reads);
 })->with([[0, '0.00'], [5, '0.05'], [99, '0.99'], [100, '1.00'], [125, '1.25'], [1_010, '10.10']]);
 
-it('N12-R2 — no ratio is its own answer, never a figure', function (): void {
+it('no ratio is its own answer, never a figure', function (): void {
     expect(howTheRatioReads(ARatio::none()))->toBe('none');
 });
 

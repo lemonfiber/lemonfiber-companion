@@ -61,14 +61,14 @@ function aCommandCalled(string $name, HowItIsHosted $standing): Unattended
     return Unattended::called($name, 'lemonfiber watch', 'Files are noticed', $standing);
 }
 
-it('N16-R5 — a machine with a manager says the machine does this itself', function (): void {
+it('a machine with a manager says the machine does this itself', function (): void {
     $running = WhatRunsUnattended::keptBy(WhatKeepsItRunning::Launchd, aCommandCalled('A', HowItIsHosted::Hosted));
 
     expect($running->whatKeepsThem())->toBe(WhatKeepsItRunning::Launchd)
         ->and(whatTheMachineSays($running))->toBe('the machine does this itself');
 });
 
-it('N16-R5 — a machine with no manager carries what to do instead', function (): void {
+it('a machine with no manager carries what to do instead', function (): void {
     // The whole of *say so rather than rendering it as off*. A screen reaching
     // this arm has a sentence to draw and no control; one reaching the other
     // has a machine that already does this.
@@ -78,7 +78,7 @@ it('N16-R5 — a machine with no manager carries what to do instead', function (
         ->and(whatTheMachineSays($running))->toBe('Start it from your own login items.');
 });
 
-it('N16-R5 — an unsupported machine is `unsupported` by construction', function (): void {
+it('an unsupported machine is `unsupported` by construction', function (): void {
     // The keeper is not a parameter, which makes two mistakes unspellable at
     // once: an unsupported machine with no instruction, and an instruction
     // attached to a machine that has a manager — telling an operator to go and
@@ -87,14 +87,14 @@ it('N16-R5 — an unsupported machine is `unsupported` by construction', functio
         ->toBe(WhatKeepsItRunning::Unsupported);
 });
 
-it('N16-R5 — an unsupported machine that says nothing to do instead is refused', function (): void {
+it('an unsupported machine that says nothing to do instead is refused', function (): void {
     // *Not available here* with no sentence beside it is the empty box that
     // reads as *off*, which is the reading the requirement exists to prevent.
     expect(fn(): WhatRunsUnattended => WhatRunsUnattended::unsupported('   '))
         ->toThrow(InstructionSaysNothing::class);
 });
 
-it('N16-R6 — names what did not come back, and only that', function (): void {
+it('names what did not come back, and only that', function (): void {
     // `Orphaned` is in and `NotHosted` is not: nothing was installed for the
     // second, so nothing failed to start, and listing it would invent a failure.
     $running = WhatRunsUnattended::keptBy(
@@ -110,7 +110,7 @@ it('N16-R6 — names what did not come back, and only that', function (): void {
         ->and($running->count())->toBe(5);
 });
 
-it('N16-R6 — a machine where everything came back names nothing', function (): void {
+it('a machine where everything came back names nothing', function (): void {
     $running = WhatRunsUnattended::keptBy(WhatKeepsItRunning::Launchd, aCommandCalled('A', HowItIsHosted::Hosted));
 
     expect(theNamesThatDidNotComeBack($running))->toBe([]);

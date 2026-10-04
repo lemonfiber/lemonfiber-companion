@@ -95,7 +95,7 @@ it('lists the ways a stack is dialled by reading them, not by spelling them', fu
     }
 });
 
-it('answers N1-R12 from the one fact that decides it', function (): void {
+it('says whether the connection is encrypted from the one fact that decides it', function (): void {
     expect(Address::of(AN_ADDRESS)->isEncrypted())->toBeTrue();
     expect(Address::of('HTTPS://stack.local')->isEncrypted())->toBeTrue();
     expect(Address::of('http://192.168.1.42')->isEncrypted())->toBeFalse();
@@ -144,14 +144,14 @@ it('is closed to every reader that asks the type, and open to the one that does 
     expect(str_contains(var_export(Address::of(AN_ADDRESS), return: true), AN_ADDRESS))->toBeTrue();
 });
 
-it('N1-R15 — an address does not leave the process in a serialised payload', function (): void {
+it('an address does not leave the process in a serialised payload', function (): void {
     // Not secrecy. Anything that serialises stack addresses accumulates a map
     // of private networks, which is the thing actually being protected.
     expect(fn(): string => serialize(Address::of(AN_ADDRESS)))
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });
 
-it('N1-R15 — an address does not come back from a serialised payload either', function (): void {
+it('an address does not come back from a serialised payload either', function (): void {
     // Same door, other side. Without `__unserialize` a crafted payload naming this
     // class would be walked back into an object with whatever properties it carried.
     //

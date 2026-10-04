@@ -15,7 +15,7 @@ use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 
 use function sprintf;
 
-it('N10-R4, N10-R5 — carries down and up apart, how they were measured, when, and over which path', function (): void {
+it('carries down and up apart, how they were measured, when, and over which path', function (): void {
     $line = WhatTheLineCarries::measured(12_500_000, 2_500_000, HowTheLineWasMeasured::Observed, Instant::atEpochSeconds(1_790_100_000), WhetherItGoesThroughTheTunnel::Through);
 
     expect($line->down())->toBe(12_500_000)

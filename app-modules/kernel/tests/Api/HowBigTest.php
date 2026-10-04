@@ -39,7 +39,7 @@ function everyBandWithOneAbove(): array
     ));
 }
 
-it('D7-R3 — says a size in the largest unit it fills', function (): void {
+it('says a size in the largest unit it fills', function (): void {
     expect(asShown(4_000_000_000))->toBe('4 household.gigabytes')
         ->and(asShown(900_000_000))->toBe('900 household.megabytes')
         ->and(asShown(2_000_000_000_000))->toBe('2 household.terabytes');

@@ -64,7 +64,7 @@ it('is the same key when it came from the same nonce', function (): void {
     expect(IdempotencyKey::from($nonce)->is(IdempotencyKey::of($nonce->shown())))->toBeTrue();
 });
 
-it('N1-R42 — a key cannot be written down', function (): void {
+it('a key cannot be written down', function (): void {
     // The second half of the requirement, and the one a type can hold. A key
     // serves retry *within a single attempt*; a serialised key is one that
     // outlived its attempt, and whatever reads it back sends the operator's
@@ -78,7 +78,7 @@ it('N1-R42 — a key cannot be written down', function (): void {
         ->toThrow(MustNotLeaveThisProcess::class);
 });
 
-it('N1-R42 — a key cannot be read back either', function (): void {
+it('a key cannot be read back either', function (): void {
     // The other half of the same door. Without it a crafted payload naming this
     // class walks back into an object carrying whatever key it liked — and a
     // key somebody else chose is a key that matches an action the operator

@@ -38,17 +38,17 @@ function whatTheRecordSaysWasDone(TheRecord $record): array
     return $done;
 }
 
-it('N11-R1 — carries how far back it goes', function (): void {
+it('carries how far back it goes', function (): void {
     expect(TheRecord::reaching('The last 90 days')->horizon())->toBe('The last 90 days');
 });
 
-it('N11-R1 — refuses a record that will not say how far back it goes', function (): void {
+it('refuses a record that will not say how far back it goes', function (): void {
     // Its oldest entry would read as the machine's first day rather than as
     // the end of what is kept.
     expect(fn(): TheRecord => TheRecord::reaching('   '))->toThrow(TheRecordHasNoHorizon::class);
 });
 
-it('N11-R9 — a record of nothing is still a record', function (): void {
+it('a record of nothing is still a record', function (): void {
     // The stack answered and has changed nothing. Told apart from a stack
     // that could not be asked by being a value at all.
     $record = TheRecord::reaching('The last 90 days');
@@ -57,7 +57,7 @@ it('N11-R9 — a record of nothing is still a record', function (): void {
         ->and(whatTheRecordSaysWasDone($record))->toBe([]);
 });
 
-it('N11-R10 — keeps the order the stack gave, rather than re-deciding it', function (): void {
+it('keeps the order the stack gave, rather than re-deciding it', function (): void {
     // Two at the same instant stay in the order they arrived. Sorting them
     // here would be an opinion about which came first, which is exactly what
     // the requirement refuses.

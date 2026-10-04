@@ -28,17 +28,17 @@ function whichSide(Lock $lock): string
     )->shown();
 }
 
-it('N4-R19 — the app starts held, because that is what forgetting gets you', function (): void {
+it('the app starts held, because that is what forgetting gets you', function (): void {
     // A cold start requires the device's own authentication, and the safe state
     // is the one you reach by not deciding.
     expect(whichSide(Lock::held()))->toBe('held');
 });
 
-it('N4-R8 — the only way open is a device that said yes', function (): void {
+it('the only way open is a device that said yes', function (): void {
     expect(whichSide(Lock::openedBy(Authenticated::byTheDevice())))->toBe('open');
 });
 
-it('N4-R8 — there is no way to open a lock from a boolean', function (): void {
+it('there is no way to open a lock from a boolean', function (): void {
     // The requirement in the form a rule can hold. A biometric failure must not
     // fall back to unlocked, and the way to make that structural is to give the
     // opening constructor a parameter that a failure cannot produce.
@@ -56,7 +56,7 @@ it('N4-R8 — there is no way to open a lock from a boolean', function (): void 
         ->toBe(Authenticated::class);
 });
 
-it('N4-R8 — proof of authentication cannot be built from anything', function (): void {
+it('proof of authentication cannot be built from anything', function (): void {
     // `Authenticated` exists to be hard to obtain: a private constructor and one
     // named maker an adapter calls on a prompt that returned success. That is a
     // thin guarantee and it is the right thin one — the mistake now lives in a
@@ -68,7 +68,7 @@ it('N4-R8 — proof of authentication cannot be built from anything', function (
         ->toBe(0);
 });
 
-it('N4-R7 — there is no accessor to forget to check', function (): void {
+it('there is no accessor to forget to check', function (): void {
     // A boolean accessor is the check somebody forgets, and the forgotten one
     // here shows a stack's contents to whoever picked up the phone.
     expect(get_class_methods(Lock::class))->not->toContain('isOpen');

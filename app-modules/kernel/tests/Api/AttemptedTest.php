@@ -61,13 +61,13 @@ it('says the stack received it', function (): void {
     expect(howItWent(Attempted::delivered(theStackAskedOf())))->toBe(sprintf('delivered to %s', THE_STACK_ASKED));
 });
 
-it('N1-R40 — refuses an action it could not deliver', function (): void {
+it('refuses an action it could not deliver', function (): void {
     // Refused rather than retained. ADR-0020 spends its length rejecting the
     // obvious kindness of holding it until the stack comes back.
     expect(howItWent(Attempted::refused(theStackAskedOf(), itNeverArrived())))->toBe(sprintf('COMPANION-UNREACHABLE on %s', THE_STACK_ASKED));
 });
 
-it('N1-R40 — the refusal names the stack', function (): void {
+it('the refusal names the stack', function (): void {
     // An operator who pressed a button and saw a red message needs to know
     // which machine it was about. Carried on the type rather than left to the
     // screen, so it cannot depend on which screen the refusal reached.
@@ -85,13 +85,13 @@ it('N1-R40 — the refusal names the stack', function (): void {
     expect($named)->toBe(THE_STACK_ASKED);
 });
 
-it('N1-R40 — names the stack on the delivered arm too', function (): void {
+it('names the stack on the delivered arm too', function (): void {
     // A screen showing several stacks needs it either way.
     expect(Attempted::delivered(theStackAskedOf())->on()->stored())->toBe(THE_STACK_ASKED)
         ->and(Attempted::refused(theStackAskedOf(), itNeverArrived())->on()->stored())->toBe(THE_STACK_ASKED);
 });
 
-it('N1-R41 — has no third state meaning pending', function (): void {
+it('has no third state meaning pending', function (): void {
     // The absence *is* the requirement. A type with no arm for "pending"
     // cannot present an action as pending, whatever a screen would like to do.
     $makers = [];
@@ -105,7 +105,7 @@ it('N1-R41 — has no third state meaning pending', function (): void {
     expect($makers)->toBe(['delivered', 'refused']);
 });
 
-it('N1-R43 — a refused attempt says nothing about the capability', function (): void {
+it('a refused attempt says nothing about the capability', function (): void {
     // The attempt failed; the capability did not become unavailable. This type
     // carries no capability at all, which is how it stays true — there is
     // nothing here for a screen to read as "that button is gone now".

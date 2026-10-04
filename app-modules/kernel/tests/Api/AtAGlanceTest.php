@@ -31,7 +31,7 @@ function glanceAt(string $digest): string
     return AtAGlance::of(Fingerprint::of($digest))->shown();
 }
 
-it('N1-R51 — is short enough to check at a glance', function (): void {
+it('is short enough to check at a glance', function (): void {
     // Sixteen characters in four groups. Thirty-two is not a glance, and
     // sixty-four is what ADR-0018 rejects by name — the version where people
     // check the first four and the last four and then press accept.
@@ -41,7 +41,7 @@ it('N1-R51 — is short enough to check at a glance', function (): void {
         ->and(mb_str_split($shown, 5))->toHaveCount(4);
 });
 
-it('N1-R51 — is derived from the whole fingerprint', function (): void {
+it('is derived from the whole fingerprint', function (): void {
     // The half truncation fails. The leading characters of a SHA-256 are
     // grindable, so a comparison an attacker can satisfy by matching a prefix
     // is not a comparison. Changing the *last* byte must change what is shown.
@@ -50,17 +50,17 @@ it('N1-R51 — is derived from the whole fingerprint', function (): void {
     expect(glanceAt($tail))->not->toBe(glanceAt(ONE_CERTIFICATE));
 });
 
-it('N1-R51 — changing the first byte changes it too', function (): void {
+it('changing the first byte changes it too', function (): void {
     $head = sprintf('c%s', mb_substr(ONE_CERTIFICATE, 1));
 
     expect(glanceAt($head))->not->toBe(glanceAt(ONE_CERTIFICATE));
 });
 
-it('N1-R51 — two different certificates do not share one', function (): void {
+it('two different certificates do not share one', function (): void {
     expect(glanceAt(ONE_CERTIFICATE))->not->toBe(glanceAt(ANOTHER_CERTIFICATE));
 });
 
-it('N1-R51 — no two certificates in a wide spread share one', function (): void {
+it('no two certificates in a wide spread share one', function (): void {
     // The test that was missing, and the one the whole requirement rests on.
     //
     // Two named certificates not colliding says almost nothing: any fold, even
@@ -83,7 +83,7 @@ it('N1-R51 — no two certificates in a wide spread share one', function (): voi
     expect(count(array_unique($codes)))->toBe(500);
 });
 
-it('N1-R51 — reads the same in a later version as in this one', function (): void {
+it('reads the same in a later version as in this one', function (): void {
     // Two screens showing a fingerprint are two builds, and one of them is
     // older: the operator holding a phone is comparing it against a stack that
     // was installed months ago. A fold that quietly changes turns every such
@@ -106,7 +106,7 @@ it('folds a fingerprint of all zeros and one of all fs to the codes every surfac
         ->and(glanceAt(str_repeat('f', 64)))->toBe('Z9JL-Q3PK-BZ6M-HRQZ');
 });
 
-it('N1-R51 — an anagram of a digest folds differently', function (): void {
+it('an anagram of a digest folds differently', function (): void {
     // The reason the fold is position-weighted. Without the index in the mix,
     // two bytes swapping places would produce the same groups — and a digest
     // is exactly the kind of thing somebody can rearrange.

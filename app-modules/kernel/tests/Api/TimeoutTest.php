@@ -10,12 +10,12 @@ use function it;
 use Modules\Kernel\Api\ReachWaitsTooLong;
 use Modules\Kernel\Api\Timeout;
 
-it('N1-R26 — carries a bound, in the unit a person feels', function (): void {
+it('carries a bound, in the unit a person feels', function (): void {
     expect(Timeout::of(5)->inSeconds())->toBe(5);
     expect(Timeout::ordinary()->inSeconds())->toBe(Timeout::CEILING);
 });
 
-it('N1-R26 — the ceiling and the floor are both allowed, which is what makes them bounds', function (): void {
+it('the ceiling and the floor are both allowed, which is what makes them bounds', function (): void {
     // The boundary, asserted from `of()` rather than from `ordinary()`, which
     // constructs directly and so proves nothing about the comparison. Mutation
     // testing found this: `> CEILING` and `>= CEILING` behave identically until
@@ -25,7 +25,7 @@ it('N1-R26 — the ceiling and the floor are both allowed, which is what makes t
     expect(Timeout::of(Timeout::FLOOR)->inSeconds())->toBe(Timeout::FLOOR);
 });
 
-it('N1-R26 — the bound is not raised to accommodate a slow stack', function (): void {
+it('the bound is not raised to accommodate a slow stack', function (): void {
     // The clause that needs a type. Carrying a bound is a habit and habits
     // hold; raising one is a decision, and it arrives at three in the morning
     // while somebody is debugging a stack that takes eleven seconds to answer,
@@ -42,7 +42,7 @@ it('refuses a bound so short a healthy stack loses', function (): void {
         ->toThrow(ReachWaitsTooLong::class, 'at least');
 });
 
-it('N1-R26 — the ceiling is ten seconds, and moving it fails this test on purpose', function (): void {
+it('the ceiling is ten seconds, and moving it fails this test on purpose', function (): void {
     // Pinned rather than derived, and this is the one place in the repository
     // where restating a constant is the assertion rather than a duplicate of
     // it. Nothing can stop somebody editing a `const`. What this does is make

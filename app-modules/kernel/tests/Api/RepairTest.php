@@ -30,7 +30,7 @@ function anOfferedRepair(Undoing $undoing = Undoing::Possible): Repair
     );
 }
 
-it('N2-R4 — states what it does, what else it affects and whether it can be undone', function (): void {
+it('states what it does, what else it affects and whether it can be undone', function (): void {
     // One closure rather than three accessors. The three clauses are one
     // requirement, and three getters are three chances to call two of them.
     expect(anOfferedRepair()->stated(
@@ -43,7 +43,7 @@ it('N2-R4 — states what it does, what else it affects and whether it can be un
     )->shown())->toBe('restart the indexer|downloads pause for about a minute|possible');
 });
 
-it('N2-R4 — a permanent repair says so where a reversible one says otherwise', function (): void {
+it('a permanent repair says so where a reversible one says otherwise', function (): void {
     // The clause an operator most needs before agreeing. Read through the same
     // fold as everything else, so a screen cannot reach it on its own.
     expect(anOfferedRepair(Undoing::Permanent)->stated(
@@ -51,7 +51,7 @@ it('N2-R4 — a permanent repair says so where a reversible one says otherwise',
     )->shown())->toBe('permanent');
 });
 
-it('N2-R4 — a repair that will not say what it does cannot be built', function (): void {
+it('a repair that will not say what it does cannot be built', function (): void {
     // Refused at construction rather than rendered short. A repair with a blank
     // `does` renders as a button with no label above a list of consequences,
     // which is the worst version of this screen.

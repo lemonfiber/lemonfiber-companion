@@ -26,7 +26,7 @@ function aRepairOf(string $check = 'indexer-reachable'): Repair
     );
 }
 
-it('N2-R6 — carries the word the engine names the listing by', function (): void {
+it('carries the word the engine names the listing by', function (): void {
     // The whole reason the repairs and the word travel together: a yes quotes
     // the listing it answers, and the engine refuses it where the machine has
     // moved. Repairs without the word could only be agreed to in the abstract.
@@ -34,7 +34,7 @@ it('N2-R6 — carries the word the engine names the listing by', function (): vo
         ->toBe('a-listing-the-engine-named');
 });
 
-it('N2-R5 — refuses a listing the stack did not name', function (): void {
+it('refuses a listing the stack did not name', function (): void {
     // Not a field missing from a listing. A listing nobody can quote is one
     // whose only possible yes is the one with no listing attached — standing
     // consent — which is what this surface must never send.
@@ -46,7 +46,7 @@ it('takes the word as the stack wrote it, less the space around it', function ()
     expect(Offer::of("  a-listing  \n", Repairs::none())->named())->toBe('a-listing');
 });
 
-it('N2-R4 — a stack offering nothing is an answer, not a failure to ask', function (): void {
+it('a stack offering nothing is an answer, not a failure to ask', function (): void {
     // Most runs offer none, because most findings are things the operator has
     // to go and do. An empty listing under a perfectly good name is how that
     // arrives, and a screen reads it as nothing to offer here.
@@ -79,7 +79,7 @@ it('reads which repairs answer which check, and nothing about what they do', fun
         ->and($repairs->answering(Check::of('vpn.egress-match')))->toBeFalse();
 });
 
-it('N2-R6 — tells one listing from another holding an equal-looking repair', function (): void {
+it('tells one listing from another holding an equal-looking repair', function (): void {
     // By identity rather than by value, which is `Confirmed`'s argument about
     // readings: two listings can offer a repair that looks the same and be
     // about different moments, and treating them as one would be this app

@@ -29,7 +29,7 @@ function aMomentAt(int $seconds): WhenItWasMade
     return WhenItWasMade::at(Instant::atEpochSeconds($seconds));
 }
 
-it('N11-R10 — carries the moment a change was made', function (): void {
+it('carries the moment a change was made', function (): void {
     expect(whatTheClockSays(aMomentAt(1_790_142_840)))->toBe('1790142840');
 });
 
@@ -37,15 +37,15 @@ it('carries that the clock would not say, as its own arm rather than as 1970', f
     expect(whatTheClockSays(WhenItWasMade::unreadable()))->toBe('unreadable');
 });
 
-it('N11-R10 — two changes at one known moment are the same moment', function (): void {
+it('two changes at one known moment are the same moment', function (): void {
     expect(aMomentAt(1_790_142_840)->isTheSameMomentAs(aMomentAt(1_790_142_840)))->toBeTrue();
 });
 
-it('N11-R10 — two known moments a second apart are not', function (): void {
+it('two known moments a second apart are not', function (): void {
     expect(aMomentAt(1_790_142_840)->isTheSameMomentAs(aMomentAt(1_790_142_841)))->toBeFalse();
 });
 
-it('N11-R10 — an unreadable clock is never the same moment as anything', function (): void {
+it('an unreadable clock is never the same moment as anything', function (): void {
     // Not as another unreadable clock — two changes nothing dated are two
     // changes nothing orders, and drawing them as one moment would claim they
     // happened together. Not as a known moment either, from either side.

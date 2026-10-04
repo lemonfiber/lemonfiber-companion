@@ -77,7 +77,7 @@ function whenItIsRead(int $at = NOW): FrozenClock
     return FrozenClock::at(Instant::atEpochSeconds($at));
 }
 
-it('N1-R18 — carries the fingerprint the stack will present', function (): void {
+it('carries the fingerprint the stack will present', function (): void {
     // `ADR-0018`: the fingerprint comes from this material and never from the
     // network. A fingerprint learned from the connection it is meant to
     // validate proves nothing — somebody carried this across the gap, and the
@@ -90,7 +90,7 @@ it('N1-R18 — carries the fingerprint the stack will present', function (): voi
         ))->toBeTrue();
 });
 
-it('N1-R6 — reads the same material whichever way it arrived', function (): void {
+it('reads the same material whichever way it arrived', function (): void {
     // Both routes, one parser. A code read by camera is not more trusted than
     // one read by a person, and a parser that branched here would be two
     // parsers of which only one would stay tested.
@@ -101,7 +101,7 @@ it('N1-R6 — reads the same material whichever way it arrived', function (): vo
         ->and($scanned->presenting()->is($typed->presenting()))->toBeTrue();
 });
 
-it('N1-R6 — remembers which way it arrived', function (): void {
+it('remembers which way it arrived', function (): void {
     expect(Pairing::read(material(), HowItWasRead::Typed, whenItIsRead())->how())->toBe(HowItWasRead::Typed)
         ->and(Pairing::read(material(), HowItWasRead::Scanned, whenItIsRead())->how())->toBe(HowItWasRead::Scanned);
 });
@@ -213,7 +213,7 @@ it('lets the address and the fingerprint refuse in their own words', function ()
         ->toThrow(FingerprintIsNotAFingerprint::class);
 });
 
-it('N1-R48 — material promising a certificate for an unencrypted address is refused', function (): void {
+it('material promising a certificate for an unencrypted address is refused', function (): void {
     // The material contradicts itself. The fingerprint is "the
     // certificate that address will present", and an `http://` address presents
     // none — so the digest would be pinned against a connection with nothing to
@@ -256,7 +256,7 @@ it('refuses it for what it is, rather than as a malformed address', function ():
         ->and($said)->toContain('typed');
 });
 
-it('N1-R6 — says which failure is worth simply retrying', function (): void {
+it('says which failure is worth simply retrying', function (): void {
     // "Try again" is advice somebody has already taken if they typed sixty-four
     // characters. A camera can be re-pointed; a transcription needs showing
     // what did not parse.
@@ -264,7 +264,7 @@ it('N1-R6 — says which failure is worth simply retrying', function (): void {
         ->and(HowItWasRead::Typed->isWorthSimplyRetrying())->toBeFalse();
 });
 
-it('N1-R49 — material that has expired is refused', function (): void {
+it('material that has expired is refused', function (): void {
     // A photograph of a QR code in somebody's camera roll is a durable
     // instruction to trust a host. It outlives the evening it was useful for,
     // and whoever picks the phone up later can act on it.
@@ -272,14 +272,14 @@ it('N1-R49 — material that has expired is refused', function (): void {
         ->toThrow(PairingIsSpent::class);
 });
 
-it('N1-R49 — material expiring at this very second is spent', function (): void {
+it('material expiring at this very second is spent', function (): void {
     // A boundary that admits the exact second is a boundary two clocks
     // disagree about, and the stack's clock is not this phone's.
     expect(fn(): Pairing => Pairing::read(material(expires: NOW), HowItWasRead::Typed, whenItIsRead()))
         ->toThrow(PairingIsSpent::class);
 });
 
-it('N1-R49 — says the code is stale rather than that it is wrong', function (): void {
+it('says the code is stale rather than that it is wrong', function (): void {
     // Different sentences to the person holding the phone. "That is not a
     // pairing code" sends somebody to check what they scanned; "that code has
     // expired" sends them back to the machine for another. Telling the first
@@ -291,7 +291,7 @@ it('N1-R49 — says the code is stale rather than that it is wrong', function ()
         ->toThrow(PairingIsNotReadable::class);
 });
 
-it('N1-R49 — material with no expiry at all is refused', function (): void {
+it('material with no expiry at all is refused', function (): void {
     // The requirement is that pairing material expires, so material that never
     // does is not pairing material. Defaulting to some interval here would be
     // this app deciding how long another machine's invitation lasts.
@@ -299,7 +299,7 @@ it('N1-R49 — material with no expiry at all is refused', function (): void {
         ->toThrow(PairingIsNotReadable::class);
 });
 
-it('N1-R49 — an expiry spelled as a string is not an expiry', function (): void {
+it('an expiry spelled as a string is not an expiry', function (): void {
     // A format that takes both spellings has two spellings of one fact, and
     // the day a producer switches is the day every app that handled only the
     // other reports correct material as malformed.
@@ -313,7 +313,7 @@ it('N1-R49 — an expiry spelled as a string is not an expiry', function (): voi
         ->toThrow(PairingIsNotReadable::class);
 });
 
-it('N1-R48 — material carrying a credential is refused', function (): void {
+it('material carrying a credential is refused', function (): void {
     // The requirement in the form somebody would actually violate it. Material
     // that hands the app a secret out of band is either a stack doing
     // something it must not, or a payload somebody else wrote.
@@ -324,7 +324,7 @@ it('N1-R48 — material carrying a credential is refused', function (): void {
     ))->toThrow(PairingIsNotReadable::class);
 });
 
-it('N1-R48 — anything the format does not define is refused, whatever it is called', function (): void {
+it('anything the format does not define is refused, whatever it is called', function (): void {
     // The reason the check is a closed set rather than a list of forbidden
     // names. A list is wrong the first time somebody picks a name nobody
     // thought of, and it fails open: the app pairs happily, having been handed
@@ -339,7 +339,7 @@ it('N1-R48 — anything the format does not define is refused, whatever it is ca
     }
 });
 
-it('N1-R48 — still reads material that says exactly what the format defines', function (): void {
+it('still reads material that says exactly what the format defines', function (): void {
     // The other half, and worth pinning: a closed set that refused correct
     // material would be found by an operator rather than by this suite.
     $paired = Pairing::read(material(), HowItWasRead::Scanned, whenItIsRead());
@@ -348,7 +348,7 @@ it('N1-R48 — still reads material that says exactly what the format defines', 
         ->and($paired->presenting()->forComparingByEye())->toBe(A_STACKS_DIGEST);
 });
 
-it('N1-R48 — a payload that is a list, not an object, is refused by name', function (): void {
+it('a payload that is a list, not an object, is refused by name', function (): void {
     // A JSON array decodes to integer keys, and `[1, 2]` is a payload somebody
     // can send. It has to be refused like any other key the format does not
     // define, and the refusal has to be able to name it — which is why the key
@@ -357,7 +357,7 @@ it('N1-R48 — a payload that is a list, not an object, is refused by name', fun
         ->toThrow(PairingIsNotReadable::class, 'carried "0"');
 });
 
-it('N1-R49 — an expiry before the epoch is refused by the type that knows why', function (): void {
+it('an expiry before the epoch is refused by the type that knows why', function (): void {
     // Not checked twice. `Instant::atEpochSeconds()` refuses a moment before
     // the epoch and says so in its own words; a second check here would be the
     // same rule with a worse sentence, which is the reasoning `read()` already

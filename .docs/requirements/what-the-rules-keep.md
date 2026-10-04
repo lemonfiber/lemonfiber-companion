@@ -46,16 +46,16 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `G4-R1` | Every user-facing error states what happened, what it means, and what to do | `tests/Feature/EveryObstacleSaysSomethingOfItsOwnTest.php` — the second test is what makes the middle one true |
-| `G4-R2` | Errors use exactly the four defined severity levels | `app-modules/kernel/tests/Api/SeverityTest.php` |
-| `G4-R6` | Every error kind carries a stable identifier | `app-modules/kernel/tests/Api/ObstacleTest.php` |
+| `G4-R2` | Errors use exactly the four defined severity levels | `app-modules/kernel/tests/Api/SeverityTest.php` (`SeverityTest`) |
+| `G4-R6` | Every error kind carries a stable identifier | `app-modules/kernel/tests/Api/ObstacleTest.php` (`ObstacleTest`) |
 | `G4-R8` | An error carries no credential and no secret | `tests/Templates/NothingSecretReachesAScreenTest.php`, held by being stricter: the three values are refused on every screen, not only on the ones somebody sees because something failed |
-| `B2-R10` | Status distinguishes absent, stopped, starting, healthy, unhealthy, crash-looping and failed | `app-modules/kernel/tests/Api/HowAServiceRunsTest.php`, a register of all seven |
+| `B2-R10` | Status distinguishes absent, stopped, starting, healthy, unhealthy, crash-looping and failed | `app-modules/kernel/tests/Api/HowAServiceRunsTest.php`, a register of all seven (`HowAServiceRunsTest`) |
 
 ## What a member is never shown
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N3-R1` | The application a person is given is decided by the identity that signed in | `tests/Feature/SigningIntoAStackTest.php` at the tap and `tests/Feature/TheFirstFrameIsOfferedTest.php` at every launch after it. Two screens, because a session outlives the app being closed: deciding only at sign-in gave a member the operator's report on every reopen. `Resumed::whoseItIs()` answers the subject without the session, so neither screen holds a credential to decide it |
+| `N3-R1` | The application a person is given is decided by the identity that signed in | `tests/Feature/SigningIntoAStackTest.php` at the tap and `tests/Feature/TheFirstFrameIsOfferedTest.php` at every launch after it. Two screens, because a session outlives the app being closed: deciding only at sign-in gave a member the operator's report on every reopen. `Resumed::whoseItIs()` answers the subject without the session, so neither screen holds a credential to decide it (`WhoseTest`) |
 | `N3-R2` | The app implements no permission model; what a member may do is the core's answer | `tests/Contract/OwingContractTest.php` and `tests/Feature/SeeingWhatYouAreOwedTest.php` — the port answers with the core's own sentences, so there is nothing for a surface to compose a wording from |
 | `N3-R3` | A control a member is not entitled to is refused by the core if it is ever reached, and does not rely on the app having omitted it | `app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php` tells the refusal apart, `app-modules/kernel/tests/Api/ObstacleTest.php` holds what it says and that it signs nobody out, and `tests/Feature/SeeingWhatYouAreOwedTest.php` is what draws it as a refusal rather than as an empty reading |
 | `N3-R4` | Before a member asks for something, the app states whether it needs approval and whether they have allowance left | `tests/Contract/OwingContractTest.php`, run against the adapter and the fake. The sentences are the core's and are carried unchanged — the wire has the parts as well, and composing from them would be a second voice about the household's rules |

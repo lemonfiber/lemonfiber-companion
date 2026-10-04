@@ -27,7 +27,7 @@ function whatTheLineWasFound(WhatTheLineWasFound $answer): string
     )->said;
 }
 
-it('N10-R12 — a line that could not be read is never an unlimited one', function (): void {
+it('a line that could not be read is never an unlimited one', function (): void {
     expect(whatTheLineWasFound(WhatTheLineWasFound::shared(HowTheLineIsShared::standing(WhereTheLineStands::Unlimited, 'Nothing holds the stack back', 'Down: no limit', 'Up: no limit', Remarks::of(), Remarks::of()))))->toBe('shared:unlimited')
         ->and(whatTheLineWasFound(WhatTheLineWasFound::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -9,7 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\Shape;
 
-it('N1-R32 — names the shape this build writes', function (): void {
+it('names the shape this build writes', function (): void {
     expect(Shape::current())->toBe(Shape::One);
 });
 
@@ -24,7 +24,7 @@ it('is one shape per layout, numbered from one with no gaps', function (): void 
     }
 });
 
-it('N1-R33 — is a marker today and a decision the day a second shape exists', function (): void {
+it('is a marker today and a decision the day a second shape exists', function (): void {
     // This test is a note to whoever adds `case Two = 2;`, placed where they
     // cannot miss it: it fails the moment they do, and here is what it is
     // asking for.

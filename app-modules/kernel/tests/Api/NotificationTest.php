@@ -17,7 +17,7 @@ use ReflectionNamedType;
 
 use function sprintf;
 
-it('N4-R11 — is built from the core\'s decision and nothing else', function (): void {
+it('is built from the core\'s decision and nothing else', function (): void {
     // The requirement has two halves and this is the one a type can keep: there
     // is exactly one way to make a notification, it takes a code the server
     // declared, and it takes no text. An app wanting to say something of its own
@@ -37,7 +37,7 @@ it('N4-R11 — is built from the core\'s decision and nothing else', function ()
     expect($built)->toBe(['fromTheCore']);
 });
 
-it('N4-R10 — has nowhere to hold a credential, a name or a title', function (): void {
+it('has nowhere to hold a credential, a name or a title', function (): void {
     // All three are values the requirement forbids, and the defence is that
     // there is no field for any of them. Pinned over the constructor rather
     // than argued in a comment: a fourth parameter taking a `string` is the
@@ -58,7 +58,7 @@ it('N4-R10 — has nowhere to hold a credential, a name or a title', function ()
     ]);
 });
 
-it('N4-R15 — knows whether its stack is still configured', function (): void {
+it('knows whether its stack is still configured', function (): void {
     $here = StackId::rememberedAs('the-loft');
     $gone = StackId::rememberedAs('the-shed');
 
@@ -68,7 +68,7 @@ it('N4-R15 — knows whether its stack is still configured', function (): void {
         ->and($notification->concernsOneOf($here, $gone))->toBeTrue();
 });
 
-it('N4-R15 — concerns nothing when the device has no stacks at all', function (): void {
+it('concerns nothing when the device has no stacks at all', function (): void {
     // The boundary the loop gets wrong: an empty list is what a device has
     // immediately after the last stack is removed, which is exactly when a
     // notification about it is most likely to still be in flight.
@@ -86,7 +86,7 @@ it('says what it is about when the device is unlocked', function (): void {
     expect($said->shown())->toBe('backup.finished on the-loft');
 });
 
-it('N4-R20 — hands a locked device no stack to name', function (): void {
+it('hands a locked device no stack to name', function (): void {
     // The point of the whole design, and the reason `whileLocked()` returns a
     // different object rather than setting a flag somebody has to read: the
     // guarded arm is not passed the stack, so a lock-screen renderer cannot
@@ -120,7 +120,7 @@ it('N4-R20 — hands a locked device no stack to name', function (): void {
     expect($handed)->toBe('backup.finished');
 });
 
-it('N4-R20 — the guarded arm is the only one a locked device can run', function (): void {
+it('the guarded arm is the only one a locked device can run', function (): void {
     $ran = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'))
         ->whileLocked()
         ->either(
@@ -131,7 +131,7 @@ it('N4-R20 — the guarded arm is the only one a locked device can run', functio
     expect($ran->shown())->toBe('guarded backup.finished');
 });
 
-it('N4-R20 — locking one notification does not unlock the original', function (): void {
+it('locking one notification does not unlock the original', function (): void {
     // `whileLocked()` returns a new object, and the mistake it exists to
     // prevent is a renderer that locks a notification and then, still holding
     // the same reference, renders the plain form somewhere else.

@@ -43,7 +43,7 @@ it('holds what the stack listed, in the order it listed it', function (): void {
         ->and($stalled->count())->toBe(2);
 });
 
-it('N2-R9 — carries whether this is the whole of what the stack holds', function (): void {
+it('carries whether this is the whole of what the stack holds', function (): void {
     $partial = Stalled::of(HowMuchIsShown::SomeOfIt, WhatIsUnsupported::none(), aStalledItem('The only one shown'));
 
     expect($partial->howMuchIsShown())->toBe(HowMuchIsShown::SomeOfIt);

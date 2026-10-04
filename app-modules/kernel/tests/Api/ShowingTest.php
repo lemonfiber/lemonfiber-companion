@@ -39,11 +39,11 @@ function whatIsOnTheFrame(Showing $showing): string
     )->shown();
 }
 
-it('N1-R28 — a progress indicator answers only where the app holds nothing', function (): void {
+it('a progress indicator answers only where the app holds nothing', function (): void {
     expect(whatIsOnTheFrame(Showing::waiting()))->toBe('a spinner');
 });
 
-it('N1-R28 — a retained reading is shown rather than covered by a spinner', function (): void {
+it('a retained reading is shown rather than covered by a spinner', function (): void {
     // The common failure and the one the requirement names. A screen that has a
     // number from yesterday and paints a spinner over it while refreshing is not
     // being cautious — it throws away the only thing it had, and the operator
@@ -56,7 +56,7 @@ it('N1-R28 — a retained reading is shown rather than covered by a spinner', fu
     expect(whatIsOnTheFrame(Showing::holding($remembered)))->toBe(sprintf('retained:%s:%d', Findings::class, WHEN_IT_WAS_READ));
 });
 
-it('N1-R28 — a live reading is shown as itself', function (): void {
+it('a live reading is shown as itself', function (): void {
     expect(whatIsOnTheFrame(Showing::holding(Reading::live(Findings::none()))))->toBe(sprintf('live:%s', Findings::class));
 });
 

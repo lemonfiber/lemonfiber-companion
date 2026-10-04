@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Stage;
 
-it('N2-R9 — says which of the ten a stalled item is at, as a key', function (): void {
+it('says which of the ten a stalled item is at, as a key', function (): void {
     // The key is built from the case rather than written out, so a stage added
     // to the contract cannot arrive with a line nobody wrote.
     expect(Stage::NotMonitored->saidOnTheScreen())->toBe('health.stage.not-monitored')
         ->and(Stage::Available->saidOnTheScreen())->toBe('health.stage.available');
 });
 
-it('N15-R9 — shows the stack\'s own word for a stage, spelled as the stack spells it', function (): void {
+it('shows the stack\'s own word for a stage, spelled as the stack spells it', function (): void {
     // Not a key and not a translation. The word is lemonfiber's vocabulary,
     // and every case is held to it, so a case whose word was rewritten here
     // would fail rather than put a word on a screen the contract does not

@@ -17,7 +17,7 @@ function whatTheStalledItemSaid(Stuck $stuck): string
     )->said;
 }
 
-it('N2-R9 — hands over what stopped, where it stopped and who has it, together', function (): void {
+it('hands over what stopped, where it stopped and who has it, together', function (): void {
     // One closure rather than three accessors, because the three are one fact
     // and three getters are three chances to call two of them.
     $stuck = Stuck::at('A film nobody has seen', 'radarr', Stage::Searching);

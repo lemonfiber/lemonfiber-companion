@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 
-it('N2-R10 — carries the name exactly as the stack spells it', function (): void {
+it('carries the name exactly as the stack spells it', function (): void {
     // Never title-cased for display: a service called `gluetun` shown as
     // *Gluetun* is a name that works nowhere else — not in a log read, not in a
     // terminal, not against a finding.

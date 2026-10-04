@@ -42,8 +42,8 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R8` | A credential never appears in a URL | routes carry a stored id and never an address or a secret |
 | `N1-R15` | An address has one destination and a screen is not it | a row is a name and nothing else; `tests/Templates/NothingSecretReachesAScreenTest.php` |
-| `N4-R13` | A diagnostic report is assembled from what the operator chooses to send, not from whatever a screen happened to hold | `Concealed` on every stack-facing screen |
-| `N4-R18` | Credentials and pairing material are kept out of a capture, and so is the report | `tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php` |
+| `N4-R13` | A diagnostic report is assembled from what the operator chooses to send, not from whatever a screen happened to hold | `Concealed` on every stack-facing screen (`DiagnosticsTest`) |
+| `N4-R18` | Credentials and pairing material are kept out of a capture, and so is the report | `tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php` (`ConcealedTest`) |
 
 | `N1-R43` | A refused attempt leaves the action offered — the attempt failed, the capability did not become unavailable | `Attempted`, which has no arm that withdraws what was tried; `AnActionIsNeverHeldTest` is what stops a screen inventing one |
 

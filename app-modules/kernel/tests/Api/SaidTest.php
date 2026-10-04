@@ -17,7 +17,7 @@ function whenOneLineHappened(Said $said): string
     )->said;
 }
 
-it('N2-R10 — carries the line, the service and which mouth it came out of', function (): void {
+it('carries the line, the service and which mouth it came out of', function (): void {
     $line = Said::whenever('no route to host', ServiceId::called('gluetun'), Stream::Stderr);
 
     expect($line->line())->toBe('no route to host')
@@ -49,7 +49,7 @@ it('a blank line is a line', function (): void {
     expect($line->line())->toBe('');
 });
 
-it('N2-R10 — a line says whether it holds what somebody is looking for', function (): void {
+it('a line says whether it holds what somebody is looking for', function (): void {
     $line = Said::whenever('connection timed out', ServiceId::called('gluetun'), Stream::Stderr);
 
     expect($line->holds(LookingFor::text('timed')))->toBeTrue()

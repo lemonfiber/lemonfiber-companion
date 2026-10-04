@@ -20,7 +20,7 @@ use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
 
-it('N12-R10 — a machine that could not be asked is never one with room to spare', function (): void {
+it('a machine that could not be asked is never one with room to spare', function (): void {
     $fold = static fn(WhatWasMeasured $answer): string => $answer->either(
         measured: static fn(WhereTheRoomWent $room): TheWordCarriedOut => new TheWordCarriedOut(sprintf('measured:%s', $room->stands()->value)),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),

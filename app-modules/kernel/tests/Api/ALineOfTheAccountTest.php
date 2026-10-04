@@ -13,7 +13,7 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatItOccupies;
 
-it('N12-R6 — a tree carries its name, and nothing else carries one', function (): void {
+it('a tree carries its name, and nothing else carries one', function (): void {
     $occupies = WhatItOccupies::counted(2, 1);
     $tree = ALineOfTheAccount::forTheTree('movies', $occupies, WhatGettingItBackCosts::ByLosingContent);
     $landing = ALineOfTheAccount::for(WhatALineIsAbout::Landing, $occupies, WhatGettingItBackCosts::InProgress);

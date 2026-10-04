@@ -39,7 +39,7 @@ function sonarrsOrigin(array $instead = []): WhereItComesFrom
     );
 }
 
-it('N11-R6 — carries its image, its pin, its upstream and its licence, each apart', function (): void {
+it('carries its image, its pin, its upstream and its licence, each apart', function (): void {
     $origin = sonarrsOrigin();
 
     expect($origin->service()->named())->toBe('sonarr')
@@ -50,7 +50,7 @@ it('N11-R6 — carries its image, its pin, its upstream and its licence, each ap
         ->and($origin->licence())->toBe('GPL-3.0-only');
 });
 
-it('N11-R7 — refuses an origin with any word blank, naming which', function (string $field): void {
+it('refuses an origin with any word blank, naming which', function (string $field): void {
     // A licence missing from one row reads as a licence nobody checked, and the
     // other three are the same argument about a different question.
     expect(fn(): WhereItComesFrom => sonarrsOrigin([$field => '  ']))

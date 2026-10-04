@@ -15,12 +15,12 @@ function whenItWasRefused(TurnedDown $why): string
     )->said;
 }
 
-it('N3-R7 — carries the reason that was given', function (): void {
+it('carries the reason that was given', function (): void {
     expect(TurnedDown::because('The disk is nearly full')->reason())
         ->toBe('The disk is nearly full');
 });
 
-it('D7-R7 — a refusal with no reason cannot be built', function (): void {
+it('a refusal with no reason cannot be built', function (): void {
     // The reason is part of declining rather than an extra beside it, so a
     // decline without one is a stack that broke the rule — not a row to render
     // short, because *declined* with nothing after it is exactly the screen

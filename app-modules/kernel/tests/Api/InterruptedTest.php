@@ -50,7 +50,7 @@ function foldInterrupted(Interrupted $what): Code
     );
 }
 
-it('N1-R46 — an ended session and a refused credential are read differently', function (): void {
+it('an ended session and a refused credential are read differently', function (): void {
     // The requirement in one assertion. A `bool` puts both of these through the
     // same branch, and the branch that says "that credential was not accepted"
     // to somebody whose session merely expired teaches them to distrust a stack
@@ -66,7 +66,7 @@ it('N1-R46 — an ended session and a refused credential are read differently', 
         ->and(foldInterrupted($refused)->shown())->toBe('refused:credential_refused:stack.readings');
 });
 
-it('N1-R46 — the ended arm is handed no obstacle to show', function (): void {
+it('the ended arm is handed no obstacle to show', function (): void {
     // Not an oversight — the mechanism. `Obstacle` holds the three things
     // are named as blocking a connection, and a session expiring is not one
     // of them: it is routine, and it is exactly what must read
@@ -100,7 +100,7 @@ it('N1-R46 — the ended arm is handed no obstacle to show', function (): void {
         ->toBe('ended:stack.readings');
 });
 
-it('N1-R44 — both arms come back to the screen the operator was on', function (): void {
+it('both arms come back to the screen the operator was on', function (): void {
     // The clause a screen loses by accident. The interruption arrives, the app
     // has a perfectly good error to show, and where the operator *was* is a
     // local in a frame that has already gone. Nothing fails; they sign in and
@@ -113,7 +113,7 @@ it('N1-R44 — both arms come back to the screen the operator was on', function 
         ->toBeTrue();
 });
 
-it('N1-R44 — the screen reaches both arms of the fold as well', function (): void {
+it('the screen reaches both arms of the fold as well', function (): void {
     // `resumeAt()` sits outside `either()` so that a caller choosing which
     // sentence to show cannot also decide whether returning somebody to their
     // work is part of this case. It is still handed to both arms, because the
@@ -127,7 +127,7 @@ it('N1-R44 — the screen reaches both arms of the fold as well', function (): v
         ->toBe('refused:credential_refused:stack.settings');
 });
 
-it('N1-R11 — names its stack on both arms', function (): void {
+it('names its stack on both arms', function (): void {
     // A stack's session is its own. An interruption that could not name its
     // stack would sign the operator out of every stack they have.
     $on = theStackTheOperatorWasOn();
@@ -139,7 +139,7 @@ it('N1-R11 — names its stack on both arms', function (): void {
         ->toBeTrue();
 });
 
-it('N1-R45 — names its stack and nothing that could re-pin a certificate', function (): void {
+it('names its stack and nothing that could re-pin a certificate', function (): void {
     // A credential expiring is not the machine changing — ADR-0018 is explicit
     // — so re-pairing when a session ends would throw away a pinned certificate
     // that is still correct, and then ask the operator to accept a new one.

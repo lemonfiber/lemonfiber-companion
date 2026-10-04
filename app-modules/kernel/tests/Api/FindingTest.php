@@ -90,7 +90,7 @@ it('names the check when it refuses, because that is what a report is searched b
         ->toThrow(FindingHasNoTitle::class, 'vpn.egress-match arrived with no title');
 });
 
-it('N2-R3 — a finding carries the code, the meaning and the remedy the core produced', function (): void {
+it('a finding carries the code, the meaning and the remedy the core produced', function (): void {
     // All three arrived on the wire and all three were dropped: the doctor
     // envelope carries them on the verdict, and the reader took the outcome tag
     // and said so in as many words. A screen could show that a check failed and
@@ -132,7 +132,7 @@ it('N2-R3 — a finding carries the code, the meaning and the remedy the core pr
     );
 });
 
-it('N2-R3 — a check that passed carries none of it, and says so in its own arm', function (): void {
+it('a check that passed carries none of it, and says so in its own arm', function (): void {
     // A type with three nullable fields would make a screen ask three questions
     // to find out which situation it is in, and the screen that asks two of them
     // renders a passing check as a failure with blank text.
@@ -159,7 +159,7 @@ it('N2-R3 — a check that passed carries none of it, and says so in its own arm
     expect($shown->shown())->toBe('nothing-wrong');
 });
 
-it('N2-R3 — a failure that says nothing is refused rather than shown', function (): void {
+it('a failure that says nothing is refused rather than shown', function (): void {
     // A red row with no sentence is one the operator cannot act on and cannot
     // search for. A core producing one has a fault, and the fault should be
     // visible where the payload is read rather than on somebody's screen at the
@@ -174,7 +174,7 @@ it('N2-R3 — a failure that says nothing is refused rather than shown', functio
     ))->toThrow(CheckSaidNothing::class);
 });
 
-it('G4-R4 — a verdict carries what the core added underneath, where it added any', function (): void {
+it('a verdict carries what the core added underneath, where it added any', function (): void {
     // Available, which is the half of the rule a screen forgets. The plain
     // explanation already leads; what was missing was any way through to the
     // line an operator who knows what a socket is would actually want.
@@ -183,7 +183,7 @@ it('G4-R4 — a verdict carries what the core added underneath, where it added a
     expect(whatItSays($said))->toBe('dial tcp 10.0.0.4:8989: connect: connection refused');
 });
 
-it('G4-R4 — a core that added nothing is told from one that added an empty line', function (): void {
+it('a core that added nothing is told from one that added an empty line', function (): void {
     // Blank is absent. A screen that told them apart would draw a heading with
     // nothing under it, which reads as *we know something and are not telling
     // you* — and the operator cannot see the difference that justified it.

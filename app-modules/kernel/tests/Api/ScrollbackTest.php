@@ -33,7 +33,7 @@ function everyLineIn(Scrollback $scrollback): string
     return implode(' | ', $rows);
 }
 
-it('N2-R10 — holds the lines in the order the service wrote them', function (): void {
+it('holds the lines in the order the service wrote them', function (): void {
     // The only order that means anything: a log line is read against the line
     // before it.
     $window = Scrollback::of(
@@ -47,14 +47,14 @@ it('N2-R10 — holds the lines in the order the service wrote them', function ()
         ->and($window->count())->toBe(2);
 });
 
-it('N2-R10 — names the service and the bound it was given', function (): void {
+it('names the service and the bound it was given', function (): void {
     $window = Scrollback::of(theServiceTalking(), HowManyLines::of(10), aLineSaying('first'));
 
     expect($window->service()->named())->toBe('gluetun')
         ->and($window->asked()->figure())->toBe(10);
 });
 
-it('N2-R10 — a full window says the view stops where it was told to', function (): void {
+it('a full window says the view stops where it was told to', function (): void {
     $window = Scrollback::of(
         theServiceTalking(),
         HowManyLines::of(2),
@@ -65,7 +65,7 @@ it('N2-R10 — a full window says the view stops where it was told to', function
     expect($window->isAWindow())->toBeTrue();
 });
 
-it('N2-R10 — fewer lines than the bound says the bound cut nothing', function (): void {
+it('fewer lines than the bound says the bound cut nothing', function (): void {
     // And says nothing further. It does not claim to be everything the service
     // ever wrote, because the engine keeps what it keeps.
     $window = Scrollback::of(theServiceTalking(), HowManyLines::of(10), aLineSaying('only one'));

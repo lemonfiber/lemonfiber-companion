@@ -44,14 +44,14 @@ function saidAbout(WhatTheStackSays $says): string
     )->shown();
 }
 
-it('N1-R29 — answers what a stack can do by reading what it declared', function (): void {
+it('answers what a stack can do by reading what it declared', function (): void {
     $declared = Capabilities::of(aStackCalled(THE_LOFT), Declared::of(backups(), Availability::Available));
 
     expect($declared->offers(backups()))->toBeTrue();
     expect(saidAbout($declared->forAbility(backups())))->toBe('available');
 });
 
-it('ARCH-R79 — a capability the stack does not have is absent, not false', function (): void {
+it('a capability the stack does not have is absent, not false', function (): void {
     // The distinction the whole type is built around. `null` here is the one
     // `C2` permits by exception: the question "what does this stack say about
     // X" has no answer when the stack said nothing about X, and inventing a
@@ -64,7 +64,7 @@ it('ARCH-R79 — a capability the stack does not have is absent, not false', fun
     expect($declared->offers(Ability::of('tunnel.rotate')))->toBeFalse();
 });
 
-it('N1-R30 — present-but-unconfigured and not-permitted are each themselves', function (): void {
+it('present-but-unconfigured and not-permitted are each themselves', function (): void {
     // An operator told "this stack cannot back up" when the truth is "your
     // credential may not" goes looking for a feature that is right there; one
     // told "unavailable" when the truth is "not set up yet" never finds the
@@ -83,7 +83,7 @@ it('N1-R30 — present-but-unconfigured and not-permitted are each themselves', 
     expect($declared->offers(Ability::of('tunnel.rotate')))->toBeFalse();
 });
 
-it('N1-R31 — a capability set knows which stack declared it', function (): void {
+it('a capability set knows which stack declared it', function (): void {
     // The failure this refuses: a screen holding the set from the stack it was
     // showing a minute ago, now showing a different one, with buttons that are
     // right for a machine nobody is looking at.
@@ -106,7 +106,7 @@ it('a stack that has declared nothing is not a stack that can do nothing', funct
     expect($nothing->describes(aStackCalled(THE_LOFT)))->toBeTrue();
 });
 
-it('ARCH-R79 — absence is read by saying what happens, not by checking for null', function (): void {
+it('absence is read by saying what happens, not by checking for null', function (): void {
     // `C2`'s reason, in the one place it is load-bearing: a null
     // is checked at the honest call sites and skipped at the one written in a
     // hurry, and the skipped one shows a button for something the stack cannot

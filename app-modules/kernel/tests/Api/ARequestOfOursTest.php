@@ -42,7 +42,7 @@ function theUpdateCheck(array $instead = [], array $destinations = ['api.github.
     );
 }
 
-it('N10-R2, N10-R3 — carries its purpose, destinations, what it sends, its switch and what turning it off costs', function (): void {
+it('carries its purpose, destinations, what it sends, its switch and what turning it off costs', function (): void {
     $request = theUpdateCheck(destinations: ['api.github.com', 'objects.githubusercontent.com']);
 
     expect($request->asksFor())->toBe(WhatLemonfiberAsksFor::Updates)

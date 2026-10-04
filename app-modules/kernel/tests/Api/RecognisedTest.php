@@ -43,11 +43,11 @@ function whatItSaw(Recognised $seen): string
     )->shown();
 }
 
-it('N1-R19 — recognises the machine it was introduced to', function (): void {
+it('recognises the machine it was introduced to', function (): void {
     expect(whatItSaw(theLoft()->recognises(Fingerprint::of(WHAT_IT_PRESENTED))))->toBe('paired');
 });
 
-it('N1-R20 — refuses a machine presenting something else', function (): void {
+it('refuses a machine presenting something else', function (): void {
     // Refused rather than warned about. There is no arm here meaning "not the
     // paired stack, but carry on" — a warning is a dialog with a way past it,
     // and the way past it is the thing an attacker needs.
@@ -55,7 +55,7 @@ it('N1-R20 — refuses a machine presenting something else', function (): void {
         ->toEqual(KindOfObstacle::StackIsNotTheOnePaired->value);
 });
 
-it('N1-R20 — reports it as this not being the machine, and offers re-pairing', function (): void {
+it('reports it as this not being the machine, and offers re-pairing', function (): void {
     // The requirement asks for three things about the report, and all three are
     // already attached to the obstacle: it is critical rather than advisory, it
     // has a code somebody can search for, and it is actionable — which is what
@@ -65,14 +65,14 @@ it('N1-R20 — reports it as this not being the machine, and offers re-pairing',
         ->and(KindOfObstacle::StackIsNotTheOnePaired->standing())->toBe(Standing::Actionable);
 });
 
-it('N1-R20 — the stranger arm cannot be handed a gentler obstacle', function (): void {
+it('the stranger arm cannot be handed a gentler obstacle', function (): void {
     // `asAStranger()` takes no argument on purpose. Letting a caller choose the
     // obstacle would let a caller choose one that is not critical, which is the
     // warning this requirement refuses, arrived at from a different direction.
     expect(new ReflectionMethod(Recognised::class, 'asAStranger')->getParameters())->toBe([]);
 });
 
-it('N1-R22 — is pinned to the stack, so another route changes nothing', function (): void {
+it('is pinned to the stack, so another route changes nothing', function (): void {
     // The same machine reached at a different address is still that machine.
     // A check hanging off the address would re-open the question of identity
     // every time the route changed, which is what this requirement forbids.

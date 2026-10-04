@@ -20,7 +20,7 @@ function whatTheLimitSuggests(WhereItStopsShort $where): string
     )->said;
 }
 
-it('N11-R2 — carries why putting a change back stops short', function (): void {
+it('carries why putting a change back stops short', function (): void {
     expect(WhereItStopsShort::because('The old library was deleted')->why())->toBe('The old library was deleted');
 });
 
@@ -28,7 +28,7 @@ it('suggests nothing unless told what to do instead', function (): void {
     expect(whatTheLimitSuggests(WhereItStopsShort::because('Gone')))->toBe('nothing');
 });
 
-it('N11-R2 — carries what to do instead beside the reason, never without it', function (): void {
+it('carries what to do instead beside the reason, never without it', function (): void {
     // There is no constructor for a suggestion alone. The stack builds both
     // from one refusal to go further, and that refusal always has a reason.
     $where = WhereItStopsShort::suggesting('The old library was deleted', 'Restore it from the last backup first');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\WhatToDoWithIt;
 
-it('N2-R8 — a start disturbs nothing and the other two do', function (): void {
+it('a start disturbs nothing and the other two do', function (): void {
     // The line is drawn once, here. A screen deciding for itself which verbs
     // are disruptive would eventually ask for a confirmation of a start, which
     // teaches an operator to confirm without reading.

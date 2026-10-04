@@ -49,7 +49,7 @@ function namesIn(Configured $record): array
     );
 }
 
-it('N1-R35 — a device introduced to nothing says so', function (): void {
+it('a device introduced to nothing says so', function (): void {
     expect(Configured::none()->isEmpty())->toBeTrue();
 });
 
@@ -57,7 +57,7 @@ it('stops being empty once it holds a stack', function (): void {
     expect(Configured::none()->with(stack('a'))->isEmpty())->toBeFalse();
 });
 
-it('N1-R11 — holds more than one stack at once', function (): void {
+it('holds more than one stack at once', function (): void {
     $record = Configured::none()->with(stack('a', 'The loft'))->with(stack('b', 'My mum\'s'));
 
     expect(namesIn($record))->toBe(['The loft', 'My mum\'s']);
@@ -70,7 +70,7 @@ it('answers with the stack that was named', function (): void {
     expect($record->stack($loft->id())->name()->shown())->toBe('The loft');
 });
 
-it('N1-R11 — refuses a stack it does not hold rather than substituting one', function (): void {
+it('refuses a stack it does not hold rather than substituting one', function (): void {
     // The whole clause: a lookup that misses and falls back to the first, the
     // only, or whatever was there before is how a reading comes to be
     // attributed to the wrong machine. There is exactly one stack held here,
@@ -96,7 +96,7 @@ it('says whether it has been introduced to a stack, without raising', function (
         ->and($record->knows(stack('b')->id()))->toBeFalse();
 });
 
-it('N1-R22 — a stack that comes back on another address is the same stack', function (): void {
+it('a stack that comes back on another address is the same stack', function (): void {
     // Re-pairing, which is the remedy for a changed
     // certificate. A second entry here would be a device holding one machine
     // twice, and the operator choosing between two rows that are the same

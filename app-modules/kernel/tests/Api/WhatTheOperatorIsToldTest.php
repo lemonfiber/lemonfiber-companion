@@ -15,7 +15,7 @@ use Modules\Kernel\Api\WhetherItIsHeard;
 
 use function sprintf;
 
-it('N10-R8 — carries the preset, what it means and the exceptions made to it', function (): void {
+it('carries the preset, what it means and the exceptions made to it', function (): void {
     $told = WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(AnEventSetApart::of('disk-low', WhetherItIsHeard::Heard)));
 
     expect($told->preset())->toBe('quiet')

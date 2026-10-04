@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\LookingFor;
 
-it('N2-R10 — a blank box is not a search', function (): void {
+it('a blank box is not a search', function (): void {
     // A blank term selects every line, so a screen treating it as a search
     // would announce *200 of 200 lines match* the moment somebody cleared the
     // field — which reads as a result rather than the absence of one.
