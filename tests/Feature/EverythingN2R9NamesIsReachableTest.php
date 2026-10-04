@@ -34,6 +34,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatThePhoneKeeps;
 
 // "Stuck downloads, provider health, disk pressure and VPN verification
@@ -99,6 +100,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
         StandingsInMemory::working(),
         WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

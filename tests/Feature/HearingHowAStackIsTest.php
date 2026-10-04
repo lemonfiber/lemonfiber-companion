@@ -49,6 +49,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -129,6 +130,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         $standings,
         WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -452,6 +454,7 @@ it('draws the summary it heard where the device would not keep the word', functi
         StandingsInMemory::refusing(),
         WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->listen();

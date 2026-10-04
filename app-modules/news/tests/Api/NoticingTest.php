@@ -9,9 +9,16 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\AProblemNamed;
+use Modules\Kernel\Api\AReleaseNamed;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\Kernel\Api\WhichTab;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
@@ -188,4 +195,70 @@ it('keeps something of a stack where only its choice of kinds, or a row it canno
 
 it('says it may keep something of a stack where nothing can be sealed to look', function (): void {
     expect(noticingOver(ASealInMemory::thatWillNotOpen(), NewsKeptInMemory::empty())->keepsAnythingOf(theStackWhoseNewsIsNoticed()))->toBeTrue();
+});
+
+/**
+ * What a stack names as newest: these releases and problems, and a request numbered nine.
+ *
+ * @param list<string>             $releases
+ * @param list<array{string, int}> $problems each check with its onset in seconds
+ */
+function theNewestAStackNames(array $releases, array $problems, bool $releasesRead = true): TheNewestNamed
+{
+    $named = [];
+
+    foreach ($problems as [$check, $onset]) {
+        $named[] = new AProblemNamed(Check::of($check), Instant::atEpochSeconds($onset));
+    }
+
+    return new TheNewestNamed(
+        $releasesRead ? WhatTheStackListed::these(...array_map(AReleaseNamed::versioned(...), $releases)) : WhatTheStackListed::unread(),
+        WhatTheStackListed::these(RequestId::numbered(9)),
+        WhatTheStackListed::these(...$named),
+    );
+}
+
+/**
+ * How many new items each tab holds, by the tab's word.
+ *
+ * @return array<string, int>
+ */
+function howEachTabIsMarked(Noticing $noticing, TheNewestNamed $newest): array
+{
+    $marks = $noticing->whatTheTabsHold(theStackWhoseNewsIsNoticed(), $newest);
+    $counted = [];
+
+    foreach (WhichTab::cases() as $tab) {
+        $counted[$tab->value] = $marks->howManyOn($tab);
+    }
+
+    return $counted;
+}
+
+it('marks no tab on the first reading of a stack, and then Updates and Health for what arrives after it', function (): void {
+    $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+
+    expect(howEachTabIsMarked($noticing, theNewestAStackNames(['2.3.0'], [['disk.space', 1_790_000_000]])))
+        ->toBe(['health' => 0, 'services' => 0, 'updates' => 0, 'repairs' => 0])
+        ->and(howEachTabIsMarked($noticing, theNewestAStackNames(['2.5.0', '2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]])))
+        ->toBe(['health' => 1, 'services' => 0, 'updates' => 2, 'repairs' => 0]);
+});
+
+it('marks no tab for a kind switched off, and still marks the other', function (): void {
+    $seal = ASealInMemory::working();
+    $kept = NewsKeptInMemory::empty();
+    $noticing = noticingOver($seal, $kept);
+    howEachTabIsMarked($noticing, theNewestAStackNames(['2.3.0'], [['disk.space', 1_790_000_000]]));
+    new MarkingAsNew(newsOver($seal, $kept))->markNoLonger(theStackWhoseNewsIsNoticed(), KindOfNews::Problem);
+
+    expect(howEachTabIsMarked($noticing, theNewestAStackNames(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600]])))
+        ->toBe(['health' => 0, 'services' => 0, 'updates' => 1, 'repairs' => 0]);
+});
+
+it('marks no tab for a kind the stack could not read, and still marks the other', function (): void {
+    $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    howEachTabIsMarked($noticing, theNewestAStackNames(['2.3.0'], [['disk.space', 1_790_000_000]]));
+
+    expect(howEachTabIsMarked($noticing, theNewestAStackNames(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600]], releasesRead: false)))
+        ->toBe(['health' => 1, 'services' => 0, 'updates' => 0, 'repairs' => 0]);
 });

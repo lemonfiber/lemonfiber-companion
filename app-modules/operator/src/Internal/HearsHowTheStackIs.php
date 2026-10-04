@@ -10,8 +10,12 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\News\Api\TheTabsMarked;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
+use Modules\Operator\Internal\Presenters\HowTheTabsAreMarked;
+use Modules\Operator\Internal\ViewModels\TheTabsAsMarked;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Poll;
@@ -45,6 +49,11 @@ use Native\Mobile\Edge\NativeComponent;
  * screen opening on a stack starts from that summary, as of when it was read,
  * rather than from nothing.
  *
+ * **What the stack names as newest marks the tabs.** The stream says it when a
+ * listener arrives and whenever it changes, and the news module answers which
+ * tabs hold something new by it, against what the operator has seen. A wake
+ * that names nothing leaves the marks as they were.
+ *
  * @phpstan-require-extends NativeComponent
  */
 trait HearsHowTheStackIs
@@ -67,6 +76,13 @@ trait HearsHowTheStackIs
 
     /** Whether the operator has opened the summary out to what it counts. */
     public bool $expanded = false;
+
+    /**
+     * Which tabs the stack's newest marks, as last heard.
+     *
+     * `public` for the reason {@see $heard} is.
+     */
+    public ?TheTabsMarked $marked = null;
 
     public function mount(): void
     {
@@ -98,7 +114,9 @@ trait HearsHowTheStackIs
         }
 
         $stack = $this->stack();
-        $held = $held->after($this->heardFrom($stack, $now), $now);
+        $thisWake = $this->heardFrom($stack, $now);
+        $this->marked = $this->markedBy($thisWake, $stack);
+        $held = $held->after($thisWake, $now);
 
         if ($held->hasGoneQuiet($now)) {
             $held = $held->after($with->hearing->letGo(), $now);
@@ -112,6 +130,12 @@ trait HearsHowTheStackIs
                 return $held;
             },
         );
+    }
+
+    /** Which tabs hold something new, and how many, as the bar draws them. */
+    public function marks(): TheTabsAsMarked
+    {
+        return new HowTheTabsAreMarked()->of($this->marked ?? TheTabsMarked::none());
     }
 
     /** Open the summary out to what it counts, or fold it back. */
@@ -173,6 +197,15 @@ trait HearsHowTheStackIs
     private function heardSoFar(): WhatWasHeardSoFar
     {
         return $this->heard ??= $this->listensWith()->keeping->lastKept($this->stack()->id());
+    }
+
+    /** The tabs marked by what the stack named as newest in this wake, or as they were where it named nothing. */
+    private function markedBy(WhatWasHeard $heard, Stack $stack): TheTabsMarked
+    {
+        return $heard->theNewest(
+            named: fn(TheNewestNamed $newest): TheTabsMarked => $this->noticing->whatTheTabsHold($stack->id(), $newest),
+            nothing: fn(): TheTabsMarked => $this->marked ?? TheTabsMarked::none(),
+        );
     }
 
     /**

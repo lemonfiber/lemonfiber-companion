@@ -29,6 +29,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The list of stacks the top bar's name opens says how each stack stands. On a
@@ -113,6 +114,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         $standings,
         WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 

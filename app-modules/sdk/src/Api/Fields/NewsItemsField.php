@@ -17,15 +17,6 @@ enum NewsItemsField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The releases in the stack's record. */
-    case Updates = 'updates';
-
-    /** The checks found wrong. */
-    case Problems = 'problems';
-
-    /** When a check went wrong, in whole seconds since the epoch. */
-    case Onset = 'onset';
-
     /** Who asked for a request. */
     case By = 'by';
 }

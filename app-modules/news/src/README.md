@@ -8,7 +8,7 @@ it began.
 
 | | |
 |---|---|
-| `Noticing` | What is new among the items of a kind on a stack, and the operator having seen one item or all of them. It is the keeper `ForgetsAStack` asks when a stack is removed |
+| `Noticing` | What is new among the items of a kind on a stack, which tabs the newest a stack names marks, and the operator having seen one item or all of them. It is the keeper `ForgetsAStack` asks when a stack is removed |
 | `MarkingAsNew` | Which kinds a stack marks as new: all three until the operator switches one off. Switching a kind off forgets the newest of it seen |
 
 And the values they take and give:
@@ -20,6 +20,7 @@ And the values they take and give:
 | `TheItems` | Every item of one kind a stack holds, newest first, and what is newer than one of them |
 | `WhatIsNew` | The items of one kind on one stack that are new, newest first |
 | `TheKindsMarked` | The kinds a stack marks as new |
+| `TheTabsMarked` | How many new items each tab holds: updates on Updates, problems on Health, and requests on none |
 | `NotAnItem` | Why something could not be made an item |
 
 **The first sight of a kind records what is current as seen.** A stack read for
@@ -42,6 +43,7 @@ switched off and the newest item seen of each kind, `WhatIsKeptOfNews`. A
 marker holds only what names and orders an item, never what the stack says
 about it. `TheNewsAsKept` writes and reads it, `NewsOfAStack` seals, keeps,
 opens and forgets it for both services, and `TheNewestItem` takes the newest of
-a list. `KeptNews` and `WhetherItWasKept` carry an answer out of a fold.
+a list. `TheNewestAsItems` makes items of what a stack's event stream names as
+newest. `KeptNews` and `WhetherItWasKept` carry an answer out of a fold.
 Nothing in this module but the store names the database, and nothing but the
 composition root names the store.

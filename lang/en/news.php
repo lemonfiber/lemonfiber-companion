@@ -27,4 +27,7 @@ return [
     'update_headline' => 'lemonfiber :version',
     'unreached' => ':stack could not be reached',
     'unreached_since' => 'Last read :ago.',
+
+    // What a screen reader says for a tab holding something new.
+    'new_on_tab' => '{1} :tab, 1 new|[2,*] :tab, :count new',
 ];

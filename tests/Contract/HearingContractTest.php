@@ -5,26 +5,32 @@ declare(strict_types=1);
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AProblemNamed;
+use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
@@ -693,4 +699,150 @@ it('holds no start stream after a line it could not read, so the next ask opens 
         ->toBe([KindOfObstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"']);
 
     $stack->assertSentCount(2);
+});
+
+/**
+ * The newest of each kind a stack names, changed where a case says.
+ *
+ * @param  array<mixed>  $changed
+ * @return array<string, mixed>
+ */
+function aNewestNamed(array $changed = []): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'news',
+        'data' => [
+            'updates' => ['2.5.0', '2.4.0'],
+            'requests' => [12, 9],
+            'problems' => [['check' => 'disk.space', 'onset' => '1759400000']],
+            'unread' => [],
+            ...$changed,
+        ],
+    ];
+}
+
+/**
+ * One news event as the core frames it.
+ *
+ * @param  array<mixed>  $changed
+ */
+function aNewsEvent(array $changed = []): string
+{
+    return anEvent('news', json_encode(aNewestNamed($changed), JSON_THROW_ON_ERROR));
+}
+
+/** What both implementations answer with, where a stack names that newest. */
+function theNewestThatStackNamed(bool $updatesRead = true): TheNewestNamed
+{
+    return new TheNewestNamed(
+        $updatesRead ? WhatTheStackListed::these(AReleaseNamed::versioned('2.5.0'), AReleaseNamed::versioned('2.4.0')) : WhatTheStackListed::unread(),
+        WhatTheStackListed::these(RequestId::numbered(12), RequestId::numbered(9)),
+        WhatTheStackListed::these(new AProblemNamed(Check::of('disk.space'), Instant::atEpochSeconds(1_759_400_000))),
+    );
+}
+
+/** What a wake named as newest, as one line, or that it named nothing. */
+function whatWasNamedAsAWord(WhatWasHeard $heard): string
+{
+    return $heard->theNewest(
+        named: static function (TheNewestNamed $newest): TheWordCarriedOut {
+            $releases = [];
+            $requests = [];
+            $problems = [];
+
+            foreach ($newest->releases() as $release) {
+                $releases[] = $release->version();
+            }
+
+            foreach ($newest->requests() as $request) {
+                $requests[] = (string) $request->number();
+            }
+
+            foreach ($newest->problems() as $problem) {
+                $problems[] = sprintf('%s@%d', $problem->check()->shown(), $problem->onset()->epochSeconds());
+            }
+
+            return new TheWordCarriedOut(sprintf(
+                'updates %s, requests [%s], problems [%s]',
+                $newest->releases()->wasRead() ? sprintf('[%s]', implode('|', $releases)) : 'unread',
+                implode('|', $requests),
+                implode('|', $problems),
+            ));
+        },
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing named'),
+    )->said;
+}
+
+/**
+ * What one way of listening hears named as newest across as many wakes as asked.
+ *
+ * @return list<string>
+ */
+function whatWakesHearNamed(Hearing $hearing, int $wakes): array
+{
+    $named = [];
+
+    for ($wake = 0; $wake < $wakes; $wake++) {
+        $heard = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+        $named[] = sprintf('%s; %s', whatWasHeardAsAWord($heard), whatWasNamedAsAWord($heard));
+    }
+
+    return $named;
+}
+
+it('hears what a stack names as newest beside the summary, and nothing named where it names nothing', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(sprintf('%s%s', aDashboardEvent(whatAHealthyStackSaysOfItsHealth()), aNewsEvent()))],
+        [WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())],
+    ) as $which => $make) {
+        expect(whatWakesHearNamed($make(), 2))->toBe([
+            'healthy, 0 wanting, worst "", {}; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]',
+            'closed; nothing named',
+        ], $which);
+    }
+});
+
+it('hears what a stack names as newest on its own as a sign of life, and only the last of it', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(sprintf('%s%s', aNewsEvent(['updates' => ['2.3.0']]), aNewsEvent()))],
+        [WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed())],
+    ) as $which => $make) {
+        expect(whatWakesHearNamed($make(), 1))->toBe(['alive; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]'], $which);
+    }
+});
+
+it('hears a kind the stack could not read as unread, whatever its list holds', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(aNewsEvent(['unread' => ['updates'], 'updates' => []]))],
+        [WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed(updatesRead: false))],
+    ) as $which => $make) {
+        expect(whatWakesHearNamed($make(), 1))->toBe(['alive; updates unread, requests [12|9], problems [disk.space@1759400000]'], $which);
+    }
+});
+
+it('cannot hear a newest it cannot read, and says so as a stack that did not answer', function (array $changed): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(aNewsEvent($changed))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    ) as $which => $make) {
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+    }
+})->with([
+    'updates that are not a list' => [['updates' => 'all of them']],
+    'a version that is not words' => [['updates' => [7]]],
+    'a blank version' => [['updates' => [' ']]],
+    'a request that is not a number' => [['requests' => ['twelve']]],
+    'a request numbered nought' => [['requests' => [0]]],
+    'a problem that is not one' => [['problems' => ['disk.space']]],
+    'a problem with no check' => [['problems' => [['onset' => '1759400000']]]],
+    'an onset in words' => [['problems' => [['check' => 'disk.space', 'onset' => 'this morning']]]],
+    'an unread kind that is not words' => [['unread' => [1]]],
+]);
+
+it('stands in for a stack with the newest it names as the contract would accept', function (): void {
+    foreach ([aNewestNamed(), aNewestNamed(['unread' => ['updates'], 'updates' => []])] as $said) {
+        expect(WhatTheContractAccepts::complaintsAbout('NewsEnvelope', $said))
+            ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+    }
 });

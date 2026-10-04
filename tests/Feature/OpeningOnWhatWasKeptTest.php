@@ -40,6 +40,7 @@ use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -103,6 +104,7 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
         StandingsInMemory::working(),
         $keeping,
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

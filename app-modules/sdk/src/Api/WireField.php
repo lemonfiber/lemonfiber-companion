@@ -735,4 +735,19 @@ enum WireField: string implements NamesAWireField
      * could not list as new.
      */
     case Unread = 'unread';
+
+    /**
+     * The releases in a stack's record: every one in what it lists as new, and
+     * the newest of them where its event stream names what is newest.
+     */
+    case Updates = 'updates';
+
+    /**
+     * The checks a stack found wrong: every one in what it lists as new, and
+     * the most recent where its event stream names what is newest.
+     */
+    case Problems = 'problems';
+
+    /** When a check went wrong, in whole seconds since the epoch. */
+    case Onset = 'onset';
 }

@@ -50,6 +50,11 @@ declare(strict_types=1);
  * expressible. Each entry names its own file for the same reason the refusal
  * does: a patch that cannot say *which* line moved sends the reader to search
  * a package for it.
+ *
+ * An entry whose rewrite has changed says what it wrote before, under `was`,
+ * so a package an earlier build patched is moved on to the rewrite rather than
+ * refused: `composer install` does not unpack a package again only because
+ * this script changed.
  */
 const WHAT_THIS_REWRITES = [
     [
@@ -866,14 +871,23 @@ import androidx.compose.ui.semantics.semantics
 BECOMES,
     ],
     [
+        // And where the tab carries a mark, the name it says is the mark's
+        // own sentence, which names the tab and how many new items it holds:
+        // the count drawn in the badge is a number to the eye and nothing a
+        // reader is told on its own.
         'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
         'ships' => <<<'SHIPS'
                         NavigationBarItem(
                             selected = actualIdx == selection,
 SHIPS,
-        'becomes' => <<<'BECOMES'
+        'was' => <<<'WAS'
                         NavigationBarItem(
                             modifier = Modifier.semantics { contentDescription = label },
+                            selected = actualIdx == selection,
+WAS,
+        'becomes' => <<<'BECOMES'
+                        NavigationBarItem(
+                            modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
                             selected = actualIdx == selection,
 BECOMES,
     ],
@@ -952,6 +966,18 @@ private fun Modifier.saidAs(label: String?): Modifier =
 
 /**
  * Get the Material Icon ligature name for the given icon name.
+BECOMES,
+    ],
+    [
+        // The count in a tab's badge is said by the tab, in the mark's own
+        // sentence, so the digits drawn in the badge say nothing of their own:
+        // read as well, the count would be heard twice.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {})
 BECOMES,
     ],
     [
@@ -1595,6 +1621,58 @@ private struct EdgeSwipeBackModifier: ViewModifier {
 private struct StackBarBackgroundModifier: ViewModifier {
 BECOMES,
     ],
+    [
+        // A tab carries a mark a screen reader announces: its name and how
+        // many new items it holds, in a sentence of its own beside the count
+        // drawn in the badge. The package has no word for it, so the tab
+        // takes one, `badge-label`, which reaches each renderer as
+        // `badge_label`.
+        'in' => '/../vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php',
+        'ships' => <<<'SHIPS'
+            'badge-color' => 'badgeColor',
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            'badge-color' => 'badgeColor',
+            'badge-label' => 'badgeLabel',
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php',
+        'ships' => <<<'SHIPS'
+        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor'] as $key) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor', 'badgeLabel'] as $key) {
+BECOMES,
+    ],
+    [
+        // On iOS the mark's sentence is the tab's name to a screen reader
+        // where the tab carries one, as it is on Android, so the tab is
+        // named once and the count is said with it.
+        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift',
+        'ships' => <<<'SHIPS'
+                .badge(badgeFor(tab))
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                .badge(badgeFor(tab))
+                .accessibilityLabel(markFor(tab), isEnabled: !markFor(tab).isEmpty)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift',
+        'ships' => <<<'SHIPS'
+    private func badgeFor(_ tab: NativeUINode) -> Text? {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    /// What a screen reader says for a tab carrying a mark: its name and how
+    /// many new items it holds, or nothing where the tab carries none.
+    private func markFor(_ tab: NativeUINode) -> String {
+        tab.props.getString("badge_label", default: "")
+    }
+
+    private func badgeFor(_ tab: NativeUINode) -> Text? {
+BECOMES,
+    ],
 ];
 
 /**
@@ -1700,7 +1778,10 @@ function whereItIsMade(string $where): array
 
 $rewritten = 0;
 
-foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
+foreach (WHAT_THIS_REWRITES as $entry) {
+    ['in' => $where, 'ships' => $ships, 'becomes' => $becomes] = $entry;
+    $was = array_key_exists('was', $entry) ? $entry['was'] : $ships;
+
     foreach (whereItIsMade($where) as ['path' => $path, 'file_is_not_there' => $fileIsNotThere, 'line_has_moved' => $lineHasMoved]) {
         if (! file_exists($path)) {
             fwrite(STDERR, sprintf($fileIsNotThere, $path));
@@ -1720,13 +1801,15 @@ foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => 
             continue;
         }
 
-        if (! str_contains($source, $ships)) {
+        $from = str_contains($source, $was) ? $was : $ships;
+
+        if (! str_contains($source, $from)) {
             fwrite(STDERR, sprintf($lineHasMoved, $path));
 
             exit(1);
         }
 
-        file_put_contents($path, str_replace($ships, $becomes, $source));
+        file_put_contents($path, str_replace($from, $becomes, $source));
 
         $rewritten++;
     }

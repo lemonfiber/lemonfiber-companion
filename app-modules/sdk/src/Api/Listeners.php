@@ -18,17 +18,20 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
+use Lemonfiber\Sdk\Generated\NewsEnvelope;
 use Lemonfiber\Sdk\Generated\StartEnvelope;
 use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
 use Modules\Kernel\Api\RemedySaysNothing;
+use Modules\Kernel\Api\RequestIsUnnumbered;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StartSaysNothing;
 use Modules\Kernel\Api\StoppageSaysNothing;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
+use Modules\Kernel\Api\VersionIsBlank;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
@@ -48,9 +51,11 @@ use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
  * **It never waits on the stack.** The stream is opened with a wait of one
  * millisecond, so a read that finds nothing comes back with nothing almost at
  * once. Each call takes what {@see AStreamHeldOpen::taken()} finds, reads the
- * last `dashboard` event among it, and hands that back. The wait for the next
- * event is spent between calls, on the screen's cadence, rather than inside
- * one.
+ * last `dashboard` event among it, and hands that back, with the last `news`
+ * event beside it where one arrived: the newest of each kind the stack names,
+ * which it says when a listener arrives and whenever it changes. The wait for
+ * the next event is spent between calls, on the screen's cadence, rather than
+ * inside one.
  *
  * **Mutable, because a held connection is.** This is the one adapter that
  * keeps something between calls, and what it keeps is the connection itself,
@@ -162,7 +167,7 @@ final class Listeners implements Hearing
             return $this->heard($which, $this->heldFor($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered $why) {
             $this->letGoOf($which);
 
             return WhatWasHeard::met($this->clients->whatStoodInTheWay($stack, $why));
@@ -208,6 +213,7 @@ final class Listeners implements Hearing
     {
         $arrived = $held->taken();
         $latest = $arrived->theLast(DashboardEnvelope::KIND);
+        $newest = $arrived->theLast(NewsEnvelope::KIND);
 
         if ($arrived->ended) {
             $this->letGoOf($which);
@@ -217,12 +223,14 @@ final class Listeners implements Hearing
             $this->ended[$which] = true;
         }
 
-        return match (true) {
+        $heard = match (true) {
             $latest instanceof ServerEvent => WhatWasHeard::said(Summaries::in(new EnvelopeReader()->read($latest->data))),
             $arrived->anything => WhatWasHeard::aSignOfLife(),
             $arrived->ended => WhatWasHeard::closed(),
             default => WhatWasHeard::nothing(),
         };
+
+        return $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
     }
 
     /**
