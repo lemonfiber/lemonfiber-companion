@@ -15,6 +15,9 @@ namespace Modules\Operator\Internal\ViewModels;
  * answer them differently: a setting that already held the value answers yes
  * to the first and no to the second, and an operator told *written* about it
  * would go looking for a restart that never happened.
+ *
+ * `canBeAgreedTo` is a third: a blocked change neither holds what was asked
+ * nor waits on a yes, and the yes is drawn only where one could write it.
  */
 final readonly class WhatAChangeTurnedOutToBe
 {
@@ -28,6 +31,7 @@ final readonly class WhatAChangeTurnedOutToBe
         public string $stanceSaid,
         public bool $mustBeAgreedFirst,
         public bool $holdsWhatWasAsked,
+        public bool $canBeAgreedTo,
         public bool $wroteSomething,
         public string $refusalSaid,
     ) {}

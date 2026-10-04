@@ -67,6 +67,7 @@ final readonly class HowAChangeReads
             stanceSaid: $stands->stance->saidOnTheScreen(),
             mustBeAgreedFirst: $stands->change->cost->mustBeAgreedFirst(),
             holdsWhatWasAsked: $stands->stance->holdsWhatWasAsked(),
+            canBeAgreedTo: $stands->stance->canBeAgreedTo(),
             wroteSomething: $stands->stance->wroteSomething(),
             refusalSaid: $stands->why(),
         );
@@ -84,6 +85,7 @@ final readonly class HowAChangeReads
             stanceSaid: '',
             mustBeAgreedFirst: false,
             holdsWhatWasAsked: false,
+            canBeAgreedTo: false,
             wroteSomething: false,
             refusalSaid: '',
         );

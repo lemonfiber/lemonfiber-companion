@@ -782,3 +782,23 @@ it('puts what the stack said about a moved offer away once the operator answers 
     expect($before)->toContain('What you agreed to is not what is offered now')
         ->and($screen->movedOn)->toBeNull();
 })->with(['agreeing', 'looking again']);
+
+it('says a repair the stack left alone because the area was declared unmanaged changed nothing and is not worth another go', function (): void {
+    $leftAlone = WhatWasMended::of(Mended::went(
+        Repair::offered(Check::of('storage.one-filesystem'), 'Move the library onto the larger disk', Effects::of('Downloads pause while it moves'), Undoing::Possible),
+        WhatBecameOfIt::Unmanaged,
+    ));
+    $screen = theRepairsScreen(AStackThatWouldMend::carryingOut(aListingWorthReading(), $leftAlone));
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $done = $screen->done();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($done->changed)->toBe(0)
+        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
+        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
+        ->and($drawn)->toContain(__(WhatBecameOfIt::Unmanaged->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(WhatBecameOfIt::WouldOverwrite->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(WhatBecameOfIt::FixFailed->saidOnTheScreen()));
+});

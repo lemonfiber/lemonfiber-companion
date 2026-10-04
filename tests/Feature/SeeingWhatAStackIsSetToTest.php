@@ -680,3 +680,20 @@ it('an override says what it replaced and where that came from, and a value left
         ->toContain(__('config.came_from_plugin', ['named' => 'arr']))
         ->toContain(__('config.came_from_orphaned', ['named' => 'plex']));
 });
+
+it('draws a change refused because the operator declared the area unmanaged in the stack\'s words, and offers no yes that could write it', function (): void {
+    $refusal = 'you declared this unmanaged, so lemonfiber does not write it: the library sits on the NAS I look after';
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(WhereTheChangeStands::blocked(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
+        $refusal,
+    )));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
+        ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
+        ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
+});

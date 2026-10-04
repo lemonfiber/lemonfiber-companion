@@ -293,6 +293,116 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'another surface meanwhile would be heard as this one. No other job carries a stage at '
             . 'all: the `job` envelope is `action` and `job`, so a repair, an update or a copy is shown '
             . 'as running and never as at a stage.',
+    ],    [
+        'requirement' => 'N19-R1',
+        'asks' => 'to show the command changing a setting runs, before the yes as well as after',
+        // Named: the command a rehearsal of `config-set` would run can only arrive
+        // on what `config-set` answers with. `command` is the word a start, a stop
+        // and a restart already carry it under.
+        'envelope' => 'ConfigEnvelope',
+        'field' => 'command',
+        'shape' => null,
+        'raised' => '`LifecycleEnvelope` carries `command` for a start, a stop and a restart, and '
+            . 'the screen draws it after the verb and, from a rehearsal, before the yes. `ConfigEnvelope`, '
+            . 'which `config-set` answers with, carries no command, rehearsed or carried out, so the app '
+            . 'cannot show what changing a setting runs without the operator going to the machine. It composes '
+            . 'none: a command written here would be this app\'s account of how the core does the '
+            . 'work, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N19-R1',
+        'asks' => 'to show the command putting the configuration back runs, before the yes as well as after',
+        // Named: the command a rehearsal of `reset` would run can only arrive
+        // on what `reset` answers with. `command` is the word a start, a stop
+        // and a restart already carry it under.
+        'envelope' => 'ResetEnvelope',
+        'field' => 'command',
+        'shape' => null,
+        'raised' => '`LifecycleEnvelope` carries `command` for a start, a stop and a restart, and '
+            . 'the screen draws it after the verb and, from a rehearsal, before the yes. `ResetEnvelope`, '
+            . 'which `reset` answers with, carries no command, rehearsed or carried out, so the app '
+            . 'cannot show what putting the configuration back runs without the operator going to the machine. It composes '
+            . 'none: a command written here would be this app\'s account of how the core does the '
+            . 'work, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N19-R1',
+        'asks' => 'to show the command taking an update runs, before the yes as well as after',
+        // Named: the command a rehearsal of `update` would run can only arrive
+        // on what `update` answers with. `command` is the word a start, a stop
+        // and a restart already carry it under.
+        'envelope' => 'UpdateEnvelope',
+        'field' => 'command',
+        'shape' => null,
+        'raised' => '`LifecycleEnvelope` carries `command` for a start, a stop and a restart, and '
+            . 'the screen draws it after the verb and, from a rehearsal, before the yes. `UpdateEnvelope`, '
+            . 'which `update` answers with, carries no command, rehearsed or carried out, so the app '
+            . 'cannot show what taking an update runs without the operator going to the machine. It composes '
+            . 'none: a command written here would be this app\'s account of how the core does the '
+            . 'work, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N19-R1',
+        'asks' => 'to show the command carrying out a repair runs, before the yes as well as after',
+        // Named: the command a rehearsal of `repair` would run can only arrive
+        // on what `repair` answers with. `command` is the word a start, a stop
+        // and a restart already carry it under.
+        'envelope' => 'RepairEnvelope',
+        'field' => 'command',
+        'shape' => null,
+        'raised' => '`LifecycleEnvelope` carries `command` for a start, a stop and a restart, and '
+            . 'the screen draws it after the verb and, from a rehearsal, before the yes. `RepairEnvelope`, '
+            . 'which `repair` answers with, carries no command, rehearsed or carried out, so the app '
+            . 'cannot show what carrying out a repair runs without the operator going to the machine. It composes '
+            . 'none: a command written here would be this app\'s account of how the core does the '
+            . 'work, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N19-R5',
+        'asks' => 'to show each area the operator declared unmanaged, with the reason they gave, as a choice in force',
+        // Unnamed, because a list of declarations could land on the settings
+        // listing or on a reading of its own. `unmanaged` is free on this wire
+        // as a field; it is spent only as a value, on a connection, a repair
+        // outcome and a line of the room.
+        'envelope' => null,
+        'field' => 'unmanaged',
+        'shape' => null,
+        'raised' => 'What the operator declared unmanaged is carried only as the raw value of the '
+            . '`LEMONFIBER_UNMANAGED` setting on the settings listing, in the core\'s own notation. '
+            . 'The app does not parse it: a reading of that notation kept here would be a second '
+            . 'copy of what a declaration covers, and wrong the day the core changes it. So an area '
+            . 'left alone is shown only where an answer names one: a connection the wiring '
+            . '`observed`, a repair that came to `unmanaged`, a change the stack refused with the '
+            . 'operator\'s reason, and the room\'s line for what the operator said to leave alone. What '
+            . 'closes this row is the declarations carried as a list, each with what it covers and why.',
+    ],
+    [
+        'requirement' => 'N19-R7',
+        'asks' => 'to state that the stack runs without lemonfiber and that every action has a non-interactive equivalent',
+        // Unnamed, for the row above's reason. The plainest name for the
+        // statement is the one watched.
+        'envelope' => null,
+        'field' => 'runs_without_lemonfiber',
+        'shape' => null,
+        'raised' => 'Nothing on the wire says that the stack is a Compose project that runs with no '
+            . 'lemonfiber binary, or that every action has a command-line equivalent. A sentence '
+            . 'written here would be this app asserting how the stack runs, which is the core\'s to '
+            . 'say. The screens show the command a verb ran, or will run, where the stack reports '
+            . 'one, and make no wider claim.',
+    ],
+    [
+        'requirement' => 'N19-R8',
+        'asks' => 'to show that the stack is the operator\'s own rather than the bundled one, where it was substituted wholesale',
+        // Unnamed, for the row above's reason. The core calls a stack the
+        // operator substituted an external one, and `external` is free on
+        // this wire.
+        'envelope' => null,
+        'field' => 'external',
+        'shape' => null,
+        'raised' => 'The core tells an external stack from its embedded one and leaves the external '
+            . 'one untouched, and no envelope says which this machine runs. The app does not infer '
+            . 'it from a path or a setting, which `N2-R14` refuses, so no screen says the stack is '
+            . 'the operator\'s own.',
     ],
 ];
 

@@ -794,11 +794,12 @@ it('shows the command once the stack has finished working out the rehearsal, and
     $drawn = whatAskingToRestartSonarrDrew($screen);
 
     expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
         ->and($screen->rehearsalOfTheYes)->toBe(AStackThatSupervises::THE_JOB)
         ->and($screen->asking())->not->toBeNull();
 });
 
-it('asks the question without the command where the stack would not rehearse it', function (Underway|HowTheVerbIsGoing $refused): void {
+it('asks the question without the command where the stack would not rehearse it, and says it could not be read', function (Underway|HowTheVerbIsGoing $refused): void {
     $supervising = $refused instanceof Underway
         ? AStackThatSupervises::withButRefusing(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial), Obstacle::of(KindOfObstacle::StackDidNotAnswer))
         : aStoppedSonarrThatCameTo($refused);
@@ -807,6 +808,7 @@ it('asks the question without the command where the stack would not rehearse it'
     $drawn = whatAskingToRestartSonarrDrew($screen);
 
     expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($drawn)->toContain(whatTheCatalogueSays('stacks.command.unread'))
         ->and($screen->asking())->not->toBeNull()
         ->and($screen->rehearsalOfTheYes)->toBeNull();
 })->with([
@@ -815,7 +817,7 @@ it('asks the question without the command where the stack would not rehearse it'
     'met asking after it' => [HowTheVerbIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
 ]);
 
-it('never shows, before the yes, a command from a report that was not a rehearsal', function (): void {
+it('never shows, before the yes, a command from a report that was not a rehearsal, and says the rehearsal could not be read', function (): void {
     $carriedOut = WhatTheVerbCameTo::reported(
         WhetherItWasRehearsed::CarriedOut,
         WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
@@ -826,7 +828,10 @@ it('never shows, before the yes, a command from a report that was not a rehearsa
     );
     $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($carriedOut)));
 
-    expect(whatAskingToRestartSonarrDrew($screen))->not->toContain(whatTheCatalogueSays('stacks.command.will_run'));
+    $drawn = whatAskingToRestartSonarrDrew($screen);
+
+    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($drawn)->toContain(whatTheCatalogueSays('stacks.command.unread'));
 });
 
 it('shows no command before the yes where the rehearsal says the verb would run nothing', function (): void {
@@ -840,7 +845,10 @@ it('shows no command before the yes where the rehearsal says the verb would run 
     );
     $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($declined)));
 
-    expect(whatAskingToRestartSonarrDrew($screen))->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+    $drawn = whatAskingToRestartSonarrDrew($screen);
+
+    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
+        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
         ->and($screen->willRun)->toBe('')
         ->and($screen->asking())->not->toBeNull();
 });
@@ -860,10 +868,40 @@ it('puts the rehearsal away with the question, whichever way it is answered', fu
         ->and($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
 });
 
+it('puts away that a rehearsal could not be read with the question it was about', function (): void {
+    $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::ended()));
+
+    whatAskingToRestartSonarrDrew($screen);
+    $unreadWhileAsked = $screen->willRunUnread;
+    $screen->neverMind();
+
+    expect($unreadWhileAsked)->toBeTrue()
+        ->and($screen->willRunUnread)->toBeFalse();
+});
+
 it('rehearses nothing for a start, which asks no question', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
 
     whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom($supervising));
 
     expect($supervising->whatItWasAskedToRehearse())->toBe([]);
+});
+
+it('offers nothing to put back a file the operator edited: the outcome offers what it would with no edit at all', function (): void {
+    $starting = static fn(TheStackEdits $edits): WhatTheVerbCameTo => WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::CarriedOut,
+        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy)),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        $edits,
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
+    );
+    $edited = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($starting(TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"))))));
+    $untouched = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($starting(TheStackEdits::none()))));
+
+    $saidWhereEdited = whatStartingSonarrDrew($edited);
+    whatStartingSonarrDrew($untouched);
+
+    expect($saidWhereEdited)->toContain(whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']))
+        ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($edited)->offers())->not->toBe([])->toBe(WhatTheDeviceWouldDraw::onTheSecondFrame($untouched)->offers());
 });

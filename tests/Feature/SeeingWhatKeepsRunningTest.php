@@ -30,6 +30,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatHosts;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine keeps running when nobody is signed in.
 //
@@ -550,4 +551,13 @@ it('asking about another act puts the last outcome away', function (): void {
     $screen->wouldRemove('boot');
 
     expect($screen->handedOver)->toBeNull();
+});
+
+it('points a machine that keeps nothing running to the machine, and offers no setting up from here', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theHostingScreen(
+        AStackThatHosts::with(WhatRunsUnattended::keptBy(WhatKeepsItRunning::Systemd)),
+    ));
+
+    expect($drawn->said())->toContain(__('stacks.keeps_nothing_running'), __('stacks.keeps_nothing_running_action'))
+        ->and($drawn->offers())->toBe([__('health.ask_again'), __('stacks.guard.road_in')]);
 });

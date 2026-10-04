@@ -432,3 +432,21 @@ it('the way here and the way back are routes', function (): void {
 it('renders its own view', function (): void {
     expect(theWiringScreen(AStackThatWires::answering())->render()->name())->toBe('operator::how-the-services-are-wired');
 });
+
+it('draws an area the operator declared unmanaged as left alone in their words, never as a change, with no value and nothing to do about it', function (): void {
+    $leftAlone = TheWiring::written(
+        HowDriftWasJudged::Assessed,
+        WhatIsUnsupported::none(),
+        aConnectionEnded('Sonarr to qBittorrent', HowAConnectionEnded::because(WhereAConnectionStands::Observed, 'Tuned by hand for the seedbox')),
+    );
+    $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered($leftAlone)));
+    $shown = theRunDrawn($screen)->connections[0];
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect([$shown->stateSaid, $shown->said, $shown->ours, $shown->yours])->toBe(['stacks.wiring.state.observed', 'Tuned by hand for the seedbox', '', ''])
+        ->and($drawn->said())->toContain(__('stacks.wiring.state.observed'), 'Tuned by hand for the seedbox')
+        ->and($drawn->said())->not->toContain(__('stacks.wiring.state.drifted'))
+        ->and($drawn->said())->not->toContain(__('stacks.wiring.state.failed'))
+        ->and($drawn->said())->not->toContain(__('stacks.wiring.state.skipped'))
+        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+});
