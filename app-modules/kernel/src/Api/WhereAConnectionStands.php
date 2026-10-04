@@ -45,6 +45,9 @@ enum WhereAConnectionStands: string
     /** An area the operator declared unmanaged; nothing was read or written. */
     case Observed = 'observed';
 
+    /** Something fills what a service asks for, and nothing lemonfiber does connects the two; no run changes it. */
+    case Unmatched = 'unmatched';
+
     /** A prerequisite was not there; a later run finishes it. */
     case Skipped = 'skipped';
 

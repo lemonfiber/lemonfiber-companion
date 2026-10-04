@@ -625,6 +625,7 @@ return [
             'would_wire' => 'Een ronde die schrijft zou dit verbinden',
             'would_adopt' => 'Een ronde die schrijft zou jouw waarde houden zoals het hoort',
             'observed' => 'Met rust gelaten, omdat jij dat zei',
+            'unmatched' => 'Niets wat lemonfiber doet verbindt deze twee',
             'skipped' => 'Nog niet verbonden: iets wat nodig is ontbreekt, en een latere ronde maakt het af',
             'failed' => 'De service wees het af',
             'refused' => 'lemonfiber doet dit niet',
