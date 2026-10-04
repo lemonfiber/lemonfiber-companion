@@ -40,7 +40,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -117,7 +116,6 @@ function theInvitationScreen(
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

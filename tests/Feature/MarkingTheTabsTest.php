@@ -113,8 +113,7 @@ function theShedsHealthHearing(AStackThatSpeaksUp $stream, ?ASealInMemory $seal 
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
-        AroundThePhone::listening($stream, $clock, $window, $standings),
-        NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty()),
+        AroundThePhone::listening($stream, $clock, $window, $standings, noticing: NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty())),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -129,14 +128,13 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $around = AroundThePhone::holding(StacksInMemory::holding($stack));
     $listening = AroundThePhone::listening($stream, $clock);
-    $noticing = NoticingWhatIsNew::fromNothing();
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($tab) {
-        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
-        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
-        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing, WhatThePhoneKeeps::noUpkeepYet()),
-        TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet()),
+        TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
     };
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -159,13 +157,12 @@ function theShedsOtherScreenHearing(
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $around = AroundThePhone::holding(StacksInMemory::holding($stack));
     $listening = AroundThePhone::listening($stream, $clock);
-    $noticing = NoticingWhatIsNew::fromNothing();
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($which) {
-        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening, $noticing),
-        'what a service said' => new WhatThisServiceSaid(AServiceThatSpoke::met($offline), $keychain, $around, AZoneThatIsSet::to('Europe/Amsterdam'), new AppsSettingsThatOpen(), $listening, $noticing),
-        'the words the menu opens' => new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening),
+        'what a service said' => new WhatThisServiceSaid(AServiceThatSpoke::met($offline), $keychain, $around, AZoneThatIsSet::to('Europe/Amsterdam'), new AppsSettingsThatOpen(), $listening),
+        'the words the menu opens' => new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
         default => new WatchingOneArrive(
             AStackThatWalksThrough::met($offline),
             AStackThatExplainsItsWords::met($offline),
@@ -177,7 +174,6 @@ function theShedsOtherScreenHearing(
             ACaptureInMemory::inFront(),
             new AppsSettingsThatOpen(),
             $listening,
-            $noticing,
         ),
     };
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'sonarr']);

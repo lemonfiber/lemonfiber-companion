@@ -17,11 +17,14 @@ final readonly class ALockScreen
 {
     public static function over(ADeviceThatKnowsYou $device): Locked
     {
-        return new Locked($device, new LockingAfter(
-            ASealInMemory::working(),
-            ConnectionSettingsInMemory::empty(),
+        return new Locked(
             $device,
-            FrozenClock::at(Instant::atEpochSeconds(0)),
-        ));
+            new LockingAfter(
+                ASealInMemory::working(),
+                ConnectionSettingsInMemory::empty(),
+                $device,
+                FrozenClock::at(Instant::atEpochSeconds(0)),
+            ),
+        );
     }
 }

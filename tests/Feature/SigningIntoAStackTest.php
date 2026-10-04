@@ -24,7 +24,6 @@ use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The password exchanged once, and the three things that can
@@ -77,7 +76,6 @@ function signInScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
     );
 
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);

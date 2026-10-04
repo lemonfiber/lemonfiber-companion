@@ -16,11 +16,9 @@ use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsToldReads;
 use Modules\Operator\Internal\ViewModels\WhatIsToldTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -65,19 +63,8 @@ final class WhatYouAreToldAbout extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhereThisComesFrom::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
@@ -85,11 +72,6 @@ final class WhatYouAreToldAbout extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

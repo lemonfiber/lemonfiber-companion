@@ -17,13 +17,10 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
-use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
@@ -139,7 +136,6 @@ final class SignIntoAStack extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
     /** What the operator has typed into the password field. */
@@ -154,28 +150,6 @@ final class SignIntoAStack extends NativeComponent
         return $this->went;
     }
 
-    /**
-     * The stack this screen is signing into.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names. A held stack
-     * is how a screen comes to be showing one machine's name while offering
-     * another machine the password.
-     *
-     * Raises {@see StackIsNotConfigured} where the device holds no such stack,
-     * which is a route naming a stack that has been forgotten — a launch-time
-     * fault rather than a screen state, and the same treatment
-     * {@see Configured::stack()} gives it.
-     *
-     * A route parameter arrives as `mixed`, because the navigation stack's own
-     * parameter array is untyped. Anything that is not a string becomes the
-     * empty one, which {@see StackId::rememberedAs()} refuses by name — the
-     * same refusal a route naming no stack at all gets, which is what it is.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Whether the operator is in, which is when the way onwards is offered. */
     public function isSignedIn(): bool

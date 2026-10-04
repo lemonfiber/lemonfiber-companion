@@ -18,14 +18,12 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Operator\Internal\ViewModels\WhatIsKeptTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -83,19 +81,8 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatStoppedComingIn::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Ask the machine again, both readings. */
     public function again(): void
@@ -104,11 +91,6 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         $this->copiesFound = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

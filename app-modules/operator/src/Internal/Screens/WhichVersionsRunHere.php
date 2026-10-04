@@ -16,11 +16,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatRunsHere;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheVersionsRead;
 use Modules\Operator\Internal\ViewModels\TheVersionsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -59,14 +57,8 @@ final class WhichVersionsRunHere extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /** The stack this screen is about, read from the route on every frame. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
@@ -74,11 +66,6 @@ final class WhichVersionsRunHere extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

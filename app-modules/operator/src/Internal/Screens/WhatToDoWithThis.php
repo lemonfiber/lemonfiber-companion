@@ -20,13 +20,11 @@ use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\HearsWhatAStartWaitsOn;
@@ -41,7 +39,6 @@ use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
 use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -138,7 +135,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly HearingTheStart $hearingTheStart,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
     /**
@@ -153,16 +149,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         return $this->listingOf($this->stack(), $this->storage, $this->supervising);
     }
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * What the route names, and what may be done with it.
@@ -357,16 +343,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->formsAgain();
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination: {@see WhereAStackIs} is the
-     * only place that knows a stack's routes.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

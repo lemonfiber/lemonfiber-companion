@@ -48,7 +48,6 @@ use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatMeasuresItsRoom;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // How full this machine is, and where the room went.
@@ -107,7 +106,7 @@ function theRoomScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowFullThisMachineIs($measuring, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowFullThisMachineIs($measuring, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

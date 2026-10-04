@@ -40,7 +40,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatListsItsCopies;
 use Tests\Support\Fakes\AStackThatSaysWhatItKeeps;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine keeps, where, and why, and the copies it holds.
@@ -90,7 +89,7 @@ function theKeepingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisMachineKeepsHere($storing, $copying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new WhatThisMachineKeepsHere($storing, $copying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

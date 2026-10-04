@@ -36,7 +36,6 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\AStackThatTakesThemOut;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Taking somebody out of the household: what it would cost before anything is
@@ -70,7 +69,7 @@ function theRemovalScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $member]);
 
     return $screen;
@@ -465,7 +464,6 @@ it('is offered for each member of the household, where who is in is read', funct
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
     );
     $household->setParams(['stack' => theStackSomebodyLeaves()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();

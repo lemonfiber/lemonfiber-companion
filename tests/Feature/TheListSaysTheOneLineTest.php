@@ -33,7 +33,6 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -68,17 +67,13 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        $standings ?? StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(NOW)), standings: $standings ?? StandingsInMemory::working()),
     );
 }
 
@@ -129,17 +124,13 @@ it('says nothing about the session where this device is signed in', function ():
         $stacks,
         $keychain,
         AShareSheetThatWasOffered::working(),
-        $standings,
-        FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(NOW)), standings: $standings),
     );
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(sprintf(
@@ -245,17 +236,13 @@ it('keeps one stack\'s word apart from another\'s', function (): void {
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        $standings,
-        FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(NOW)), standings: $standings),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(HowItStands::Broken->saidOnTheScreen())
@@ -286,7 +273,6 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))), FrozenClock::at(Instant::atEpochSeconds(NOW - 3)), standings: $standings),
-        NoticingWhatIsNew::fromNothing(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
     $heard->listen();
@@ -311,17 +297,13 @@ function theListeningScreen(
         $stacks,
         $keychain,
         AShareSheetThatWasOffered::working(),
-        $standings,
-        $clock ?? FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening($stacks, $network ?? ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        $hearing,
-        $capture ?? ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening($hearing, $clock ?? FrozenClock::at(Instant::atEpochSeconds(NOW)), $capture ?? ACaptureInMemory::inFront(), $standings),
     );
 }
 

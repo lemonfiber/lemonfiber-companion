@@ -17,12 +17,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\ViewModels\TheRecordTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -80,20 +78,8 @@ final class WhatWasChangedHere extends NativeComponent
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatStoppedComingIn::stack()}'s reason: there is one answer to
-     * *which machine*, and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask the machine again.
@@ -106,11 +92,6 @@ final class WhatWasChangedHere extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

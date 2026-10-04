@@ -32,7 +32,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatStalled;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Stuck downloads are reachable.
@@ -87,7 +86,7 @@ function theStalledScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new WhatStoppedComingIn($stalling, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;

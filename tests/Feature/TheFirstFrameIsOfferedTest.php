@@ -21,12 +21,10 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -78,17 +76,13 @@ function theLaunchScreen(
         $stacks,
         $keychain ?? AKeychainInMemory::working(),
         $sharing ?? AShareSheetThatWasOffered::working(),
-        $standings ?? StandingsInMemory::working(),
-        $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
         $opening ?? new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)), standings: $standings ?? StandingsInMemory::working()),
     );
 }
 

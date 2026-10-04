@@ -14,9 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -60,7 +58,6 @@ final class ThisStackOnThisPhone extends NativeComponent
         private readonly MarkingAsNew $marking,
         protected readonly SecureStorage $storage,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
     public function stack(): Stack
@@ -146,10 +143,6 @@ final class ThisStackOnThisPhone extends NativeComponent
         $this->replaceTheWholeStack($landing);
     }
 
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

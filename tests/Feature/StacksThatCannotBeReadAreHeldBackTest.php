@@ -7,15 +7,12 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -38,17 +35,13 @@ function theScreenOverStacksHeldBack(WhyTheStacksAreHeldBack $why): YourStacks
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACKS_WERE_HELD_BACK)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACKS_WERE_HELD_BACK))),
     );
 }
 

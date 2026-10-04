@@ -26,14 +26,12 @@ use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAnUpgradeReads;
 use Modules\Operator\Internal\Presenters\HowTheQualityReads;
 use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -102,19 +100,8 @@ final class ChoosingHowGood extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, for
-     * {@see WhatIsRunningHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Ask the machine again, and forget every answer and every yes on offer.
@@ -193,11 +180,6 @@ final class ChoosingHowGood extends NativeComponent
         return $this->described instanceof AnUpgradeDescribed;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

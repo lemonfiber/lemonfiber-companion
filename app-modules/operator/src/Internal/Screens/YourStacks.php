@@ -10,12 +10,8 @@ use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\Opening;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatWasKeptAtOpening;
-use Modules\Health\Api\KeepingTheLastReading;
-use Modules\Kernel\Api\Capture;
-use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
-use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Obstacle;
@@ -140,17 +136,13 @@ final class YourStacks extends NativeComponent
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
         private readonly Sharing $sharing,
-        private readonly Standings $standings,
-        private readonly Clock $clock,
         private readonly Opening $opening,
         private readonly ClearingWhatCannotBeRead $clearing,
-        private readonly KeepingTheLastReading $keeping,
         private readonly LettingGoOfOldReadings $readings,
-        private readonly Hearing $hearing,
-        private readonly Capture $capture,
         private readonly RemovingAStack $removing,
         private readonly WhereAStackOpens $landing,
         protected readonly TheAppsSettings $settings,
+        private readonly WhatItListensWith $listening,
     ) {}
 
     /**
@@ -321,7 +313,7 @@ final class YourStacks extends NativeComponent
      */
     public function lastKnownOf(Stack $stack): WhatTheOneLineSays
     {
-        return new WhatEachStackLastSaid($this->standings, $this->clock)->of($stack);
+        return new WhatEachStackLastSaid($this->listening->standings, $this->listening->clock)->of($stack);
     }
 
     /**
@@ -465,7 +457,7 @@ final class YourStacks extends NativeComponent
         if (! $this->saved instanceof WhatWasKeptAtOpening) {
             $this->removing->finishWhatWasLeft();
             $this->saved = $this->clearing->onOpening();
-            $this->readings->forgetTheOld($this->clock->now());
+            $this->readings->forgetTheOld($this->listening->clock->now());
         }
 
         return $this->saved === WhatWasKeptAtOpening::Cleared;
@@ -513,6 +505,6 @@ final class YourStacks extends NativeComponent
 
     protected function listensWith(): WhatItListensWith
     {
-        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings, $this->keeping);
+        return $this->listening;
     }
 }

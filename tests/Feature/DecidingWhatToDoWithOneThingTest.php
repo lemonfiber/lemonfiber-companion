@@ -41,7 +41,6 @@ use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -88,7 +87,7 @@ function theThingScreen(
     }
 
     $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none())));
-    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AStackThatSaysWhatItWaitsOn::saying(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AStackThatSaysWhatItWaitsOn::saying(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;

@@ -19,12 +19,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheWordsRead;
 use Modules\Operator\Internal\ViewModels\AWordAskedAbout;
 use Modules\Operator\Internal\ViewModels\TheWordsTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -86,7 +84,6 @@ final class WhatTheWordsMean extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
     /**
@@ -105,16 +102,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->open = $service;
     }
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame, for
-     * {@see WhatStoppedComingIn::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Open or close the longer gloss of the word at a place in the list as drawn.
@@ -168,11 +155,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->asked = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

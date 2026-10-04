@@ -18,17 +18,14 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -70,7 +67,6 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -107,17 +103,13 @@ it('the word a frame opens on is drawn, with its age', function (): void {
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        $standings,
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN)), standings: $standings),
     );
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Modules\Kernel\Api\Stack;
 use Modules\Operator\Internal\HoldsItsStacksStream;
+use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhereTheTabsAreDrawn;
 use Modules\Wayfinding\Api\Screens\FindsItsWayAroundAStack;
 use Modules\Wayfinding\Api\TheTabs;
@@ -30,6 +32,36 @@ trait FindsItsWayAround
     use FindsItsWayAroundAStack, HoldsItsStacksStream {
         HoldsItsStacksStream::stop insteadof FindsItsWayAroundAStack;
         HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAroundAStack;
+    }
+
+    /**
+     * The stack this screen is about.
+     *
+     * Read from the route on every frame rather than held, so there is one
+     * answer to *which machine* and it is the one the URI names. A held stack
+     * is how a screen comes to be showing one machine's name while offering
+     * another machine the password.
+     *
+     * Raises {@see \Modules\Kernel\Api\StackIsNotConfigured} where the
+     * device holds no such stack, which is a route naming a stack that has been
+     * forgotten: a launch-time fault rather than a screen state. A route
+     * parameter that is not a string is refused as a route naming no stack.
+     */
+    public function stack(): Stack
+    {
+        return $this->around->stackOn($this);
+    }
+
+    /**
+     * Where this machine's screens are.
+     *
+     * One accessor rather than one per destination: {@see WhereAStackIs} is the
+     * only place that knows a stack's routes, and it is built from the stack
+     * this screen is about, so none of them can lead to another machine's.
+     */
+    public function goes(): WhereAStackIs
+    {
+        return WhereAStackIs::of($this->stack()->id());
     }
 
     /** The tab this screen is drawn under, which the bar marks, or none. */

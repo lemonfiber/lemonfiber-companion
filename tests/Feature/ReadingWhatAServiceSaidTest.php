@@ -30,7 +30,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Logs offered as a bounded, searchable read that names the service
@@ -113,7 +112,6 @@ function theLogScreen(
         AZoneThatIsSet::to('Europe/Amsterdam'),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),

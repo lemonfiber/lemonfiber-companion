@@ -14,15 +14,12 @@ use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -63,17 +60,13 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        StandingsInMemory::working(),
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_WAS_FIRST_RUN)),
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
-        WhatThePhoneKeeps::nothingYet(),
         WhatThePhoneKeeps::nothingTooOld(),
-        AStackThatSpeaksUp::holdingOpen(),
-        ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
         AroundThePhone::alreadyOpened(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_WAS_FIRST_RUN))),
     );
 }
 

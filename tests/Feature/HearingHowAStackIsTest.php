@@ -49,7 +49,6 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The one line on the screen the app opens a machine on, held from the core's
@@ -125,7 +124,6 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($stream, $clock, $window, $standings),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -445,7 +443,6 @@ it('draws the summary it heard where the device would not keep the word', functi
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())), FrozenClock::at(AScreenListening::secondsAfterOpening(0)), standings: StandingsInMemory::refusing()),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->listen();

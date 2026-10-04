@@ -23,7 +23,6 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheRouterHolds;
 
@@ -47,7 +46,7 @@ function theAllowanceScreen(AMemberWhoIsOwed $owing, ?AKeychainInMemory $keychai
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheHouseholdIsAllowed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new WhatTheHouseholdIsAllowed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

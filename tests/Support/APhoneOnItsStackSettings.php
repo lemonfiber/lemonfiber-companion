@@ -57,7 +57,6 @@ final readonly class APhoneOnItsStackSettings
             $this->marking,
             AKeychainInMemory::working(),
             AroundThePhone::listening(),
-            NoticingWhatIsNew::fromNothing(),
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

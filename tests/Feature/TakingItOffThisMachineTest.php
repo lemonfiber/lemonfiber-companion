@@ -53,7 +53,6 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatTakesItOff;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Taking lemonfiber off this machine: four removals, each read on its own and
@@ -83,7 +82,7 @@ function theTakingItOffScreen(AStackThatTakesItOff $removing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

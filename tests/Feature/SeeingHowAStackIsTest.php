@@ -44,7 +44,6 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -124,7 +123,7 @@ function theHealthScreen(
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -327,7 +326,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue();
@@ -380,7 +379,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $stack = theStackBeingLookedAt();
 
-    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()

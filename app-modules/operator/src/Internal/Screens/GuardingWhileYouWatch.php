@@ -28,14 +28,12 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheGuardSaw;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AsksWhatFormsItHas;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -107,25 +105,9 @@ final class GuardingWhileYouWatch extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame, for
-     * {@see WhatThisMachineKeepsHere::stack()}'s reason.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

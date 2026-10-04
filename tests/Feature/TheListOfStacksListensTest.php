@@ -31,7 +31,6 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
-use Tests\Support\NoticingWhatIsNew;
 
 // The list of stacks the top bar's name opens says how each stack stands. On a
 // screen that holds no stream, what the phone kept goes out of date within
@@ -111,7 +110,6 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($own, $clock, standings: $standings),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -129,7 +127,6 @@ function theCellarsWords(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Stan
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($own, $clock, standings: $standings),
-        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 

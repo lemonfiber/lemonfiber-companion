@@ -21,14 +21,12 @@ use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -79,14 +77,8 @@ final class WhereThisGotTo extends NativeComponent
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Follow what was typed instead; nothing typed follows nothing new. */
     public function follow(): void
@@ -106,11 +98,6 @@ final class WhereThisGotTo extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

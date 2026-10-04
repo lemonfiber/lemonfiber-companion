@@ -38,7 +38,6 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
@@ -135,7 +134,7 @@ function theUpkeepScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
+    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -431,7 +430,7 @@ it('N1-R44 — a yes on a phone whose session ended sends nothing', function ():
     $stack = theStackWhoseUpkeepIsRead();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
+    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     $screen->wouldYouLike();

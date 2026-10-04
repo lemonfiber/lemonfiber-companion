@@ -36,7 +36,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // How this machine shares its line with the household.
@@ -87,7 +86,7 @@ function theLineScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheLineIsSharedHere($rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowTheLineIsSharedHere($rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

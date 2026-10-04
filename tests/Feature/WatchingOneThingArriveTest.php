@@ -53,7 +53,6 @@ use Tests\Support\Fakes\AStackThatWalksThrough;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\Tree;
 use Tests\Support\WalkthroughsToFollow;
@@ -111,7 +110,6 @@ function theWalkthroughScreen(
         $capture ?? ACaptureInMemory::inFront(),
         settings: new AppsSettingsThatOpen(),
         listening: AroundThePhone::listening(),
-        noticing: NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->mount();

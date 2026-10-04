@@ -28,7 +28,6 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChecksItself;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Which version of lemonfiber the machine runs, and whether a newer one exists.
@@ -79,7 +78,7 @@ function theCopyScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $settings ?? new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new WhatIsRunningHere($checking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $settings ?? new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

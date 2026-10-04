@@ -27,7 +27,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasMended;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
@@ -36,7 +35,6 @@ use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -151,19 +149,8 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
@@ -372,18 +359,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         $this->agreeTo($yesTo);
     }
 
-    /**
-     * Where this machine's screens are.
-     *
-     * One accessor rather than one per destination, and {@see WhereAStackIs}
-     * is the only place that knows a stack's routes — six classes were each
-     * spelling `/stacks/%s/sign-in` for themselves, so a rename had to be found
-     * in all six and the one that was missed would be a button leading nowhere.
-     */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

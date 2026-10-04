@@ -19,14 +19,12 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -103,20 +101,9 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
         private readonly KeepingTheLastUpkeep $kept,
     ) {}
 
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /**
      * Open the stack's stream and ask the stack, behind the first frame.
@@ -235,11 +222,6 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         return $this->asking instanceof TakingAnUpdate ? $this->asking->cannotBePutBack()->count() : 0;
     }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     public function render(): View
     {

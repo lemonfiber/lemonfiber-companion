@@ -31,7 +31,6 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGuards;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -79,7 +78,7 @@ function theGuardScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

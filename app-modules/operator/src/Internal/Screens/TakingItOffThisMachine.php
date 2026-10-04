@@ -26,12 +26,10 @@ use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
-use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
-use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -101,20 +99,9 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Noticing $noticing,
     ) {}
 
-    /** The stack this screen is about, read from the route on every frame. */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
-    /** Where this machine's screens are. */
-    public function goes(): WhereAStackIs
-    {
-        return WhereAStackIs::of($this->stack()->id());
-    }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool

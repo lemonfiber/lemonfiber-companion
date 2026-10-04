@@ -47,14 +47,13 @@ use Native\Mobile\Edge\NativeComponent;
  * tabs hold something new by it, against what the operator has seen. A wake
  * that names nothing leaves the marks as they were.
  *
- * **It reads the screen's own `$listening`, `$storage` and `$noticing`.** That
- * is the coupling, stated here because a trait cannot declare it: the ports the
- * stream is heard with, the store the session is resumed from, and what answers
- * which tabs hold something new. A screen without one of them is refused by
- * PHPStan, which reads this trait in every screen that uses it. The screen
- * takes `$listening` and `$noticing` as protected, because only this trait
- * reads them, and an analyser that does not follow a trait reads a private one
- * as never used.
+ * **It reads the screen's own `$listening` and `$storage`.** That is the
+ * coupling, stated here because a trait cannot declare it: the ports the
+ * stream is heard with, and the store the session is resumed from. A screen
+ * without either is refused by PHPStan, which reads this trait in every screen
+ * that uses it. The screen takes `$listening` as protected, because only this
+ * trait reads it, and an analyser that does not follow a trait reads a private
+ * one as never used.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -180,7 +179,7 @@ trait HoldsItsStacksStream
     private function markedBy(WhatWasHeard $heard, Stack $stack): TheTabsMarked
     {
         return $heard->theNewest(
-            named: fn(TheNewestNamed $newest): TheTabsMarked => $this->noticing->whatTheTabsHold($stack->id(), $newest),
+            named: fn(TheNewestNamed $newest): TheTabsMarked => $this->listening->noticing->whatTheTabsHold($stack->id(), $newest),
             nothing: fn(): TheTabsMarked => $this->marked ?? TheTabsMarked::none(),
         );
     }

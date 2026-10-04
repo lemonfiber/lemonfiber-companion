@@ -16,6 +16,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WhereTheOperatorWas;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\WhereAStackOpens;
 use Modules\Wayfinding\Api\HearingEachStack;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -81,8 +82,9 @@ final readonly class AroundThePhone
     /**
      * The ports a screen holding its stack's stream is handed, made as the container makes them.
      *
-     * A stream that says nothing, a phone in front that kept nothing, and the
-     * moment a phone handed no clock reads, for whatever a test does not hand it.
+     * A stream that says nothing, a phone in front that kept nothing, what
+     * notices news on a phone that kept none, and the moment a phone handed no
+     * clock reads, for whatever a test does not hand it.
      */
     public static function listening(
         ?Hearing $hearing = null,
@@ -90,6 +92,7 @@ final readonly class AroundThePhone
         ?Capture $capture = null,
         ?Standings $standings = null,
         ?KeepingTheLastReading $keeping = null,
+        ?Noticing $noticing = null,
     ): WhatItListensWith {
         return new WhatItListensWith(
             $hearing ?? AStackThatSpeaksUp::holdingOpen(),
@@ -97,6 +100,7 @@ final readonly class AroundThePhone
             $capture ?? ACaptureInMemory::inFront(),
             $standings ?? StandingsInMemory::working(),
             $keeping ?? WhatThePhoneKeeps::nothingYet(),
+            $noticing ?? NoticingWhatIsNew::fromNothing(),
         );
     }
 }
