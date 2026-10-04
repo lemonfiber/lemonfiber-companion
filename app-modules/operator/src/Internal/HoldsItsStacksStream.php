@@ -50,7 +50,10 @@ use Native\Mobile\Edge\NativeComponent;
  * is the coupling, stated here because a trait cannot declare it: the ports the
  * stream is heard with, the store the session is resumed from, and what answers
  * which tabs hold something new. A screen without one of them is refused by
- * PHPStan, which reads this trait in every screen that uses it.
+ * PHPStan, which reads this trait in every screen that uses it. The screen
+ * takes `$listening` and `$noticing` as protected, because only this trait
+ * reads them, and an analyser that does not follow a trait reads a private one
+ * as never used.
  *
  * @phpstan-require-extends NativeComponent
  */

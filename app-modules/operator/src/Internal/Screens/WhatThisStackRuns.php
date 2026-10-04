@@ -111,8 +111,8 @@ final class WhatThisStackRuns extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
-        private readonly WhatItListensWith $listening,
-        private readonly Noticing $noticing,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**
