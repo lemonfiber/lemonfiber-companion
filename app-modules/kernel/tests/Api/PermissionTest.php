@@ -28,9 +28,8 @@ it('N4-R3 — every permission has a working alternative when it is declined', f
     expect($without)->toBe([], sprintf(
         "These permissions have no alternative when declined:\n  %s\n\n"
         . 'N4-R3 makes every permission optional and requires a working alternative for '
-        . 'each declined one. A pairing code can be typed instead of scanned, the app '
-        . 'can be opened to see what a notification would have said, and a stack can be '
-        . 'reached over a route the platform does not gate — each case here needs an '
+        . 'each declined one. A pairing code can be typed instead of scanned, and a '
+        . 'stack can be reached over a route the platform does not gate — each case here needs an '
         . 'answer of that kind before it can be added.',
         implode("\n  ", $without),
     ));
@@ -42,7 +41,6 @@ it('N4-R1 — the app names what it asks for, and asks for nothing else', functi
     // use — so every case here has exactly one place that asks.
     expect(Permission::cases())->toBe([
         Permission::LocalNetwork,
-        Permission::Notifications,
         Permission::Camera,
     ]);
 });

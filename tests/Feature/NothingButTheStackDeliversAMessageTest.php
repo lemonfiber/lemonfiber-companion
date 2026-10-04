@@ -102,5 +102,5 @@ it('takes a notifier nowhere but where it is answered, so nothing subscribes, as
     ];
 
     expect(interface_exists(Notifier::class) && class_exists(PlatformNotifier::class))->toBeTrue()
-        ->and(whereTheApplicationNames(['Notifier', 'Permission::Notifications'], leaving: $answered))->toBe([]);
+        ->and(whereTheApplicationNames(['Notifier'], leaving: $answered))->toBe([]);
 });

@@ -483,6 +483,21 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'delivery carried, there is neither a list to read nor one to fail to read; the app draws '
             . 'no list of either, empty or otherwise.',
     ],
+    [
+        'requirement' => 'N27-R17',
+        'asks' => 'to offer, for each kind of notification the stack raises, whether it may reach this phone, from the kinds the stack declares',
+        // Unnamed, because the list could land on the alerts reading or on one
+        // of its own. `notification_kinds` is free on this wire.
+        'envelope' => null,
+        'field' => 'notification_kinds',
+        'shape' => null,
+        'raised' => 'The alerts reading carries the exceptions an operator made, each a kind and whether it '
+            . 'is wanted, and not the whole list of kinds the stack raises. A list assembled here from '
+            . 'the exceptions seen would be the app adding kinds of its own, which `N4-R11` refuses, so '
+            . 'a stack\'s settings offer no switch per kind. What closes this row is every kind the stack '
+            . 'raises carried as a list, and the spec saying how a kind switched off on one phone is '
+            . 'kept from reaching it.',
+    ],
 ];
 
 /**
