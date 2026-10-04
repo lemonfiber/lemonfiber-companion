@@ -90,7 +90,7 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         private readonly Clock $clock,
         private readonly LocalZone $here,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

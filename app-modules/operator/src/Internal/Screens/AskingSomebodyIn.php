@@ -119,7 +119,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         private readonly Encoding $encoding,
         private readonly Sharing $sharing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Translator $catalogue,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

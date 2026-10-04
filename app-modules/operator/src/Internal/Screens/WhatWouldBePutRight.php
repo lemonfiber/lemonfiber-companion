@@ -146,7 +146,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     public function __construct(
         private readonly Mending $mending,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

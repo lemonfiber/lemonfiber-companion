@@ -91,7 +91,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         private readonly Arranging $arranging,
         private readonly Adjusting $adjusting,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

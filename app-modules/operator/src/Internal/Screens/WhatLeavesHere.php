@@ -66,7 +66,7 @@ final class WhatLeavesHere extends NativeComponent
     public function __construct(
         private readonly Outgoing $outgoing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

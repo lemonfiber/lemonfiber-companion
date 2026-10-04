@@ -78,7 +78,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         private readonly Storing $storing,
         private readonly Copying $copying,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

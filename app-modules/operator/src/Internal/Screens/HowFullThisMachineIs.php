@@ -73,7 +73,7 @@ final class HowFullThisMachineIs extends NativeComponent
     public function __construct(
         private readonly Measuring $measuring,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Clock $clock,
         private readonly Explaining $explaining,
         protected readonly TheAppsSettings $settings,

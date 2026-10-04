@@ -54,7 +54,7 @@ final class WhichVersionsRunHere extends NativeComponent
     public function __construct(
         private readonly ReadingVersions $reading,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

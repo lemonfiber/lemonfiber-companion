@@ -87,7 +87,7 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
     public function __construct(
         private readonly RemovingSomebody $removing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

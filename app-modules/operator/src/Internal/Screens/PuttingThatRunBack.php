@@ -100,7 +100,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         private readonly History $history,
         private readonly PuttingARunBack $puttingBack,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

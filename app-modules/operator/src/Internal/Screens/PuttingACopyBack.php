@@ -101,7 +101,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     public function __construct(
         private readonly PuttingBack $puttingBack,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

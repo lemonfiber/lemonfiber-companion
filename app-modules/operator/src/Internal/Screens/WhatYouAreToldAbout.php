@@ -60,7 +60,7 @@ final class WhatYouAreToldAbout extends NativeComponent
     public function __construct(
         private readonly Telling $telling,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

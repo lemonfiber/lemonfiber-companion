@@ -74,7 +74,7 @@ final class WhatWasChangedHere extends NativeComponent
     public function __construct(
         private readonly History $history,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

@@ -86,7 +86,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         private readonly TakingCopies $copying,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

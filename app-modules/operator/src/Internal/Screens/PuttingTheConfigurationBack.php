@@ -96,7 +96,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     public function __construct(
         private readonly ResettingTheConfiguration $resetting,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

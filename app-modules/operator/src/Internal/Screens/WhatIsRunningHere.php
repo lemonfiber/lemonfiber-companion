@@ -64,7 +64,7 @@ final class WhatIsRunningHere extends NativeComponent
     public function __construct(
         private readonly SelfChecking $checking,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

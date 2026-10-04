@@ -98,7 +98,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     public function __construct(
         private readonly KeepingCurrent $keeping,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly KeepingTheLastUpkeep $kept,

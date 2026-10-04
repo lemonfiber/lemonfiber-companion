@@ -94,7 +94,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     public function __construct(
         private readonly MovingIn $movingIn,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

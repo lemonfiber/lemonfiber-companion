@@ -97,7 +97,7 @@ final class ChoosingHowGood extends NativeComponent
         private readonly ChoosingQuality $choosing,
         private readonly UpgradingTheLibrary $upgrades,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

@@ -74,7 +74,7 @@ final class WhereThisGotTo extends NativeComponent
         private readonly Tracing $tracing,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

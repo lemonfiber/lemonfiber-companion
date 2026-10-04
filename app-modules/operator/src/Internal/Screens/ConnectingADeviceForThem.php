@@ -77,7 +77,7 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
         private readonly Encoding $encoding,
         private readonly Clock $clock,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

@@ -131,7 +131,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         private readonly Supervising $supervising,
         private readonly Rehearsing $rehearsing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly HearingTheStart $hearingTheStart,
         protected readonly WhatItListensWith $listening,

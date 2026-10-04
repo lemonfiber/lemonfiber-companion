@@ -59,7 +59,7 @@ final class WhatItHoldsToLetThemIn extends NativeComponent
     public function __construct(
         private readonly Safekeeping $safekeeping,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

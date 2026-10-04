@@ -111,7 +111,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         private readonly WalkingThrough $walking,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly WorkLeftRunning $leftRunning,
         private readonly HearingTheWalk $hearingTheWalk,
         private readonly Clock $clock,

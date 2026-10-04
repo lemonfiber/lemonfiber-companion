@@ -92,7 +92,7 @@ final class WhatStoppedComingIn extends NativeComponent
     public function __construct(
         private readonly Stalling $stalling,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Explaining $explaining,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

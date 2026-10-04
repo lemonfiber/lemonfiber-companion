@@ -103,7 +103,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     public function __construct(
         private readonly AskingForHelp $helping,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly Sharing $sharing,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

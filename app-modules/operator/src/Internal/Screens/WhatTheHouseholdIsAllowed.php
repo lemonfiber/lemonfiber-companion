@@ -50,7 +50,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
     public function __construct(
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

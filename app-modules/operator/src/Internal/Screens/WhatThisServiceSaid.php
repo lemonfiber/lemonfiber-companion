@@ -120,7 +120,7 @@ final class WhatThisServiceSaid extends NativeComponent
     public function __construct(
         private readonly Saying $saying,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         private readonly LocalZone $here,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,

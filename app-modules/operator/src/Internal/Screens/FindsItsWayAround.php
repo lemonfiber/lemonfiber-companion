@@ -25,6 +25,12 @@ use Native\Mobile\Edge\NativeComponent;
  * holding something new on whichever screen draws it, and the list of stacks
  * the top bar's name opens does not ask that stack again.
  *
+ * **It reads the screen's own `$around`**, which answers the stack the route
+ * names. That is the coupling, stated here because a trait cannot declare it.
+ * The screen takes `$around` as protected, because only its traits read it,
+ * and an analyser that does not follow a trait reads a private one as never
+ * used.
+ *
  * @phpstan-require-extends NativeComponent
  */
 trait FindsItsWayAround

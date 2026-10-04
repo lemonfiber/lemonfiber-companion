@@ -72,7 +72,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
         private readonly WiringTheServices $wiring,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

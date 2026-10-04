@@ -99,7 +99,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     public function __construct(
         private readonly StoppingSeeding $stopping,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}

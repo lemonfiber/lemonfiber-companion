@@ -66,7 +66,7 @@ final class WhereThisComesFrom extends NativeComponent
     public function __construct(
         private readonly Provenance $provenance,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
