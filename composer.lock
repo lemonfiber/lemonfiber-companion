@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "bb56a4bf5794fae7575ade7cfbe63a148d560977"
+                "reference": "a4943b09a9b5c25ecd28bfc2cc4231da398bc80f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/bb56a4bf5794fae7575ade7cfbe63a148d560977",
-                "reference": "bb56a4bf5794fae7575ade7cfbe63a148d560977",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/a4943b09a9b5c25ecd28bfc2cc4231da398bc80f",
+                "reference": "a4943b09a9b5c25ecd28bfc2cc4231da398bc80f",
                 "shasum": ""
             },
             "require": {
@@ -3251,7 +3251,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-03T11:56:56+00:00"
+            "time": "2026-10-04T00:54:52+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3925,9 +3925,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/wayfinding",
-                "reference": "914be8aef23bbe948ab196389cedefd945001cf7"
+                "reference": "583e5810b8564487fa2564e43103b99c18b0ef5e"
             },
             "require": {
+                "modules/connection": "dev-main",
                 "modules/design": "dev-main",
                 "modules/health": "dev-main",
                 "modules/kernel": "dev-main",
