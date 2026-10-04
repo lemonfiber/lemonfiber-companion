@@ -156,6 +156,7 @@ use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
+use Modules\Sdk\Api\StartLines;
 use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
@@ -395,8 +396,8 @@ function everyAdapterCallThatReads(): array
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
-        'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
         'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
+        'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session),
         'Pairers::make' => static fn(): object => new Pairers($clients, $entropy)->make($stack, $session),
         'Connectors::handOver' => static fn(): object => new Connectors($clients, $entropy)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
         'Connectors::whatBecameOf' => static fn(): object
@@ -999,6 +1000,7 @@ function adapterCallsThatAskNothing(): array
     return [
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+        'StartLines::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
     ];
 }
 

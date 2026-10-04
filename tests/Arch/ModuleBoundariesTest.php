@@ -8,6 +8,7 @@ use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Narrators;
+use Modules\Sdk\Api\StartLines;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
@@ -92,6 +93,9 @@ const MUTABLE_BY_DESIGN = [
     // The same stream held for the steps a running walk says, which is the
     // only place they arrive while it runs. Mutable for the reason above.
     Narrators::class,
+    // The same stream held for what a running start is waiting for, which is
+    // the only place that is said. Mutable for the reason above.
+    StartLines::class,
 ];
 
 foreach ($modules as $module) {

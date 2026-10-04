@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\EnvelopeReader;
 use Lemonfiber\Sdk\Events\ServerEvent;
@@ -19,7 +18,6 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Generated\NewsEnvelope;
-use Lemonfiber\Sdk\Generated\StartEnvelope;
 use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
@@ -28,11 +26,9 @@ use Modules\Kernel\Api\RemedySaysNothing;
 use Modules\Kernel\Api\RequestIsUnnumbered;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StartSaysNothing;
 use Modules\Kernel\Api\StoppageSaysNothing;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
 use Modules\Kernel\Api\VersionIsBlank;
-use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -121,34 +117,6 @@ final class Listeners implements Hearing
         return $this->heardFrom($stack, $session);
     }
 
-    public function whatAStartWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn
-    {
-        $which = $stack->id()->stored();
-
-        try {
-            $arrived = $this->heldFor($stack, $session)->taken();
-            $latest = $arrived->theLast(StartEnvelope::KIND);
-
-            // A stream that ended is let go of and opened again on the next
-            // ask. There is no end to report here: a start's lines stop when
-            // the start does, and the job being followed says when that was.
-            if ($arrived->ended) {
-                $this->keepWhereItLeftOff($which);
-                unset($this->held[$which]);
-            }
-
-            return $latest instanceof ServerEvent
-                ? WhatAStartWaitsOn::saying($this->lineIn($latest))
-                : WhatAStartWaitsOn::nothingNew();
-        } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatAStartWaitsOn::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing $why) {
-            $this->letGoOf($which);
-
-            return WhatAStartWaitsOn::met($this->clients->whatStoodInTheWay($stack, $why));
-        }
-    }
-
     public function letGo(): WhatWasHeard
     {
         $this->held = [];
@@ -231,35 +199,5 @@ final class Listeners implements Hearing
         };
 
         return $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
-    }
-
-    /**
-     * The sentence a start line carries, refusing one that is not text.
-     *
-     * The envelope's payload is a bare string, and the generated reader
-     * asserts that without checking it, so it is checked here.
-     */
-    private function lineIn(ServerEvent $event): string
-    {
-        $said = $this->payloadOf($event);
-
-        if (! is_string($said)) {
-            throw StartSaysNothing::inItsLine();
-        }
-
-        return $said;
-    }
-
-    /**
-     * A start line's payload, as it actually arrived.
-     *
-     * `mixed` deliberately, for {@see Origins::payload()}'s reason: the
-     * generated envelope asserts its shape without checking it.
-     */
-    private function payloadOf(ServerEvent $event): mixed
-    {
-        $envelope = new EnvelopeReader()->read($event->data);
-
-        return StartEnvelope::in($envelope)->data;
     }
 }
