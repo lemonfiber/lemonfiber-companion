@@ -241,6 +241,63 @@ final class CompositionRoot extends ServiceProvider
             WhatThisBuildInstallsAs::orRefuse(config(self::WHAT_THE_PLATFORM_INSTALLS_US_AS)),
         );
 
+        $this->bindThePlatform();
+        $this->bindWhatThePhoneKeeps();
+        $this->bindTheWayToEveryStack();
+    }
+
+    public function boot(): void
+    {
+        // Whose palette `bg-theme-*` resolves against, and — the half that was
+        // decided by luck until `nativephp/mobile-ui` arrived — that it is
+        // still ours after every other provider has had its turn.
+        // {@see TheTheme} carries the reasoning; it is a class rather than four
+        // lines here so that a test can plant a rival resolver and call it.
+        //
+        // `$this->app->booted()` rather than `$this->booted()`, which fires at
+        // the end of *this* provider's boot rather than everybody's, and differs
+        // only in the case that matters.
+        $this->app->booted(TheTheme::paint(...));
+
+        // `Route::native()`, replaced so that a screen is built through the
+        // container rather than with `new`. NativePHP's own router cannot give
+        // a screen a port, and a screen that reached the container itself would
+        // be the service location `A3` refuses — so the substitution happens
+        // here, where naming the container is what this directory is for.
+        //
+        // In `boot()` and after the macro it replaces, which the NativePHP
+        // package adds in its own boot. Provider order between two discovered
+        // packages is not something either of them decides, so this is asserted
+        // by `ScreenRoutesReplaceTheVendorsTest` rather than assumed.
+        //
+        // Handed *how to build a screen* rather than the container. A router
+        // holding a container could resolve anything, and the rule against a
+        // container parameter exists because that is what a class holding one
+        // eventually does.
+        // Which runloop, decided here because *whether there is a device* is a
+        // fact about this composition rather than about routing. A suite must
+        // never enter the real one: it blocks against the bridge, so a test
+        // that reached it would hang rather than fail.
+        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
+
+        new ScreenRoutes($this->screen(...), $runloop)->declare();
+
+        // The lock, kept over whatever screen is on view. The device wakes the
+        // app with an event that carries nothing when its lock stands again or
+        // opens, and {@see WhenTheLockMoves} reads the lock afresh; the device
+        // keeps its window covered until {@see TheLockIsOnTheGlass} says the
+        // lock screen has been published. After boot, where the dispatcher is
+        // the one every provider has registered with.
+        $this->app->booted($this->keepTheLock(...));
+
+        // Where the operator is, noted as each screen comes to the front, so the
+        // app opens there after the lock and a chosen stack opens on its tab.
+        $this->app->booted($this->noteWhereTheOperatorIs(...));
+    }
+
+    /** The phone itself: its clock, its randomness, its secure store and the platform's own answers. */
+    private function bindThePlatform(): void
+    {
         // The one line that says which clock the application runs on, and the
         // only place in the codebase allowed to say it. Everything else takes a
         // `Clock` and never learns it got the platform's rather than a frozen
@@ -268,72 +325,6 @@ final class CompositionRoot extends ServiceProvider
             static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
         );
 
-        // The one way this application opens a connection to a stack.
-        //
-        // Bound rather than a singleton because a client is built for one stack
-        // and holds that stack's pin — a single instance would be a client for
-        // whichever machine was reached first, which is exactly the attribution
-        // that must not happen.
-        //
-        // `modules/sdk` is the only manifest that requires the SDK, and
-        // `NothingReachesAStackUnpinnedTest` refuses any other file that names
-        // its transport. This line is where those two facts meet the container.
-        //
-        // Over the phone's own answers about its network, so that a stack that
-        // went silent is told apart from a phone that has no way to it.
-        $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
-
-        // The kernel's name for the same thing, so a capability can say *a way
-        // to reach a stack* without naming the SDK (`A7`). One binding rather
-        // than two adapters: the narrowed interface extends the port, so what
-        // answers here is whatever answers above — and a stand-in put over one
-        // of them cannot be missed by a caller that asked for the other.
-        $this->app->bind(Reaching::class, Clients::class);
-
-        // The one place a credential is offered to a stack, bound beside the
-        // client for the same reason: `modules/sdk` is the only manifest that
-        // requires the SDK, so the two adapters that name its doors are the two
-        // lines here that come from it.
-        //
-        // Bound rather than a singleton, and this one matters more than the
-        // client's. A door is opened for one stack with one credential; an
-        // instance held across two would be an object that has already been
-        // handed a password, and nothing may hold a credential for re-sending.
-        // It holds no state today — the binding is what keeps that true of
-        // whatever it grows into.
-        $this->app->bind(Doors::class, PinnedDoors::class);
-        $this->app->bind(Admitting::class, Admissions::class);
-
-        // Asking a stack how it is, which is what a session is opened for.
-        //
-        // Bound rather than a singleton, and taking the client factory rather
-        // than the `Reaching` port it implements: the port answers `object` so
-        // that the kernel never names the SDK's client, which is what the port
-        // is for — and a caller needing to call a method on one would have to
-        // narrow, which is a branch nothing can reach. Both classes live in
-        // `modules/sdk`, so no boundary is crossed by using the real type.
-        $this->app->bind(Asking::class, Questions::class);
-
-        // Holding a stack's event stream open, for the health summary the core
-        // publishes there and nowhere else.
-        //
-        // Bound rather than a singleton, and here it is the whole point: one
-        // holds one connection for one screen, so each screen is handed its
-        // own, and a screen letting go of its connection lets go of nobody
-        // else's.
-        $this->app->bind(Hearing::class, Listeners::class);
-
-        // Holding the same stream for the steps a running walk says, which the
-        // stack narrates there as they happen. Bound rather than a singleton,
-        // for the reason above: the screen following a walk holds its own.
-        $this->app->bind(HearingTheWalk::class, Narrators::class);
-
-        // Holding the same stream for what a running start is waiting for,
-        // which the stack says there as it waits. Bound rather than a
-        // singleton, for the reason above: the screen that sent the start
-        // holds its own.
-        $this->app->bind(HearingTheStart::class, StartLines::class);
-
         // Handing a diagnostic report to the operator, which is the only way
         // one leaves this device. The app assembles and does not transmit, and
         // both halves are structural: `Diagnostics` holds nothing
@@ -345,6 +336,98 @@ final class CompositionRoot extends ServiceProvider
         // since moved on.
         $this->app->bind(Sharing::class, static fn(): Sharing => new PlatformShare(new TheSheet()));
 
+        // Whether this device is on a network at all, which is the one question
+        // about reaching a stack that can be answered without sending anything.
+        // Bound rather than a singleton for the reason the store above is: the
+        // facade is a handle to something outside this process, and a phone
+        // changes network while the app is open.
+        $this->app->bind(
+            Networking::class,
+            static fn(): Networking => new PlatformNetwork(new TheLink()),
+        );
+
+        $this->app->bind(
+            TheLocalNetwork::class,
+            static fn(): TheLocalNetwork => new PlatformLocalNetwork(new TheLocalNetworkProbe()),
+        );
+
+        $this->app->bind(
+            TheAppsSettings::class,
+            static fn(): TheAppsSettings => new PlatformAppsSettings(new TheAppsSettingsPage()),
+        );
+
+        // Which zone the phone's clock is set to, asked each time rather than
+        // held: a phone can cross a border between two screens.
+        $this->app->bind(
+            LocalZone::class,
+            static fn(): LocalZone => new PlatformZone(new ThePhonesClock()),
+        );
+
+        // Bound, not a singleton, for the same reason the store above is not:
+        // the bridge's centre is a handle to something outside this process,
+        // and this runtime is persistent (I1).
+        //
+        // Local rather than pushed, which is the decision this line records. A
+        // push payload reaches the handset through Google's or Apple's relay —
+        // a third party reading what a stack said about somebody's home — and
+        // NothingLeavesThisDeviceTest is the rule that refuses it. A local
+        // notification is composed and shown on the device and never leaves it.
+        $this->app->bind(
+            Notifier::class,
+            // Named by class rather than built by a closure here. Both of this
+            // adapter's dependencies are concrete classes with no alternative —
+            // lemonfiber's own notification centre and the catalogue reader —
+            // so there is no implementation choice for a closure to state. The
+            // decision this line makes is the one that matters and is still
+            // written down: `Notifier` is `PlatformNotifier`.
+            PlatformNotifier::class,
+        );
+
+        // Bound for the same reason: a window is outside this process, and an
+        // app holding one from launch would go on answering with the state it
+        // saw then.
+        //
+        // Protecting a backgrounded window is not reached through this binding
+        // at all. The native half
+        // installs a lifecycle observer as the app starts and protects a
+        // backgrounded app whether or not anything here is ever resolved — a
+        // requirement with no exceptions should not depend on a container entry.
+        $this->app->bind(
+            Capture::class,
+            static fn(): Capture => new PlatformScreen(new Screen()),
+        );
+
+        // The camera, reading a pairing code.
+        //
+        // Handed this application's own camera rather than the plugin's. The
+        // difference that matters is not ownership: it is that our call blocks
+        // while the scanner is on screen and answers with what was read, so the
+        // code never goes near an event — which on Android is injected into the
+        // WebView as a DOM event, a Livewire dispatch and an HTTP POST. Pairing
+        // material is the one payload where that is a disclosure.
+        $this->app->bind(
+            Scanning::class,
+            // Built in a named method rather than here, because `make()` raises
+            // a checked exception and the analyser refuses one raised inside a
+            // closure. That is the same rule that put the container behind a
+            // method for the screen router, and it lands the same way.
+            $this->theScanner(...),
+        );
+
+        // The same handle again, and bound for the same reason. The app locks on
+        // backgrounding and asks again after a period the operator sets — both of which are decisions about *when*, made in
+        // `LockRule` on the native side where they can be tested without a
+        // handset. This is only how an answer becomes a Lock.
+        $this->app->bind(
+            DeviceAuth::class,
+            // By class, for the reason given above the `Notifier` binding.
+            PlatformAuth::class,
+        );
+    }
+
+    /** What the phone keeps between launches, the seal over it, and every set of keepers asked as one. */
+    private function bindWhatThePhoneKeeps(): void
+    {
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
         // because the two have opposite obligations: a session is what this app
@@ -471,12 +554,77 @@ final class CompositionRoot extends ServiceProvider
             RemovalsUnderWay::class,
             static fn(): RemovalsUnderWay => new PlatformStacks(new PlatformStore()),
         );
+    }
 
-        // Whether this device is on a network at all, which is the one question
-        // about reaching a stack that can be answered without sending anything.
-        // Bound rather than a singleton for the reason the store above is: the
-        // facade is a handle to something outside this process, and a phone
-        // changes network while the app is open.
+    /** The one way to a stack, and every port a stack is asked through, each answered in `modules/sdk`. */
+    private function bindTheWayToEveryStack(): void
+    {
+        // The one way this application opens a connection to a stack.
+        //
+        // Bound rather than a singleton because a client is built for one stack
+        // and holds that stack's pin — a single instance would be a client for
+        // whichever machine was reached first, which is exactly the attribution
+        // that must not happen.
+        //
+        // `modules/sdk` is the only manifest that requires the SDK, and
+        // `NothingReachesAStackUnpinnedTest` refuses any other file that names
+        // its transport. This line is where those two facts meet the container.
+        //
+        // Over the phone's own answers about its network, so that a stack that
+        // went silent is told apart from a phone that has no way to it.
+        $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
+
+        // The kernel's name for the same thing, so a capability can say *a way
+        // to reach a stack* without naming the SDK (`A7`). One binding rather
+        // than two adapters: the narrowed interface extends the port, so what
+        // answers here is whatever answers above — and a stand-in put over one
+        // of them cannot be missed by a caller that asked for the other.
+        $this->app->bind(Reaching::class, Clients::class);
+
+        // The one place a credential is offered to a stack, bound beside the
+        // client for the same reason: `modules/sdk` is the only manifest that
+        // requires the SDK, so the two adapters that name its doors are the two
+        // lines here that come from it.
+        //
+        // Bound rather than a singleton, and this one matters more than the
+        // client's. A door is opened for one stack with one credential; an
+        // instance held across two would be an object that has already been
+        // handed a password, and nothing may hold a credential for re-sending.
+        // It holds no state today — the binding is what keeps that true of
+        // whatever it grows into.
+        $this->app->bind(Doors::class, PinnedDoors::class);
+        $this->app->bind(Admitting::class, Admissions::class);
+
+        // Asking a stack how it is, which is what a session is opened for.
+        //
+        // Bound rather than a singleton, and taking the client factory rather
+        // than the `Reaching` port it implements: the port answers `object` so
+        // that the kernel never names the SDK's client, which is what the port
+        // is for — and a caller needing to call a method on one would have to
+        // narrow, which is a branch nothing can reach. Both classes live in
+        // `modules/sdk`, so no boundary is crossed by using the real type.
+        $this->app->bind(Asking::class, Questions::class);
+
+        // Holding a stack's event stream open, for the health summary the core
+        // publishes there and nowhere else.
+        //
+        // Bound rather than a singleton, and here it is the whole point: one
+        // holds one connection for one screen, so each screen is handed its
+        // own, and a screen letting go of its connection lets go of nobody
+        // else's.
+        $this->app->bind(Hearing::class, Listeners::class);
+
+        // Holding the same stream for the steps a running walk says, which the
+        // stack narrates there as they happen. Bound rather than a singleton,
+        // for the reason above: the screen following a walk holds its own.
+        $this->app->bind(HearingTheWalk::class, Narrators::class);
+
+        // Holding the same stream for what a running start is waiting for,
+        // which the stack says there as it waits. Bound rather than a
+        // singleton, for the reason above: the screen that sent the start
+        // holds its own.
+        $this->app->bind(HearingTheStart::class, StartLines::class);
+
         // What the household has asked its stack for, which the requests screen
         // reads. Beside `Asking` and built the same way: both go through
         // `PinnedClients`, so there is one place a certificate is checked.
@@ -650,138 +798,6 @@ final class CompositionRoot extends ServiceProvider
         // is waiting, agrees to it, and a second port for the agreeing would be
         // a second place a client could be reached for.
         $this->app->bind(KeepingCurrent::class, Upkeepers::class);
-
-        $this->app->bind(
-            Networking::class,
-            static fn(): Networking => new PlatformNetwork(new TheLink()),
-        );
-
-        $this->app->bind(
-            TheLocalNetwork::class,
-            static fn(): TheLocalNetwork => new PlatformLocalNetwork(new TheLocalNetworkProbe()),
-        );
-
-        $this->app->bind(
-            TheAppsSettings::class,
-            static fn(): TheAppsSettings => new PlatformAppsSettings(new TheAppsSettingsPage()),
-        );
-
-        // Which zone the phone's clock is set to, asked each time rather than
-        // held: a phone can cross a border between two screens.
-        $this->app->bind(
-            LocalZone::class,
-            static fn(): LocalZone => new PlatformZone(new ThePhonesClock()),
-        );
-
-        // Bound, not a singleton, for the same reason the store above is not:
-        // the bridge's centre is a handle to something outside this process,
-        // and this runtime is persistent (I1).
-        //
-        // Local rather than pushed, which is the decision this line records. A
-        // push payload reaches the handset through Google's or Apple's relay —
-        // a third party reading what a stack said about somebody's home — and
-        // NothingLeavesThisDeviceTest is the rule that refuses it. A local
-        // notification is composed and shown on the device and never leaves it.
-        $this->app->bind(
-            Notifier::class,
-            // Named by class rather than built by a closure here. Both of this
-            // adapter's dependencies are concrete classes with no alternative —
-            // lemonfiber's own notification centre and the catalogue reader —
-            // so there is no implementation choice for a closure to state. The
-            // decision this line makes is the one that matters and is still
-            // written down: `Notifier` is `PlatformNotifier`.
-            PlatformNotifier::class,
-        );
-
-        // Bound for the same reason: a window is outside this process, and an
-        // app holding one from launch would go on answering with the state it
-        // saw then.
-        //
-        // Protecting a backgrounded window is not reached through this binding
-        // at all. The native half
-        // installs a lifecycle observer as the app starts and protects a
-        // backgrounded app whether or not anything here is ever resolved — a
-        // requirement with no exceptions should not depend on a container entry.
-        $this->app->bind(
-            Capture::class,
-            static fn(): Capture => new PlatformScreen(new Screen()),
-        );
-
-        // The camera, reading a pairing code.
-        //
-        // Handed this application's own camera rather than the plugin's. The
-        // difference that matters is not ownership: it is that our call blocks
-        // while the scanner is on screen and answers with what was read, so the
-        // code never goes near an event — which on Android is injected into the
-        // WebView as a DOM event, a Livewire dispatch and an HTTP POST. Pairing
-        // material is the one payload where that is a disclosure.
-        $this->app->bind(
-            Scanning::class,
-            // Built in a named method rather than here, because `make()` raises
-            // a checked exception and the analyser refuses one raised inside a
-            // closure. That is the same rule that put the container behind a
-            // method for the screen router, and it lands the same way.
-            $this->theScanner(...),
-        );
-
-        // The same handle again, and bound for the same reason. The app locks on
-        // backgrounding and asks again after a period the operator sets — both of which are decisions about *when*, made in
-        // `LockRule` on the native side where they can be tested without a
-        // handset. This is only how an answer becomes a Lock.
-        $this->app->bind(
-            DeviceAuth::class,
-            // By class, for the reason given above the `Notifier` binding.
-            PlatformAuth::class,
-        );
-    }
-
-    public function boot(): void
-    {
-        // Whose palette `bg-theme-*` resolves against, and — the half that was
-        // decided by luck until `nativephp/mobile-ui` arrived — that it is
-        // still ours after every other provider has had its turn.
-        // {@see TheTheme} carries the reasoning; it is a class rather than four
-        // lines here so that a test can plant a rival resolver and call it.
-        //
-        // `$this->app->booted()` rather than `$this->booted()`, which fires at
-        // the end of *this* provider's boot rather than everybody's, and differs
-        // only in the case that matters.
-        $this->app->booted(TheTheme::paint(...));
-
-        // `Route::native()`, replaced so that a screen is built through the
-        // container rather than with `new`. NativePHP's own router cannot give
-        // a screen a port, and a screen that reached the container itself would
-        // be the service location `A3` refuses — so the substitution happens
-        // here, where naming the container is what this directory is for.
-        //
-        // In `boot()` and after the macro it replaces, which the NativePHP
-        // package adds in its own boot. Provider order between two discovered
-        // packages is not something either of them decides, so this is asserted
-        // by `ScreenRoutesReplaceTheVendorsTest` rather than assumed.
-        //
-        // Handed *how to build a screen* rather than the container. A router
-        // holding a container could resolve anything, and the rule against a
-        // container parameter exists because that is what a class holding one
-        // eventually does.
-        // Which runloop, decided here because *whether there is a device* is a
-        // fact about this composition rather than about routing. A suite must
-        // never enter the real one: it blocks against the bridge, so a test
-        // that reached it would hang rather than fail.
-        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
-
-        new ScreenRoutes($this->screen(...), $runloop)->declare();
-
-        // The lock, kept over whatever screen is on view. The device wakes the
-        // app with an event that carries nothing when its lock stands again or
-        // opens, and {@see WhenTheLockMoves} reads the lock afresh; the device
-        // keeps its window covered until {@see TheLockIsOnTheGlass} says the
-        // lock screen has been published. After boot, where the dispatcher is
-        // the one every provider has registered with.
-        $this->app->booted($this->keepTheLock(...));
-
-        // Where the operator is, noted as each screen comes to the front, so the
-        // app opens there after the lock and a chosen stack opens on its tab.
-        $this->app->booted($this->noteWhereTheOperatorIs(...));
     }
 
     /**

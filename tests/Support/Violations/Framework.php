@@ -375,6 +375,31 @@ final readonly class Framework
                     }
                 }
                 PHP, 'A9 —'),
+
+            // The same work, moved into a method `register()` calls: it still
+            // runs at boot, before the first frame.
+            Fixture::analyser('A9', 'Plain/ProviderWorkingThroughAMethod.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use Illuminate\Support\ServiceProvider;
+
+                final class ProviderWorkingThroughAMethod extends ServiceProvider
+                {
+                    public function register(): void
+                    {
+                        $this->bindTheStores();
+                    }
+
+                    private function bindTheStores(): void
+                    {
+                        $warm = $this->app->make('something');
+                    }
+                }
+                PHP, 'A9 —'),
         ];
     }
 
