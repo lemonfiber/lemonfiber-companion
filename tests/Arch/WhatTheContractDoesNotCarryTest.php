@@ -404,6 +404,85 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'it from a path or a setting, which `N2-R14` refuses, so no screen says the stack is '
             . 'the operator\'s own.',
     ],
+    [
+        'requirement' => 'N17-R3',
+        'asks' => 'to show a message as delivered only where the stack confirms it, and an unconfirmed one as unconfirmed',
+        // Unnamed, because a delivery record could land on the alerts reading
+        // or on one of its own. `delivered` is free on this wire, and
+        // `confirmed` is spent on four envelopes already.
+        'envelope' => null,
+        'field' => 'delivered',
+        'shape' => null,
+        'raised' => 'The core sends an alert through `Channel`, whose one implementation is the screen '
+            . 'itself, and no envelope carries a back-end or a delivery: `AlertsEnvelope` carries the '
+            . 'preset, what it means and the exceptions an operator made, and nothing about where a '
+            . 'message went. So the app shows no message as sent or delivered, and says nothing of a '
+            . 'delivery it is never told the fate of. What closes this row is each delivery carried '
+            . 'with whether the back-end confirmed it.',
+    ],
+    [
+        'requirement' => 'N17-R4',
+        'asks' => 'to tell a back-end that is configured and has never delivered from one that is delivering',
+        // Unnamed, for the row above's reason. A back-end's last delivery is
+        // what tells the two apart, and `last_delivered` is free.
+        'envelope' => null,
+        'field' => 'last_delivered',
+        'shape' => null,
+        'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. A back-end that never '
+            . 'delivered and one that is delivering cannot be told apart by an app that is told of '
+            . 'neither, and it does not guess either from the alert preset.',
+    ],
+    [
+        'requirement' => 'N17-R5',
+        'asks' => 'to show each back-end with what it is, where it delivers and whether the operator or the household chose it',
+        // Unnamed, for the row above's reason. The core calls a back-end a
+        // channel, and `channels` is free on this wire.
+        'envelope' => null,
+        'field' => 'channels',
+        'shape' => null,
+        'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. What a channel is '
+            . 'called is the name an operator configured it by, and nothing carries even that. The app '
+            . 'lists no back-end, and does not read one out of the settings listing, which would be '
+            . 'this app deciding which settings are a channel.',
+    ],
+    [
+        'requirement' => 'N17-R7',
+        'asks' => 'to state what leaves the device to use a hosted back-end, apart from the connections lemonfiber itself makes',
+        // Unnamed, for the row above's reason. Whether a channel is a hosted
+        // service is a fact about the channel, and `hosted` is free.
+        'envelope' => null,
+        'field' => 'hosted',
+        'shape' => null,
+        'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. Nothing says which '
+            . 'channels are hosted services or what goes out to use one. The outbound reading lists the '
+            . 'connections lemonfiber makes, and no back-end is added to it here.',
+    ],
+    [
+        'requirement' => 'N17-R10',
+        'asks' => 'to show a delivery that failed with the reason the back-end gave, never as a generic failure to retry',
+        // Unnamed, for the row above's reason. The core's own word for a
+        // channel that would not take an alert is `Undelivered`, carrying the
+        // channel and its reason, and `undelivered` is free.
+        'envelope' => null,
+        'field' => 'undelivered',
+        'shape' => null,
+        'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. The core records a '
+            . 'refusal as `Undelivered`, the channel and the reason in its own words, and no envelope '
+            . 'carries it, so the app shows no failed delivery and offers no retry of one.',
+    ],
+    [
+        'requirement' => 'N17-R11',
+        'asks' => 'to tell back-ends or delivery records that could not be read from there being none',
+        // Named, and watched as a whole payload: the alerts reading is where an
+        // operator's alerting is read, and back-ends or deliveries arriving
+        // there, under any name, change the shape recorded here.
+        'envelope' => 'AlertsEnvelope',
+        'field' => null,
+        'shape' => 'array{changed: bool, exceptions: list<array{kind: string, wanted: bool}>, means: string, preset: string, rehearsed: bool}',
+        'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. With no back-end or '
+            . 'delivery carried, there is neither a list to read nor one to fail to read; the app draws '
+            . 'no list of either, empty or otherwise.',
+    ],
 ];
 
 /**

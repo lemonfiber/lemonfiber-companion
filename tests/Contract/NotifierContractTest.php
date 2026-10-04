@@ -234,6 +234,22 @@ it('names the stack when the device is not locked', function (): void {
         ->and($shown[0]['body'])->toContain('backup.finished');
 });
 
+it('puts nothing on a notification but the catalogue\'s words, the stack it is about and the core\'s code', function (): void {
+    // Exactly the catalogue's lines, filled with those two and nothing else, so
+    // a credential, a member's name or a requested title has nowhere to appear:
+    // a notification carrying any of them would read differently from these.
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $words = Catalogue::words();
+
+    overAHandset($centre)->show(somethingWorthSaying());
+    overAHandset($centre)->show(somethingWorthSaying()->whileLocked());
+
+    expect(array_map(static fn(array $shown): array => [$shown['title'], $shown['body']], $centre->shown()))->toBe([
+        [$words->for('notifications.plain.title', ['stack' => 'the-loft']), $words->for('notifications.plain.body', ['code' => 'backup.finished'])],
+        [$words->for('notifications.guarded.title'), $words->for('notifications.guarded.body')],
+    ]);
+});
+
 it('tells a device that would not show it from one that was not allowed to', function (): void {
     // The distinction a boolean could not carry, and the reason this whole
     // capability is ours. A channel the operator switched off and a platform

@@ -79,6 +79,26 @@ final readonly class Manifests
     ];
 
     /**
+     * The packages that reach a push service, or are one.
+     *
+     * A push payload reaches a handset through Google's or Apple's relay, or
+     * through a hosted service between the two, and a package here is how an
+     * app comes to hold a push identity of its own. Named for the reason the
+     * list above is: a word would not separate them from what this app keeps.
+     */
+    private const array REACHES_A_PUSH_SERVICE = [
+        'nativephp/mobile-firebase',
+        'kreait/firebase-php', 'kreait/laravel-firebase',
+        'laravel-notification-channels/fcm', 'laravel-notification-channels/apn',
+        'laravel-notification-channels/webpush', 'laravel-notification-channels/onesignal',
+        'minishlink/web-push',
+        'edujugon/push-notification',
+        'pusher/pusher-push-notifications',
+        'onesignal/onesignal-php-api', 'berkayk/onesignal-laravel',
+        'expo/expo-server-sdk-php',
+    ];
+
+    /**
      * The sentence iOS shows before it will let the app reach the local network.
      *
      * Read from this application's own plugin manifest, because that is where it
@@ -133,6 +153,16 @@ final readonly class Manifests
     public static function reportingToAThirdParty(): array
     {
         return self::requiring(self::REPORTS_TO_A_THIRD_PARTY);
+    }
+
+    /**
+     * Every package required here that reaches a push service, and which manifest requires it.
+     *
+     * @return list<string> `package — manifest`, one per hit
+     */
+    public static function reachingAPushService(): array
+    {
+        return self::requiring(self::REACHES_A_PUSH_SERVICE);
     }
 
     /**

@@ -66,6 +66,25 @@ and never from an event.
 | `N4-R11` | The app raises no alerts of its own | every notification originates in the core's |
 | `N4-R15` | Not shown for a stack no longer configured | `Notification` carries the `StackId` that lets it be asked |
 
+## Where a message goes
+
+A message reaches the operator through the back-end they configured on the
+stack. The app carries what the core decided and composes nothing of its own.
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N17-R1` | The app operates, requires and ships no notification service, relay or push identity of its own | `Notifier` is local: `PlatformNotifier` composes a notification on the handset through lemonfiber's own bridge, and nothing is pushed. No manifest requires a package that reaches a push service, nothing the app ships names the platform's push facade or its enrolment, the switch NativePHP's build keeps the push entitlement by is off and no Firebase file is there for it to copy, and the bridge's manifest and native code declare no push dependency, background mode or registration (`NothingButTheStackDeliversAMessageTest`) |
+| `N17-R2` | Where the app subscribes to a back-end, it says what that can and cannot deliver while the app is not running, and implies no delivery it cannot provide | The app subscribes to no back-end: the only connection it opens is the SDK's, to its own stack (`NothingOpensAConnectionByHandTest`), and nothing takes a `Notifier` or asks for the notification permission, so nothing promises a delivery (`NothingButTheStackDeliversAMessageTest`). That test fails the day something does, which is when this sentence is owed |
+| `N17-R6` | The app never sets or changes a back-end's credential, and never renders its value | No verb this app asks a stack for writes a credential, and `config-set` reaches only a setting the stack showed a value for (`TheAppOpensOnlyTheseDoorsTest`). A withheld setting is drawn as the stack's own note, with no control beside it (`SeeingWhatAStackIsSetToTest`). No back-end is drawn at all, which `WhatTheContractDoesNotCarryTest` holds under `N17-R5` |
+| `N17-R8` | A notification carries no credential, no household member's name and no requested title | `Notification` holds the stack it is about, the core's decision and whether it is guarded, and nothing else (`NotificationTest`). What `PlatformNotifier` shows is exactly the catalogue's two lines, filled with the stack and the core's code, or the guarded pair with neither (`NotifierContractTest`) |
+| `N17-R9` | The app raises no notification of its own; every one originates in the core's decisions | `Notification::fromTheCore()` is the only way to make one and takes a `WhatTheCoreDecided` and no text (`NotificationTest`). Nothing outside the module that reads the stack calls `WhatTheCoreDecided::toSay()` or `Notification::fromTheCore()` (`EveryNotificationIsTheCoresTest`), and the analyser refuses `Dialog::alert()` |
+
+`N17-R3`, `N17-R4`, `N17-R5`, `N17-R7`, `N17-R10` and `N17-R11` wait on the
+contract rather than on this app. The core sends an alert through `Channel`,
+whose one implementation is the screen itself, and no envelope carries a
+back-end, a delivery or a refusal of one. `WhatTheContractDoesNotCarryTest`
+holds a row for each, and `N1-R17` is why none is worked out here.
+
 ## What never leaves
 
 | Requirement | What it asks | What keeps it |
