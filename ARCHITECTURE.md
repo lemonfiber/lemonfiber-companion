@@ -166,6 +166,7 @@ honestly is better than pretending.
 | A10 | A table belongs to one owner: it carries its owner's prefix, is created only in that capability's own `database/migrations`, and is named in no other module's code | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and the composition root |
 | A11 | A store is reached through its port: nothing outside a capability's `src/Internal/Store`, in that module or any other, names a class in it, and only the composition root binds it | arch: `AStoreIsReachedThroughItsPortTest`, over every module's sources and the rest of `bootstrap/Composition`, with names resolved as PHP resolves them |
 | A12 | A store takes and gives only what is sealed: every public method of a store class takes a `SealedPayload`, a `SealedStack` or the `Shape` and `Instant` beside them, and answers with a value built from those or a count | arch: `AStoreSeesNothingItCouldReadTest`, by reflection over every store class; test: `WhatThePhoneKeepsIsUnreadableOnDiskTest`, which keeps a summary and reads the raw database file for it |
+| A13 | What the phone keeps is put in the clear to be sealed only by its owner's writer, and no writer is handed an offer, an agreement, a command's idempotency key, a credential, a session or pairing material | arch: `WhatThePhoneMayKeepTest`, every call to `Unsealed::of` in a source tree resolved as PHP resolves it and read against its register of `*AsKept` writers and the seal, which hands back what it opened; and every type a writer is handed walked by reflection to the types it holds, docblocks included |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
 so every test that touches one is an integration test wearing a unit test's
@@ -189,6 +190,17 @@ module names one: an owner that needs another's data asks that owner's
 capability, never its rows. A store is recognised by where it is rather than by
 a list here, so one written tomorrow is walled the moment its first class
 exists.
+
+**Why A13 is a wall beside them.** The four walls keep a store from reading
+what it is handed, and none of them says what that may be. Everything kept is
+an `Unsealed` before it is sealed, so the classes that make one are the whole
+of the way into the phone's storage, and they are few enough to name: each
+owner's `*AsKept`, which writes what it keeps in a shape it reads back. A
+writer handed a session, an offer or the key of a command the stack may not
+have received is one line from writing it down, and the phone would then keep
+a credential beside the readings or send an agreement again on the next
+launch. So a writer's inputs are walked to every type they hold, and none of
+those may be one.
 
 **Why A7 costs something and is worth it.** Giving up `Collection` in domain code
 is a real loss of convenience. What it buys is a domain that does not move when
