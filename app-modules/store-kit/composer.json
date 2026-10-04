@@ -1,18 +1,17 @@
 {
-    "name": "modules/updates",
-    "description": "Versions, applying one, and undoing it.",
+    "name": "modules/store-kit",
+    "description": "What every capability's store of readings does over its own table.",
     "license": "LicenseRef-Hippocratic-3.0",
     "type": "library",
     "require": {
         "php": "^8.5",
         "illuminate/database": "^13.17",
-        "modules/kernel": "dev-main",
-        "modules/store-kit": "dev-main"
+        "modules/kernel": "dev-main"
     },
     "autoload": {
         "psr-4": {
-            "Modules\\Updates\\": "src/",
-            "Modules\\Updates\\Tests\\": "tests/"
+            "Modules\\StoreKit\\": "src/",
+            "Modules\\StoreKit\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -21,7 +20,7 @@
                 "coverage": 100,
                 "mutation": 100
             },
-            "kind": "capability"
+            "kind": "store-kit"
         }
     }
 }

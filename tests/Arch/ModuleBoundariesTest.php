@@ -48,6 +48,9 @@ it('has modules to check', function () use ($modules): void {
 /** The vendor a capability's store may name, and nothing else in a capability may. */
 const WHAT_A_STORE_MAY_NAME = 'Illuminate';
 
+/** The one part of that vendor a store kit may name. */
+const WHAT_A_STORE_KIT_MAY_NAME = 'Illuminate\Database';
+
 /**
  * The values whose whole purpose is that they change, each with the reason.
  *
@@ -246,6 +249,10 @@ function reachesOutside(Module $module, array $forbidden): array
  * the module reaches it. Everything else its kind forbids — the platform, the
  * SDK, a transport — stays forbidden there too.
  *
+ * A store kit is read apart more narrowly: it names the database and no other
+ * part of the framework, so a name under `Illuminate\Database` is passed over
+ * and every other `Illuminate` name is refused as it is in a capability.
+ *
  * @return list<string>
  */
 function reachesOutsideItsKind(Module $module): array
@@ -253,7 +260,9 @@ function reachesOutsideItsKind(Module $module): array
     $offenders = [];
 
     foreach ($module->classes() as $file) {
-        $names = Imports::of($file);
+        $names = $module->kind === Kind::StoreKit
+            ? array_values(array_filter(Imports::of($file), static fn(string $name): bool => ! Imports::anyUnder([$name], WHAT_A_STORE_KIT_MAY_NAME)))
+            : Imports::of($file);
         $forbidden = Stores::holds($module, $file)
             ? array_values(array_diff($module->kind->forbiddenVendors(), [WHAT_A_STORE_MAY_NAME]))
             : $module->kind->forbiddenVendors();

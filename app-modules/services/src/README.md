@@ -24,7 +24,7 @@ this module declares in `Internal` and answers in `Internal/Store`:
 
 | | |
 |---|---|
-| `ListingsInTheDatabase` | `ListingsKept`, over the app's own database: one table, `services_readings`, created by this module's migration in `database/migrations` |
+| `ListingsInTheDatabase` | `ListingsKept`, over the app's own database: one table, `services_readings`, created by this module's migration in `database/migrations`, and queried through `store-kit`'s `ATableOfReadings` |
 
 A row holds a stack's keyed hash, the shape the listing was written in, when it
 was read, and the listing as this module sealed it. Nothing in this module but

@@ -38,6 +38,7 @@
         "modules/seal": "dev-main",
         "modules/services": "dev-main",
         "modules/stacks": "dev-main",
+        "modules/store-kit": "dev-main",
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
         "modules/wayfinding": "dev-main",

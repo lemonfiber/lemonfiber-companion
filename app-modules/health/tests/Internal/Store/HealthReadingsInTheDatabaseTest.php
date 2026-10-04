@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Schema;
 use function it;
 
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
-use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
@@ -27,8 +26,9 @@ use function uses;
 // tested over the database the phone migrates, with the migration it ships.
 uses(TestCase::class);
 
-// What the contract cannot ask of the fake: the table the migration makes, the
-// row a reading is written as, and a row holding what this class never writes.
+// What the contract cannot ask of the fake: the table the migration makes, and
+// the row a reading is written as in it. How a row this class never writes is
+// read is `store-kit`'s, and tested there.
 
 /** The stack a row here belongs to, as the store names it. */
 function theStackTheRowIsFor(): SealedStack
@@ -88,28 +88,3 @@ it('writes a reading as the stack\'s hash, its shape, when it was read and the p
         'payload' => 'sealed-summary',
     ]]);
 });
-
-it('answers a row holding what it never writes as a reading it cannot read', function (string $column, int|string $holding): void {
-    $database = AKeptDatabase::migrated();
-
-    $database->table('health_readings')->insert([
-        ...[
-            'stack_hash' => theStackTheRowIsFor()->forTheStore(),
-            'shape' => 1,
-            'read_at' => 1_790_000_000,
-            'payload' => 'sealed-summary',
-        ],
-        $column => $holding,
-    ]);
-
-    expect(new HealthReadingsInTheDatabase($database)->newest(theStackTheRowIsFor())->either(
-        found: static fn(): Code => Code::of('found'),
-        none: static fn(): Code => Code::of('none'),
-        unreadable: static fn(): Code => Code::of('unreadable'),
-    )->shown())->toBe('unreadable');
-})->with([
-    'a shape no build writes' => ['shape', 99],
-    'a shape that is not a number' => ['shape', 'one'],
-    'a moment that is not a number' => ['read_at', 'yesterday'],
-    'a payload that is not text' => ['payload', 7],
-]);

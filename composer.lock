@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb896f0b0fbd62f425141804e67bbdf4",
+    "content-hash": "3ab997778c7366bed4863adb010f8dbd",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3524,11 +3524,12 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/health",
-                "reference": "7ff8c3607dd5cec7cceee836438bc81e1f8eaef7"
+                "reference": "bd3cc18f810ac8a55df721c39c2137a79fab2257"
             },
             "require": {
                 "illuminate/database": "^13.17",
                 "modules/kernel": "dev-main",
+                "modules/store-kit": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3812,11 +3813,12 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/services",
-                "reference": "009e22e8983f05922b7194f31fa0766f228f36c9"
+                "reference": "497986083b4bf975fb18cd48d03af7a06e5a1099"
             },
             "require": {
                 "illuminate/database": "^13.17",
                 "modules/kernel": "dev-main",
+                "modules/store-kit": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3882,16 +3884,55 @@
             }
         },
         {
+            "name": "modules/store-kit",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/store-kit",
+                "reference": "373b0cff7c8055b53d5b0b794614aa1c34e9f195"
+            },
+            "require": {
+                "illuminate/database": "^13.17",
+                "modules/kernel": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "store-kit"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\StoreKit\\": "src/",
+                    "Modules\\StoreKit\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "What every capability's store of readings does over its own table.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "modules/updates",
             "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/updates",
-                "reference": "a54d72feee1dc5ef613277a0c63d6e70538de064"
+                "reference": "1d0b69ba6e4f20086af9387e7c39246452d72d5b"
             },
             "require": {
                 "illuminate/database": "^13.17",
                 "modules/kernel": "dev-main",
+                "modules/store-kit": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -14835,6 +14876,7 @@
         "modules/seal": 20,
         "modules/services": 20,
         "modules/stacks": 20,
+        "modules/store-kit": 20,
         "modules/updates": 20,
         "modules/vault": 20,
         "modules/wayfinding": 20,
