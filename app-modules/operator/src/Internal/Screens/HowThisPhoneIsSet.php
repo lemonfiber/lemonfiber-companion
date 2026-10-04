@@ -8,8 +8,8 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
+use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
-use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\DaysAsked;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\ItsContent;
@@ -72,7 +72,7 @@ final class HowThisPhoneIsSet extends NativeComponent
     public function __construct(
         private readonly LockingAfter $locking,
         private readonly SecureStorage $storage,
-        private readonly KeepingTheLastReading $readings,
+        private readonly LettingGoOfOldReadings $readings,
         private readonly ClearingWhatThePhoneKeeps $clearing,
         private readonly Stacks $stacks,
     ) {}

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\Health\Internal;
 
 use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\ForgetsOldReadings;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\NewestReading;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
@@ -36,17 +38,14 @@ use Modules\Kernel\Api\Shape;
  * not kept costs the next opening its first frame, which a screen already
  * draws for a stack it has never heard from.
  */
-interface HealthReadingsKept extends ForgetsEverythingKept
+interface HealthReadingsKept extends ForgetsEverythingKept, ForgetsOldReadings
 {
     /** Keep this reading as the newest for this stack, replacing the one before it. */
     public function keep(SealedStack $stack, SealedPayload $payload, Shape $shape, Instant $readAt): Noted;
 
     /** The newest reading kept for this stack, or that there is none. */
-    public function newest(SealedStack $stack): NewestHealthReading;
+    public function newest(SealedStack $stack): NewestReading;
 
     /** Let go of the reading kept for this stack. */
     public function forget(SealedStack $stack): Forgotten;
-
-    /** Let go of every reading read before this moment; one read at it is kept. */
-    public function forgetOlderThan(Instant $before): Forgotten;
 }

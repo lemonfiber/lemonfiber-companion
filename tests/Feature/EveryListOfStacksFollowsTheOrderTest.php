@@ -83,6 +83,7 @@ it('lists the stacks on the phone in the order they were put in', function (): v
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        WhatThePhoneKeeps::nothingTooOld(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),

@@ -55,9 +55,28 @@
         </x-design::notice>
     @endif
 
-    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    {{-- Drawn and not usable while the reading drawn is one the phone kept:
+         an update is agreed to only against a fresh one. --}}
+    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    @if ($this->answer()->waitsForTheStack)
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
     <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
 @else
+    @if ($this->answer()->waitsForTheStack)
+        {{-- What the phone kept, said for what it is: how long ago it was
+             read, and above it what stopped the reading asked for now. --}}
+        @if (! $this->answer()->askedNow->cameBack())
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->answer()->askedNow"
+                ask-again=""
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @endif
+        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
+
     {{-- The answer, first: whether any service would move onto the version
          its pins name — the stack's own word, not one worked out here from
          two version strings. Where one would, the answer is how many are
@@ -90,7 +109,13 @@
              its build pins, and the confirmation names which services. --}}
         <x-design::card>
             <x-design::body>{{ trans_choice('updates.would_change', $this->answer()->offer->changing()->count()) }}</x-design::body>
-            <x-design::action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" />
+            {{-- Drawn whether or not it can be used, so a kept reading never
+                 hides what a fresh one would offer; beside it, until then,
+                 why it waits and how old the reading is. --}}
+            <x-design::action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" :disabled="$this->answer()->waitsForTheStack" />
+            @if ($this->answer()->waitsForTheStack)
+                <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+            @endif
         </x-design::card>
     @endif
 
@@ -172,11 +197,17 @@
     <x-design::heading>{{ __('updates.last_update') }}</x-design::heading>
 
     @if (! $this->lastUpdate()->went->cameBack())
-        <x-operator::what-stood-in-the-way
-            :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->lastUpdate()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
-        />
+        {{-- Asking again is the column's own, below. Where the reading asked
+             for now did not come back either, what stands in the way is said
+             once, above, with its remedy, rather than twice. --}}
+        @if ($this->answer()->askedNow->cameBack())
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->lastUpdate()->went"
+                ask-again=""
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @endif
         <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
     @elseif ($this->lastUpdate()->isWorking)
         <x-design::standing

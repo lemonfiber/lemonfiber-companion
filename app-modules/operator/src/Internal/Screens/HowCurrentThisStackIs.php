@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
@@ -24,12 +25,15 @@ use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
+use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -55,6 +59,13 @@ use function view;
  * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
  * wherever the operator is. Taking what the stream delivered sends nothing to
  * the stack.
+ *
+ * **It opens on what the phone kept, and acts only on a fresh reading.** The
+ * first frame draws the reading kept from an earlier session, with how long
+ * ago it was read, before the stack is asked anything; the fresh reading
+ * replaces it and is kept in its place. Until one arrives — and where the
+ * stack cannot be reached, beside what stood in the way — taking the update is
+ * drawn and cannot be used, and refused here as well as on the glass.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
@@ -103,6 +114,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         protected readonly Noticing $noticing,
+        private readonly KeepingTheLastUpkeep $kept,
     ) {}
 
     /**
@@ -114,6 +126,18 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     public function stack(): Stack
     {
         return $this->around->stackOn($this);
+    }
+
+    /**
+     * Open the stack's stream and ask the stack, behind the first frame.
+     *
+     * The first frame drew what the phone kept; what the stack says now
+     * replaces it.
+     */
+    public function mount(): void
+    {
+        $this->listen();
+        $this->answered = $this->ask();
     }
 
     /**
@@ -153,16 +177,19 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
      * Every update asks. There is no unconfirmed arm here the way there is for
      * a start, because there is no update that takes nothing away: it stops
      * services, and which ones is the whole of what the confirmation says.
+     *
+     * A reading the phone kept offers nothing yet: the control is drawn and
+     * cannot be used, and a tap that reaches here anyway is refused.
      */
     public function wouldYouLike(): void
     {
-        $offer = $this->answer()->offer;
+        $answer = $this->answer();
 
-        if (! $offer instanceof TakingAnUpdate) {
+        if ($answer->waitsForTheStack || ! $answer->offer instanceof TakingAnUpdate) {
             return;
         }
 
-        $this->asking = $offer;
+        $this->asking = $answer->offer;
     }
 
     /**
@@ -171,12 +198,15 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
      * Forgetting rather than re-reading here, so the next accessor asks — the
      * listing after an update is taken is a different listing, and a screen
      * that kept the old one would show an evening that has already happened.
+     *
+     * Refused while the reading drawn is one the phone kept: an update is
+     * agreed to only against a fresh one.
      */
     public function agree(): void
     {
         $taking = $this->asking;
 
-        if (! $taking instanceof TakingAnUpdate) {
+        if ($this->answer()->waitsForTheStack || ! $taking instanceof TakingAnUpdate) {
             return;
         }
 
@@ -239,6 +269,25 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     }
 
     /**
+     * The first frame: the reading the phone kept, drawn as the screen draws
+     * any, with its age and taking the update waiting.
+     *
+     * Held as the answer for this frame alone; {@see mount()} asks behind it.
+     * Only where nothing was kept is the frame the platform's indicator.
+     */
+    protected function placeholder(): Element|View
+    {
+        return $this->kept->lastKept($this->stack()->id())->either(
+            kept: function (Upkeep $upkeep, Instant $readAt): View {
+                $this->answered = new HowUpkeepReads()->kept($upkeep, $readAt, $this->listening->clock->now(), HowTheReadingWent::itCameBack());
+
+                return view('operator::how-current-this-stack-is');
+            },
+            nothing: fn(): Element|View => parent::placeholder(),
+        );
+    }
+
+    /**
      * Resume the session, ask the stack, and flatten what came back.
      *
      * Split from {@see answer()} because the two are different questions — when
@@ -251,7 +300,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheUpkeepTurnedOutToBe => $this->asked($stack, $session),
-            notHeld: static fn(): WhatTheUpkeepTurnedOutToBe => new HowUpkeepReads()->signedOut(),
+            notHeld: fn(): WhatTheUpkeepTurnedOutToBe => $this->besideWhatWasKept(new HowUpkeepReads()->signedOut()),
         );
     }
 
@@ -259,13 +308,33 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     private function asked(Stack $stack, Session $session): WhatTheUpkeepTurnedOutToBe
     {
         return $this->keeping->standing($stack, $session)->either(
-            stands: static fn(Upkeep $upkeep): WhatTheUpkeepTurnedOutToBe
-                => new HowUpkeepReads()->standing($upkeep),
+            stands: function (Upkeep $upkeep) use ($stack): WhatTheUpkeepTurnedOutToBe {
+                $this->kept->keep($stack->id(), $upkeep, $this->listening->clock->now());
+
+                return new HowUpkeepReads()->standing($upkeep);
+            },
             met: function (Obstacle $why) use ($stack): WhatTheUpkeepTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return new HowUpkeepReads()->met($why);
+                return $this->besideWhatWasKept(new HowUpkeepReads()->met($why));
             },
+        );
+    }
+
+    /**
+     * A reading that did not come back, drawn beside the one the phone kept.
+     *
+     * No fresh reading arrived, so the kept one still stands, with its age and
+     * every action on it waiting; only where nothing was kept is what stood in
+     * the way the whole screen.
+     */
+    private function besideWhatWasKept(WhatTheUpkeepTurnedOutToBe $unread): WhatTheUpkeepTurnedOutToBe
+    {
+        $now = $this->listening->clock->now();
+
+        return $this->kept->lastKept($this->stack()->id())->either(
+            kept: static fn(Upkeep $upkeep, Instant $readAt): WhatTheUpkeepTurnedOutToBe => new HowUpkeepReads()->kept($upkeep, $readAt, $now, $unread->askedNow),
+            nothing: static fn(): WhatTheUpkeepTurnedOutToBe => $unread,
         );
     }
 }

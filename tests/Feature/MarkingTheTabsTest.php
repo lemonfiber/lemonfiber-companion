@@ -46,6 +46,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // A tab holding something new carries a mark: the count, drawn as text in the
 // badge, and a sentence a screen reader says with the tab's name. The newest of
@@ -122,7 +123,7 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
     $screen = match ($tab) {
         TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
         TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
-        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing, WhatThePhoneKeeps::noUpkeepYet()),
         TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
     };
     $screen->setParams(['stack' => $stack->id()->stored()]);

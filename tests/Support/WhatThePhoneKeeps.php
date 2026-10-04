@@ -6,18 +6,20 @@ namespace Tests\Support;
 
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
+use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
+use Modules\Updates\Api\KeepingTheLastUpkeep;
 
 use function str_repeat;
 
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\RemovalsUnderWayInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -35,13 +37,25 @@ final readonly class WhatThePhoneKeeps
     /** Deciding what is kept of a stack's health, with nothing kept yet. */
     public static function nothingYet(): KeepingTheLastReading
     {
-        return new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
+        return new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty());
+    }
+
+    /** Deciding what is kept of where a stack stands on being up to date, with nothing kept yet. */
+    public static function noUpkeepYet(): KeepingTheLastUpkeep
+    {
+        return new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty());
+    }
+
+    /** Letting go of readings older than they are kept for, with none kept to let go of. */
+    public static function nothingTooOld(): LettingGoOfOldReadings
+    {
+        return new LettingGoOfOldReadings(ReadingsKeptForInMemory::standard(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)));
     }
 
     /** Clearing what the phone kept on opening, with nothing kept to clear. */
     public static function nothingToClear(): ClearingWhatCannotBeRead
     {
-        return new ClearingWhatCannotBeRead(ASealInMemory::working(), HealthReadingsInMemory::empty());
+        return new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty());
     }
 
     /** Clearing what the phone kept on opening, where its key has gone since the launch before and a word was kept. */

@@ -11,11 +11,13 @@ use function count;
 use Countable;
 
 use function explode;
+use function implode;
 
 use IteratorAggregate;
 
 use function mb_strlen;
 use function mb_substr;
+use function sprintf;
 use function str_starts_with;
 
 use Traversable;
@@ -72,6 +74,23 @@ final readonly class AStackEdit implements Countable, IteratorAggregate
     public function path(): string
     {
         return $this->path;
+    }
+
+    /**
+     * The diff as the stack marks it, which {@see at()} reads back to the same lines.
+     *
+     * Written with the marks this class reads, so what the phone keeps of an
+     * edit is read by the one reading the stack's own diff goes through.
+     */
+    public function diff(): string
+    {
+        $marked = [];
+
+        foreach ($this->lines as $line) {
+            $marked[] = sprintf('%s%s', $line->isTheirs() ? self::THEIRS : self::LEMONFIBERS, $line->text());
+        }
+
+        return implode("\n", $marked);
     }
 
     /** @return Traversable<int, ALineOfADiff> */

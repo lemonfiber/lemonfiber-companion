@@ -63,6 +63,7 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\ForgetsOldReadings;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
@@ -181,6 +182,9 @@ use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Sdk\Api\Wirers;
 use Modules\Seal\Api\EncrypterSeal;
+use Modules\Updates\Api\KeepingTheLastUpkeep;
+use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
+use Modules\Updates\Internal\UpkeepReadingsKept;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
@@ -215,6 +219,9 @@ final class CompositionRoot extends ServiceProvider
 
     /** The tag every keeper of one stack is registered under. */
     private const string WHAT_IS_KEPT_OF_A_STACK = 'what-is-kept-of-a-stack';
+
+    /** The tag every store of readings is registered under. */
+    private const string EVERY_STORE_OF_READINGS = 'every-store-of-readings';
 
     public function register(): void
     {
@@ -407,6 +414,11 @@ final class CompositionRoot extends ServiceProvider
         // open.
         $this->app->bind(HealthReadingsKept::class, HealthReadingsInTheDatabase::class);
 
+        // The newest reading of where each stack stands on being up to date,
+        // `updates`'s own port and the store walled inside it, bound as the
+        // health readings are and for their reasons.
+        $this->app->bind(UpkeepReadingsKept::class, UpkeepReadingsInTheDatabase::class);
+
         // `connection`'s settings — how long the app may be away before the
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
@@ -416,9 +428,18 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(NewsKept::class, NewsInTheDatabase::class);
 
         // How long readings are kept is one of the phone's settings, kept in
-        // `connection`'s row beside the lock's time away; `health` asks for it
-        // through the kernel.
+        // `connection`'s row beside the lock's time away, and asked for through
+        // the kernel by what lets go of readings older than it.
         $this->app->bind(KeepsReadingsFor::class, KeepingReadingsFor::class);
+
+        // Every store of readings, registered under one tag and asked as one
+        // to let go of what is older than readings are kept for. A kind of
+        // reading is let go of for its age by adding its store here.
+        $this->app->tag([HealthReadingsKept::class, UpkeepReadingsKept::class], self::EVERY_STORE_OF_READINGS);
+        $this->app->when(EveryStoreOfReadings::class)
+            ->needs(ForgetsOldReadings::class)
+            ->giveTagged(self::EVERY_STORE_OF_READINGS);
+        $this->app->bind(ForgetsOldReadings::class, EveryStoreOfReadings::class);
 
         // Every store of what the phone keeps, registered under one tag and
         // cleared together where the seal's key had to be made afresh: what
@@ -426,7 +447,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, SettingsKept::class, NewsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, SettingsKept::class, NewsKept::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -439,7 +460,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

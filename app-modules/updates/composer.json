@@ -5,6 +5,7 @@
     "type": "library",
     "require": {
         "php": "^8.5",
+        "illuminate/database": "^13.17",
         "modules/kernel": "dev-main"
     },
     "autoload": {

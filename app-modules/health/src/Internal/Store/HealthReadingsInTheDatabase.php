@@ -11,9 +11,9 @@ use function is_int;
 use function is_string;
 
 use Modules\Health\Internal\HealthReadingsKept;
-use Modules\Health\Internal\NewestHealthReading;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\NewestReading;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
@@ -56,12 +56,12 @@ final readonly class HealthReadingsInTheDatabase implements HealthReadingsKept
         return Noted::downAt($readAt);
     }
 
-    public function newest(SealedStack $stack): NewestHealthReading
+    public function newest(SealedStack $stack): NewestReading
     {
         try {
             return $this->asTheNewest($this->theRowOf($stack));
         } catch (QueryException) {
-            return NewestHealthReading::none();
+            return NewestReading::none();
         }
     }
 
@@ -142,18 +142,18 @@ final readonly class HealthReadingsInTheDatabase implements HealthReadingsKept
      * wrote. Both are answered as a reading that cannot be read rather than
      * read: what to do with one is `health`'s to decide.
      */
-    private function asTheNewest(?stdClass $row): NewestHealthReading
+    private function asTheNewest(?stdClass $row): NewestReading
     {
         if (! $row instanceof stdClass) {
-            return NewestHealthReading::none();
+            return NewestReading::none();
         }
 
         $shape = is_int($row->shape) ? Shape::tryFrom($row->shape) : null;
 
         if (! $shape instanceof Shape || ! is_int($row->read_at) || ! is_string($row->payload)) {
-            return NewestHealthReading::thatThisBuildCannotRead();
+            return NewestReading::thatThisBuildCannotRead();
         }
 
-        return NewestHealthReading::found(SealedPayload::of($row->payload), $shape, Instant::atEpochSeconds($row->read_at));
+        return NewestReading::found(SealedPayload::of($row->payload), $shape, Instant::atEpochSeconds($row->read_at));
     }
 }

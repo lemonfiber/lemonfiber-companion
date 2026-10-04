@@ -2,28 +2,38 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\EveryStoreOfReadings;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
+use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\Opening;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheStackEdits;
+use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Tests\Support\ALockScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
@@ -36,7 +46,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -77,7 +87,7 @@ function theStackWhoseSummaryWasKept(): Stack
 /** What the phone kept of the attic's health, two hours before it was opened. */
 function whatTheAtticKept(): KeepingTheLastReading
 {
-    $keeping = new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
+    $keeping = new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty());
     $keeping->keep(
         theStackWhoseSummaryWasKept()->id(),
         TheHealthSummary::of(HowItStands::Broken, 1, 'The disk that holds the photos is full', WhatStoppedMoving::nothing()),
@@ -152,7 +162,7 @@ it('opens on the platform\'s indicator, and on nothing kept, where nothing was k
 });
 
 /** The launch screen, over a seal and a store in whatever state a test arranges. */
-function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading $keeping): YourStacks
+function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading $keeping, ?LettingGoOfOldReadings $readings = null): YourStacks
 {
     $stacks = StacksInMemory::holding(theStackWhoseSummaryWasKept());
 
@@ -165,6 +175,7 @@ function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading
         new Opening($stacks, ADeviceOnANetwork::connected()),
         $clearing,
         $keeping,
+        $readings ?? WhatThePhoneKeeps::nothingTooOld(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),
@@ -183,9 +194,9 @@ function aSealWhoseKeysHaveGone(): ASealInMemory
 }
 
 it('clears what the phone kept where its key has gone, and says so once', function (): void {
-    $store = HealthReadingsInMemory::empty();
+    $store = ReadingsInMemory::empty();
     $seal = aSealWhoseKeysHaveGone();
-    $keeping = new KeepingTheLastReading($seal, $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
+    $keeping = new KeepingTheLastReading($seal, $store);
     $store->holdsOneALaterBuildWrote($seal->stack(theStackWhoseSummaryWasKept()->id()));
 
     $launch = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
@@ -199,12 +210,12 @@ it('clears what the phone kept where its key has gone, and says so once', functi
 });
 
 it('touches nothing kept while the app is locked, and clears it once the lock is passed', function (): void {
-    $store = HealthReadingsInMemory::empty();
+    $store = ReadingsInMemory::empty();
     $seal = aSealWhoseKeysHaveGone();
     $attic = $seal->stack(theStackWhoseSummaryWasKept()->id());
     $store->holdsOneALaterBuildWrote($attic);
     $clearing = new ClearingWhatCannotBeRead($seal, $store);
-    $keeping = new KeepingTheLastReading($seal, $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
+    $keeping = new KeepingTheLastReading($seal, $store);
 
     // While the lock stands the navigation stack builds the lock screen in
     // place of the launch, and the lock screen reads nothing kept.
@@ -220,16 +231,28 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
         ->toContain(__('connection.saved_data_cleared'));
 });
 
-it('forgets on opening what was read longer ago than a reading is kept', function (): void {
-    $store = HealthReadingsInMemory::empty();
-    $keeping = new KeepingTheLastReading(ASealInMemory::working(), $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
-    $keeping->keep(
-        theStackWhoseSummaryWasKept()->id(),
-        TheHealthSummary::of(HowItStands::Broken, 0, '', WhatStoppedMoving::nothing()),
-        Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED - THIRTY_ONE_DAYS),
-    );
+it('forgets on opening every kind of reading read longer ago than a reading is kept', function (): void {
+    $health = ReadingsInMemory::empty();
+    $upkeep = ReadingsInMemory::empty();
+    $longAgo = Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED - THIRTY_ONE_DAYS);
+    $keeping = new KeepingTheLastReading(ASealInMemory::working(), $health);
+    $keeping->keep(theStackWhoseSummaryWasKept()->id(), TheHealthSummary::of(HowItStands::Broken, 0, '', WhatStoppedMoving::nothing()), $longAgo);
+    new KeepingTheLastUpkeep(ASealInMemory::working(), $upkeep)->keep(theStackWhoseSummaryWasKept()->id(), Upkeep::reported(
+        AgainstThePins::Current,
+        Releases::none(),
+        Services::none(),
+        Services::none(),
+        HowServicesTookIt::none(),
+        HowTheNotesStand::Current,
+        TheStackEdits::none(),
+    ), $longAgo);
 
-    WhatTheDeviceWouldDraw::by(theLaunchOver(WhatThePhoneKeeps::nothingToClear(), $keeping));
+    WhatTheDeviceWouldDraw::by(theLaunchOver(
+        WhatThePhoneKeeps::nothingToClear(),
+        $keeping,
+        new LettingGoOfOldReadings(ReadingsKeptForInMemory::standard(), new EveryStoreOfReadings($health, $upkeep), FrozenClock::at(Instant::atEpochSeconds(0))),
+    ));
 
-    expect($store->forgetEverything()->howMany())->toBe(0);
+    expect($health->forgetEverything()->howMany())->toBe(0)
+        ->and($upkeep->forgetEverything()->howMany())->toBe(0);
 });

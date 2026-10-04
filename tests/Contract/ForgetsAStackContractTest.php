@@ -25,6 +25,7 @@ use Modules\News\Api\KindOfNews;
 use Modules\News\Api\Noticing;
 use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
@@ -34,13 +35,13 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
-use Tests\Support\Fakes\ReadingsKeptForInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
+use Tests\Support\WhatIsKeptOfUpdates;
 
 // The ForgetsAStack contract, run against every keeper of a stack and against
 // all of them together: what it keeps for one stack goes, what it keeps for
@@ -72,7 +73,8 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake pairings' => StacksInMemory::working(),
         'the platform keychain' => new PlatformKeychain(APlatformStore::working()),
         'the fake keychain' => AKeychainInMemory::working(),
-        'the readings' => new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'the readings' => new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty()),
+        'the upkeep' => new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty()),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
@@ -114,6 +116,12 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
 
     if ($keeper instanceof KeepingTheLastReading) {
         $keeper->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1));
+
+        return;
+    }
+
+    if ($keeper instanceof KeepingTheLastUpkeep) {
+        $keeper->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1));
 
         return;
     }
@@ -170,7 +178,8 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform words' => new PlatformStandings(APlatformStore::refusing()),
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
-        'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
+        'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'news whose keys cannot be read' => whatNoticesNewsOver(ASealInMemory::thatWillNotOpen()),
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);

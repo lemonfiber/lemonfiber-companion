@@ -14,8 +14,11 @@
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
          leaving and returning, which is named separately as what a screen must
-         not rely on. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" :tap="$askAgain" />
+         not rely on. A screen that offers asking again in the column already
+         hands nothing here, so the column holds one. --}}
+    @if ($askAgain !== '')
+        <x-operator::action label="{{ __('health.ask_again') }}" :tap="$askAgain" />
+    @endif
 
     {{-- Beside asking again, where the remedy is a switch in the phone's
          settings: one tap to the switch rather than a hunt for it. --}}

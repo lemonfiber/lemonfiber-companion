@@ -102,4 +102,5 @@ return [
     'pair_again' => 'Opnieuw koppelen',
     'start_over' => 'Probeer opnieuw aan te melden',
     'saved_data_cleared' => 'Opgeslagen gegevens zijn gewist omdat ze niet meer te lezen waren. Je stacks blijven gekoppeld.',
+    'usable_once_the_stack_answers' => 'Te gebruiken zodra de stack antwoordt. Laatst gelezen :ago.',
 ];

@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
+use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\Opening;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatWasKeptAtOpening;
@@ -144,6 +145,7 @@ final class YourStacks extends NativeComponent
         private readonly Opening $opening,
         private readonly ClearingWhatCannotBeRead $clearing,
         private readonly KeepingTheLastReading $keeping,
+        private readonly LettingGoOfOldReadings $readings,
         private readonly Hearing $hearing,
         private readonly Capture $capture,
         private readonly RemovingAStack $removing,
@@ -463,7 +465,7 @@ final class YourStacks extends NativeComponent
         if (! $this->saved instanceof WhatWasKeptAtOpening) {
             $this->removing->finishWhatWasLeft();
             $this->saved = $this->clearing->onOpening();
-            $this->keeping->forgetTheOld($this->clock->now());
+            $this->readings->forgetTheOld($this->clock->now());
         }
 
         return $this->saved === WhatWasKeptAtOpening::Cleared;

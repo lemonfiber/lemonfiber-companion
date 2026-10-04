@@ -12,7 +12,9 @@ in to it.
 | `Opening` | What the app found when it opened |
 | `TheLock` | Whether the lock stands, waived where the store holds nothing it guards |
 | `ClearingWhatCannotBeRead`, `WhatWasKeptAtOpening` | Everything the phone kept, cleared on opening where the key that sealed it had gone |
+| `LettingGoOfOldReadings` | How long readings are kept, and every reading older than that let go of on opening and when the choice changes |
 
 It depends on `kernel` alone. The sign-in request is made by `Admissions` in
 `sdk`, through the `Admitting` port; what the phone kept is cleared through
-`ForgetsEverythingKept`, which every store implements.
+`ForgetsEverythingKept`, which every store implements, and readings too old to
+keep through `ForgetsOldReadings`, which every store of readings implements.

@@ -6,8 +6,8 @@ use Bootstrap\Composition\EveryStoreThePhoneKeeps;
 use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\KeepingReadingsFor;
+use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
-use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
@@ -35,7 +35,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
@@ -49,7 +49,7 @@ function thePhonesSettingsOver(
     ADeviceThatKnowsYou $device,
     ?ConnectionSettingsInMemory $kept = null,
     ?AKeychainInMemory $keychain = null,
-    ?KeepingTheLastReading $readings = null,
+    ?LettingGoOfOldReadings $readings = null,
     ?ForgetsEverythingKept $everything = null,
     ?Stacks $stacks = null,
 ): HowThisPhoneIsSet {
@@ -59,7 +59,7 @@ function thePhonesSettingsOver(
     return new HowThisPhoneIsSet(
         $locking,
         $keychain ?? AKeychainInMemory::working(),
-        $readings ?? WhatThePhoneKeeps::nothingYet(),
+        $readings ?? WhatThePhoneKeeps::nothingTooOld(),
         new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking),
         $stacks ?? StacksInMemory::working(),
     );
@@ -74,11 +74,11 @@ const WHEN_THE_SETTINGS_OPEN = 1_790_000_000;
  * How long they are kept is one of the phone's settings, so it is kept in
  * the settings row the lock's time away is kept in.
  *
- * @return array{KeepingTheLastReading, HealthReadingsInMemory, ConnectionSettingsInMemory}
+ * @return array{LettingGoOfOldReadings, ReadingsInMemory, ConnectionSettingsInMemory}
  */
 function readingsADayAndSixtyDaysOld(?ConnectionSettingsInMemory $settings = null): array
 {
-    $store = HealthReadingsInMemory::empty();
+    $store = ReadingsInMemory::empty();
     $settings ??= ConnectionSettingsInMemory::empty();
     $now = FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_SETTINGS_OPEN));
 
@@ -92,7 +92,7 @@ function readingsADayAndSixtyDaysOld(?ConnectionSettingsInMemory $settings = nul
     }
 
     return [
-        new KeepingTheLastReading(ASealInMemory::working(), $store, new KeepingReadingsFor(ASealInMemory::working(), $settings, $now), $now),
+        new LettingGoOfOldReadings(new KeepingReadingsFor(ASealInMemory::working(), $settings, $now), $store, $now),
         $store,
         $settings,
     ];

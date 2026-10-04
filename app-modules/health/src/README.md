@@ -20,7 +20,7 @@ And one decision about what the phone keeps of it between launches:
 
 | | |
 |---|---|
-| `KeepingTheLastReading` | The newest summary per stack, sealed before it is kept, handed back on opening with when it was read, and forgotten after thirty days or where it does not read |
+| `KeepingTheLastReading` | The newest summary per stack, sealed before it is kept, handed back on opening with when it was read, and let go of where it does not read |
 
 It depends on `kernel`, and on Laravel's database in its store alone. The
 report is read by `Questions` in `sdk`, and the repairs a stack offers are asked
@@ -34,5 +34,6 @@ and answers in `Internal/Store`:
 
 A row holds a stack's keyed hash, the shape the reading was written in, when it
 was read, and the reading as this module sealed it, so nothing in the table can
-be read without the seal's key. Nothing in this module but the store names the
+be read without the seal's key. Readings older than the operator chose are let
+go of from the store through `ForgetsOldReadings`, which the store implements. Nothing in this module but the store names the
 database, and nothing but the composition root names the store.

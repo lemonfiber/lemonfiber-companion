@@ -25,6 +25,10 @@ use function view;
  * nothing else to draw has {@see WhatStoppedTheReading}, which is this inside
  * {@see Content}. Content is a scroll view, so drawing that inside content
  * would put a scroll view inside a scroll view.
+ *
+ * **Asking again is the screen's to place.** It is drawn here unless the
+ * screen hands no method to ask with, which a screen does where its column
+ * already offers asking again: one action, one control.
  */
 final class WhatStoodInTheWay extends Component
 {
