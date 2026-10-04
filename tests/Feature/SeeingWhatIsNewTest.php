@@ -21,8 +21,10 @@ use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\News\Api\KindOfNews;
+use Modules\Operator\Internal\Presenters\HowWhatIsNewReads;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Tests\Support\APhoneLookingAtWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -151,6 +153,26 @@ it('shows one stack when asked, and every stack again for a stack it does not ho
     expect($narrowed)->toContain('Heat')
         ->and($narrowed)->not->toContain('Dune')
         ->and($every)->toContain('Heat', 'Dune');
+});
+
+it('opens on the stack a stack\'s menu handed it, and on every stack for one it does not hold', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $phone = new APhoneLookingAtWhatIsNew($home, $away);
+
+    $handed = $phone->opens();
+    $handed->setData([AScreenWithoutAStack::WHATS_NEW_SHOWS => $away->id()->stored()]);
+    $handed->mount();
+    $forgotten = $phone->opens();
+    $forgotten->setData([AScreenWithoutAStack::WHATS_NEW_SHOWS => 'a stack this phone does not hold']);
+    $forgotten->mount();
+    $nothing = $phone->opens();
+    $nothing->setData([AScreenWithoutAStack::WHATS_NEW_SHOWS => 7]);
+    $nothing->mount();
+
+    expect($handed->stackShown)->toBe($away->id()->stored())
+        ->and($forgotten->stackShown)->toBe(HowWhatIsNewReads::EVERYTHING)
+        ->and($nothing->stackShown)->toBe(HowWhatIsNewReads::EVERYTHING);
 });
 
 it('says a request it has no title for as a request', function (): void {

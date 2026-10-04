@@ -174,6 +174,17 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
+     * The tree a screen's side menu hands the device, whole: types, layouts and
+     * props, for what the words in it leave out.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function menuTree(NativeComponent $screen, Drawer $menu): array
+    {
+        return self::treeMadeBy($screen, static fn(): Element => TheWaysAround::drawnOn($screen, $menu));
+    }
+
+    /**
      * What the list of stacks draws on a screen about a stack: the name in the
      * top bar that opens it, then the sheet, which draws its rows only while it
      * is open.

@@ -1,7 +1,8 @@
 {{-- The side menu: the stack it is about and the way to another stack, then
      what follows from whose session this phone holds for it, then the stack's
      settings and the app's. A member's menu adds what the stack owes them; the
-     operator's adds what is new and the five groups, every item on every stack.
+     operator's adds what is new, counting how much is new here, and the five
+     groups, every item on every stack.
      Until a session says whose it is, nothing is added. --}}
 <native:column class="w-full gap-4 p-4">
     <x-design::title>{{ $stack->name()->shown() }}</x-design::title>
@@ -15,11 +16,14 @@
             ios-icon="arrow.left.arrow.right"
         />
 
+        {{-- What's new opens on this stack and counts how much is new here,
+             said with its label to a screen reader; nothing new, no count. --}}
         @if ($rows->whatIsNew)
             <x-design::row
                 :headline="__($whatsNew->said())"
-                :answers-to="__($whatsNew->said())"
-                :goes="$whatsNew->goes()"
+                :answers-to="$whatsNew->count() > 0 ? trans_choice('news.new_on_tab', $whatsNew->count(), ['tab' => __($whatsNew->said())]) : __($whatsNew->said())"
+                tap="openWhatsNew()"
+                :badge="$whatsNew->badge()"
                 :icon="$whatsNew->glyph()"
                 :ios-icon="$whatsNew->iosGlyph()"
             />

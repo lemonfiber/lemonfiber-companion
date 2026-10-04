@@ -10,11 +10,11 @@ use Modules\News\Api\KindOfNews;
 use Modules\News\Api\TheItems;
 
 /**
- * What a stack named as newest, as the items of the kinds a tab is marked for.
+ * What a stack named as newest, as the items of each kind.
  *
  * The event names an item by exactly what an item is named and ordered by: a
- * release by its version and a problem by its check and onset. Requests mark
- * no tab, so they are not made items here.
+ * release by its version, a request by its number, and a problem by its check
+ * and onset.
  */
 final readonly class TheNewestAsItems
 {
@@ -28,6 +28,18 @@ final readonly class TheNewestAsItems
         }
 
         return TheItems::of(KindOfNews::Update, ...$items);
+    }
+
+    /** The household's newest requests the stack named, as requests, highest number first. */
+    public static function requests(TheNewestNamed $newest): TheItems
+    {
+        $items = [];
+
+        foreach ($newest->requests() as $request) {
+            $items[] = AnItem::aRequest($request->number());
+        }
+
+        return TheItems::of(KindOfNews::Request, ...$items);
     }
 
     /** The checks the stack named as most recently found wrong, as problems, newest first. */

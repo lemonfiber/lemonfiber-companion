@@ -20,6 +20,7 @@ use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhichTab;
 use Modules\News\Api\AnItem;
+use Modules\News\Api\HowMuchIsNew;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
 use Modules\News\Api\Noticing;
@@ -198,12 +199,13 @@ it('says it may keep something of a stack where nothing can be sealed to look', 
 });
 
 /**
- * What a stack names as newest: these releases and problems, and a request numbered nine.
+ * What a stack names as newest: these releases, problems and requests, by default a request numbered nine.
  *
  * @param list<string>             $releases
  * @param list<array{string, int}> $problems each check with its onset in seconds
+ * @param list<int>                $requests
  */
-function theNewestAStackNames(array $releases, array $problems, bool $releasesRead = true): TheNewestNamed
+function theNewestAStackNames(array $releases, array $problems, bool $releasesRead = true, array $requests = [9]): TheNewestNamed
 {
     $named = [];
 
@@ -213,7 +215,7 @@ function theNewestAStackNames(array $releases, array $problems, bool $releasesRe
 
     return new TheNewestNamed(
         $releasesRead ? WhatTheStackListed::these(...array_map(AReleaseNamed::versioned(...), $releases)) : WhatTheStackListed::unread(),
-        WhatTheStackListed::these(RequestId::numbered(9)),
+        WhatTheStackListed::these(...array_map(RequestId::numbered(...), $requests)),
         WhatTheStackListed::these(...$named),
     );
 }
@@ -225,7 +227,7 @@ function theNewestAStackNames(array $releases, array $problems, bool $releasesRe
  */
 function howEachTabIsMarked(Noticing $noticing, TheNewestNamed $newest): array
 {
-    $marks = $noticing->whatTheTabsHold(theStackWhoseNewsIsNoticed(), $newest);
+    $marks = $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), $newest);
     $counted = [];
 
     foreach (WhichTab::cases() as $tab) {
@@ -261,4 +263,31 @@ it('marks no tab for a kind the stack could not read, and still marks the other'
 
     expect(howEachTabIsMarked($noticing, theNewestAStackNames(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600]], releasesRead: false)))
         ->toBe(['health' => 1, 'services' => 0, 'updates' => 0, 'repairs' => 0]);
+});
+
+it('counts what is new of every kind in all, requests with them, from the first reading on', function (): void {
+    $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    $first = $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames(['2.3.0'], [['disk.space', 1_790_000_000]]))->howManyInAll();
+    $after = $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]], requests: [12, 11, 10, 9]));
+
+    expect($first)->toBe(0)
+        ->and($after->howManyInAll())->toBe(5)
+        ->and($after->howManyOn(WhichTab::Updates) + $after->howManyOn(WhichTab::Health))->toBe(2);
+});
+
+it('counts no request where requests are switched off, or the stack could not read them', function (): void {
+    $seal = ASealInMemory::working();
+    $kept = NewsKeptInMemory::empty();
+    $noticing = noticingOver($seal, $kept);
+    $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames([], []));
+    $unread = new TheNewestNamed(WhatTheStackListed::these(), WhatTheStackListed::unread(), WhatTheStackListed::these());
+    $read = $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), $unread)->howManyInAll();
+    new MarkingAsNew(newsOver($seal, $kept))->markNoLonger(theStackWhoseNewsIsNoticed(), KindOfNews::Request);
+
+    expect($read)->toBe(0)
+        ->and($noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames([], [], requests: [11, 10, 9]))->howManyInAll())->toBe(0);
+});
+
+it('counts nothing where nothing has been heard', function (): void {
+    expect(HowMuchIsNew::none()->howManyInAll())->toBe(0);
 });

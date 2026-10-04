@@ -16,9 +16,9 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\WhoTheMenuIsFor;
 use Modules\Wayfinding\Internal\TheMenu;
-use Modules\Wayfinding\Internal\TheWhatsNewInTheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -190,5 +190,5 @@ it('marks one tab in the bar, the one the screen is under', function (): void {
 });
 
 it('opens What\'s new from the menu, on a screen of its own', function (): void {
-    expect(data_get(NativeRouter::resolve(new TheWhatsNewInTheMenu()->goes()), 'class'))->toBe(WhatIsNewOnEveryStack::class);
+    expect(data_get(NativeRouter::resolve(AScreenWithoutAStack::WhatsNew->value), 'class'))->toBe(WhatIsNewOnEveryStack::class);
 });

@@ -38,6 +38,7 @@ trait FindsItsWayAround
     use FindsItsWayAroundAStack, HoldsItsStacksStream {
         HoldsItsStacksStream::stop insteadof FindsItsWayAroundAStack;
         HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAroundAStack;
+        HoldsItsStacksStream::howMuchIsNewHere insteadof FindsItsWayAroundAStack;
     }
 
     /**

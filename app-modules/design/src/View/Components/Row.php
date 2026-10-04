@@ -23,7 +23,9 @@ use function view;
  * something with a state, such as a service. `icon` and `iosIcon` put a glyph
  * of the row's own there instead, beside the headline and never in its place,
  * for a row that names somewhere to go, such as a menu item. A row with
- * neither starts with its headline.
+ * neither starts with its headline. `badge` is a count a row that goes
+ * somewhere draws between its headline and its chevron, as a tab's badge is
+ * drawn; `answersTo` then says it, since the digits say nothing of their own.
  */
 final class Row extends Component
 {
@@ -39,6 +41,7 @@ final class Row extends Component
         public readonly string $trailing = '',
         public readonly string $tap = '',
         public readonly string $goes = '',
+        public readonly string $badge = '',
         string $answersTo = '',
         string $tone = '',
         string $icon = '',
