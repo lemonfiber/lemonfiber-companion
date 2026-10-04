@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Envelope\EnvelopeReader;
 use Lemonfiber\Sdk\Events\ServerEvent;
-use Lemonfiber\Sdk\Events\SseParser;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
@@ -15,14 +14,13 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\StepEnvelope;
-use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheWalkSaid;
-use Modules\Sdk\Internal\AStreamHeldOpen;
+use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
-use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
+use Modules\Sdk\Internal\WhatArrivedOnTheStream;
 
 /**
  * The steps a running walkthrough says, heard on a stack's event stream.
@@ -34,7 +32,8 @@ use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
  * by {@see Walkthroughs::said()} into the line the finished record would carry.
  *
  * **Mutable, for {@see Listeners}' reason.** What it keeps between calls is the
- * connection itself, which is why it is bound fresh for each screen.
+ * connection itself, in {@see TheStreamsHeld}, and whether it ended, which is
+ * why it is bound fresh for each screen.
  *
  * **Every refusal is an obstacle, and a step it cannot read is one too.** The
  * stream refusing the session, the two ends disagreeing about the version, an
@@ -52,15 +51,13 @@ use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
  */
 final class Narrators implements HearingTheWalk
 {
-    private ?AStreamHeldOpen $held = null;
-
     private bool $ended = false;
 
-    private WhereTheStreamsLeftOff $leftOff;
+    private readonly TheStreamsHeld $streams;
 
     public function __construct(private readonly Clients $clients)
     {
-        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
+        $this->streams = new TheStreamsHeld($clients);
     }
 
     public function whereItIs(Stack $stack, Session $session): WhatTheWalkSaid
@@ -76,9 +73,8 @@ final class Narrators implements HearingTheWalk
 
     public function letGo(): WhatTheWalkSaid
     {
-        $this->held = null;
+        $this->streams->letGoOfEvery();
         $this->ended = false;
-        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
 
         return WhatTheWalkSaid::closed();
     }
@@ -87,7 +83,7 @@ final class Narrators implements HearingTheWalk
     private function heardFrom(Stack $stack, Session $session): WhatTheWalkSaid
     {
         try {
-            return $this->heard($stack, $this->held ??= $this->opened($stack, $session));
+            return $this->heard($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheWalkSaid::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|WalkthroughIsUnreadable $why) {
@@ -97,34 +93,16 @@ final class Narrators implements HearingTheWalk
         }
     }
 
-    /**
-     * The same stream {@see Listeners} holds, opened with the same wait, and
-     * resuming after the last event this stack's previous stream carried.
-     */
-    private function opened(Stack $stack, Session $session): AStreamHeldOpen
-    {
-        $after = $this->leftOff->forTheStack($stack->id()->stored());
-
-        return new AStreamHeldOpen(
-            $this->clients->client($stack, $session)
-                ->eventSource(Duration::ofMilliseconds(Listeners::NO_LONGER_THAN_MS))
-                ->open($after),
-            new SseParser($after),
-        );
-    }
-
     /** Let go of the stream, keeping where it left off for the stream opened in its place. */
     private function letGoOf(Stack $stack): void
     {
-        $this->leftOff = $this->leftOff->keeping($stack->id()->stored(), $this->held);
-        $this->held = null;
+        $this->streams->letGoOf($stack);
         $this->ended = false;
     }
 
     /** What arrived, as what the walk said, letting go of a stream that ended. */
-    private function heard(Stack $stack, AStreamHeldOpen $held): WhatTheWalkSaid
+    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived): WhatTheWalkSaid
     {
-        $arrived = $held->taken();
         $latest = $arrived->theLast(StepEnvelope::KIND);
 
         if ($arrived->ended) {

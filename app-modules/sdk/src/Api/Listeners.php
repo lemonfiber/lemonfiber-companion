@@ -8,7 +8,6 @@ use function array_key_exists;
 
 use Lemonfiber\Sdk\Envelope\EnvelopeReader;
 use Lemonfiber\Sdk\Events\ServerEvent;
-use Lemonfiber\Sdk\Events\SseParser;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
@@ -18,7 +17,6 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Generated\NewsEnvelope;
-use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
@@ -30,9 +28,9 @@ use Modules\Kernel\Api\StoppageSaysNothing;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
 use Modules\Kernel\Api\VersionIsBlank;
 use Modules\Kernel\Api\WhatWasHeard;
-use Modules\Sdk\Internal\AStreamHeldOpen;
+use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
-use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
+use Modules\Sdk\Internal\WhatArrivedOnTheStream;
 
 /**
  * The one place this application holds a stack's event stream open.
@@ -53,11 +51,12 @@ use Modules\Sdk\Internal\WhereTheStreamsLeftOff;
  * the next event is spent between calls, on the screen's cadence, rather than
  * inside one.
  *
- * **Mutable, because a held connection is.** This is the one adapter that
- * keeps something between calls, and what it keeps is the connection itself,
- * one for each stack it is asked about. One belongs to one screen, which is
- * why it is bound fresh for each: the screen for one stack holds one stream,
- * and the list of stacks holds one per stack.
+ * **Mutable, because a held connection is.** What it keeps between calls is
+ * the connection itself, one for each stack it is asked about, held in
+ * {@see TheStreamsHeld} as {@see Narrators} and {@see StartLines} hold theirs.
+ * One belongs to one screen, which is why it is bound fresh for each: the
+ * screen for one stack holds one stream, and the list of stacks holds one per
+ * stack.
  *
  * **Every refusal is an obstacle.** The stream refusing the session, the two
  * ends disagreeing about the version, an event that is not an envelope, and a
@@ -91,17 +90,14 @@ final class Listeners implements Hearing
      */
     public const int NO_LONGER_THAN_MS = 1;
 
-    /** @var array<string, AStreamHeldOpen> each stack's open stream, by its stored identifier */
-    private array $held = [];
-
     /** @var array<string, true> the stacks whose stream ended and has not been said to have ended */
     private array $ended = [];
 
-    private WhereTheStreamsLeftOff $leftOff;
+    private readonly TheStreamsHeld $streams;
 
     public function __construct(private readonly Clients $clients)
     {
-        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
+        $this->streams = new TheStreamsHeld($clients);
     }
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard
@@ -119,9 +115,8 @@ final class Listeners implements Hearing
 
     public function letGo(): WhatWasHeard
     {
-        $this->held = [];
+        $this->streams->letGoOfEvery();
         $this->ended = [];
-        $this->leftOff = WhereTheStreamsLeftOff::nowhere();
 
         return WhatWasHeard::closed();
     }
@@ -129,66 +124,36 @@ final class Listeners implements Hearing
     /** What has arrived on the stream, opening it where it is not open. */
     private function heardFrom(Stack $stack, Session $session): WhatWasHeard
     {
-        $which = $stack->id()->stored();
-
         try {
-            return $this->heard($which, $this->heldFor($stack, $session));
+            return $this->heard($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered $why) {
-            $this->letGoOf($which);
+            $this->letGoOf($stack);
 
             return WhatWasHeard::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
-    /** This stack's open stream, opening it where it is not open. */
-    private function heldFor(Stack $stack, Session $session): AStreamHeldOpen
-    {
-        return $this->held[$stack->id()->stored()] ??= $this->opened($stack, $session);
-    }
-
     /** Let go of one stack's stream, leaving every other stack's open. */
-    private function letGoOf(string $which): void
+    private function letGoOf(Stack $stack): void
     {
-        $this->keepWhereItLeftOff($which);
-        unset($this->held[$which], $this->ended[$which]);
-    }
-
-    /** Where one stack's stream left off, kept for the stream opened in its place. */
-    private function keepWhereItLeftOff(string $which): void
-    {
-        if (array_key_exists($which, $this->held)) {
-            $this->leftOff = $this->leftOff->keeping($which, $this->held[$which]);
-        }
-    }
-
-    /** A stream for this stack, resuming after the last event its previous one carried. */
-    private function opened(Stack $stack, Session $session): AStreamHeldOpen
-    {
-        $after = $this->leftOff->forTheStack($stack->id()->stored());
-
-        return new AStreamHeldOpen(
-            $this->clients->client($stack, $session)
-                ->eventSource(Duration::ofMilliseconds(self::NO_LONGER_THAN_MS))
-                ->open($after),
-            new SseParser($after),
-        );
+        $this->streams->letGoOf($stack);
+        unset($this->ended[$stack->id()->stored()]);
     }
 
     /** What arrived, as what was heard, letting go of a stream that ended. */
-    private function heard(string $which, AStreamHeldOpen $held): WhatWasHeard
+    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived): WhatWasHeard
     {
-        $arrived = $held->taken();
         $latest = $arrived->theLast(DashboardEnvelope::KIND);
         $newest = $arrived->theLast(NewsEnvelope::KIND);
 
         if ($arrived->ended) {
-            $this->letGoOf($which);
+            $this->letGoOf($stack);
         }
 
         if ($arrived->ended && $arrived->anything) {
-            $this->ended[$which] = true;
+            $this->ended[$stack->id()->stored()] = true;
         }
 
         $heard = match (true) {
