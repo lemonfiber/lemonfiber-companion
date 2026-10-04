@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+
+use function is_string;
+
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -31,6 +34,7 @@ use Modules\Operator\Internal\ViewModels\WhatAnItemSays;
 use Modules\Operator\Internal\ViewModels\WhatEachStackListed;
 use Modules\Operator\Internal\ViewModels\WhatIsNewAsShown;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -88,6 +92,16 @@ final class WhatIsNewOnEveryStack extends NativeComponent
         private readonly Standings $standings,
         private readonly Clock $clock,
     ) {}
+
+    /** Open on the stack a stack's menu opened this from, which the operator can widen to every stack. */
+    public function mount(): void
+    {
+        $shows = $this->data(AScreenWithoutAStack::WHATS_NEW_SHOWS);
+
+        if (is_string($shows)) {
+            $this->showStack($shows);
+        }
+    }
 
     /** What's new as this frame draws it, reading the first stack shown that has not been read. */
     public function news(): WhatIsNewAsShown

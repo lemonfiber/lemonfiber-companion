@@ -8,7 +8,7 @@ it began.
 
 | | |
 |---|---|
-| `Noticing` | What is new among the items of a kind on a stack, which tabs the newest a stack names marks, and the operator having seen one item or all of them. It is the keeper `ForgetsAStack` asks when a stack is removed |
+| `Noticing` | What is new among the items of a kind on a stack, how much is new by the newest a stack names, and the operator having seen one item or all of them. It is the keeper `ForgetsAStack` asks when a stack is removed |
 | `MarkingAsNew` | Which kinds a stack marks as new: all three until the operator switches one off. Switching a kind off forgets the newest of it seen |
 
 And the values they take and give:
@@ -20,7 +20,7 @@ And the values they take and give:
 | `TheItems` | Every item of one kind a stack holds, newest first, and what is newer than one of them |
 | `WhatIsNew` | The items of one kind on one stack that are new, newest first |
 | `TheKindsMarked` | The kinds a stack marks as new |
-| `TheTabsMarked` | How many new items each tab holds: updates on Updates, problems on Health, and requests on none |
+| `HowMuchIsNew` | How many new items of each kind a stack holds: what each tab is marked with, updates on Updates, problems on Health and requests on none, and what the menu counts in all |
 | `NotAnItem` | Why something could not be made an item |
 
 **The first sight of a kind records what is current as seen.** A stack read for

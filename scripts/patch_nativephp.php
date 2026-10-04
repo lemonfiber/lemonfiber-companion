@@ -1673,6 +1673,144 @@ SHIPS,
     private func badgeFor(_ tab: NativeUINode) -> Text? {
 BECOMES,
     ],
+    [
+        // A list row that goes somewhere carries a count between its label
+        // and its chevron, as a tab carries its badge: what the menu counts
+        // beside What's new. The package has no word for it, so the row takes
+        // one, `badge`, which reaches each renderer as `badge`.
+        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/ListItem.php',
+        'ships' => <<<'SHIPS'
+        if (isset($attrs['trailingText'])) {
+            $this->trailingText($attrs['trailingText']);
+        }
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        if (isset($attrs['trailingText'])) {
+            $this->trailingText($attrs['trailingText']);
+        }
+        if (isset($attrs['badge'])) {
+            $this->listItemProps['badge'] = (string) $attrs['badge'];
+        }
+
+BECOMES,
+    ],
+    [
+        // On Android the count is drawn in the platform's own badge before
+        // whatever ends the row. The digits are hidden from a screen reader,
+        // because the row's label says the count with its name.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+            trailingContent = run {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            trailingContent = withBadge(p.getString("badge", ""), run {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+            },
+            colors = colors,
+            tonalElevation = tonalElevation.dp,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            }),
+            colors = colors,
+            tonalElevation = tonalElevation.dp,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+    @Composable
+    private fun buildLeadingContent(
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    /**
+     * What ends the row, with the row's count drawn in a badge before it
+     * where it carries one. The digits say nothing to a screen reader: the
+     * row's label says the count with its name.
+     */
+    private fun withBadge(badge: String, trailing: (@Composable () -> Unit)?): (@Composable () -> Unit)? {
+        if (badge.isEmpty()) return trailing
+        return {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Badge { Text(badge, fontFamily = nuiDefaultFontFamily(), modifier = Modifier.clearAndSetSemantics {}) }
+                trailing?.invoke()
+            }
+        }
+    }
+
+    @Composable
+    private fun buildLeadingContent(
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.foundation.layout.Box
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.material3.Checkbox
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Checkbox
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.semantics.Role
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+
+BECOMES,
+    ],
+    [
+        // On iOS the count is drawn as the package's own badge is, in the
+        // theme's destructive colours, before whatever ends the row, and
+        // hidden from VoiceOver for the reason it is on Android.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+            Spacer()
+
+            // Trailing — multi-badge stack wins over single trailingIcon.
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            Spacer()
+
+            let badge = p.getString("badge", default: "")
+            if !badge.isEmpty {
+                let theme = themeStore.resolve(for: colorScheme)
+                Text(badge)
+                    .nuiScaledFont(size: 12, weight: .bold)
+                    .foregroundColor(theme.onDestructive)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(theme.destructive))
+                    .accessibilityHidden(true)
+            }
+
+            // Trailing — multi-badge stack wins over single trailingIcon.
+BECOMES,
+    ],
 ];
 
 /**

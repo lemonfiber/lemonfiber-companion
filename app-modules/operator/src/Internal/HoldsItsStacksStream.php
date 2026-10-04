@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatWasHeard;
-use Modules\News\Api\TheTabsMarked;
+use Modules\News\Api\HowMuchIsNew;
 use Modules\Operator\Internal\Presenters\HowTheTabsAreMarked;
 use Modules\Operator\Internal\ViewModels\TheTabsAsMarked;
 use Native\Mobile\Attributes\Poll;
@@ -42,10 +42,10 @@ use Native\Mobile\Edge\NativeComponent;
  * the word for the list of stacks, and the whole summary, sealed, for the next
  * time the stack's Health screen opens.
  *
- * **What the stack names as newest marks the tabs.** The stream says it when a
- * listener arrives and whenever it changes, and the news module answers which
- * tabs hold something new by it, against what the operator has seen. A wake
- * that names nothing leaves the marks as they were.
+ * **What the stack names as newest marks the tabs and counts in the menu.**
+ * The stream says it when a listener arrives and whenever it changes, and the
+ * news module answers how much is new by it, of each kind, against what the
+ * operator has seen. A wake that names nothing leaves it as it was.
  *
  * **It reads the screen's own `$listening` and `$storage`.** That is the
  * coupling, stated here because a trait cannot declare it: the ports the
@@ -68,11 +68,11 @@ trait HoldsItsStacksStream
     public ?WhatWasHeardSoFar $heard = null;
 
     /**
-     * Which tabs the stack's newest marks, as last heard.
+     * How much is new on the stack, of each kind, as last heard.
      *
      * `public` for the reason {@see $heard} is.
      */
-    public ?TheTabsMarked $marked = null;
+    public ?HowMuchIsNew $howMuchIsNew = null;
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -98,7 +98,7 @@ trait HoldsItsStacksStream
 
         $stack = $this->stack();
         $thisWake = $this->heardFrom($stack, $now);
-        $this->marked = $this->markedBy($thisWake, $stack);
+        $this->howMuchIsNew = $this->newIn($thisWake, $stack);
         $held = $held->after($thisWake, $now);
 
         if ($held->hasGoneQuiet($now)) {
@@ -118,7 +118,7 @@ trait HoldsItsStacksStream
     /** Which tabs hold something new, and how many, as the bar draws them. */
     public function marks(): TheTabsAsMarked
     {
-        return new HowTheTabsAreMarked()->of($this->marked ?? TheTabsMarked::none());
+        return new HowTheTabsAreMarked()->of($this->howMuchIsNewHere());
     }
 
     /**
@@ -153,6 +153,16 @@ trait HoldsItsStacksStream
     }
 
     /**
+     * How much is new on this stack, as last heard, which the menu counts.
+     *
+     * Nothing until the stream has named the newest.
+     */
+    protected function howMuchIsNewHere(): HowMuchIsNew
+    {
+        return $this->howMuchIsNew ?? HowMuchIsNew::none();
+    }
+
+    /**
      * Let go of what else this screen hears on subscriptions of its own, as it stops.
      *
      * Nothing, for a screen that hears nothing else. A screen that follows a
@@ -175,12 +185,12 @@ trait HoldsItsStacksStream
         return $this->heard ??= $this->listening->keeping->lastKept($this->stack()->id());
     }
 
-    /** The tabs marked by what the stack named as newest in this wake, or as they were where it named nothing. */
-    private function markedBy(WhatWasHeard $heard, Stack $stack): TheTabsMarked
+    /** How much is new by what the stack named as newest in this wake, or as it was where it named nothing. */
+    private function newIn(WhatWasHeard $heard, Stack $stack): HowMuchIsNew
     {
         return $heard->theNewest(
-            named: fn(TheNewestNamed $newest): TheTabsMarked => $this->listening->noticing->whatTheTabsHold($stack->id(), $newest),
-            nothing: fn(): TheTabsMarked => $this->marked ?? TheTabsMarked::none(),
+            named: fn(TheNewestNamed $newest): HowMuchIsNew => $this->listening->noticing->howMuchIsNew($stack->id(), $newest),
+            nothing: fn(): HowMuchIsNew => $this->howMuchIsNewHere(),
         );
     }
 

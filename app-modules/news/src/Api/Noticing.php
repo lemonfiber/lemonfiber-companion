@@ -55,17 +55,19 @@ final readonly class Noticing implements ForgetsAStack
     }
 
     /**
-     * Which tabs hold something new, and how many, by what the stack named as newest.
+     * How much is new of each kind, by what the stack named as newest.
      *
-     * Asked exactly as the list of what is new asks, kind by kind, so a tab
-     * and the list never disagree: a kind switched off marks nothing, the
-     * first sight of a kind records it as seen and marks nothing, and a kind
-     * the stack could not read is not asked about at all.
+     * Asked exactly as the list of what is new asks, kind by kind, so a tab,
+     * the menu's count and the list never disagree: a kind switched off counts
+     * nothing, the first sight of a kind records it as seen and counts nothing,
+     * and a kind the stack could not read is not asked about at all. The count
+     * is of what the stack named, which is up to ten of each kind.
      */
-    public function whatTheTabsHold(StackId $stack, TheNewestNamed $newest): TheTabsMarked
+    public function howMuchIsNew(StackId $stack, TheNewestNamed $newest): HowMuchIsNew
     {
-        return TheTabsMarked::holding(
+        return HowMuchIsNew::holding(
             $newest->releases()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::updates($newest)) : WhatIsNew::nothing(),
+            $newest->requests()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::requests($newest)) : WhatIsNew::nothing(),
             $newest->problems()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::problems($newest)) : WhatIsNew::nothing(),
         );
     }

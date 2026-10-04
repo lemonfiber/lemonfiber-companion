@@ -17,6 +17,10 @@ use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
 
+use Modules\Kernel\Api\Instant;
+use Modules\News\Api\AnItem;
+use Modules\News\Api\HowMuchIsNew;
+use Modules\News\Api\WhatIsNew;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\ThePhonesSettingsInTheMenu;
@@ -80,16 +84,29 @@ it('gives What\'s new and the two settings an icon each platform has, and a labe
     $material = theIconsIn('material-icons');
     $symbols = theIconsIn('sf-symbols');
 
-    foreach ([new TheWhatsNewInTheMenu(), new TheStacksSettingsInTheMenu(), new ThePhonesSettingsInTheMenu()] as $item) {
+    foreach ([new TheWhatsNewInTheMenu(HowMuchIsNew::none()), new TheStacksSettingsInTheMenu(), new ThePhonesSettingsInTheMenu()] as $item) {
         expect($material)->toContain($item->glyph())
             ->and($symbols)->toContain($item->iosGlyph());
     }
 
-    expect(new TheWhatsNewInTheMenu()->said())->toBe('navigation.menu.whats_new')
-        ->and(new TheWhatsNewInTheMenu()->goes())->toBe('/whats-new')
+    expect(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->said())->toBe('navigation.menu.whats_new')
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->goes())->toBe('/whats-new')
         ->and(new TheStacksSettingsInTheMenu()->screen())->toBe(AStacksScreen::OnThisPhone)
         ->and(new ThePhonesSettingsInTheMenu()->said())->toBe('navigation.menu.app_settings')
         ->and(new ThePhonesSettingsInTheMenu()->appSettings())->toBe('/settings');
+});
+
+it('counts what is new of every kind as digits, and draws no count where nothing is new', function (): void {
+    $new = HowMuchIsNew::holding(
+        WhatIsNew::these(AnItem::anUpdate('2.4.0')),
+        WhatIsNew::these(AnItem::aRequest(12), AnItem::aRequest(11)),
+        WhatIsNew::these(AnItem::aProblem('vpn.leak', Instant::atEpochSeconds(1_790_000_600))),
+    );
+
+    expect(new TheWhatsNewInTheMenu($new)->count())->toBe(4)
+        ->and(new TheWhatsNewInTheMenu($new)->badge())->toBe('4')
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->count())->toBe(0)
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->badge())->toBe('');
 });
 
 it('names each group by a key of its own', function (): void {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Wayfinding\Api\Screens;
 
+use Modules\News\Api\HowMuchIsNew;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\WhoTheMenuIsFor;
 use Modules\Wayfinding\Internal\ThePhonesSettingsInTheMenu;
 use Modules\Wayfinding\Internal\TheRowsOfTheMenu;
@@ -51,13 +53,30 @@ trait FindsItsWayAroundAStack
         return Drawer::make(view('wayfinding::the-menu', [
             'stack' => $this->stack(),
             'rows' => TheRowsOfTheMenu::for($this->menuIsFor ??= $this->around->whoTheMenuIsFor($this->stack())),
-            'whatsNew' => new TheWhatsNewInTheMenu(),
+            'whatsNew' => new TheWhatsNewInTheMenu($this->howMuchIsNewHere()),
             'stackSettings' => new TheStacksSettingsInTheMenu(),
             'appSettings' => new ThePhonesSettingsInTheMenu(),
         ]))
             ->label($this->around->theMenuIsCalled())
             ->besideBack(besideBack: $this->opensOnTopOfAnother())
             ->modal();
+    }
+
+    /** Open What's new on this stack, which the operator can widen to every stack from there. */
+    public function openWhatsNew(): void
+    {
+        $this->navigate(new TheWhatsNewInTheMenu($this->howMuchIsNewHere())->goes(), [AScreenWithoutAStack::WHATS_NEW_SHOWS => $this->stack()->id()->stored()]);
+    }
+
+    /**
+     * How much is new on this stack, which the menu counts beside What's new.
+     *
+     * Nothing, for a screen that holds no stream of its stack. A screen that
+     * holds one says otherwise, through the trait that holds it.
+     */
+    protected function howMuchIsNewHere(): HowMuchIsNew
+    {
+        return HowMuchIsNew::none();
     }
 
     /** Whether this screen is opened on top of another, and so has a back button. */

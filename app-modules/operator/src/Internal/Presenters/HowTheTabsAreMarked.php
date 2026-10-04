@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\WhichTab;
-use Modules\News\Api\TheTabsMarked;
+use Modules\News\Api\HowMuchIsNew;
 use Modules\Operator\Internal\ViewModels\AMarkAsShown;
 use Modules\Operator\Internal\ViewModels\TheTabsAsMarked;
 
@@ -20,11 +20,11 @@ use function sprintf;
  */
 final readonly class HowTheTabsAreMarked
 {
-    public function of(TheTabsMarked $marked): TheTabsAsMarked
+    public function of(HowMuchIsNew $new): TheTabsAsMarked
     {
         return new TheTabsAsMarked(
-            health: $this->mark($marked->howManyOn(WhichTab::Health)),
-            updates: $this->mark($marked->howManyOn(WhichTab::Updates)),
+            health: $this->mark($new->howManyOn(WhichTab::Health)),
+            updates: $this->mark($new->howManyOn(WhichTab::Updates)),
         );
     }
 
