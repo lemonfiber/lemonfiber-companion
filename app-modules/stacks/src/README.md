@@ -39,6 +39,7 @@ they live where those live.
 |---|---|
 | `Modules\Kernel\Api` | `Stack`, `StackId`, `ServiceId`, `Daemons`, `Supervising`, `Disturbances` |
 | `Modules\Sdk\Api` | `Rosters`, `Supervisors` — the readers and the adapter |
+| `Modules\Services` | `KeepingWhatItRuns`, `WithoutWhatWasLeftOut`, `WhetherItIsInstalled` — what the phone keeps of a listing, and what the app decides about one |
 | `Modules\Operator` | `WhatThisStackRuns` and its folds |
 | `Modules\Household` | `WhatYouAreOwed`, which is a member's reading of the same machine |
 
@@ -46,12 +47,9 @@ That is not a mistake to be tidied up into here. A value belongs in `kernel`,
 which every module may use; moving it would make one capability module a
 dependency of another, which the kinds forbid.
 
-## What would fill it
+## Where a decision about services goes
 
 An ordering or a narrowing over services that the stack does not send and a
-screen should not invent — the shape `WorstFirst` has. `WhatLeansOnIt` is the
-nearest candidate if a screen ever needs the dependency graph read in an order
-the wire does not give it.
-
-Until then, a module holding only what two surfaces share is the honest answer,
+screen should not invent — the shape `WorstFirst` has — goes in `services`,
+beside `WithoutWhatWasLeftOut`. This module holds only what two surfaces share,
 and this file is here so that reads as a decision rather than as an oversight.

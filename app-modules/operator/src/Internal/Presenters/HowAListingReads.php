@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function array_unique;
+use function array_values;
+
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\HowLongAgo;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Services\Api\Queries\WithoutWhatWasLeftOut;
 
 /**
  * What asking a stack what it is running comes to, as fields a template reads.
@@ -41,35 +47,41 @@ final readonly class HowAListingReads
     /** The stack answered, and this is what it is running. */
     public function these(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
     {
-        $rows = [];
-        $settling = false;
+        return $this->read($daemons, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+    }
+
+    /**
+     * What the stack was running, as the phone kept it from an earlier listing.
+     *
+     * Drawn whole, as a listing that came back when it was read, with how long
+     * ago that was, beside whatever this frame's asking met, and with every
+     * action on it waiting for a fresh one.
+     */
+    public function kept(Daemons $daemons, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatThisStackRunsTurnedOutToBe
+    {
+        return $this->read($daemons, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now), waits: true);
+    }
+
+    /**
+     * The forms a kept listing names, as the forms the stack declares.
+     *
+     * The forms are a reading of their own, kept nowhere, so a listing the
+     * phone kept offers the forms it names: those asked for, those that
+     * brought a service in, and those that left one out.
+     */
+    public function formsNamedIn(Daemons $daemons): TheFormsAsFound
+    {
+        $names = new HowWhatWasLeftOutReads()->forms($daemons->active());
 
         foreach ($daemons as $daemon) {
-            // A service the forms left out is filtered, and the stack also
-            // lists it among the services as absent. Drawn there, it reads as
-            // a service that failed; it is drawn once, with why, below.
-            if ($daemons->leftOut()->include($daemon->id())) {
-                continue;
-            }
-
-            $row = new HowAServiceReads()->in($daemon, $daemons);
-            $rows[] = $row;
-            $settling = $settling || $row->isSettling;
+            $names = [...$names, ...new HowWhatWasLeftOutReads()->forms($daemon->whatBroughtItIn())];
         }
 
-        // The overall comes off the listing rather than off the rows, so what
-        // the stack amounts to is decided where the stack said it — a fold that
-        // dropped a row could never quietly turn a degraded machine into a
-        // healthy one.
-        return new WhatThisStackRunsTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            services: $rows,
-            overall: $daemons->running()->saidOnTheScreen(),
-            isSettling: $settling,
-            disturbs: $daemons->disturbs(),
-            active: new HowWhatWasLeftOutReads()->forms($daemons->active()),
-            leftOut: new HowWhatWasLeftOutReads()->of($daemons->leftOut()),
-        );
+        foreach ($daemons->leftOut() as $left) {
+            $names = [...$names, ...new HowWhatWasLeftOutReads()->forms($left->askedBy())];
+        }
+
+        return new TheFormsAsFound(HowTheReadingWent::itCameBack(), array_values(array_unique($names)));
     }
 
     /**
@@ -104,6 +116,9 @@ final readonly class HowAListingReads
             disturbs: null,
             active: [],
             leftOut: [],
+            askedNow: $went,
+            readAgo: AgoAsShown::live(),
+            waitsForTheStack: false,
         );
     }
 
@@ -129,5 +144,37 @@ final readonly class HowAListingReads
     public function formsSignedOut(): TheFormsAsFound
     {
         return new TheFormsAsFound(HowTheReadingWent::theSessionEnded(), []);
+    }
+
+    private function read(Daemons $daemons, HowTheReadingWent $askedNow, AgoAsShown $ago, bool $waits): WhatThisStackRunsTurnedOutToBe
+    {
+        $rows = [];
+        $settling = false;
+
+        // A service the forms left out is drawn once, with why, below, and
+        // not again among the services as one that failed.
+        foreach (new WithoutWhatWasLeftOut()->over($daemons) as $daemon) {
+            $row = new HowAServiceReads()->in($daemon, $daemons);
+            $rows[] = $row;
+            $settling = $settling || $row->isSettling;
+        }
+
+        // The overall comes off the listing rather than off the rows, so what
+        // the stack amounts to is decided where the stack said it — a fold that
+        // dropped a row could never quietly turn a degraded machine into a
+        // healthy one. A kept listing becomes nothing else by itself, however
+        // its rows stood when it was read, so it is never settling.
+        return new WhatThisStackRunsTurnedOutToBe(
+            went: HowTheReadingWent::itCameBack(),
+            services: $rows,
+            overall: $daemons->running()->saidOnTheScreen(),
+            isSettling: $settling && ! $waits,
+            disturbs: $daemons->disturbs(),
+            active: new HowWhatWasLeftOutReads()->forms($daemons->active()),
+            leftOut: new HowWhatWasLeftOutReads()->of($daemons->leftOut()),
+            askedNow: $askedNow,
+            readAgo: $ago,
+            waitsForTheStack: $waits,
+        );
     }
 }

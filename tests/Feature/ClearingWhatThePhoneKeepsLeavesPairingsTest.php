@@ -9,6 +9,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Services\Internal\ListingsKept;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 
 // Clear saved data asks every store the composition root registers, so what
@@ -51,5 +52,6 @@ it('asks the store of every kind of reading the phone keeps', function (): void 
     $stores = theStoresClearingAsks();
 
     expect(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof HealthReadingsKept))->toHaveCount(1)
-        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof UpkeepReadingsKept))->toHaveCount(1);
+        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof UpkeepReadingsKept))->toHaveCount(1)
+        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof ListingsKept))->toHaveCount(1);
 });

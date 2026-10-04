@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
+use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 
 use function str_repeat;
@@ -44,6 +45,12 @@ final readonly class WhatThePhoneKeeps
     public static function noUpkeepYet(): KeepingTheLastUpkeep
     {
         return new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty());
+    }
+
+    /** Deciding what is kept of what a stack runs, with nothing kept yet. */
+    public static function noListingYet(): KeepingWhatItRuns
+    {
+        return new KeepingWhatItRuns(ASealInMemory::working(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)));
     }
 
     /** Letting go of readings older than they are kept for, with none kept to let go of. */

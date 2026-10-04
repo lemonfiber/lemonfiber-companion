@@ -17,6 +17,7 @@ use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedReading;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
+use Modules\Services\Internal\ListingsKept;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 
 /**
@@ -25,7 +26,8 @@ use Modules\Updates\Internal\UpkeepReadingsKept;
  * One fake for every store of readings, because every one of them makes the
  * same promise over the same sealed bookkeeping: held to the contract of
  * {@see \Modules\Health\Internal\Store\HealthReadingsInTheDatabase} and of
- * {@see \Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase}, so a
+ * {@see \Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase} and of
+ * {@see \Modules\Services\Internal\Store\ListingsInTheDatabase}, so a
  * decision tested over this is tested over a store that behaves like the
  * database: one reading per stack, the later replacing the earlier, a reading
  * read exactly at the cut-off kept, and a row this build cannot read
@@ -35,7 +37,7 @@ use Modules\Updates\Internal\UpkeepReadingsKept;
  * Written by hand rather than mocked, so a change to either port fails to
  * compile here rather than drifting.
  */
-final class ReadingsInMemory implements HealthReadingsKept, UpkeepReadingsKept
+final class ReadingsInMemory implements HealthReadingsKept, ListingsKept, UpkeepReadingsKept
 {
     /** @var array<string, SealedReading> the stack's hash => its reading */
     private array $readings = [];

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
+use Modules\Services\Api\Queries\WhetherItIsInstalled;
 
 /**
  * What one service a stack runs comes to, as the fields a row reads.
@@ -45,7 +46,7 @@ final readonly class HowAServiceReads
         }
 
         $runsFor = new HowWhatWasLeftOutReads()->forms($daemon->whatBroughtItIn());
-        $isInstalled = $daemon->runs() !== HowAServiceRuns::Absent || $runsFor !== [];
+        $isInstalled = new WhetherItIsInstalled()->of($daemon);
 
         return new WhatOneServiceSays(
             id: $daemon->id(),

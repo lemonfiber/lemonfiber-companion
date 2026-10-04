@@ -50,6 +50,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // What a start, a stop or a restart came to, followed from the screen it was
 // sent from.
@@ -90,6 +91,7 @@ function theScreenAVerbIsFollowedFrom(
         new AppsSettingsThatOpen(),
         $hearing ?? AStackThatSaysWhatItWaitsOn::saying(),
         AroundThePhone::listening(),
+        WhatThePhoneKeeps::noListingYet(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 

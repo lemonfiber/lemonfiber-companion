@@ -8,6 +8,7 @@ use function array_filter;
 use function array_values;
 
 use Modules\Kernel\Api\Disturbances;
+use Modules\Operator\Internal\Presenters\AgoAsShown;
 
 /**
  * What asking a stack what it is running produced, flattened for a template.
@@ -23,6 +24,12 @@ use Modules\Kernel\Api\Disturbances;
  * together would have a signed-out phone report a house where nothing is
  * running, which is the collapse {@see \Modules\Kernel\Api\WhatIsRunning}
  * refuses one layer up and this one must not rebuild.
+ *
+ * **A listing the phone kept is drawn whole, and waits.** It came back when it
+ * was read, so it is drawn as a listing; what stopped the asking on this frame,
+ * where something did, is a fact of its own beside it. Until a fresh listing
+ * arrives, every control that would act on the stack is drawn and cannot be
+ * used, with how long ago the listing was read beside it.
  */
 final readonly class WhatThisStackRunsTurnedOutToBe
 {
@@ -32,6 +39,9 @@ final readonly class WhatThisStackRunsTurnedOutToBe
      * @param bool                     $isSettling whether anything here becomes something else by itself
      * @param list<string>                 $active  the forms running, as the stack counts them
      * @param list<AServiceLeftOutAsShown> $leftOut the services those forms left out, each with why
+     * @param HowTheReadingWent            $askedNow what this frame's asking met, which stands beside a kept listing where the stack did not answer
+     * @param AgoAsShown                   $readAgo  how long ago the listing drawn was read, said only where it was kept
+     * @param bool                         $waitsForTheStack whether the listing drawn is one the phone kept, so nothing on it can be acted on yet
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -41,6 +51,9 @@ final readonly class WhatThisStackRunsTurnedOutToBe
         public ?Disturbances $disturbs,
         public array $active,
         public array $leftOut,
+        public HowTheReadingWent $askedNow,
+        public AgoAsShown $readAgo,
+        public bool $waitsForTheStack,
     ) {}
 
     /**

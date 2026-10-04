@@ -44,6 +44,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // One thing this machine runs, and the verbs about it.
 //
@@ -87,7 +88,7 @@ function theThingScreen(
     }
 
     $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none())));
-    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AStackThatSaysWhatItWaitsOn::saying(), AroundThePhone::listening());
+    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AStackThatSaysWhatItWaitsOn::saying(), AroundThePhone::listening(), WhatThePhoneKeeps::noListingYet());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
@@ -555,7 +556,8 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
 it('a session that ended between the reading and the yes sends nothing', function (): void {
     // The narrow path a removed identity opens: the listing was read while the session
     // worked, and the stack refused it in between. This must come away quietly
-    // rather than raise on a tap — the frame after it is the sign-in screen.
+    // rather than raise on a tap — the frame after it says the session ended,
+    // beside the listing that was read while it worked.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $keychain = AKeychainInMemory::working();
     $screen = theThingScreen($supervising, keychain: $keychain);
@@ -565,7 +567,8 @@ it('a session that ended between the reading and the yes sends nothing', functio
     $screen->agree();
 
     expect($supervising->whatItWasToldToDo())->toBe([])
-        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
+        ->and($screen->answer()->askedNow->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->waitsForTheStack)->toBeTrue();
 });
 
 it('refuses a route parameter that is not text', function (): void {

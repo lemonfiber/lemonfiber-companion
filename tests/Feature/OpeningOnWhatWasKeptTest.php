@@ -48,6 +48,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatIsKeptOfServices;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -238,13 +239,16 @@ it('forgets on opening every kind of reading read longer ago than a reading is k
         HowTheNotesStand::Current,
         TheStackEdits::none(),
     ), $longAgo);
+    $listings = WhatIsKeptOfServices::onAPhoneThatSealsAt($longAgo);
+    $listings->keeping->keep(theStackWhoseSummaryWasKept()->id(), WhatIsKeptOfServices::aListingOfNothing());
 
     WhatTheDeviceWouldDraw::by(theLaunchOver(
         WhatThePhoneKeeps::nothingToClear(),
         $keeping,
-        new LettingGoOfOldReadings(ReadingsKeptForInMemory::standard(), new EveryStoreOfReadings($health, $upkeep), FrozenClock::at(Instant::atEpochSeconds(0))),
+        new LettingGoOfOldReadings(ReadingsKeptForInMemory::standard(), new EveryStoreOfReadings($health, $upkeep, $listings->store), FrozenClock::at(Instant::atEpochSeconds(0))),
     ));
 
     expect($health->forgetEverything()->howMany())->toBe(0)
-        ->and($upkeep->forgetEverything()->howMany())->toBe(0);
+        ->and($upkeep->forgetEverything()->howMany())->toBe(0)
+        ->and($listings->store->forgetEverything()->howMany())->toBe(0);
 });

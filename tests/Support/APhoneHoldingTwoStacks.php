@@ -25,6 +25,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\Whose;
+use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -36,6 +37,7 @@ use function str_repeat;
 
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 
 /** A phone holding everything it keeps for two stacks, the one to remove and one to keep. */
@@ -47,6 +49,8 @@ final readonly class APhoneHoldingTwoStacks
 
     public ReadingsInMemory $upkeeps;
 
+    public ReadingsInMemory $listings;
+
     public PlatformStacks $stacks;
 
     /** @var list<ForgetsAStack> */
@@ -57,11 +61,13 @@ final readonly class APhoneHoldingTwoStacks
         $this->store = APlatformStore::working();
         $this->readings = ReadingsInMemory::empty();
         $this->upkeeps = ReadingsInMemory::empty();
+        $this->listings = ReadingsInMemory::empty();
         $this->stacks = new PlatformStacks($this->store);
 
         $keychain = new PlatformKeychain($this->store);
         $keeping = new KeepingTheLastReading(ASealInMemory::working(), $this->readings);
         $upkeep = new KeepingTheLastUpkeep(ASealInMemory::working(), $this->upkeeps);
+        $listing = new KeepingWhatItRuns(ASealInMemory::working(), $this->listings, FrozenClock::at(Instant::atEpochSeconds(1)));
         $standings = new PlatformStandings($this->store);
         $left = new PlatformWorkLeftRunning($this->store, $this->stacks);
 
@@ -71,12 +77,13 @@ final readonly class APhoneHoldingTwoStacks
             $keychain->keep($stack->id(), Session::of(sprintf('a-session-for-%s', $seed)), Whose::theOperator());
             $keeping->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1));
             $upkeep->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1));
+            $listing->keep($stack->id(), WhatIsKeptOfServices::aListingOfNothing());
             $standings->remember($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(1));
             $left->remember($stack->id(), KindOfWork::Walkthrough, Job::named(sprintf('a-walk-on-%s', $seed)));
         }
 
         // In the order the composition root registers them: the pairing first.
-        $this->keepers = [$this->stacks, $keychain, $keeping, $upkeep, $standings, $left];
+        $this->keepers = [$this->stacks, $keychain, $keeping, $upkeep, $listing, $standings, $left];
     }
 
     public function removing(): RemovingAStack

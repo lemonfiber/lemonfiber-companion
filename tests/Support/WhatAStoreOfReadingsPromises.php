@@ -16,6 +16,7 @@ use Modules\Kernel\Api\NewestReading;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
+use Modules\Services\Internal\ListingsKept;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 
 use function sprintf;
@@ -64,7 +65,7 @@ final readonly class WhatAStoreOfReadingsPromises
         ]);
     }
 
-    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores */
+    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores */
     public static function findsNothingWhereNothingIsKept(array $stores): void
     {
         foreach ($stores as $which => $made) {
@@ -72,7 +73,7 @@ final readonly class WhatAStoreOfReadingsPromises
         }
     }
 
-    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores */
+    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores */
     public static function handsBackWhatItKeptAsItCame(array $stores): void
     {
         foreach ($stores as $which => $made) {
@@ -83,7 +84,7 @@ final readonly class WhatAStoreOfReadingsPromises
         }
     }
 
-    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores */
+    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores */
     public static function keepsOneReadingPerStack(array $stores): void
     {
         foreach ($stores as $which => $made) {
@@ -98,7 +99,7 @@ final readonly class WhatAStoreOfReadingsPromises
         }
     }
 
-    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores */
+    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores */
     public static function forgetsOneStackAndNoOther(array $stores): void
     {
         foreach ($stores as $which => $made) {
@@ -116,7 +117,7 @@ final readonly class WhatAStoreOfReadingsPromises
     /**
      * The boundary is the decision: a reading exactly as old as the lifetime has not outlived it yet.
      *
-     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores
+     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores
      */
     public static function forgetsWhatWasReadBeforeAMoment(array $stores): void
     {
@@ -131,7 +132,7 @@ final readonly class WhatAStoreOfReadingsPromises
         }
     }
 
-    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores */
+    /** @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores */
     public static function forgetsEverythingItKeeps(array $stores): void
     {
         foreach ($stores as $which => $made) {
@@ -149,7 +150,7 @@ final readonly class WhatAStoreOfReadingsPromises
     /**
      * Each store holding a row for the first stack that a later build wrote.
      *
-     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores
+     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores
      */
     public static function answersALaterBuildsRowAsUnreadable(array $stores): void
     {
@@ -169,7 +170,7 @@ final readonly class WhatAStoreOfReadingsPromises
     /**
      * Each store holding a row for the first stack that a later build wrote.
      *
-     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores
+     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores
      */
     public static function forgetsAnUnreadableRowWithItsStack(array $stores): void
     {
@@ -184,7 +185,7 @@ final readonly class WhatAStoreOfReadingsPromises
     /**
      * Each store over a database whose table is not there, which is the case an adapter can meet on a phone.
      *
-     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept)> $stores
+     * @param array<string, Closure(): (HealthReadingsKept|UpkeepReadingsKept|ListingsKept)> $stores
      */
     public static function answersEvenWhereItCannotBeReached(array $stores): void
     {
@@ -217,7 +218,7 @@ final readonly class WhatAStoreOfReadingsPromises
     }
 
     /** When a keep was noted as written, or that it was not, as one word. */
-    private static function noted(HealthReadingsKept|UpkeepReadingsKept $store, SealedStack $stack, string $payload, int $seconds): string
+    private static function noted(HealthReadingsKept|UpkeepReadingsKept|ListingsKept $store, SealedStack $stack, string $payload, int $seconds): string
     {
         return $store->keep($stack, SealedPayload::of($payload), Shape::One, self::secondsAfter($seconds))->either(
             down: static fn(Instant $at): Code => Code::of(sprintf('down:%d', $at->epochSeconds() - self::WHEN_THE_READING_WAS_TAKEN)),
