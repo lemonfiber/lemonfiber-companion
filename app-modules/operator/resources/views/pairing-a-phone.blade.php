@@ -34,6 +34,16 @@
         @if ($this->going()->code->caution !== '')
             <x-design::note>{{ $this->going()->code->caution }}</x-design::note>
         @endif
+        {{-- What replacing the certificate would cost, in the stack's words,
+             and then how it is replaced, in this app's: at the machine. --}}
+        <x-design::note>{{ $this->going()->code->replacing }}</x-design::note>
+        <x-design::note>{{ __('stacks.pairing.replaced_at_the_machine') }}</x-design::note>
+    @elseif ($this->going()->isCheckedDifferently)
+        {{-- No line and no code: one the other phone could never check is
+             not handed out. --}}
+        <x-design::notice tone="trouble">
+            <x-design::strong>{{ __('stacks.pairing.checked_differently') }}</x-design::strong>
+        </x-design::notice>
     @elseif ($this->going()->hasExpired)
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.pairing.expired') }}</x-design::strong>

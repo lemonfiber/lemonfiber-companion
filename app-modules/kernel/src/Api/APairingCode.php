@@ -9,11 +9,16 @@ use function trim;
 /**
  * A pairing code the stack made, and what the operator is told beside it.
  *
- * The line another phone scans or types, the short form of the fingerprint a
- * person compares once it is typed, the moment it stops being good, and where
- * the phone reaches this machine with what is worth knowing about that
- * address. Every word is the stack's; the moment is the stack's too, and what
- * a clock on this phone reads at it is the screen's to say.
+ * The line another phone scans or types, the fingerprint it carries and the
+ * short form of it a person compares once it is typed, the moment it stops
+ * being good, where the phone reaches this machine with what is worth knowing
+ * about that address, and what replacing the certificate would cost. Every
+ * word is the stack's; the moment is the stack's too, and what a clock on this
+ * phone reads at it is the screen's to say.
+ *
+ * **The short form is worked out here too.** The phone that types the line
+ * folds the fingerprint itself and shows what it got, so a stack whose
+ * `compare` folds differently hands out a line nobody can check.
  *
  * **It is pairing material, so it never leaves this process.** It carries no
  * credential, and it still says where a machine is and which certificate it
@@ -24,10 +29,12 @@ final readonly class APairingCode
 {
     private function __construct(
         private APairingLine $line,
+        private Fingerprint $fingerprint,
         private string $compare,
         private Instant $expires,
         private string $address,
         private string $caution,
+        private string $replacing,
     ) {}
 
     /**
@@ -68,18 +75,20 @@ final readonly class APairingCode
      */
     public static function made(
         APairingLine $line,
+        Fingerprint $fingerprint,
         string $compare,
         Instant $expires,
         string $address,
         string $caution,
+        string $replacing,
     ): self {
-        foreach (['compare' => $compare, 'address' => $address] as $field => $said) {
+        foreach (['compare' => $compare, 'address' => $address, 'replacing' => $replacing] as $field => $said) {
             if (trim($said) === '') {
                 throw PairingIsNotReadable::becauseItSaysNothingAbout($field);
             }
         }
 
-        return new self($line, $compare, $expires, $address, $caution);
+        return new self($line, $fingerprint, $compare, $expires, $address, $caution, $replacing);
     }
 
     /** The line another phone scans or types. */
@@ -92,6 +101,12 @@ final readonly class APairingCode
     public function compare(): string
     {
         return $this->compare;
+    }
+
+    /** Whether the short form the stack sent is the one a phone works out from the fingerprint. */
+    public function agreesOnTheCheckCode(): bool
+    {
+        return AtAGlance::of($this->fingerprint)->shown() === $this->compare;
     }
 
     /** The moment it stops being good. */
@@ -110,6 +125,12 @@ final readonly class APairingCode
     public function caution(): string
     {
         return $this->caution;
+    }
+
+    /** What replacing the certificate would cost every phone paired with it, in words any surface can show. */
+    public function replacing(): string
+    {
+        return $this->replacing;
     }
 
     /** Whether it has stopped being good by `$now`. */

@@ -387,7 +387,7 @@ final readonly class WhatTheWireWouldAnswer
         return [
             'api_version' => Api::VERSION,
             'kind' => WhatTheContractDeclares::kindOf($envelope),
-            'data' => self::withEditsThatRead(WhatAStackWouldSay::inside($envelope)),
+            'data' => PairingMaterialAsItReads::in(self::withEditsThatRead(WhatAStackWouldSay::inside($envelope))),
         ];
     }
 

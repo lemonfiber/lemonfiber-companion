@@ -410,6 +410,8 @@ return [
         'compare' => 'Als het getypt is, laat de andere telefoon dit zien. Kijk of het overeenkomt.',
         'until' => 'Hij is geldig tot :until.',
         'reaches' => 'De telefoon bereikt deze machine op :address.',
+        'replaced_at_the_machine' => 'Het certificaat wordt op de machine vervangen, niet hier.',
+        'checked_differently' => 'Deze stack berekent een andere controlecode dan deze telefoon, dus een telefoon die deze regel typt kan hem niet controleren. Werk lemonfiber of de app bij.',
         'expired' => 'Deze code is verlopen',
         'make_a_new_one' => 'Maak een nieuwe',
     ],

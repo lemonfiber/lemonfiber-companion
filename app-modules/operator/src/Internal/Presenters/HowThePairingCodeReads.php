@@ -56,6 +56,12 @@ final readonly class HowThePairingCodeReads
         return $this->without(HowTheReadingWent::itCameBack(), hasExpired: true);
     }
 
+    /** The stack's check code is not the one a phone typing the line works out, so the code is not shown. */
+    public function checkedDifferently(): HowThePairingCodeWent
+    {
+        return $this->without(HowTheReadingWent::itCameBack(), isCheckedDifferently: true);
+    }
+
     /**
      * The code the stack made, with its line drawn as a code and its moment
      * on the clock of the phone showing it.
@@ -69,6 +75,7 @@ final readonly class HowThePairingCodeReads
             went: HowTheReadingWent::itCameBack(),
             isWorking: false,
             hasExpired: false,
+            isCheckedDifferently: false,
             refused: '',
             code: new APairingCodeAsShown(
                 squares: new HowACodeReads()->squares($drawn),
@@ -77,6 +84,7 @@ final readonly class HowThePairingCodeReads
                 until: $here->timeOfDayAt($code->expiresAt())->shown(),
                 address: $code->address(),
                 caution: $code->caution(),
+                replacing: $code->replacing(),
             ),
         );
     }
@@ -86,12 +94,14 @@ final readonly class HowThePairingCodeReads
         HowTheReadingWent $went,
         bool $isWorking = false,
         bool $hasExpired = false,
+        bool $isCheckedDifferently = false,
         string $refused = '',
     ): HowThePairingCodeWent {
         return new HowThePairingCodeWent(
             went: $went,
             isWorking: $isWorking,
             hasExpired: $hasExpired,
+            isCheckedDifferently: $isCheckedDifferently,
             refused: $refused,
             code: null,
         );
