@@ -65,7 +65,7 @@ trait FindsItsWayAroundAStack
     /** Open What's new on this stack, which the operator can widen to every stack from there. */
     public function openWhatsNew(): void
     {
-        $this->navigate(AScreenWithoutAStack::WhatsNew->value, [AScreenWithoutAStack::WHATS_NEW_SHOWS => $this->stack()->id()->stored()]);
+        $this->navigate(new TheWhatsNewInTheMenu($this->howMuchIsNewHere())->goes(), [AScreenWithoutAStack::WHATS_NEW_SHOWS => $this->stack()->id()->stored()]);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Wayfinding\Internal;
 
 use Modules\News\Api\HowMuchIsNew;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 
 use function sprintf;
 
@@ -36,6 +37,12 @@ final readonly class TheWhatsNewInTheMenu
     public function iosGlyph(): string
     {
         return 'newspaper';
+    }
+
+    /** Where the item goes, which the screen hands this stack to. */
+    public function goes(): string
+    {
+        return AScreenWithoutAStack::WhatsNew->value;
     }
 
     /** How many new items there are on this stack, of every kind. */

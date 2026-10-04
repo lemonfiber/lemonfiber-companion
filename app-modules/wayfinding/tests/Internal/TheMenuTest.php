@@ -90,6 +90,7 @@ it('gives What\'s new and the two settings an icon each platform has, and a labe
     }
 
     expect(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->said())->toBe('navigation.menu.whats_new')
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->goes())->toBe('/whats-new')
         ->and(new TheStacksSettingsInTheMenu()->screen())->toBe(AStacksScreen::OnThisPhone)
         ->and(new ThePhonesSettingsInTheMenu()->said())->toBe('navigation.menu.app_settings')
         ->and(new ThePhonesSettingsInTheMenu()->appSettings())->toBe('/settings');

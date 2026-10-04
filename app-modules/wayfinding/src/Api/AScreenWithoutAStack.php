@@ -51,6 +51,7 @@ enum AScreenWithoutAStack: string
 
     /** How this phone is set: the lock, readings, the order of the stacks and what is kept. */
     case Settings = '/settings';
+
     /**
      * What opening What's new from a stack's menu hands it: the stack it shows, by its stored identifier.
      *
