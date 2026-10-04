@@ -33,6 +33,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 /** The machine whose services this screen is about. */
 function theStackWhoseServicesAreRead(): Stack
@@ -62,7 +63,7 @@ function theServicesScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisStackRuns($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatThisStackRuns($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noListingYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

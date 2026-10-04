@@ -39,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
 use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -135,6 +136,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly HearingTheStart $hearingTheStart,
         protected readonly WhatItListensWith $listening,
+        private readonly KeepingWhatItRuns $kept,
     ) {}
 
     /**
@@ -146,7 +148,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->listingOf($this->stack(), $this->storage, $this->supervising);
+        return $this->listingOf($this->stack(), $this->storage, $this->supervising, $this->kept);
     }
 
 
@@ -166,7 +168,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         // The forms are asked only where the name is not a service's, and on
         // the frame after the listing.
         return $reads->service($this->answer(), $named)
-            ?? $reads->form($named, $this->formsOf($this->stack(), $this->storage, $this->supervising));
+            ?? $reads->form($named, $this->formsOf($this->stack(), $this->storage, $this->supervising, $this->kept));
     }
 
     /**
@@ -175,11 +177,12 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * Asked only where the template draws a form, on a frame that has not
      * read the stack already, and nothing until then. Shown before the verbs,
      * so what a start would bring up and leave out is on the screen before
-     * anybody starts it; nothing is started by asking.
+     * anybody starts it; nothing is started by asking. Not asked while the
+     * listing drawn is one the phone kept, which a fresh listing ends.
      */
     public function rehearsal(): ?WhatStartingItWouldShow
     {
-        if ($this->rehearsed instanceof WhatStartingItWouldShow || ! $this->mayReadItsStack()) {
+        if ($this->rehearsed instanceof WhatStartingItWouldShow || $this->answer()->waitsForTheStack || ! $this->mayReadItsStack()) {
             return $this->rehearsed;
         }
 
@@ -193,12 +196,15 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * {@see agree()} is the only thing that sends it. That is the rule in the
      * shape of a method: this one cannot act on a verb that asks first however
      * it is called.
+     *
+     * Refused while the listing drawn is one the phone kept: a verb is sent
+     * only against a fresh listing.
      */
     public function wouldYouLike(string $doing): void
     {
         $verb = WhatToDoWithIt::tryFrom($doing);
 
-        if (! $verb instanceof WhatToDoWithIt) {
+        if ($this->answer()->waitsForTheStack || ! $verb instanceof WhatToDoWithIt) {
             return;
         }
 
@@ -223,12 +229,13 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      *
      * It sends what was held and nothing a template passed in, so the thing
      * that was confirmed and the thing that happens are the same value.
+     * Refused while the listing drawn is one the phone kept.
      */
     public function agree(): void
     {
         $agreed = $this->asking;
 
-        if (! $agreed instanceof AgreedTo) {
+        if ($this->answer()->waitsForTheStack || ! $agreed instanceof AgreedTo) {
             return;
         }
 
@@ -252,14 +259,16 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * operator confirms on is the one the stack reported on the reading they
      * are looking at — not one fetched when they tapped, and not one this app
      * worked out. The second is forbidden, and the first would be a
-     * different stack's answer by the time it arrived.
+     * different stack's answer by the time it arrived. A kept listing is
+     * nothing to confirm on, so while the screen draws one there is none.
      */
     public function whatItTakesAway(): ?WhatAVerbTakesAwaySays
     {
         $agreed = $this->asking;
-        $disturbs = $this->answer()->disturbs;
+        $answer = $this->answer();
+        $disturbs = $answer->disturbs;
 
-        if (! $agreed instanceof AgreedTo || ! $disturbs instanceof Disturbances) {
+        if (! $agreed instanceof AgreedTo || $answer->waitsForTheStack || ! $disturbs instanceof Disturbances) {
             return null;
         }
 

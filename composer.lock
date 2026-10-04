@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c53dc68c7451ff09543b5ef238f25ea",
+    "content-hash": "bb896f0b0fbd62f425141804e67bbdf4",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3684,7 +3684,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "bb910c1135b4ea0c4c3b9d3c993af2177ea4710a"
+                "reference": "3f229fdd1250255f230980fb41b77c3d27691bc9"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3692,6 +3692,7 @@
                 "modules/design": "dev-main",
                 "modules/health": "dev-main",
                 "modules/kernel": "dev-main",
+                "modules/services": "dev-main",
                 "modules/stacks": "dev-main",
                 "modules/updates": "dev-main",
                 "modules/wayfinding": "dev-main",
@@ -3800,6 +3801,44 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "Sealing what the phone keeps, under keys the platform's secure storage holds.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/services",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/services",
+                "reference": "009e22e8983f05922b7194f31fa0766f228f36c9"
+            },
+            "require": {
+                "illuminate/database": "^13.17",
+                "modules/kernel": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "capability"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Services\\": "src/",
+                    "Modules\\Services\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "What a stack runs: which of its services are drawn and installed, and the reading of them the phone keeps.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14794,6 +14833,7 @@
         "modules/operator": 20,
         "modules/sdk": 20,
         "modules/seal": 20,
+        "modules/services": 20,
         "modules/stacks": 20,
         "modules/updates": 20,
         "modules/vault": 20,

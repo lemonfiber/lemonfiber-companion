@@ -21,7 +21,7 @@ it('lets go of the stack\'s pairing, session, readings and markers in one act, a
 
     expect($phone->removing()->remove(APhoneHoldingTwoStacks::aStack('a')->id()))->toBe(WhatBecameOfRemoving::Removed)
         ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('a')->id()))->toBe([])
-        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('b')->id()))->toBe([0, 1, 2, 3, 4, 5])
+        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('b')->id()))->toBe([0, 1, 2, 3, 4, 5, 6])
         ->and(new PlatformStacks($phone->store)->underWay()->isEmpty())->toBeTrue()
         ->and($phone->stacks->configured()->knows(APhoneHoldingTwoStacks::aStack('b')->id()))->toBeTrue();
 });
@@ -45,15 +45,16 @@ it('finishes a removal cut short after any step when the app next opens, and nev
         ->and($left->isEmpty())->toBeTrue()
         ->and($phone->stillKeeping($removed))->toBe([])
         ->and(new PlatformStacks($phone->store)->underWay()->isEmpty())->toBeTrue()
-        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('b')->id()))->toBe([0, 1, 2, 3, 4, 5]);
+        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('b')->id()))->toBe([0, 1, 2, 3, 4, 5, 6]);
 })->with([
     'before anything was let go of' => [0],
     'after the pairing' => [1],
     'after the session' => [2],
     'after the readings' => [3],
     'after the reading of what is up to date' => [4],
-    'after the words' => [5],
-    'after the work left running, before it was struck off' => [6],
+    'after the listing of what it runs' => [5],
+    'after the words' => [6],
+    'after the work left running, before it was struck off' => [7],
 ]);
 
 it('touches nothing where the removal cannot be written down', function (): void {
@@ -61,7 +62,7 @@ it('touches nothing where the removal cannot be written down', function (): void
     $removing = new RemovingAStack(RemovalsUnderWayInMemory::refusing(), new EveryKeeperOfAStack(...$phone->keepers));
 
     expect($removing->remove(APhoneHoldingTwoStacks::aStack('a')->id()))->toBe(WhatBecameOfRemoving::Refused)
-        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('a')->id()))->toBe([0, 1, 2, 3, 4, 5])
+        ->and($phone->stillKeeping(APhoneHoldingTwoStacks::aStack('a')->id()))->toBe([0, 1, 2, 3, 4, 5, 6])
         ->and($phone->stacks->configured()->knows(APhoneHoldingTwoStacks::aStack('a')->id()))->toBeTrue();
 });
 

@@ -132,7 +132,7 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
 
     $screen = match ($tab) {
         TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
-        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noListingYet()),
         TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet()),
         TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
     };
@@ -160,7 +160,7 @@ function theShedsOtherScreenHearing(
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($which) {
-        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening),
+        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening, WhatThePhoneKeeps::noListingYet()),
         'what a service said' => new WhatThisServiceSaid(AServiceThatSpoke::met($offline), $keychain, $around, AZoneThatIsSet::to('Europe/Amsterdam'), new AppsSettingsThatOpen(), $listening),
         'the words the menu opens' => new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
         default => new WatchingOneArrive(

@@ -29,6 +29,7 @@ app-modules/
 
   connection/             pairing, session, multi-stack       (N1)
   stacks/                 stacks and their services
+  services/               what a stack runs, kept between launches
   health/                 verdict, findings, repairs          (N2)
   backups/                snapshots
   updates/                versions, apply, undo
@@ -1004,12 +1005,12 @@ honestly described: the table reports green and a reader stops checking, which
 is strictly worse than an unchecked area, because an unchecked area gets
 reviewed by a person.
 
-**Why the floors are per tree.** One percentage across seventeen trees is an
+**Why the floors are per tree.** One percentage across every tree is an
 average, and an average is true about what it covered and silent about what it
 covered over: a capability at 100% carries an adapter at 40% and the gate
 reports a pass. The clover report already holds the per-file numbers, so
 splitting it by directory costs nothing at the point of measurement and turns
-one number into seventeen.
+one number into one per tree.
 
 **A tree's floors are declared in the nearest manifest above it.** That is one
 principle applied three times rather than three cases:

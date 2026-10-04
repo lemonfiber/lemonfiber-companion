@@ -27,6 +27,7 @@ use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\Unsealed;
 use Modules\News\Internal\TheNewsAsKept;
 use Modules\Seal\Api\EncrypterSeal;
+use Modules\Services\Internal\TheListingAsKept;
 use Modules\Updates\Internal\TheUpkeepAsKept;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
@@ -65,6 +66,7 @@ const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheSummaryAsKept::class,
     TheNewsAsKept::class,
     TheUpkeepAsKept::class,
+    TheListingAsKept::class,
 ];
 
 /** The one other class that makes a value to seal: the seal, handing back what it opened. */

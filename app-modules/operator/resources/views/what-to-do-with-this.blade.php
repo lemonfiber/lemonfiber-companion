@@ -2,6 +2,21 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+@if ($this->answer()->waitsForTheStack)
+    {{-- What the phone kept, said for what it is: how long ago it was
+         read, and above it what stopped the reading asked for now. Asking
+         again is the column's own, below. --}}
+    @if (! $this->answer()->askedNow->cameBack())
+        <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
+            :went="$this->answer()->askedNow"
+            ask-again=""
+            :sign-in-goes-to="$this->goes()->signIn()"
+        />
+    @endif
+    <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+@endif
+
 @if ($this->asking() !== null)
     {{-- What this will take away, stated before the yes and not
          after it. A confirmation an operator can tap past without reading
@@ -23,8 +38,12 @@
          are different decisions, and the decision is made before the verb
          runs. There is no fallback sentence: a length this app invented
          would be a guess at something the stack knows, wrong in exactly the
-         cases somebody most needs it, and wrong silently. --}}
-    <x-design::note>{{ __($this->whatItTakesAway()->said, ['seconds' => $this->whatItTakesAway()->seconds]) }}</x-design::note>
+         cases somebody most needs it, and wrong silently. Nothing is said
+         while the listing drawn is one the phone kept: the length is the
+         fresh listing's to state. --}}
+    @if ($this->whatItTakesAway() !== null)
+        <x-design::note>{{ __($this->whatItTakesAway()->said, ['seconds' => $this->whatItTakesAway()->seconds]) }}</x-design::note>
+    @endif
 
     @if ($this->thing()->isAForm)
         {{-- A whole form is every service in it, which is more than the
@@ -62,7 +81,12 @@
         @endif
     @endif
 
-    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    {{-- Drawn and not usable while the listing drawn is one the phone kept:
+         a verb is agreed to only against a fresh one. --}}
+    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    @if ($this->answer()->waitsForTheStack)
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
     <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
 @elseif ($this->thing()->waits)
     {{-- Not a service of this name, and the forms are read on the next
@@ -98,9 +122,11 @@
             <x-design::heading>{{ __('health.came_to.heading') }}</x-design::heading>
 
             @if (! $this->whatItCameTo()->went->cameBack())
+                {{-- Asking again is the column's own, at its foot. --}}
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->whatItCameTo()->went"
+                    ask-again=""
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
                 <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
@@ -190,9 +216,11 @@
             @if ($this->rehearsal() === null)
                 {{-- Rehearsed on the next frame. --}}
             @elseif (! $this->rehearsal()->went->cameBack())
+                {{-- Asking again is the column's own, at its foot. --}}
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->rehearsal()->went"
+                    ask-again=""
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
             @else
@@ -249,7 +277,7 @@
              one subject on this frame, so the label is the whole name a
              reader needs — which is the difference between a verb here and
              the same verb drawn once per row on the listing. --}}
-        <x-design::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" />
+        <x-design::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" :disabled="$this->answer()->waitsForTheStack" />
     @empty
         {{-- Said rather than left blank: a thing this stack runs and offers
              nothing for reads as a frame whose buttons failed to draw. --}}
@@ -263,6 +291,13 @@
             <x-design::note>{{ __('health.nothing_to_do_with_it') }}</x-design::note>
         @endif
     @endforelse
+
+    @if ($this->answer()->waitsForTheStack && $this->thing()->verbs !== [])
+        {{-- Drawn and not usable while the listing drawn is one the phone
+             kept, never hidden: beside them, why they wait and how old the
+             listing is. --}}
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
 
     @unless ($this->thing()->isAForm)
         <x-design::link

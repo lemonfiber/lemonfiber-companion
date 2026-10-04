@@ -2,6 +2,21 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+    @if ($this->answer()->waitsForTheStack)
+        {{-- What the phone kept, said for what it is: how long ago it was
+             read, and above it what stopped the reading asked for now. Asking
+             again is the column's own, below. --}}
+        @if (! $this->answer()->askedNow->cameBack())
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->answer()->askedNow"
+                ask-again=""
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @endif
+        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    @endif
+
     {{-- What it all amounts to, as the stack judged it — said before the
          rows, so an operator who opened this because a film would not play
          reads the answer before the list. --}}

@@ -1,0 +1,26 @@
+{
+    "name": "modules/services",
+    "description": "What a stack runs: which of its services are drawn and installed, and the reading of them the phone keeps.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "illuminate/database": "^13.17",
+        "modules/kernel": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Services\\": "src/",
+            "Modules\\Services\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            },
+            "kind": "capability"
+        }
+    }
+}

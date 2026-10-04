@@ -19,10 +19,12 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
+use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -70,6 +72,12 @@ use function view;
  * network nothing the rest of the time — which is what keeps this from being
  * the polling that is refused.
  *
+ * **It opens on what the phone kept.** The first frame draws the listing kept
+ * from an earlier session, with how long ago it was read, before the stack is
+ * asked anything; the fresh listing replaces it and is kept in its place.
+ * Where the stack cannot be reached, the kept listing stays, beside what stood
+ * in the way. Every action on a service or a form waits for a fresh listing.
+ *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
@@ -99,6 +107,7 @@ final class WhatThisStackRuns extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly KeepingWhatItRuns $kept,
     ) {}
 
     /**
@@ -110,13 +119,13 @@ final class WhatThisStackRuns extends NativeComponent
      */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->listingOf($this->stack(), $this->storage, $this->supervising);
+        return $this->listingOf($this->stack(), $this->storage, $this->supervising, $this->kept);
     }
 
     /** The forms the stack declares, or nothing while they wait for the next frame. */
     public function forms(): ?TheFormsAsFound
     {
-        return $this->formsOf($this->stack(), $this->storage, $this->supervising);
+        return $this->formsOf($this->stack(), $this->storage, $this->supervising, $this->kept);
     }
 
 
@@ -150,5 +159,30 @@ final class WhatThisStackRuns extends NativeComponent
         $this->aFrameBegins();
 
         return view('operator::what-this-stack-runs');
+    }
+
+    /**
+     * Open the stack's stream and ask the stack, behind the first frame.
+     *
+     * The first frame drew what the phone kept; the next frame asks, and what
+     * the stack says then replaces it.
+     */
+    public function mount(): void
+    {
+        $this->listen();
+        $this->answered = null;
+    }
+
+    /**
+     * The first frame: the listing the phone kept, drawn as the screen draws
+     * any, with its age, before the stack is asked anything.
+     *
+     * Only where nothing was kept is the frame the platform's indicator.
+     */
+    protected function placeholder(): Element|View
+    {
+        return $this->opensOnWhatWasKept($this->stack(), $this->kept)
+            ? view('operator::what-this-stack-runs')
+            : parent::placeholder();
     }
 }
