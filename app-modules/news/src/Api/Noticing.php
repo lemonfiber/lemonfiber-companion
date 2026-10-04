@@ -7,7 +7,9 @@ namespace Modules\News\Api;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\TheNewestNamed;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\TheNewestAsItems;
 use Modules\News\Internal\TheNewestItem;
 
 /**
@@ -50,6 +52,22 @@ final readonly class Noticing implements ForgetsAStack
         }
 
         return WhatIsNew::nothing();
+    }
+
+    /**
+     * Which tabs hold something new, and how many, by what the stack named as newest.
+     *
+     * Asked exactly as the list of what is new asks, kind by kind, so a tab
+     * and the list never disagree: a kind switched off marks nothing, the
+     * first sight of a kind records it as seen and marks nothing, and a kind
+     * the stack could not read is not asked about at all.
+     */
+    public function whatTheTabsHold(StackId $stack, TheNewestNamed $newest): TheTabsMarked
+    {
+        return TheTabsMarked::holding(
+            $newest->releases()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::updates($newest)) : WhatIsNew::nothing(),
+            $newest->problems()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::problems($newest)) : WhatIsNew::nothing(),
+        );
     }
 
     /** The operator has seen this item, and every older one of its kind with it; whether that was kept. */

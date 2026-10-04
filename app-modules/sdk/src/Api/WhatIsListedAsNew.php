@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_is_list;
 use function array_key_exists;
-use function filter_var;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -18,15 +16,13 @@ use Modules\Kernel\Api\AProblemListed;
 use Modules\Kernel\Api\AReleaseListed;
 use Modules\Kernel\Api\ARequestListed;
 use Modules\Kernel\Api\Check;
-use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Sdk\Api\Fields\NewsItemsField;
+use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
-
-use function preg_match;
 
 /**
  * Reads the `news-items` envelope into what a stack lists that could be new.
@@ -53,12 +49,12 @@ final readonly class WhatIsListedAsNew
             throw NewsIsUnreadable::missing(WireField::Data);
         }
 
-        $unread = self::unread($data);
+        $unread = WhatANewsListHolds::unread($data);
 
         return new TheNewsOfAStack(
-            in_array(NewsItemsField::Updates->value, $unread, strict: true) ? WhatTheStackListed::unread() : WhatTheStackListed::these(...self::releases($data)),
+            in_array(WireField::Updates->value, $unread, strict: true) ? WhatTheStackListed::unread() : WhatTheStackListed::these(...self::releases($data)),
             in_array(WireField::Requests->value, $unread, strict: true) ? WhatTheStackListed::unread() : WhatTheStackListed::these(...self::requests($data)),
-            in_array(NewsItemsField::Problems->value, $unread, strict: true) ? WhatTheStackListed::unread() : WhatTheStackListed::these(...self::problems($data)),
+            in_array(WireField::Problems->value, $unread, strict: true) ? WhatTheStackListed::unread() : WhatTheStackListed::these(...self::problems($data)),
         );
     }
 
@@ -76,28 +72,6 @@ final readonly class WhatIsListedAsNew
     }
 
     /**
-     * The kinds the stack could not read, by the words the wire names them with.
-     *
-     * @param array<array-key, mixed> $data
-     *
-     * @return list<string>
-     */
-    private static function unread(array $data): array
-    {
-        $words = [];
-
-        foreach (self::listOf($data, WireField::Unread) as $word) {
-            if (! is_string($word)) {
-                throw NewsIsUnreadable::missing(WireField::Unread);
-            }
-
-            $words[] = $word;
-        }
-
-        return $words;
-    }
-
-    /**
      * @param array<array-key, mixed> $data
      *
      * @return list<AReleaseListed>
@@ -106,9 +80,9 @@ final readonly class WhatIsListedAsNew
     {
         $read = [];
 
-        foreach (self::listOf($data, NewsItemsField::Updates) as $position => $release) {
-            $item = self::entry($release, NewsItemsField::Updates, WireField::Version, $position);
-            $version = self::text($item, NewsItemsField::Updates, WireField::Version, $position);
+        foreach (WhatANewsListHolds::listOf($data, WireField::Updates) as $position => $release) {
+            $item = WhatANewsListHolds::entry($release, WireField::Updates, WireField::Version, $position);
+            $version = WhatANewsListHolds::text($item, WireField::Updates, WireField::Version, $position);
             $delivers = self::optional($item, WireField::Delivers);
             $read[] = AReleaseListed::versioned(
                 $version,
@@ -128,8 +102,8 @@ final readonly class WhatIsListedAsNew
     {
         $read = [];
 
-        foreach (self::listOf($data, WireField::Requests) as $position => $request) {
-            $item = self::entry($request, WireField::Requests, WireField::Number, $position);
+        foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $request) {
+            $item = WhatANewsListHolds::entry($request, WireField::Requests, WireField::Number, $position);
             if (! array_key_exists(WireField::Number->value, $item) || ! is_int($item[WireField::Number->value])) {
                 throw NewsIsUnreadable::item(WireField::Requests, WireField::Number, $position);
             }
@@ -139,7 +113,7 @@ final readonly class WhatIsListedAsNew
             $read[] = new ARequestListed(
                 RequestId::numbered($number),
                 self::optional($item, WireField::Title),
-                self::text($item, WireField::Requests, NewsItemsField::By, $position),
+                WhatANewsListHolds::text($item, WireField::Requests, NewsItemsField::By, $position),
             );
         }
 
@@ -155,70 +129,17 @@ final readonly class WhatIsListedAsNew
     {
         $read = [];
 
-        foreach (self::listOf($data, NewsItemsField::Problems) as $position => $problem) {
-            $item = self::entry($problem, NewsItemsField::Problems, WireField::Check, $position);
-            $onset = self::text($item, NewsItemsField::Problems, NewsItemsField::Onset, $position);
-
-            $seconds = filter_var($onset, FILTER_VALIDATE_INT);
-
-            // Digits and nothing else, as `Records` reads a change's `at`, and
-            // within an integer, which a long enough run of digits is not.
-            if (preg_match('/^\d+$/', $onset) !== 1 || $seconds === false) {
-                throw NewsIsUnreadable::item(NewsItemsField::Problems, NewsItemsField::Onset, $position);
-            }
+        foreach (WhatANewsListHolds::listOf($data, WireField::Problems) as $position => $problem) {
+            $item = WhatANewsListHolds::entry($problem, WireField::Problems, WireField::Check, $position);
 
             $read[] = new AProblemListed(
-                Check::of(self::text($item, NewsItemsField::Problems, WireField::Check, $position)),
-                Instant::atEpochSeconds($seconds),
-                self::text($item, NewsItemsField::Problems, WireField::Summary, $position),
+                Check::of(WhatANewsListHolds::text($item, WireField::Problems, WireField::Check, $position)),
+                WhatANewsListHolds::onset($item, $position),
+                WhatANewsListHolds::text($item, WireField::Problems, WireField::Summary, $position),
             );
         }
 
         return $read;
-    }
-
-    /**
-     * One list of the payload, refused where it is not one.
-     *
-     * @param array<array-key, mixed> $data
-     *
-     * @return list<mixed>
-     */
-    private static function listOf(array $data, NamesAWireField $field): array
-    {
-        if (! array_key_exists($field->value, $data) || ! is_array($data[$field->value]) || ! array_is_list($data[$field->value])) {
-            throw NewsIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
-    }
-
-    /**
-     * One entry of a list, refused where it is not an object.
-     *
-     * @return array<array-key, mixed>
-     */
-    private static function entry(mixed $entry, NamesAWireField $list, NamesAWireField $field, int $position): array
-    {
-        if (! is_array($entry)) {
-            throw NewsIsUnreadable::item($list, $field, $position);
-        }
-
-        return $entry;
-    }
-
-    /**
-     * A field every entry of its kind carries as text.
-     *
-     * @param array<array-key, mixed> $item
-     */
-    private static function text(array $item, NamesAWireField $list, NamesAWireField $field, int $position): string
-    {
-        if (! array_key_exists($field->value, $item) || ! is_string($item[$field->value])) {
-            throw NewsIsUnreadable::item($list, $field, $position);
-        }
-
-        return $item[$field->value];
     }
 
     /**

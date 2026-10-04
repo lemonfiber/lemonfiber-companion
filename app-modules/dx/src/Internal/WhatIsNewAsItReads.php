@@ -12,7 +12,6 @@ use function count;
 use function is_array;
 use function is_string;
 
-use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Api\WireField;
 
 /**
@@ -44,20 +43,20 @@ final readonly class WhatIsNewAsItReads
         // `problems` and `requests` are required by the declaration, so the
         // keys are always there; what is not known to the analyser is that
         // each holds a list.
-        $problems = $news[NewsItemsField::Problems->value];
+        $problems = $news[WireField::Problems->value];
         $requests = $news[WireField::Requests->value];
         $dated = [];
         $numbered = [];
 
         foreach (is_array($problems) ? $problems : [] as $problem) {
-            $dated[] = [...self::namedKeysOf($problem), NewsItemsField::Onset->value => $onset];
+            $dated[] = [...self::namedKeysOf($problem), WireField::Onset->value => $onset];
         }
 
         foreach (is_array($requests) ? $requests : [] as $request) {
             $numbered[] = [...self::namedKeysOf($request), WireField::Number->value => count($numbered) + 1];
         }
 
-        $news[NewsItemsField::Problems->value] = $dated;
+        $news[WireField::Problems->value] = $dated;
         $news[WireField::Requests->value] = $numbered;
         $news[WireField::Unread->value] = [];
         $envelope['data'] = $news;

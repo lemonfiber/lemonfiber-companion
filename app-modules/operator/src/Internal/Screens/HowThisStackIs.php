@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
@@ -149,6 +150,7 @@ final class HowThisStackIs extends NativeComponent
         private readonly Standings $standings,
         private readonly KeepingTheLastReading $keeping,
         protected readonly TheAppsSettings $settings,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

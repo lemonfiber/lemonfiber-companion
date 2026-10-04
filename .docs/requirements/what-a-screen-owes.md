@@ -84,8 +84,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 67 envelopes and this app follows 59.
-Of the rest, 7 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 67 envelopes and this app follows 60.
+Of the rest, 6 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 1 more — `Pull` — is named without being followed. `Admission` is
 followed through the SDK: signing in opens a door whose class reads that
 envelope itself, so no reader here opens it.

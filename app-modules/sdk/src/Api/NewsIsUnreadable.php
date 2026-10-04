@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use function sprintf;
 
 /**
- * The `news-items` envelope did not hold what the contract says it holds.
+ * A `news-items` envelope, or a `news` event, did not hold what the contract says it holds.
  *
  * A developer reads it, so it is `sprintf` and never translated (`L1`).
  * Refused rather than salvaged: an item dropped from a list is one the phone
@@ -21,7 +21,7 @@ final class NewsIsUnreadable extends InvalidArgumentException
     public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
-            'The news-items envelope has no readable `%s`. This answer did not come from a lemonfiber of a version this app can read.',
+            'A news envelope has no readable `%s`. This answer did not come from a lemonfiber of a version this app can read.',
             $field->value,
         ));
     }
@@ -30,7 +30,7 @@ final class NewsIsUnreadable extends InvalidArgumentException
     public static function item(NamesAWireField $list, NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
-            'Entry %d of `%s` in the news-items envelope has no readable `%s`.',
+            'Entry %d of `%s` in a news envelope has no readable `%s`.',
             $position + 1,
             $list->value,
             $field->value,

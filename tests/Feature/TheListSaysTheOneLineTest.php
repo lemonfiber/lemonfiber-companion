@@ -33,6 +33,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -286,6 +287,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         $standings,
         WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
     $heard->listen();

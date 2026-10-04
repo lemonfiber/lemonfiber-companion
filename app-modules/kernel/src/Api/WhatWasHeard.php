@@ -14,6 +14,11 @@ use Closure;
  * summary, which proves the stack is still there. A summary arrived. The
  * subscription is closed, by the stack or by the app. Or it could not be opened
  * or read, and the obstacle says why.
+ *
+ * **What the stack named as newest rides beside any of them.** It arrives on
+ * the same stream, when a listener arrives and whenever it changes, so it is
+ * carried apart from the five rather than as a sixth: a summary and the
+ * newest of each kind can arrive in one wake, and neither is lost.
  */
 final readonly class WhatWasHeard
 {
@@ -21,6 +26,7 @@ final readonly class WhatWasHeard
         private WhatArrived $arrived,
         private ?TheHealthSummary $summary,
         private ?Obstacle $why,
+        private ?TheNewestNamed $newest = null,
     ) {}
 
     public static function nothing(): self
@@ -46,6 +52,27 @@ final readonly class WhatWasHeard
     public static function met(Obstacle $why): self
     {
         return new self(WhatArrived::AnObstacle, null, $why);
+    }
+
+    /** The same, with the newest of each kind the stack named in this wake. */
+    public function naming(TheNewestNamed $newest): self
+    {
+        return new self($this->arrived, $this->summary, $this->why, $newest);
+    }
+
+    /**
+     * The newest of each kind the stack named in this wake, where it named them.
+     *
+     * @template T of object
+     *
+     * @param Closure(TheNewestNamed): T $named
+     * @param Closure(): T $nothing
+     *
+     * @return T
+     */
+    public function theNewest(Closure $named, Closure $nothing): object
+    {
+        return $this->newest instanceof TheNewestNamed ? $named($this->newest) : $nothing();
     }
 
     /**
