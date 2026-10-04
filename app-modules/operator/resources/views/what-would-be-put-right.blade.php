@@ -178,4 +178,4 @@
          removing it leaves the leaf still reachable. --}}
 </x-operator::content>
 
-<x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />
+<x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

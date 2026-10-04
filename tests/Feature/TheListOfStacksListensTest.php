@@ -17,20 +17,19 @@ use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
-use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
-use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\NoticingWhatIsNew;
-use Tests\Support\WhatThePhoneKeeps;
 
 // The list of stacks the top bar's name opens says how each stack stands. On a
 // screen that holds no stream, what the phone kept goes out of date within
@@ -77,12 +76,12 @@ function signedIntoBoth(): AKeychainInMemory
     return $keychain;
 }
 
-/** A tab on the cellar that holds no stream, with the list listening through `$hearing`. */
-function aTabThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $standings, ?ACaptureInMemory $capture = null): HowCurrentThisStackIs
+/** The glossary on the cellar, a screen the menu opens that holds no stream, with the list listening through `$hearing`. */
+function aScreenThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory $standings, ?ACaptureInMemory $capture = null): WhatTheWordsMean
 {
     $keychain = signedIntoBoth();
-    $screen = new HowCurrentThisStackIs(
-        AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
+    $screen = new WhatTheWordsMean(
+        AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(
             StacksInMemory::holding(theCellar(), theShed()),
@@ -108,12 +107,8 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
-        $own,
-        $clock,
-        ACaptureInMemory::inFront(),
-        $standings,
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening($own, $clock, standings: $standings),
         NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
@@ -126,7 +121,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
  *
  * @return array<string, string>
  */
-function whatEachRowSays(HowCurrentThisStackIs $screen): array
+function whatEachRowSays(WhatTheWordsMean $screen): array
 {
     $said = [];
 
@@ -141,7 +136,7 @@ it('says how each stack stands now once the open list has listened, where what w
     $standings = StandingsInMemory::working()
         ->lastHeard(theCellar()->id(), HowItStands::Healthy, Instant::atEpochSeconds(LISTENING_AT - 600))
         ->lastHeard(theShed()->id(), HowItStands::Healthy, Instant::atEpochSeconds(LISTENING_AT - 600));
-    $screen = aTabThatHearsThrough(AStackThatSpeaksUp::holdingOpen(theStackIsCritical(), theStackIsCritical()), $standings);
+    $screen = aScreenThatHearsThrough(AStackThatSpeaksUp::holdingOpen(theStackIsCritical(), theStackIsCritical()), $standings);
     $screen->chooseAStack();
 
     $before = whatEachRowSays($screen);
@@ -158,7 +153,7 @@ it('says how each stack stands now once the open list has listened, where what w
 
 it('reaches no stack while the list is shut', function (): void {
     $hearing = AStackThatSpeaksUp::holdingOpen(theStackIsCritical());
-    $screen = aTabThatHearsThrough($hearing, StandingsInMemory::working());
+    $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working());
 
     $screen->hearEachStackWhileChoosing();
 
@@ -168,7 +163,7 @@ it('reaches no stack while the list is shut', function (): void {
 
 it('lets go of what it listens to however the list is shut, and when the screen stops', function (Closure $shutting): void {
     $hearing = AStackThatSpeaksUp::holdingOpen();
-    $screen = aTabThatHearsThrough($hearing, StandingsInMemory::working());
+    $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working());
     $screen->chooseAStack();
     $screen->hearEachStackWhileChoosing();
 
@@ -177,15 +172,15 @@ it('lets go of what it listens to however the list is shut, and when the screen 
     expect($hearing->asked())->toBe(2)
         ->and($hearing->lettingsGo())->toBe(1);
 })->with([
-    'shut by hand' => [static fn(HowCurrentThisStackIs $screen) => $screen->stopChoosingAStack()],
-    'a stack chosen' => [static fn(HowCurrentThisStackIs $screen) => $screen->openTheStack(theShed()->id()->stored())],
-    'a stack added' => [static fn(HowCurrentThisStackIs $screen) => $screen->addAStack()],
-    'the screen stopped' => [static fn(HowCurrentThisStackIs $screen) => $screen->stop()],
+    'shut by hand' => [static fn(WhatTheWordsMean $screen) => $screen->stopChoosingAStack()],
+    'a stack chosen' => [static fn(WhatTheWordsMean $screen) => $screen->openTheStack(theShed()->id()->stored())],
+    'a stack added' => [static fn(WhatTheWordsMean $screen) => $screen->addAStack()],
+    'the screen stopped' => [static fn(WhatTheWordsMean $screen) => $screen->stop()],
 ]);
 
 it('stays open when the screen stops, and listens again when it is back', function (): void {
     $hearing = AStackThatSpeaksUp::holdingOpen();
-    $screen = aTabThatHearsThrough($hearing, StandingsInMemory::working());
+    $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working());
     $screen->chooseAStack();
     $screen->stop();
     $screen->hearEachStackWhileChoosing();
@@ -196,7 +191,7 @@ it('stays open when the screen stops, and listens again when it is back', functi
 
 it('lets go rather than listening while nobody can see the list', function (): void {
     $hearing = AStackThatSpeaksUp::holdingOpen(theStackIsCritical());
-    $screen = aTabThatHearsThrough($hearing, StandingsInMemory::working(), ACaptureInMemory::away());
+    $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working(), ACaptureInMemory::away());
     $screen->chooseAStack();
 
     $screen->hearEachStackWhileChoosing();

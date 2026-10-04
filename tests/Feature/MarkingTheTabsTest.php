@@ -23,22 +23,29 @@ use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\News\Api\KindOfNews;
+use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Wayfinding\Api\TheTabs;
+use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\AroundThePhone;
 use Tests\Support\AScreenListening;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
-use Tests\Support\WhatThePhoneKeeps;
 
 // A tab holding something new carries a mark: the count, drawn as text in the
 // badge, and a sentence a screen reader says with the tab's name. The newest of
@@ -92,17 +99,35 @@ function theShedsHealthHearing(AStackThatSpeaksUp $stream, ?ASealInMemory $seal 
         AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        $stream,
-        $clock,
-        $window,
-        $standings,
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening($stream, $clock, $window, $standings),
         NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty()),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return new AScreenListening($screen, $stream, $clock, $window, $keychain, $standings);
+}
+
+/** A tab's screen on the shed, hearing what the stream is scripted to say, on this clock. */
+function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenClock $clock): HowThisStackIs|WhatThisStackRuns|HowCurrentThisStackIs|WhatWouldBePutRight
+{
+    $stack = theStackWhoseTabsAreMarked();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $around = AroundThePhone::holding(StacksInMemory::holding($stack));
+    $listening = AroundThePhone::listening($stream, $clock);
+    $noticing = NoticingWhatIsNew::fromNothing();
+    $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
+
+    $screen = match ($tab) {
+        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+        TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, $noticing),
+    };
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+
+    return $screen;
 }
 
 /**
@@ -142,7 +167,7 @@ function theTextOf(array $node, string $prop): string
  *
  * @return array<string, array{badge: string, said: string}>
  */
-function theMarksOnTheBar(HowThisStackIs $screen): array
+function theMarksOnTheBar(NativeComponent $screen): array
 {
     $tabs = [];
 
@@ -193,6 +218,25 @@ it('marks Health and Updates with how many new items each holds, as text and a s
         ->and(trans_choice('news.new_on_tab', 2, ['tab' => __('navigation.updates')]))->toBe('Updates, 2 new')
         ->and(trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.health', locale: 'nl')], 'nl'))->toBe('Gezondheid, 1 nieuw');
 });
+
+it('marks the tabs on each tab\'s screen, which holds the stack\'s stream while it is in front', function (TheTabs $tab): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $screen = theShedsTabHearing($tab, AStackThatSpeaksUp::holdingOpen(
+        whatTheShedNamesAsNewest(['2.3.0'], [['disk.space', 1_790_000_000]]),
+        whatTheShedNamesAsNewest(['2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]]),
+    ), $clock);
+
+    $screen->mount();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $screen->listen();
+
+    expect(theMarksOnTheBar($screen))->toBe([
+        'health' => ['badge' => '1', 'said' => trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.health')])],
+        'repairs' => ['badge' => '', 'said' => ''],
+        'services' => ['badge' => '', 'said' => ''],
+        'updates' => ['badge' => '1', 'said' => trans_choice('news.new_on_tab', 1, ['tab' => __('navigation.updates')])],
+    ]);
+})->with(TheTabs::cases());
 
 it('keeps the marks it has where a wake names nothing new', function (): void {
     $listening = theShedsHealthHearing(AStackThatSpeaksUp::holdingOpen(

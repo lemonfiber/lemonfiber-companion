@@ -51,7 +51,6 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
-use Tests\Support\WhatThePhoneKeeps;
 
 // The one line on the screen the app opens a machine on, held from the core's
 // event stream rather than read.
@@ -124,12 +123,8 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         AStackThatWasAsked::saying($run ?? aRunWithOneFinding()),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        $stream,
-        $clock,
-        $window,
-        $standings,
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening($stream, $clock, $window, $standings),
         NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
@@ -448,12 +443,8 @@ it('draws the summary it heard where the device would not keep the word', functi
         AStackThatWasAsked::saying(aRunWithOneFinding()),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())),
-        FrozenClock::at(AScreenListening::secondsAfterOpening(0)),
-        ACaptureInMemory::inFront(),
-        StandingsInMemory::refusing(),
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())), FrozenClock::at(AScreenListening::secondsAfterOpening(0)), standings: StandingsInMemory::refusing()),
         NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);

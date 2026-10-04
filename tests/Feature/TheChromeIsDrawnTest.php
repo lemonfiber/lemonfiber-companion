@@ -68,12 +68,8 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        AStackThatSpeaksUp::holdingOpen(),
-        FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
-        ACaptureInMemory::inFront(),
-        StandingsInMemory::working(),
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
         NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);

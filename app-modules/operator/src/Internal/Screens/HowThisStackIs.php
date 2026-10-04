@@ -6,18 +6,14 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
-use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Asking;
-use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Category;
-use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
-use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
@@ -25,7 +21,6 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
@@ -144,12 +139,8 @@ final class HowThisStackIs extends NativeComponent
         private readonly Asking $asking,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
-        private readonly Hearing $hearing,
-        private readonly Clock $clock,
-        private readonly Capture $capture,
-        private readonly Standings $standings,
-        private readonly KeepingTheLastReading $keeping,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
         protected readonly Noticing $noticing,
     ) {}
 
@@ -374,12 +365,6 @@ final class HowThisStackIs extends NativeComponent
             current: static fn(): View => view('operator::how-this-stack-was'),
             asOf: static fn(): View => view('operator::how-this-stack-was'),
         );
-    }
-
-    /** The ports the one line is listened for with, which only this screen holds. */
-    protected function listensWith(): WhatItListensWith
-    {
-        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings, $this->keeping);
     }
 
     /**

@@ -98,12 +98,8 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
         AStackThatWasAsked::saying(Report::of(Overall::Healthy, Findings::of())),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        $stream,
-        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)),
-        ACaptureInMemory::inFront(),
-        StandingsInMemory::working(),
-        $keeping,
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening($stream, FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)), keeping: $keeping),
         NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
