@@ -152,7 +152,7 @@ function everythingTheOriginsSay(Provenance $provenance): string
     )->said;
 }
 
-it('N11-R6, N11-R7 — comes away with every service\'s image, pin, upstream and licence, in the stack\'s order', function (): void {
+it('comes away with every service\'s image, pin, upstream and licence, in the stack\'s order', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackNamingItsOriginsSends()));
 
     foreach (everyWayOfAskingWhereItComesFrom($answered) as $which => $make) {
@@ -186,7 +186,7 @@ it('tells a session that has ended from a stack that is not answering', function
     }
 });
 
-it('N11-R7 — origins this app cannot read are an obstacle, not a shorter list', function (): void {
+it('origins this app cannot read are an obstacle, not a shorter list', function (): void {
     // A service dropped for a blank licence is a service the screen says this
     // stack does not run.
     MockClient::destroyGlobal();

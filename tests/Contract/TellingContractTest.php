@@ -109,7 +109,7 @@ function everythingTheSettingSays(Telling $telling): string
     )->said;
 }
 
-it('N10-R8 — comes away with the preset, what it means and every exception', function (): void {
+it('comes away with the preset, what it means and every exception', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysItTells()));
 
     foreach (everyWayOfAskingWhatIsTold($answered) as $which => $make) {
@@ -117,7 +117,7 @@ it('N10-R8 — comes away with the preset, what it means and every exception', f
     }
 });
 
-it('N10-R12 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -131,7 +131,7 @@ it('N10-R12 — tells a session that has ended from a stack that is not answerin
     }
 });
 
-it('N10-R12 — a setting this app cannot read is an obstacle, not an empty one', function (): void {
+it('a setting this app cannot read is an obstacle, not an empty one', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItTells('  ')))]);
 

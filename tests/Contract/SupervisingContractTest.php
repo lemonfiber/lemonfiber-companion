@@ -356,7 +356,7 @@ function whatCameOfSaying(Supervising $supervising, AgreedTo $agreed): string
     )->said;
 }
 
-it('N2-R7 — comes away with every service, how it is running, and how much it matters', function (): void {
+it('comes away with every service, how it is running, and how much it matters', function (): void {
     // All three together, in the stack's order. Which order an operator should
     // read them in is a screen's decision, made where there is a screen.
     foreach (everyWayOfSupervising(aRunningAnswer()) as $which => $make) {
@@ -400,7 +400,7 @@ function theFormsIn(Supervising $supervising): string
     )->said;
 }
 
-it('N2-R7 — the forms are the ones the stack declares, and no profile is one of them', function (): void {
+it('the forms are the ones the stack declares, and no profile is one of them', function (): void {
     // The status envelope says it was asked about no form and each service
     // names its profile; the stack's list of forms names `library` and `full`.
     // Only the last is a form a verb can be asked for by.
@@ -409,7 +409,7 @@ it('N2-R7 — the forms are the ones the stack declares, and no profile is one o
     }
 });
 
-it('N18-R9 — forms that could not be read are a stack that did not answer, not one with none', function (): void {
+it('forms that could not be read are a stack that did not answer, not one with none', function (): void {
     // The forms did not arrive. Reading that as a stack that declares no
     // forms would take every form control off the screen and say nothing
     // about why; a stack that did not answer is the honest sentence.
@@ -429,7 +429,7 @@ it('N18-R9 — forms that could not be read are a stack that did not answer, not
     }
 });
 
-it('N2-R7 — takes a verb about a service and comes away with a name to ask about', function (): void {
+it('takes a verb about a service and comes away with a name to ask about', function (): void {
     $agreed = AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr'));
 
     foreach (everyWayOfSupervising([aStartedAnswer()]) as $which => $make) {
@@ -437,7 +437,7 @@ it('N2-R7 — takes a verb about a service and comes away with a name to ask abo
     }
 });
 
-it('N2-R7 — takes the same verb about a whole form', function (): void {
+it('takes the same verb about a whole form', function (): void {
     // The other half of the granularity owed — one service, and a whole form. A
     // port that took only
     // one of them would have a screen assembling the other out of services it
@@ -503,7 +503,7 @@ it('asks for a rehearsal as the same verb with `dry_run`, under a key of its own
     ]);
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -517,7 +517,7 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N1-R10 — says the same about a verb it could not deliver', function (): void {
+it('tells a refused session from a stack that did not answer, where a verb could not be delivered', function (): void {
     // The half that matters more. A verb that failed and reported nothing would
     // leave an operator tapping stop on a service that goes on running, and a
     // verb that failed and reported a refused session sends them to sign in
@@ -592,7 +592,7 @@ it('an acknowledgement with no name in it is a stack that did not answer', funct
     }
 });
 
-it('N1-R11 — is asked about the stack it was handed, with that stack\'s session', function (): void {
+it('is asked about the stack it was handed, with that stack\'s session', function (): void {
     // The half a screen cannot assert about itself. A screen holding two stacks
     // and stopping a service on the wrong machine is this requirement broken
     // exactly where it costs the most.
@@ -604,7 +604,7 @@ it('N1-R11 — is asked about the stack it was handed, with that stack\'s sessio
     expect($supervising->wasGivenASession())->toBeTrue();
 });
 
-it('N2-R8 — nothing reaches the stack until a verb is agreed to', function (): void {
+it('nothing reaches the stack until a verb is agreed to', function (): void {
     // The thing worth proving about a confirmation, and only the port can say
     // it: reading a listing must not carry one out. A screen that drew a row
     // and stopped it on the way past would be caught here and nowhere else.

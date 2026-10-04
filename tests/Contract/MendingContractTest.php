@@ -220,7 +220,7 @@ function everyWayOfMending(MockResponse $answered, Closure $fake): array
     ];
 }
 
-it('N2-R7 — asking what would be put right answers a handle, not a listing', function (): void {
+it('asking what would be put right answers a handle, not a listing', function (): void {
     // The whole reason this port has two methods. A stack does not answer
     // *here is what I would do*; it answers *I have started, ask me about this
     // name* — and a port hiding that would have to wait inside itself.
@@ -235,7 +235,7 @@ it('N2-R7 — asking what would be put right answers a handle, not a listing', f
     }
 });
 
-it('N2-R4 — a finished offer states what each repair does, affects and can undo', function (): void {
+it('a finished offer states what each repair does, affects and can undo', function (): void {
     // All three clauses, because they are one requirement. A listing carrying
     // the sentence and dropping whether it can be undone would satisfy any
     // assertion about what appeared and still leave somebody agreeing to
@@ -255,7 +255,7 @@ it('N2-R4 — a finished offer states what each repair does, affects and can und
     }
 });
 
-it('N2-R7 — work still going is its own answer', function (): void {
+it('work still going is its own answer', function (): void {
     $ways = everyWayOfMending(stillGoing(), AStackThatWouldMend::stillWorkingItOut(...));
 
     foreach ($ways as $which => $make) {
@@ -278,7 +278,7 @@ it('a job the stack no longer has is ended, not unreachable and not running', fu
     }
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -291,7 +291,7 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N1-R41 — reading a handle is a read, so reading it twice changes nothing', function (): void {
+it('reading a handle is a read, so reading it twice changes nothing', function (): void {
     // The distinction that lets this port exist. A job is not a pending action:
     // the stack received the action and named it, so asking after the name is a
     // read — and a read repeated is still a read. What must never repeat is the
@@ -308,7 +308,7 @@ it('N1-R41 — reading a handle is a read, so reading it twice changes nothing',
         ->and($mending->wasGivenASession())->toBeTrue();
 });
 
-it('N1-R10 — an answer this app cannot read is the machine, not the session', function (): void {
+it('an answer this app cannot read is the machine, not the session', function (): void {
     // Only the adapter can be asked this: the fake has no wire to malform. It
     // is here rather than in a unit test because what is being pinned is the
     // collapse — three faults with one meaning for somebody holding a phone,
@@ -320,7 +320,7 @@ it('N1-R10 — an answer this app cannot read is the machine, not the session', 
         ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
-it('N1-R10 — a refused session while reading a handle is still a refused session', function (): void {
+it('a refused session while reading a handle is still a refused session', function (): void {
     // The reading half of the same distinction. A session that ended between
     // asking and reading is answered by signing in again, on a machine that is
     // working perfectly — and a screen holding a handle is exactly where that
@@ -474,7 +474,7 @@ function whatWasDone(Mending $mending): string
         )->said;
 }
 
-it('N2-R5 — agreeing is its own act, and answers a handle like every other', function (): void {
+it('agreeing is its own act, and answers a handle like every other', function (): void {
     $ways = everyWayOfMending(
         anAcknowledgement(),
         static fn(): Mending => AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes()),
@@ -493,7 +493,7 @@ it('N2-R5 — agreeing is its own act, and answers a handle like every other', f
     }
 });
 
-it('N2-R5 — a finished run says what became of each repair, and what it left', function (): void {
+it('a finished run says what became of each repair, and what it left', function (): void {
     // Per repair, because a listing agreed to as a whole comes apart: one fix
     // takes and the next stops part-way. A run reported as one word would have
     // the operator believe either that everything worked or that nothing did,
@@ -513,7 +513,7 @@ it('N2-R5 — a finished run says what became of each repair, and what it left',
     }
 });
 
-it('N2-R6 — the yes names the listing it was given', function (): void {
+it('the yes names the listing it was given', function (): void {
     // Only the fake can be asked this: what reaches the wire is the agreement's
     // name and the repair's check, and the fake is what can hold the whole
     // `Confirmed` to compare. A port that let the two be passed separately
@@ -527,7 +527,7 @@ it('N2-R6 — the yes names the listing it was given', function (): void {
         ->and($mending->agreements())->toBe(1);
 });
 
-it('N1-R41 — reading what was done is a read, and does not agree again', function (): void {
+it('reading what was done is a read, and does not agree again', function (): void {
     // The distinction that lets a screen hold a handle at all. An agreement
     // sent twice is a repair carried out twice, and for a fix that moves a
     // library that is not the same as doing it once.
@@ -556,7 +556,7 @@ it('a job that ended after an agreement is not a run that failed', function (): 
     }
 });
 
-it('N1-R10 — a refused agreement is a refused session, not a broken machine', function (): void {
+it('a refused agreement is a refused session, not a broken machine', function (): void {
     // Only the adapter can be asked this: what is being pinned is the collapse
     // on the *agreeing* half, which has its own catches.
     MockClient::destroyGlobal();
@@ -590,7 +590,7 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
     expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
-it('N1-R10 — reading what was done can meet an obstacle of its own', function (): void {
+it('reading what was done can meet an obstacle of its own', function (): void {
     // Time passes between agreeing and reading, which is exactly where a
     // session ends underneath somebody.
     $table = [

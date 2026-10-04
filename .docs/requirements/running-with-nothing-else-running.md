@@ -36,6 +36,6 @@ requirement is right and this page is a defect.
 | `N1-R54` | The first-run sequence ends at pairing | `ACameraThatSeesAStandIn` |
 | `N1-R56` | A paired device never sees that sequence again | `ACameraThatSeesAStandIn`, seeded by `ADeviceAlreadyPaired` |
 | `N1-R7` | The credential exchange happens through a transport of its own, so an act that is not a reading has a stand-in too | `ADoorThatIsNotThere` |
-| `N2-R4`, `N2-R5` | What a stack would put right, and what became of each | `WhatTheWireWouldAnswer` (`ConfirmedTest`, `MendedTest`, `OfferTest`, `OffersTest`) |
+| `N2-R4`, `N2-R5` | What a stack would put right, and what became of each | `WhatTheWireWouldAnswer` (`ConfirmedTest`, `MendedTest`, `OfferTest`, `OffersTest`, `MendingContractTest`) |
 | `N3-R13` | The whole sequence of a refused session — offer, refuse, let go, sign in again — is reachable | `ASessionThisRunKeeps` (`HowTheReadingWentTest`) |
-| `N4-R6` | A refusal when there is nowhere to keep a session, kept per stack | `ASessionThisRunKeeps` uses the shipped adapter, so the refusal is the real one (`WhySessionCannotBeKeptTest`) |
+| `N4-R6` | A refusal when there is nowhere to keep a session, kept per stack | `ASessionThisRunKeeps` uses the shipped adapter, so the refusal is the real one (`WhySessionCannotBeKeptTest`, `KeepsContractTest`, `SecureStorageContractTest`) |

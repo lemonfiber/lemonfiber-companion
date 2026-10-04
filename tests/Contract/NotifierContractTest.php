@@ -113,7 +113,7 @@ it('reads what the operator has already said', function (): void {
     }
 });
 
-it('N4-R4 — asking is separate from reading, so reading never prompts', function (): void {
+it('asking is separate from reading, so reading never prompts', function (): void {
     // The defect this whole change is about, asserted rather than described.
     // `isPermitted()` asked in order to answer, and `show()` called it — so a
     // notification arriving re-prompted somebody who had already declined.
@@ -132,7 +132,7 @@ it('N4-R4 — asking is separate from reading, so reading never prompts', functi
     expect($centre->prompts())->toBe(0);
 });
 
-it('N4-R4 — a declined permission is not asked for again', function (): void {
+it('a declined permission is not asked for again', function (): void {
     foreach (everyNotifier(Asked::Declined) as $which => $make) {
         $notifier = $make();
 
@@ -141,7 +141,7 @@ it('N4-R4 — a declined permission is not asked for again', function (): void {
     }
 });
 
-it('N4-R4 — the prompt is raised once, and not again once answered', function (): void {
+it('the prompt is raised once, and not again once answered', function (): void {
     $centre = ANotificationCentreOnAHandset::unasked();
     $notifier = overAHandset($centre);
 
@@ -153,7 +153,7 @@ it('N4-R4 — the prompt is raised once, and not again once answered', function 
         ->and($centre->prompts())->toBe(1);
 });
 
-it('N4-R1 — asks where nothing has been asked yet', function (): void {
+it('asks where nothing has been asked yet', function (): void {
     foreach (everyNotifier(Asked::NotYet) as $which => $make) {
         expect($make()->ask())->toBe(Asked::Granted, $which);
     }

@@ -402,7 +402,7 @@ function theUpdateTheOperatorAgreedTo(): TakingAnUpdate
     return TakingAnUpdate::offeredBy(theSameStandingWithAnUpdateAvailable());
 }
 
-it('N2-R15 — comes away with the state the stack reported and the release it is on', function (): void {
+it('comes away with the state the stack reported and the release it is on', function (): void {
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
         expect(whereItStands($build()))->toStartWith('partial/4.1.0/nothing offered', $which);
     }
@@ -436,7 +436,7 @@ it('offers nothing where the notes are pending and every service is on its pin',
     }
 });
 
-it('N2-R17 — names only the services an update would actually change', function (): void {
+it('names only the services an update would actually change', function (): void {
     // The rule the fake could not be wrong about on its own: what makes this
     // worth asserting across both is that the adapter has to read `refused` off
     // the wire and leave that row out, and the fake has to be built the same
@@ -453,7 +453,7 @@ it('N2-R17 — names only the services an update would actually change', functio
     }
 });
 
-it('N1-R10 — tells a credential that was refused from a stack that is not answering', function (): void {
+it('tells a credential that was refused from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -522,7 +522,7 @@ it('stands in for a stack with a payload the contract would accept', function ()
     }
 });
 
-it('N2-R19 — the contract still names a way back on every service', function (): void {
+it('the contract still names a way back on every service', function (): void {
     // `HowAServiceTookIt` has no case for *no way back*, and this is why that
     // is safe rather than an omission. Undoing may not be offered where the
     // stack named no way back, and the stack names one every time: `reversal`
@@ -585,7 +585,7 @@ function aFinishedUpdate(): MockResponse
     return MockResponse::make((string) json_encode(whatAStackWithUpdatesSends()));
 }
 
-it('N2-R18 — a finished update reports each service apart from the others', function (): void {
+it('a finished update reports each service apart from the others', function (): void {
     // The rule the fake could not be wrong about alone: the adapter has to read
     // four endings off the wire and keep them four. A `not-started` flattened
     // into a failure sends an operator to the machine when the answer is in the
@@ -595,7 +595,7 @@ it('N2-R18 — a finished update reports each service apart from the others', fu
     }
 });
 
-it('N2-R18 — leads with the services that are not where the operator wanted them', function (): void {
+it('leads with the services that are not where the operator wanted them', function (): void {
     foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowTheUpdateIsGoing::done(theSameStanding())) as $which => $build) {
         $went = $build()
             ->whatBecameOf(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), Job::named(AStackThatKeepsCurrent::THE_JOB))
@@ -619,7 +619,7 @@ it('N2-R18 — leads with the services that are not where the operator wanted th
     }
 });
 
-it('N2-R18 — an update still running is its own answer', function (): void {
+it('an update still running is its own answer', function (): void {
     $running = MockResponse::make((string) json_encode([
         'api_version' => 1,
         'kind' => 'job',
@@ -642,7 +642,7 @@ it('an update the stack no longer has a job for is ended, not unreachable and no
     }
 });
 
-it('N1-R10 — asking after an update tells a refused session from a stack that is not answering', function (): void {
+it('asking after an update tells a refused session from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -741,13 +741,13 @@ it('stands in for a release with a payload the contract would accept', function 
     ]))->toBe([], "The payload these cases stand in for a stack with is not one a stack would send.\n");
 });
 
-it('E5-R6 — reads what a release delivers, so the row that draws it can say it', function (): void {
+it('reads what a release delivers, so the row that draws it can say it', function (): void {
     expect(whatThatListedReleaseDelivers([
         'version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.',
     ]))->toBe('said:Adds series search.');
 });
 
-it('E5-R10 — a release the stack said nothing about is silent rather than blank', function (): void {
+it('a release the stack said nothing about is silent rather than blank', function (): void {
     // Absent, and present but empty. Both are the stack having nothing to say
     // and neither is a payload gone wrong — the contract marks the field
     // optional, and a reading that refused here would refuse the ordinary case.

@@ -148,7 +148,7 @@ function everythingThatLeaves(Outgoing $outgoing): string
     )->said;
 }
 
-it('N10-R1, N10-R2, N10-R3 — comes away with lemonfiber\'s requests and its services\', apart', function (): void {
+it('comes away with lemonfiber\'s requests and its services\', apart', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysLeavesIt()));
 
     foreach (everyWayOfAskingWhatLeaves($answered) as $which => $make) {
@@ -161,7 +161,7 @@ it('N10-R1, N10-R2, N10-R3 — comes away with lemonfiber\'s requests and its se
     }
 });
 
-it('N10-R12 — a stack sending nothing answers with two empty lists, not an obstacle', function (): void {
+it('a stack sending nothing answers with two empty lists, not an obstacle', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSendingNothingSays()));
 
     foreach (everyWayOfAskingWhatLeaves($answered, leaving: WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of())) as $which => $make) {
@@ -169,7 +169,7 @@ it('N10-R12 — a stack sending nothing answers with two empty lists, not an obs
     }
 });
 
-it('N10-R12 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -183,7 +183,7 @@ it('N10-R12 — tells a session that has ended from a stack that is not answerin
     }
 });
 
-it('N10-R12 — connections this app cannot read are an obstacle, not a shorter list', function (): void {
+it('connections this app cannot read are an obstacle, not a shorter list', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysLeavesIt('telemetry')))]);
 

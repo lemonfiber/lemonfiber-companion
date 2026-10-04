@@ -202,7 +202,7 @@ function whatTheWindowClaims(Saying $saying): string
     )->said;
 }
 
-it('N2-R10 — comes away with the lines, in the order the service wrote them', function (): void {
+it('comes away with the lines, in the order the service wrote them', function (): void {
     // Oldest first, which is the only order that means anything: a log line is
     // read against the line before it.
     foreach (everyWayOfReadingAService(aScrollbackAnswer()) as $which => $make) {
@@ -213,7 +213,7 @@ it('N2-R10 — comes away with the lines, in the order the service wrote them', 
     }
 });
 
-it('N2-R10, G3-R10 — names the service and says the view is a window rather than the whole', function (): void {
+it('names the service and says the view is a window rather than the whole', function (): void {
     // Three clauses of the requirement in one assertion, because they are one
     // sentence: the bound that was given, what arrived against it, and the
     // service it is all about.
@@ -229,7 +229,7 @@ it('N2-R10, G3-R10 — names the service and says the view is a window rather th
     }
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],

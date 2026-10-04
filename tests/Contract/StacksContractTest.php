@@ -61,7 +61,7 @@ dataset('every stacks implementation', [
     'the fake' => [fn(): Stacks => StacksInMemory::working()],
 ]);
 
-it('N1-R35 — answers with nothing before anything has been paired', function (Stacks $stacks): void {
+it('answers with nothing before anything has been paired', function (Stacks $stacks): void {
     expect($stacks->configured()->isEmpty())->toBeTrue();
 })->with('every stacks implementation');
 
@@ -74,14 +74,14 @@ it('gives back the stack it was asked to remember', function (Stacks $stacks): v
         ->and($record->stack(aStackCalled('The loft')->id())->name()->shown())->toBe('The loft');
 })->with('every stacks implementation');
 
-it('N1-R11 — keeps two paired machines apart', function (Stacks $stacks): void {
+it('keeps two paired machines apart', function (Stacks $stacks): void {
     $stacks->remember(aStackCalled('The loft', 'a'));
     $stacks->remember(aStackCalled('My mum\'s', 'b', 'https://192.168.1.77'));
 
     expect($stacks->configured())->toHaveCount(2);
 })->with('every stacks implementation');
 
-it('N1-R22 — re-pairing replaces a machine rather than adding a second row', function (Stacks $stacks): void {
+it('re-pairing replaces a machine rather than adding a second row', function (Stacks $stacks): void {
     $stacks->remember(aStackCalled('The loft', 'a'));
     $stacks->remember(aStackCalled('The attic', 'a', 'https://192.168.1.99'));
 
@@ -118,17 +118,17 @@ it('the fake refuses for whichever reason it was given', function (): void {
 // readily than the platform would put the prompt in front of a first run on a
 // device and never in a test.
 
-it('N4-R22 — says a device holding nothing holds nothing', function (Stacks $stacks): void {
+it('says a device holding nothing holds nothing', function (Stacks $stacks): void {
     expect($stacks->holdsAny())->toBeFalse();
 })->with('every stacks implementation');
 
-it('N4-R23 — says a device holds one the moment the store does', function (Stacks $stacks): void {
+it('says a device holds one the moment the store does', function (Stacks $stacks): void {
     $stacks->remember(aStackCalled('The loft'));
 
     expect($stacks->holdsAny())->toBeTrue();
 })->with('every stacks implementation');
 
-it('N4-R23 — never disagrees with the record it is asked about', function (Stacks $stacks): void {
+it('never disagrees with the record it is asked about', function (Stacks $stacks): void {
     // The property, rather than the two answers above restated. The answer
     // comes from the store itself rather than a flag, and the way a flag goes
     // wrong is
@@ -141,7 +141,7 @@ it('N4-R23 — never disagrees with the record it is asked about', function (Sta
     expect($stacks->holdsAny())->toBe(! $stacks->configured()->isEmpty());
 })->with('every stacks implementation');
 
-it('N4-R22 — a store that will not open is not a device holding nothing', function (): void {
+it('a store that will not open is not a device holding nothing', function (): void {
     // The adapter's own, because the fake has no store to be unable to open.
     //
     // `Opening` asks this to decide whether there is anything worth locking, so
@@ -153,7 +153,7 @@ it('N4-R22 — a store that will not open is not a device holding nothing', func
     expect(new PlatformStacks(APlatformStore::absent())->holdsAny())->toBeTrue();
 });
 
-it('N4-R22 — reads a record written down as empty as holding nothing', function (): void {
+it('reads a record written down as empty as holding nothing', function (): void {
     // The adapter's own, because it is about an encoding the fake does not
     // have: a store can hold the record and the record can be the empty list —
     // a device that paired a machine and then forgot it. A status check alone

@@ -49,7 +49,7 @@ requirement is right and this page is a defect.
 | `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written and answering `HowThePairingWent::PairedAgainOnANewCertificate`, which tells the operator to sign in again |
 | `N1-R50`, `N1-R51` | A short form to check at a glance, derived from the whole fingerprint — two constraints that pull against each other | `AtAGlance` |
 | `N1-R10` | A refusal is an obstacle rather than a type of its own | `Admitted` |
-| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` (`InterruptedTest`, `WhereaboutsTest`, `HowAChangeReadsTest`, `HowAListingReadsTest`, `HowTheReadingWentTest`) |
+| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` (`InterruptedTest`, `WhereaboutsTest`, `HowAChangeReadsTest`, `HowAListingReadsTest`, `HowTheReadingWentTest`, `MeasuringContractTest`, `StoringContractTest`) |
 | `N1-R45` | A credential expiring is not the machine changing — the pairing survives | `Interrupted` (`InterruptedTest`) |
 | `N1-R46` | An ended session is not a refused credential | `Interrupted`, whose two arms take different arguments (`InterruptedTest`) |
 
@@ -60,7 +60,7 @@ requirement is right and this page is a defect.
 | `N1-R32` | Anything kept between launches carries its shape | `Shape` (`ShapeTest`, `PlatformStacksTest`) |
 | `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` (`ShapeTest`, `PlatformStacksTest`) |
 | `N1-R34` | A discard of retained state does not take the pairing with it | `Stacks`, whose one removing method, `forgetTheStack()`, only Remove from phone calls; clearing what the phone keeps asks stores that hold no pairing (`APairingIsNotDiscardedTest`, `ClearingWhatThePhoneKeepsLeavesPairingsTest`); a record the store would not open, or one a newer build wrote, is held back rather than read as none, nothing is written over it, and Your stacks says why with what to do (`WhyTheStacksAreHeldBack`, `StacksThatCannotBeReadAreHeldBackTest`) |
-| `N1-R23`, `N4-R5` | What is retained is stated, and beside it what is not | `Configured` |
+| `N1-R23`, `N4-R5` | What is retained is stated, and beside it what is not | `Configured` (`SecureStorageContractTest`) |
 | `N1-R38` | What a screen was holding when the operator left it | `Held` (`HeldTest`) |
 | `N1-R24` | A retained reading may open a screen and may never stand as confirmation | `Reading` |
 | `N1-R9` | A value not read in this session carries when it was read | `HowLongAgo` |
