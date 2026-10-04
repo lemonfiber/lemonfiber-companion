@@ -50,7 +50,7 @@ function everyTargetIn(Template $template): array
     return $found[0];
 }
 
-it('G3-R16 — every tappable element declares a target a finger can hit', function (): void {
+it('every tappable element declares a target a finger can hit', function (): void {
     $small = [];
     $looked = 0;
 

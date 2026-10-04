@@ -39,7 +39,7 @@ requirement is right and this page is a defect.
 | `N1-R71` | A broken subscription is opened again on a declared cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOftenAScreenLooks::AfterABreak`. A value held from before a break is drawn as unknown with its age |
 | `N1-R72` | Held only while a screen showing it is in front; closed when the screen is left and when the app leaves the foreground | Every wake asks `Capture::isInFront()`, answered by `Lemonfiber.IsInFront` from the lifecycle observer capture protection installs, and lets go while the answer is no. Every way off a screen ends in `stop()`, which lets go |
 | `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current says when it was updated, and every word on the list is drawn with how long ago it was heard |
-| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]` on `HoldsItsStacksStream::listen()`, and `HowOftenAScreenLooks::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template (`HowAServiceRunsTest`) |
+| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]` on `HoldsItsStacksStream::listen()`, and `HowOftenAScreenLooks::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template (`HowAServiceRunsTest`, `DecidingWhatToDoWithOneThingTest`, `SeeingWhatThisStackRunsTest`, `SeeingWhatWouldBePutRightTest`, `SeeingWhatYouAreOwedTest`, `EveryReadingCanBeAskedAgainTest`) |
 
 ## How the line reaches the list
 
@@ -54,9 +54,9 @@ back.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R25` | A screen that reads from a stack publishes its first frame before the read, built from what the app holds | `HearsHowEachStackIs::listen()` runs on `#[Poll]` wakes only, which come after the first render, and the rows read `Standings`. `TheListSaysTheOneLineTest` draws the kept word with its age before anything is asked, and the heard word after |
-| `N2-R1` | The app opens on the overall verdict, and renders `unknown` as its own answer | Every row on `YourStacks` says a word in its own sentence, and a stack never heard reads `HowItStands::Unknown` rather than nothing |
+| `N2-R1` | The app opens on the overall verdict, and renders `unknown` as its own answer | Every row on `YourStacks` says a word in its own sentence, and a stack never heard reads `HowItStands::Unknown` rather than nothing (`SeeingHowAStackIsTest`) |
 | `N1-R24` | A reading retained from an earlier session may be shown on opening, carrying when it was read, and never confirms an action | `Standings` answers `Showing`, whose held arm is a retained `Reading`. `PlatformStandings` keeps the word and the moment in the platform's store, and nothing else |
-| `N2-R13` | A reading older than the session carries its age wherever it is shown, including on the opening verdict | `HowTheOneLineReads::kept()` hands the word and its age out together, and the row draws the one line's own *last heard* sentence under it |
+| `N2-R13` | A reading older than the session carries its age wherever it is shown, including on the opening verdict | `HowTheOneLineReads::kept()` hands the word and its age out together, and the row draws the one line's own *last heard* sentence under it (`AReadingCarriesItsAgeTest`) |
 
 ## Why the stream is held on the screen
 

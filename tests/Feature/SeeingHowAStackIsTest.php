@@ -129,7 +129,7 @@ function theHealthScreen(
     return $screen;
 }
 
-it('N1-R2 — shows what the checks found', function (): void {
+it('shows what the checks found', function (): void {
     // What it amounts to is the core's one line, which this screen holds from
     // the event stream rather than working out from the findings.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
@@ -142,7 +142,7 @@ it('N1-R2 — shows what the checks found', function (): void {
         ->and($screen->answer()->went->remedy)->toBe('');
 });
 
-it('N2-R3 — says what the check meant and what to try, in the core\'s own words', function (): void {
+it('says what the check meant and what to try, in the core\'s own words', function (): void {
     // The half that was on the wire and going nowhere. `Finding::said()` has
     // carried a meaning, a code and a list of remedies since the translation
     // was written, and until this screen existed no caller asked — an operator
@@ -168,7 +168,7 @@ it('N2-R3 — says what the check meant and what to try, in the core\'s own word
         ->and($row->remedies->count())->toBe(2);
 });
 
-it('N2-R3 — offers every remedy, because the first one may not work', function (): void {
+it('offers every remedy, because the first one may not work', function (): void {
     // `Remedies::likeliest()` exists for a screen with room for one line. This
     // screen has room for the list, and an operator whose first remedy did not
     // work would otherwise have nowhere to find the second.
@@ -182,7 +182,7 @@ it('N2-R3 — offers every remedy, because the first one may not work', function
     expect($actions)->toBe(['Restart the tunnel', 'Check the provider is up']);
 });
 
-it('N2-R3 — says so where the machine knows what is wrong and has nothing to suggest', function (): void {
+it('says so where the machine knows what is wrong and has nothing to suggest', function (): void {
     // A failure with no remedy is representable and is a sentence rather than
     // blank space: the operator is being told the stack knows what is wrong and
     // has nothing to offer, which is what sends them to the machine itself.
@@ -279,7 +279,7 @@ it('says which part of the machine every finding is about', function (): void {
     }
 });
 
-it('N1-R65 — asks once however many times the frame reads it', function (): void {
+it('asks once however many times the frame reads it', function (): void {
     // A screen is not a poller. Every accessor reads what one asking produced,
     // and a screen that asked per accessor would open six connections to a
     // machine over somebody's home network to draw one frame.
@@ -297,7 +297,7 @@ it('N1-R65 — asks once however many times the frame reads it', function (): vo
         ->and($asking->wasGivenASession())->toBeTrue();
 });
 
-it('N2-R1 — asks again when the operator asks it to, and not otherwise', function (): void {
+it('asks again when the operator asks it to, and not otherwise', function (): void {
     // Somebody who has just gone and restarted a service wants to know whether
     // it took. A screen that could only be re-asked by leaving it and coming
     // back teaches them to distrust what it says — and one that asked on a
@@ -317,7 +317,7 @@ it('N2-R1 — asks again when the operator asks it to, and not otherwise', funct
     expect($asking->askings())->toBe(2);
 });
 
-it('N1-R44 — asking again notices a session that has ended underneath them', function (): void {
+it('asking again notices a session that has ended underneath them', function (): void {
     // An operator may have been on this screen a while. A refresh that reused a
     // session it never re-checked would show them a stale report under a stack
     // they are no longer signed into.
@@ -338,7 +338,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
         ->and($asking->askings())->toBe(1);
 });
 
-it('N1-R10 — says what the operator met where the stack did not answer', function (): void {
+it('says what the operator met where the stack did not answer', function (): void {
     // Every obstacle that leaves the session standing, because the screen shows
     // whichever it was and the keys are derived — so a seventh case needs no
     // edit on this screen and must not arrive without a catalogue line.
@@ -372,7 +372,7 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
     }
 });
 
-it('N1-R44 — a session that has ended sends them to sign in rather than to an error', function (): void {
+it('a session that has ended sends them to sign in rather than to an error', function (): void {
     // Nothing was asked, so there is nothing to report and no obstacle to name:
     // the app did not get as far as the machine. The remedy is a screen rather
     // than a sentence, which is why signed-out is its own state.
@@ -389,7 +389,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
         ->and($asking->askings())->toBe(0);
 });
 
-it('N4-R6 — a keychain that will not open asks for the password rather than breaking', function (): void {
+it('a keychain that will not open asks for the password rather than breaking', function (): void {
     // The same call `YourStacks` makes: a store that cannot be read is a store
     // with no session in it as far as this question goes, and the honest answer
     // is the sign-in screen.
@@ -403,7 +403,7 @@ it('N4-R6 — a keychain that will not open asks for the password rather than br
     }
 });
 
-it('N1-R11 — signing in again goes to this stack and no other', function (): void {
+it('signing in again goes to this stack and no other', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->signIn())
@@ -542,7 +542,7 @@ it('says a machine finding\'s code at the foot of its card, having no logs to ca
         ->and($drawn)->toContain('VPN-3');
 });
 
-it('N2-R3 — a row whose check could not run carries the reason and nothing else', function (): void {
+it('a row whose check could not run carries the reason and nothing else', function (): void {
     // Nothing was graded: a check that could not run produced no judgement, so
     // there is no identifier to quote and no word for what it costs, and a
     // word in either place would be this app inventing one.
@@ -620,7 +620,7 @@ function aFailingVerdict(): WhatTheCheckSaid
     );
 }
 
-it('N2-R3 — a row names the service it is about, and what explains it', function (): void {
+it('a row names the service it is about, and what explains it', function (): void {
     // The cause is shown by the other row's *title*, not by its identifier.
     // `vpn.up` is right on a wire and jargon on a phone; "The tunnel" is what
     // the operator is looking at two rows up.
@@ -651,7 +651,7 @@ it('N2-R3 — a row names the service it is about, and what explains it', functi
         ->and($rows[1]->because)->toBe('The tunnel');
 });
 
-it('N2-R3 — a cause the report does not hold is shown as the identifier', function (): void {
+it('a cause the report does not hold is shown as the identifier', function (): void {
     // A report attributing a finding to a check it does not contain has a fault
     // in it. Showing the identifier is honest rather than tidy: the operator
     // has a string they can quote to somebody who can fix it, where a blank
@@ -670,7 +670,7 @@ it('N2-R3 — a cause the report does not hold is shown as the identifier', func
     expect($screen->findings()[0]->because)->toBe('a.check.that.did.not.run');
 });
 
-it('N2-R3 — a row about the machine names no service', function (): void {
+it('a row about the machine names no service', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     expect($screen->findings()[0]->service)->toBe('')
@@ -738,7 +738,7 @@ function aRunAcrossTwoFamilies(): Report
     ));
 }
 
-it('N2-R2 — shows the worst finding first, whatever order the checks ran in', function (): void {
+it('shows the worst finding first, whatever order the checks ran in', function (): void {
     // The engine sends findings in the order the checks ran, and a list drawn
     // straight off the envelope looks ordered on any report whose worst finding
     // happened to run first. This one deliberately is not that report: a
@@ -757,7 +757,7 @@ it('N2-R2 — shows the worst finding first, whatever order the checks ran in', 
     ]);
 });
 
-it('N2-R9 — offers the families this run has something to say about, and no others', function (): void {
+it('offers the families this run has something to say about, and no others', function (): void {
     // Storage before Queue, which is the engine's own order rather than the
     // order the checks ran — the two queue findings arrived first. And seven
     // families are missing, because a control leading to a blank screen teaches
@@ -788,7 +788,7 @@ it('N2-R9 — offers the families this run has something to say about, and no ot
         ->toContain('1');
 });
 
-it('N2-R9 — reading one family narrows the report to it', function (): void {
+it('reading one family narrows the report to it', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
 
     expect($screen->isNarrowed())->toBeFalse()
@@ -823,7 +823,7 @@ it('N2-R9 — reading one family narrows the report to it', function (): void {
     ]);
 });
 
-it('N2-R9 — reading the family already open widens back out', function (): void {
+it('reading the family already open widens back out', function (): void {
     // The way back is the way in, which is the gesture somebody makes without
     // being told: there is no separate "all" control to go and find.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
@@ -859,7 +859,7 @@ it('N2-R9 — reading the family already open widens back out', function (): voi
         ->and($screen->findings()[0]->about)->toBe(Category::Storage->saidOnTheScreen());
 });
 
-it('N2-R9 — a value naming no family shows the whole report rather than nothing', function (): void {
+it('a value naming no family shows the whole report rather than nothing', function (): void {
     // The screen's own state is the only thing that writes it, so this is a
     // value that cannot arrive — and `tryFrom` is what makes that a fact rather
     // than a hope. What it prevents is a blank report where the operator
@@ -879,7 +879,7 @@ it('N2-R9 — a value naming no family shows the whole report rather than nothin
         ->and($open)->toBe([false, false]);
 });
 
-it('N2-R11 — what the household asked for is one tap from the machine it is about', function (): void {
+it('what the household asked for is one tap from the machine it is about', function (): void {
     // The link's half of the pair. `SeeingWhatTheHouseholdAskedForTest` asserts
     // that something is registered under that route; this asserts that the
     // screen an operator is actually looking at points at it, which is what
@@ -891,7 +891,7 @@ it('N2-R11 — what the household asked for is one tap from the machine it is ab
         ->and(NativeRouter::resolve($screen->goes()->requests()))->not->toBeNull();
 });
 
-it('N2-R4 — what this machine would put right is one tap from the machine', function (): void {
+it('what this machine would put right is one tap from the machine', function (): void {
     // The link's half of the pair. `SeeingWhatWouldBePutRightTest` asserts that
     // something is registered under that route; this asserts that the screen an
     // operator is looking at points at it. A screen rather than a button beside
@@ -904,7 +904,7 @@ it('N2-R4 — what this machine would put right is one tap from the machine', fu
         ->and(NativeRouter::resolve($screen->goes()->repairs()))->not->toBeNull();
 });
 
-it('N2-R9 — what stopped coming in is one tap from the machine', function (): void {
+it('what stopped coming in is one tap from the machine', function (): void {
     // *Reachable* is the whole requirement, and this is the tap that satisfies
     // it. It hangs off the machine rather than off the verdict above, because a
     // stack passing every check and a household getting nothing are not a
@@ -916,7 +916,7 @@ it('N2-R9 — what stopped coming in is one tap from the machine', function (): 
         ->and(NativeRouter::resolve(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
-it('N2-R10 — a finding about a service offers what that service said', function (): void {
+it('a finding about a service offers what that service said', function (): void {
     // Offered from the finding rather than from a list of every service the
     // stack runs: this row is already about one, and a picker would put a
     // choice in front of somebody who came here to read a specific thing.
@@ -942,7 +942,7 @@ it('N2-R10 — a finding about a service offers what that service said', functio
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
 });
 
-it('N2-R10 — a finding about the machine has no log to go to, and asking for one comes away quietly', function (): void {
+it('a finding about the machine has no log to go to, and asking for one comes away quietly', function (): void {
     // `WhatOneFindingSays::$service` is documented as the service *or empty*, and
     // a finding about the machine is the empty one. The template does not draw
     // the button for those rows — but this is a public method on a screen, and a
@@ -981,7 +981,7 @@ it('a name that is only whitespace is no name either', function (): void {
     }
 });
 
-it('N3-R13 — a credential the stack refused signs this device out', function (): void {
+it('a credential the stack refused signs this device out', function (): void {
     // Not one of the six sentences about a machine. The stack answered and said
     // no, so whatever this device is holding is not a session any more — the
     // identity was removed, the password changed, or the stack rebuilt.
@@ -996,7 +996,7 @@ it('N3-R13 — a credential the stack refused signs this device out', function (
         ->and($screen->howMany())->toBe(0);
 });
 
-it('N3-R13 — and the session is let go of, not merely hidden', function (): void {
+it('a refused credential lets the session go, rather than only hiding it', function (): void {
     // The half a fold cannot do. A session left in the store is resumed on the
     // next frame and refused again, so the operator would be looking at a
     // sign-in prompt over a device that still believes it is signed in.
@@ -1010,7 +1010,7 @@ it('N3-R13 — and the session is let go of, not merely hidden', function (): vo
     expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeFalse();
 });
 
-it('N3-R13 — no other obstacle throws the session away', function (): void {
+it('no other obstacle throws the session away', function (): void {
     // A walk out of wifi must not look like being thrown out of the house. The
     // five that leave a session standing are asked off the enum, so a case that
     // starts ending one moves itself into the case above.
@@ -1026,7 +1026,7 @@ it('N3-R13 — no other obstacle throws the session away', function (): void {
     }
 });
 
-it('G4-R4 — the detail is on the row, under everything that leads', function (): void {
+it('the detail is on the row, under everything that leads', function (): void {
     // Available and not leading, which on a surface with one column is a
     // question about order. The plain explanation and what to try come first;
     // this is last, so somebody who wants it has it and everybody else has
@@ -1039,7 +1039,7 @@ it('G4-R4 — the detail is on the row, under everything that leads', function (
         ->and($row->remedies->count())->toBe(1);
 });
 
-it('G4-R4 — a check with no verdict to explain carries no detail either', function (): void {
+it('a check with no verdict to explain carries no detail either', function (): void {
     // The other two readings of a check, which reach this row by a different
     // arm and were the two the detail was never asserted on. A check that
     // passed has nothing underneath because nothing went wrong; a check that
@@ -1071,14 +1071,14 @@ it('G4-R4 — a check with no verdict to explain carries no detail either', func
         ->and($screen->findings()[1]->underneath)->toBe('');
 });
 
-it('G4-R4 — a finding the core added nothing to carries no detail', function (): void {
+it('a finding the core added nothing to carries no detail', function (): void {
     // The template branches on the empty string, so a row that carried a blank
     // heading would draw *what the check reported* with nothing under it —
     // which reads as the app knowing something and not saying it.
     expect(aFindingRowFor(WhatItSaysUnderneath::none())->underneath)->toBe('');
 });
 
-it('N1-R2 — the findings reach the glass, not only the view model', function (): void {
+it('the findings reach the glass, not only the view model', function (): void {
     // Every assertion above this one reads the view model, which is the right
     // shape for asking what the screen decided and cannot answer what it drew.
     // The findings are a list, and a list is drawn by walking a collection
@@ -1126,7 +1126,7 @@ function aRunWithAPluginsCheck(WhoPutItThere $second): Report
     ));
 }
 
-it('C1-R15 — a plugin\'s check says so beside its title, and the report says once what an unmarked row is', function (): void {
+it('a plugin\'s check says so beside its title, and the report says once what an unmarked row is', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::plugin('plex'))));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
@@ -1137,7 +1137,7 @@ it('C1-R15 — a plugin\'s check says so beside its title, and the report says o
         ->and($drawn)->not->toContain(__('health.origin.bundled'));
 });
 
-it('F7-R11 — a check nobody could attribute is marked with the stack\'s reason, never left to read as its own', function (): void {
+it('a check nobody could attribute is marked with the stack\'s reason, never left to read as its own', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::unknown('the plugin was removed'))));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 

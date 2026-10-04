@@ -199,7 +199,7 @@ it('opens at the last line, where a service says why it stopped', function (): v
     )))->toBe(['bottom']);
 });
 
-it('N2-R10 — shows the lines, oldest first, marking only those from the error stream', function (): void {
+it('shows the lines, oldest first, marking only those from the error stream', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
     expect(everyLineOnTheScreen($screen))->toBe(sprintf(
@@ -213,7 +213,7 @@ it('N2-R10 — shows the lines, oldest first, marking only those from the error 
         ->and($screen->answer()->went->remedy)->toBe('');
 });
 
-it('N2-R10 — a line the service timed carries the time on the phone\'s clock, and one it did not says so', function (): void {
+it('a line the service timed carries the time on the phone\'s clock, and one it did not says so', function (): void {
     // `hasAMoment` is a field of its own so a template never has to read an
     // empty `at` as *no moment*. That only holds if the two disagree somewhere:
     // a fold that set the flag from nothing, or set it the same way on both
@@ -377,7 +377,7 @@ it('heads the lines with what the stack calls the service, where the road here c
         ->and($unnamed->called())->toBe('gluetun');
 });
 
-it('N2-R10 — names the service it is about, from the route', function (): void {
+it('names the service it is about, from the route', function (): void {
     // From the route rather than held, because a screen holding the service it
     // was opened with, on a frame whose URI names another, would show one
     // service's lines under another's heading.
@@ -385,7 +385,7 @@ it('N2-R10 — names the service it is about, from the route', function (): void
         ->toBe('gluetun');
 });
 
-it('N2-R10 — states the bound and whether the view stops at it', function (): void {
+it('states the bound and whether the view stops at it', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
     expect($screen->answer()->bound)->toBe(3)
@@ -393,7 +393,7 @@ it('N2-R10 — states the bound and whether the view stops at it', function (): 
         ->and($screen->answer()->isAWindow)->toBeTrue();
 });
 
-it('N2-R10 — a read the bound did not cut says so, and claims nothing more', function (): void {
+it('a read the bound did not cut says so, and claims nothing more', function (): void {
     $service = theServiceOnTheScreen();
     $short = Scrollback::of(
         $service,
@@ -404,7 +404,7 @@ it('N2-R10 — a read the bound did not cut says so, and claims nothing more', f
     expect(theLogScreen(AServiceThatSpoke::saying($short))->answer()->isAWindow)->toBeFalse();
 });
 
-it('N2-R10 — searching narrows what is shown and not what was read', function (): void {
+it('searching narrows what is shown and not what was read', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
     typedIntoTheSearch($screen, 'timed');
 
@@ -419,7 +419,7 @@ it('N2-R10 — searching narrows what is shown and not what was read', function 
         ->and($screen->answer()->isSearching)->toBeTrue();
 });
 
-it('N1-R66 — narrowing does not ask the stack again', function (): void {
+it('narrowing does not ask the stack again', function (): void {
     // A screen that re-read per keystroke would open a connection per letter to
     // a machine on a home network — and would change what is being searched
     // underneath the person searching it.
@@ -457,7 +457,7 @@ it('an empty box is not a search', function (): void {
         ->and($screen->looking())->toBe('   ');
 });
 
-it('N2-R10 — asks for as much as a phone shows, and for this service', function (): void {
+it('asks for as much as a phone shows, and for this service', function (): void {
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     theLogScreen($saying)->answer();
 
@@ -467,7 +467,7 @@ it('N2-R10 — asks for as much as a phone shows, and for this service', functio
         ->and($saying->wasGivenASession())->toBeTrue();
 });
 
-it('N1-R10 — a stack that could not be asked says which of the six it met', function (): void {
+it('a stack that could not be asked says which of the six it met', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
 
     expect($screen->howMany())->toBe(0)
@@ -488,7 +488,7 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         ->and($screen->answer()->isSearching)->toBeFalse();
 });
 
-it('N1-R44 — a device with no session for that stack is not asked to wait for one', function (): void {
+it('a device with no session for that stack is not asked to wait for one', function (): void {
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     $screen = theLogScreen($saying, signedIn: false);
 
@@ -508,7 +508,7 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
         ->and($saying->askings())->toBe(0);
 });
 
-it('N1-R11 — a route naming a stack this device has forgotten is refused', function (): void {
+it('a route naming a stack this device has forgotten is refused', function (): void {
     $screen = theLogScreen(
         AServiceThatSpoke::saying(aWindowWorthReading()),
         named: str_repeat('z', Nonce::SHORTEST),
@@ -532,7 +532,7 @@ it('refuses a route naming no service', function (): void {
     expect(fn(): ServiceId => $screen->service())->toThrow(ServiceIsUnnamed::class);
 });
 
-it('N2-R10 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService(
         theStackWhoseServiceIsRead()->id(),
         ServiceId::called('gluetun'),
@@ -567,7 +567,7 @@ it('renders its own view', function (): void {
         ->toBe('operator::what-this-service-said');
 });
 
-it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+it('asking again after an obstacle asks the stack again', function (): void {
     // The action an obstacle must not take away. Counted rather than asserted
     // by absence of an error, because a screen that kept its held window would
     // hand back the same lines and leave somebody tapping a button that changes
@@ -596,7 +596,7 @@ it('asking again forgets the window, so a search is not run against stale lines'
     expect($saying->askings())->toBe(2);
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // This screen makes the same two moves its four siblings do, and it has to
     // make them itself: a fold cannot forget anything, and a session left in the
     // store is resumed on the next frame and refused again.
@@ -619,7 +619,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeFalse();
 });
 
-it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
+it('an obstacle that is not a refused credential leaves the session alone', function (): void {
     // The other side of the same line, and the one that keeps this from being a
     // screen that signs somebody out whenever a machine is unreachable. A phone
     // in flight mode has not lost its pairing, and forgetting the session would

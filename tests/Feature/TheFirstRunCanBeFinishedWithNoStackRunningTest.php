@@ -63,7 +63,7 @@ function theMachinesScreen(): YourStacks
     return app()->make(YourStacks::class);
 }
 
-it('N1-R6 — the camera sees a code for a machine this device has not met', function (): void {
+it('the camera sees a code for a machine this device has not met', function (): void {
     withNoCameraAndNoStack();
 
     $before = howManyMachinesAreHeld();
@@ -106,7 +106,7 @@ it('holds one machine for one code scanned twice, rather than a second row for i
     )->and($went)->toBe([HowThePairingWent::Paired, HowThePairingWent::PairedAgain]);
 });
 
-it('N1-R56 — a device that has paired opens on its machines rather than the sequence', function (): void {
+it('a device that has paired opens on its machines rather than the sequence', function (): void {
     withNoCameraAndNoStack();
 
     expect(theMachinesScreen()->theFirstRunIsStillRunning())->toBeFalse();

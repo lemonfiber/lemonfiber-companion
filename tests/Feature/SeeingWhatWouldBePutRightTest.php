@@ -102,7 +102,7 @@ function theRepairsScreen(
     return $screen;
 }
 
-it('N2-R4 — states what each repair does, affects and can undo, before any yes', function (): void {
+it('states what each repair does, affects and can undo, before any yes', function (): void {
     // All three clauses on every row. A screen carrying the sentence and
     // dropping whether it can be taken back would satisfy any assertion about
     // what appeared and still leave somebody agreeing to something permanent
@@ -117,7 +117,7 @@ it('N2-R4 — states what each repair does, affects and can undo, before any yes
         ->and($rows[1]->undoing)->toBe(Undoing::Permanent->saidOnTheScreen());
 });
 
-it('N2-R4 — a permanent repair and a reversible one do not read alike', function (): void {
+it('a permanent repair and a reversible one do not read alike', function (): void {
     // The assertion the requirement is actually about. Two rows that differed
     // only in a field nothing rendered would pass everything above.
     $rows = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()))->offer()->repairs;
@@ -125,7 +125,7 @@ it('N2-R4 — a permanent repair and a reversible one do not read alike', functi
     expect($rows[0]->undoing)->not->toBe($rows[1]->undoing);
 });
 
-it('N2-R7 — asking costs a round trip, then a read of the handle', function (): void {
+it('asking costs a round trip, then a read of the handle', function (): void {
     // The unconfirmed form is still a job. One of each per frame, and never two
     // askings — a second would be a second piece of work on somebody's machine
     // for a question already asked.
@@ -141,7 +141,7 @@ it('N2-R7 — asking costs a round trip, then a read of the handle', function ()
         ->and($mending->askedAfter()?->shown())->toBe(AStackThatWouldMend::THE_JOB);
 });
 
-it('N2-R7 — work still going is a state of the screen, not a spinner', function (): void {
+it('work still going is a state of the screen, not a spinner', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
 
     expect($screen->offer()->isWorking)->toBeTrue()
@@ -150,7 +150,7 @@ it('N2-R7 — work still going is a state of the screen, not a spinner', functio
         ->and($screen->offer()->went->met)->toBe('');
 });
 
-it('N1-R66 — asking again while the work runs reads the same job, and starts none', function (): void {
+it('asking again while the work runs reads the same job, and starts none', function (): void {
     // The distinction that makes this port safe to hold a handle for: the work
     // is the stack's, and repeating the read changes nothing. Starting a second
     // job for one question would be two lots of work on a machine.
@@ -211,7 +211,7 @@ it('a stack with no repair to offer is not a job that ended', function (): void 
         ->and($ended->offer()->hasEnded)->toBeTrue();
 });
 
-it('N1-R10 — a stack that could not be asked says so, and says what to do', function (): void {
+it('a stack that could not be asked says so, and says what to do', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
@@ -233,7 +233,7 @@ it('a stack that took the question on and then went away is an obstacle too', fu
         ->and($mending->readings())->toBe(1);
 });
 
-it('N1-R44 — a device with no session for that stack is not asked to reach it', function (): void {
+it('a device with no session for that stack is not asked to reach it', function (): void {
     $mending = AStackThatWouldMend::offering(aListingWorthReading());
     $screen = theRepairsScreen($mending, signedIn: false);
 
@@ -245,7 +245,7 @@ it('N1-R44 — a device with no session for that stack is not asked to reach it'
         ->and($mending->readings())->toBe(0);
 });
 
-it('N1-R11 — a route naming a stack this device has forgotten is refused', function (): void {
+it('a route naming a stack this device has forgotten is refused', function (): void {
     $screen = theRepairsScreen(
         AStackThatWouldMend::offering(aListingWorthReading()),
         named: str_repeat('z', Nonce::SHORTEST),
@@ -254,7 +254,7 @@ it('N1-R11 — a route naming a stack this device has forgotten is refused', fun
     expect(fn(): int => count($screen->offer()->repairs))->toThrow(StackIsNotConfigured::class);
 });
 
-it('N2-R4 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
         AStacksScreen::Repairs->forTheStack(theStackBeingOfferedRepairs()->id()),
     );
@@ -296,7 +296,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N1-R65 — asking again before the first frame has read anything asks once', function (): void {
+it('asking again before the first frame has read anything asks once', function (): void {
     // *Ask again* is an action, and an action can arrive before any accessor
     // has run — a frame that has been built and not yet resolved is a real
     // state, not a hypothetical one. Nothing has been read, so there is no
@@ -340,7 +340,7 @@ function aRunThatHalfWorked(): WhatWasMended
     );
 }
 
-it('N2-R5 — agreeing is a second act, and the screen stops showing the offer', function (): void {
+it('agreeing is a second act, and the screen stops showing the offer', function (): void {
     // The offer and the outcome are different questions with different answers,
     // and the screen must not answer one with the other. A template reading a
     // single value would render a listing of what a machine *would* do as a
@@ -401,7 +401,7 @@ it('asks what it would put right again where other work held the question', func
         ->and($mending->agreements())->toBe(0);
 });
 
-it('N2-R6 — the yes quotes the listing the operator was shown', function (): void {
+it('the yes quotes the listing the operator was shown', function (): void {
     $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
     $screen = theRepairsScreen($mending);
 
@@ -412,7 +412,7 @@ it('N2-R6 — the yes quotes the listing the operator was shown', function (): v
         ->and($mending->agreedTo()?->repair()->answers()->shown())->toBe('storage.one-filesystem');
 });
 
-it('N2-R5 — a repair named by a check that is not on offer agrees to nothing', function (): void {
+it('a repair named by a check that is not on offer agrees to nothing', function (): void {
     // Named by check rather than by position, so a listing that came back in
     // another order between the render and the tap cannot agree to a different
     // repair. A check that is not there at all is the same protection working.
@@ -426,7 +426,7 @@ it('N2-R5 — a repair named by a check that is not on offer agrees to nothing',
         ->and($mending->agreements())->toBe(0);
 });
 
-it('N2-R5 — a name that is blank agrees to nothing rather than raising', function (): void {
+it('a name that is blank agrees to nothing rather than raising', function (): void {
     // A template can send anything, and `Check::of()` raises on a blank —
     // rightly, a check named as nothing is no check at all — so building the
     // value before knowing there is a row would put that raise on a tap.
@@ -443,7 +443,7 @@ it('N2-R5 — a name that is blank agrees to nothing rather than raising', funct
         ->and($mending->agreements())->toBe(0);
 });
 
-it('N2-R5 — agreeing before a listing has been read agrees to nothing', function (): void {
+it('agreeing before a listing has been read agrees to nothing', function (): void {
     // There is nothing to quote, so there is nothing to agree to. Silent rather
     // than refusing: the template does not draw the button in that state, and a
     // sentence about a button nobody can see is noise.
@@ -456,7 +456,7 @@ it('N2-R5 — agreeing before a listing has been read agrees to nothing', functi
         ->and($mending->agreements())->toBe(0);
 });
 
-it('N2-R5 — a finished run says what became of each repair, and what one left', function (): void {
+it('a finished run says what became of each repair, and what one left', function (): void {
     // Per repair, because a listing agreed to as a whole comes apart. Reported
     // as one word, the operator believes either that everything worked or that
     // nothing did — and there is half a library on the old disk either way.
@@ -476,7 +476,7 @@ it('N2-R5 — a finished run says what became of each repair, and what one left'
         ->and($done->outcomes[1]->worthAnotherGo)->toBeTrue();
 });
 
-it('N2-R4 — an outcome still carries what the repair said it would do', function (): void {
+it('an outcome still carries what the repair said it would do', function (): void {
     // Not only the sentence. *Can this be undone* is exactly the question an
     // operator has once a repair has worked, and what else it affected is what
     // explains the half hour they just had.
@@ -492,7 +492,7 @@ it('N2-R4 — an outcome still carries what the repair said it would do', functi
         ->and($first->repair->undoing)->toBe(Undoing::Possible->saidOnTheScreen());
 });
 
-it('N1-R41 — asking again after agreeing reads, and never agrees twice', function (): void {
+it('asking again after agreeing reads, and never agrees twice', function (): void {
     // An agreement sent twice is a repair carried out twice, which for a fix
     // that moves a library is not the same as doing it once.
     $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
@@ -539,7 +539,7 @@ it('nothing was agreed to, so there is nothing that was done', function (): void
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
-it('N1-R10 — a stack that goes away between agreeing and reading says what was met', function (): void {
+it('a stack that goes away between agreeing and reading says what was met', function (): void {
     // Time passes between the two, which is exactly where a phone leaves the
     // house or a session ends underneath somebody. Reaching it needs a stack
     // that offers a listing and *then* cannot be reached — one that met the
@@ -556,7 +556,7 @@ it('N1-R10 — a stack that goes away between agreeing and reading says what was
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
-it('N2-R5 — a run still being carried out is its own state', function (): void {
+it('a run still being carried out is its own state', function (): void {
     // The ordinary middle: the listing read, the operator agreed, the machine
     // working. Told apart from *nothing was agreed to*, which is the case
     // above, and from a run that finished having done nothing.
@@ -570,7 +570,7 @@ it('N2-R5 — a run still being carried out is its own state', function (): void
         ->and($screen->done()->went->met)->toBe('');
 });
 
-it('N1-R65 — what was done is held, so reading it twice asks once', function (): void {
+it('what was done is held, so reading it twice asks once', function (): void {
     // The same rule as the offer, one question along: a frame reads several
     // fields off the outcome and each read must not be a trip to the machine.
     $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
@@ -588,7 +588,7 @@ it('N1-R65 — what was done is held, so reading it twice asks once', function (
     expect($mending->readings() - $before)->toBe(1);
 });
 
-it('N2-R5 — a second repair in the same listing can still be agreed to', function (): void {
+it('a second repair in the same listing can still be agreed to', function (): void {
     // A listing usually holds more than one, and agreeing to the first is not
     // agreeing to the rest. Without a way back, the operator who fixed the disk
     // is left looking at that one outcome with the credential still waiting
@@ -631,7 +631,7 @@ it('looking again asks the stack afresh rather than reusing the listing', functi
     expect($mending->askings() - $before)->toBe(1);
 });
 
-it('N1-R27 — while the stack is working it out, the screen looks again by itself', function (): void {
+it('while the stack is working it out, the screen looks again by itself', function (): void {
     // The half of the cadence rule that is not a button. An operator who told a machine
     // to do something should not have to keep tapping to find out whether it
     // did, and leaving and returning is what the rule refuses by name.
@@ -650,7 +650,7 @@ it('N1-R27 — while the stack is working it out, the screen looks again by itse
         ->and($screen->isWorking())->toBeTrue();
 });
 
-it('N1-R66 — the cadence costs nothing while there is nothing to wait for', function (): void {
+it('the cadence costs nothing while there is nothing to wait for', function (): void {
     // What keeps this from being the polling that is refused. A screen showing
     // an offer has nothing that changes on its own, so the poll does not reach
     // the machine at all.
@@ -686,7 +686,7 @@ it('declares its cadence on the attribute, from the one constant', function (): 
         ->and($polls[0]->newInstance()->ms)->toBe(HowOftenAScreenLooks::WhileWorkRuns->milliseconds());
 });
 
-it('N3-R13 — a refused credential on the outcome read signs this device out', function (): void {
+it('a refused credential on the outcome read signs this device out', function (): void {
     // The case the offer read cannot cover. A screen that read an offer
     // successfully and then met a refusal while asking what became of the work
     // would, for one frame, render what it loaded a moment ago under a session
@@ -710,7 +710,7 @@ it('N3-R13 — a refused credential on the outcome read signs this device out', 
         ->and($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeFalse();
 });
 
-it('N3-R13 — an outcome that came back is not a session that ended', function (): void {
+it('an outcome that came back is not a session that ended', function (): void {
     // The other side of the line `isSignedIn()` draws. Once something has been
     // agreed to, the answer comes from the outcome read rather than the offer
     // read — so a screen that folded the two together with *and* would report a
@@ -726,7 +726,7 @@ it('N3-R13 — an outcome that came back is not a session that ended', function 
         ->and($screen->isSignedIn())->toBeTrue();
 });
 
-it('N3-R13 — and the session is let go of, handle and all', function (): void {
+it('a refused credential lets the session go, handle and all', function (): void {
     // This screen is the one that holds a job between frames, and a handle is
     // only redeemable with the session it was taken out under — keeping it
     // would have the next frame ask about work on behalf of somebody the stack

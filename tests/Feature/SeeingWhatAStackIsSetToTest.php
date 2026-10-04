@@ -253,7 +253,7 @@ it('reads a route parameter that is not text as naming no machine', function ():
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N3-R13 — lets the session go when the stack refuses the credential', function (): void {
+it('lets the session go when the stack refuses the credential', function (): void {
     // The listing is a read, and a read refused on the credential is the same
     // signed-out device as one refused anywhere else: the identity was
     // removed, the password changed, or the stack was rebuilt. A session left
@@ -267,7 +267,7 @@ it('N3-R13 — lets the session go when the stack refuses the credential', funct
         ->and($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
 });
 
-it('N3-R13 — keeps the session when the machine could not be reached', function (): void {
+it('keeps the session when the machine could not be reached', function (): void {
     // The other half, and the reason the release is a decision rather than a
     // reflex. A phone in flight mode has not lost its pairing, and forgetting
     // the session here would make somebody sign in again to read settings they
@@ -622,7 +622,7 @@ it('asks nothing of the stack for a setting that is not the open one', function 
         ->and($screen->proposal()?->key)->toBe('');
 });
 
-it('N3-R13 — lets the session go when a change is refused on the credential', function (): void {
+it('lets the session go when a change is refused on the credential', function (): void {
     // The same release the listing does, on the other call this screen makes.
     // A read refused on the credential and a write refused on it are the same
     // signed-out device, and a screen that let go on one and not the other
@@ -641,7 +641,7 @@ it('N3-R13 — lets the session go when a change is refused on the credential', 
     expect($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
 });
 
-it('F7-R3 — every setting is drawn with who set it, each arm in its own words', function (): void {
+it('every setting is drawn with who set it, each arm in its own words', function (): void {
     // Every row, unlike a report: settings are split between the stack's own
     // and the operator's, so neither is the ordinary case a legend could name.
     // Drawn rather than read off the view model, because the sentence and the

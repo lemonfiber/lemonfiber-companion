@@ -112,7 +112,7 @@ const NEVER_SHOWN_TO_A_MEMBER = [
     HowManyLines::class => 'logs',
 ];
 
-it('N3-R9 — every type this refuses is one this application has', function (): void {
+it('every type this refuses is one this application has', function (): void {
     // `Foo::class` is a string the compiler builds out of the `use` above it,
     // and it resolves whether or not anything of that name exists. So a
     // renamed type leaves a row here that matches nothing, and the rule below
@@ -138,7 +138,7 @@ it('N3-R9 — every type this refuses is one this application has', function ():
     ));
 });
 
-it('N3-R9 — no member surface keeps a session or hands one on', function (): void {
+it('no member surface keeps a session or hands one on', function (): void {
     // The credentials clause, drawn where it belongs. A screen is handed a
     // session to ask a stack with, which is every screen in the application and
     // not a thing a member does differently. What a member surface must never
@@ -201,7 +201,7 @@ function everyClassOnTheMemberSurface(): array
     return $found;
 }
 
-it('N3-R9 — nothing on a member surface can be handed what the operator is shown', function (): void {
+it('nothing on a member surface can be handed what the operator is shown', function (): void {
     $household = array_values(array_filter(
         Module::all(),
         static fn(Module $module): bool => $module->namespace === 'Modules\\Household',

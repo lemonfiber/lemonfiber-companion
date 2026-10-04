@@ -358,7 +358,7 @@ function valuesOf(array $cases): array
     return $values;
 }
 
-it('N1-R13 — the reading that decides all five can say something else', function (): void {
+it('the reading that decides all five can say something else', function (): void {
     // The five rules below have only ever asked this reader about a generated
     // file where every answer is the right one, and nothing can be planted for
     // them: the envelope is somebody else's file in `vendor/`, restored by
@@ -391,7 +391,7 @@ it('N1-R13 — the reading that decides all five can say something else', functi
     expect(unionIn("state: 'settled',", 'state'))->toBe([]);
 });
 
-it('N1-R13 — a field declared twice with different unions is refused', function (): void {
+it('a field declared twice with different unions is refused', function (): void {
     // The path the comment above `unionIn` describes and nothing had taken. Two
     // occurrences that disagree are a question this cannot answer, and answering
     // with whichever came first would be the quiet half-right result these rules
@@ -408,7 +408,7 @@ it('N1-R13 — a field declared twice with different unions is refused', functio
     expect(unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
 });
 
-it('N1-R13 — every request standing the contract describes has a case', function (): void {
+it('every request standing the contract describes has a case', function (): void {
     // The contract calls this `state` too, in a different envelope and with a
     // different union — a problem's standing and a request's. Read from the
     // household envelope by name rather than by sweeping the generated files,
@@ -420,7 +420,7 @@ it('N1-R13 — every request standing the contract describes has a case', functi
     expect(valuesOf(Waiting::cases()))->toBe($union);
 });
 
-it('N1-R13 — the verdict outcomes are collected across arms', function (): void {
+it('the verdict outcomes are collected across arms', function (): void {
     // `outcome` is read as single literals rather than as a union, because the
     // verdict is a union of object shapes and each arm fixes it to one value of
     // its own. Two arms is the case that distinguishes this from `unionIn`.
@@ -430,17 +430,17 @@ it('N1-R13 — the verdict outcomes are collected across arms', function (): voi
     expect(outcomesIn('nothing here'))->toBe([]);
 });
 
-it('N1-R13 — every health category the contract describes has a case', function (): void {
+it('every health category the contract describes has a case', function (): void {
     expect(wireUnion('category'))->not->toBe([], 'no category union was found in the generated envelope');
     expect(valuesOf(Category::cases()))->toBe(wireUnion('category'));
 });
 
-it('N1-R13 — every verdict the contract describes has a case', function (): void {
+it('every verdict the contract describes has a case', function (): void {
     expect(wireOutcomes())->not->toBe([], 'no verdict outcome was found in the generated envelope');
     expect(valuesOf(Conclusion::cases()))->toBe(wireOutcomes());
 });
 
-it('N1-R13 — every repair outcome the contract describes has a case', function (): void {
+it('every repair outcome the contract describes has a case', function (): void {
     // A union of object shapes, each arm fixing `outcome` to a literal of its
     // own, as a verdict is — so the literal-union rule below cannot see it, and
     // for as long as this rule did not exist the stack's `unmanaged` arrived
@@ -458,17 +458,17 @@ it('every word the health summary may stand at has a case', function (): void {
     expect(valuesOf(HowItStands::cases()))->toBe($standings);
 });
 
-it('N1-R13 — every overall the contract describes has a case', function (): void {
+it('every overall the contract describes has a case', function (): void {
     expect(wireUnion('overall'))->not->toBe([], 'no overall union was found in the generated envelope');
     expect(valuesOf(Overall::cases()))->toBe(wireUnion('overall'));
 });
 
-it('N1-R13 — every severity the contract describes has a case', function (): void {
+it('every severity the contract describes has a case', function (): void {
     expect(wireUnion('severity'))->not->toBe([], 'no severity union was found in the generated envelope');
     expect(valuesOf(Severity::cases()))->toBe(wireUnion('severity'));
 });
 
-it('N1-R13 — every settler the contract describes has a case', function (): void {
+it('every settler the contract describes has a case', function (): void {
     // Read from the wiring envelope, where the word is declared. `whose` says
     // which of the stack and the operator resolved a contested capability, and
     // the two may not be flattened — so an arm the contract grew that nothing
@@ -479,7 +479,7 @@ it('N1-R13 — every settler the contract describes has a case', function (): vo
     expect(valuesOf(WhoSettledIt::cases()))->toBe($settlers);
 });
 
-it('N1-R13 — every settlement the contract describes has a case', function (): void {
+it('every settlement the contract describes has a case', function (): void {
     // The five are tags on objects rather than one union, so they are gathered
     // by tag. A word the contract adds and this does not have is the failure
     // that matters: `contested` is the core declining to choose, and an arm
@@ -490,7 +490,7 @@ it('N1-R13 — every settlement the contract describes has a case', function ():
     expect(valuesOf(HowItSettled::cases()))->toBe($settlements);
 });
 
-it('N1-R13 — every way one service reaches another has a case', function (): void {
+it('every way one service reaches another has a case', function (): void {
     // Whose decision it was: a capability the core resolved, or a name somebody
     // gave. A plugin may not create the second, so an arm the contract grew
     // that nothing here reads would render an instruction as a deduction.
@@ -500,7 +500,7 @@ it('N1-R13 — every way one service reaches another has a case', function (): v
     expect(valuesOf(HowItWasReached::cases()))->toBe($reaches);
 });
 
-it('N1-R13 — every kind of stopped the dashboard describes has a case', function (): void {
+it('every kind of stopped the dashboard describes has a case', function (): void {
     // Read from the dashboard, whose `stuck` rows carry it. The cases are the
     // stack's order as well as its words, worst first, so a kind added
     // anywhere but the end fails here too.
@@ -510,7 +510,7 @@ it('N1-R13 — every kind of stopped the dashboard describes has a case', functi
     expect(valuesOf(HowItStopped::cases()))->toBe($stalls);
 });
 
-it('N1-R13 — every stage the contract describes has a case', function (): void {
+it('every stage the contract describes has a case', function (): void {
     // Read from the stuck envelope rather than the doctor one, which is the
     // first time these rules have looked at a second file. The union is only
     // declared where it is used, so asking the doctor envelope about `stage`
@@ -522,7 +522,7 @@ it('N1-R13 — every stage the contract describes has a case', function (): void
     expect(valuesOf(Stage::cases()))->toBe($stages);
 });
 
-it('N1-R13 — every medium the contract describes has a case', function (): void {
+it('every medium the contract describes has a case', function (): void {
     // Read from the held envelope, the way the stage and the stream are read
     // from theirs: a union is declared only where it is used, so asking any
     // other envelope about `medium` answers `[]` — the same answer a renamed
@@ -533,7 +533,7 @@ it('N1-R13 — every medium the contract describes has a case', function (): voi
     expect(valuesOf(Medium::cases()))->toBe($media);
 });
 
-it('N1-R13 — every stream the contract describes has a case', function (): void {
+it('every stream the contract describes has a case', function (): void {
     // A third generated envelope, read the way the stuck one above is. A union
     // is only declared where it is used, so asking any other envelope about
     // `stream` answers `[]` — the same answer a renamed field gives, which is
@@ -544,7 +544,7 @@ it('N1-R13 — every stream the contract describes has a case', function (): voi
     expect(valuesOf(Stream::cases()))->toBe($streams);
 });
 
-it('N1-R13 — every severity a log line can declare has a case', function (): void {
+it('every severity a log line can declare has a case', function (): void {
     // Read off the log envelope, where the union is declared; the space
     // envelope's `level` is a different field under the same word.
     $levels = unionIn(theGeneratedLogEnvelope(), 'level');
@@ -553,14 +553,14 @@ it('N1-R13 — every severity a log line can declare has a case', function (): v
     expect(valuesOf(HowSeriousALineIs::cases()))->toBe($levels);
 });
 
-it('N1-R13 — every cost the contract describes has a case', function (): void {
+it('every cost the contract describes has a case', function (): void {
     $costs = unionIn(theGeneratedConfigEnvelope(), 'cost');
 
     expect($costs)->not->toBe([], 'no cost union was found in the generated envelope');
     expect(valuesOf(Cost::cases()))->toBe($costs);
 });
 
-it('N1-R13 — every stance the contract describes has a case', function (): void {
+it('every stance the contract describes has a case', function (): void {
     // The one where a missing case would be worst. A stance this app did not
     // know would be refused as unreadable, which is correct — but the reason
     // to hold the set to the wire here is the pair the enum exists to keep
@@ -573,28 +573,28 @@ it('N1-R13 — every stance the contract describes has a case', function (): voi
     expect(valuesOf(Stance::cases()))->toBe($stances);
 });
 
-it('N1-R13 — every way a service can be running has a case', function (): void {
+it('every way a service can be running has a case', function (): void {
     $states = unionIn(theGeneratedStatusEnvelope(), 'state');
 
     expect($states)->not->toBe([], 'no service state union was found in the generated envelope');
     expect(valuesOf(HowAServiceRuns::cases()))->toBe($states);
 });
 
-it('N1-R13 — every criticality the contract describes has a case', function (): void {
+it('every criticality the contract describes has a case', function (): void {
     $matters = unionIn(theGeneratedStatusEnvelope(), 'criticality');
 
     expect($matters)->not->toBe([], 'no criticality union was found in the generated envelope');
     expect(valuesOf(HowMuchItMatters::cases()))->toBe($matters);
 });
 
-it('N1-R13 — every condition the whole stack can be in has a case', function (): void {
+it('every condition the whole stack can be in has a case', function (): void {
     $conditions = unionIn(theGeneratedStatusEnvelope(), 'condition');
 
     expect($conditions)->not->toBe([], 'no condition union was found in the generated envelope');
     expect(valuesOf(HowTheStackIsRunning::cases()))->toBe($conditions);
 });
 
-it('N1-R13 — every way a command can be hosted has a case', function (): void {
+it('every way a command can be hosted has a case', function (): void {
     // `standing` rather than `state`, which is the `hosting` envelope's own
     // word for it and is a third union again — a problem's standing and a
     // household request's are already two, under the wire's `state`. Naming the
@@ -605,7 +605,7 @@ it('N1-R13 — every way a command can be hosted has a case', function (): void 
     expect(valuesOf(HowItIsHosted::cases()))->toBe($hosted);
 });
 
-it('N1-R13 — every way a change can be put back has a case', function (): void {
+it('every way a change can be put back has a case', function (): void {
     // `reversal` became a named union in the contract, so the three words this
     // app reads are held to the wire rather than to a sentence describing it.
     $reversals = unionIn(theGeneratedHistoryEnvelope(), 'reversal');
@@ -623,7 +623,7 @@ it('everything putting one change back can do has a case', function (): void {
     expect(valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
 });
 
-it('N1-R13 — every request lemonfiber makes on its own account has a case', function (): void {
+it('every request lemonfiber makes on its own account has a case', function (): void {
     // `reach` on the wire, and the closed set is the stack's claim: an eighth
     // request is one somebody decided to add, and this is where the app hears
     // of it rather than drawing it under the nearest name.
@@ -633,70 +633,70 @@ it('N1-R13 — every request lemonfiber makes on its own account has a case', fu
     expect(valuesOf(WhatLemonfiberAsksFor::cases()))->toBe($asks);
 });
 
-it('N1-R13 — every state the shared line can be in has a case', function (): void {
+it('every state the shared line can be in has a case', function (): void {
     $words = unionIn(theGeneratedBandwidthEnvelope(), 'restraint');
 
     expect($words)->not->toBe([], 'no restraint union was found in the generated envelope');
     expect(valuesOf(WhereTheLineStands::cases()))->toBe($words);
 });
 
-it('N1-R13 — every way the line\'s capacity can have been arrived at has a case', function (): void {
+it('every way the line\'s capacity can have been arrived at has a case', function (): void {
     $words = unionIn(theGeneratedBandwidthEnvelope(), 'source');
 
     expect($words)->not->toBe([], 'no source union was found in the generated envelope');
     expect(valuesOf(HowTheLineWasMeasured::cases()))->toBe($words);
 });
 
-it('N1-R13 — everything reaching a cap can do has a case', function (): void {
+it('everything reaching a cap can do has a case', function (): void {
     $words = unionIn(theGeneratedBandwidthEnvelope(), 'exceeded');
 
     expect($words)->not->toBe([], 'no exceeded union was found in the generated envelope');
     expect(valuesOf(WhatACapDoes::cases()))->toBe($words);
 });
 
-it('N1-R13 — everywhere a month can stand against its cap has a case', function (): void {
+it('everywhere a month can stand against its cap has a case', function (): void {
     $words = unionIn(theGeneratedBandwidthEnvelope(), 'reached');
 
     expect($words)->not->toBe([], 'no reached union was found in the generated envelope');
     expect(valuesOf(WhereTheMonthStands::cases()))->toBe($words);
 });
 
-it('N1-R13 — everywhere a machine or a volume can stand for room has a case', function (): void {
+it('everywhere a machine or a volume can stand for room has a case', function (): void {
     $words = unionIn(theGeneratedSpaceEnvelope(), 'level');
 
     expect($words)->not->toBe([], 'no level union was found in the generated envelope');
     expect(valuesOf(WhereTheRoomStands::cases()))->toBe($words);
 });
 
-it('N1-R13 — every volume the stack watches has a case', function (): void {
+it('every volume the stack watches has a case', function (): void {
     $words = unionIn(theGeneratedSpaceEnvelope(), 'role');
 
     expect($words)->not->toBe([], 'no role union was found in the generated envelope');
     expect(valuesOf(WhatAVolumeHolds::cases()))->toBe($words);
 });
 
-it('N1-R13 — everything getting room back can cost has a case', function (): void {
+it('everything getting room back can cost has a case', function (): void {
     $words = unionIn(theGeneratedSpaceEnvelope(), 'reclaim');
 
     expect($words)->not->toBe([], 'no reclaim union was found in the generated envelope');
     expect(valuesOf(WhatGettingItBackCosts::cases()))->toBe($words);
 });
 
-it('N1-R13 — every category a line of the account can be has a case', function (): void {
+it('every category a line of the account can be has a case', function (): void {
     $words = theArmsIn(theGeneratedSpaceEnvelope(), 'of');
 
     expect($words)->not->toBe([], 'no category arm was found in the generated envelope');
     expect(valuesOf(WhatALineIsAbout::cases()))->toBe($words);
 });
 
-it('N1-R13 — everywhere a download can stand has a case', function (): void {
+it('everywhere a download can stand has a case', function (): void {
     $words = theArmsIn(theGeneratedSpaceEnvelope(), 'standing');
 
     expect($words)->not->toBe([], 'no standing arm was found in the generated envelope');
     expect(valuesOf(WhereADownloadStands::cases()))->toBe($words);
 });
 
-it('N1-R13 — every kind of reading a volume can have has a case', function (): void {
+it('every kind of reading a volume can have has a case', function (): void {
     $words = theArmsIn(theGeneratedSpaceEnvelope(), 'as');
 
     expect($words)->not->toBe([], 'no reading arm was found in the generated envelope');
@@ -771,14 +771,14 @@ it('everything a walkthrough can hand over to has a case', function (): void {
     expect(valuesOf(WhatToDoNext::cases()))->toBe($words);
 });
 
-it('N1-R13 — every way lemonfiber can have been installed has a case', function (): void {
+it('every way lemonfiber can have been installed has a case', function (): void {
     $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'installed');
 
     expect($words)->not->toBe([], 'no installed union was found in the generated envelope');
     expect(valuesOf(HowLemonfiberWasInstalled::cases()))->toBe($words);
 });
 
-it('N1-R13 — everywhere a copy of lemonfiber can stand has a case', function (): void {
+it('everywhere a copy of lemonfiber can stand has a case', function (): void {
     $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'standing');
 
     expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
@@ -939,14 +939,14 @@ it('everything asking a service about quality can come to has a case', function 
     expect(valuesOf(WhereTheAskingStands::cases()))->toBe($words);
 });
 
-it('N1-R13 — every service manager the contract describes has a case', function (): void {
+it('every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
     expect($managers)->not->toBe([], 'no manager union was found in the generated envelope');
     expect(valuesOf(WhatKeepsItRunning::cases()))->toBe($managers);
 });
 
-it('N1-R13 — every standing the contract describes has a case', function (): void {
+it('every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
     // names are written down together here.
@@ -1130,7 +1130,7 @@ function everyWireUnion(): array
     return $found;
 }
 
-it('N1-R13 — an enum that is a wire union is checked against it', function (): void {
+it('an enum that is a wire union is checked against it', function (): void {
     // The five above are the ones that mirror a union today, established by
     // reading rather than by remembering. What this refuses is the sixth: an
     // enum written from a contract field, with nothing holding it to that field,

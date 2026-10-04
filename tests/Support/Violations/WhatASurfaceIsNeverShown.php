@@ -38,7 +38,7 @@ final readonly class WhatASurfaceIsNeverShown
                         return '';
                     }
                 }
-                PHP, 'N2-R12 — no screen can be handed a credential'),
+                PHP, 'no screen can be handed a credential'),
 
             Fixture::suite('N3-R9', 'app-modules/household/src/Fixtures/ShowsAReport.php', <<<'PHP'
                 <?php
@@ -56,7 +56,7 @@ final readonly class WhatASurfaceIsNeverShown
                         return '';
                     }
                 }
-                PHP, 'N3-R9 — nothing on a member surface can be handed'),
+                PHP, 'nothing on a member surface can be handed'),
 
             // The queue `ADR-0020` spends its length rejecting, written the way
             // every collection in this repository is written: a promoted
@@ -319,7 +319,7 @@ final readonly class WhatASurfaceIsNeverShown
 
                         /** Held from an earlier session, and this is when it was read. */
                     PHP,
-                'N1-R9, N2-R13 — the value is reachable only by saying what happens either way',
+                'the value is reachable only by saying what happens either way',
                 'valueWithoutItsAge',
             ),
 
@@ -332,7 +332,7 @@ final readonly class WhatASurfaceIsNeverShown
                 'app-modules/kernel/src/Api/Reading.php',
                 '     * @param Closure(object, Instant): TRetained $retained',
                 '     * @param Closure(object): TRetained $retained',
-                'N1-R9 — the retained arm is handed the moment it was read',
+                'the retained arm is handed the moment it was read',
                 'Closure(object, Instant): TRetained',
             ),
         ];

@@ -145,7 +145,7 @@ function theBranchNamed(string $body): string
     return trim((string) preg_replace('/\s+/', ' ', mb_substr($body, 0, 60)));
 }
 
-it('N1-R3 — no obstacle branch leaves an operator with nothing to do', function (): void {
+it('no obstacle branch leaves an operator with nothing to do', function (): void {
     $silent = [];
     $branches = 0;
 

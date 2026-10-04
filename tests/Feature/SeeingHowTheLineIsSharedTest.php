@@ -106,7 +106,7 @@ it('shows where the line stands, what it means and each direction in the stack\'
         ->and($answer->uploadCost)->toBe('Seeding back at a quarter slows the ratio');
 });
 
-it('N10-R4, N10-R5 — the capacity says down and up, declared or observed, which path, and how long ago', function (): void {
+it('the capacity says down and up, declared or observed, which path, and how long ago', function (): void {
     $measured = theLineScreen(AStackThatRationsItsLine::with(aCappedLine()))->answer()->measured;
 
     expect($measured)->not->toBeNull()
@@ -117,14 +117,14 @@ it('N10-R4, N10-R5 — the capacity says down and up, declared or observed, whic
         ->and($measured?->agoCount)->toBe(2);
 });
 
-it('N10-R6 — the cap says its allowance, what reaching it does, and where the month stands', function (): void {
+it('the cap says its allowance, what reaching it does, and where the month stands', function (): void {
     $cap = theLineScreen(AStackThatRationsItsLine::with(aCappedLine()))->answer()->cap;
 
     expect($cap)->not->toBeNull()
         ->and([$cap?->figure, $cap?->doesSaid, $cap?->standingSaid])->toBe([1, WhatACapDoes::Pause->saidOnTheScreen(), WhereTheMonthStands::Warning->saidOnTheScreen()]);
 });
 
-it('N10-R7 — no cap declared is not a cap of nought, and a line nobody measured is not a line of nothing', function (): void {
+it('no cap declared is not a cap of nought, and a line nobody measured is not a line of nothing', function (): void {
     $bare = theLineScreen(AStackThatRationsItsLine::with(aBareLine()))->answer();
     $zero = theLineScreen(AStackThatRationsItsLine::with(aBareLine()->cappedAt(AMonthlyCap::of(0, WhatACapDoes::Continue))))->answer();
 
@@ -136,7 +136,7 @@ it('N10-R7 — no cap declared is not a cap of nought, and a line nobody measure
         ->and($zero->cap?->standingSaid)->toBe('');
 });
 
-it('N10-R12 — a stack that could not be asked is not a line with nothing on it', function (): void {
+it('a stack that could not be asked is not a line with nothing on it', function (): void {
     $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
@@ -153,13 +153,13 @@ it('N10-R12 — a stack that could not be asked is not a line with nothing on it
         ->and($answer->uploadCost)->toBe('');
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     $answer = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R44 — a session that has ended is not a line with nothing on it', function (): void {
+it('a session that has ended is not a line with nothing on it', function (): void {
     $answer = theLineScreen(AStackThatRationsItsLine::with(aCappedLine()), signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
@@ -169,7 +169,7 @@ it('N1-R44 — a session that has ended is not a line with nothing on it', funct
         ->and($answer->cap)->toBeNull();
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theLineScreen(AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
@@ -193,7 +193,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($rationing->askedAbout()?->id()->stored())->toBe(theStackWhoseLineIsRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $rationing = AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theLineScreen($rationing);
 
@@ -236,7 +236,7 @@ function theUnitSaid(string $key): string
     return is_string($said) ? $said : throw new LogicException(sprintf('`%s` names a group of lines, not a unit', $key));
 }
 
-it('N10-R4, N10-R6 — the reading reaches the glass, each figure in its own unit', function (): void {
+it('the reading reaches the glass, each figure in its own unit', function (): void {
     // Drawn rather than read off the view model, because the figure and its
     // unit meet only in the template. Down and up sit in different units here
     // — a gigabit line with a 500 kbit/s upload — and the cap in a unit of

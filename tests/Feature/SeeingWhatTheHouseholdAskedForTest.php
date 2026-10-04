@@ -86,7 +86,7 @@ function theRequestsScreen(
     return $screen;
 }
 
-it('N2-R11 — shows what the house asked for, and how much of it wants deciding', function (): void {
+it('shows what the house asked for, and how much of it wants deciding', function (): void {
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
 
     expect($screen->howMany())->toBe(2)
@@ -98,7 +98,7 @@ it('N2-R11 — shows what the house asked for, and how much of it wants deciding
         ->and($screen->answer()->went->remedy)->toBe('');
 });
 
-it('D7-R7 — every row says who asked, so a decline can reach them', function (): void {
+it('every row says who asked, so a decline can reach them', function (): void {
     $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->answer()->requests;
 
     expect($rows[0]->by)->toBe('Sam')
@@ -106,7 +106,7 @@ it('D7-R7 — every row says who asked, so a decline can reach them', function (
         ->and($rows[1]->by)->toBe('Robin');
 });
 
-it('D7-R4 — an estimate is labelled as one, and a measurement is not', function (): void {
+it('an estimate is labelled as one, and a measurement is not', function (): void {
     // One fact and two sentences. A screen carrying the figure and dropping the
     // word would render both of these identically, which is the failure the
     // requirement is about — and the number renders either way, so nobody
@@ -118,7 +118,7 @@ it('D7-R4 — an estimate is labelled as one, and a measurement is not', functio
         ->and($rows[0]->sizeSaid)->not->toBe($rows[1]->sizeSaid);
 });
 
-it('D7-R3 — the figure is whole and under a thousand, in a unit named by a key', function (): void {
+it('the figure is whole and under a thousand, in a unit named by a key', function (): void {
     // `L5`: a separator written into a source file is wrong in one locale by
     // construction, so nothing that leaves the fold has one. Four gigabytes is
     // `4` and `household.gigabytes`; nine hundred megabytes stays in megabytes
@@ -131,7 +131,7 @@ it('D7-R3 — the figure is whole and under a thousand, in a unit named by a key
         ->and($rows[1]->sizeUnit)->toBe('household.megabytes');
 });
 
-it('D7-R3 — a figure too big for its unit moves up rather than grows', function (): void {
+it('a figure too big for its unit moves up rather than grows', function (): void {
     // What the ladder is for, and not tidiness. Four terabytes said in
     // gigabytes is `4000` — a four-figure number, which cannot be read without
     // a separator, which `L5` says nothing leaving the fold may carry because
@@ -156,7 +156,7 @@ it('D7-R3 — a figure too big for its unit moves up rather than grows', functio
         ->and([$rows[2]->sizeFigure, $rows[2]->sizeUnit])->toBe([1, 'household.terabytes']);
 });
 
-it('D7-R3 — a figure between two whole ones is rounded rather than trimmed', function (): void {
+it('a figure between two whole ones is rounded rather than trimmed', function (): void {
     // Nearest, not toward zero and not away from it. A request of 4.6 TB shown
     // as `4 TB` understates what the operator is about to let onto their disk,
     // and one of 4.4 TB shown as `5 TB` overstates it — and the second is the
@@ -181,7 +181,7 @@ it('D7-R3 — a figure between two whole ones is rounded rather than trimmed', f
         ->and([$rows[4]->sizeFigure, $rows[5]->sizeFigure])->toBe([4, 5]);
 });
 
-it('D7-R3 — a request nobody has sized says so rather than showing nothing', function (): void {
+it('a request nobody has sized says so rather than showing nothing', function (): void {
     $wanted = Requested::of(
         Wanted::of(43, 'Sam', 'Something nobody has sized', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
     );
@@ -214,7 +214,7 @@ it('a quiet week is an answer, and is not the same as a stack that did not answe
         ->and($unreachable->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy());
 });
 
-it('N1-R44 — a device with no session for that stack is not asked to reach it', function (): void {
+it('a device with no session for that stack is not asked to reach it', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting, signedIn: false);
 
@@ -225,7 +225,7 @@ it('N1-R44 — a device with no session for that stack is not asked to reach it'
         ->and($wanting->askings())->toBe(0);
 });
 
-it('N1-R65 — asks once per frame however many fields are read', function (): void {
+it('asks once per frame however many fields are read', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 
@@ -243,7 +243,7 @@ it('N1-R65 — asks once per frame however many fields are read', function (): v
         ->toBe(theStackWhoseHouseholdIsRead()->id()->stored());
 });
 
-it('N1-R11 — a route naming a stack this device has forgotten is refused', function (): void {
+it('a route naming a stack this device has forgotten is refused', function (): void {
     // Not an empty screen. A screen that answered for a machine it does not
     // know is the shape where one stack's requests appear under another's name.
     $screen = theRequestsScreen(
@@ -262,7 +262,7 @@ it('the way back to this machine and to signing in are both this screen', functi
         ->and($screen->goes()->signIn())->toBe(AStacksScreen::SignIn->forTheStack($named));
 });
 
-it('N2-R11 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     // A route nothing registered is a button that does nothing. The other half
     // — that the stack screen's button points here — is asserted beside that
     // button in `SeeingHowAStackIsTest`, because `G10` has each file build its
@@ -294,7 +294,7 @@ it('renders the frame it is named for', function (): void {
         ->toBe('operator::what-the-household-asked');
 });
 
-it('N1-R44 — a signed-out frame carries no sentence and nothing waiting behind the flag', function (): void {
+it('a signed-out frame carries no sentence and nothing waiting behind the flag', function (): void {
     // The flag is what the template branches on, and the rest of the frame has
     // to be empty behind it rather than merely unread. A sentence or a count
     // surviving on a signed-out screen is a fact about somebody's house left
@@ -341,7 +341,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+it('asking again after an obstacle asks the stack again', function (): void {
     // The action an obstacle must not take away.
     $wanting = AHouseholdThatAsked::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRequestsScreen($wanting);
@@ -353,7 +353,7 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     expect($wanting->askings())->toBe(2);
 });
 
-it('N3-R7 — a refused request shows the reason on the row', function (): void {
+it('a refused request shows the reason on the row', function (): void {
     // The answer the household actually asks its operator for. `declined` on
     // its own is what sends somebody to ask in person, which is the whole thing
     // a decline's reason exists to prevent.
@@ -391,7 +391,7 @@ it('a refusal the stack did not time carries the reason and no moment', function
         ->and($rows[0]->refusedAt)->toBe('');
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // The requests screen makes the same two moves the health screen does, and
     // it has to make them itself: a fold cannot forget anything, and a session
     // left in the store is resumed on the next frame and refused again.
@@ -409,7 +409,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeFalse();
 });
 
-it('N2-R11 — a waiting request is approved from the app', function (): void {
+it('a waiting request is approved from the app', function (): void {
     // The half this screen said and did not offer: it drew *waiting for your
     // decision* under every pending row and gave nobody a way to make one.
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
@@ -424,7 +424,7 @@ it('N2-R11 — a waiting request is approved from the app', function (): void {
         ->and($decided[0]->about()->number())->toBe(41);
 });
 
-it('N2-R11 — a request this screen never showed is not decided about', function (): void {
+it('a request this screen never showed is not decided about', function (): void {
     // The half that makes the rest mean anything. The decision is built from
     // what was read rather than from what a template sent, so a number this
     // screen never drew reaches nothing.
@@ -436,7 +436,7 @@ it('N2-R11 — a request this screen never showed is not decided about', functio
     expect($wanting->whatItWasToldWasDecided())->toBe([]);
 });
 
-it('N2-R11 — a request that is not waiting is not decided about either', function (): void {
+it('a request that is not waiting is not decided about either', function (): void {
     // `42` is here already. Deciding about it again is an operator ruling twice
     // on one thing, and the stack would be right to refuse the second.
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
@@ -449,7 +449,7 @@ it('N2-R11 — a request that is not waiting is not decided about either', funct
         ->and($screen->turningDown())->toBeNull();
 });
 
-it('D7-R7 — turning one down asks for the sentence before it sends anything', function (): void {
+it('turning one down asks for the sentence before it sends anything', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 
@@ -465,7 +465,7 @@ it('D7-R7 — turning one down asks for the sentence before it sends anything', 
     expect($wanting->whatItWasToldWasDecided())->toBe([]);
 });
 
-it('D7-R7 — and sends the sentence with it once there is one', function (): void {
+it('turning one down sends the sentence with it once there is one', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 
@@ -489,7 +489,7 @@ it('D7-R7 — and sends the sentence with it once there is one', function (): vo
         ->and($screen->turningDown())->toBeNull();
 });
 
-it('N2-R11 — saying never mind decides nothing', function (): void {
+it('saying never mind decides nothing', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 
@@ -503,7 +503,7 @@ it('N2-R11 — saying never mind decides nothing', function (): void {
         ->and($screen->mayDecline())->toBeFalse();
 });
 
-it('N2-R11 — reads the household again once a decision has been sent', function (): void {
+it('reads the household again once a decision has been sent', function (): void {
     // The listing in front of the operator is about the house as it was before
     // they decided anything.
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
@@ -517,7 +517,7 @@ it('N2-R11 — reads the household again once a decision has been sent', functio
     expect($wanting->askings())->toBe(3);
 });
 
-it('N3-R13 — a credential refused on the decision lets the session go too', function (): void {
+it('a credential refused on the decision lets the session go too', function (): void {
     // The half a read cannot reach: a stack that refuses the credential the
     // moment somebody taps approve is the same signed-out device as one that
     // refuses it on a read, and this is the call that happens on the tap.
@@ -550,7 +550,7 @@ it('a session that ended between the reading and the decision sends nothing', fu
         ->and($screen->answer()->waitsForTheStack)->toBeTrue();
 });
 
-it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): void {
+it('a reason of nothing but spaces is no reason at all', function (): void {
     // `trim` rather than a bare comparison: a field holding three spaces looks
     // filled and says nothing, and *declined* with three spaces beside it is
     // the answer a reason exists to prevent, spelled differently.
@@ -567,7 +567,7 @@ it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): 
     expect($wanting->whatItWasToldWasDecided())->toBe([]);
 });
 
-it('D7-R7 — a reason with no question open turns nothing down', function (): void {
+it('a reason with no question open turns nothing down', function (): void {
     // The guard that makes the question load-bearing: a reason typed with
     // nothing being asked about is a sentence with no subject, and sending it
     // would turn down whichever request happened to be first.
@@ -580,7 +580,7 @@ it('D7-R7 — a reason with no question open turns nothing down', function (): v
     expect($wanting->whatItWasToldWasDecided())->toBe([]);
 });
 
-it('D7-R7 — the reason is put away once it has been sent', function (): void {
+it('the reason is put away once it has been sent', function (): void {
     // So the next refusal starts empty rather than carrying the last one's
     // sentence into a decision about somebody else's request.
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
@@ -593,7 +593,7 @@ it('D7-R7 — the reason is put away once it has been sent', function (): void {
     expect($screen->mayDecline())->toBeFalse();
 });
 
-it('N2-R11 — a number arriving with spaces around it is the same number', function (): void {
+it('a number arriving with spaces around it is the same number', function (): void {
     // A route and a template both carry text, and text picks up whitespace on
     // the way. A screen that read `41` and ` 41 ` as two requests would refuse
     // a decision an operator made on the row in front of them.

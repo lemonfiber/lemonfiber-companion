@@ -89,7 +89,7 @@ function theShelfScreen(
     return $screen;
 }
 
-it('N3-R14 — draws the shelf the core listed, in its order and unfiltered', function (): void {
+it('draws the shelf the core listed, in its order and unfiltered', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
 
     $titles = array_map(
@@ -101,7 +101,7 @@ it('N3-R14 — draws the shelf the core listed, in its order and unfiltered', fu
         ->and($screen->answer()->cameBack())->toBeTrue();
 });
 
-it('N3-R14 — names each kind against a key rather than in English', function (): void {
+it('names each kind against a key rather than in English', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
 
     $media = array_map(
@@ -139,7 +139,7 @@ it('draws each holding as a row: its title, its kind under it, and its year at i
         ]);
 });
 
-it('N3-R15 — draws a library out of reach as itself, never as an empty shelf', function (): void {
+it('draws a library out of reach as itself, never as an empty shelf', function (): void {
     // The failure this screen is written around. Both are no rows, and one
     // says *you have nothing* while the other says *your collection could not
     // be reached* — and the first, said wrongly, tells somebody their library
@@ -171,7 +171,7 @@ it('says an empty shelf in as many words', function (): void {
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach'));
 });
 
-it('N1-R10 — reports what stood in the way and keeps the way back', function (): void {
+it('reports what stood in the way and keeps the way back', function (): void {
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($met->answer()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
@@ -180,7 +180,7 @@ it('N1-R10 — reports what stood in the way and keeps the way back', function (
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toBe([]);
 });
 
-it('N3-R15 — draws an obstacle as itself, never as a library out of reach', function (): void {
+it('draws an obstacle as itself, never as a library out of reach', function (): void {
     // The third pair this screen has to keep apart, and the one nothing read.
     // `cameBack()` is already false with a sentence in hand, so whether an
     // obstacle is also out of reach is decided by the template and by nothing
@@ -203,7 +203,7 @@ it('N3-R15 — draws an obstacle as itself, never as a library out of reach', fu
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach_action'));
 });
 
-it('N3-R13 — a refused credential is a signed-out device, not a report', function (): void {
+it('a refused credential is a signed-out device, not a report', function (): void {
     // Asserted of the keychain and not only of the screen. A screen that drew
     // the signed-out frame and left the session in the store is a device that
     // signs itself back in on the next frame, which is the failure the fold
@@ -222,7 +222,7 @@ it('N3-R13 — a refused credential is a signed-out device, not a report', funct
         ->toBeFalse();
 });
 
-it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
+it('an obstacle that is not a refused credential leaves the session alone', function (): void {
     $keychain = AKeychainInMemory::working();
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), keychain: $keychain);
 
@@ -278,7 +278,7 @@ it('draws the way back in where this device holds no session', function (): void
         ->and(WhatTheDeviceWouldDraw::by($out)->said())->toContain(__('connection.session_has_ended'));
 });
 
-it('N1-R65 — asks the machine once per frame, however many fields are read', function (): void {
+it('asks the machine once per frame, however many fields are read', function (): void {
     $watching = AShelfThatWasRead::holding(aShelfOfThree());
     $screen = theShelfScreen($watching);
 
@@ -291,7 +291,7 @@ it('N1-R65 — asks the machine once per frame, however many fields are read', f
         ->toBe(theStackAShelfIsReadFrom()->id()->stored());
 });
 
-it('N1-R3 — asking again is offered, and asks again', function (): void {
+it('asking again is offered, and asks again', function (): void {
     $watching = AShelfThatWasRead::holding(aShelfOfThree());
     $screen = theShelfScreen($watching);
 

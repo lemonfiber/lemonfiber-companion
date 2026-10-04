@@ -138,7 +138,7 @@ it('pairs the stack from what the camera read, with nothing to confirm', functio
     expect($screen->went())->toBe(HowThePairingWent::Paired);
 });
 
-it('N4-R3 — a refused camera is told apart from one somebody closed', function (): void {
+it('a refused camera is told apart from one somebody closed', function (): void {
     // Three reasons, three things to do about them, and this is the screen that
     // has to say which. "Open Settings" is advice that wastes an operator's
     // time on two of the three.
@@ -215,7 +215,7 @@ it('refuses a scanned code naming an address that presents no certificate', func
         ->and($screen->went())->toBe(HowThePairingWent::NotYet);
 });
 
-it('N1-R49 — an expired code is refused on this road too', function (): void {
+it('an expired code is refused on this road too', function (): void {
     // Both roads parse through the same named constructor, which is what keeps
     // the expiry true of both. A second parser here would be the one that
     // stopped being tested.
@@ -285,7 +285,7 @@ it('says what this screen is for until there is an outcome, then what happened',
         ->and($screen->supporting())->toBe('connection.paired_action');
 });
 
-it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
+it('a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
     // The same onward step as the typed road, and for the same reason: pairing
     // introduces a machine and leaves this device holding no session for it.
     $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));

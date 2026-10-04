@@ -86,7 +86,7 @@ function theHostingScreen(
     return $screen;
 }
 
-it('N16-R5 — shows every command, what it guarantees, and where it stands', function (): void {
+it('shows every command, what it guarantees, and where it stands', function (): void {
     $screen = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()));
 
     expect($screen->answer()->commands)->toHaveCount(2)
@@ -106,14 +106,14 @@ it('N16-R5 — shows every command, what it guarantees, and where it stands', fu
         ->and($rows[1]->standingSaid)->toBe(HowItIsHosted::Orphaned->saidOnTheScreen());
 });
 
-it('N16-R5 — a machine that keeps things running says nothing about doing it by hand', function (): void {
+it('a machine that keeps things running says nothing about doing it by hand', function (): void {
     // The empty string is what the template branches on. A sentence here would
     // tell an operator to go and set up by hand what the machine already does.
     expect(theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()))->answer()->instead)
         ->toBe('');
 });
 
-it('N16-R5 — a machine this product cannot configure says what to do instead', function (): void {
+it('a machine this product cannot configure says what to do instead', function (): void {
     // *Not available here* rather than *off*, and the sentence is what makes
     // the difference readable. Drawn instead of a control: there is nothing on
     // this platform to switch.
@@ -133,7 +133,7 @@ it('N16-R5 — a machine this product cannot configure says what to do instead',
         ->and($answer->went->cameBack())->toBeTrue();
 });
 
-it('N16-R6 — counts what did not come back, and an orphan is in it', function (): void {
+it('counts what did not come back, and an orphan is in it', function (): void {
     // Two rows, one of them orphaned: installed against a program that is gone,
     // so it cannot run. A count of one would be the reboot looking better than
     // it went.
@@ -147,7 +147,7 @@ it('N16-R6 — counts what did not come back, and an orphan is in it', function 
         ->and($answer->commands[0]->standingSaid)->toBe(HowItIsHosted::Hosted->saidOnTheScreen());
 });
 
-it('N16-R6 — an orphan names the program that is gone, and nothing else does', function (): void {
+it('an orphan names the program that is gone, and nothing else does', function (): void {
     // A blank printed where a path belongs reads as *nothing is missing* on the
     // one row where something is, which is what the two arms exist to prevent.
     $rows = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()))->answer()->commands;
@@ -169,7 +169,7 @@ it('a machine that keeps nothing running is an answer rather than a gap', functi
         ->and($answer->keptBySaid)->toBe(WhatKeepsItRunning::Systemd->saidOnTheScreen());
 });
 
-it('N1-R10 — a stack that could not be asked is not a machine hosting nothing', function (): void {
+it('a stack that could not be asked is not a machine hosting nothing', function (): void {
     // The collapse this surface exists to refuse. Both draw an empty list, and
     // only one of them means everything is fine.
     $answer = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
@@ -182,7 +182,7 @@ it('N1-R10 — a stack that could not be asked is not a machine hosting nothing'
         ->and($answer->missing)->toBe(0);
 });
 
-it('N1-R10 — a device holding no session asks somebody to sign in', function (): void {
+it('a device holding no session asks somebody to sign in', function (): void {
     // Nothing was met, because the app did not get as far as asking.
     $answer = theHostingScreen(
         AStackThatHosts::with(aMachineThatKeepsTwoThings()),
@@ -197,7 +197,7 @@ it('N1-R10 — a device holding no session asks somebody to sign in', function (
         ->and($answer->missing)->toBe(0);
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     // A phone with no signal told to sign in is given advice for a problem it
     // does not have, over the one it does.
     $answer = theHostingScreen(AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
@@ -205,7 +205,7 @@ it('N1-R3 — an obstacle that is not a refused credential leaves the session st
     expect($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // Both halves: if the session stayed, the next frame would resume it, be
     // refused again, and draw a sign-in prompt over a device that still
     // believes it is signed in.
@@ -236,7 +236,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($stack->askedAbout()?->id()->stored())->toBe(theStackWhoseHostingIsRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $stack = AStackThatHosts::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theHostingScreen($stack);
 

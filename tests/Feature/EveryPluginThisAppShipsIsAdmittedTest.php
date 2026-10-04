@@ -57,7 +57,7 @@ function pluginNames(Collection $plugins): array
     return $found;
 }
 
-it('N4-R18 — every plugin this application installs is admitted', function (): void {
+it('every plugin this application installs is admitted', function (): void {
     $registry = app(PluginRegistry::class);
 
     $admitted = pluginNames($registry->all());

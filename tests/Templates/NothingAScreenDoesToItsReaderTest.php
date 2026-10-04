@@ -69,7 +69,7 @@ function everyClassWrittenDown(): array
     return $found;
 }
 
-it('G3-R6 — nothing on a screen flashes, blinks or pulses', function (): void {
+it('nothing on a screen flashes, blinks or pulses', function (): void {
     $written = everyClassWrittenDown();
     $moving = [];
 
@@ -95,7 +95,7 @@ it('G3-R6 — nothing on a screen flashes, blinks or pulses', function (): void 
     ));
 });
 
-it('G3-R8 — no screen is written wider than the phone showing it', function (): void {
+it('no screen is written wider than the phone showing it', function (): void {
     $written = everyClassWrittenDown();
     $wide = [];
 

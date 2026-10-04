@@ -71,7 +71,7 @@ function theToldScreen(
     return $screen;
 }
 
-it('N10-R8 — shows the preset with what it means and with every exception made to it', function (): void {
+it('shows the preset with what it means and with every exception made to it', function (): void {
     $answer = theToldScreen(AStackThatSaysWhatItTells::with(aQuietSettingWithTwoExceptions()))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()
@@ -109,7 +109,7 @@ it('a preset with nothing set apart is an answer', function (): void {
     expect($answer->went->cameBack())->toBeTrue()->and($answer->exceptions)->toBe([]);
 });
 
-it('N10-R12 — a stack that could not be asked is not a setting of nothing', function (): void {
+it('a stack that could not be asked is not a setting of nothing', function (): void {
     $answer = theToldScreen(AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
@@ -119,13 +119,13 @@ it('N10-R12 — a stack that could not be asked is not a setting of nothing', fu
         ->and($answer->exceptions)->toBe([]);
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     $answer = theToldScreen(AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R44 — a session that has ended is not a setting of nothing', function (): void {
+it('a session that has ended is not a setting of nothing', function (): void {
     $answer = theToldScreen(AStackThatSaysWhatItTells::with(aQuietSettingWithTwoExceptions()), signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
@@ -135,7 +135,7 @@ it('N1-R44 — a session that has ended is not a setting of nothing', function (
         ->and($answer->exceptions)->toBe([]);
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theToldScreen(AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
@@ -159,7 +159,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($telling->askedAbout()?->id()->stored())->toBe(theStackWhoseAlertsAreRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $telling = AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theToldScreen($telling);
 

@@ -96,7 +96,7 @@ const NOT_YET = [
     'Certificate', 'Plugins', 'Substitution', 'Wiring',
 ];
 
-it('N1-R2 — every kind the stack offers has been looked at', function (): void {
+it('every kind the stack offers has been looked at', function (): void {
     // A set difference rather than a membership test in a loop, and the
     // reason is worth writing down: the analyser can prove these lists cover
     // every case, so `in_array(...) === false` reads to it as always false and
@@ -163,7 +163,7 @@ function everyKindThisAppOpens(): array
     return $kinds;
 }
 
-it('N1-R2 — every kind said to be offered is one something here reads', function (): void {
+it('every kind said to be offered is one something here reads', function (): void {
     // The claim in the other direction, and the one no rule made. Three lists
     // were held to covering every kind between them and none was held to being
     // true, so `OFFERED` could say anything — including nothing, which is what
@@ -180,7 +180,7 @@ it('N1-R2 — every kind said to be offered is one something here reads', functi
     ));
 });
 
-it('N1-R2 — nothing read here is still waiting to be offered', function (): void {
+it('nothing read here is still waiting to be offered', function (): void {
     // The drift that actually happened, now caught the moment it starts. A
     // reader lands, nobody moves the kind up, and `NOT_YET` goes on saying
     // somebody has yet to build the thing they just built — which reads as a
@@ -199,7 +199,7 @@ it('N1-R2 — nothing read here is still waiting to be offered', function (): vo
     ));
 });
 
-it('N1-R2 — nothing is claimed for a kind the stack no longer offers', function (): void {
+it('nothing is claimed for a kind the stack no longer offers', function (): void {
     // The other direction, and the one that rots quietly. A kind removed from
     // the contract leaves an entry here describing a surface that is gone —
     // which reads as current, and which would let `ELSEWHERE` go on excusing
@@ -217,7 +217,7 @@ it('N1-R2 — nothing is claimed for a kind the stack no longer offers', functio
     ));
 });
 
-it('N1-R2 — a kind is in exactly one list', function (): void {
+it('a kind is in exactly one list', function (): void {
     // Two lists claiming the same kind is two answers to one question, and the
     // one that gets read depends on which list somebody opened.
     $named = [...OFFERED, ...array_keys(THROUGH_THE_SDK), ...array_keys(ELSEWHERE), ...NOT_YET];
@@ -248,7 +248,7 @@ it('holds every kind offered through the SDK to a class that reads it, used here
     }
 });
 
-it('N1-R2 — every excuse names a requirement', function (): void {
+it('every excuse names a requirement', function (): void {
     // The escape clause is "except where a requirement here states otherwise
     // and why". An entry saying "not needed" is a judgement, not a
     // requirement, and judgements are what this clause exists to keep out.

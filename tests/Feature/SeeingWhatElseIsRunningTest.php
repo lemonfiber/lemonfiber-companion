@@ -97,7 +97,7 @@ function theStrangersScreen(
     return $screen;
 }
 
-it('N2-R21 — names each one and says what it is running', function (): void {
+it('names each one and says what it is running', function (): void {
     $screen = theStrangersScreen(AStackThatSupervises::alsoRunning(
         Daemons::none(whatTheVerbsCostBesideTheStrangers()),
         twoThingsNobodyDeclared(),
@@ -117,7 +117,7 @@ it('N2-R21 — names each one and says what it is running', function (): void {
         ->and($rows[1]->runs)->toBe(HowAServiceRuns::Healthy->saidOnTheScreen());
 });
 
-it('N2-R21 — a machine running only what it declared says so', function (): void {
+it('a machine running only what it declared says so', function (): void {
     // The ordinary answer, and it is not the same screen as a machine that
     // could not be asked. Nothing unaccounted for is what an operator wants to
     // read, and an empty list with no sentence reads as nobody having looked.
@@ -130,7 +130,7 @@ it('N2-R21 — a machine running only what it declared says so', function (): vo
         ->and($screen->answer()->went->met)->toBe('');
 });
 
-it('N2-R21 — a machine that could not be asked reports no strangers, not none', function (): void {
+it('a machine that could not be asked reports no strangers, not none', function (): void {
     // The obstacle branch. What matters is that the empty list arrives beside
     // the obstacle rather than instead of it: a screen that showed *nothing
     // else is running here* over an unreachable machine would be answering a
@@ -142,7 +142,7 @@ it('N2-R21 — a machine that could not be asked reports no strangers, not none'
         ->and($screen->howMany())->toBe(0);
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     // The other half of a removed identity, and the half a screen shows rather than the
     // half it stores. A stack that did not answer says nothing about whether
     // this device is still signed into it — `Obstacle` owns that decision and
@@ -157,7 +157,7 @@ it('N1-R3 — an obstacle that is not a refused credential leaves the session st
         ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
-it('N1-R44 — a session that has ended is not a machine running nothing', function (): void {
+it('a session that has ended is not a machine running nothing', function (): void {
     $screen = theStrangersScreen(
         AStackThatSupervises::with(Daemons::none(whatTheVerbsCostBesideTheStrangers())),
         signedIn: false,
@@ -168,7 +168,7 @@ it('N1-R44 — a session that has ended is not a machine running nothing', funct
         ->and($screen->howMany())->toBe(0);
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // Both halves, because the fold and the store have to agree. A refused
     // credential is being signed out rather than an obstacle to read about, so
     // nothing is offered to do about it — and the session has to be gone, or
@@ -215,7 +215,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N1-R3 — asking again after an obstacle asks the machine again', function (): void {
+it('asking again after an obstacle asks the machine again', function (): void {
     $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theStrangersScreen($supervising);
 

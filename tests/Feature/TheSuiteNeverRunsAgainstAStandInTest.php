@@ -139,7 +139,7 @@ it('binds nothing when the application has no configuration at all', function ()
     expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(ClientsThatAskTheDevice::class);
 });
 
-it('Q-R72 — binds every stand-in when one is asked for', function (): void {
+it('binds every stand-in when one is asked for', function (): void {
     config(['dx.stands_in' => true]);
 
     app()->register(new DxServiceProvider(app()), force: true);
@@ -147,7 +147,7 @@ it('Q-R72 — binds every stand-in when one is asked for', function (): void {
     expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(ClientsThatReachNothing::class);
 });
 
-it('N1-R57 — a device with stand-ins on is already introduced to a machine', function (): void {
+it('a device with stand-ins on is already introduced to a machine', function (): void {
     // The rule below asks whether each port answers with the class its stand-in
     // names, and for this one that question is too weak to mean anything: the
     // stand-in *is* `PlatformStacks`, the same class the real binding gives,
@@ -171,7 +171,7 @@ it('N1-R57 — a device with stand-ins on is already introduced to a machine', f
         ->and($stacks->configured()->isEmpty())->toBeFalse();
 });
 
-it('N1-R60 — a session kept with stand-ins on reaches no device', function (): void {
+it('a session kept with stand-ins on reaches no device', function (): void {
     // The gap this closes is not hypothetical and not the stand-in's own doing:
     // `SignIntoAStack` keeps what a sign-in came back with, and with stand-ins
     // on what came back was assembled from the contract. Without a stand-in at
@@ -202,7 +202,7 @@ it('N1-R60 — a session kept with stand-ins on reaches no device', function ():
         ->toBeInstanceOf(stdClass::class);
 });
 
-it('Q-R72 — takes the place of a port without being asked which', function (): void {
+it('takes the place of a port without being asked which', function (): void {
     // The half that says a new affordance costs nothing outside this
     // module. Written over whatever the registry holds rather than over
     // `Reaching`, so the day a second stand-in is added this covers it without
