@@ -16,7 +16,7 @@ use Tests\Support\Manifests;
 //
 // The alternative is the half that is easy to write down and hard to keep: every
 // permission is optional, and each declined one has a *working alternative*.
-// `Permission::hasAnAlternative()` already says all three do. This is what stops
+// `Permission::hasAnAlternative()` already says each does. This is what stops
 // that being a promise nobody can read — an alternative the operator is never
 // told about is not offered.
 //

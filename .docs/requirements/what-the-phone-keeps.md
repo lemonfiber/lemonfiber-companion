@@ -47,6 +47,12 @@ requirement is right and this page is a defect.
 | `N27-R15` | App settings offers the order of the stacks, and every list of stacks follows it | `HowThisPhoneIsSet` draws Stack order under Stacks as `<x-design::order>`, the bridge's `Reorderable`, which `ReorderableRenderer` draws natively on each platform: a row is dragged into place, or moved one place with the screen reader's Move up and Move down actions, and `Reordering` says where it lands; `putStacksInOrder()` hands the order to `Stacks::putInOrder()`, and `PlatformStacks` keeps it in the pairings record, which every list reads through `configured()` (`EveryListOfStacksFollowsTheOrderTest`, `SettingHowThisPhoneIsSetTest`, `StacksContractTest`) |
 | `N27-R18` | Each stack's settings offer which of updates, requests and problems are marked as new | `ThisStackOnThisPhone` draws Marked as new with a switch for each kind, all on until one is switched off, and turns a kind over through `MarkingAsNew` in `news`, which keeps the choice per stack (`ChoosingWhatAStackMarksAsNewTest`) |
 
+`N27-R17` waits on the contract and on the spec. The alerts reading carries the
+exceptions an operator made, and not every kind of notification the stack
+raises, so a stack's settings offer no switch per kind; a list put together
+here would be the app adding kinds of its own (`N4-R11`).
+`WhatTheContractDoesNotCarryTest` holds its row.
+
 ## Taken off the phone
 
 | Requirement | What it asks | What keeps it |

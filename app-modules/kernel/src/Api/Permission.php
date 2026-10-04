@@ -30,9 +30,6 @@ enum Permission: string
      */
     case LocalNetwork = 'local_network';
 
-    /** Showing a notification the core decided to send. */
-    case Notifications = 'notifications';
-
     /** Reading a pairing code with the camera. */
     case Camera = 'camera';
 
@@ -41,10 +38,9 @@ enum Permission: string
      *
      * Every permission is optional with a working
      * alternative, and this is where "working alternative" stops being a
-     * promise in a document. All three are true, and each has a different
-     * alternative: a pairing code can be typed instead of scanned, the app can
-     * be opened to see what a notification would have said, and a stack can be
-     * reached over a route the platform does not gate.
+     * promise in a document. Both are true, and each has a different
+     * alternative: a pairing code can be typed instead of scanned, and a stack
+     * can be reached over a route the platform does not gate.
      *
      * A case answering false would be a permission this app cannot honestly
      * call optional, and it is here so that adding one is a decision somebody
@@ -53,7 +49,7 @@ enum Permission: string
     public function hasAnAlternative(): bool
     {
         return match ($this) {
-            self::LocalNetwork, self::Notifications, self::Camera => true,
+            self::LocalNetwork, self::Camera => true,
         };
     }
 
