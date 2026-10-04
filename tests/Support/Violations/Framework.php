@@ -309,6 +309,37 @@ final readonly class Framework
                 }
                 PHP, 'A12 — a store class takes and gives only sealed payloads'),
 
+            // A class that is no owner's writer making a value to seal, and so a
+            // second way into the phone's storage nothing lists.
+            Fixture::suite('A13', 'app-modules/health/src/Internal/KeepsWhatItWasNeverAsked.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal;
+
+                use Modules\Kernel\Api\Unsealed;
+
+                final readonly class KeepsWhatItWasNeverAsked
+                {
+                    public static function written(string $said): Unsealed
+                    {
+                        return Unsealed::of($said);
+                    }
+                }
+                PHP, 'A13 — only a declared writer puts a value in the clear'),
+
+            // A writer handed a session, one line from writing it down beside
+            // the settings it keeps.
+            Fixture::edit(
+                'A13',
+                'app-modules/connection/src/Internal/TheSettingsAsKept.php',
+                'public static function written(ThePhonesSettings $settings): Unsealed',
+                'public static function written(ThePhonesSettings $settings, \\Modules\\Kernel\\Api\\Session $session): Unsealed',
+                'A13 — no writer is handed',
+                'Session',
+            ),
+
             Fixture::analyser('A8', 'Plain/UsesPlatformFacade.php', <<<'PHP'
                 <?php
 
