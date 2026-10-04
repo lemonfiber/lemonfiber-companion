@@ -6,6 +6,7 @@ use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheRouterHolds;
 
 // A screen without a stack has no menu, so its top bar is where the way back
 // is: drawn wherever a screen lies beneath it, and nowhere else.
@@ -28,10 +29,7 @@ function theBarOf(AScreenWithoutAStack $where, int $beneathIt): ?array
         return null;
     }
 
-    $router = new NativeRouter();
-    $stack = array_fill(0, $beneathIt, ['uri' => AScreenWithoutAStack::TheList->value]);
-    new ReflectionProperty(NativeRouter::class, 'stack')->setValue($router, [...$stack, ['uri' => $where->value]]);
-    $screen->setRouter($router);
+    WhatTheRouterHolds::over($screen, $where->value, ...array_fill(0, $beneathIt, AScreenWithoutAStack::TheList->value));
 
     return theStackRootIn(WhatTheDeviceWouldDraw::tree($screen));
 }

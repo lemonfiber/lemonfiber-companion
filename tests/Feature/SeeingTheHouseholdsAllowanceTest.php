@@ -24,6 +24,7 @@ use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheRouterHolds;
 
 function theStackWhoseAllowanceIsRead(): Stack
 {
@@ -93,6 +94,7 @@ it('offers signing in where no session is held, and lets go of one the stack ref
 it('is where the menu\'s Allowance goes, and carries the menu', function (): void {
     $screen = theAllowanceScreen(AMemberWhoIsOwed::owedNothing());
     $path = TheMenu::Allowance->screen()->forTheStack(theStackWhoseAllowanceIsRead()->id());
+    WhatTheRouterHolds::over($screen, $path, AStacksScreen::Health->forTheStack(theStackWhoseAllowanceIsRead()->id()));
 
     expect(NativeRouter::resolve($path)['class'] ?? null)->toBe(WhatTheHouseholdIsAllowed::class)
         ->and($path)->toBe(AStacksScreen::Allowance->forTheStack(theStackWhoseAllowanceIsRead()->id()))

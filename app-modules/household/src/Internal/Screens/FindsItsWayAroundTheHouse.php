@@ -12,8 +12,8 @@ use Native\Mobile\Edge\NativeComponent;
  * The way around, on a member's screen about a stack.
  *
  * What a member is owed is where they land on a stack, so it is drawn as the
- * root the way an operator's tab is; what they can watch is opened on top of
- * it and has a back button.
+ * root the way an operator's tab is; what they can watch has a back button
+ * wherever the router holds a screen beneath it.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -33,8 +33,8 @@ trait FindsItsWayAroundTheHouse
         return ($this->menuIsFor ??= $this->around->whoTheMenuIsFor($this->stack())) === WhoTheMenuIsFor::TheOperator;
     }
 
-    protected function opensOnTopOfAnother(): bool
+    protected function isDrawnAsATab(): bool
     {
-        return self::class !== WhatYouAreOwed::class;
+        return self::class === WhatYouAreOwed::class;
     }
 }

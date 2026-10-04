@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\WhoTheMenuIsFor;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\TheWhatsNewInTheMenu;
@@ -27,6 +28,7 @@ use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheRouterHolds;
 
 function theStackWhoseMenuIsOpened(): Stack
 {
@@ -136,8 +138,14 @@ it('names the control that opens the menu in the operator\'s language', function
 });
 
 it('puts the menu control beside the back button on a screen opened on top of a tab, and not on a tab', function (): void {
-    expect(aTabWithTheMenu()->drawerOverride()->isBesideBack())->toBeFalse()
-        ->and(aScreenTheMenuOpens()->drawerOverride()->isBesideBack())->toBeTrue();
+    $tab = aTabWithTheMenu();
+    $opened = aScreenTheMenuOpens();
+    $atTheTab = AStacksScreen::Updates->forTheStack(theStackWhoseMenuIsOpened()->id());
+    WhatTheRouterHolds::over($tab, $atTheTab);
+    WhatTheRouterHolds::over($opened, AStacksScreen::Words->forTheStack(theStackWhoseMenuIsOpened()->id()), $atTheTab);
+
+    expect($tab->drawerOverride()->isBesideBack())->toBeFalse()
+        ->and($opened->drawerOverride()->isBesideBack())->toBeTrue();
 });
 
 it('draws the bar on a tab with that tab marked, and hides it on a screen the menu opens', function (): void {
