@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\Noticing;
+use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\Presenters\HowWhatIsNewReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
@@ -58,6 +59,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatIsNewOnEveryStack extends NativeComponent
 {
+    use HasAWayBack;
     use LetsGoOfARefusedSession;
     use LooksAgainWhileOpen;
     use ReadsAStackOnceAFrame;

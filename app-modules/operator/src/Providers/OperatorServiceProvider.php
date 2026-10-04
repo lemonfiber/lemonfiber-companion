@@ -144,8 +144,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AScreenWithoutAStack::PairByScanning->value, PairByScanning::class);
             Router::native(AScreenWithoutAStack::PairByTyping->value, PairByTyping::class);
 
-            // What this version of the app does not have yet, which the menu
-            // keeps its items for and which says so when opened.
+            // What is new on every stack this phone holds, from the menu.
             Router::native(AScreenWithoutAStack::WhatsNew->value, WhatIsNewOnEveryStack::class);
 
             // The lock, which the navigation stack builds in place of any

@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WireVersion;
+use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\HearsHowEachStackIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
@@ -101,6 +102,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class YourStacks extends NativeComponent
 {
+    use HasAWayBack;
     use OffersTheAppsSettings;
     use HearsHowEachStackIs;
 

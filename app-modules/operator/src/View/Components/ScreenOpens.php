@@ -27,7 +27,10 @@ use function view;
  */
 final class ScreenOpens extends Component
 {
-    public function __construct(public readonly string $title) {}
+    /**
+     * @param bool $back whether the bar offers the way back, which a screen with a menu draws beside the menu's control instead
+     */
+    public function __construct(public readonly string $title, public readonly bool $back = false) {}
 
     public function render(): View
     {

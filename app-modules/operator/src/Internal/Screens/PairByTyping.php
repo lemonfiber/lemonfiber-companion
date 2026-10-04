@@ -18,6 +18,7 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
@@ -66,6 +67,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class PairByTyping extends NativeComponent
 {
+    use HasAWayBack;
     /**
      * The pairing code, as it stands in the field.
      *
