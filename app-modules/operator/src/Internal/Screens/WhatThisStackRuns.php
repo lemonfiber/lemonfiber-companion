@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
@@ -15,12 +16,15 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\News\Api\Noticing;
+use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -63,12 +67,17 @@ use function view;
  * arrived on the reading instead, because a bound is only any use *before* the
  * verb runs — which is why a register watches for a fact and not for a place.
  *
- * **It polls only while something is settling.** A service that is
+ * **It asks the stack again only while something is settling.** A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
  * to finding out is the reliance on leaving and returning that rule refuses.
  * Every other state here is standing, so the cadence costs a machine on a home
  * network nothing the rest of the time — which is what keeps this from being
  * the polling that is refused.
+ *
+ * **It holds the stack's event stream while it is in front**, through
+ * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
+ * wherever the operator is. Taking what the stream delivered sends nothing to
+ * the stack.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
@@ -82,6 +91,11 @@ final class WhatThisStackRuns extends NativeComponent
 {
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
+    use HoldsItsStacksStream {
+        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
+        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
+    }
+    use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
     /**
@@ -97,6 +111,8 @@ final class WhatThisStackRuns extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        private readonly WhatItListensWith $listening,
+        private readonly Noticing $noticing,
     ) {}
 
     /**

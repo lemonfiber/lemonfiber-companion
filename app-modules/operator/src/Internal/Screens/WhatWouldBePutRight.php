@@ -27,7 +27,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
@@ -37,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -72,6 +75,11 @@ use function view;
  * carried on the fold for it, so that screen will not have to ask the stack
  * again for what this one is already showing.
  *
+ * **It holds the stack's event stream while it is in front**, through
+ * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
+ * wherever the operator is. Taking what the stream delivered sends nothing to
+ * the stack.
+ *
  * `Concealed` for the reason every stack-facing screen here is: what a machine
  * would put right says a good deal about what is on it.
  */
@@ -81,6 +89,10 @@ use function view;
 final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
+    use HoldsItsStacksStream {
+        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
+        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
+    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -148,6 +160,8 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        private readonly WhatItListensWith $listening,
+        private readonly Noticing $noticing,
     ) {}
 
     /**

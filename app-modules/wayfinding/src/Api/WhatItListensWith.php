@@ -18,8 +18,9 @@ use Modules\Kernel\Api\WhatWasHeard;
  * The ports a screen holding the stream reaches for, handed to it together.
  *
  * The traits that hold a stream are where they are used, and a screen is where
- * they arrive, so the screen hands them over in one value rather than the trait
- * reaching for fields it cannot declare. {@see HearingEachStack} listens with one.
+ * they arrive, so the screen is handed them in one value and a trait holding a
+ * stream reaches for that one value rather than for each port.
+ * {@see HearingEachStack} listens with one.
  */
 final readonly class WhatItListensWith
 {

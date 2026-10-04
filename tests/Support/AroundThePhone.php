@@ -7,6 +7,7 @@ namespace Tests\Support;
 use function app;
 
 use Illuminate\Contracts\Translation\Translator;
+use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
@@ -72,17 +73,30 @@ final readonly class AroundThePhone
             $standings,
             $clock,
             $storage,
-            new HearingEachStack(
-                new WhatItListensWith(
-                    $hearing ?? AStackThatSpeaksUp::holdingOpen(),
-                    $clock,
-                    $capture ?? ACaptureInMemory::inFront(),
-                    $standings,
-                    WhatThePhoneKeeps::nothingYet(),
-                ),
-                $storage,
-            ),
+            new HearingEachStack(self::listening($hearing, $clock, $capture, $standings), $storage),
             $was ?? WhereTheOperatorWasInMemory::nowhere(),
+        );
+    }
+
+    /**
+     * The ports a screen holding its stack's stream is handed, made as the container makes them.
+     *
+     * A stream that says nothing, a phone in front that kept nothing, and the
+     * moment a phone handed no clock reads, for whatever a test does not hand it.
+     */
+    public static function listening(
+        ?Hearing $hearing = null,
+        ?Clock $clock = null,
+        ?Capture $capture = null,
+        ?Standings $standings = null,
+        ?KeepingTheLastReading $keeping = null,
+    ): WhatItListensWith {
+        return new WhatItListensWith(
+            $hearing ?? AStackThatSpeaksUp::holdingOpen(),
+            $clock ?? FrozenClock::at(Instant::atEpochSeconds(self::NOW)),
+            $capture ?? ACaptureInMemory::inFront(),
+            $standings ?? StandingsInMemory::working(),
+            $keeping ?? WhatThePhoneKeeps::nothingYet(),
         );
     }
 }

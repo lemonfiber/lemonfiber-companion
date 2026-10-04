@@ -18,13 +18,16 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
+use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -48,6 +51,11 @@ use function view;
  * **A withdrawn release is said, not offered.** A stack running one is told so,
  * and moving onto the pins a withdrawn release carries is not offered.
  *
+ * **It holds the stack's event stream while it is in front**, through
+ * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
+ * wherever the operator is. Taking what the stream delivered sends nothing to
+ * the stack.
+ *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
@@ -60,6 +68,10 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
 {
     use OffersTheAppsSettings;
     use FollowsTheUpdateItTook;
+    use HoldsItsStacksStream {
+        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
+        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
+    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
@@ -89,6 +101,8 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        private readonly WhatItListensWith $listening,
+        private readonly Noticing $noticing,
     ) {}
 
     /**

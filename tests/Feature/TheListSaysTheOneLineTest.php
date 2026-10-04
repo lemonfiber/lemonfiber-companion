@@ -281,12 +281,8 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))),
-        FrozenClock::at(Instant::atEpochSeconds(NOW - 3)),
-        ACaptureInMemory::inFront(),
-        $standings,
-        WhatThePhoneKeeps::nothingYet(),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))), FrozenClock::at(Instant::atEpochSeconds(NOW - 3)), standings: $standings),
         NoticingWhatIsNew::fromNothing(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
