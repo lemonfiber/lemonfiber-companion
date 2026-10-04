@@ -196,7 +196,7 @@ function everythingTheRoomSays(Measuring $measuring): string
     )->said;
 }
 
-it('N12-R1, N12-R2, N12-R3, N12-R6, N12-R10 — comes away with the volumes, the account and each download', function (): void {
+it('comes away with the volumes, the account and each download', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysOfItsRoom()));
 
     foreach (everyWayOfAskingHowFull($answered) as $which => $make) {
@@ -215,7 +215,7 @@ it('N12-R1, N12-R2, N12-R3, N12-R6, N12-R10 — comes away with the volumes, the
     }
 });
 
-it('N1-R44 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -229,7 +229,7 @@ it('N1-R44 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N12-R10 — a level this app cannot read is an obstacle, never a comfortable disk', function (): void {
+it('a level this app cannot read is an obstacle, never a comfortable disk', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsRoom('roomy')))]);
 

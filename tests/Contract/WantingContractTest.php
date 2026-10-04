@@ -210,7 +210,7 @@ function whatCameOfDeciding(Wanting $wanting, Decided $decided): string
     )->said;
 }
 
-it('N2-R11 — takes an approval and comes away with a name to ask about', function (): void {
+it('takes an approval and comes away with a name to ask about', function (): void {
     $decided = Decided::toApprove(RequestId::numbered(41));
 
     foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
@@ -218,7 +218,7 @@ it('N2-R11 — takes an approval and comes away with a name to ask about', funct
     }
 });
 
-it('D7-R7 — takes a refusal, which carries the sentence it owes', function (): void {
+it('takes a refusal, which carries the sentence it owes', function (): void {
     // The other of the two decisions, and the one that carries something extra. A
     // port taking only the approval would have a screen turning a request down
     // by leaving it alone, which is exactly what may not happen.
@@ -229,7 +229,7 @@ it('D7-R7 — takes a refusal, which carries the sentence it owes', function ():
     }
 });
 
-it('N1-R10 — says the same about a decision it could not deliver', function (): void {
+it('tells a refused session from a stack that did not answer, where a decision could not be delivered', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -281,12 +281,12 @@ function whatTheWireCarriedForADecision(Decided $decided): array
     return $sent;
 }
 
-it('N2-R11 — an approval names the request and nothing else', function (): void {
+it('an approval names the request and nothing else', function (): void {
     expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::numbered(41))))
         ->toBe(['request' => 41]);
 });
 
-it('D7-R7 — a refusal names the request and carries the sentence with it', function (): void {
+it('a refusal names the request and carries the sentence with it', function (): void {
     // Both keys, and the number among them: a refusal sent without its reason
     // is the wire half of a refusal that says nothing, and one sent with the
     // wrong number turns somebody else's request down.
@@ -338,13 +338,13 @@ function everyRequestIn(Wanting $wanting): string
     )->said;
 }
 
-it('N2-R11 — comes away with what the house asked for, and how much wants deciding', function (): void {
+it('comes away with what the house asked for, and how much wants deciding', function (): void {
     foreach (everyWayOfAskingTheHousehold(aHouseholdAnswer()) as $which => $make) {
         expect(whatTheHouseholdSaid($make()))->toBe('2 of which 1 waiting', $which);
     }
 });
 
-it('D7-R7 — carries who asked, onto every row, in the order the stack listed them', function (): void {
+it('carries who asked, onto every row, in the order the stack listed them', function (): void {
     // The requester is on the row rather than on a heading, because a decline
     // has to reach them by name — and the order is the stack's, which is the
     // order the house asked in and how somebody finds theirs.
@@ -356,7 +356,7 @@ it('D7-R7 — carries who asked, onto every row, in the order the stack listed t
     }
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -401,7 +401,7 @@ it('answers exactly one way, and answers at all', function (): void {
     }
 });
 
-it('N1-R65 — asks once, because a frame reads a machine once', function (): void {
+it('asks once, because a frame reads a machine once', function (): void {
     $wanting = AHouseholdThatAsked::wanting(theSameRequests());
     $stack = aStackWithAHousehold();
 

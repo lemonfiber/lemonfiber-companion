@@ -52,11 +52,11 @@ dataset('every networking implementation with nothing to reach over', [
     'the fake' => [fn(): Networking => ADeviceOnANetwork::withNothingToReachOver()],
 ]);
 
-it('N1-R37 — says so where the device can reach a network', function (Networking $network): void {
+it('says so where the device can reach a network', function (Networking $network): void {
     expect($network->isConnected())->toBeTrue();
 })->with('every networking implementation that is connected');
 
-it('N1-R37 — says so where there is nothing to reach over', function (Networking $network): void {
+it('says so where there is nothing to reach over', function (Networking $network): void {
     // The answer the whole port exists for. A phone in flight mode and a
     // machine that is switched off produce the same silence at the socket, and
     // this is the one that can be settled without sending anything.

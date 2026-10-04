@@ -120,7 +120,7 @@ it('does not decide whether what it read is pairing material', function (): void
     }
 });
 
-it('N4-R3 — a refused camera is told apart from one somebody closed', function (): void {
+it('a refused camera is told apart from one somebody closed', function (): void {
     // The distinction the whole refusal enum exists for. A scanner somebody
     // dismissed is answered by offering another go; a camera turned off in
     // settings by naming Settings; a camera declined a moment ago by simply
@@ -136,7 +136,7 @@ it('N4-R3 — a refused camera is told apart from one somebody closed', function
     }
 });
 
-it('N4-R2 — captions the camera with this application\'s own sentence', function (): void {
+it('captions the camera with this application\'s own sentence', function (): void {
     // An adapter-only property, so it is asserted against the adapter alone:
     // the fake has no camera to caption and nothing to say over it.
     //

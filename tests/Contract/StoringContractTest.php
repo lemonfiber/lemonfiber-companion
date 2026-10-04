@@ -128,7 +128,7 @@ function everythingTheKeepingSays(Storing $storing): string
     )->said;
 }
 
-it('N6-R7 — comes away with where things are kept, what, why, and which hold a secret', function (): void {
+it('comes away with where things are kept, what, why, and which hold a secret', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysItKeeps()));
 
     foreach (everyWayOfAskingWhatIsStored($answered) as $which => $make) {
@@ -142,7 +142,7 @@ it('N6-R7 — comes away with where things are kept, what, why, and which hold a
     }
 });
 
-it('N1-R44 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -156,7 +156,7 @@ it('N1-R44 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N6-R7 — a secret flag this app cannot read is an obstacle, never a thing with no secret in it', function (): void {
+it('a secret flag this app cannot read is an obstacle, never a thing with no secret in it', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItKeeps(secret: 'yes')))]);
 

@@ -204,7 +204,7 @@ it('says there is somewhere to keep a value', function (): void {
     }
 });
 
-it('N4-R6 — tells a device with no store from one whose store would not open', function (): void {
+it('tells a device with no store from one whose store would not open', function (): void {
     // The distinction the whole refusal type exists for, and the one place it
     // is read off the platform rather than decided here. The two reach the
     // operator as two screens with two remedies: one says give up on this
@@ -241,7 +241,7 @@ it('refuses to forget where the store itself cannot be asked', function (): void
     }
 });
 
-it('N4-R6 — a store that will not open is not a device that has none', function (): void {
+it('a store that will not open is not a device that has none', function (): void {
     // Different remedies, and this is the answer that chooses between them
     // before a session exists. Telling an operator their phone cannot keep a
     // session is the advice that makes them give up on a phone that works.

@@ -241,7 +241,7 @@ function whatDidNotComeBackIn(Hosting $hosting): string
     )->said;
 }
 
-it('N16-R5 — comes away with every command, what it is, and where it stands', function (): void {
+it('comes away with every command, what it is, and where it stands', function (): void {
     // All of them, hosted or not, in the stack's order. A listing of only the
     // installed ones would answer the question nobody asks.
     foreach (everyWayOfAskingWhatIsKept(aHostingAnswer()) as $which => $make) {
@@ -252,14 +252,14 @@ it('N16-R5 — comes away with every command, what it is, and where it stands', 
     }
 });
 
-it('N16-R5 — says what keeps them running, which is a fact about the machine', function (): void {
+it('says what keeps them running, which is a fact about the machine', function (): void {
     foreach (everyWayOfAskingWhatIsKept(aHostingAnswer()) as $which => $make) {
         expect(whatKeepsThemRunningIn($make()))->toBe('launchd', $which)
             ->and(whatToDoInsteadIn($make()))->toBe('the machine does this itself', $which);
     }
 });
 
-it('N16-R5 — a machine this product cannot configure carries what to do instead', function (): void {
+it('a machine this product cannot configure carries what to do instead', function (): void {
     // The arm that must not render as *off*. Both implementations carry the
     // sentence, so a fake that shrugged at it could not be used to build a
     // screen that draws an empty box where the instruction belongs.
@@ -275,13 +275,13 @@ it('N16-R5 — a machine this product cannot configure carries what to do instea
     }
 });
 
-it('N16-R6 — names what did not come back, and the orphan is in it', function (): void {
+it('names what did not come back, and the orphan is in it', function (): void {
     foreach (everyWayOfAskingWhatIsKept(aHostingAnswer()) as $which => $make) {
         expect(whatDidNotComeBackIn($make()))->toBe('Seeding what you share', $which);
     }
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -295,7 +295,7 @@ it('N1-R10 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N16-R13 — a listing this app cannot read is an obstacle, not a shorter list', function (): void {
+it('a listing this app cannot read is an obstacle, not a shorter list', function (): void {
     // The direction of error that matters. A row dropped for being unreadable
     // is one fewer command shown as not coming back, and an operator reading a
     // short list concludes the reboot went better than it did.
@@ -307,7 +307,7 @@ it('N16-R13 — a listing this app cannot read is an obstacle, not a shorter lis
     expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });
 
-it('N16-R5 — an unsupported machine with nothing to do instead is an obstacle', function (): void {
+it('an unsupported machine with nothing to do instead is an obstacle', function (): void {
     // *Not available here* with no sentence beside it is the empty box that
     // reads as *off*. Refused at the reading rather than rendered, because a
     // screen cannot tell the two apart once the field is gone.

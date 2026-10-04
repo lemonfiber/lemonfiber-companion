@@ -98,7 +98,7 @@ it('comes away with each copy by its name, in the stack\'s order', function (): 
     }
 });
 
-it('N6-R9 — an empty list is an answer, and one that could not be read is not', function (): void {
+it('an empty list is an answer, and one that could not be read is not', function (): void {
     $empty = MockResponse::make((string) json_encode(whatAStackSaysOfItsCopies([])));
 
     foreach (everyWayOfAskingForTheCopies($empty, TheCopies::named()) as $which => $make) {
@@ -118,7 +118,7 @@ it('N6-R9 — an empty list is an answer, and one that could not be read is not'
     }
 });
 
-it('N6-R9 — a copy with no name is an obstacle, never a shorter list', function (): void {
+it('a copy with no name is an obstacle, never a shorter list', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCopies(['lemonfiber-20260924-0300-full', ''])))]);
 

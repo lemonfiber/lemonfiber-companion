@@ -157,7 +157,7 @@ function whatAShelfSaid(Watching $watching): string
     )->said;
 }
 
-it('N3-R14 — hands over the shelf the core listed, unchanged', function (): void {
+it('hands over the shelf the core listed, unchanged', function (): void {
     // Unchanged is the assertion, and it is the whole requirement: what a
     // member may watch was decided by their entitlements and their age limit
     // before this was called, so neither side may drop a row, add one or
@@ -177,7 +177,7 @@ it('N3-R14 — hands over the shelf the core listed, unchanged', function (): vo
     }
 });
 
-it('N3-R15 — tells a library that could not be read from a shelf with nothing on it', function (): void {
+it('tells a library that could not be read from a shelf with nothing on it', function (): void {
     // The distinction a screen cannot recover on its own. Both arrive as no
     // rows, and they say opposite things to the person reading: one is *you
     // have nothing here* and the other is *your collection is out of reach*.
@@ -199,7 +199,7 @@ it('N3-R15 — tells a library that could not be read from a shelf with nothing 
     }
 });
 
-it('N1-R10 — says the same about a reading it could not get', function (): void {
+it('tells a refused session from a stack that did not answer, where the shelf could not be got', function (): void {
     $refusals = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -232,7 +232,7 @@ it('N1-R10 — says the same about a reading it could not get', function (): voi
     }
 });
 
-it('N3-R14 — the operator has no shelf, and that is an answer', function (): void {
+it('the operator has no shelf, and that is an answer', function (): void {
     // Read *as* an account, and the operator is not one. Answered rather than
     // asked for: a request naming nobody is a request the stack would refuse,
     // and refusing it here spares the round trip and says the true thing.

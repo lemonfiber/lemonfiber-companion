@@ -156,7 +156,7 @@ function howMuchOfTheStallWasShown(Stalling $stalling): string
     )->said;
 }
 
-it('N2-R9 — comes away with what stopped, where it stopped, and who has it', function (): void {
+it('comes away with what stopped, where it stopped, and who has it', function (): void {
     // All three together, in the stack's order. The order is the one the work
     // was queued in, which is how an operator finds the thing that has been
     // wrong longest.
@@ -177,7 +177,7 @@ it('says whether the listing is the whole of what the stack holds', function ():
     }
 });
 
-it('N1-R10 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],

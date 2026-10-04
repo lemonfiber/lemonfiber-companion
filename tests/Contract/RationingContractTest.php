@@ -135,7 +135,7 @@ function everythingTheReadingSays(Rationing $rationing): string
     )->said;
 }
 
-it('N10-R4, N10-R5, N10-R6 — comes away with the line\'s standing, capacity and cap', function (): void {
+it('comes away with the line\'s standing, capacity and cap', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysOfItsLine()));
 
     foreach (everyWayOfAskingHowTheLineIs($answered) as $which => $make) {
@@ -146,7 +146,7 @@ it('N10-R4, N10-R5, N10-R6 — comes away with the line\'s standing, capacity an
     }
 });
 
-it('N10-R12 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -160,7 +160,7 @@ it('N10-R12 — tells a session that has ended from a stack that is not answerin
     }
 });
 
-it('N10-R12 — a line this app cannot read is an obstacle, never an unlimited line', function (): void {
+it('a line this app cannot read is an obstacle, never an unlimited line', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsLine('throttled')))]);
 

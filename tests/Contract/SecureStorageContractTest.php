@@ -65,7 +65,7 @@ function howItWent(Kept $kept): string
     )->shown();
 }
 
-it('N4-R5 — a working store keeps a session and gives it back up on request', function (): void {
+it('a working store keeps a session and gives it back up on request', function (): void {
     $keychain = AKeychainInMemory::working();
 
     expect($keychain->isAvailable())->toBeTrue();
@@ -77,7 +77,7 @@ it('N4-R5 — a working store keeps a session and gives it back up on request', 
     expect($keychain->isHolding(aStackThatIsPaired()))->toBeFalse();
 });
 
-it('N4-R6 — a device with nowhere safe refuses, and says which refusal it is', function (): void {
+it('a device with nowhere safe refuses, and says which refusal it is', function (): void {
     // The clause that makes this a port rather than a call. An adapter that
     // answered "could not save" would leave the app holding a session it cannot
     // keep and no way to tell an operator whether the device has no store, or
@@ -90,7 +90,7 @@ it('N4-R6 — a device with nowhere safe refuses, and says which refusal it is',
         ->toBe('no_secure_storage');
 });
 
-it('N4-R6 — a store that will not open is not a device that has none', function (): void {
+it('a store that will not open is not a device that has none', function (): void {
     // Different remedies: one is worth trying again and the other sends an
     // operator to a settings screen. Folding them together tells somebody their
     // device cannot do a thing it can.
@@ -100,7 +100,7 @@ it('N4-R6 — a store that will not open is not a device that has none', functio
         ->toBe('store_would_not_open');
 });
 
-it('N4-R6 — forgetting works even where keeping did not', function (): void {
+it('forgetting works even where keeping did not', function (): void {
     // The one thing that must always succeed. A refusal leaves the app holding
     // a session it could not store, and getting rid of it cannot depend on the
     // store that just refused.
@@ -110,7 +110,7 @@ it('N4-R6 — forgetting works even where keeping did not', function (): void {
     expect($keychain->isHolding(aStackThatIsPaired()))->toBeFalse();
 });
 
-it('N1-R11 — two stacks do not share one session', function (): void {
+it('two stacks do not share one session', function (): void {
     // One key holding "the session" is how the second pairing overwrites the
     // first, and the first stack starts answering with somebody else's
     // credential. Asserted on the fake because it is the one that can be
@@ -174,7 +174,7 @@ function whoseItIs(Resumed $resumed): string
     )->shown();
 }
 
-it('N1-R7 — gives back the session it was keeping, so nothing asks twice', function (): void {
+it('gives back the session it was keeping, so nothing asks twice', function (): void {
     // The whole point of keeping one. The password is exchanged once, and
     // "once" is only true if the next launch finds what the first one kept.
     foreach (everyStoreHolding() as $which => $store) {
@@ -190,7 +190,7 @@ it('has nothing for a stack it was never given one for', function (): void {
     }
 });
 
-it('N1-R11 — resumes each stack its own session, never the other one', function (): void {
+it('resumes each stack its own session, never the other one', function (): void {
     // The failure this would hide is the worst one in the file: a reader keyed
     // loosely hands stack B the session stack A opened, and every request after
     // that is attributed to the wrong machine.
@@ -204,7 +204,7 @@ it('N1-R11 — resumes each stack its own session, never the other one', functio
     }
 });
 
-it('N3-R1 — gives back whose the session is, not only what it is', function (): void {
+it('gives back whose the session is, not only what it is', function (): void {
     // The half a resumed session is useless without. A store that hands the token
     // back and forgets who it was minted for sends every launch to the operator's
     // application, whoever signed in — which is the requirement read backwards.
@@ -217,7 +217,7 @@ it('N3-R1 — gives back whose the session is, not only what it is', function ()
     }
 });
 
-it('N3-R1 — keeps each stack its own subject, never the other one', function (): void {
+it('keeps each stack its own subject, never the other one', function (): void {
     // The same failure the rule about resuming each stack its own session names, one
     // field along and worse: a subject read across stacks shows one household member
     // another household's application.
@@ -232,7 +232,7 @@ it('N3-R1 — keeps each stack its own subject, never the other one', function (
     }
 });
 
-it('N3-R1 — a session kept for the operator comes back as the operator', function (): void {
+it('a session kept for the operator comes back as the operator', function (): void {
     foreach (everyStoreHolding() as $which => $store) {
         expect(whoseItIs($store->resume(aStackThatIsPaired())))->toBe('the operator', $which);
     }
@@ -246,7 +246,7 @@ it('has nothing once the session has been forgotten', function (): void {
     }
 });
 
-it('N4-R6 — a store that will not open has no session rather than a fault', function (): void {
+it('a store that will not open has no session rather than a fault', function (): void {
     // Both refusals answer the same way here, which is the one place this port
     // does *not* tell them apart. A keychain that cannot be read is a keychain
     // with no session in it as far as resuming goes: the operator is asked for
@@ -283,7 +283,7 @@ it('PlatformKeychain answers the same port', function (): void {
     expect(PlatformKeychain::class)->toImplement(SecureStorage::class);
 });
 
-it('N4-R5 — the adapter keeps a session where the platform keeps things', function (): void {
+it('the adapter keeps a session where the platform keeps things', function (): void {
     $store = APlatformStore::working();
     $keychain = new PlatformKeychain($store);
 
@@ -292,7 +292,7 @@ it('N4-R5 — the adapter keeps a session where the platform keeps things', func
     expect($store->keysHeld())->toBe([sprintf('lemonfiber.session.%s', A_PAIRED_STACK)]);
 });
 
-it('N1-R11 — the adapter gives each stack its own key', function (): void {
+it('the adapter gives each stack its own key', function (): void {
     // One key holding "the session" is how the second pairing overwrites the
     // first, and the first stack starts answering with somebody else's
     // credential. The fake cannot show this — it is keyed the same way by
@@ -306,7 +306,7 @@ it('N1-R11 — the adapter gives each stack its own key', function (): void {
     expect($store->keysHeld())->toHaveCount(2);
 });
 
-it('N4-R6 — the adapter tells a device with no store from one that refused', function (): void {
+it('the adapter tells a device with no store from one that refused', function (): void {
     // The distinction the whole refusal type exists for, and the one place it
     // is read off the platform rather than decided by us.
     expect(howItWent(new PlatformKeychain(APlatformStore::absent())
@@ -318,7 +318,7 @@ it('N4-R6 — the adapter tells a device with no store from one that refused', f
     expect(new PlatformKeychain(APlatformStore::absent())->isAvailable())->toBeFalse();
 });
 
-it('N4-R6 — the adapter forgets even where the store said no', function (): void {
+it('the adapter forgets even where the store said no', function (): void {
     // The one thing that must always work: a refusal leaves the app holding a
     // session it could not store, and getting rid of it cannot depend on the
     // store that just refused. The adapter ignores the delete result for
@@ -327,7 +327,7 @@ it('N4-R6 — the adapter forgets even where the store said no', function (): vo
         ->toBe('kept');
 });
 
-it('N3-R1 — reads a session kept before members as the operator\'s', function (): void {
+it('reads a session kept before members as the operator\'s', function (): void {
     // What a device that signed in under an earlier build is holding: the token and
     // nothing else, written when there was no member who could sign in. Read as the
     // operator's because that is what it is, not because a missing subject is treated
@@ -342,7 +342,7 @@ it('N3-R1 — reads a session kept before members as the operator\'s', function 
         ->and(whoseItIs($resumed))->toBe('the operator');
 });
 
-it('N4-R5 — a stored value with a subject and no token is no session', function (): void {
+it('a stored value with a subject and no token is no session', function (): void {
     // The half-written value, which is the one shape this encoding can be left in. A
     // subject with no token is a member this app cannot ask anything for, and saying
     // so sends them to the password field rather than to a request that cannot be made.

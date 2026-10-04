@@ -64,7 +64,7 @@ function howTheSharingWent(Handed $handed): string
     )->said;
 }
 
-it('N4-R13 — hands the report over and says it did', function (): void {
+it('hands the report over and says it did', function (): void {
     $adapter = overASheetThatSays(['outcome' => 'offered']);
 
     foreach (['the fake' => AShareSheetThatWasOffered::working(), 'the adapter' => $adapter] as $which => $sharing) {
@@ -83,7 +83,7 @@ it('N4-R13 — hands the report over and says it did', function (): void {
     );
 });
 
-it('N4-R13 — a report that was never assembled refuses rather than crashing', function (): void {
+it('a report that was never assembled refuses rather than crashing', function (): void {
     // Told apart from a platform that would not offer a sheet, because the
     // remedies differ: this one is answered by asking for the report again, and
     // the other by trying the sheet again.
@@ -98,7 +98,7 @@ it('N4-R13 — a report that was never assembled refuses rather than crashing', 
     }
 });
 
-it('N4-R13 — a platform that would not show a sheet says so', function (): void {
+it('a platform that would not show a sheet says so', function (): void {
     $adapter = overASheetThatSays(['outcome' => 'refused', 'because' => 'the_platform_would_not']);
 
     foreach ([
@@ -110,7 +110,7 @@ it('N4-R13 — a platform that would not show a sheet says so', function (): voi
     }
 });
 
-it('N1-R10 — tells a report that is not there from a platform that would not offer', function (): void {
+it('tells a report that is not there from a platform that would not offer', function (): void {
     // Two refusals, two sentences, two different remedies. One sentence for
     // both is the sentence that is unhelpful for whichever they are in.
     $said = [];

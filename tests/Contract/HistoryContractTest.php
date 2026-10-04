@@ -184,7 +184,7 @@ function everythingTheRecordSays(History $history): string
     )->said;
 }
 
-it('N11-R1 — comes away with how far back it goes and every change, in the stack\'s order', function (): void {
+it('comes away with how far back it goes and every change, in the stack\'s order', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackKeepingARecordSends()));
 
     foreach (everyWayOfAskingForTheRecord($answered) as $which => $make) {
@@ -198,7 +198,7 @@ it('N11-R1 — comes away with how far back it goes and every change, in the sta
     }
 });
 
-it('N11-R9 — a stack that changed nothing answers with an empty record, not an obstacle', function (): void {
+it('a stack that changed nothing answers with an empty record, not an obstacle', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackThatChangedNothingSends()));
 
     foreach (everyWayOfAskingForTheRecord($answered, record: TheRecord::reaching('The last 90 days')) as $which => $make) {
@@ -206,7 +206,7 @@ it('N11-R9 — a stack that changed nothing answers with an empty record, not an
     }
 });
 
-it('N11-R9 — tells a session that has ended from a stack that is not answering', function (): void {
+it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -220,7 +220,7 @@ it('N11-R9 — tells a session that has ended from a stack that is not answering
     }
 });
 
-it('N11-R9 — a record this app cannot read is an obstacle, not a shorter record', function (): void {
+it('a record this app cannot read is an obstacle, not a shorter record', function (): void {
     // The direction of error that matters. A row dropped for being unreadable
     // is a change the screen says did not happen.
     MockClient::destroyGlobal();

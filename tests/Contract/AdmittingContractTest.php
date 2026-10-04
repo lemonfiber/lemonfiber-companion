@@ -169,7 +169,7 @@ it('comes away with the session the stack opened, and when it ends', function ()
     }
 });
 
-it('N1-R10 — tells a refused password from a door that has stopped listening', function (): void {
+it('tells a refused password from a door that has stopped listening', function (): void {
     // The distinction the whole obstacle set exists for, at the one port where
     // getting it wrong costs the operator something: a wrong password is
     // answered by trying again, and a stack that is not answering is not — and
@@ -191,7 +191,7 @@ it('N1-R10 — tells a refused password from a door that has stopped listening',
     }
 });
 
-it('N1-R7 — spends the credential it was given, so nothing can offer it twice', function (): void {
+it('spends the credential it was given, so nothing can offer it twice', function (): void {
     // The clause that takes a design rather than care. `Credential` empties
     // itself when it is read, and this is what holds both implementations to
     // reading it: a door that answered without offering would leave every

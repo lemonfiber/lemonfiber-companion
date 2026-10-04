@@ -78,7 +78,7 @@ dataset('every way of reaching a stack', [
     )],
 ]);
 
-it('N1-R11 — builds a separate client per stack', function (Reaching $reaching): void {
+it('builds a separate client per stack', function (Reaching $reaching): void {
     // The last clause, at the transport. A client holds one stack's pin, so two
     // stacks sharing one is how a reading comes to be attributed to the wrong
     // machine — and a fake that answered a shared instance would let an adapter

@@ -75,7 +75,7 @@ it('starts unprotected, in front of somebody, showing nothing guarded', function
     }
 });
 
-it('N4-R18 — a guarded screen is protected while it is in front of you', function (): void {
+it('a guarded screen is protected while it is in front of you', function (): void {
     // The case a rule written as "protect when backgrounded" gets wrong. A screen
     // recording runs while the app is the thing you are looking at, so this is
     // exactly when the protection is needed.
@@ -87,7 +87,7 @@ it('N4-R18 — a guarded screen is protected while it is in front of you', funct
     }
 });
 
-it('N4-R9 — a backgrounded app is protected, whatever it was showing', function (): void {
+it('a backgrounded app is protected, whatever it was showing', function (): void {
     foreach (everyWindow() as $which => $make) {
         [$window, $away] = $make();
 
@@ -97,7 +97,7 @@ it('N4-R9 — a backgrounded app is protected, whatever it was showing', functio
     }
 });
 
-it('N4-R9 — revealing while away leaves the window protected', function (): void {
+it('revealing while away leaves the window protected', function (): void {
     // The half a fake gets wrong by writing `reveal()` as "return false".
     // Revealing takes away the reason to refuse a screenshot and leaves the
     // reason to blank a window the operator has stepped away from, and an

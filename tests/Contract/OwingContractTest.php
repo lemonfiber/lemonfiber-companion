@@ -262,7 +262,7 @@ function theStandingOfTheirs(Wanted $one): string
     )->said;
 }
 
-it('N3-R4 — hands over the sentences the core wrote, unchanged', function (): void {
+it('hands over the sentences the core wrote, unchanged', function (): void {
     // Unchanged is the assertion. Both halves are on the wire in parts — a
     // policy, a standing, two counts, an instant — and an implementation that
     // assembled its own wording from them would be a second voice able to
@@ -275,7 +275,7 @@ it('N3-R4 — hands over the sentences the core wrote, unchanged', function (): 
     }
 });
 
-it('N3-R5 — carries when a spent allowance makes room, because the core says so', function (): void {
+it('carries when a spent allowance makes room, because the core says so', function (): void {
     // The reset is a sentence rather than arithmetic here. It is carried by the
     // service that keeps the period, so reading it needs no sum that could be
     // wrong in exactly the cases somebody is waiting on.
@@ -287,7 +287,7 @@ it('N3-R5 — carries when a spent allowance makes room, because the core says s
     }
 });
 
-it('N3-R3 — tells a stack that would not say from a member with nothing to be told', function (): void {
+it('tells a stack that would not say from a member with nothing to be told', function (): void {
     // The distinction the whole port turns on. Both arrive as no sentences, and
     // a screen drawing an empty list for the refusal would be passing off *this
     // was not yours to ask* as *there is nothing to tell you*.
@@ -300,7 +300,7 @@ it('N3-R3 — tells a stack that would not say from a member with nothing to be 
     expect(whatAMemberWasOwed(AMemberWhoIsOwed::owedNothing()))->toBe('told:');
 });
 
-it('N1-R10 — says the same about a reading it could not get', function (): void {
+it('tells a refused session from a stack that did not answer, where the reading could not be got', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -331,7 +331,7 @@ it('reads an answer that is not one member\'s as nothing owed to anybody', funct
     expect(whatAMemberWasOwed(new TheirOwn(new PinnedClients())))->toBe('told:');
 });
 
-it('N1-R65 — asks the stack it was given, once', function (): void {
+it('asks the stack it was given, once', function (): void {
     $owing = AMemberWhoIsOwed::owed(theSameSentences(whatTheCoreWroteToAMember()));
     $stack = theHouseAMemberBelongsTo();
 
@@ -377,7 +377,7 @@ function whatAMemberAskedFor(Owing $owing): string
     )->said;
 }
 
-it('N3-R6 — hands over what they asked for, each with where it stands', function (): void {
+it('hands over what they asked for, each with where it stands', function (): void {
     // The state is the assertion, and the reason beside it. A member reads
     // whether a thing is waiting on somebody, on its way, here, or refused and
     // why — so an implementation that carried the titles and dropped the states
@@ -407,7 +407,7 @@ it('N3-R6 — hands over what they asked for, each with where it stands', functi
     }
 });
 
-it('N3-R9 — answers a whole house with nothing rather than with somebody else\'s requests', function (): void {
+it('answers a whole house with nothing rather than with somebody else\'s requests', function (): void {
     // The one that matters. A member\'s session is answered with their own row
     // because the core narrowed it; an answer carrying a house is the operator\'s
     // read of the same endpoint, and handing it to a member surface would put
@@ -419,7 +419,7 @@ it('N3-R9 — answers a whole house with nothing rather than with somebody else\
     expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))->toBe('told:');
 });
 
-it('N3-R6 — tells a stack that would not say from a member who has asked for nothing', function (): void {
+it('tells a stack that would not say from a member who has asked for nothing', function (): void {
     // The same distinction the sentences turn on, and the same cost of losing
     // it: an empty list drawn for a refusal tells somebody they have asked for
     // nothing when the truth is that nobody could find out.
@@ -432,7 +432,7 @@ it('N3-R6 — tells a stack that would not say from a member who has asked for n
         ->and(whatAMemberAskedFor(AMemberWhoIsOwed::owedNothing()))->toBe('told:');
 });
 
-it('N1-R10 — says the same about a list of requests it could not read', function (): void {
+it('a list of requests it could not read is a stack that did not answer, not a shorter list', function (): void {
     // A row this app cannot show is refused rather than dropped, for the reason
     // the operator\'s reading gives: a list one row short reads as somebody never
     // having asked, while the person who asked is in the house and will ask again.
@@ -453,7 +453,7 @@ it('N1-R10 — says the same about a list of requests it could not read', functi
     }
 });
 
-it('N3-R3 — a household the stack could not read reaches the member as a refusal', function (): void {
+it('a household the stack could not read reaches the member as a refusal', function (): void {
     // Both halves of the member's screen, because both would otherwise draw an
     // empty list from the same payload: one saying there is nothing to tell
     // them, the other that they have asked for nothing. The stack said neither.
