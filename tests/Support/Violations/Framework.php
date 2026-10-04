@@ -288,6 +288,49 @@ final readonly class Framework
                 }
                 PHP, 'A11 — nothing outside a store names a class in it'),
 
+            // The rest of a capability reaching the store kit beside its store,
+            // which is a second way into its table that no port stands before.
+            Fixture::suite('A14', 'app-modules/health/src/Internal/KeepsThroughTheKit.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal;
+
+                use Modules\Kernel\Api\Forgotten;
+                use Modules\StoreKit\Api\ATableOfReadings;
+
+                final readonly class KeepsThroughTheKit
+                {
+                    public function __construct(private ATableOfReadings $table) {}
+
+                    public function forgetEverything(): Forgotten
+                    {
+                        return $this->table->forgetEverything();
+                    }
+                }
+                PHP, 'A14 — a store kit is named only in a capability\'s store'),
+
+            // The store kit reaching past the database for the rest of the
+            // framework, which a store kit may not.
+            Fixture::suite('A7', 'app-modules/store-kit/src/Fixtures/NamesMoreThanTheDatabase.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\StoreKit\Fixtures;
+
+                use Illuminate\Support\Collection;
+
+                final readonly class NamesMoreThanTheDatabase
+                {
+                    public function holds(): Collection
+                    {
+                        return new Collection();
+                    }
+                }
+                PHP, 'A7/E4 — store-kit', 'Illuminate'),
+
             // A store that can be handed a summary it could read, and so one
             // day writes it to disk in the clear.
             Fixture::suite('A12', 'app-modules/health/src/Internal/Store/KeepsWhatItCanRead.php', <<<'PHP'

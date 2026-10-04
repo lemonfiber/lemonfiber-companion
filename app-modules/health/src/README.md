@@ -30,7 +30,7 @@ and answers in `Internal/Store`:
 
 | | |
 |---|---|
-| `HealthReadingsInTheDatabase` | `HealthReadingsKept`, over the app's own database: one table, `health_readings`, created by this module's migration in `database/migrations` |
+| `HealthReadingsInTheDatabase` | `HealthReadingsKept`, over the app's own database: one table, `health_readings`, created by this module's migration in `database/migrations`, and queried through `store-kit`'s `ATableOfReadings` |
 
 A row holds a stack's keyed hash, the shape the reading was written in, when it
 was read, and the reading as this module sealed it, so nothing in the table can

@@ -60,6 +60,18 @@ enum Kind: string
     case StandIn = 'stand-in';
 
     /**
+     * What every capability's store of readings does over its own table.
+     *
+     * Its own kind because the code it holds may live in no other. A store
+     * lives inside its capability and is walled there, and the kernel may not
+     * name the framework, so this is the one place the queries every store of
+     * readings shares can be written once. A module of this kind owns no table and no
+     * migration; it names `Illuminate\Database` and the kernel, and it is
+     * named by a capability's `src/Internal/Store` and by nothing else.
+     */
+    case StoreKit = 'store-kit';
+
+    /**
      * Vendor namespaces a module of this kind may never name.
      *
      * `Lemonfiber\Sdk` is absent from the adapter list on purpose: the sdk
@@ -75,8 +87,10 @@ enum Kind: string
             // The domain does not know a framework exists (A7), does not know
             // the platform exists, and does not know how it is reached. A
             // capability's store is the one place in it that names the
-            // framework, and `ModuleBoundariesTest` reads it apart.
-            self::Kernel, self::Capability => [
+            // framework, and `ModuleBoundariesTest` reads it apart. A store
+            // kit names `Illuminate\Database` and no other part of it, read
+            // apart there too.
+            self::Kernel, self::Capability, self::StoreKit => [
                 'Illuminate',
                 'Native',
                 'Lemonfiber\Sdk',
@@ -110,7 +124,10 @@ enum Kind: string
     {
         return match ($this) {
             self::Kernel => [],
-            self::Capability, self::Adapter, self::Design => [self::Kernel],
+            // A capability reaches the store kit from its store alone, which
+            // `OnlyAStoreReachesTheDatabaseTest` holds.
+            self::Capability => [self::Kernel, self::StoreKit],
+            self::StoreKit, self::Adapter, self::Design => [self::Kernel],
             self::Wayfinding => [self::Kernel, self::Design, self::Capability],
             self::Surface => [self::Kernel, self::Design, self::Capability, self::Wayfinding],
             // The adapters too, because standing in for one means holding the
@@ -155,7 +172,7 @@ enum Kind: string
         return match ($this) {
             // Where the decisions are, and therefore where a surviving mutant
             // means a test that asserts nothing.
-            self::Kernel, self::Capability, self::Surface, self::Wayfinding => 100,
+            self::Kernel, self::Capability, self::StoreKit, self::Surface, self::Wayfinding => 100,
             // A component holds state and an adapter forwards a call. Mutating
             // either measures the fake rather than the application, which is a
             // number that looks like rigour and is not. A stand-in is a fake by

@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use Tests\Support\Imports;
+use Tests\Support\Kind;
 use Tests\Support\Module;
 use Tests\Support\Stores;
 use Tests\Support\Tree;
 
-// A1 and A10 — the database belongs to the stores, and each table to one owner.
+// A1, A10 and A14 — the database belongs to the stores, and each table to one owner.
 //
 // What the phone keeps is decided and stored by the capability it belongs to.
 // Its store sits inside it, under `src/Internal/Store`, beside the module's own
@@ -20,6 +21,11 @@ use Tests\Support\Tree;
 //
 // A store is recognised by where it is rather than by a list here, so one
 // written tomorrow is governed the moment its first class exists.
+//
+// What every store of readings does over its table is written once, in a store
+// kit, and the kit is held to the same wall from the other side: a store names
+// it, and nothing else does — not the rest of a capability, not another kind of
+// module, and not the composition root.
 
 /** The prefix every table a capability owns carries: its own name. */
 function thePrefixOf(Module $owner): string
@@ -97,12 +103,12 @@ it('finds the stores and the tables they own', function (): void {
         ->and(everyTableAndItsOwner())->not->toBe([]);
 });
 
-it('A1 — Illuminate\Database is named only in a capability\'s store and its migrations', function (): void {
+it('A1 — Illuminate\Database is named only in a capability\'s store and its migrations, and in a store kit', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
         foreach (everyFileAModuleRuns($module) as $file) {
-            if (Stores::holds($module, $file) || Stores::isAMigrationOf($module, $file)) {
+            if ($module->kind === Kind::StoreKit || Stores::holds($module, $file) || Stores::isAMigrationOf($module, $file)) {
                 continue;
             }
 
@@ -122,8 +128,8 @@ it('A1 — Illuminate\Database is named only in a capability\'s store and its mi
         "These reach the database without being a store:\n  %s\n\n"
         . 'What the phone keeps is decided and stored by the capability it belongs to. Its store '
         . 'is one query class under that capability\'s src/Internal/Store, beside its own '
-        . 'database/migrations, answering a port the capability declares; nothing else names the '
-        . 'database (A1).',
+        . 'database/migrations, answering a port the capability declares, and the queries every such '
+        . 'store shares are in a store kit; nothing else names the database (A1).',
         implode("\n  ", $offenders),
     ));
 });
@@ -184,4 +190,58 @@ it('A10 — no module names a table another module owns', function (): void {
         . 'that owner\'s capability, which asks its store (A10).',
         implode("\n  ", $offenders),
     ));
+});
+
+/**
+ * Every module of the store kit's kind.
+ *
+ * @return list<Module>
+ */
+function everyStoreKit(): array
+{
+    return array_values(array_filter(Module::all(), static fn(Module $module): bool => $module->kind === Kind::StoreKit));
+}
+
+/**
+ * The store kits a file names, resolved as PHP resolves its names.
+ *
+ * @param list<Module> $kits
+ *
+ * @return list<string>
+ */
+function theStoreKitsNamedIn(string $file, array $kits): array
+{
+    $names = Stores::namesIn($file);
+
+    return array_values(array_map(
+        static fn(Module $kit): string => sprintf('%s names %s', $file, $kit->namespace),
+        array_filter($kits, static fn(Module $kit): bool => Imports::anyUnder($names, $kit->namespace)),
+    ));
+}
+
+it('A14 — a store kit is named only in a capability\'s store', function (): void {
+    $kits = everyStoreKit();
+    $offenders = [];
+
+    foreach (Module::all() as $module) {
+        foreach (everyFileAModuleRuns($module) as $file) {
+            if ($module->kind !== Kind::StoreKit && ! Stores::holds($module, $file)) {
+                $offenders = [...$offenders, ...theStoreKitsNamedIn($file, $kits)];
+            }
+        }
+    }
+
+    foreach (Tree::filesUnder(Tree::at('bootstrap/Composition'), '.php') as $file) {
+        $offenders = [...$offenders, ...theStoreKitsNamedIn($file, $kits)];
+    }
+
+    expect($kits)->not->toBe([])
+        ->and($offenders)->toBe([], sprintf(
+            "These name a store kit without being a store:\n  %s\n\n"
+            . 'A store kit holds what every capability\'s store of readings does over its own table, '
+            . 'and it is reached from a capability\'s src/Internal/Store and nowhere else: the rest of '
+            . 'the capability asks the port its module declares, and the composition root binds that '
+            . 'port to the store (A14).',
+            implode("\n  ", $offenders),
+        ));
 });

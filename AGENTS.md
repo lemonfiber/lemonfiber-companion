@@ -58,6 +58,7 @@ app-modules/
   operator/ household/                              surface
   sdk/ device/ vault/ codes/ seal/                  adapter
   dx/                                               stand-in
+  store-kit/                                        store kit
 ```
 
 | Adding | Goes in |

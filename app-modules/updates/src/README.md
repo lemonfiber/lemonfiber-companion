@@ -24,7 +24,7 @@ port this module declares in `Internal` and answers in `Internal/Store`:
 
 | | |
 |---|---|
-| `UpkeepReadingsInTheDatabase` | `UpkeepReadingsKept`, over the app's own database: one table, `updates_readings`, created by this module's migration in `database/migrations` |
+| `UpkeepReadingsInTheDatabase` | `UpkeepReadingsKept`, over the app's own database: one table, `updates_readings`, created by this module's migration in `database/migrations`, and queried through `store-kit`'s `ATableOfReadings` |
 
 A row holds a stack's keyed hash, the shape the reading was written in, when it
 was read, and the reading as this module sealed it. Nothing in this module but

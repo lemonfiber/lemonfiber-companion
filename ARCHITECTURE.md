@@ -44,6 +44,8 @@ app-modules/
   codes/                  QR codes another phone can scan
   seal/                   sealing what the phone keeps
 
+  store-kit/              what every store of readings does over its table
+
   dx/                     stand-ins for a stack, require-dev only
 ```
 
@@ -63,12 +65,13 @@ is the difference between a convention and an invariant: nobody has to remember.
 | Kind | May use | May never use |
 |---|---|---|
 | `kernel` | nothing. Not Illuminate, not Native, not the SDK | everything |
-| `capability` | `kernel`; Illuminate in its own store only | Illuminate outside its store, Native, the SDK, other capabilities, adapters, surfaces |
+| `capability` | `kernel`; Illuminate and a store kit in its own store only | Illuminate or a store kit outside its store, Native, the SDK, other capabilities, adapters, surfaces |
 | `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
 | `surface` | `kernel`, `design`, capabilities, `wayfinding`, `Native\Mobile` | the SDK, adapters, the other surface |
 | `wayfinding` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, surfaces |
 | `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
 | `stand-in` | `kernel`, adapters, any outside package | capabilities, design, surfaces |
+| `store-kit` | `kernel`, `Illuminate\Database` | the rest of Illuminate, Native, the SDK, capabilities, adapters, surfaces |
 
 Two consequences worth stating plainly:
 
@@ -155,19 +158,20 @@ honestly is better than pretending.
 
 | | Rule | Enforced by |
 |---|---|---|
-| A1 | No Eloquent, no Active Record. Persistence is a port the owning capability declares, and `Illuminate\Database` is named only in a store: a capability's `src/Internal/Store` and its own `database/migrations` | arch: no Eloquent and no query builder named anywhere (`ArchitectureTest`), and no `Illuminate\Database` in any file of any module outside a capability's store and migrations, or in the composition root (`OnlyAStoreReachesTheDatabaseTest`) |
+| A1 | No Eloquent, no Active Record. Persistence is a port the owning capability declares, and `Illuminate\Database` is named only in a store, a capability's `src/Internal/Store` and its own `database/migrations`, and in the `store-kit` those stores share | arch: no Eloquent and no query builder named anywhere (`ArchitectureTest`), and no `Illuminate\Database` in any file of any module outside a capability's store and migrations and a `store-kit`, or in the composition root (`OnlyAStoreReachesTheDatabaseTest`) |
 | A2 | No facades. Dependencies arrive through constructors | phpstan `disallowed-calls` |
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
 | A4 | No container-reaching helpers — `config()`, `cache()`, `view()`, `__()` and the rest — outside the composition root, `config/` and tests | phpstan `disallowed-calls` |
 | A5 | `env()` only inside `config/` | arch |
 | A6 | No mutable static state — a static property, and a `static` inside a method body | arch: reflection over every module class for the property, a token read over every source for the variable |
-| A7 | `Illuminate\*` forbidden in `kernel`, and in a `capability` everywhere but its store: `src/Internal/Store` and `database/migrations` | arch: module kind (`ModuleBoundariesTest`), with a capability's store read apart by directory. The dependency analyser reads a package per manifest and cannot scope one by path, so a capability that keeps something requires `illuminate/database` in its manifest and this rule is the wall |
+| A7 | `Illuminate\*` forbidden in `kernel`, in a `capability` everywhere but its store: `src/Internal/Store` and `database/migrations`, and in a `store-kit` but for `Illuminate\Database` | arch: module kind (`ModuleBoundariesTest`), with a capability's store read apart by directory and a store kit's names under `Illuminate\Database` passed over. The dependency analyser reads a package per manifest and cannot scope one by path, so a capability that keeps something requires `illuminate/database` in its manifest and this rule is the wall |
 | A8 | `Native\Mobile\Facades\*` only in `device` and `vault` | phpstan `disallowed-calls` |
 | A9 | A service provider binds and does not work: no read, no request, no resolve in `register()`/`boot()`, or in a method of the provider either calls as it runs | phpstan: own rule |
 | A10 | A table belongs to one owner: it carries its owner's prefix, is created only in that capability's own `database/migrations`, and is named in no other module's code | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and the composition root |
 | A11 | A store is reached through its port: nothing outside a capability's `src/Internal/Store`, in that module or any other, names a class in it, and only the composition root binds it | arch: `AStoreIsReachedThroughItsPortTest`, over every module's sources and the rest of `bootstrap/Composition`, with names resolved as PHP resolves them |
 | A12 | A store takes and gives only what is sealed: every public method of a store class takes a `SealedPayload`, a `SealedStack` or the `Shape` and `Instant` beside them, and answers with a value built from those or a count | arch: `AStoreSeesNothingItCouldReadTest`, by reflection over every store class; test: `WhatThePhoneKeepsIsUnreadableOnDiskTest`, which keeps a summary and reads the raw database file for it |
 | A13 | What the phone keeps is put in the clear to be sealed only by its owner's writer, and no writer is handed an offer, an agreement, a command's idempotency key, a credential, a session or pairing material | arch: `WhatThePhoneMayKeepTest`, every call to `Unsealed::of` in a source tree resolved as PHP resolves it and read against its register of `*AsKept` writers and the seal, which hands back what it opened; and every type a writer is handed walked by reflection to the types it holds, docblocks included |
+| A14 | A store kit is reached from a store: a `store-kit` module is named only in a capability's `src/Internal/Store`, and never elsewhere in a capability, in a migration, in another kind of module or in the composition root | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and `bootstrap/Composition`, with names resolved as PHP resolves them |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
 so every test that touches one is an integration test wearing a unit test's
@@ -202,6 +206,16 @@ have received is one line from writing it down, and the phone would then keep
 a credential beside the readings or send an agreement again on the next
 launch. So a writer's inputs are walked to every type they hold, and none of
 those may be one.
+
+**Why the stores share a kit, and the kit is walled too.** Every store of
+readings answers the same five questions over the same four columns, and a
+store inside its owner has nowhere else to share them: the kernel may not name
+the framework, and one capability may not name another. So the queries are
+written once, in a `store-kit` module that owns no table and no migration. Each
+store hands in the table that is its own, so A10 still names every table for
+its owner, and A12 still judges the store, whose every method the kit answers.
+A14 walls the kit from the other side: only a store names it, so the rest of a
+capability still reaches what it keeps through its port alone.
 
 **Why A7 costs something and is worth it.** Giving up `Collection` in domain code
 is a real loss of convenience. What it buys is a domain that does not move when
