@@ -132,7 +132,7 @@ it('puts the costlier of two failures first, which the verdict cannot tell apart
     expect(checksIn($ordered))->toBe(['a-critical', 'an-error', 'a-warning-severity']);
 });
 
-it('lets severity outrank the verdict, which is what N2-R2 asks for', function (): void {
+it('lets severity outrank the verdict', function (): void {
     // Findings are ordered by severity and nothing else. The engine
     // graded one of these `critical` — data or something outside the machine is
     // at risk — and the other `advisory`, a broken thing that costs nothing.

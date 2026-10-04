@@ -31,7 +31,7 @@ function readInOrder(HowServicesTookIt $went): array
     return $named;
 }
 
-it('N2-R18 — puts what did not arrive above what did', function (): void {
+it('puts what did not arrive above what did', function (): void {
     $went = HowServicesTookIt::these(
         howItWentFor('jellyfin', HowItEnded::Updated),
         howItWentFor('sonarr', HowItEnded::NotStarted),
@@ -43,7 +43,7 @@ it('N2-R18 — puts what did not arrive above what did', function (): void {
         ->toBe(['sonarr', 'prowlarr', 'jellyfin', 'radarr']);
 });
 
-it('N2-R18 — does not rank a network against a service against a machine', function (): void {
+it('does not rank a network against a service against a machine', function (): void {
     // The decision this query refuses to make. All three are failures and the
     // stack's order between them is kept, because which of them matters most
     // is a judgement about a situation this app cannot see.

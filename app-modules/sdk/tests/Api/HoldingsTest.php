@@ -114,7 +114,7 @@ function whatTheShelfHeldOf(mixed $data, Closure $reading): string
     )->rows[0];
 }
 
-it('N3-R14 — reads the shelf the core listed, in the order it listed it', function (): void {
+it('reads the shelf the core listed, in the order it listed it', function (): void {
     $held = whatAStackSaysAboutAShelf(['holdings' => [
         oneHolding(),
         oneHolding(['id' => 'b2', 'title' => 'A series', 'medium' => 'series']),
@@ -124,7 +124,7 @@ it('N3-R14 — reads the shelf the core listed, in the order it listed it', func
     expect(whatTheShelfHeld($held))->toBe(['A film', 'A series', 'Something else']);
 });
 
-it('N3-R15 — reads a library that could not be read as out of reach, not as empty', function (): void {
+it('reads a library that could not be read as out of reach, not as empty', function (): void {
     // The one distinction a screen cannot recover on its own, and the reason
     // `available` is read before anything else is believed.
     $unread = whatAStackSaysAboutAShelf([

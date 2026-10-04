@@ -66,7 +66,7 @@ function theFormsNamedIn(Forms $forms): array
     return $named;
 }
 
-it('N2-R7 — reads every form the stack declares, by the id a verb asks for it by', function (): void {
+it('reads every form the stack declares, by the id a verb asks for it by', function (): void {
     // The id and not the name: `library` is what `up` is told, and `Library`
     // is a label a stack of somebody's own may spell however it likes.
     $forms = Repertoires::in(aRepertoireSaying(['forms' => [

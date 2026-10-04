@@ -23,13 +23,13 @@ use Modules\Sdk\Internal\Wire;
 // `G12` asks about that one on its own — an exemption that covered the file
 // rather than the kind would be an exemption nobody could read.
 
-it('N1-R13 — lets through an answer in a version this app reads', function (): void {
+it('lets through an answer in a version this app reads', function (): void {
     $envelope = new Envelope(WireVersion::One->value, 'doctor', []);
 
     expect(Wire::checked($envelope))->toBe($envelope);
 });
 
-it('N1-R13 — refuses an answer in a version this app does not read', function (): void {
+it('refuses an answer in a version this app does not read', function (): void {
     // A stack ahead of its app is an ordinary state of the world — somebody
     // updated the machine and not the phone — so this is refused where the
     // answer arrives rather than discovered as a field whose meaning changed

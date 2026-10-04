@@ -151,7 +151,7 @@ it('reads where the machine stands and whether new work is halted', function ():
         ->and($room)->toBeInstanceOf(WhereTheRoomWent::class);
 });
 
-it('N12-R10 — reads a figure the stack could not read as unread, never as nought', function (): void {
+it('reads a figure the stack could not read as unread, never as nought', function (): void {
     expect(theVolumeRead(aMachineWithRoom()))->toBe('/srv|100|90|live')
         ->and(theVolumeRead(withTheFirst('volumes', [...aVolumeSaying(), 'point' => '', 'free' => null, 'projected' => null])))->toBe('|unread|unread|live')
         ->and(theVolumeRead(withTheFirst('volumes', [...aVolumeSaying(), 'free' => 0])))->toBe('/srv|0|90|live');
@@ -161,7 +161,7 @@ it('reads a network share\'s figures with when they were taken', function (): vo
     expect(theVolumeRead(withTheFirst('volumes', [...aVolumeSaying(), 'reading' => ['as' => 'as_of', 'at' => 1_790_100_000]])))->toBe('/srv|100|90|1790100000');
 });
 
-it('N12-R6 — reads a line by its category, a tree by its name, with both figures', function (): void {
+it('reads a line by its category, a tree by its name, with both figures', function (): void {
     $lines = [];
 
     foreach (WhereTheRoomIs::in(spaceSaying([...aMachineWithRoom(), 'consumption' => [
@@ -174,7 +174,7 @@ it('N12-R6 — reads a line by its category, a tree by its name, with both figur
     expect($lines)->toBe(['tree movies 20/30 by_losing_content', 'services  5/5 you_said_not']);
 });
 
-it('N12-R1, N12-R2, N12-R3 — reads each standing, the ratio, and what removing costs', function (): void {
+it('reads each standing, the ratio, and what removing costs', function (): void {
     $seeding = theDownloadRead(aMachineWithRoom());
     $never = theDownloadRead(withTheFirst('candidates', ['name' => 'a', 'bytes' => 1, 'standing' => ['standing' => 'never_imported'], 'consequence' => null]));
     $alone = theDownloadRead(withTheFirst('candidates', ['name' => 'b', 'bytes' => 2, 'standing' => ['standing' => 'left_alone']]));
@@ -184,7 +184,7 @@ it('N12-R1, N12-R2, N12-R3 — reads each standing, the ratio, and what removing
         ->and([$alone->stands()->value, theRatioRead($alone), $alone->consequence()])->toBe(['left_alone', '-', '']);
 });
 
-it('N12-R2 — reads the figure that means no ratio as none, and the one below it as a ratio', function (): void {
+it('reads the figure that means no ratio as none, and the one below it as a ratio', function (): void {
     $none = theDownloadRead(withTheFirst('candidates', [...aDownloadSaying(), 'standing' => ['standing' => 'seeding', 'ratio' => 4_294_967_295]]));
     $below = theDownloadRead(withTheFirst('candidates', [...aDownloadSaying(), 'standing' => ['standing' => 'seeding', 'ratio' => 4_294_967_294]]));
 

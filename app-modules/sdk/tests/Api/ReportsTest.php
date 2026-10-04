@@ -244,7 +244,7 @@ it('leaves the wrong kind to the client to report', function (): void {
         ->toThrow(UnexpectedKind::class);
 });
 
-it('N1-R13 — refuses an envelope in a wire version this app does not read', function (): void {
+it('refuses an envelope in a wire version this app does not read', function (): void {
     // Asserted here and not only over `Wire`, because what is being pinned is
     // that this translator asks. A gate nothing calls is a gate.
     //
@@ -255,7 +255,7 @@ it('N1-R13 — refuses an envelope in a wire version this app does not read', fu
         ->toThrow(EnvelopeIsNotRead::class, 'version 99');
 });
 
-it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict', function (): void {
+it('reads the code, the meaning and the remedies off a failing verdict', function (): void {
     // All three cross the wire on the verdict, beside the outcome tag. Reading
     // the tag alone is enough to colour a row and not enough to act on it.
     $report = Reports::in(doctorSaying(aRun('broken', [aFailure()])));
@@ -279,7 +279,7 @@ it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict
     expect($said[0]->shown())->toBe('VPN-3|Your address was visible|1');
 });
 
-it('N2-R3 — reads how much it matters and where it stands, off the same verdict', function (): void {
+it('reads how much it matters and where it stands, off the same verdict', function (): void {
     // Both cross the wire beside the code, and both were dropped for as long as
     // this app had nowhere to put them. Severity is taken as sent rather than
     // worked out from the conclusion: a screen deciding for itself would be a
@@ -308,7 +308,7 @@ it('N2-R3 — reads how much it matters and where it stands, off the same verdic
     expect($said[0]->shown())->toBe('critical|guided');
 });
 
-it('N2-R3 — refuses a severity this app cannot read rather than calling it advisory', function (): void {
+it('refuses a severity this app cannot read rather than calling it advisory', function (): void {
     // The quiet arm is the wrong place to land. A critical finding whose word
     // did not parse would be shown as informational, and quiet is the one thing
     // it must not be — `D4`'s argument, and the same one the category makes.
@@ -319,7 +319,7 @@ it('N2-R3 — refuses a severity this app cannot read rather than calling it adv
     ]))))->toThrow(ReportIsUnreadable::class, 'urgent');
 });
 
-it('N2-R3 — refuses a standing this app cannot read rather than offering a button', function (): void {
+it('refuses a standing this app cannot read rather than offering a button', function (): void {
     // Sharper than the severity case: the distinction between `actionable` and
     // `guided` decides whether a screen offers to do something, so a word this
     // app cannot read must not become the arm that offers one.
@@ -330,7 +330,7 @@ it('N2-R3 — refuses a standing this app cannot read rather than offering a but
     ]))))->toThrow(ReportIsUnreadable::class, 'pending');
 });
 
-it('N2-R3 — a check that passed carries none of it', function (): void {
+it('a check that passed carries no code, meaning or remedy', function (): void {
     $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
     $said = [];
 
@@ -352,7 +352,7 @@ it('N2-R3 — a check that passed carries none of it', function (): void {
     expect($said[0]->shown())->toBe('nothing-wrong');
 });
 
-it('N2-R3 — a check that could not run carries why, and what to do to get an answer', function (): void {
+it('a check that could not run carries why, and what to do to get an answer', function (): void {
     // This read as a passing check until the reader stopped sniffing for a
     // `code` key. `unverified` carries neither a code nor a severity, so the
     // presence test put it on the arm that means nothing is wrong — which is
@@ -380,7 +380,7 @@ it('N2-R3 — a check that could not run carries why, and what to do to get an a
         ->toBe('The container engine did not answer, so egress could not be established|1');
 });
 
-it('N2-R3 — a skipped check carries why, and nothing to do about it', function (): void {
+it('a skipped check carries why, and nothing to do about it', function (): void {
     // No remedy on the wire and none invented here. A prerequisite that was
     // absent is a fact about the machine, not something the core is asking
     // anybody to go and fix, and an empty list says so without a sentence.
@@ -401,7 +401,7 @@ it('N2-R3 — a skipped check carries why, and nothing to do about it', function
     expect($said[0]->shown())->toBe('No VPN is configured, so there was nothing to check|0');
 });
 
-it('N2-R3 — refuses a check that could not run and said nothing about why', function (): void {
+it('refuses a check that could not run and said nothing about why', function (): void {
     // The same refusal a failure with no meaning gets, and for a sharper
     // reason: the row already says there is no answer, so a blank sentence
     // leaves an operator with a line that reads as a check that found nothing.
@@ -412,7 +412,7 @@ it('N2-R3 — refuses a check that could not run and said nothing about why', fu
     ]))))->toThrow(CheckGaveNoReason::class);
 });
 
-it('N2-R3 — refuses a remedy on an unverified check that is not a remedy', function (): void {
+it('refuses a remedy on an unverified check that is not a remedy', function (): void {
     $verdict = ['outcome' => 'unverified', 'reason' => 'The engine did not answer', 'remedy' => 'start it'];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
@@ -420,7 +420,7 @@ it('N2-R3 — refuses a remedy on an unverified check that is not a remedy', fun
     ]))))->toThrow(ReportIsUnreadable::class, 'remedy');
 });
 
-it('N2-R3 — a failure the core offered nothing for carries no remedies', function (): void {
+it('a failure the core offered nothing for carries no remedies', function (): void {
     // Different from a failure whose remedies are an empty list, and read the
     // same way on purpose: both mean there is nothing to offer, and a screen
     // that told them apart would be showing the difference between the core
@@ -444,7 +444,7 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
     expect($counted[0]->shown())->toBe('0');
 });
 
-it('N2-R3 — refuses remedies that are not a list', function (): void {
+it('refuses remedies that are not a list', function (): void {
     $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'guided', 'meaning' => 'Visible', 'remedies' => 'restart it'];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
@@ -452,7 +452,7 @@ it('N2-R3 — refuses remedies that are not a list', function (): void {
     ]))))->toThrow(ReportIsUnreadable::class);
 });
 
-it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
+it('refuses a remedy that is not a remedy', function (): void {
     // A list of strings where a list of objects belongs. The core producing
     // this is a fault worth seeing where the payload is read, rather than as a
     // type error on somebody's screen.
@@ -463,7 +463,7 @@ it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
     ]))))->toThrow(ReportIsUnreadable::class);
 });
 
-it('N2-R3 — reads which service a finding is about', function (): void {
+it('reads which service a finding is about', function (): void {
     // Beside the title rather than inside it. The same check runs against
     // whichever service fills a role, so a title naming one would be wrong on
     // the next machine — and an operator with nineteen services needs the name.
@@ -482,7 +482,7 @@ it('N2-R3 — reads which service a finding is about', function (): void {
     expect($named[0]->shown())->toBe('gluetun');
 });
 
-it('N2-R3 — a check about the machine names no service', function (): void {
+it('a check about the machine names no service', function (): void {
     $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
     $named = [];
 
@@ -496,7 +496,7 @@ it('N2-R3 — a check about the machine names no service', function (): void {
     expect($named[0]->shown())->toBe('the-machine');
 });
 
-it('N2-R3 — refuses a finding that claims a service and names none', function (): void {
+it('refuses a finding that claims a service and names none', function (): void {
     // Different from a finding that claims none: one is a check about the
     // machine and the other is a row with a fault in it. An operator shown a
     // blank where a service belongs learns less than one shown nothing.
@@ -537,7 +537,7 @@ it('refuses a finding that gives its service\'s name as nothing, or as something
     'not text' => [42, ReportIsUnreadable::class],
 ]);
 
-it('N2-R3 — reads which check explains a finding', function (): void {
+it('reads which check explains a finding', function (): void {
     // The engine sets this after the run, because a check is independent by
     // construction and cannot see what any other found. It is the difference
     // between an operator reading five broken things and reading one.
@@ -556,7 +556,7 @@ it('N2-R3 — reads which check explains a finding', function (): void {
     expect($explained[0]->shown())->toBe('vpn.up');
 });
 
-it('N2-R3 — a finding nothing explains stands alone', function (): void {
+it('a finding nothing explains stands alone', function (): void {
     $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
     $explained = [];
 
@@ -627,7 +627,7 @@ it('refuses a finding whose field is there and is not text', function (): void {
         ->toThrow(ReportIsUnreadable::class, 'Finding 1');
 });
 
-it('G4-R4 — reads the technical detail a verdict carried', function (): void {
+it('reads the technical detail a verdict carried', function (): void {
     $verdict = [
         'outcome' => 'fail',
         'code' => 'VPN-3',
@@ -643,7 +643,7 @@ it('G4-R4 — reads the technical detail a verdict carried', function (): void {
         ->toBe('dial tcp 10.0.0.4:8989: connect: connection refused');
 });
 
-it('G4-R4 — a verdict with no detail is one the core added nothing to', function (): void {
+it('a verdict with no detail is one the core added nothing to', function (): void {
     // The one field here that does not refuse when it is absent. The contract
     // marks it optional, so missing is a core with nothing to add rather than a
     // conversation gone wrong — and what this side refuses to invent is a value
@@ -718,7 +718,7 @@ function whoPutTheCheckThere(Finding $finding): string
     )->said;
 }
 
-it('C1-R15 — reads who put each check there, row by row', function (): void {
+it('reads who put each check there, row by row', function (): void {
     // Two rows with different origins, so a reader that read the first row's
     // origin for every row, or the same arm for both, fails here.
     $report = Reports::in(doctorSaying(aRun('degraded', [

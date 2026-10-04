@@ -74,7 +74,7 @@ function whatIsGoneIn(Unattended $command): string
     )->said;
 }
 
-it('N16-R5 — reads a listing, keeping the machine\'s order', function (): void {
+it('reads a listing, keeping the machine\'s order', function (): void {
     $running = Hosts::in(hostingSaying([
         'manager' => 'launchd',
         'commands' => [aHostedRow('Watching', 'hosted'), aHostedRow('Seeding', 'stopped')],
@@ -84,7 +84,7 @@ it('N16-R5 — reads a listing, keeping the machine\'s order', function (): void
         ->and($running->whatKeepsThem())->toBe(WhatKeepsItRunning::Launchd);
 });
 
-it('N16-R5 — a machine with no manager carries what to do instead', function (): void {
+it('a machine with no manager carries what to do instead', function (): void {
     $running = Hosts::in(hostingSaying([
         'manager' => 'unsupported',
         'instruction' => 'Add it to your own login items.',
@@ -101,7 +101,7 @@ it('a machine that hosts nothing is an answer rather than a gap', function (): v
     expect(Hosts::in(hostingSaying(['manager' => 'systemd', 'commands' => []]))->count())->toBe(0);
 });
 
-it('N16-R6 — an orphan carries the program, and nothing else does', function (): void {
+it('an orphan carries the program, and nothing else does', function (): void {
     $running = Hosts::in(hostingSaying([
         'manager' => 'launchd',
         'commands' => [
@@ -194,7 +194,7 @@ it('refuses a row whose word is there and blank, which is the same fault', funct
     ])))->toThrow(HostingIsUnreadable::class, 'guarantees');
 });
 
-it('N16-R6 — refuses an orphan that names no program', function (): void {
+it('refuses an orphan that names no program', function (): void {
     // The one row that carries extra information is not the one row allowed to
     // arrive without it: *installed against a program that is gone*, naming no
     // program, tells an operator less than the standing alone already did.
@@ -206,7 +206,7 @@ it('N16-R6 — refuses an orphan that names no program', function (): void {
     ])))->toThrow(HostingIsUnreadable::class, 'missing');
 });
 
-it('N16-R5 — refuses an unsupported machine that says nothing to do instead', function (): void {
+it('refuses an unsupported machine that says nothing to do instead', function (): void {
     // *Not available here* with no sentence beside it is the empty box that
     // reads as *off*. Both shapes: the field absent, and the field blank.
     expect(fn(): WhatRunsUnattended => Hosts::in(hostingSaying([

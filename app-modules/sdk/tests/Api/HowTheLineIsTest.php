@@ -104,12 +104,12 @@ it('reads a line with nothing optional as knowing nothing optional', function ()
         ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|unmeasured|uncapped|unspent|no upload cost');
 });
 
-it('N10-R4, N10-R5, N10-R6 — reads the capacity, how it was measured, the tunnel, the cap and what it does', function (): void {
+it('reads the capacity, how it was measured, the tunnel, the cap and what it does', function (): void {
     expect(everythingTheLineSays(HowTheLineIs::in(bandwidthSaying([...aPlainLine(), ...everythingItCouldKnow()]))))
         ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|12500000/2500000 observed @1790100000 through|1000000000000 throttle warning|Nothing is being held back yet|Seeding back at a quarter slows the ratio');
 });
 
-it('N10-R7 — reads a cap of zero as a cap, and null as none declared', function (): void {
+it('reads a cap of zero as a cap, and null as none declared', function (): void {
     $zero = HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'cap' => ['monthly' => 0, 'exceeded' => 'pause']]));
     $none = HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'cap' => null, 'capacity' => null, 'reached' => null, 'acting' => null, 'ratio' => null]));
 

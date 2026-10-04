@@ -53,7 +53,7 @@ function everythingToldIn(WhatTheOperatorIsTold $told): string
     return sprintf('%s/%s/[%s]', $told->preset(), $told->means(), implode(',', $exceptions));
 }
 
-it('N10-R8 — reads the preset, what it means and every exception, in the stack\'s order', function (): void {
+it('reads the preset, what it means and every exception, in the stack\'s order', function (): void {
     $told = WhatIsTold::in(alertsSaying(aQuietSetting([['kind' => 'update-available', 'wanted' => false], ['kind' => 'disk-low', 'wanted' => true]])));
 
     expect(everythingToldIn($told))->toBe('quiet/Only what needs you today/[update-available=silenced,disk-low=heard]');

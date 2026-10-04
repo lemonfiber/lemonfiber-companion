@@ -29,7 +29,7 @@ function whatAStackReportsItApplied(array $applied): array
     return ['applied' => $applied];
 }
 
-it('N2-R18 — keeps the four endings apart rather than reporting one failure', function (): void {
+it('keeps the four endings apart rather than reporting one failure', function (): void {
     // The whole requirement in one case. *Not fetched*, *not started* and *not
     // reached* are a network, a service and a machine, and an operator sent to
     // the wrong one of those at eleven at night loses the evening.
@@ -52,7 +52,7 @@ it('N2-R18 — keeps the four endings apart rather than reporting one failure', 
     ]);
 });
 
-it('N2-R19 — keeps a rollback and a restore as two offers', function (): void {
+it('keeps a rollback and a restore as two offers', function (): void {
     $rows = [];
 
     foreach (Endings::in(whatAStackReportsItApplied([

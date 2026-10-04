@@ -45,7 +45,7 @@ function arrangedAs(Findings $findings): array
     return $named;
 }
 
-it('G4-R3 — puts a cause immediately before what it explains', function (): void {
+it('puts a cause immediately before what it explains', function (): void {
     // The reading this exists to prevent: four separate problems, ordered by
     // severity, each saying *because of this other thing*, with that other
     // thing somewhere else in the list. An operator reads four and goes looking
@@ -59,7 +59,7 @@ it('G4-R3 — puts a cause immediately before what it explains', function (): vo
     expect(arrangedAs($run))->toBe(['vpn.up', 'jellyfin.reachable', 'sonarr.reachable']);
 });
 
-it('G4-R3 — keeps the symptoms it was handed in the order it was handed them', function (): void {
+it('keeps the symptoms it was handed in the order it was handed them', function (): void {
     // Run after `WorstFirst`, so the symptoms under a cause are already
     // worst-first. Reordering them here would be this query having a second
     // opinion about severity, which is not its question.
@@ -72,7 +72,7 @@ it('G4-R3 — keeps the symptoms it was handed in the order it was handed them',
     expect(arrangedAs($run))->toBe(['vpn.up', 'sonarr.reachable', 'jellyfin.reachable']);
 });
 
-it('G4-R3 — reorders and does not narrow', function (): void {
+it('reorders and does not narrow', function (): void {
     // Every finding that went in comes out. A stack with the tunnel down and
     // four services unreachable is worse than one with the tunnel down, and a
     // screen showing only the cause would have lost that.

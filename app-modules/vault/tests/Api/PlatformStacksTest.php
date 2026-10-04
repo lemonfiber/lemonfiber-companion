@@ -80,7 +80,7 @@ it('reads back what a previous launch wrote', function (): void {
     expect($read->stack(aStack()->id())->name()->shown())->toBe('The loft');
 });
 
-it('N1-R15 — writes the address down deliberately, rather than by serialising the type', function (): void {
+it('writes the address down deliberately, rather than by serialising the type', function (): void {
     // `Address::jsonSerialize()` answers with a placeholder on purpose, so a
     // record built by handing the value to `json_encode` would store the words
     // "a stack address, hidden" and be unreadable on the next launch — with
@@ -91,7 +91,7 @@ it('N1-R15 — writes the address down deliberately, rather than by serialising 
     expect($store->whatIsUnder(UNDER))->toContain('192.168.1.77');
 });
 
-it('N1-R32 — carries the version of the shape it was written in', function (): void {
+it('carries the version of the shape it was written in', function (): void {
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack());
 
@@ -100,7 +100,7 @@ it('N1-R32 — carries the version of the shape it was written in', function ():
     expect($written)->toBeArray()->toHaveKey('shape');
 });
 
-it('N1-R33 — discards a record written in a shape it does not know', function (): void {
+it('discards a record written in a shape it does not know', function (): void {
     // Never interpreted as though it were current. Reading the parts that
     // happen to parse would assemble a stack list out of something nobody
     // wrote, which is an app offering to operate a machine it cannot name.

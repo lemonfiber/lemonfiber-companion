@@ -25,7 +25,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R8` | A session stays out of the URL | `Address`, whose only accessor is named for where the value goes |
 | `N1-R12` | An unencrypted address is stated, and protection it does not have is not implied | `Address` (`AddressTest`, `SchemeTest`) |
-| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`) |
+| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`, `PlatformStacksTest`) |
 | `N1-R16` | Every call goes through the SDK | `KeepingCurrent` and the ports beside it |
 | `N1-R17` | Where the contract does not carry something, the work stops rather than approximating it from a neighbour | `WhatTheCoreDecided` |
 | `N1-R13` | A refused wire version carries both halves: what arrived, and what is supported | `EnvelopeIsNotRead` |
@@ -49,7 +49,7 @@ requirement is right and this page is a defect.
 | `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written and answering `HowThePairingWent::PairedAgainOnANewCertificate`, which tells the operator to sign in again |
 | `N1-R50`, `N1-R51` | A short form to check at a glance, derived from the whole fingerprint — two constraints that pull against each other | `AtAGlance` |
 | `N1-R10` | A refusal is an obstacle rather than a type of its own | `Admitted` |
-| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` (`InterruptedTest`, `WhereaboutsTest`) |
+| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` (`InterruptedTest`, `WhereaboutsTest`, `HowAChangeReadsTest`, `HowAListingReadsTest`, `HowTheReadingWentTest`) |
 | `N1-R45` | A credential expiring is not the machine changing — the pairing survives | `Interrupted` (`InterruptedTest`) |
 | `N1-R46` | An ended session is not a refused credential | `Interrupted`, whose two arms take different arguments (`InterruptedTest`) |
 
@@ -57,8 +57,8 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R32` | Anything kept between launches carries its shape | `Shape` (`ShapeTest`) |
-| `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` (`ShapeTest`) |
+| `N1-R32` | Anything kept between launches carries its shape | `Shape` (`ShapeTest`, `PlatformStacksTest`) |
+| `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` (`ShapeTest`, `PlatformStacksTest`) |
 | `N1-R34` | A discard of retained state does not take the pairing with it | `Stacks`, whose one removing method, `forgetTheStack()`, only Remove from phone calls; clearing what the phone keeps asks stores that hold no pairing (`APairingIsNotDiscardedTest`, `ClearingWhatThePhoneKeepsLeavesPairingsTest`); a record the store would not open, or one a newer build wrote, is held back rather than read as none, nothing is written over it, and Your stacks says why with what to do (`WhyTheStacksAreHeldBack`, `StacksThatCannotBeReadAreHeldBackTest`) |
 | `N1-R23`, `N4-R5` | What is retained is stated, and beside it what is not | `Configured` |
 | `N1-R38` | What a screen was holding when the operator left it | `Held` (`HeldTest`) |

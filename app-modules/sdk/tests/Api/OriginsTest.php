@@ -87,7 +87,7 @@ function everyOriginIn(WhereTheServicesComeFrom $origins): array
     return $lines;
 }
 
-it('N11-R6, N11-R7 — reads every service with its image, pin, upstream and licence, in the stack\'s order', function (): void {
+it('reads every service with its image, pin, upstream and licence, in the stack\'s order', function (): void {
     $origins = Origins::in(theOriginsOf([aDeclaredService(), [...aDeclaredService('jellyfin'), 'name' => 'Jellyfin', 'license' => 'GPL-2.0-only']]));
 
     expect(everyOriginIn($origins))->toBe([
@@ -118,7 +118,7 @@ it('refuses a row that is not a service, rather than dropping it', function (): 
         ->toThrow(ProvenanceIsUnreadable::class, 'Service 1');
 });
 
-it('N11-R7 — refuses a service missing any word, naming which and where', function (string $field): void {
+it('refuses a service missing any word, naming which and where', function (string $field): void {
     $missing = aDeclaredService();
     unset($missing[$field]);
 
@@ -126,7 +126,7 @@ it('N11-R7 — refuses a service missing any word, naming which and where', func
         ->toThrow(ProvenanceIsUnreadable::class, sprintf('Service 1 in the provenance envelope has no readable `%s`', $field));
 })->with(['id', 'name', 'image', 'pinned', 'upstream', 'license']);
 
-it('N11-R7 — refuses a word that is blank or not text', function (mixed $said): void {
+it('refuses a word that is blank or not text', function (mixed $said): void {
     expect(fn(): WhereTheServicesComeFrom => Origins::in(theOriginsOf([[...aDeclaredService(), 'license' => $said]])))
         ->toThrow(ProvenanceIsUnreadable::class, '`license`');
 })->with([['  '], [null], [3]]);

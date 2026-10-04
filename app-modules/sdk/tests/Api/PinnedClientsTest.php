@@ -45,7 +45,7 @@ function aSession(): Session
     return Session::of('a-session-not-a-secret');
 }
 
-it('N1-R19 — builds a client for a stack on the network, held to its certificate', function (): void {
+it('builds a client for a stack on the network, held to its certificate', function (): void {
     // The whole point of the adapter, and both halves of it are asked for
     // rather than the return type. A client for `192.168.1.42` is what the SDK
     // refused outright before ADR-0025 and now permits only where a pin was
@@ -65,7 +65,7 @@ it('N1-R19 — builds a client for a stack on the network, held to its certifica
         ->and($reaches->pin()?->toString())->toBe(A_STACKS_DIGEST);
 });
 
-it('N1-R18 — takes the pin off the stack rather than from anywhere else', function (): void {
+it('takes the pin off the stack rather than from anywhere else', function (): void {
     // A digest the SDK will not accept proves the value reaching it came from
     // the stack: `Fingerprint` and `CertificatePin` agree on the shape, so a
     // stack the app holds is a stack this can build a client for, and nothing
