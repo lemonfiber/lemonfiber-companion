@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Tests\Support\OurCode;
+use Tests\Support\TestTitles;
 use Tests\Support\Tree;
 
 // GOV-R6 — a requirement identifier does not belong in a code comment.
@@ -124,6 +125,38 @@ it('GOV-R6 — no comment names a requirement', function (): void {
         . 'under `.docs/requirements/` that says what the requirement asks and what keeps it '
         . 'here (GOV-R6).',
         implode("\n  ", $found),
+    ));
+});
+
+/**
+ * Every PHP test title that names a requirement, against where it is written.
+ *
+ * @return list<string>
+ */
+function everyTitleNamingARequirement(): array
+{
+    $found = [];
+
+    foreach (TestTitles::everyOne() as $where => $title) {
+        if (preg_match(A_REQUIREMENT_IDENTIFIER, $title) === 1) {
+            $found[] = sprintf('%s: %s', $where, $title);
+        }
+    }
+
+    return $found;
+}
+
+// G13 — no test's title names a requirement
+it('no PHP test title names a requirement', function (): void {
+    // Assert the reading before what it says: a rule over titles that found
+    // none would pass about nothing.
+    expect(TestTitles::everyOne())->not->toBe([], 'no test title was read, so this rule proved nothing');
+
+    expect(everyTitleNamingARequirement())->toBe([], sprintf(
+        "These test titles name a requirement:\n  %s\n\n"
+        . 'Say what the test shows in words, and name the test file in the requirement\'s row '
+        . 'under `.docs/requirements/`, which is where a requirement leads to what keeps it (G13).',
+        implode("\n  ", everyTitleNamingARequirement()),
     ));
 });
 

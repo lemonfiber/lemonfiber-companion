@@ -98,6 +98,12 @@ with rules holding the player to `N3-R14` and `N3-R16`.
 | `N1-R58` | A stand-in sits below the transport the app's client uses, so the client, the envelope reading and the wire-version check exercised against it are the real ones | `tests/Feature/TheWholeWireAnswersWithNoStackOnItTest.php` (`TheWholeWireAnswersWithNoStackOnItTest`) |
 | `N4-R16` | A local-network permission purpose is declared in the operator's terms, and is never a placeholder | `tests/Arch/PermissionsAreExplainedTest.php`, reading the built manifest rather than a constant |
 
+## Where a citation goes
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `GOV-R6` | No citation appears in a code comment; this directory names each requirement and what keeps it | `NoRequirementIdInACommentTest`, over every comment in PHP, Blade, Kotlin and Swift sources; `EveryPageNamesSomethingThatExistsTest`, which refuses a row here naming something the repository does not have |
+
 ## The floor under all of them
 
 | Requirement | What it asks | What keeps it |

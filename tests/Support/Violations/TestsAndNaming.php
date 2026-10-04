@@ -93,6 +93,30 @@ final readonly class TestsAndNaming
                 }
                 PHP, 'G10 —'),
 
+            // Planted under `tests/Support` for G10's reason: the file is read
+            // as text and loaded by no suite, so the title is judged without a
+            // test of it ever running.
+            Fixture::suite('G13', 'tests/Support/Fixtures/NamesARequirementInItsTitleTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('N9-R1 — draws something', function (): void {
+                    expect(true)->toBeTrue();
+                });
+                PHP, 'no PHP test title names a requirement'),
+
+            // The same, for a rule of this repository rather than a requirement.
+            Fixture::suite('G14', 'tests/Support/Fixtures/NamesARuleInItsTitleTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('A1 — keeps no model', function (): void {
+                    expect(true)->toBeTrue();
+                });
+                PHP, 'no test title names a rule of the architecture'),
+
             // Planted where `G10`'s other fixture is, and for its reason: the
             // clash is only a failure once something loads the file and asks
             // whether the helper's name is a class, so the rule reads text. The

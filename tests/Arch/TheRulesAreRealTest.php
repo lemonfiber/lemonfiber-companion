@@ -15,9 +15,10 @@ use Tests\Support\Rules;
 //
 // A table that can lie is worse than no table, so both directions fail here.
 //
-// Every enforcement artifact carries its rule's identifier: arch rules in their
-// description, PHPStan bans in the `message:` a developer reads when blocked,
-// configuration in a comment above the setting. The identifier is the join.
+// Every enforcement artifact carries its rule's identifier: arch rules in a
+// comment directly above the rule, PHPStan bans in the `message:` a developer
+// reads when blocked, configuration in a comment above the setting. The
+// identifier is the join.
 
 it('enforces every rule the architecture documents', function (): void {
     $unenforced = [];
