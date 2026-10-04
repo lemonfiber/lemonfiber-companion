@@ -108,7 +108,7 @@ function everythingRead(WhatToDoWithThis $screen): WhatToDoWithThis
     return $screen;
 }
 
-it('N2-R7 — the frame is about the one thing the route names', function (): void {
+it('the frame is about the one thing the route names', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
     $thing = $screen->thing();
 
@@ -122,7 +122,7 @@ it('N2-R7 — the frame is about the one thing the route names', function (): vo
         ->and($thing->service?->leaning)->toBe(['Jellyfin']);
 });
 
-it('N2-R7 — a thing this machine is not running is an answer, not a blank frame', function (): void {
+it('a thing this machine is not running is an answer, not a blank frame', function (): void {
     // A route can name anything: a list tapped a moment before the stack
     // changed, or a screen restored after a service left its form.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'a-thing-nobody-listed');
@@ -132,7 +132,7 @@ it('N2-R7 — a thing this machine is not running is an answer, not a blank fram
         ->and($screen->thing()->named)->toBe('a-thing-nobody-listed');
 });
 
-it('N2-R7 — a route naming nothing at all is the same answer', function (): void {
+it('a route naming nothing at all is an answer, not a blank frame', function (): void {
     // Blank rather than absent, which a navigation stack can produce and
     // `ServiceId::called()` would raise on. Nothing here is named nothing, so
     // it comes away as *no such thing* like any other name never read.
@@ -142,7 +142,7 @@ it('N2-R7 — a route naming nothing at all is the same answer', function (): vo
         ->and($screen->thing()->named)->toBe('');
 });
 
-it('N2-R7 — only the verbs this one state can take', function (): void {
+it('offers only the verbs this one state can take', function (): void {
     $running = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
 
     expect($running->thing()->verbs)->toBe([WhatToDoWithIt::Stop, WhatToDoWithIt::Restart]);
@@ -152,7 +152,7 @@ it('N2-R7 — only the verbs this one state can take', function (): void {
     expect($stopped->thing()->verbs)->toBe([WhatToDoWithIt::Start]);
 });
 
-it('N2-R7 — a service this stack does not run is offered no verb at all', function (): void {
+it('a service this stack does not run is offered no verb at all', function (): void {
     // The verbs are about what this stack runs. A verb about something the host
     // runs would be refused by the machine, and offering it teaches an operator
     // that the buttons here are a guess.
@@ -163,7 +163,7 @@ it('N2-R7 — a service this stack does not run is offered no verb at all', func
         ->and($screen->thing()->verbs)->toBe([]);
 });
 
-it('N2-R7 — a whole form takes all three, because it has no state of its own', function (): void {
+it('a whole form takes all three, because it has no state of its own', function (): void {
     $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library'));
 
     expect($screen->thing()->isAForm)->toBeTrue()
@@ -205,7 +205,7 @@ it('never asks for the forms where a service goes by the name', function (): voi
     expect($supervising->formsAskings())->toBe(0);
 });
 
-it('N2-R7 — a whole form is agreed to as a form', function (): void {
+it('a whole form is agreed to as a form', function (): void {
     // The other granularity, and it must not arrive at the port
     // as a service: a form's name sent under `services` would stop nothing and
     // report that it had.
@@ -222,7 +222,7 @@ it('N2-R7 — a whole form is agreed to as a form', function (): void {
         ->and($told[0]->named())->toBe('library');
 });
 
-it('N2-R7 — a service wins over a form that shares its name', function (): void {
+it('a service wins over a form that shares its name', function (): void {
     // The narrower reading is the safer one: agreeing about one service and
     // being sent a whole form is the mistake that costs a household something.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::oneThing('library', HowAServiceRuns::Running, HowTheStackIsRunning::Active));
@@ -235,7 +235,7 @@ it('N2-R7 — a service wins over a form that shares its name', function (): voi
         ->and($supervising->whatItWasToldToDo()[0]->isAboutAForm())->toBeFalse();
 });
 
-it('N2-R8 — a stop is asked about before anything is sent', function (): void {
+it('a stop is asked about before anything is sent', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theThingScreen($supervising);
 
@@ -247,7 +247,7 @@ it('N2-R8 — a stop is asked about before anything is sent', function (): void 
         ->and($screen->asking()?->named())->toBe('sonarr');
 });
 
-it('N2-R8 — the yes sends what was stated and not what a tap carries', function (): void {
+it('the yes sends what was stated and not what a tap carries', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theThingScreen($supervising);
 
@@ -264,7 +264,7 @@ it('N2-R8 — the yes sends what was stated and not what a tap carries', functio
         ->and($screen->asking())->toBeNull();
 });
 
-it('N2-R8 — saying never mind sends nothing at all', function (): void {
+it('saying never mind sends nothing at all', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theThingScreen($supervising);
 
@@ -276,7 +276,7 @@ it('N2-R8 — saying never mind sends nothing at all', function (): void {
         ->and($screen->asking())->toBeNull();
 });
 
-it('N2-R8 — a start is not asked about, because it disturbs nothing', function (): void {
+it('a start is not asked about, because it disturbs nothing', function (): void {
     // A screen that asked about a start would teach an operator to confirm
     // without reading, which is what makes the stop confirmation worth anything.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial));
@@ -289,7 +289,7 @@ it('N2-R8 — a start is not asked about, because it disturbs nothing', function
         ->and($supervising->whatItWasToldToDo()[0]->doing())->toBe(WhatToDoWithIt::Start);
 });
 
-it('N2-R8 — states what will not work while it is off', function (): void {
+it('states what will not work while it is off', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
@@ -335,7 +335,7 @@ it('carries no restart warning while nothing is being asked', function (): void 
     expect($screen->aRestartWouldNotHelp())->toBeFalse();
 });
 
-it('N2-R8 — the confirmation says how long the verb takes it away for', function (): void {
+it('the confirmation says how long the verb takes it away for', function (): void {
     // The number is the stack's: a length worked out here would be a guess at
     // something the stack knows, which is what is refused.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
@@ -345,7 +345,7 @@ it('N2-R8 — the confirmation says how long the verb takes it away for', functi
         ->and($screen->whatItTakesAway()?->seconds)->toBe(10);
 });
 
-it('N2-R8 — a stop and a restart are not held to the same clock', function (): void {
+it('a stop and a restart are not held to the same clock', function (): void {
     // Two verbs, two numbers, read off the same listing. A screen that stated
     // one length for every verb would be stating a number that nothing honours
     // for every verb but one.
@@ -393,7 +393,7 @@ it('offers no fetch for one service, and acts on none asked for there', function
         ->and($supervising->whatItWasToldToDo())->toBe([]);
 });
 
-it('N2-R8 — nothing is stated where nothing is being asked', function (): void {
+it('nothing is stated where nothing is being asked', function (): void {
     // Absent because there is no question, not because the stack said nothing.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
 
@@ -401,7 +401,7 @@ it('N2-R8 — nothing is stated where nothing is being asked', function (): void
         ->and($screen->whatItTakesAway())->toBeNull();
 });
 
-it('N2-R8 — states no length once the reading it came from is gone', function (): void {
+it('states no length once the reading it came from is gone', function (): void {
     // The bound is the listing's, so a reading that met an obstacle carries
     // none — and a sentence built from a number this app invented is exactly
     // what substitution refuses.
@@ -454,7 +454,7 @@ it('reads the machine again once a verb has been sent', function (): void {
     expect($supervising->askings())->toBe(3);
 });
 
-it('N1-R27 — looks again only while something is settling', function (): void {
+it('looks again only while something is settling', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Starting, HowTheStackIsRunning::Partial));
     $screen = theThingScreen($supervising);
 
@@ -466,7 +466,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     expect($supervising->askings())->toBe(2);
 });
 
-it('N1-R66 — a standing thing is not polled', function (): void {
+it('a standing thing is not polled', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theThingScreen($supervising);
 
@@ -477,7 +477,7 @@ it('N1-R66 — a standing thing is not polled', function (): void {
     expect($supervising->askings())->toBe(1);
 });
 
-it('N1-R44 — a device with no session for it asks nothing', function (): void {
+it('a device with no session for it asks nothing', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
     $screen = theThingScreen($supervising, signedIn: false);
 
@@ -486,7 +486,7 @@ it('N1-R44 — a device with no session for it asks nothing', function (): void 
         ->and($supervising->askings())->toBe(0);
 });
 
-it('N1-R10 — an obstacle is what stood in the way, with what to do about it', function (): void {
+it('an obstacle is what stood in the way, with what to do about it', function (): void {
     $screen = theThingScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $answer = $screen->answer();
 
@@ -495,7 +495,7 @@ it('N1-R10 — an obstacle is what stood in the way, with what to do about it', 
         ->and($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+it('asking again after an obstacle asks the stack again', function (): void {
     $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theThingScreen($supervising);
 
@@ -506,7 +506,7 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     expect($supervising->askings())->toBe(2);
 });
 
-it('N3-R13 — a credential refused on the verb lets the session go too', function (): void {
+it('a credential refused on the verb lets the session go too', function (): void {
     // The half a read cannot reach. A stack that refuses a credential the
     // moment somebody taps start is the same signed-out device as one that
     // refuses it on a read, and this is the call that happens on the tap. A
@@ -539,7 +539,7 @@ it('lets the session go where the stack refuses it on the rehearsal asked before
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
 
-it('N3-R13 — a machine that cannot be reached keeps its session', function (): void {
+it('a machine that cannot be reached keeps its session', function (): void {
     // A phone in flight mode has not lost its pairing, and forgetting the
     // session there would make somebody sign in again to start a service they
     // were entitled to start all along.
@@ -588,7 +588,7 @@ it('refuses a named thing that is not text', function (): void {
         ->and($screen->thing()->isRun())->toBeFalse();
 });
 
-it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(AStacksScreen::Doing->forTheStacksService(
         theMachineTheseVerbsReach()->id(),
         ServiceId::called('sonarr'),

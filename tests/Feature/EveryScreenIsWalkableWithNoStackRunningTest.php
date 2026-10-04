@@ -197,7 +197,7 @@ function theSignedOutSentence(): string
     return whateverTheCatalogueSays('connection.session_has_ended');
 }
 
-it('Q-R72 — a machine that answers draws every screen it is behind', function (): void {
+it('a machine that answers draws every screen it is behind', function (): void {
     withNoStackRunning();
 
     $thin = [];
@@ -272,7 +272,7 @@ const ASKS_NOTHING_UNTIL_TAPPED = [
     'Pair' => 'a pairing code is fresh material that stops being good minutes later, so one is made when the operator asks for it and never on open',
 ];
 
-it('N1-R3 — a screen that asks nothing on open still offers the act that asks', function (): void {
+it('a screen that asks nothing on open still offers the act that asks', function (): void {
     withNoStackRunning();
 
     $drawn = whatEachScreenDrewOf(AStandInStack::NotAnswering);
@@ -314,7 +314,7 @@ it('draws a screen that asks its machine nothing the same against every machine,
     }
 });
 
-it('N1-R10 — a machine that does not answer draws what stood in the way, and the way back', function (): void {
+it('a machine that does not answer draws what stood in the way, and the way back', function (): void {
     withNoStackRunning();
 
     $quiet = [];
@@ -348,7 +348,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
     ));
 });
 
-it('N3-R13 — a machine that refuses the session draws the way back in', function (): void {
+it('a machine that refuses the session draws the way back in', function (): void {
     withNoStackRunning();
 
     $refusing = AStandInStack::RefusingTheSession->asAStack()->id();
@@ -411,7 +411,7 @@ function theSignInScreenFor(string $stack): SignIntoAStack
     return $screen;
 }
 
-it('N1-R7 — a password can be offered to a machine that is not running', function (): void {
+it('a password can be offered to a machine that is not running', function (): void {
     // The one act the walk above leaves out, because it is not a reading: every
     // other screen draws what a stack said, and this one offers the operator's
     // password and keeps what came back.

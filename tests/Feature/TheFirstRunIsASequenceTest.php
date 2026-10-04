@@ -79,13 +79,13 @@ it('draws its first step on a device holding nothing, and no unlock', function (
         ->and($drawn->said())->not->toContain(__('device.unlock_reason'));
 });
 
-it('N1-R54 — a first run opens on what the app is, not on a button', function (): void {
+it('a first run opens on what the app is, not on a button', function (): void {
     // The order is the requirement. A sequence that opened on pairing would be
     // the old screen with two extra frames nobody reaches.
     expect(theScreenAFirstRunLandsOn()->firstRunIsAt())->toBe(WhereTheFirstRunIs::WhatThisIs);
 });
 
-it('N1-R54 — the steps arrive in the order the requirement names them', function (): void {
+it('the steps arrive in the order the requirement names them', function (): void {
     $screen = theScreenAFirstRunLandsOn();
     $walked = [$screen->firstRunIsAt()];
 
@@ -110,7 +110,7 @@ it('N1-R54 — the steps arrive in the order the requirement names them', functi
     ]);
 });
 
-it('N1-R55 — every step says which it is and how many there are', function (): void {
+it('every step says which it is and how many there are', function (): void {
     $seen = [];
 
     foreach (WhereTheFirstRunIs::cases() as $at) {
@@ -123,7 +123,7 @@ it('N1-R55 — every step says which it is and how many there are', function ():
     expect($seen)->toBe([[1, 4], [2, 4], [3, 4], [4, 4]]);
 });
 
-it('N1-R55 — leaving lands on the way into pairing rather than on nothing', function (): void {
+it('leaving lands on the way into pairing rather than on nothing', function (): void {
     $screen = theScreenAFirstRunLandsOn();
 
     $screen->skipAhead();
@@ -146,7 +146,7 @@ it('says why the app reaches the local network, and what still works without it,
         ->and(WhereTheFirstRunIs::TheLocalNetwork->andThen())->toBe(WhereTheFirstRunIs::Pairing);
 });
 
-it('N1-R54 — pairing is offered at the end of the sequence and not before', function (): void {
+it('pairing is offered at the end of the sequence and not before', function (): void {
     $screen = theScreenAFirstRunLandsOn();
 
     expect($screen->pairingIsOffered())->toBeFalse();
@@ -166,7 +166,7 @@ it('N1-R54 — pairing is offered at the end of the sequence and not before', fu
     expect($screen->pairingIsOffered())->toBeTrue();
 });
 
-it('N1-R56 — a device holding a pairing is offered pairing and never the sequence', function (): void {
+it('a device holding a pairing is offered pairing and never the sequence', function (): void {
     $screen = theScreenAFirstRunLandsOn(aStackAlreadyPaired());
 
     // Tied to the store rather than to a flag, which is why this holds without

@@ -86,7 +86,7 @@ function theLaunchScreen(
     );
 }
 
-it('N1-R35 — the first frame is registered, and it is this screen', function (): void {
+it('the first frame is registered, and it is this screen', function (): void {
     $resolved = NativeRouter::resolve('/');
 
     expect($resolved)->not->toBeNull(
@@ -117,7 +117,7 @@ it('the road out of the first frame leads somewhere that is served', function ()
     );
 });
 
-it('N1-R7 — says which stacks are already signed into, so nobody retypes a password', function (): void {
+it('says which stacks are already signed into, so nobody retypes a password', function (): void {
     // The reason a session is kept at all. The exchange trades the password once,
     // and "once" is only true if the list can tell the operator which machines
     // will not ask again.
@@ -135,7 +135,7 @@ it('N1-R7 — says which stacks are already signed into, so nobody retypes a pas
         ->and($screen->isSignedInto($shed))->toBeFalse();
 });
 
-it('N4-R6 — a store that will not open asks for the password rather than breaking', function (): void {
+it('a store that will not open asks for the password rather than breaking', function (): void {
     // The launch screen is the worst place to raise. A keychain that cannot be
     // read is a keychain with no session in it as far as this question goes, so
     // the operator is offered the password — which is both honest and the only
@@ -152,7 +152,7 @@ it('N4-R6 — a store that will not open asks for the password rather than break
     }
 });
 
-it('N1-R2 — tapping a signed-in stack goes to the report, not back to the password', function (): void {
+it('tapping a signed-in stack goes to the report, not back to the password', function (): void {
     // What the list is *for*. An operator who is signed in wants to see their
     // machine; asking them for a password they already gave is the app having
     // forgotten what it holds.
@@ -173,7 +173,7 @@ it('N1-R2 — tapping a signed-in stack goes to the report, not back to the pass
         ->and(NativeRouter::resolve($screen->tappingGoesTo($shed)))->not->toBeNull();
 });
 
-it('N3-R1 — tapping a stack a member is signed into goes to their reading', function (): void {
+it('tapping a stack a member is signed into goes to their reading', function (): void {
     // The launch half. Signing in already led where the subject said, but a
     // session outlives the app being closed, and a list that remembered only
     // *that* one was held handed a member the operator's machine report on
@@ -205,7 +205,7 @@ it('N3-R1 — tapping a stack a member is signed into goes to their reading', fu
     expect($screen->tappingGoesTo($shed))->toBe($screen->signInAt($shed));
 });
 
-it('N4-R13 — assembles a report for the operator to send, and does not send it', function (): void {
+it('assembles a report for the operator to send, and does not send it', function (): void {
     // Both clauses. The app hands the text to the platform's share sheet and
     // stops; where it goes is a choice a person makes in an app this one does
     // not know about, which is the whole difference between this and the crash
@@ -222,7 +222,7 @@ it('N4-R13 — assembles a report for the operator to send, and does not send it
         ->and($screen->sharingWent)->toBe('');
 });
 
-it('N4-R13 — the report carries no address, no session and no reading', function (): void {
+it('the report carries no address, no session and no reading', function (): void {
     // The pressure this refuses is real: a report is useful in proportion to
     // what it contains, which is exactly what puts a token in a support bundle.
     // `Diagnostics::assemble()` refuses in its parameter list, and this is that
@@ -240,7 +240,7 @@ it('N4-R13 — the report carries no address, no session and no reading', functi
         ->and($text)->not->toContain('192.168');
 });
 
-it('N1-R10 — says why a report could not be handed over, and what to do', function (): void {
+it('says why a report could not be handed over, and what to do', function (): void {
     // Two refusals, and only one of them is something the operator can fix.
     foreach (WhyNothingWasShared::cases() as $why) {
         $screen = theLaunchScreen(
@@ -278,7 +278,7 @@ it('clears the refusal once a later attempt works', function (): void {
         ->and($working->sharingRemedy)->toBe('');
 });
 
-it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
+it('a stack in the list leads to that stack and no other', function (): void {
     // A screen nothing navigates to is a screen nobody reaches, and the route
     // is where separation is either kept or quietly broken: two stacks in the
     // list must lead to two URIs, and each must name the identifier this device
@@ -305,7 +305,7 @@ it('N1-R11 — a stack in the list leads to that stack and no other', function (
     );
 });
 
-it('N1-R36 — a launch with stacks configured names them rather than offering to pair', function (): void {
+it('a launch with stacks configured names them rather than offering to pair', function (): void {
     // What this screen did until pairing existed: it answered the empty case
     // and only the empty case, so an operator who had just paired a stack was
     // told on the next launch that nothing was paired. A screen named for one
@@ -327,7 +327,7 @@ it('N1-R36 — a launch with stacks configured names them rather than offering t
     expect($named)->toBe(['The loft']);
 });
 
-it('N1-R11 — every configured stack is named, in the order they were paired', function (): void {
+it('every configured stack is named, in the order they were paired', function (): void {
     // More than one stack is the requirement, and the order is what an operator
     // recognises their list by. `Configured` keeps it; this is what proves the
     // screen does not rearrange it on the way out.
@@ -345,7 +345,7 @@ it('N1-R11 — every configured stack is named, in the order they were paired', 
     expect($named)->toBe(['The loft', 'The shed']);
 });
 
-it('N1-R6 — both roads into pairing are registered, and each is its own screen', function (): void {
+it('both roads into pairing are registered, and each is its own screen', function (): void {
     // The requirement is that scanning and typed entry both exist, and a route
     // that is never registered is a road that does not. Each is asserted by the
     // screen behind it rather than by a count: two routes both resolving to the
@@ -416,7 +416,7 @@ it('draws the frame the surface registered, by name', function (): void {
         ->toBe('operator::your-stacks');
 });
 
-it('N1-R37 — a launch with no network says so, and says what to do', function (): void {
+it('a launch with no network says so, and says what to do', function (): void {
     // The half of the requirement that producing the answer does not satisfy.
     // `Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)` existed from the day the obstacles were
     // written and nothing produced one; then something did, and for a while
@@ -435,7 +435,7 @@ it('N1-R37 — a launch with no network says so, and says what to do', function 
         ->and($screen->howItOpened()->remedy)->toEqual(KindOfObstacle::DeviceHasNoNetwork->remedy());
 });
 
-it('N1-R37 — the stacks are still shown to a device with no network', function (): void {
+it('the stacks are still shown to a device with no network', function (): void {
     // Deliberate. A retained word is
     // worth most when the device cannot ask for a new one, and the diagnostics
     // control at the foot of this screen is the one thing that still works when
@@ -455,7 +455,7 @@ it('N1-R37 — the stacks are still shown to a device with no network', function
         ->and($screen->configured()->isEmpty())->toBeFalse();
 });
 
-it('N1-R36 — a launch that is ready has nothing standing in the way', function (): void {
+it('a launch that is ready has nothing standing in the way', function (): void {
     // The banner is drawn on `!== ''`, so a fold that answered with a key for
     // every launch would put "this device has no network" above a working one.
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
@@ -468,7 +468,7 @@ it('N1-R36 — a launch that is ready has nothing standing in the way', function
         ->and($screen->howItOpened()->remedy)->toBe('');
 });
 
-it('N1-R35 — a first run has nothing standing in the way either', function (): void {
+it('a first run has nothing standing in the way either', function (): void {
     // Nothing is wrong on a first run, and an obstacle drawn here would be the
     // app describing its own first launch as a fault.
     $stacks = StacksInMemory::working();

@@ -69,7 +69,7 @@ function theServicesScreen(
     return $screen;
 }
 
-it('N2-R7 — shows every service, and how it runs', function (): void {
+it('shows every service, and how it runs', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
     $answer = $screen->answer();
 
@@ -88,7 +88,7 @@ it('N2-R7 — shows every service, and how it runs', function (): void {
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
 });
 
-it('N2-R7 — a row carries the name an operator recognises, beside the id a verb uses', function (): void {
+it('a row carries the name an operator recognises, beside the id a verb uses', function (): void {
     // Two facts and not one. On a stack where somebody renamed a service they
     // differ, and a row carrying only the id puts an identifier in front of
     // somebody looking for *Sonarr*.
@@ -102,7 +102,7 @@ it('N2-R7 — a row carries the name an operator recognises, beside the id a ver
         ->and($row->mattersSaid)->toBe(HowMuchItMatters::Important->saidOnTheScreen());
 });
 
-it('N2-R7 — carries the forms whether or not anything in them is running', function (): void {
+it('carries the forms whether or not anything in them is running', function (): void {
     // The form with everything stopped is the one an operator opened this
     // screen to start, and a listing assembled from the rows would not have it.
     $running = Daemons::of(
@@ -117,7 +117,7 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
     expect($screen->forms()?->names)->toBe(['library', 'full']);
 });
 
-it('N2-R7 — draws a control for each form the stack declares', function (): void {
+it('draws a control for each form the stack declares', function (): void {
     // The stack declares `library` and `full`, and a control is drawn for
     // each, so the form an operator opens this screen to start is on it.
     $frame = WhatTheDeviceWouldDraw::onTheSecondFrame(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull())));
@@ -184,7 +184,7 @@ it('forms that could not be read stop the screen on the next frame, and are aske
         ->and($supervising->formsAskings())->toBe(2);
 });
 
-it('N1-R27 — looks again only while something is settling', function (): void {
+it('looks again only while something is settling', function (): void {
     $settling = Daemons::of(
         HowTheStackIsRunning::Partial,
         WhatAMachineRuns::whatTheVerbsCost(),
@@ -205,7 +205,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     expect($supervising->askings())->toBe(2);
 });
 
-it('N1-R66 — a standing listing is not polled', function (): void {
+it('a standing listing is not polled', function (): void {
     // Every state but `starting` is a standing answer, so a stack that is not
     // settling answers the same thing however often it is read — and the
     // cadence costs a machine on a home network nothing.
@@ -219,7 +219,7 @@ it('N1-R66 — a standing listing is not polled', function (): void {
     expect($supervising->askings())->toBe(1);
 });
 
-it('N1-R44 — a device with no session for it asks nothing', function (): void {
+it('a device with no session for it asks nothing', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
     $screen = theServicesScreen($supervising, signedIn: false);
 
@@ -228,7 +228,7 @@ it('N1-R44 — a device with no session for it asks nothing', function (): void 
         ->and($supervising->askings())->toBe(0);
 });
 
-it('N1-R10 — an obstacle is what stood in the way, with what to do about it', function (): void {
+it('an obstacle is what stood in the way, with what to do about it', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
     $answer = $screen->answer();
 
@@ -248,7 +248,7 @@ it('N1-R10 — an obstacle is what stood in the way, with what to do about it', 
         ->and($answer->isSettling)->toBeFalse();
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // Both halves, because a fold cannot forget anything. Rendering the
     // signed-out state and leaving the session in the store means the next
     // frame resumes it, is refused again, and the operator reads a sign-in
@@ -275,7 +275,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
 });
 
-it('N3-R13 — a machine that cannot be reached keeps its session', function (): void {
+it('a machine that cannot be reached keeps its session', function (): void {
     // The line's other side. A phone in flight mode has not lost its pairing,
     // and forgetting the session there would make somebody sign in again to
     // start a service they were entitled to start all along.
@@ -287,7 +287,7 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
 });
 
-it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+it('asking again after an obstacle asks the stack again', function (): void {
     $supervising = AStackThatSupervises::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theServicesScreen($supervising);
 
@@ -320,7 +320,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
         AStacksScreen::Services->forTheStack(theStackWhoseServicesAreRead()->id()),
     );

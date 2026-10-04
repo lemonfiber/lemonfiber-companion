@@ -125,7 +125,7 @@ it('opens offering nothing, because an empty field is not an attempt', function 
         ->and($screen->mayOffer())->toBeFalse();
 });
 
-it('N1-R7 — offers the password once and comes away signed in', function (): void {
+it('offers the password once and comes away signed in', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = typedPassword(signInScreen(aDoorThatOpens(), $keychain), 'the-operators-password');
 
@@ -135,7 +135,7 @@ it('N1-R7 — offers the password once and comes away signed in', function (): v
         ->and($keychain->isHolding(aStackToSignInto()->id()))->toBeTrue();
 });
 
-it('N1-R7 — clears the field, so a second tap is a second decision', function (): void {
+it('clears the field, so a second tap is a second decision', function (): void {
     // A password left in a field is a password on the glass for as long as the
     // screen is up, and after a refusal it is one the next tap would offer
     // again unchanged — an attempt the operator did not decide to make, against
@@ -148,7 +148,7 @@ it('N1-R7 — clears the field, so a second tap is a second decision', function 
         ->and($screen->mayOffer())->toBeFalse();
 });
 
-it('N1-R11 — knocks on the stack the route names, not one of its own choosing', function (): void {
+it('knocks on the stack the route names, not one of its own choosing', function (): void {
     // A screen that picked its own stack is the place two stacks come to share
     // one session.
     $door = aDoorThatOpens();
@@ -159,7 +159,7 @@ it('N1-R11 — knocks on the stack the route names, not one of its own choosing'
         ->and($door->knocks())->toBe(1);
 });
 
-it('N1-R10 — tells the three things the operator can meet at a door apart', function (): void {
+it('tells the three things the operator can meet at a door apart', function (): void {
     // The whole reason this screen holds an enum rather than a boolean. Each
     // row is a different sentence and a different remedy, and only the first is
     // answered by typing the password again.
@@ -246,7 +246,7 @@ it('offers pairing again where the stack answered as some other machine or at so
     }
 });
 
-it('N4-R17 — a network the app is not allowed onto is not a stack that is off', function (): void {
+it('a network the app is not allowed onto is not a stack that is off', function (): void {
     // The requirement says *distinct*, and this screen used to fold the two
     // together. They are indistinguishable at the socket — both are a request
     // that goes nowhere — and opposite everywhere that matters: one is a
@@ -266,14 +266,14 @@ it('N4-R17 — a network the app is not allowed onto is not a stack that is off'
         ->and(__($screen->went()->remedy()))->not->toBe($screen->went()->remedy());
 });
 
-it('N4-R17 — it offers no password field, because the remedy is elsewhere', function (): void {
+it('offers no password field, because the remedy is elsewhere', function (): void {
     // `Guided` rather than `Actionable`. A password field over a network the
     // app is not allowed onto is the screen offering to do something it cannot
     // do, which is the failure `Standing` exists to prevent.
     expect(HowTheSignInWent::TheNetworkIsNotPermitted->mayTry())->toBeFalse();
 });
 
-it('N4-R6 — a session it could not keep is not a sign-in', function (): void {
+it('a session it could not keep is not a sign-in', function (): void {
     // The stack opened one and this phone has nowhere to put it, so the next
     // launch will ask for the password again. Saying "signed in" now and asking
     // again in a minute is being misled by an app that knew at the time.
@@ -349,7 +349,7 @@ it('offers the password field only where typing one could help', function (): vo
     }
 });
 
-it('N1-R10 — takes the kernel\'s judgement about what a button can help with', function (): void {
+it('takes the kernel\'s judgement about what a button can help with', function (): void {
     // The duplication this replaced: `mayTry()` was a `match` of its own, and
     // `Obstacle::standing()` had already made the same call — differently. Two
     // spellings of one judgement, and the screen's was written in passing.
@@ -409,7 +409,7 @@ it('offers the password field only where typing one could help, on the screen to
     expect($counting->mayTry())->toBeFalse();
 });
 
-it('N1-R2 — takes them to the report once they are in, rather than describing where it is', function (): void {
+it('takes them to the report once they are in, rather than describing where it is', function (): void {
     // What they came for. The screen used to say "you can reach it from the
     // main screen" and leave them to go and do it, which is an app asking
     // somebody to navigate on its behalf.
@@ -427,7 +427,7 @@ it('N1-R2 — takes them to the report once they are in, rather than describing 
         );
 });
 
-it('N3-R1 — hands a member their own reading rather than the operator\'s report', function (): void {
+it('hands a member their own reading rather than the operator\'s report', function (): void {
     // The identity decides the application. Both people offer a password at
     // the same field and come away signed in the same way; the only thing that
     // differs is what the stack said about whose session it opened. A screen
@@ -451,7 +451,7 @@ it('N3-R1 — hands a member their own reading rather than the operator\'s repor
         );
 });
 
-it('N4-R6 — answers a session it could not keep with the way it always led', function (): void {
+it('answers a session it could not keep with the way it always led', function (): void {
     // The subject is taken from what the stack said, not from what the store
     // managed to write, so a store that would not open does not leave the way
     // onwards undecided. The screen does not offer it for this sign-in anyway

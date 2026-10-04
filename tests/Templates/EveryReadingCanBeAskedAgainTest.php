@@ -98,7 +98,7 @@ it('finds screens that can be asked again', function (): void {
     expect(count(whatEachScreenThatCanBeAskedAgainSays()))->toBeGreaterThan(3);
 });
 
-it('N1-R27 — a screen that can be asked again says so on its own frame', function (): void {
+it('a screen that can be asked again says so on its own frame', function (): void {
     $unreachable = [];
 
     foreach (whatEachScreenThatCanBeAskedAgainSays() as $view => $said) {

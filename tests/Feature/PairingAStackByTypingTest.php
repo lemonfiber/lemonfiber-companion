@@ -281,7 +281,7 @@ it('says what this screen is for until there is an outcome, then what happened',
         ->and($shut->supporting())->toBe('connection.store_would_not_open_action');
 });
 
-it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
+it('a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
     // Pairing is not signing in: the machine has been introduced and this
     // device holds no session for it. So the way onwards is the password — and
     // it is a tap, rather than "you can reach it from the main screen" and an

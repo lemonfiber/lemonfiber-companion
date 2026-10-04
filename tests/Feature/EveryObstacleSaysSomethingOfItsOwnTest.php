@@ -28,7 +28,7 @@ use Tests\Support\Catalogue;
 // actually lives; nothing else in this repository reads an error for what it
 // says.
 
-it('N1-R10 — every obstacle has a sentence and a remedy, in every language', function (): void {
+it('every obstacle has a sentence and a remedy, in every language', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {
@@ -57,7 +57,7 @@ it('N1-R10 — every obstacle has a sentence and a remedy, in every language', f
     ));
 });
 
-it('N1-R10 — no two obstacles say the same thing', function (): void {
+it('no two obstacles say the same thing', function (): void {
     $collisions = [];
 
     foreach (Catalogue::locales() as $locale) {

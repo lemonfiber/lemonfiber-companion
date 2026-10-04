@@ -116,7 +116,7 @@ function theOwedScreen(
     return $screen;
 }
 
-it('N3-R4 — hands over what the core wrote, word for word and in its order', function (): void {
+it('hands over what the core wrote, word for word and in its order', function (): void {
     $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()));
 
     expect($screen->answer()->sentences)->toBe([
@@ -131,7 +131,7 @@ it('N3-R4 — hands over what the core wrote, word for word and in its order', f
         ->and($screen->answer()->cameBack())->toBeTrue();
 });
 
-it('N3-R5 — carries when a spent allowance makes room, because the core said so', function (): void {
+it('carries when a spent allowance makes room, because the core said so', function (): void {
     // The reset is a sentence rather than a sum. It is kept by the service that
     // keeps the period, so reading it needs no arithmetic that could be wrong
     // in exactly the cases somebody is waiting on.
@@ -141,7 +141,7 @@ it('N3-R5 — carries when a spent allowance makes room, because the core said s
         ->toBe(['Nothing left this month. It makes room again on the 1st.']);
 });
 
-it('N3-R3 — draws a refusal as a refusal rather than as an empty reading', function (): void {
+it('draws a refusal as a refusal rather than as an empty reading', function (): void {
     // The distinction the whole screen turns on. A member who may not ask for
     // something and a member with nothing to be told both arrive with no
     // sentences, and they are opposite things to read.
@@ -156,7 +156,7 @@ it('N3-R3 — draws a refusal as a refusal rather than as an empty reading', fun
         ->and($nothing->answer()->sentences)->toBe([]);
 });
 
-it('N3-R2 — says nothing about entitlement that the core did not say', function (): void {
+it('says nothing about entitlement that the core did not say', function (): void {
     // The app implements no permission model, so what a refusal says is the
     // obstacle's own pair of keys and nothing this module wrote. Asserted as
     // the obstacle's own rather than as literals, because a screen spelling
@@ -167,7 +167,7 @@ it('N3-R2 — says nothing about entitlement that the core did not say', functio
         ->and($screen->answer()->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedy());
 });
 
-it('N3-R13 — a refused credential signs the device out and the session is let go of', function (): void {
+it('a refused credential signs the device out and the session is let go of', function (): void {
     // Both halves. A fold that rendered the signed-out state while the store
     // kept the session would resume it on the next frame and be refused again,
     // and somebody would be looking at a sign-in prompt over a device that
@@ -184,7 +184,7 @@ it('N3-R13 — a refused credential signs the device out and the session is let 
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeFalse();
 });
 
-it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
+it('an obstacle that is not a refused credential leaves the session alone', function (): void {
     // The other direction, which matters as much: a walk out of wifi is not
     // being thrown out of the house, and a screen that forgot the session on
     // every obstacle would ask for the password every time a machine slept.
@@ -206,7 +206,7 @@ it('asks for nothing where this device holds no session for the machine', functi
         ->and($owing->askedAbout())->toBeNull();
 });
 
-it('N1-R65 — asks once per frame, and asks again when told to', function (): void {
+it('asks once per frame, and asks again when told to', function (): void {
     // One reading per frame. A home network with a machine that may be asleep
     // is the wrong thing to talk to four times a second, and every accessor
     // here reads what one asking produced.
@@ -224,7 +224,7 @@ it('N1-R65 — asks once per frame, and asks again when told to', function (): v
     expect($owing->askings())->toBe(2);
 });
 
-it('N1-R27 — refuses a route naming a machine this device has forgotten', function (): void {
+it('refuses a route naming a machine this device has forgotten', function (): void {
     $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()), named: 'never-paired');
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsNotConfigured::class);
@@ -264,7 +264,7 @@ it('ends with the way back to the machine for the operator, and with none for a 
         ->and(WhatTheDeviceWouldDraw::by($member)->offers())->not->toContain(__('household.back_to_the_machine'));
 });
 
-it('N3-R4 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     // A route nothing registered is a button that does nothing, on a handset,
     // with no error anywhere.
     $resolved = NativeRouter::resolve(AStacksScreen::Owed->forTheStack(theStackAMemberReadsFrom()->id()));
@@ -272,7 +272,7 @@ it('N3-R4 — the screen is registered under the route that reaches it', functio
     expect($resolved['class'] ?? null)->toBe(WhatYouAreOwed::class);
 });
 
-it('N3-R6 — shows what they asked for, each with where it stands', function (): void {
+it('shows what they asked for, each with where it stands', function (): void {
     // The requirement's two halves in one assertion: the thing they asked for,
     // and where it stands. A screen showing titles and no states would leave
     // somebody looking at a list of films they already knew they had asked for.
@@ -295,7 +295,7 @@ it('N3-R6 — shows what they asked for, each with where it stands', function ()
         ->and($rows[1]->wasRefused())->toBeTrue();
 });
 
-it('N3-R6 — says where a request stands in their words, not the operator\'s', function (): void {
+it('says where a request stands in their words, not the operator\'s', function (): void {
     // The one state whose wording differs in meaning rather than in phrasing.
     // *Waiting for your decision* is true to an operator and false to the person
     // who asked — it is not their decision — and a screen telling them it is
@@ -308,7 +308,7 @@ it('N3-R6 — says where a request stands in their words, not the operator\'s', 
         ->and(__(Waiting::ForApproval->saidOnTheScreen()))->toBe('Waiting for your decision');
 });
 
-it('N3-R9 — carries no requester on a member\'s own row', function (): void {
+it('carries no requester on a member\'s own row', function (): void {
     // Every row here is theirs, so a name would be their own repeated down a
     // list — and a field for a requester is a field that could one day hold
     // somebody else\'s. The fixture names the asker; the row does not carry it.
@@ -323,7 +323,7 @@ it('N3-R9 — carries no requester on a member\'s own row', function (): void {
     }
 });
 
-it('N3-R6 — draws a refusal as a refusal rather than as having asked for nothing', function (): void {
+it('draws a refusal as a refusal rather than as having asked for nothing', function (): void {
     // The same distinction the sentences turn on. Both arrive with no rows, and
     // an empty list drawn for the refusal tells somebody they have asked for
     // nothing when the truth is that nobody could find out.
@@ -376,7 +376,7 @@ it('reads both halves once, whichever is drawn first, and again when told to', f
     expect($owing->askings())->toBe(2);
 });
 
-it('N3-R13 — a refused credential met on the requests read lets the session go too', function (): void {
+it('a refused credential met on the requests read lets the session go too', function (): void {
     // A fold cannot forget anything, and whichever of the two readings met the
     // refusal is the one holding the obstacle when the store has to hear about
     // it. A screen that let go only on the sentences would leave a device

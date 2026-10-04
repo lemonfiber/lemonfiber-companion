@@ -27,7 +27,7 @@ use Tests\Support\ApiSurface;
  * accessors that a twelfth spelling walks past: a method answering the held
  * value must make the caller say what happens in both cases.
  */
-it('N1-R9, N2-R13 — the value is reachable only by saying what happens either way', function (): void {
+it('the value is reachable only by saying what happens either way', function (): void {
     $reachable = [];
 
     $class = ApiSurface::reflect(Reading::class);
@@ -71,7 +71,7 @@ it('N1-R9, N2-R13 — the value is reachable only by saying what happens either 
     ));
 });
 
-it('N1-R9 — the retained arm is handed the moment it was read', function (): void {
+it('the retained arm is handed the moment it was read', function (): void {
     // The other half, and the one the shape rule cannot see: `either()` could
     // take two closures and hand the retained one nothing but the value. The
     // annotation is what a screen is written against, so it is what is checked.

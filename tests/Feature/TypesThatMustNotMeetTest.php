@@ -118,7 +118,7 @@ function typesThatMustNotMeet(): array
     ];
 }
 
-it('N1-R17 — every type this table refuses is one this application has', function (): void {
+it('every type this table refuses is one this application has', function (): void {
     // `Foo::class` is a string the compiler builds out of the `use` above it,
     // and it resolves whether or not anything of that name exists. So a renamed
     // type leaves a row here that matches nothing, and the rule below goes on
@@ -151,7 +151,7 @@ it('N1-R17 — every type this table refuses is one this application has', funct
     ));
 });
 
-it('N1-R38 — what a screen kept cannot be handed anything that could refetch it', function (): void {
+it('what a screen kept cannot be handed anything that could refetch it', function (): void {
     // The requirement's second clause: returning to a screen must not re-read
     // the stack solely to rebuild it. The easy way to satisfy the first clause
     // is to re-run whatever built the screen, which looks correct and — on a
@@ -252,7 +252,7 @@ function screens(): array
     return $found;
 }
 
-it('N2-R12 — no screen can be handed a credential', function (): void {
+it('no screen can be handed a credential', function (): void {
     // The app may say that a credential is refused, and saying so needs its
     // name and its state — which is what the contract's `held` carries, having
     // "deliberately no value here, and no field a value could be put in later
@@ -291,7 +291,7 @@ it('N2-R12 — no screen can be handed a credential', function (): void {
     ));
 });
 
-it('N2-R4 — a repair cannot hand over one of its three clauses alone', function (): void {
+it('a repair cannot hand over one of its three clauses alone', function (): void {
     // The requirement is one sentence with three clauses, and the way it gets
     // broken is that a screen is written around `does` — the field that reads
     // like the label — while the other two stay in the envelope. `Repair`
@@ -352,7 +352,7 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     ));
 });
 
-it('N2-R20 — the apply path takes a reading, and no release', function (): void {
+it('the apply path takes a reading, and no release', function (): void {
     // The requirement's first clause: an update the stack did not report as
     // available is never applied. The stack moves services onto its own build's
     // pins, so no release is chosen, and a `Release` reaching the apply path

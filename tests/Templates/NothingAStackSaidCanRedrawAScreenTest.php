@@ -30,7 +30,7 @@ use Tests\Support\Template;
 // the stronger rule and the only one a text search can make true. A template
 // that genuinely needs unescaped markup is a conversation, not an exception.
 
-it('G3-R15 — no template echoes a value without escaping it', function (): void {
+it('no template echoes a value without escaping it', function (): void {
     $raw = [];
 
     foreach (Template::all() as $template) {

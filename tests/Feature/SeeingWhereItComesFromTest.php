@@ -71,7 +71,7 @@ function theOriginsScreen(
     return $screen;
 }
 
-it('N11-R6 — each service says what it runs, what it is pinned at, where it is built from and under what licence', function (): void {
+it('each service says what it runs, what it is pinned at, where it is built from and under what licence', function (): void {
     $answer = theOriginsScreen(AStackThatNamesItsOrigins::with(twoServicesAndWhereTheyComeFrom()))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()
@@ -86,7 +86,7 @@ it('N11-R6 — each service says what it runs, what it is pinned at, where it is
         ->and($sonarr->licence)->toBe('GPL-3.0-only');
 });
 
-it('N11-R7 — every service carries its licence, the unremarkable ones too', function (): void {
+it('every service carries its licence, the unremarkable ones too', function (): void {
     $services = theOriginsScreen(AStackThatNamesItsOrigins::with(twoServicesAndWhereTheyComeFrom()))->answer()->services;
 
     expect(array_map(static fn(WhereOneServiceComesFrom $row): string => $row->licence, $services))->toBe(['GPL-3.0-only', 'MIT']);
@@ -98,7 +98,7 @@ it('keeps the order the stack declares its services in', function (): void {
     expect(array_map(static fn(WhereOneServiceComesFrom $row): string => $row->name, $services))->toBe(['Sonarr', 'Gluetun']);
 });
 
-it('N11-R8 — the pin and the licence come from the stack alone, with nothing else asked', function (): void {
+it('the pin and the licence come from the stack alone, with nothing else asked', function (): void {
     // The screen's only collaborator that reaches anything is the port, and it
     // is asked once — so no upstream stands between an operator and the pin or
     // the licence, and one that is unreachable changes neither.
@@ -125,13 +125,13 @@ it('a stack that could not be asked is not a machine declaring nothing', functio
         ->and($answer->services)->toBe([]);
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     $answer = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R44 — a session that has ended is not a machine declaring nothing', function (): void {
+it('a session that has ended is not a machine declaring nothing', function (): void {
     $answer = theOriginsScreen(
         AStackThatNamesItsOrigins::with(twoServicesAndWhereTheyComeFrom()),
         signedIn: false,
@@ -142,7 +142,7 @@ it('N1-R44 — a session that has ended is not a machine declaring nothing', fun
         ->and($answer->services)->toBe([]);
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theOriginsScreen(AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
@@ -166,7 +166,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($provenance->askedAbout()?->id()->stored())->toBe(theStackWhoseOriginsAreRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $provenance = AStackThatNamesItsOrigins::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theOriginsScreen($provenance);
 

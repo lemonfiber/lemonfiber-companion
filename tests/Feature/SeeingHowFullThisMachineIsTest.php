@@ -141,7 +141,7 @@ it('says where the machine stands, and where each volume does', function (): voi
         ]);
 });
 
-it('N12-R10 — a volume that could not be read says so on the glass, and never reads as comfortable or full', function (): void {
+it('a volume that could not be read says so on the glass, and never reads as comfortable or full', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())))->said();
 
     expect($drawn)->toContain(__(WhereTheRoomStands::Unknown->saidOnTheScreen()))
@@ -188,7 +188,7 @@ it('says the stack has stopped new downloads where it has, and not otherwise', f
         ->and($running)->not->toContain(__('stacks.room.halted'));
 });
 
-it('N12-R6 — shows the room by the stack\'s categories, a tree by its name, and both figures only where they differ', function (): void {
+it('shows the room by the stack\'s categories, a tree by its name, and both figures only where they differ', function (): void {
     $answer = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()))->answer();
     $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())))->said();
 
@@ -205,7 +205,7 @@ it('N12-R6 — shows the room by the stack\'s categories, a tree by its name, an
         ->and($drawn)->toContain(__(WhatGettingItBackCosts::TheEasyWin->saidOnTheScreen()));
 });
 
-it('N12-R1 — shows every download with where it stands, and never draws one standing as another', function (): void {
+it('shows every download with where it stands, and never draws one standing as another', function (): void {
     $answer = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()))->answer();
 
     expect(array_map(static fn(ADownloadAsShown $d): array => [$d->name, $d->standingSaid], $answer->downloads))->toBe([
@@ -216,7 +216,7 @@ it('N12-R1 — shows every download with where it stands, and never draws one st
     ]);
 });
 
-it('N12-R2 — shows a seeding download\'s ratio, and says so in words where there is none', function (): void {
+it('shows a seeding download\'s ratio, and says so in words where there is none', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())))->said();
 
     expect($drawn)->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
@@ -224,7 +224,7 @@ it('N12-R2 — shows a seeding download\'s ratio, and says so in words where the
         ->and(implode("\n", $drawn))->not->toContain('42949672');
 });
 
-it('N12-R3 — draws what removing a download costs inside that download\'s entry', function (): void {
+it('draws what removing a download costs inside that download\'s entry', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())))->said();
     $film = array_search('Some.Film.2024', $drawn, strict: true);
     $next = array_search('Old.Film.1999', $drawn, strict: true);
@@ -261,7 +261,7 @@ it('says so where no volume is watched, nothing takes room and no download is on
         ->and($drawn)->toContain(__('stacks.room.no_downloads'));
 });
 
-it('N12-R10 — a stack that could not be asked is not a machine with room to spare', function (): void {
+it('a stack that could not be asked is not a machine with room to spare', function (): void {
     $answer = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->cameBack())->toBeFalse()
@@ -274,7 +274,7 @@ it('N12-R10 — a stack that could not be asked is not a machine with room to sp
         ->and($answer->downloads)->toBe([]);
 });
 
-it('N1-R44 — a session that has ended is not a machine with room to spare', function (): void {
+it('a session that has ended is not a machine with room to spare', function (): void {
     $measuring = AStackThatMeasuresItsRoom::with(aFillingLoft());
     $answer = theRoomScreen($measuring, signedIn: false)->answer();
 
@@ -284,7 +284,7 @@ it('N1-R44 — a session that has ended is not a machine with room to spare', fu
         ->and($measuring->askings())->toBe(0);
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
@@ -304,7 +304,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($measuring->askedAbout()?->id()->stored())->toBe(theStackWhoseRoomIsRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $measuring = AStackThatMeasuresItsRoom::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRoomScreen($measuring);
 

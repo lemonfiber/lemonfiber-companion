@@ -145,7 +145,7 @@ function theScrollbackOf(string $service): LogWindow
     return aClientForNothing()->logs(Logs::ofService($service, 3));
 }
 
-it('N1-R58 — a read through the stand-in is read by the SDK, version check and all', function (): void {
+it('a read through the stand-in is read by the SDK, version check and all', function (): void {
     $envelope = whatCameBackFrom(Api::STATUS_ENDPOINT);
 
     expect($envelope)->toBeInstanceOf(Envelope::class)
@@ -153,7 +153,7 @@ it('N1-R58 — a read through the stand-in is read by the SDK, version check and
         ->and($envelope->kind)->toBe('status');
 });
 
-it('N1-R59 — every endpoint the contract declares answers with a shape it accepts', function (): void {
+it('every endpoint the contract declares answers with a shape it accepts', function (): void {
     $refused = [];
 
     foreach (WhichEnvelopeAnEndpointAnswersWith::everyOneNamed() as $path => $envelope) {
@@ -198,7 +198,7 @@ it('answers the scrollback as a document a line', function (): void {
     expect($window->lines())->toHaveCount(3);
 });
 
-it('N1-R10 — a machine that is not answering reaches the obstacle for it', function (): void {
+it('a machine that is not answering reaches the obstacle for it', function (): void {
     // The half a single stand-in cannot show. Every screen behind a stack that
     // answers is reachable already; the screens an operator actually meets on a
     // bad evening are behind one that does not, and a build where those cannot

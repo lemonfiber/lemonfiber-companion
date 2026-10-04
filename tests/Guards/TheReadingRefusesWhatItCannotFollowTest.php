@@ -37,14 +37,14 @@ function theCallIn(string $expression): CallLike
         : throw new RuntimeException('The fixture parsed to no call at all.');
 }
 
-it('Q-R66 — refuses a call it cannot follow, and says which one', function (): void {
+it('refuses a call it cannot follow, and says which one', function (): void {
     expect(fn(): array => WhereTheReadingStops::theArgumentsOf(
         theCallIn('self::permanent(...)'),
         'following a reader to what it reads',
     ))->toThrow(RuntimeException::class, 'permanent');
 });
 
-it('Q-R66 — the refusal says what to do about it', function (): void {
+it('the refusal says what to do about it', function (): void {
     // A gate that refuses without a remedy is a gate somebody routes around,
     // which is how the guard this exists to prevent gets written in the first
     // place. Both ways out are named: call it directly, or teach the reading.

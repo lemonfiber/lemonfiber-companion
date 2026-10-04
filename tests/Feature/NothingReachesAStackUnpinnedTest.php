@@ -175,7 +175,7 @@ const THE_TRANSPORT = [
     RunToken::class,
 ];
 
-it('N1-R20 — nothing opens a connection to a stack without pinning its certificate', function (): void {
+it('nothing opens a connection to a stack without pinning its certificate', function (): void {
     $offenders = [];
 
     $files = [
@@ -229,7 +229,7 @@ it('N1-R20 — nothing opens a connection to a stack without pinning its certifi
     ));
 });
 
-it('N1-R20 — a file allowed to reach a stack says what permits it', function (): void {
+it('a file allowed to reach a stack says what permits it', function (): void {
     // The list opens exactly once, and the moment it does is the only moment
     // anybody will be looking at this file. An entry that cites nothing reads
     // as settled and is how the question gets lost.
@@ -286,7 +286,7 @@ function whatThisFileDoesRatherThanSays(string $shown): string
     return $said;
 }
 
-it('N1-R20 — a file allowed only to name a client builds none', function (): void {
+it('a file allowed only to name a client builds none', function (): void {
     // The half that keeps the weaker permission weak. Naming the type and
     // calling a constructor are different acts, and a list that permitted the
     // first would be worth nothing if it quietly permitted the second — which

@@ -56,7 +56,7 @@ function whatMigratingProduces(): array
     return ['jobs' => Schema::hasTable('jobs'), 'failed_jobs' => Schema::hasTable('failed_jobs')];
 }
 
-it('N1-R36 — the queue the packager polls has a table to poll', function (): void {
+it('the queue the packager polls has a table to poll', function (): void {
     $made = whatMigratingProduces();
 
     expect($made['jobs'])->toBeTrue(
@@ -71,7 +71,7 @@ it('N1-R36 — the queue the packager polls has a table to poll', function (): v
     );
 });
 
-it('N1-R36 — the migration the device runs is in the tree', function (): void {
+it('the migration the device runs is in the tree', function (): void {
     // The floor for the rule above, and not the same question: the suite
     // migrates against its own connection, so a green `hasTable` proves the
     // schema works and not that anything ships it. This asks whether the device

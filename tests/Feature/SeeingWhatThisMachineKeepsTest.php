@@ -125,7 +125,7 @@ function twoCopies(): AStackThatListsItsCopies
     return AStackThatListsItsCopies::with(TheCopies::named('lemonfiber-20260924-0300-full', 'lemonfiber-20260923-0300-full'));
 }
 
-it('N6-R7 — shows where things are kept, what, why, and whether each holds a secret', function (): void {
+it('shows where things are kept, what, why, and whether each holds a secret', function (): void {
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies());
     $answer = $screen->answer();
     $copies = theCopiesOnTheNextFrame($screen);
@@ -141,7 +141,7 @@ it('N6-R7 — shows where things are kept, what, why, and whether each holds a s
         ->and($copies?->names)->toBe(['lemonfiber-20260924-0300-full', 'lemonfiber-20260923-0300-full']);
 });
 
-it('N6-R7 — a value the stack sends beside a secret never reaches the glass', function (): void {
+it('a value the stack sends beside a secret never reaches the glass', function (): void {
     // The real adapter, not the fake, because the fake cannot carry a value
     // at all and this is about what happens when the wire does.
     //
@@ -171,7 +171,7 @@ it('N6-R7 — a value the stack sends beside a secret never reaches the glass', 
         ->and(implode("\n", $drawn))->not->toContain($leaked);
 });
 
-it('N6-R9 — no copy taken and a list that could not be read are different sentences on the glass', function (): void {
+it('no copy taken and a list that could not be read are different sentences on the glass', function (): void {
     $none = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->said();
     $unread = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $unreadDrawn = WhatTheDeviceWouldDraw::onTheSecondFrame($unread)->said();
@@ -190,7 +190,7 @@ it('N6-R9 — no copy taken and a list that could not be read are different sent
         ->and($unreadDrawn)->toContain('The VPN credentials');
 });
 
-it('N6-R9 — the copies drawn are the copies listed, each by its name', function (): void {
+it('the copies drawn are the copies listed, each by its name', function (): void {
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->said();
 
     expect($drawn)->toContain('lemonfiber-20260924-0300-full')
@@ -242,7 +242,7 @@ it('a stack that could not be asked is not a machine keeping nothing, and its co
         ->and($copying->askings())->toBe(0);
 });
 
-it('N1-R44 — a session that has ended is not a machine keeping nothing', function (): void {
+it('a session that has ended is not a machine keeping nothing', function (): void {
     $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
     $answer = theKeepingScreen($storing, twoCopies(), signedIn: false)->answer();
 
@@ -252,7 +252,7 @@ it('N1-R44 — a session that has ended is not a machine keeping nothing', funct
         ->and($storing->askings())->toBe(0);
 });
 
-it('N3-R13 — a credential refused for what is kept signs this device out and lets the session go', function (): void {
+it('a credential refused for what is kept signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), twoCopies(), $keychain);
 
@@ -263,7 +263,7 @@ it('N3-R13 — a credential refused for what is kept signs this device out and l
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeFalse();
 });
 
-it('N3-R13 — a credential refused for the copies lets the session go as well', function (): void {
+it('a credential refused for the copies lets the session go as well', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
@@ -275,7 +275,7 @@ it('N3-R13 — a credential refused for the copies lets the session go as well',
         ->and($drawn->offers())->toContain(__('connection.sign_in'));
 });
 
-it('N1-R3 — copies that could not be read for another reason leave the session standing', function (): void {
+it('copies that could not be read for another reason leave the session standing', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
 
@@ -312,7 +312,7 @@ it('reads what is kept on the first frame and the copies on the next, each once,
         ->and($copying->askedAbout()?->id()->stored())->toBe(theStackWhoseKeepingIsRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks both again', function (): void {
+it('asking again asks both again', function (): void {
     $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
     $copying = AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theKeepingScreen($storing, $copying);

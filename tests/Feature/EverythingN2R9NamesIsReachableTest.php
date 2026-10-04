@@ -95,7 +95,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
     return $screen;
 }
 
-it('N2-R9 — provider health, disk pressure and VPN verification are each reachable', function (): void {
+it('provider health, disk pressure and VPN verification are each reachable', function (): void {
     // Reached by narrowing the run to one family. The chip is offered only
     // where that family has something to say, which is what makes the row worth
     // reading — so the run above puts one finding in each of the three.
@@ -120,7 +120,7 @@ it('N2-R9 — provider health, disk pressure and VPN verification are each reach
     ));
 });
 
-it('N2-R9 — stuck downloads are reachable, and not by narrowing a run', function (): void {
+it('stuck downloads are reachable, and not by narrowing a run', function (): void {
     // The fourth, and the one that is not a family. Nothing in the diagnostic
     // report is about a download that stopped — a stack can pass every check
     // while four titles the house asked for sit at a stage nothing will move

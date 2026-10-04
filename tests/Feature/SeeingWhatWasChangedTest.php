@@ -97,7 +97,7 @@ function theRecordScreen(
     return $screen;
 }
 
-it('N11-R1 — says how far back the record goes', function (): void {
+it('says how far back the record goes', function (): void {
     $answer = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
         'the last 50 runs of lemonfiber\'s own changes',
         aChangeMadeBefore('Pointed Sonarr at the new library', 120),
@@ -108,7 +108,7 @@ it('N11-R1 — says how far back the record goes', function (): void {
         ->and($answer->horizon)->toBe('the last 50 runs of lemonfiber\'s own changes');
 });
 
-it('N11-R1 — still says how far back it goes when nothing is under it', function (): void {
+it('still says how far back it goes when nothing is under it', function (): void {
     // An empty record without its horizon reads as *nothing has ever happened
     // here*, which is the one reading the horizon exists to prevent.
     $answer = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching('the last 50 runs')))->answer();
@@ -118,7 +118,7 @@ it('N11-R1 — still says how far back it goes when nothing is under it', functi
         ->and($answer->went->cameBack())->toBeTrue();
 });
 
-it('N11-R2, N11-R3 — every change says what it did, how far it goes back and how many came with it', function (): void {
+it('every change says what it did, how far it goes back and how many came with it', function (): void {
     $answer = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
         'the last 50 runs',
         aChangeMadeBefore('Pointed Sonarr at the new library', 120, HowFarItGoesBack::Partial, 3)
@@ -164,7 +164,7 @@ it('draws a record with nothing in it as saying so, over where it ends', functio
         ->and($said)->toContain(__('stacks.record.horizon', ['horizon' => 'the last 50 runs']));
 });
 
-it('N11-R2 — a change that goes back whole says nothing about stopping short', function (): void {
+it('a change that goes back whole says nothing about stopping short', function (): void {
     // Empty, which is what the template branches on. A heading with nothing
     // under it would read as a limit nobody knows the reason for.
     $row = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
@@ -175,7 +175,7 @@ it('N11-R2 — a change that goes back whole says nothing about stopping short',
     expect($row->because)->toBe('')->and($row->instead)->toBe('');
 });
 
-it('N11-R2 — a reason with nothing to suggest carries the reason alone', function (): void {
+it('a reason with nothing to suggest carries the reason alone', function (): void {
     $row = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
         'the last 50 runs',
         aChangeMadeBefore('Removed the old share', 120, HowFarItGoesBack::None)
@@ -195,7 +195,7 @@ it('says when as an age, measured against the moment the record was read', funct
         ->and($moment->whenCount)->toBe(2);
 });
 
-it('N11-R10 — changes made at one moment are drawn under it together, in the stack\'s order', function (): void {
+it('changes made at one moment are drawn under it together, in the stack\'s order', function (): void {
     // Not one before the other: listed each with a time, the one above would
     // read as the later.
     $moments = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
@@ -210,7 +210,7 @@ it('N11-R10 — changes made at one moment are drawn under it together, in the s
         ->and(array_map(static fn(WhatOneRecordedChangeSays $row): string => $row->did, $moments[1]->changes))->toBe(['First']);
 });
 
-it('N11-R10 — changes the clock could not date are never drawn as one moment', function (): void {
+it('changes the clock could not date are never drawn as one moment', function (): void {
     // Nobody knows they happened together, so they are not drawn together, and
     // neither is drawn as a date.
     $moments = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
@@ -225,7 +225,7 @@ it('N11-R10 — changes the clock could not date are never drawn as one moment',
         ->and($moments[1]->whenSaid)->toBe(HowTheRecordReads::CLOCK_UNREADABLE);
 });
 
-it('N11-R9 — a stack that could not be asked is not a record of nothing', function (): void {
+it('a stack that could not be asked is not a record of nothing', function (): void {
     // Both would draw an empty list, and only one of them means nothing
     // happened.
     $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
@@ -236,7 +236,7 @@ it('N11-R9 — a stack that could not be asked is not a record of nothing', func
         ->and($answer->horizon)->toBe('');
 });
 
-it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+it('an obstacle that is not a refused credential leaves the session standing', function (): void {
     // A phone with no signal told to sign in is given advice for a problem it
     // does not have, over the one it does.
     $answer = theRecordScreen(AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
@@ -244,7 +244,7 @@ it('N1-R3 — an obstacle that is not a refused credential leaves the session st
     expect($answer->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R44 — a session that has ended is not a machine that changed nothing', function (): void {
+it('a session that has ended is not a machine that changed nothing', function (): void {
     $answer = theRecordScreen(
         AStackThatKeepsARecord::with(TheRecord::reaching('the last 50 runs')),
         signedIn: false,
@@ -256,7 +256,7 @@ it('N1-R44 — a session that has ended is not a machine that changed nothing', 
         ->and($answer->horizon)->toBe('');
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // Both halves: if the session stayed, the next frame would resume it, be
     // refused again, and draw a sign-in prompt over a device that still
     // believes it is signed in.
@@ -285,7 +285,7 @@ it('the machine is asked once for a frame, about the machine the route names', f
         ->and($history->askedAbout()?->id()->stored())->toBe(theStackWhoseRecordIsRead()->id()->stored());
 });
 
-it('N1-R3 — asking again asks the machine again', function (): void {
+it('asking again asks the machine again', function (): void {
     $history = AStackThatKeepsARecord::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theRecordScreen($history);
 

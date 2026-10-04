@@ -92,7 +92,7 @@ function theStalledScreen(
     return $screen;
 }
 
-it('N2-R9 — shows what stopped, where it stopped, and who has it', function (): void {
+it('shows what stopped, where it stopped, and who has it', function (): void {
     $screen = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()));
 
     expect($screen->howMany())->toBe(2)
@@ -117,7 +117,7 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
         ->and($rows[1]->stageSaid)->toBe(Stage::NotMonitored->saidOnTheScreen());
 });
 
-it('N15-R9 — draws the stack\'s word for a stage, with the plain sentence beside it', function (): void {
+it('draws the stack\'s word for a stage, with the plain sentence beside it', function (): void {
     // Asked of the drawn screen rather than of the row, because a row can
     // carry the word and a template can still draw only the sentence.
     // Both locales, because the word is not the catalogue's and must come
@@ -144,7 +144,7 @@ it('keeps the stack\'s order rather than putting the hopeless ones first', funct
         ->and($rows[1]->stillMoving)->toBeFalse();
 });
 
-it('N2-R9 — says how much of what the stack holds this is', function (): void {
+it('says how much of what the stack holds this is', function (): void {
     // The field a screen cannot notice the absence of. A partial listing
     // rendered without it claims to be complete, and an operator shown three
     // stalled titles and told that is all of them stops looking.
@@ -170,7 +170,7 @@ it('nothing stuck is an answer, and not the same one as a stack that would not s
         ->and($quiet->answer()->shownSaid)->toBe(HowMuchIsShown::AllOfIt->saidOnTheScreen());
 });
 
-it('N1-R10 — a stack that could not be asked says which of the six it met', function (): void {
+it('a stack that could not be asked says which of the six it met', function (): void {
     $screen = theStalledScreen(AStackThatStalled::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
 
     expect($screen->howMany())->toBe(0)
@@ -185,7 +185,7 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         ->and($screen->answer()->shownSaid)->toBe('');
 });
 
-it('N1-R44 — a device with no session for that stack is not asked to wait for one', function (): void {
+it('a device with no session for that stack is not asked to wait for one', function (): void {
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     $screen = theStalledScreen($stalling, signedIn: false);
 
@@ -201,7 +201,7 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
         ->and($stalling->askings())->toBe(0);
 });
 
-it('N1-R65 — asks once however many accessors a frame reads', function (): void {
+it('asks once however many accessors a frame reads', function (): void {
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     $screen = theStalledScreen($stalling);
 
@@ -213,7 +213,7 @@ it('N1-R65 — asks once however many accessors a frame reads', function (): voi
     expect($stalling->askings())->toBe(1);
 });
 
-it('N1-R11 — asks about the stack the route names, with the session kept for it', function (): void {
+it('asks about the stack the route names, with the session kept for it', function (): void {
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     theStalledScreen($stalling)->howMany();
 
@@ -221,7 +221,7 @@ it('N1-R11 — asks about the stack the route names, with the session kept for i
         ->and($stalling->wasGivenASession())->toBeTrue();
 });
 
-it('N1-R11 — a route naming a stack this device has forgotten is refused', function (): void {
+it('a route naming a stack this device has forgotten is refused', function (): void {
     $screen = theStalledScreen(
         AStackThatStalled::with(aWeekOfStalledDownloads()),
         named: str_repeat('z', Nonce::SHORTEST),
@@ -241,7 +241,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N2-R9 — the screen is registered under the route that reaches it', function (): void {
+it('the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
         AStacksScreen::Stuck->forTheStack(theStackWhoseStallIsRead()->id()),
     );
@@ -261,7 +261,7 @@ it('renders its own view', function (): void {
     expect($screen->render()->name())->toBe('operator::what-stopped-coming-in');
 });
 
-it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+it('asking again after an obstacle asks the stack again', function (): void {
     // The action an obstacle must not take away. A stack that was asleep when
     // the screen opened may be awake now, and leaving and returning is what
     // the cadence rule refuses by name.
@@ -291,7 +291,7 @@ it('reads what stopped again every few seconds, and keeps the words it explained
         ->and($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']));
 });
 
-it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+it('a credential the stack refused signs this device out and lets the session go', function (): void {
     // The stalled screen makes the same two moves the others do, and it has to
     // make them itself: a fold cannot forget anything, and a session left in
     // the store is resumed on the next frame and refused again.
