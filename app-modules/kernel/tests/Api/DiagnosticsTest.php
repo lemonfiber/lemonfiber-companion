@@ -53,7 +53,7 @@ it('names every stack it was given', function (): void {
         ->and($said)->toContain(A_SHED);
 });
 
-it('N4-R13 — says in the report itself what it does not contain', function (): void {
+it('says in the report itself what it does not contain', function (): void {
     // For the person reading it rather than for a rule. Somebody asked to send
     // a diagnostic bundle is being asked to trust it, and a file that says what
     // it withheld is one they can check at a glance — which is worth more than

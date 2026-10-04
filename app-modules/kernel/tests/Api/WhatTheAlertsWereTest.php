@@ -26,7 +26,7 @@ function whatTheAlertsSaid(WhatTheAlertsWere $answer): string
     )->said;
 }
 
-it('N10-R12 — carries what the operator is told, or what stood in the way, never one for the other', function (): void {
+it('carries what the operator is told, or what stood in the way, never one for the other', function (): void {
     expect(whatTheAlertsSaid(WhatTheAlertsWere::told(WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of()))))->toBe('told:quiet')
         ->and(whatTheAlertsSaid(WhatTheAlertsWere::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -40,7 +40,7 @@ function whatIsGoneFrom(Unattended $command): string
     )->said;
 }
 
-it('N16-R5 — carries the three words a decision about a reboot is made from', function (): void {
+it('carries the three words a decision about a reboot is made from', function (): void {
     $command = aCommand();
 
     expect($command->name())->toBe('Watching the library')
@@ -57,26 +57,26 @@ it('takes the words as the stack wrote them, less the space around them', functi
         ->and($command->guarantees())->toBe('Files');
 });
 
-it('N16-R5 — refuses a row whose label is blank, naming what it sat beside', function (): void {
+it('refuses a row whose label is blank, naming what it sat beside', function (): void {
     // A row carrying a control and no label is the worst version of this
     // screen, and a refusal naming nothing leaves somebody reading all nine.
     expect(fn(): Unattended => aCommand(name: '   '))
         ->toThrow(UnattendedIsUnnamed::class, 'lemonfiber watch --all');
 });
 
-it('N16-R5 — refuses a row that names no command, naming the label instead', function (): void {
+it('refuses a row that names no command, naming the label instead', function (): void {
     expect(fn(): Unattended => aCommand(command: '   '))
         ->toThrow(UnattendedIsUnnamed::class, 'Watching the library');
 });
 
-it('N16-R5 — refuses a row that says nothing about what it guarantees', function (): void {
+it('refuses a row that says nothing about what it guarantees', function (): void {
     // Without it an operator is asked to decide whether something should
     // survive every reboot, knowing only what it is called.
     expect(fn(): Unattended => aCommand(guarantees: '   '))
         ->toThrow(UnattendedIsUnnamed::class, 'Watching the library');
 });
 
-it('N16-R6 — an orphan names the program that is gone, not the service', function (): void {
+it('an orphan names the program that is gone, not the service', function (): void {
     // The difference between *Sonarr is not running* and *the file Sonarr's
     // service definition runs is not there any more*: the same row, and
     // different work.
@@ -90,7 +90,7 @@ it('N16-R6 — an orphan names the program that is gone, not the service', funct
     expect(whatIsGoneFrom($command))->toBe('/usr/local/bin/lemonfiber');
 });
 
-it('N16-R6 — an orphan is `orphaned` by construction', function (): void {
+it('an orphan is `orphaned` by construction', function (): void {
     // The standing is not a parameter, which makes a row naming a missing
     // program while claiming to be running unspellable.
     $command = Unattended::orphaned('Watching', 'lemonfiber watch', 'Files are noticed', '/gone');
@@ -113,7 +113,7 @@ it('an orphan is refused for the reasons every row is', function (): void {
         ->toThrow(UnattendedIsUnnamed::class);
 });
 
-it('N16-R6 — an orphan whose missing program is blank is refused', function (): void {
+it('an orphan whose missing program is blank is refused', function (): void {
     // The whole of what this arm adds. A row reaching a screen as *installed
     // against a program that is gone* and naming no program tells an operator
     // less than the standing alone already did.

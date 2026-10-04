@@ -37,7 +37,7 @@ function whatItCameTo(Mended $mended): string
     )->shown();
 }
 
-it('N2-R5 — carries the repair, what became of it, and what it left', function (): void {
+it('carries the repair, what became of it, and what it left', function (): void {
     $stopped = Mended::stopped(aRepairThatWasAgreedTo(), LeftBehind::of('Half of it on the old disk'));
 
     expect(whatItCameTo($stopped))
@@ -66,7 +66,7 @@ it('refuses a description of what was left that says nothing', function (): void
         ->toThrow(RepairSaysNothing::class, 'left');
 });
 
-it('N2-R5 — only a repair that was put right counts as having changed anything', function (): void {
+it('only a repair that was put right counts as having changed anything', function (): void {
     // Three of the five changed nothing at all, and *stopped* is the one that
     // both failed and left something — so it answers false here and is still
     // the case that needs saying most.
@@ -81,7 +81,7 @@ it('N2-R5 — only a repair that was put right counts as having changed anything
     expect($changed)->toBe([WhatBecameOfIt::Fixed->value]);
 });
 
-it('N2-R5 — only the two that might work next time are worth another go', function (): void {
+it('only the two that might work next time are worth another go', function (): void {
     // Declined and would-overwrite will answer the same way again, and a button
     // that does exactly what it did last time teaches people the app is lying.
     $again = [];

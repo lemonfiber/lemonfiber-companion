@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\HowTheStackIsRunning;
 
-it('N2-R7 — says what the whole stack amounts to, as a key', function (): void {
+it('says what the whole stack amounts to, as a key', function (): void {
     foreach (HowTheStackIsRunning::cases() as $running) {
         expect($running->saidOnTheScreen())->toBe(sprintf('health.running.%s', $running->value));
     }

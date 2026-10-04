@@ -36,7 +36,7 @@ function everyRateWithOneAbove(): array
     ));
 }
 
-it('N10-R4 — says a line in bits a second, in the largest unit it fills', function (): void {
+it('says a line in bits a second, in the largest unit it fills', function (): void {
     // 12.5 MB a second is the 100 Mbit/s line it was sold as, and 250 kB a
     // second is a 2 Mbit/s upload — which a scale starting at megabytes draws
     // as nought.

@@ -65,7 +65,7 @@ function foldCarried(Carried $carried): Code
     );
 }
 
-it('N2-R5 — a repair is carried out only with a confirmation, not with a view', function (): void {
+it('a repair is carried out only with a confirmation, not with a view', function (): void {
     // The requirement is broken by nobody deciding to break it: a screen
     // renders a finding, the repair is on it, and a tap handler calls the thing
     // that applies it. Nothing says "this was confirmed" because nothing had
@@ -79,7 +79,7 @@ it('N2-R5 — a repair is carried out only with a confirmation, not with a view'
     ->toBe('out:indexer-reachable');
 });
 
-it('N2-R6 — a repair confirmed against one reading is refused against another', function (): void {
+it('a repair confirmed against one reading is refused against another', function (): void {
     // The operator agreed to a repair for the situation in front of them. If
     // the stack has moved, that agreement is about something no longer true,
     // and carrying it out applies a decision nobody made to the state it lands
@@ -93,7 +93,7 @@ it('N2-R6 — a repair confirmed against one reading is refused against another'
     ->toBe('refused:indexer-reachable:live');
 });
 
-it('N2-R6 — a re-read that says the same thing is still a different reading', function (): void {
+it('a re-read that says the same thing is still a different reading', function (): void {
     // Identity rather than equality, deliberately. Treating a re-read with the
     // same values as the same reading would mean deciding, on the operator's
     // behalf, that nothing important changed — which is exactly the judgement
@@ -108,7 +108,7 @@ it('N2-R6 — a re-read that says the same thing is still a different reading', 
     ->toStartWith('refused:');
 });
 
-it('N2-R6 — the refusal carries what is needed to re-offer', function (): void {
+it('the refusal carries what is needed to re-offer', function (): void {
     // "Refuse" and "re-offer" are one requirement, not two. An arm handed only
     // the new reading leaves the screen to remember which repair this was
     // about, and a screen that remembers wrong offers the wrong one.
@@ -121,7 +121,7 @@ it('N2-R6 — the refusal carries what is needed to re-offer', function (): void
     ->toBe('refused:indexer-reachable:retained');
 });
 
-it('N1-R39 — a retained reading cannot confirm a repair at all', function (): void {
+it('a retained reading cannot confirm a repair at all', function (): void {
     // A screen that offered confirmation over a reading it knows is old has
     // already broken the shared-state rule, and there is no half-confirmed repair to carry on
     // with.
@@ -133,7 +133,7 @@ it('N1-R39 — a retained reading cannot confirm a repair at all', function (): 
     ->toThrow(RepairWasConfirmedAgainstAnOldReading::class);
 });
 
-it('N2-R6 — refuses a yes that quotes a listing the repair was never in', function (): void {
+it('refuses a yes that quotes a listing the repair was never in', function (): void {
     // Not defensive. The repair and the listing arrive together, so a screen
     // reaching this has lost track of which listing a button belonged to — and
     // the engine would see a listing it recognises and a repair it was asked
@@ -149,7 +149,7 @@ it('N2-R6 — refuses a yes that quotes a listing the repair was never in', func
     ))->toThrow(RepairWasNotInThatOffer::class, 'indexer-reachable');
 });
 
-it('N2-R6 — quotes the listing it was agreed to, for the engine to check', function (): void {
+it('quotes the listing it was agreed to, for the engine to check', function (): void {
     // The word is carried out of here and nowhere else reads it. The engine is
     // where it is finally settled, because it can see whether the machine
     // has moved and this app cannot.

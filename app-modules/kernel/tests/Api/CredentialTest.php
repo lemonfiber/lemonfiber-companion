@@ -21,11 +21,11 @@ use function var_export;
 
 const WHAT_THE_STACK_GAVE = 'a-credential-not-a-session';
 
-it('N1-R7 — answers once, for the one exchange it exists for', function (): void {
+it('answers once, for the one exchange it exists for', function (): void {
     expect(Credential::of(WHAT_THE_STACK_GAVE)->forTheExchange())->toBe(WHAT_THE_STACK_GAVE);
 });
 
-it('N1-R7 — keeps nothing to re-send', function (): void {
+it('keeps nothing to re-send', function (): void {
     // The clause that takes a design. Exchanging a credential is ordinary; not
     // retaining it is not, because retention is what every value does by
     // default — and the line that re-sends it on the next request is one
@@ -38,7 +38,7 @@ it('N1-R7 — keeps nothing to re-send', function (): void {
         ->toThrow(CredentialIsSpent::class, 'already been exchanged');
 });
 
-it('N1-R7 — says whether it has been spent', function (): void {
+it('says whether it has been spent', function (): void {
     $credential = Credential::of(WHAT_THE_STACK_GAVE);
 
     expect($credential->wasSpent())->toBeFalse();
@@ -48,7 +48,7 @@ it('N1-R7 — says whether it has been spent', function (): void {
     expect($credential->wasSpent())->toBeTrue();
 });
 
-it('N1-R7 — forgets before it answers, not after', function (): void {
+it('forgets before it answers, not after', function (): void {
     // The order matters and is not decoration. If the secret were cleared after
     // the return, anything throwing downstream would leave it still held — and a
     // caller catching that exception could ask again. Asserted by reading the
@@ -72,13 +72,13 @@ it('refuses material that carried no credential', function (): void {
         ->toThrow(CredentialIsBlank::class, 'empty credential');
 });
 
-it('N1-R15 — its refusal says nothing about what arrived', function (): void {
+it('its refusal says nothing about what arrived', function (): void {
     // An exception carrying a credential puts it in a stack trace, and a stack
     // trace is exactly what ends up in a diagnostic report.
     expect(CredentialIsBlank::inPairingMaterial()->getMessage())->not->toContain(WHAT_THE_STACK_GAVE);
 });
 
-it('N1-R23 — cannot be written out by anything that does not ask', function (): void {
+it('cannot be written out by anything that does not ask', function (): void {
     // `serialize()` is how a value reaches a cache without anybody deciding it
     // should, and a credential in a cache can be replayed — unlike a session,
     // nothing on the server expires it on a schedule.
@@ -88,7 +88,7 @@ it('N1-R23 — cannot be written out by anything that does not ask', function ()
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });
 
-it('N1-R23 — cannot be read back in either', function (): void {
+it('cannot be read back in either', function (): void {
     // The other half of the same door. Without it a crafted payload naming this
     // class walks back into an unspent credential nobody was given.
     // Built from the class name's own length rather than counted by hand: a
@@ -101,7 +101,7 @@ it('N1-R23 — cannot be read back in either', function (): void {
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });
 
-it('N1-R15 — hides itself from the reader that honours __debugInfo', function (): void {
+it('hides itself from the reader that honours __debugInfo', function (): void {
     // `print_r` is what somebody reaches for at a breakpoint, and it honours
     // `__debugInfo`, so it prints the placeholder rather than the secret.
     $credential = Credential::of(WHAT_THE_STACK_GAVE);
@@ -110,7 +110,7 @@ it('N1-R15 — hides itself from the reader that honours __debugInfo', function 
         ->and(print_r($credential, return: true))->toContain('a credential, hidden');
 });
 
-it('N1-R15 — is still readable by var_export, which is the honest limit', function (): void {
+it('is still readable by var_export, which is the honest limit', function (): void {
     // `var_export` reads private properties directly and honours nothing — not
     // `__debugInfo`, not `__serialize`. Asserted as it actually behaves rather
     // than as one would wish, because a test claiming otherwise would be a

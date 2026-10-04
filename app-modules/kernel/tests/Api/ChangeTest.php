@@ -58,15 +58,15 @@ it('carries what it did, what did it, to what and when', function (): void {
         ->and($change->when()->isTheSameMomentAs(WhenItWasMade::at(Instant::atEpochSeconds(1_790_142_840))))->toBeTrue();
 });
 
-it('N11-R2 — carries how far it could be put back', function (): void {
+it('carries how far it could be put back', function (): void {
     expect(aChangeMade(reversal: HowFarItGoesBack::None)->reversal())->toBe(HowFarItGoesBack::None);
 });
 
-it('N11-R3 — carries how many changes came with it, this one among them', function (): void {
+it('carries how many changes came with it, this one among them', function (): void {
     expect(aChangeMade(alongside: 4)->alongside())->toBe(4);
 });
 
-it('N11-R3 — refuses a count that leaves this change out', function (): void {
+it('refuses a count that leaves this change out', function (): void {
     // The operation made this one, so it made at least one. A row claiming it
     // came alone when the count says otherwise is the row that gets undone by
     // itself, leaving half an operation nobody chose.
@@ -93,7 +93,7 @@ it('says nothing stops it short until told otherwise', function (): void {
     expect(whereTheChangeStopsShort(aChangeMade()))->toBe('nowhere');
 });
 
-it('N11-R2 — carries where putting it back stops short, and keeps everything else', function (): void {
+it('carries where putting it back stops short, and keeps everything else', function (): void {
     $change = aChangeMade(reversal: HowFarItGoesBack::Partial)
         ->stoppingShort(WhereItStopsShort::suggesting('The old library was deleted', 'Restore it from the last backup first'));
 

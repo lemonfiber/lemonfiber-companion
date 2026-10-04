@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\HowMuchIsShown;
 
-it('N2-R9 — both cases have a line, so silence is never the answer', function (): void {
+it('both cases have a line, so silence is never the answer', function (): void {
     // `AllOfIt` has a line of its own rather than rendering as nothing. A
     // screen that says nothing when a list is whole teaches an operator to read
     // silence, and silence is also what a screen that forgot the flag produces.

@@ -7,20 +7,20 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
 
-it('N2-R8 — carries the verb that was agreed to, whichever it was', function (): void {
+it('carries the verb that was agreed to, whichever it was', function (): void {
     foreach (WhatToDoWithIt::cases() as $doing) {
         expect(AgreedTo::theService($doing, ServiceId::called('sonarr'))->doing())->toBe($doing);
     }
 });
 
-it('N2-R7 — names one service, and says it is not a form', function (): void {
+it('names one service, and says it is not a form', function (): void {
     $agreed = AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr'));
 
     expect($agreed->named())->toBe('sonarr');
     expect($agreed->isAboutAForm())->toBeFalse();
 });
 
-it('N2-R7 — names a whole form, and says that is what it is', function (): void {
+it('names a whole form, and says that is what it is', function (): void {
     // The two travel under different arguments on the wire, so this is the one
     // thing an adapter has to ask: a form's name sent as a service's would stop
     // nothing and report that it had.

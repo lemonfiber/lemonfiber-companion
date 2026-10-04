@@ -36,7 +36,7 @@ function foldHeld(Held $held): Code
     );
 }
 
-it('N1-R38 — a first visit has nothing to restore, and says so', function (): void {
+it('a first visit has nothing to restore, and says so', function (): void {
     // An empty payload and a real one have the same shape. A screen that cannot
     // tell them apart renders the empty one as though the operator had cleared
     // the form themselves.
@@ -44,14 +44,14 @@ it('N1-R38 — a first visit has nothing to restore, and says so', function (): 
         ->toBe('fresh:stack.backups.restore');
 });
 
-it('N1-R38 — a return hands back what was done there', function (): void {
+it('a return hands back what was done there', function (): void {
     $keeping = Code::of('half-typed');
 
     expect(foldHeld(Held::keeping(theScreenTheyLeft(), $keeping))->shown())
         ->toBe(sprintf('restored:%s:stack.backups.restore', Code::class));
 });
 
-it('N1-R38 — both arms know which screen it belongs to', function (): void {
+it('both arms know which screen it belongs to', function (): void {
     // Restoring the wrong screen's work is worse than restoring none: it puts
     // one screen's half-finished input in front of somebody looking at another.
     $was = theScreenTheyLeft();
@@ -60,7 +60,7 @@ it('N1-R38 — both arms know which screen it belongs to', function (): void {
         ->and(Held::keeping($was, Code::of('x'))->was()->is($was))->toBeTrue();
 });
 
-it('N1-R38 — the two arms take different arguments', function (): void {
+it('the two arms take different arguments', function (): void {
     // A `bool` here would make "nothing to restore" and "restore this" the same
     // branch, and the branch that wins is whichever the screen's author
     // happened to test. The arms differ in arity, so one cannot be read as the

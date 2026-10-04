@@ -23,7 +23,7 @@ function whatTheAmountSays(AnAmountOfRoom $amount): string
     )->said;
 }
 
-it('N12-R10 — a figure that was not read is never nought', function (): void {
+it('a figure that was not read is never nought', function (): void {
     expect(whatTheAmountSays(AnAmountOfRoom::of(0, 'free')))->toBe('known:0')
         ->and(whatTheAmountSays(AnAmountOfRoom::of(7, 'free')))->toBe('known:7')
         ->and(whatTheAmountSays(AnAmountOfRoom::unread()))->toBe('unread');

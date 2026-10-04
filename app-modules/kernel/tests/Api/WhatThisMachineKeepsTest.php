@@ -19,7 +19,7 @@ use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhereThingsAreKept;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 
-it('N6-R7 — hands back each list as it was given, in order', function (): void {
+it('hands back each list as it was given, in order', function (): void {
     $root = WhereThingsAreKept::at('/srv/lemonfiber', 'Everything the stack writes');
     $first = SomethingKept::kept('The VPN credentials', '/srv/lemonfiber/secrets/vpn', 'So the tunnel can be raised', WhetherItHoldsASecret::Secret);
     $second = SomethingKept::kept('Sonarr\'s settings', '/srv/lemonfiber/config/sonarr', 'So Sonarr starts as it was left', WhetherItHoldsASecret::Plain);

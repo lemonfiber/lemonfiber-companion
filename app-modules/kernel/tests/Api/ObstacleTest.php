@@ -43,7 +43,7 @@ it('is the twelve an operator must be able to tell apart', function (): void {
     ]);
 });
 
-it('G4-R6 — names each one differently in the identifier an operator searches for', function (): void {
+it('names each one differently in the identifier an operator searches for', function (): void {
     // Every error kind carries a stable identifier, and this test
     // is what makes *stable* mean something: the codes are written out, so a
     // rename is a failing test rather than a search that stops finding the page
@@ -144,7 +144,7 @@ it('offers a button only where the app can press it', function (): void {
     expect(KindOfObstacle::StackDidNotAnswer->standing()->offersAButton())->toBeFalse();
 });
 
-it('N1-R10 — gives each one its own sentence and its own advice', function (): void {
+it('gives each one its own sentence and its own advice', function (): void {
     // Derived from the case rather than spelled, so a case added here has both
     // by existing and cannot be given a sentence at one call site that
     // disagrees with another's. Two of these sharing a key would be the

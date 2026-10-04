@@ -6,7 +6,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\FormIsUnnamed;
 use Modules\Kernel\Api\Forms;
 
-it('N2-R7 — carries the name exactly as the stack spells it', function (): void {
+it('carries the name exactly as the stack spells it', function (): void {
     expect(Form::called('media')->named())->toBe('media');
 });
 

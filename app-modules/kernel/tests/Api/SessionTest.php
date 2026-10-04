@@ -85,7 +85,7 @@ it('is closed to every reader that asks the type, and open to the one that does 
     expect(str_contains(var_export(Session::of(A_TOKEN), return: true), A_TOKEN))->toBeTrue();
 });
 
-it('N1-R15 — a session does not leave the process in a serialised payload', function (): void {
+it('a session does not leave the process in a serialised payload', function (): void {
     // The third way out, and the one neither redaction covers: `serialize()`
     // walks private properties itself. A credential reaches a cache entry or a
     // queued job payload that way, in full.
@@ -93,7 +93,7 @@ it('N1-R15 — a session does not leave the process in a serialised payload', fu
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });
 
-it('N1-R15 — a session does not come back from a serialised payload either', function (): void {
+it('a session does not come back from a serialised payload either', function (): void {
     // A crafted payload naming the class is the only way in, and it is also the
     // realistic one: object injection starts with a string somebody controls.
     //

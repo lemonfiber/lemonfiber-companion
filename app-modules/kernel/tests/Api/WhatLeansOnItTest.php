@@ -17,7 +17,7 @@ function everyLeaner(WhatLeansOnIt $leaning): string
     return implode(' | ', $rows);
 }
 
-it('N2-R8 — holds what stops with a service, in the stack\'s order', function (): void {
+it('holds what stops with a service, in the stack\'s order', function (): void {
     $leaning = WhatLeansOnIt::these(ServiceId::called('qbittorrent'), ServiceId::called('prowlarr'));
 
     expect(everyLeaner($leaning))->toBe('qbittorrent | prowlarr')

@@ -17,7 +17,7 @@ function whatItWasAbout(AboutWhat $about): string
     )->said;
 }
 
-it('N2-R10 — carries the service a finding is about, as the stack spells it', function (): void {
+it('carries the service a finding is about, as the stack spells it', function (): void {
     expect(whatItWasAbout(AboutWhat::theService('gluetun')))->toBe('gluetun');
 });
 

@@ -34,7 +34,7 @@ function whatDoesNotComeBack(): array
     return $missing;
 }
 
-it('N16-R6 — installed and not running is exactly two of the six', function (): void {
+it('installed and not running is exactly two of the six', function (): void {
     // `Orphaned` counts because it cannot run: the definition is installed and
     // names a program that is not there any more, so a screen listing only the
     // stopped ones shows an operator a shorter list than the truth.
@@ -50,7 +50,7 @@ it('N16-R6 — installed and not running is exactly two of the six', function ()
     expect(whatDoesNotComeBack())->toBe(['stopped', 'orphaned']);
 });
 
-it('N16-R13 — every standing keeps its own word, so none is drawn as another', function (): void {
+it('every standing keeps its own word, so none is drawn as another', function (): void {
     // The whole of what makes six cases better than two buckets. *Not
     // available here* and *off* are the pair that must not collapse, and
     // *installed, unconfirmed* and *running* are the other. A screen draws the

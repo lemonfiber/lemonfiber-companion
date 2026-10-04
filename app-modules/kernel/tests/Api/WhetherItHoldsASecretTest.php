@@ -9,7 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 
-it('N6-R7 — reads the wire\'s flag one way round', function (): void {
+it('reads the wire\'s flag one way round', function (): void {
     expect(WhetherItHoldsASecret::said(secret: true))->toBe(WhetherItHoldsASecret::Secret)
         ->and(WhetherItHoldsASecret::said(secret: false))->toBe(WhetherItHoldsASecret::Plain);
 });

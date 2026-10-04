@@ -49,7 +49,7 @@ function aServiceThatIsRunning(): Daemon
     );
 }
 
-it('N2-R7 — a listing takes the arm that renders rows', function (): void {
+it('a listing takes the arm that renders rows', function (): void {
     $daemons = Daemons::of(
         HowTheStackIsRunning::Active,
         whatTheRunningVerbsCostHere(),
@@ -67,7 +67,7 @@ it('a stack running nothing is an answer and not a gap', function (): void {
     expect(whatCameBackAboutWhatRuns(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()), WhatElseIsRunning::nothing())))->toBe('0 running');
 });
 
-it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
+it('an obstacle takes the other arm, carrying which one it was', function (): void {
     foreach (AnObstacleOfEachKind::all() as $why) {
         expect(whatCameBackAboutWhatRuns(WhatIsRunning::met($why)))->toBe($why->kind()->value);
     }

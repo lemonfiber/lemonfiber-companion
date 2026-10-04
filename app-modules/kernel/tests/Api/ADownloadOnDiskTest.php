@@ -28,7 +28,7 @@ function whatRatioItCarries(ADownloadOnDisk $download): string
     )->said;
 }
 
-it('N12-R1, N12-R2 — each standing is built on its own, and only seeding carries a ratio', function (): void {
+it('each standing is built on its own, and only seeding carries a ratio', function (): void {
     $never = ADownloadOnDisk::neverImported('a', 1);
     $seeding = ADownloadOnDisk::seeding('b', 2, ARatio::inHundredths(10));
     $alone = ADownloadOnDisk::leftAlone('c', 0);
@@ -38,7 +38,7 @@ it('N12-R1, N12-R2 — each standing is built on its own, and only seeding carri
         ->and([$alone->stands(), $alone->bytes(), whatRatioItCarries($alone)])->toBe([WhereADownloadStands::LeftAlone, 0, 'none']);
 });
 
-it('N12-R3 — carries what removing it costs, where the stack says, and nothing otherwise', function (): void {
+it('carries what removing it costs, where the stack says, and nothing otherwise', function (): void {
     expect(ADownloadOnDisk::neverImported('a', 1)->consequence())->toBe('')
         ->and(ADownloadOnDisk::neverImported('a', 1, 'Nothing is lost')->consequence())->toBe('Nothing is lost')
         ->and(ADownloadOnDisk::seeding('b', 2, ARatio::none(), 'Your ratio stops growing')->consequence())->toBe('Your ratio stops growing')

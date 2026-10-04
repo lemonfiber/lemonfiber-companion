@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\WindowHoldsNoLines;
 
-it('N2-R10 — carries the bound a read was given', function (): void {
+it('carries the bound a read was given', function (): void {
     expect(HowManyLines::of(50)->figure())->toBe(50);
 });
 

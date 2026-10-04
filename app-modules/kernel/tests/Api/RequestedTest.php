@@ -58,7 +58,7 @@ it('builds a list even from named arguments', function (): void {
     expect(array_keys(iterator_to_array($wanted, preserve_keys: true)))->toBe([0, 1]);
 });
 
-it('N2-R11 — counts the ones waiting on the operator, not the ones that are not', function (): void {
+it('counts the ones waiting on the operator, not the ones that are not', function (): void {
     // Two waiting and one not, deliberately lopsided. A count that answered
     // *how many are not waiting* is identical wherever every row is waiting or
     // none is — which is most households most weeks, so a fold inverted here
@@ -74,7 +74,7 @@ it('N2-R11 — counts the ones waiting on the operator, not the ones that are no
         ->and($wanted->count())->toBe(3);
 });
 
-it('N2-R11 — asks each row what it stands at rather than deciding for it', function (): void {
+it('asks each row what it stands at rather than deciding for it', function (): void {
     // The line between waiting and not is `Waiting`'s to draw, and every case
     // is put to it here so this count cannot come to disagree with the enum
     // about one of them.

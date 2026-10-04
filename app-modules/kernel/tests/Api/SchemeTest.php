@@ -10,7 +10,7 @@ use function it;
 
 use Modules\Kernel\Api\Scheme;
 
-it('answers N1-R12 for each way a stack is dialled', function (): void {
+it('says whether each way a stack is dialled is encrypted', function (): void {
     expect(Scheme::Https->isEncrypted())->toBeTrue();
     expect(Scheme::Http->isEncrypted())->toBeFalse();
 });

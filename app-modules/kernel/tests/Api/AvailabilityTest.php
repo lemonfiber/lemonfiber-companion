@@ -10,13 +10,13 @@ use function it;
 
 use Modules\Kernel\Api\Availability;
 
-it('N1-R30 — only an available capability offers an action', function (): void {
+it('only an available capability offers an action', function (): void {
     expect(Availability::Available->offersAnAction())->toBeTrue();
     expect(Availability::Unconfigured->offersAnAction())->toBeFalse();
     expect(Availability::NotPermitted->offersAnAction())->toBeFalse();
 });
 
-it('ARCH-R79 — there is no case for a capability the stack does not have', function (): void {
+it('there is no case for a capability the stack does not have', function (): void {
     // Absence is the set not holding it. A fourth case would put "this stack
     // cannot do it" next to "you may not do it" in one list, and a screen would
     // treat them the same because they are the same shape — which the rule

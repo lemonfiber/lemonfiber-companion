@@ -22,13 +22,13 @@ function whereTheMonthStandsOn(AMonthlyCap $cap): string
     )->said;
 }
 
-it('N10-R6 — carries its allowance and which of pause, throttle or continue it does', function (): void {
+it('carries its allowance and which of pause, throttle or continue it does', function (): void {
     $cap = AMonthlyCap::of(1_000_000_000_000, WhatACapDoes::Throttle);
 
     expect($cap->monthly())->toBe(1_000_000_000_000)->and($cap->does())->toBe(WhatACapDoes::Throttle);
 });
 
-it('N10-R7 — a cap of zero is a cap', function (): void {
+it('a cap of zero is a cap', function (): void {
     expect(AMonthlyCap::of(0, WhatACapDoes::Pause)->monthly())->toBe(0);
 });
 

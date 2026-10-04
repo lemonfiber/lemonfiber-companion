@@ -53,7 +53,7 @@ it('carries where the line stands, what it means, each direction\'s sentence and
         ->and(iterator_to_array($line->untouched(), preserve_keys: false))->toBe(['Plex streams']);
 });
 
-it('N10-R7 — knows nothing it was not told: unmeasured, uncapped, nothing spent, no upload cost', function (): void {
+it('knows nothing it was not told: unmeasured, uncapped, nothing spent, no upload cost', function (): void {
     expect(everyArmOf(aLimitedLine()))->toBe('unmeasured|uncapped|unspent|no upload limit');
 });
 

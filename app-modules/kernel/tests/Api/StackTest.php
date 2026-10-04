@@ -43,7 +43,7 @@ function aStack(string $called = 'The loft', string $nonce = A_STACK_NONCE): Sta
     );
 }
 
-it('N1-R11 — carries the four things that make one stack', function (): void {
+it('carries the four things that make one stack', function (): void {
     $stack = aStack();
 
     expect($stack->id()->stored())->toBe(A_STACK_NONCE);
@@ -52,7 +52,7 @@ it('N1-R11 — carries the four things that make one stack', function (): void {
     expect($stack->presents()->is(aDigest()))->toBeTrue();
 });
 
-it('N1-R23 — does not carry the session', function (): void {
+it('does not carry the session', function (): void {
     // The obvious place to keep it, and that is exactly why it is not kept
     // here. A stack is what the app remembers between launches and a session is
     // what it may not — one value holding both makes the thing that must be
@@ -80,7 +80,7 @@ it('refuses a stack an operator cannot tell from another', function (): void {
         ->toThrow(StackIsNotNamed::class, 'no name');
 });
 
-it('N1-R22 — is the same stack wherever it answers', function (): void {
+it('is the same stack wherever it answers', function (): void {
     // Identity is the id, not the address. The same machine reached by another
     // route is the same machine; an address makes a fine key right up to the
     // first DHCP lease, at which point every retained reading silently belongs

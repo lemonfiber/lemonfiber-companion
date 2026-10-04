@@ -11,7 +11,7 @@ use Modules\Kernel\Api\WhatKeepsItRunning;
 
 use function sprintf;
 
-it('N16-R5 — a machine with no manager this product configures says so', function (): void {
+it('a machine with no manager this product configures says so', function (): void {
     // The one question a screen asks before drawing anything about coming back
     // after a restart. False here is not *off*: what follows it is the
     // contract's `instruction` — what to do instead — rather than a control
@@ -19,7 +19,7 @@ it('N16-R5 — a machine with no manager this product configures says so', funct
     expect(WhatKeepsItRunning::Unsupported->configuresAnything())->toBeFalse();
 });
 
-it('N16-R5 — the two managers this product sets up are both configured', function (): void {
+it('the two managers this product sets up are both configured', function (): void {
     // Named rather than derived from *not unsupported*, which is the assertion
     // the method already makes and would prove nothing twice. A third manager
     // added without an opinion about it fails here rather than passing as

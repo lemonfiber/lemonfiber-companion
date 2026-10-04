@@ -22,7 +22,7 @@ function whatCameBackAboutTheStall(WhatIsStuck $answer): string
     )->said;
 }
 
-it('N2-R9 — a listing takes the arm that renders rows', function (): void {
+it('a listing takes the arm that renders rows', function (): void {
     $stalled = Stalled::of(
         HowMuchIsShown::AllOfIt,
         WhatIsUnsupported::none(),
@@ -32,7 +32,7 @@ it('N2-R9 — a listing takes the arm that renders rows', function (): void {
     expect(whatCameBackAboutTheStall(WhatIsStuck::these($stalled)))->toBe('1 stuck');
 });
 
-it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
+it('an obstacle takes the other arm, carrying which one it was', function (): void {
     expect(whatCameBackAboutTheStall(WhatIsStuck::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });

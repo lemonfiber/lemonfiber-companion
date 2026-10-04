@@ -45,7 +45,7 @@ function theSizeOn(Wanted $wanted): string
     )->shown();
 }
 
-it('N2-R11 — carries who asked and what for, which is what a decision is made from', function (): void {
+it('carries who asked and what for, which is what a decision is made from', function (): void {
     $wanted = aRequest();
 
     expect($wanted->by())->toBe('Sam')
@@ -60,21 +60,21 @@ it('takes the words as the stack wrote them, less the space around them', functi
         ->and($wanted->forWhat())->toBe('A film');
 });
 
-it('D7-R7 — refuses a request with nobody behind it', function (): void {
+it('refuses a request with nobody behind it', function (): void {
     // A decision recorded against nobody cannot reach the requester, which is
     // what a decline is required to do.
     expect(fn(): Wanted => aRequest(by: '   '))
         ->toThrow(RequestHasNobodyBehindIt::class, '41');
 });
 
-it('N2-R11 — refuses a request that names nothing asked for', function (): void {
+it('refuses a request that names nothing asked for', function (): void {
     // A row an operator is being asked to approve, saying nothing about what
     // they would be approving, is a decision nobody can make.
     expect(fn(): Wanted => aRequest(forWhat: '   '))
         ->toThrow(RequestHasNobodyBehindIt::class, 'Sam');
 });
 
-it('N2-R11 — says which requests are waiting on the operator', function (): void {
+it('says which requests are waiting on the operator', function (): void {
     // Only one of the seven wants a decision. A screen offering to approve
     // something already here would be offering to do nothing.
     $wanting = [];
@@ -109,7 +109,7 @@ it('carries where it stands, so a screen can tell waiting from arrived', functio
         ->and(whereItStands(aRequest()))->toBe('waiting-for-approval');
 });
 
-it('D7-R3 — hands the size out with its label still on it', function (): void {
+it('hands the size out with its label still on it', function (): void {
     // Read off the request rather than off a `Size` built in the test, because
     // what the requirement is about is what reaches a screen. A request that
     // carried the figure and dropped the word would satisfy every assertion
@@ -130,7 +130,7 @@ function whyItWasTurnedDown(Wanted $wanted): string
     )->said;
 }
 
-it('N3-R7 — a refused request carries the reason that was given', function (): void {
+it('a refused request carries the reason that was given', function (): void {
     $wanted = Wanted::turnedDown(
         41,
         'Sam',
@@ -142,7 +142,7 @@ it('N3-R7 — a refused request carries the reason that was given', function ():
     expect(whyItWasTurnedDown($wanted))->toBe('The disk is nearly full');
 });
 
-it('D7-R7 — a refused request is `declined` by construction', function (): void {
+it('a refused request is `declined` by construction', function (): void {
     // The standing is not a parameter, which makes two mistakes unspellable at
     // once: a decline carrying no reason, and a reason attached to a request
     // that was never declined — a screen telling somebody why a thing they are

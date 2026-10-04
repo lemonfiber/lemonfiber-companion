@@ -26,7 +26,7 @@ function whatCopiesWereFound(WhatCopiesWereFound $answer): string
     )->said;
 }
 
-it('N6-R9 — an empty list of copies and one that could not be read take different arms', function (): void {
+it('an empty list of copies and one that could not be read take different arms', function (): void {
     expect(whatCopiesWereFound(WhatCopiesWereFound::copies(TheCopies::named())))->toBe('copies:0')
         ->and(whatCopiesWereFound(WhatCopiesWereFound::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

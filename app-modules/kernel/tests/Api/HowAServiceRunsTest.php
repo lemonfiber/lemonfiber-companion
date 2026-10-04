@@ -5,13 +5,13 @@ declare(strict_types=1);
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\WhatToDoWithIt;
 
-it('N2-R7 — says where a service stands, as a key', function (): void {
+it('says where a service stands, as a key', function (): void {
     foreach (HowAServiceRuns::cases() as $runs) {
         expect($runs->saidOnTheScreen())->toBe(sprintf('health.service.%s', $runs->value));
     }
 });
 
-it('N2-R7 — a service the host runs is not this stack\'s to start or stop', function (): void {
+it('a service the host runs is not this stack\'s to start or stop', function (): void {
     // Not the same as a control temporarily out of reach, which is
     // offered and reported on. This control does not exist.
     expect(HowAServiceRuns::HostManaged->isThisStacksToRun())->toBeFalse();
@@ -25,7 +25,7 @@ it('N2-R7 — a service the host runs is not this stack\'s to start or stop', fu
     }
 });
 
-it('N2-R8 — restarting something already being restarted is the case worth saying', function (): void {
+it('restarting something already being restarted is the case worth saying', function (): void {
     // A crash loop is *starting*, repeatedly. Another restart adds a start to a
     // queue of starts, and the honest statement before confirming is that it
     // will not help.
@@ -61,7 +61,7 @@ it('the order is the contract\'s, worst first', function (): void {
         ]);
 });
 
-it('N1-R27 — only a starting service becomes something else on its own', function (): void {
+it('only a starting service becomes something else on its own', function (): void {
     // The one state that resolves without anybody touching the phone, which is
     // what a declared cadence is for. Every other case is a standing answer, so a
     // screen polling on any of them would be polling on a listing that cannot
@@ -77,7 +77,7 @@ it('N1-R27 — only a starting service becomes something else on its own', funct
     }
 });
 
-it('N2-R7 — a state takes only the verbs that mean something to it', function (): void {
+it('a state takes only the verbs that mean something to it', function (): void {
     // The whole table, written out, because that is what it is. A screen used
     // to offer all three on every row, which put *start* on a service that is
     // running and *stop* on one that has crashed — both refused by the machine,
@@ -120,7 +120,7 @@ it('N2-R7 — a state takes only the verbs that mean something to it', function 
     ]);
 });
 
-it('N2-R7 — nothing this stack does not run can be told to do anything', function (): void {
+it('nothing this stack does not run can be told to do anything', function (): void {
     // The same line `isThisStacksToRun()` draws, asked from the other side: a
     // state that is not this stack's to run offers no verb, and one that is
     // offers at least one. A row that is ours and offers nothing would draw an
@@ -136,7 +136,7 @@ it('N2-R7 — nothing this stack does not run can be told to do anything', funct
     }
 });
 
-it('B2-R10 — the seven states an operator must be told apart are each here', function (): void {
+it('the seven states an operator must be told apart are each here', function (): void {
     // A minimum is named rather than a set: absent, stopped, starting,
     // healthy, unhealthy, crash-looping, failed. This enum carries nine of
     // them, because the contract lists nine — so the requirement is met by a

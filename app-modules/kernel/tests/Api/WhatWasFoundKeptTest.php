@@ -29,7 +29,7 @@ function whatWasFoundKept(WhatWasFoundKept $answer): string
     )->said;
 }
 
-it('N6-R7 — a machine that could not be asked is never one keeping nothing', function (): void {
+it('a machine that could not be asked is never one keeping nothing', function (): void {
     $nothing = WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of());
 
     expect(whatWasFoundKept(WhatWasFoundKept::kept($nothing)))->toBe('kept:0')

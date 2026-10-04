@@ -14,9 +14,9 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R11` | Each stack's session is separate | `Admitting` takes the stack rather than an address |
 | `N1-R22` | Trust is pinned to the stack rather than to where it answers | `Configured` — a machine on a new address is the same machine |
-| `N1-R29` | Whether an action is supported is asked before it is offered | `Capabilities`, answered in one place so no screen works it out |
+| `N1-R29` | Whether an action is supported is asked before it is offered | `Capabilities`, answered in one place so no screen works it out (`CapabilitiesTest`) |
 | `N1-R31` | Where two configured stacks differ in what they support, the difference is per stack | `Capabilities` carries the `StackId` |
-| `N1-R39` | Which stack a screen is showing is carried, never read from somewhere shared | `Configured` |
+| `N1-R39` | Which stack a screen is showing is carried, never read from somewhere shared | `Configured` (`ConfirmedTest`) |
 | `N1-R35` | A launch with no stack configured is a whole screen rather than an absence something remembers | `Configured` |
 
 ## Reaching one
@@ -24,8 +24,8 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R8` | A session stays out of the URL | `Address`, whose only accessor is named for where the value goes |
-| `N1-R12` | An unencrypted address is stated, and protection it does not have is not implied | `Address` |
-| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` |
+| `N1-R12` | An unencrypted address is stated, and protection it does not have is not implied | `Address` (`AddressTest`, `SchemeTest`) |
+| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`) |
 | `N1-R16` | Every call goes through the SDK | `KeepingCurrent` and the ports beside it |
 | `N1-R17` | Where the contract does not carry something, the work stops rather than approximating it from a neighbour | `WhatTheCoreDecided` |
 | `N1-R13` | A refused wire version carries both halves: what arrived, and what is supported | `EnvelopeIsNotRead` |
@@ -42,26 +42,26 @@ requirement is right and this page is a defect.
 | `N1-R18` | The fingerprint comes from the material and never from the network | `Pairing` |
 | `N1-R19` | The pinned request is the one that must never reach an unverified peer | `Admitting` |
 | `N1-R20` | A changed certificate becomes *this is not the machine you were introduced to* | `Fingerprint` |
-| `N1-R48` | The fingerprint is the certificate that address will present, and an unencrypted address proves nothing | `Pairing` |
+| `N1-R48` | The fingerprint is the certificate that address will present, and an unencrypted address proves nothing | `Pairing` (`PairingTest`) |
 | `N1-R49` | Material past its moment is its own screen | `Pairing` |
 | `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | `Pairing`, reading `WhatPairingMaterialSays::Stack` into `StackId::saidBy()`, which takes only the 32 lower-case hexadecimal characters a stack mints and refuses material naming anything else |
 | `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | `Introducing`, which takes the stack's identity from the material, and `Configured::with()`; `Remembering` tells a machine already held from a new one by that identifier alone, and answers `HowThePairingWent::PairedAgain` rather than `Paired` |
 | `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written and answering `HowThePairingWent::PairedAgainOnANewCertificate`, which tells the operator to sign in again |
 | `N1-R50`, `N1-R51` | A short form to check at a glance, derived from the whole fingerprint — two constraints that pull against each other | `AtAGlance` |
 | `N1-R10` | A refusal is an obstacle rather than a type of its own | `Admitted` |
-| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` |
-| `N1-R45` | A credential expiring is not the machine changing — the pairing survives | `Interrupted` |
-| `N1-R46` | An ended session is not a refused credential | `Interrupted`, whose two arms take different arguments |
+| `N1-R44` | An ended session is a screen, not a port's business | `Admitting` (`InterruptedTest`, `WhereaboutsTest`) |
+| `N1-R45` | A credential expiring is not the machine changing — the pairing survives | `Interrupted` (`InterruptedTest`) |
+| `N1-R46` | An ended session is not a refused credential | `Interrupted`, whose two arms take different arguments (`InterruptedTest`) |
 
 ## What is kept between launches
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R32` | Anything kept between launches carries its shape | `Shape` |
-| `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` |
+| `N1-R32` | Anything kept between launches carries its shape | `Shape` (`ShapeTest`) |
+| `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` (`ShapeTest`) |
 | `N1-R34` | A discard of retained state does not take the pairing with it | `Stacks`, whose one removing method, `forgetTheStack()`, only Remove from phone calls; clearing what the phone keeps asks stores that hold no pairing (`APairingIsNotDiscardedTest`, `ClearingWhatThePhoneKeepsLeavesPairingsTest`); a record the store would not open, or one a newer build wrote, is held back rather than read as none, nothing is written over it, and Your stacks says why with what to do (`WhyTheStacksAreHeldBack`, `StacksThatCannotBeReadAreHeldBackTest`) |
 | `N1-R23`, `N4-R5` | What is retained is stated, and beside it what is not | `Configured` |
-| `N1-R38` | What a screen was holding when the operator left it | `Held` |
+| `N1-R38` | What a screen was holding when the operator left it | `Held` (`HeldTest`) |
 | `N1-R24` | A retained reading may open a screen and may never stand as confirmation | `Reading` |
 | `N1-R9` | A value not read in this session carries when it was read | `HowLongAgo` |
 | `N1-R52`, `N1-R53` | The app's identity is declared once and not taken from the builder's environment | `WhoThisAppIs` |
@@ -72,18 +72,18 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R36`, `N1-R37` | No network, unreachable, locked, no stack yet, and ready — told apart | `Launch` |
 | `N1-R3` | A control is not hidden because something is unreachable | `Availability` |
-| `N1-R30` | Unsupported and unavailable are reported as themselves | `Availability` |
+| `N1-R30` | Unsupported and unavailable are reported as themselves | `Availability` (`AvailabilityTest`, `CapabilitiesTest`) |
 | `N1-R4` | The app cannot name an action the stack did not offer | `TakingAnUpdate`, spelled once in the kernel and never at a call site |
-| `N1-R28` | An indeterminate progress indicator only where the app holds nothing to show | `Showing` |
+| `N1-R28` | An indeterminate progress indicator only where the app holds nothing to show | `Showing` (`ShowingTest`) |
 
 ## What an action may be
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R40` | An action the app could not deliver is refused rather than queued | `Attempted`; `ADR-0020` is the design |
+| `N1-R40` | An action the app could not deliver is refused rather than queued | `Attempted`; `ADR-0020` is the design (`AttemptedTest`) |
 | `N1-R41` | No retaining an undelivered action, no replaying one on reconnecting, no presenting one as pending | `Attempted` |
 | `N1-R42` | An idempotency key is never serialised | `IdempotencyKey`, whose `serialize()` writes nothing |
-| `N1-R43` | A refused attempt leaves the action offered — the attempt failed, the capability did not go away | `Attempted`, which carries no arm for *unavailable*: a refusal is a thing that happened to one attempt and there is nowhere on the type to record it as a fact about the verb. `app-modules/kernel/tests/Api/AttemptedTest.php` names it |
+| `N1-R43` | A refused attempt leaves the action offered — the attempt failed, the capability did not go away | `Attempted`, which carries no arm for *unavailable*: a refusal is a thing that happened to one attempt and there is nowhere on the type to record it as a fact about the verb. `app-modules/kernel/tests/Api/AttemptedTest.php` names it (`AttemptedTest`) |
 | `N1-R65` | One reading per frame | `Asking`, which publishes one method |
 | `N1-R66` | Nothing polls on the app's behalf | `HowTheOfferIsGoing` — a job that ended is where an automatic one would start |
 | `N3-R13` | An identity removed from the household is a signed-out app at the next refused call | `Obstacle` |

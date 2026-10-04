@@ -10,7 +10,7 @@ use function it;
 
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 
-it('N4-R6 — only one of the two refusals is worth trying again', function (): void {
+it('only one of the two refusals is worth trying again', function (): void {
     // The distinction an operator acts on. A store that would not open might
     // open next time; a device with no store will not grow one, and telling
     // somebody to try again there is telling them to do nothing twice.
@@ -18,7 +18,7 @@ it('N4-R6 — only one of the two refusals is worth trying again', function (): 
     expect(WhySessionCannotBeKept::DeviceHasNoSecureStorage->mayBeWorthRetrying())->toBeFalse();
 });
 
-it('N4-R6 — there are two refusals, because the platform reports two', function (): void {
+it('there are two refusals, because the platform reports two', function (): void {
     // A third case was written and removed: "no screen lock is set" is a real
     // situation with a clear remedy, and `SecureStorageStatus` gives only
     // `Unavailable` or `Failed`. A case nothing can produce is a branch no

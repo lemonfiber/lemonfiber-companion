@@ -35,7 +35,7 @@ function aDaemonCalled(string $name, HowAServiceRuns $runs = HowAServiceRuns::He
     );
 }
 
-it('N2-R7 — carries what an operator needs before touching a service', function (): void {
+it('carries what an operator needs before touching a service', function (): void {
     $daemon = aDaemonCalled('sonarr', HowAServiceRuns::Stopped);
 
     expect($daemon->name())->toBe('sonarr')
@@ -69,7 +69,7 @@ it('refuses a service with no name to show', function (): void {
     ))->toThrow(ServiceIsUnnamed::class);
 });
 
-it('N2-R8 — carries what stopping it would take with it', function (): void {
+it('carries what stopping it would take with it', function (): void {
     $daemon = Daemon::called(
         'gluetun',
         ServiceId::called('gluetun'),

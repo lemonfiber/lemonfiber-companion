@@ -19,11 +19,11 @@ it('keeps each copy by its name, in the order given', function (): void {
         ->and($copies)->toHaveCount(2);
 });
 
-it('N6-R9 — no copy is an answer with nothing in it', function (): void {
+it('no copy is an answer with nothing in it', function (): void {
     expect(TheCopies::named())->toHaveCount(0);
 });
 
-it('N6-R9 — refuses a copy nobody could name', function (): void {
+it('refuses a copy nobody could name', function (): void {
     expect(fn(): TheCopies => TheCopies::named('lemonfiber-20260924-0300-full', ' '))->toThrow(KeepingSaysNothing::class, '`archive`');
 });
 

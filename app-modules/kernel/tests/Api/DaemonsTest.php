@@ -51,7 +51,7 @@ function everythingItRuns(Daemons $daemons): string
     return implode(' | ', $rows);
 }
 
-it('N2-R7 — holds what the stack runs, in the order it listed them', function (): void {
+it('holds what the stack runs, in the order it listed them', function (): void {
     // Worst first, which is the contract's order. Sorting alphabetically would
     // put a crashed service under a healthy one, and the operator would scroll
     // past the row they opened the app for.

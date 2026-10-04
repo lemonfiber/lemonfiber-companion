@@ -29,11 +29,11 @@ and never from an event.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N4-R7` | The app locks on backgrounding and asks for biometric or passcode to resume | `LockRule.left()` and `returned()`, fed by the process going to the background on Android and by entering the background on iOS; `WhenTheLockMoves` puts `Locked` over the screen on view |
-| `N4-R8` | A biometric failure falls back to the passcode, never to unlocked | `WhatUnlocks` in each half puts the passcode behind the biometrics; `LockRule.answered()` opens only on success; `Authenticated` can be made only from the device's answer, in `PlatformAuth` |
+| `N4-R7` | The app locks on backgrounding and asks for biometric or passcode to resume | `LockRule.left()` and `returned()`, fed by the process going to the background on Android and by entering the background on iOS; `WhenTheLockMoves` puts `Locked` over the screen on view (`LockTest`) |
+| `N4-R8` | A biometric failure falls back to the passcode, never to unlocked | `WhatUnlocks` in each half puts the passcode behind the biometrics; `LockRule.answered()` opens only on success; `Authenticated` can be made only from the device's answer, in `PlatformAuth` (`LockTest`) |
 | `N4-R9` | The task switcher shows no content | `CaptureRule` protects the window while backgrounded; `LockRule.mustCover` keeps the cover up from leaving until `Locked` is on the glass |
 | `N4-R19` | The device's own authentication on a cold start and on resume after Lock after, and no prompt while an action sent is outstanding | `LockRule.coldStart()` and `returned()`; the composition root builds `Locked` in place of any screen while the lock stands; `AwaitsAnOutcome` withholds the prompt the device would raise by itself (`WhenTheLockAsks::OnlyWhenTapped`); Lock after is the period App settings keeps, told the device through `DeviceAuth::allowAway()` |
-| `N4-R20` | A notification shown while locked discloses nothing of a stack | `PlatformNotifier` asks the device whether the lock stands, counting a time away not yet ended, and uses the guarded wording where it does |
+| `N4-R20` | A notification shown while locked discloses nothing of a stack | `PlatformNotifier` asks the device whether the lock stands, counting a time away not yet ended, and uses the guarded wording where it does (`NotificationTest`) |
 | `N4-R22` | No authentication on a cold start where the device holds no pairing and no session | `TheLock` waives the lock where `Stacks::holdsAny()` answers no |
 | `N4-R23` | That is read from the store itself, and the unlocked first run is gone once a pairing is held | `TheLock` asks `Stacks::holdsAny()` every time the lock stands; a store that will not open answers that something is held |
 | `N4-R24` | Nothing is drawn behind the lock, including a first-run surface, an empty state or an earlier frame | `Locked` draws one sentence and one button; no screen is built while the lock stands; the device's cover hides the earlier frame, and the screen reader, until `TheLockIsOnTheGlass` says `Locked` was published |
@@ -62,9 +62,9 @@ and never from an event.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N4-R10` | No credential, no household member's name, no requested title | `Notification` — all three are values, and none of them is here |
-| `N4-R11` | The app raises no alerts of its own | every notification originates in the core's |
-| `N4-R15` | Not shown for a stack no longer configured | `Notification` carries the `StackId` that lets it be asked |
+| `N4-R10` | No credential, no household member's name, no requested title | `Notification` — all three are values, and none of them is here (`NotificationTest`) |
+| `N4-R11` | The app raises no alerts of its own | every notification originates in the core's (`NotificationTest`, `WhatTheCoreDecidedTest`) |
+| `N4-R15` | Not shown for a stack no longer configured | `Notification` carries the `StackId` that lets it be asked (`NotificationTest`) |
 
 ## Where a message goes
 

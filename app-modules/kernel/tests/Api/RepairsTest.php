@@ -38,7 +38,7 @@ it('builds a list even from named arguments', function (): void {
     expect(array_keys(iterator_to_array($repairs, preserve_keys: true)))->toBe([0, 1]);
 });
 
-it('N2-R4 — offering nothing is an answer a screen reads, not an absence', function (): void {
+it('offering nothing is an answer a screen reads, not an absence', function (): void {
     expect(Repairs::none()->isEmpty())->toBeTrue()
         ->and(Repairs::none()->count())->toBe(0);
 });
@@ -70,7 +70,7 @@ it('says which findings have something on offer under them', function (): void {
         ->and(Repairs::none()->answering(Check::of('indexer-reachable')))->toBeFalse();
 });
 
-it('N2-R6 — tells the repair it holds from an equal-looking one it does not', function (): void {
+it('tells the repair it holds from an equal-looking one it does not', function (): void {
     // By identity rather than by value: two listings can offer a repair that
     // looks the same and be about different moments, and treating them as one
     // would be this app deciding that nothing important changed.

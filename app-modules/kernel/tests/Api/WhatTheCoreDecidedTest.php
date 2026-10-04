@@ -21,7 +21,7 @@ it('is shown without the whitespace around it', function (): void {
     expect(WhatTheCoreDecided::toSay("  backup.finished\n")->shown())->toBe('backup.finished');
 });
 
-it('N4-R11 — refuses a decision that names nothing', function (): void {
+it('refuses a decision that names nothing', function (): void {
     // Whitespace as well as empty, which is the case a length check alone lets
     // through: a notification with no identifier has nothing to key its words
     // by, and renders as a banner with a blank line where the sentence goes.

@@ -22,7 +22,7 @@ function whatCameBackAboutTheService(WhatWasSaid $answer): string
     )->said;
 }
 
-it('N2-R10 — a window takes the arm that renders lines', function (): void {
+it('a window takes the arm that renders lines', function (): void {
     $service = ServiceId::called('gluetun');
     $window = Scrollback::of(
         $service,
@@ -33,7 +33,7 @@ it('N2-R10 — a window takes the arm that renders lines', function (): void {
     expect(whatCameBackAboutTheService(WhatWasSaid::this($window)))->toBe('1 lines');
 });
 
-it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {
+it('an obstacle takes the other arm, carrying which one it was', function (): void {
     expect(whatCameBackAboutTheService(WhatWasSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
 });

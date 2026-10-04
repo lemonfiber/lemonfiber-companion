@@ -22,11 +22,11 @@ function howBig(Size $size): string
     )->shown();
 }
 
-it('D7-R3 — a measured size hands over the figure and says it was measured', function (): void {
+it('a measured size hands over the figure and says it was measured', function (): void {
     expect(howBig(Size::measured(1_048_576)))->toBe('measured-1048576');
 });
 
-it('D7-R4 — an estimate hands over the figure and says it is one', function (): void {
+it('an estimate hands over the figure and says it is one', function (): void {
     // The whole reason there is no `bytes()`. A screen showing a guess as a
     // measurement has to have been handed the distinction and dropped it, which
     // is visible in review in a way a missing call is not.
@@ -40,7 +40,7 @@ it('tells the same figure measured and guessed apart', function (): void {
     expect(howBig(Size::measured(512)))->not->toBe(howBig(Size::guessedAt(512)));
 });
 
-it('D7-R3 — a size nobody took is neither a measurement nor a guess of zero', function (): void {
+it('a size nobody took is neither a measurement nor a guess of zero', function (): void {
     // Not zero. An operator deciding whether to let something onto their disk
     // is entitled to *we do not know*: it is a real answer, and the one that
     // sends them to look rather than to approve. Folding it into a guess would
@@ -49,7 +49,7 @@ it('D7-R3 — a size nobody took is neither a measurement nor a guess of zero', 
         ->and(howBig(Size::unknown()))->not->toBe(howBig(Size::guessedAt(0)));
 });
 
-it('D7-R3 — a size of zero is a figure rather than a missing one', function (): void {
+it('a size of zero is a figure rather than a missing one', function (): void {
     // The boundary the arm order has to get right. `0` is falsy, and a fold
     // written on truthiness rather than on `null` would send a measured zero to
     // the arm meaning nobody looked.
