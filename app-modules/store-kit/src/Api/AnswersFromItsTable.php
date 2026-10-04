@@ -49,6 +49,11 @@ trait AnswersFromItsTable
         return $this->table()->forgetEverything();
     }
 
-    /** The table this store's owner keeps its readings in. */
-    abstract private function table(): ATableOfReadings;
+    /**
+     * The table this store's owner keeps its readings in.
+     *
+     * `protected` because only this trait calls it, and an analyser that does
+     * not follow a trait reads a private one as never used.
+     */
+    abstract protected function table(): ATableOfReadings;
 }

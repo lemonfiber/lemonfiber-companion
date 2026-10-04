@@ -28,7 +28,7 @@ final readonly class ListingsInTheDatabase implements ListingsKept
 
     public function __construct(private ConnectionInterface $database) {}
 
-    private function table(): ATableOfReadings
+    protected function table(): ATableOfReadings
     {
         return new ATableOfReadings($this->database, self::TABLE);
     }
