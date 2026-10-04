@@ -38,7 +38,7 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
-    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'NewsItems', 'Outbound', 'Pairing', 'Preview',
+    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Word',
@@ -93,7 +93,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'News', 'Plugins', 'Substitution', 'Wiring',
+    'Certificate', 'Plugins', 'Substitution', 'Wiring',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
