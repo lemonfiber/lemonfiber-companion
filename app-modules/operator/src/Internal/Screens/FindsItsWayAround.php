@@ -14,8 +14,8 @@ use Native\Mobile\Edge\NativeComponent;
  * The way around, on an operator's screen about a stack, with its tabs.
  *
  * A tab's screen is the root of what the phone draws for it; every other
- * screen about a stack is opened on top of one and has a back button. The
- * bottom bar is drawn on a tab's screens only.
+ * screen about a stack has a back button wherever the router holds a screen
+ * beneath it. The bottom bar is drawn on a tab's screens only.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -35,8 +35,8 @@ trait FindsItsWayAround
         return $this->itsTab() instanceof TheTabs ? null : TabBarOptions::make()->hidden();
     }
 
-    protected function opensOnTopOfAnother(): bool
+    protected function isDrawnAsATab(): bool
     {
-        return ! WhereTheTabsAreDrawn::drawnBy(self::class);
+        return WhereTheTabsAreDrawn::drawnBy(self::class);
     }
 }

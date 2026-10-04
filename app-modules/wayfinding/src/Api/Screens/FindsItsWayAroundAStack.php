@@ -21,8 +21,15 @@ use function view;
  * stacks. NativePHP asks a screen for `drawerOverride()` and draws what it
  * answers beside the screen, rendered against the screen, so a row's
  * navigation is the screen's own. Which rows the menu draws follows whose
- * session this phone holds for the stack. A screen opened on top of another
- * has a back button, which the menu control sits beside.
+ * session this phone holds for the stack.
+ *
+ * **The way back is the router's to say.** A screen opened on top of another
+ * has the platform's back button, which the menu control sits beside, and
+ * whether one lies beneath it is what the router holds, not what the screen
+ * is: the screen a stack opens on, signing in included, can be the bottom of
+ * the stack or be pushed over another. A tab is never opened on top of
+ * anything, whatever the router holds beneath it, because switching tabs puts
+ * one in the place of another.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -54,5 +61,11 @@ trait FindsItsWayAroundAStack
     }
 
     /** Whether this screen is opened on top of another, and so has a back button. */
-    abstract protected function opensOnTopOfAnother(): bool;
+    protected function opensOnTopOfAnother(): bool
+    {
+        return ! $this->isDrawnAsATab() && $this->nativeRouter?->isRootScreen() === false;
+    }
+
+    /** Whether this screen is drawn as a tab, the root of what the phone draws for it. */
+    abstract protected function isDrawnAsATab(): bool;
 }
