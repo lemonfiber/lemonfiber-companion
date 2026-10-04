@@ -12,32 +12,21 @@ use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Unsealed;
 use Tests\Support\Fakes\ASealInMemory;
-use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\HealthReadingsInMemory;
-use Tests\Support\Fakes\ReadingsKeptForInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 
 /** A seal, a store, and what decides between them, over the two stand-ins. */
 final readonly class WhatIsKeptOfHealth
 {
     public KeepingTheLastReading $keeping;
 
-    public ReadingsKeptForInMemory $settings;
-
-    public function __construct(public ASealInMemory $seal, public HealthReadingsInMemory $store, ?Instant $now = null)
+    public function __construct(public ASealInMemory $seal, public ReadingsInMemory $store)
     {
-        $this->settings = ReadingsKeptForInMemory::standard();
-        $this->keeping = new KeepingTheLastReading($seal, $store, $this->settings, FrozenClock::at($now ?? Instant::atEpochSeconds(0)));
-    }
-
-    /** The same, with the clock reading this. */
-    public static function onAPhoneThatSealsAt(Instant $now): self
-    {
-        return new self(ASealInMemory::working(), HealthReadingsInMemory::empty(), $now);
+        $this->keeping = new KeepingTheLastReading($seal, $store);
     }
 
     public static function onAPhoneThatSeals(): self
     {
-        return new self(ASealInMemory::working(), HealthReadingsInMemory::empty());
+        return new self(ASealInMemory::working(), ReadingsInMemory::empty());
     }
 
     /** A value kept for a stack as though a summary had been, sealed by this phone. */

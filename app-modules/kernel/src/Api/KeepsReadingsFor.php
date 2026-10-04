@@ -7,8 +7,8 @@ namespace Modules\Kernel\Api;
 /**
  * How long readings are kept, as a setting of the phone.
  *
- * Readings are `health`'s, and the phone's settings are kept together by the
- * module that keeps them; this is how the one asks the other. Until the
+ * Kept with the phone's other settings, and asked by what lets go of readings
+ * older than it, so each is tested over a stand-in for the other. Until the
  * operator chooses, it is {@see HowLongReadingsAreKept::standard()}.
  */
 interface KeepsReadingsFor

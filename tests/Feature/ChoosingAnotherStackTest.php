@@ -29,6 +29,7 @@ use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\TheWaysAround;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 /** A moment the kept words were heard at: ten seconds before the moment the phone the tests make reads. */
 const HEARD_AT = 1_789_999_990;
@@ -65,6 +66,7 @@ function aTabToChooseFrom(?AKeychainInMemory $keychain = null, ?StandingsInMemor
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
         NoticingWhatIsNew::fromNothing(),
+        WhatThePhoneKeeps::noUpkeepYet(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Companion\PHPStan\Rules;
 
+use function array_flip;
+use function array_intersect_key;
+use function array_key_exists;
+use function array_key_first;
+
 use Illuminate\Support\ServiceProvider;
 
 use function in_array;
@@ -19,6 +24,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -43,7 +49,14 @@ use function str_starts_with;
  * `make` outside the closure builds the graph immediately. So the walk stops at
  * every closure boundary, and what it reports is only what runs during boot.
  *
- * @implements Rule<ClassMethod>
+ * **What runs during boot is followed into the provider's own methods.** A
+ * `register()` that hands its bindings to `$this->bindTheStores()` runs that
+ * method at boot as surely as its own lines, so a method called on `$this`
+ * from `register()` or `boot()`, and every one that calls in turn, is read
+ * too. A method handed over as `$this->theScanner(...)` is a binding's
+ * factory, called when something asks, and is not followed.
+ *
+ * @implements Rule<InClassNode>
  */
 final class ServiceProviderBindsOnlyRule implements Rule
 {
@@ -70,46 +83,97 @@ final class ServiceProviderBindsOnlyRule implements Rule
 
     public function getNodeType(): string
     {
-        return ClassMethod::class;
+        return InClassNode::class;
     }
 
     /** @return list<IdentifierRuleError> */
     public function processNode(Node $node, Scope $scope): array
     {
-        $class = $scope->getClassReflection();
-
-        if ($class === null || ! $class->isSubclassOf(ServiceProvider::class)) {
-            return [];
-        }
-
-        if (! in_array($node->name->toLowerString(), ['register', 'boot'], strict: true)) {
+        if (! $node->getClassReflection()->isSubclassOf(ServiceProvider::class)) {
             return [];
         }
 
         $found = [];
 
-        foreach ($this->callsRunningAtBoot($node->stmts ?? []) as $call) {
-            $offence = $this->offenceIn($call);
+        foreach ($this->methodsRunningAtBoot($node->getOriginalNode()->getMethods()) as $method) {
+            foreach ($this->callsRunningAtBoot($method->stmts ?? []) as $call) {
+                $offence = $this->offenceIn($call);
 
-            if ($offence === null) {
-                continue;
+                if ($offence === null) {
+                    continue;
+                }
+
+                $found[] = RuleErrorBuilder::message(sprintf(
+                    'A9 — a service provider binds and does not work. %s runs before the '
+                    . 'first frame is drawn, on a phone, possibly with no network. Describe '
+                    . 'how the thing will be built and let the first caller pay for it: put '
+                    . 'it in a binding closure, which this rule deliberately does not look '
+                    . 'inside. A frame the operator can use must not wait on a read (A9, '
+                    . 'N1-R36).',
+                    $offence,
+                ))
+                    ->identifier('lemonfiber.serviceProviderDoesWork')
+                    ->line($call->getStartLine())
+                    ->build();
             }
-
-            $found[] = RuleErrorBuilder::message(sprintf(
-                'A9 — a service provider binds and does not work. %s runs before the '
-                . 'first frame is drawn, on a phone, possibly with no network. Describe '
-                . 'how the thing will be built and let the first caller pay for it: put '
-                . 'it in a binding closure, which this rule deliberately does not look '
-                . 'inside. A frame the operator can use must not wait on a read (A9, '
-                . 'N1-R36).',
-                $offence,
-            ))
-                ->identifier('lemonfiber.serviceProviderDoesWork')
-                ->line($call->getStartLine())
-                ->build();
         }
 
         return $found;
+    }
+
+    /**
+     * `register()`, `boot()`, and every method of the provider they call on `$this` as they run, followed to the end.
+     *
+     * @param array<int, ClassMethod> $methods
+     *
+     * @return array<string, ClassMethod>
+     */
+    private function methodsRunningAtBoot(array $methods): array
+    {
+        $byName = [];
+
+        foreach ($methods as $method) {
+            $byName[$method->name->toLowerString()] = $method;
+        }
+
+        $waiting = array_intersect_key($byName, array_flip(['register', 'boot']));
+        $read = [];
+
+        while ($waiting !== []) {
+            $name = (string) array_key_first($waiting);
+            $read[$name] = $waiting[$name];
+            unset($waiting[$name]);
+
+            foreach ($this->methodsCalledOnItself($read[$name]) as $called) {
+                if (array_key_exists($called, $byName) && ! array_key_exists($called, $read)) {
+                    $waiting[$called] = $byName[$called];
+                }
+            }
+        }
+
+        return $read;
+    }
+
+    /**
+     * The methods this one calls on `$this` as it runs, by name; one handed over as a callable is not called.
+     *
+     * @return list<string>
+     */
+    private function methodsCalledOnItself(ClassMethod $method): array
+    {
+        $called = [];
+
+        foreach ($this->callsRunningAtBoot($method->stmts ?? []) as $call) {
+            if ($call instanceof MethodCall
+                && ! $call->isFirstClassCallable()
+                && $call->var instanceof Variable
+                && $call->var->name === 'this'
+                && $call->name instanceof Node\Identifier) {
+                $called[] = $call->name->toLowerString();
+            }
+        }
+
+        return $called;
     }
 
     /**

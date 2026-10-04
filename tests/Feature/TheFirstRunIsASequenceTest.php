@@ -68,6 +68,7 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        WhatThePhoneKeeps::nothingTooOld(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),

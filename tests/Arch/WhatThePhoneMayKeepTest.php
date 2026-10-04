@@ -22,10 +22,12 @@ use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\Unsealed;
 use Modules\News\Internal\TheNewsAsKept;
 use Modules\Seal\Api\EncrypterSeal;
+use Modules\Updates\Internal\TheUpkeepAsKept;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -62,6 +64,7 @@ const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheSettingsAsKept::class,
     TheSummaryAsKept::class,
     TheNewsAsKept::class,
+    TheUpkeepAsKept::class,
 ];
 
 /** The one other class that makes a value to seal: the seal, handing back what it opened. */
@@ -86,6 +89,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     ARemovalAgreed::class,
     AResetAgreed::class,
     HostingAgreed::class,
+    TakingAnUpdate::class,
     IdempotencyKey::class,
     Credential::class,
     Session::class,

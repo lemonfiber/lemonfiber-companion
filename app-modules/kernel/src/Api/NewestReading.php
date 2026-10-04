@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Internal;
+namespace Modules\Kernel\Api;
 
 use Closure;
-use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\SealedPayload;
-use Modules\Kernel\Api\SealedReading;
-use Modules\Kernel\Api\Shape;
-use Modules\Kernel\Api\WhyNoReadingIsFound;
 
 /**
- * The newest health reading a store keeps for a stack, or that it keeps none.
+ * The newest reading a store keeps for a stack, or that it keeps none.
+ *
+ * What every store of readings answers when asked for one stack's, whichever
+ * capability owns it: the reading is the owner's, and the three answers are
+ * the same for each.
  *
  * **Three answers, and the third is the one a store cannot decide about.** A
  * row written in a shape this build has no name for — by a later version of
@@ -25,7 +24,7 @@ use Modules\Kernel\Api\WhyNoReadingIsFound;
  * could read. One field holds either answer, so no state holds a reading and a
  * reason for not having one.
  */
-final readonly class NewestHealthReading
+final readonly class NewestReading
 {
     private function __construct(private SealedReading|WhyNoReadingIsFound $answer) {}
 
@@ -45,6 +44,17 @@ final readonly class NewestHealthReading
     public static function thatThisBuildCannotRead(): self
     {
         return new self(WhyNoReadingIsFound::ItCannotBeRead);
+    }
+
+    /**
+     * Whether the store holds a row for the stack, readable or not.
+     *
+     * A row this build cannot read is still a row, so a removal that asks
+     * this waits for it to be let go of rather than taking the stack as gone.
+     */
+    public function holdsARow(): bool
+    {
+        return $this->answer !== WhyNoReadingIsFound::NoneIsKept;
     }
 
     /**

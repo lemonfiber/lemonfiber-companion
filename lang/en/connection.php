@@ -102,4 +102,5 @@ return [
     'pair_again' => 'Pair it again',
     'start_over' => 'Try signing in again',
     'saved_data_cleared' => 'Saved data was cleared because it could no longer be read. Your stacks are still paired.',
+    'usable_once_the_stack_answers' => 'Usable once the stack answers. Last read :ago.',
 ];

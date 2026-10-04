@@ -9,29 +9,33 @@ use function array_key_exists;
 use function count;
 
 use Modules\Health\Internal\HealthReadingsKept;
-use Modules\Health\Internal\NewestHealthReading;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\NewestReading;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedReading;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
+use Modules\Updates\Internal\UpkeepReadingsKept;
 
 /**
- * The health readings the phone keeps, held for as long as a test runs.
+ * The readings the phone keeps, held for as long as a test runs.
  *
- * Held to the same contract as
- * {@see \Modules\Health\Internal\Store\HealthReadingsInTheDatabase}, so a decision
- * tested over this is tested over a store that behaves like the database: one
- * reading per stack, the later replacing the earlier, a reading read exactly at
- * the cut-off kept, and a row this build cannot read reachable, because a
- * later build writing one is the case the third answer exists for.
+ * One fake for every store of readings, because every one of them makes the
+ * same promise over the same sealed bookkeeping: held to the contract of
+ * {@see \Modules\Health\Internal\Store\HealthReadingsInTheDatabase} and of
+ * {@see \Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase}, so a
+ * decision tested over this is tested over a store that behaves like the
+ * database: one reading per stack, the later replacing the earlier, a reading
+ * read exactly at the cut-off kept, and a row this build cannot read
+ * reachable, because a later build writing one is the case the third answer
+ * exists for.
  *
- * Written by hand rather than mocked, so a change to the port fails to compile
- * here rather than drifting.
+ * Written by hand rather than mocked, so a change to either port fails to
+ * compile here rather than drifting.
  */
-final class HealthReadingsInMemory implements HealthReadingsKept
+final class ReadingsInMemory implements HealthReadingsKept, UpkeepReadingsKept
 {
     /** @var array<string, SealedReading> the stack's hash => its reading */
     private array $readings = [];
@@ -65,19 +69,19 @@ final class HealthReadingsInMemory implements HealthReadingsKept
         return Noted::downAt($readAt);
     }
 
-    public function newest(SealedStack $stack): NewestHealthReading
+    public function newest(SealedStack $stack): NewestReading
     {
         if (array_key_exists($stack->forTheStore(), $this->unreadable)) {
-            return NewestHealthReading::thatThisBuildCannotRead();
+            return NewestReading::thatThisBuildCannotRead();
         }
 
         if (! array_key_exists($stack->forTheStore(), $this->readings)) {
-            return NewestHealthReading::none();
+            return NewestReading::none();
         }
 
         $reading = $this->readings[$stack->forTheStore()];
 
-        return NewestHealthReading::found($reading->payload(), $reading->shape(), $reading->readAt());
+        return NewestReading::found($reading->payload(), $reading->shape(), $reading->readAt());
     }
 
     public function forget(SealedStack $stack): Forgotten

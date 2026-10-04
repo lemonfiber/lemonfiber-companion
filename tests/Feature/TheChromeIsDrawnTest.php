@@ -112,6 +112,7 @@ it('the word a frame opens on is drawn, with its age', function (): void {
         new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        WhatThePhoneKeeps::nothingTooOld(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
         WhatThePhoneKeeps::nothingToFinish(),

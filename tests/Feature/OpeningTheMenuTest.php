@@ -29,6 +29,7 @@ use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 use Tests\Support\WhatTheRouterHolds;
 
 function theStackWhoseMenuIsOpened(): Stack
@@ -58,7 +59,7 @@ function aTabWithTheMenu(?AKeychainInMemory $keychain = null): HowCurrentThisSta
 {
     $stack = theStackWhoseMenuIsOpened();
     $keychain ??= theAtticSignedIntoBy(Whose::theOperator());
-    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
+    $screen = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

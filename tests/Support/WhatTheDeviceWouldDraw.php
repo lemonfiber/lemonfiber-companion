@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function array_filter;
 use function array_key_exists;
+use function array_map;
+use function array_values;
 
 use Closure;
 
+use function data_get;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -19,6 +23,8 @@ use Native\Mobile\Edge\NativeTagPrecompiler;
 use Native\Mobile\UI\Builders\Drawer;
 use ReflectionObject;
 use RuntimeException;
+
+use function sprintf;
 
 /**
  * The element tree a screen puts on the glass, as a thing a test can ask about.
@@ -95,8 +101,11 @@ final readonly class WhatTheDeviceWouldDraw
     /** Where a screen's children hang. */
     private const string BENEATH = 'children';
 
+    /** The prop that says a control is drawn and cannot be used. */
+    private const string DISABLED = 'disabled';
+
     /**
-     * @param list<array{type: string, said: string, operated: bool}> $nodes every line that is said
+     * @param list<array{type: string, said: string, operated: bool, usable: bool}> $nodes every line that is said
      */
     private function __construct(private array $nodes) {}
 
@@ -217,6 +226,23 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
+     * Every control the frame draws that cannot be used: a node is drawn as
+     * one only where it is a control.
+     *
+     * Drawn rather than left out, which is the difference worth asking about:
+     * a control that waits is still on the glass, and one that is gone is not.
+     *
+     * @return list<string>
+     */
+    public function offersThatWait(): array
+    {
+        return array_values(array_map(
+            static fn(array $node): string => $node['said'],
+            array_filter($this->nodes, static fn(array $node): bool => ! $node['usable']),
+        ));
+    }
+
+    /**
      * The tree one of a screen's frames hands the device, drawn as the device draws it.
      *
      * @param Closure(): mixed $making what the screen answers with for the frame: its render, or its placeholder
@@ -274,7 +300,7 @@ final readonly class WhatTheDeviceWouldDraw
      * or added to, and getting that backwards is a bug that reads as a screen
      * saying the right things in the wrong order.
      *
-     * @return list<array{type: string, said: string, operated: bool}>
+     * @return list<array{type: string, said: string, operated: bool, usable: bool}>
      */
     private static function collect(mixed $node): array
     {
@@ -306,7 +332,7 @@ final readonly class WhatTheDeviceWouldDraw
      *
      * @param array<mixed> $node
      *
-     * @return list<array{type: string, said: string, operated: bool}>
+     * @return list<array{type: string, said: string, operated: bool, usable: bool}>
      */
     private static function itself(array $node): array
     {
@@ -317,13 +343,23 @@ final readonly class WhatTheDeviceWouldDraw
             return [];
         }
 
-        $lines = [['type' => $type, 'said' => $said, 'operated' => self::isOperated($type, $node)]];
+        $lines = [['type' => $type, 'said' => $said, 'operated' => self::isOperated($type, $node), 'usable' => ! self::isDisabled($node)]];
 
         foreach (self::linesBeside($node) as $line) {
-            $lines[] = ['type' => $type, 'said' => $line, 'operated' => false];
+            $lines[] = ['type' => $type, 'said' => $line, 'operated' => false, 'usable' => true];
         }
 
         return $lines;
+    }
+
+    /**
+     * Whether this node is drawn as one that cannot be used.
+     *
+     * @param array<mixed> $node
+     */
+    private static function isDisabled(array $node): bool
+    {
+        return data_get($node, sprintf('props.%s', self::DISABLED)) === true;
     }
 
     /**

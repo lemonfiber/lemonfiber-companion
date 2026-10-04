@@ -7,6 +7,30 @@ it — and nothing else. One decision, about a screen:
 |---|---|
 | `NotArrivedFirst` | what became of each service, with what needs attention first (`N2-R18`) |
 
+And one decision about what the phone keeps of it between launches:
+
+| | |
+|---|---|
+| `KeepingTheLastUpkeep` | The newest reading of where each stack stands, sealed before it is kept, handed back on opening as a `WhatWasKeptOfTheUpkeep` with when it was read, and let go of where it does not read |
+
+Only the reading is kept: never the offer a screen builds from it, an agreement
+to take it, or what became of an update taken. Readings older than the
+operator chose are let go of from the store through `ForgetsOldReadings`, which
+the store implements.
+
+It depends on `kernel`, and on Laravel's database in its store alone. A kept
+reading is sealed through `Sealed` and stored through `UpkeepReadingsKept`, a
+port this module declares in `Internal` and answers in `Internal/Store`:
+
+| | |
+|---|---|
+| `UpkeepReadingsInTheDatabase` | `UpkeepReadingsKept`, over the app's own database: one table, `updates_readings`, created by this module's migration in `database/migrations` |
+
+A row holds a stack's keyed hash, the shape the reading was written in, when it
+was read, and the reading as this module sealed it. Nothing in this module but
+the store names the database, and nothing but the composition root names the
+store.
+
 ## What is deliberately not here
 
 **Which of the three failures is worst.** *Not fetched*, *not started* and *not

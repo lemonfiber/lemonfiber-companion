@@ -14,12 +14,12 @@ use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
 use Tests\Support\Fakes\ASealInMemory;
-use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsInMemory;
 
 /** A store holding one reading, as a phone that has been used holds one. */
-function aStoreHoldingAReading(): HealthReadingsInMemory
+function aStoreHoldingAReading(): ReadingsInMemory
 {
-    $store = HealthReadingsInMemory::empty();
+    $store = ReadingsInMemory::empty();
     $store->keep(SealedStack::of('a-keyed-hash-of-the-loft'), SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(1_790_000_000));
 
     return $store;
@@ -51,7 +51,7 @@ it('says it once: the next opening finds the new key held', function (): void {
 });
 
 it('says nothing on a first launch, when the key is new and nothing was kept', function (): void {
-    expect(new ClearingWhatCannotBeRead(ASealInMemory::working(), HealthReadingsInMemory::empty())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas);
+    expect(new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas);
 });
 
 it('leaves what was kept where the key is held', function (): void {

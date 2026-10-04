@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
+use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Updates\Internal\UpkeepReadingsKept;
 
 // Clear saved data asks every store the composition root registers, so what
 // it can never touch is whatever that set leaves out: a pairing and a session.
@@ -43,4 +45,11 @@ it('asks the stores of every marker, beside the stores of readings and settings'
 
     expect(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof Standings))->toHaveCount(1)
         ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof WorkLeftRunning))->toHaveCount(1);
+});
+
+it('asks the store of every kind of reading the phone keeps', function (): void {
+    $stores = theStoresClearingAsks();
+
+    expect(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof HealthReadingsKept))->toHaveCount(1)
+        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof UpkeepReadingsKept))->toHaveCount(1);
 });

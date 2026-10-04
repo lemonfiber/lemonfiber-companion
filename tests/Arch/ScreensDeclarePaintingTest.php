@@ -30,9 +30,10 @@ use Tests\Support\Module;
 // issuing the read, *and that frame is built from what the app already holds* —
 // and the rule below reads the first. `#[Lazy]` says a frame is drawn early; it
 // says nothing about where the frame's content came from. `HowThisStackIs`
-// overrides `placeholder()` to draw the summary the phone kept, and
-// `OpeningOnWhatWasKeptTest` renders that frame; no rule reads the others, and
-// a placeholder built from a second read would satisfy every gate here.
+// and `HowCurrentThisStackIs` override `placeholder()` to draw the reading the
+// phone kept, and `OpeningOnWhatWasKeptTest` and `OpeningOnTheKeptUpkeepTest`
+// render that frame; no rule reads the others, and a placeholder built from a
+// second read would satisfy every gate here.
 //
 // It is written down rather than left implied because the two halves read as
 // one rule in the spec, and a reader who has seen `F4` enforced would take the

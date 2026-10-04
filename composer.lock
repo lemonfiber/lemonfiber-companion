@@ -3848,9 +3848,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/updates",
-                "reference": "ec53e6fcabcaeaf85541de7c7b903b8a8f14782f"
+                "reference": "a54d72feee1dc5ef613277a0c63d6e70538de064"
             },
             "require": {
+                "illuminate/database": "^13.17",
                 "modules/kernel": "dev-main",
                 "php": "^8.5"
             },

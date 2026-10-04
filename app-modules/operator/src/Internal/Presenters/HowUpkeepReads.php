@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowTheNotesStand;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -32,8 +34,39 @@ final readonly class HowUpkeepReads
         return $this->nothingRead(HowTheReadingWent::theSessionEnded());
     }
 
-    /** Where the stack said it stands. */
+    /** Where the stack said it stands, read on this frame's asking. */
     public function standing(Upkeep $upkeep): WhatTheUpkeepTurnedOutToBe
+    {
+        return $this->read($upkeep, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+    }
+
+    /**
+     * Where the stack said it stands, as the phone kept it from an earlier reading.
+     *
+     * Drawn whole, as a reading that came back when it was read, with how
+     * long ago that was, beside whatever this frame's asking met, and with
+     * every action on it waiting for a fresh one.
+     */
+    public function kept(Upkeep $upkeep, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatTheUpkeepTurnedOutToBe
+    {
+        return $this->read($upkeep, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now), waits: true);
+    }
+
+    /**
+     * Something stood in the way of asking.
+     *
+     * An obstacle that means the session has ended renders the signed-out
+     * screen rather than an obstacle, which is the distinction: *your session
+     * ended, sign in again* and *the stack refused that credential* send an
+     * operator to two different places, and the one that offers a sign-in is
+     * the one that is any use.
+     */
+    public function met(Obstacle $why): WhatTheUpkeepTurnedOutToBe
+    {
+        return $this->nothingRead(HowTheReadingWent::somethingStopped($why));
+    }
+
+    private function read(Upkeep $upkeep, HowTheReadingWent $askedNow, AgoAsShown $ago, bool $waits): WhatTheUpkeepTurnedOutToBe
     {
         $history = [];
 
@@ -63,21 +96,10 @@ final readonly class HowUpkeepReads
             // screen counting them would offer an update to a stack that is
             // on every pin.
             offer: $upkeep->hasSomethingToOffer() ? TakingAnUpdate::offeredBy($upkeep) : null,
+            askedNow: $askedNow,
+            readAgo: $ago,
+            waitsForTheStack: $waits,
         );
-    }
-
-    /**
-     * Something stood in the way of asking.
-     *
-     * An obstacle that means the session has ended renders the signed-out
-     * screen rather than an obstacle, which is the distinction: *your session
-     * ended, sign in again* and *the stack refused that credential* send an
-     * operator to two different places, and the one that offers a sign-in is
-     * the one that is any use.
-     */
-    public function met(Obstacle $why): WhatTheUpkeepTurnedOutToBe
-    {
-        return $this->nothingRead(HowTheReadingWent::somethingStopped($why));
     }
 
     /** A reading that did not happen, which says nothing about the stack. */
@@ -93,6 +115,9 @@ final readonly class HowUpkeepReads
             editsKept: [],
             history: [],
             offer: null,
+            askedNow: $went,
+            readAgo: AgoAsShown::live(),
+            waitsForTheStack: false,
         );
     }
 }
