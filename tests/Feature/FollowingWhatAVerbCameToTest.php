@@ -44,7 +44,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
-use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
@@ -76,7 +76,7 @@ function theScreenAVerbIsFollowedFrom(
     AStackThatSupervises $supervising,
     string $named = 'sonarr',
     ?AKeychainInMemory $keychain = null,
-    ?AStackThatSpeaksUp $hearing = null,
+    ?AStackThatSaysWhatItWaitsOn $hearing = null,
 ): WhatToDoWithThis {
     $stack = theMachineAVerbIsFollowedOn();
     $keychain ??= AKeychainInMemory::working();
@@ -87,8 +87,8 @@ function theScreenAVerbIsFollowedFrom(
         AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none()))),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        $hearing ?? AStackThatSpeaksUp::whileItStarts(),
         new AppsSettingsThatOpen(),
+        $hearing ?? AStackThatSaysWhatItWaitsOn::saying(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -575,7 +575,7 @@ it('a verb that has finished is not polled for, and neither is a standing listin
 
 it('draws what the stack says a start is waiting for, in place of its own sentence, newest first', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
-    $hearing = AStackThatSpeaksUp::whileItStarts(
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(
         WhatAStartWaitsOn::saying('Waiting for the database'),
         WhatAStartWaitsOn::saying('Waiting for sonarr to answer'),
     );
@@ -598,7 +598,7 @@ it('draws what the stack says a start is waiting for, in place of its own senten
 
 it('keeps the last line where a wake heard nothing new, or could not hear the stream', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
-    $hearing = AStackThatSpeaksUp::whileItStarts(
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(
         WhatAStartWaitsOn::saying('Waiting for the database'),
         WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
@@ -612,9 +612,26 @@ it('keeps the last line where a wake heard nothing new, or could not hear the st
     expect($screen->waitsOn)->toBe('Waiting for the database');
 });
 
+it('lets go of a session the stream refused while a start runs, keeping the last line', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $keychain = AKeychainInMemory::working();
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(
+        WhatAStartWaitsOn::saying('Waiting for the database'),
+        WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
+    );
+    $screen = theScreenAVerbIsFollowedFrom($supervising, keychain: $keychain, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->whileItSettles();
+    $screen->whileItSettles();
+
+    expect($keychain->isHolding(theMachineAVerbIsFollowedOn()->id()))->toBeFalse()
+        ->and($screen->waitsOn)->toBe('Waiting for the database');
+});
+
 it('listens for what a start waits on only while a start or a restart it sent runs, and lets go otherwise', function (): void {
     $running = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
-    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
     $screen = theScreenAVerbIsFollowedFrom($running, hearing: $hearing);
 
     $screen->whileItSettles();
@@ -632,7 +649,7 @@ it('lets go rather than listening where the verb it sent comes back from the dev
     // device on the next request and can come back empty. A running start is
     // then one this screen can no longer say it sent, and it listens to nothing.
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
-    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
     $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
@@ -646,7 +663,7 @@ it('lets go rather than listening where the verb it sent comes back from the dev
 
 it('clears the last line when another verb is sent', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
-    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
     $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
@@ -659,7 +676,7 @@ it('clears the last line when another verb is sent', function (): void {
 it('keeps the line it has where the session went between the sending and the listening', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
     $keychain = AKeychainInMemory::working();
-    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
     $screen = theScreenAVerbIsFollowedFrom($supervising, keychain: $keychain, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
@@ -668,6 +685,19 @@ it('keeps the line it has where the session went between the sending and the lis
 
     expect($hearing->asked())->toBe(0)
         ->and($screen->waitsOn)->toBe('');
+});
+
+it('lets go of what a start waits on when the screen stops, keeping the last line', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->whileItSettles();
+    $screen->stop();
+
+    expect($hearing->lettingsGo())->toBe(1)
+        ->and($screen->waitsOn)->toBe('Waiting for the database');
 });
 
 it('says a file the operator edited is kept, with what lemonfiber would change in it and what the marks mean', function (): void {
