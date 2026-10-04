@@ -45,7 +45,9 @@ use Native\Mobile\Edge\NativeComponent;
  * **What the stack names as newest marks the tabs and counts in the menu.**
  * The stream says it when a listener arrives and whenever it changes, and the
  * news module answers how much is new by it, of each kind, against what the
- * operator has seen. A wake that names nothing leaves it as it was.
+ * operator has seen, and holds it for the life of the process, so every screen
+ * about the stack draws the last that any of them heard. A wake that names
+ * nothing leaves it as it was.
  *
  * **It reads the screen's own `$listening` and `$storage`.** That is the
  * coupling, stated here because a trait cannot declare it: the ports the
@@ -66,13 +68,6 @@ trait HoldsItsStacksStream
      * what the view reads.
      */
     public ?WhatWasHeardSoFar $heard = null;
-
-    /**
-     * How much is new on the stack, of each kind, as last heard.
-     *
-     * `public` for the reason {@see $heard} is.
-     */
-    public ?HowMuchIsNew $howMuchIsNew = null;
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -98,7 +93,7 @@ trait HoldsItsStacksStream
 
         $stack = $this->stack();
         $thisWake = $this->heardFrom($stack, $now);
-        $this->howMuchIsNew = $this->newIn($thisWake, $stack);
+        $this->noticeTheNewest($thisWake, $stack);
         $held = $held->after($thisWake, $now);
 
         if ($held->hasGoneQuiet($now)) {
@@ -153,13 +148,16 @@ trait HoldsItsStacksStream
     }
 
     /**
-     * How much is new on this stack, as last heard, which the menu counts.
+     * How much is new on this stack, as last heard by any screen, which the menu counts.
      *
-     * Nothing until the stream has named the newest.
+     * Asked of the news module on every frame, so a screen that opens draws
+     * what an earlier screen heard at once, and a screen returned to draws
+     * what the operator has seen since. Nothing until a stream has named the
+     * newest in this process.
      */
     protected function howMuchIsNewHere(): HowMuchIsNew
     {
-        return $this->howMuchIsNew ?? HowMuchIsNew::none();
+        return $this->listening->noticing->howMuchWasLastNamed($this->stack()->id());
     }
 
     /**
@@ -185,12 +183,12 @@ trait HoldsItsStacksStream
         return $this->heard ??= $this->listening->keeping->lastKept($this->stack()->id());
     }
 
-    /** How much is new by what the stack named as newest in this wake, or as it was where it named nothing. */
-    private function newIn(WhatWasHeard $heard, Stack $stack): HowMuchIsNew
+    /** Hand the news module what the stack named as newest in this wake, where it named anything. */
+    private function noticeTheNewest(WhatWasHeard $heard, Stack $stack): void
     {
-        return $heard->theNewest(
+        $heard->theNewest(
             named: fn(TheNewestNamed $newest): HowMuchIsNew => $this->listening->noticing->howMuchIsNew($stack->id(), $newest),
-            nothing: fn(): HowMuchIsNew => $this->howMuchIsNewHere(),
+            nothing: static fn(): HowMuchIsNew => HowMuchIsNew::none(),
         );
     }
 

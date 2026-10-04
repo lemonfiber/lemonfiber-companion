@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\News\Api;
 
 use Modules\Kernel\Api\ForgetsAStack;
+use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheNewestNamed;
@@ -27,7 +28,7 @@ use Modules\News\Internal\TheNewestItem;
  * Sealed before it is kept and named by the stack's keyed hash, as everything
  * the phone keeps is, and forgotten with the stack.
  */
-final readonly class Noticing implements ForgetsAStack
+final readonly class Noticing implements ForgetsAStack, ForgetsEverythingKept
 {
     public function __construct(private NewsOfAStack $news) {}
 
@@ -61,15 +62,28 @@ final readonly class Noticing implements ForgetsAStack
      * the menu's count and the list never disagree: a kind switched off counts
      * nothing, the first sight of a kind records it as seen and counts nothing,
      * and a kind the stack could not read is not asked about at all. The count
-     * is of what the stack named, which is up to ten of each kind.
+     * is of what the stack named, which is up to ten of each kind. What it
+     * named, and the count, are held for the screens that open after.
      */
     public function howMuchIsNew(StackId $stack, TheNewestNamed $newest): HowMuchIsNew
     {
-        return HowMuchIsNew::holding(
-            $newest->releases()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::updates($newest)) : WhatIsNew::nothing(),
-            $newest->requests()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::requests($newest)) : WhatIsNew::nothing(),
-            $newest->problems()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::problems($newest)) : WhatIsNew::nothing(),
-        );
+        $counted = $this->counted($stack, $newest);
+        $this->news->heard($stack, $newest, $counted);
+
+        return $counted;
+    }
+
+    /**
+     * How much is new on the stack by what it last named as newest in this process.
+     *
+     * So a screen opening on the stack draws what an earlier screen heard at
+     * once. Counted again against what is kept where the operator has seen
+     * anything, or switched a kind, since. Nothing where the stack has named
+     * nothing yet.
+     */
+    public function howMuchWasLastNamed(StackId $stack): HowMuchIsNew
+    {
+        return $this->news->lastCounted($stack, fn(TheNewestNamed $newest): HowMuchIsNew => $this->counted($stack, $newest));
     }
 
     /** The operator has seen this item, and every older one of its kind with it; whether that was kept. */
@@ -100,5 +114,21 @@ final readonly class Noticing implements ForgetsAStack
     public function keepsAnythingOf(StackId $stack): bool
     {
         return $this->news->keepsAnythingOf($stack);
+    }
+
+    /** Forget what is kept of every stack's news, and what each last named. */
+    public function forgetEverything(): Forgotten
+    {
+        return $this->news->forgetEverything();
+    }
+
+    /** How much is new of each kind, kind by kind, as the list of what is new asks. */
+    private function counted(StackId $stack, TheNewestNamed $newest): HowMuchIsNew
+    {
+        return HowMuchIsNew::holding(
+            $newest->releases()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::updates($newest)) : WhatIsNew::nothing(),
+            $newest->requests()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::requests($newest)) : WhatIsNew::nothing(),
+            $newest->problems()->wasRead() ? $this->whatIsNewIn($stack, TheNewestAsItems::problems($newest)) : WhatIsNew::nothing(),
+        );
     }
 }

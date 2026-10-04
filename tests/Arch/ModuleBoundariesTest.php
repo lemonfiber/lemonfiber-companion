@@ -6,6 +6,7 @@ use Illuminate\View\Component;
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Internal\TheStreamsHeld;
@@ -97,6 +98,11 @@ const MUTABLE_BY_DESIGN = [
     // The walk's reader of the same stream, keeping whether it ended and has
     // not yet been said to have ended. Mutable for the reason above.
     Narrators::class,
+    // What each stack last named as newest on that stream, held in memory for
+    // the life of the process so a screen that opens draws the marks an
+    // earlier one heard. What one screen hears and the next draws is a thing
+    // that changes; it is never kept, and it is forgotten with the stack.
+    WhatEachStackLastNamed::class,
 ];
 
 foreach ($modules as $module) {

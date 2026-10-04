@@ -26,6 +26,7 @@ use Modules\News\Api\KindOfNews;
 use Modules\News\Api\Noticing;
 use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
@@ -101,7 +102,7 @@ function everyKeeperHoldingTwoStacks(): array
 /** What notices what is new on a stack, over this seal and a store of its own. */
 function whatNoticesNewsOver(ASealInMemory $seal): Noticing
 {
-    return new Noticing(new NewsOfAStack($seal, NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))));
+    return new Noticing(new NewsOfAStack($seal, NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackLastNamed()));
 }
 
 /** Have a keeper of readings hold the newest reading of its kind for this stack. */

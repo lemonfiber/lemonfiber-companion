@@ -1111,6 +1111,12 @@ dispatch in exactly the same way. Memoising inside a method is the natural way t
 write a cache, so the declaration reflection cannot see is the one somebody
 reaches for first.
 
+`news` keeps what each stack's stream last named past a dispatch, on purpose,
+in `WhatEachStackLastNamed`: a container singleton named in the composition root
+and in `MUTABLE_BY_DESIGN` rather than a static, so a screen that opens draws
+the marks another screen heard. Every write to what is kept of
+a stack's news recounts it, and it lives no longer than the process.
+
 ---
 
 ## Patterns

@@ -26,6 +26,7 @@ use Modules\News\Api\MarkingAsNew;
 use Modules\News\Api\Noticing;
 use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 
 use function str_repeat;
 
@@ -48,7 +49,7 @@ function anotherStackWhoseNewsIsNoticed(): StackId
 /** What is kept of each stack's news, over a seal and a store a test can see into. */
 function newsOver(ASealInMemory $seal, NewsKeptInMemory $kept): NewsOfAStack
 {
-    return new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)));
+    return new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), new WhatEachStackLastNamed());
 }
 
 /** What notices news, over a seal and a store a test can see into. */
@@ -290,4 +291,51 @@ it('counts no request where requests are switched off, or the stack could not re
 
 it('counts nothing where nothing has been heard', function (): void {
     expect(HowMuchIsNew::none()->howManyInAll())->toBe(0);
+});
+
+it('holds what a stack last named for the screens that open after, and nothing for a stack that has named nothing', function (): void {
+    $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames(['2.3.0'], [], requests: [9]));
+    $noticing->howMuchIsNew(theStackWhoseNewsIsNoticed(), theNewestAStackNames(['2.4.0', '2.3.0'], [], requests: [11, 10, 9]));
+
+    expect($noticing->howMuchWasLastNamed(theStackWhoseNewsIsNoticed())->howManyInAll())->toBe(3)
+        ->and($noticing->howMuchWasLastNamed(anotherStackWhoseNewsIsNoticed())->howManyInAll())->toBe(0);
+});
+
+it('counts what it holds again once the operator has seen an item, seen them all, or switched a kind off', function (): void {
+    $news = newsOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    $noticing = new Noticing($news);
+    $marking = new MarkingAsNew($news);
+    $stack = theStackWhoseNewsIsNoticed();
+    $noticing->howMuchIsNew($stack, theNewestAStackNames(['2.3.0'], [['disk.space', 1_790_000_000]], requests: [9]));
+    $noticing->howMuchIsNew($stack, theNewestAStackNames(['2.5.0', '2.4.0', '2.3.0'], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]], requests: [11, 10, 9]));
+
+    $noticing->sawIt($stack, AnItem::anUpdate('2.4.0'), TheItems::of(KindOfNews::Update, AnItem::anUpdate('2.5.0'), AnItem::anUpdate('2.4.0'), AnItem::anUpdate('2.3.0')));
+    $afterOne = $noticing->howMuchWasLastNamed($stack)->howManyInAll();
+    $noticing->sawThemAll($stack, requestsNumbered(11, 10, 9));
+    $afterAll = $noticing->howMuchWasLastNamed($stack)->howManyInAll();
+    $marking->markNoLonger($stack, KindOfNews::Problem);
+
+    expect($afterOne)->toBe(4)
+        ->and($afterAll)->toBe(2)
+        ->and($noticing->howMuchWasLastNamed($stack)->howManyInAll())->toBe(1);
+});
+
+it('forgets what it holds of a stack removed from the phone, and of every stack when saved data is cleared', function (): void {
+    $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    foreach ([theStackWhoseNewsIsNoticed(), anotherStackWhoseNewsIsNoticed()] as $stack) {
+        $noticing->howMuchIsNew($stack, theNewestAStackNames(['2.3.0'], []));
+        $noticing->howMuchIsNew($stack, theNewestAStackNames(['2.4.0', '2.3.0'], []));
+    }
+
+    $noticing->forgetTheStack(theStackWhoseNewsIsNoticed());
+    $removed = $noticing->howMuchWasLastNamed(theStackWhoseNewsIsNoticed())->howManyInAll();
+    $kept = $noticing->howMuchWasLastNamed(anotherStackWhoseNewsIsNoticed())->howManyInAll();
+    $cleared = $noticing->forgetEverything()->howMany();
+
+    expect($removed)->toBe(0)
+        ->and($kept)->toBe(1)
+        ->and($cleared)->toBe(1)
+        ->and($noticing->howMuchWasLastNamed(anotherStackWhoseNewsIsNoticed())->howManyInAll())->toBe(0)
+        ->and($noticing->keepsAnythingOf(anotherStackWhoseNewsIsNoticed()))->toBeFalse();
 });

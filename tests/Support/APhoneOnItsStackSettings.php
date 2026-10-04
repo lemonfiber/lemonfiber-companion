@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Whose;
 use Modules\News\Api\MarkingAsNew;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -39,7 +40,7 @@ final readonly class APhoneOnItsStackSettings
         $this->store = APlatformStore::working();
         $this->stacks = new PlatformStacks($this->store);
         $this->keychain = new PlatformKeychain($this->store);
-        $this->marking = new MarkingAsNew(new NewsOfAStack(ASealInMemory::working(), NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))));
+        $this->marking = new MarkingAsNew(new NewsOfAStack(ASealInMemory::working(), NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackLastNamed()));
 
         foreach ($paired as $stack) {
             $this->stacks->remember($stack);

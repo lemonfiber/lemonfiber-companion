@@ -7,6 +7,7 @@ use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\HowItStands;
@@ -21,8 +22,13 @@ use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhichTab;
+use Modules\News\Api\Noticing;
+use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\Store\NewsInTheDatabase;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Services\Internal\Store\ListingsInTheDatabase;
 use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Vault\Api\PlatformStacks;
@@ -31,7 +37,9 @@ use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\APlatformStore;
+use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -212,4 +220,16 @@ it('forgets what a news store keeps of every stack, and says how much that was',
         expect($store->forgetEverything()->howMany())->toBe(2, $which)
             ->and($store->forgetEverything()->howMany())->toBe(0, $which);
     }
+});
+
+it('forgets what is kept of every stack\'s news through what notices it, and what each stack last named, and says how much was kept', function (): void {
+    $kept = NewsKeptInMemory::empty();
+    $noticing = new Noticing(new NewsOfAStack(ASealInMemory::working(), $kept, FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), new WhatEachStackLastNamed()));
+    $stack = StackId::of(Nonce::of(str_repeat('n', Nonce::SHORTEST)));
+    $noticing->howMuchIsNew($stack, new TheNewestNamed(WhatTheStackListed::these(AReleaseNamed::versioned('2.3.0')), WhatTheStackListed::these(), WhatTheStackListed::these()));
+    $noticing->howMuchIsNew($stack, new TheNewestNamed(WhatTheStackListed::these(AReleaseNamed::versioned('2.4.0'), AReleaseNamed::versioned('2.3.0')), WhatTheStackListed::these(), WhatTheStackListed::these()));
+
+    expect($noticing->forgetEverything()->howMany())->toBe(1)
+        ->and($noticing->howMuchWasLastNamed($stack)->howManyInAll())->toBe(0)
+        ->and($noticing->forgetEverything()->howMany())->toBe(0);
 });

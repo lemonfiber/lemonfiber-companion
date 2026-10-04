@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\News\Api\MarkingAsNew;
 use Modules\News\Api\Noticing;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -51,7 +52,7 @@ final readonly class APhoneLookingAtWhatIsNew
         $this->keychain = new PlatformKeychain($store);
         $this->listing = AStackThatListsWhatIsNew::listingNothing();
         $this->standings = StandingsInMemory::working();
-        $news = new NewsOfAStack(ASealInMemory::working(), NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(self::NOW)));
+        $news = new NewsOfAStack(ASealInMemory::working(), NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(self::NOW)), new WhatEachStackLastNamed());
         $this->noticing = new Noticing($news);
         $this->marking = new MarkingAsNew($news);
 

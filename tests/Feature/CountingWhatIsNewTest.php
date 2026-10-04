@@ -23,6 +23,12 @@ use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
+use Modules\News\Api\AnItem;
+use Modules\News\Api\KindOfNews;
+use Modules\News\Api\Noticing;
+use Modules\News\Api\TheItems;
+use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -35,6 +41,7 @@ use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -86,14 +93,14 @@ function theBarnSayingWhatIsNew(): AStackThatSpeaksUp
     );
 }
 
-/** A screen about the barn, as the operator, hearing `$stream` on this clock: Updates, or the words the menu opens. */
-function aBarnScreenHearing(string $which, AStackThatSpeaksUp $stream, FrozenClock $clock): HowCurrentThisStackIs|WhatTheWordsMean
+/** A screen about the barn, as the operator, hearing `$stream` on this clock, noticing news through `$noticing`: Updates, or the words the menu opens. */
+function aBarnScreenHearing(string $which, AStackThatSpeaksUp $stream, FrozenClock $clock, ?Noticing $noticing = null): HowCurrentThisStackIs|WhatTheWordsMean
 {
     $stack = theStackWhoseNewIsCounted();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $around = AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain);
-    $listening = AroundThePhone::listening($stream, $clock);
+    $listening = AroundThePhone::listening($stream, $clock, noticing: $noticing);
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = $which === 'updates'
@@ -118,6 +125,18 @@ function theWhatsNewRow(HowCurrentThisStackIs|WhatTheWordsMean $screen): array
     }
 
     throw new RuntimeException('The menu draws no What\'s new row.');
+}
+
+/**
+ * The badge each marked tab carries on the bar a screen draws, Health's and Updates'.
+ *
+ * @return array{health: string, updates: string}
+ */
+function theMarksOnTheBarOf(HowCurrentThisStackIs|WhatTheWordsMean $screen): array
+{
+    $marks = $screen->marks();
+
+    return ['health' => $marks->health->badge, 'updates' => $marks->updates->badge];
 }
 
 /**
@@ -165,6 +184,62 @@ it('draws no count beside What\'s new where nothing is new, as on the first read
 
     expect($before)->toBe(['badge' => null, 'said' => __('navigation.menu.whats_new')])
         ->and(theWhatsNewRow($screen))->toBe(['badge' => null, 'said' => __('navigation.menu.whats_new')]);
+});
+
+it('draws the marks and the count an earlier screen heard on a screen that opens, before it hears anything itself', function (): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $noticing = NoticingWhatIsNew::fromNothing();
+    $earlier = aBarnScreenHearing('updates', theBarnSayingWhatIsNew(), $clock, $noticing);
+    $earlier->listen();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $earlier->listen();
+
+    $opened = aBarnScreenHearing('the words the menu opens', AStackThatSpeaksUp::holdingOpen(), $clock, $noticing);
+
+    expect(theWhatsNewRow($opened)['badge'])->toBe('4')
+        ->and(theMarksOnTheBarOf($opened))->toBe(['health' => '1', 'updates' => '1']);
+});
+
+it('draws what the stack names next in place of what an earlier screen heard', function (): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $noticing = NoticingWhatIsNew::fromNothing();
+    $earlier = aBarnScreenHearing('updates', theBarnSayingWhatIsNew(), $clock, $noticing);
+    $earlier->listen();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $earlier->listen();
+    $opened = aBarnScreenHearing('the words the menu opens', AStackThatSpeaksUp::holdingOpen(
+        whatTheBarnNamesAsNewest(['2.5.0', '2.4.0', '2.3.0'], [11, 10, 9], [['disk.space', 1_790_000_000]]),
+    ), $clock, $noticing);
+
+    $opened->listen();
+
+    expect(theWhatsNewRow($opened)['badge'])->toBe('4')
+        ->and(theMarksOnTheBarOf($opened))->toBe(['health' => '', 'updates' => '2']);
+});
+
+it('draws no count an earlier screen heard once the operator has seen it all', function (): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $noticing = NoticingWhatIsNew::fromNothing();
+    $earlier = aBarnScreenHearing('updates', theBarnSayingWhatIsNew(), $clock, $noticing);
+    $earlier->listen();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $earlier->listen();
+    $stack = theStackWhoseNewIsCounted()->id();
+
+    $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Update, AnItem::anUpdate('2.4.0'), AnItem::anUpdate('2.3.0')));
+    $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Request, AnItem::aRequest(11), AnItem::aRequest(10), AnItem::aRequest(9)));
+    $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Problem, AnItem::aProblem('vpn.leak', Instant::atEpochSeconds(1_790_000_600))));
+
+    expect(theWhatsNewRow($earlier)['badge'])->toBeNull()
+        ->and(theMarksOnTheBarOf(aBarnScreenHearing('the words the menu opens', AStackThatSpeaksUp::holdingOpen(), $clock, $noticing)))->toBe(['health' => '', 'updates' => '']);
+});
+
+it('hands every screen the container builds the same record of what each stack last named', function (): void {
+    $lastNamed = static fn(): mixed => new ReflectionProperty(NewsOfAStack::class, 'lastNamed')->getValue(app(NewsOfAStack::class));
+
+    expect($lastNamed())->toBeInstanceOf(WhatEachStackLastNamed::class)
+        ->and($lastNamed())->toBe($lastNamed())
+        ->and($lastNamed())->toBe(app(WhatEachStackLastNamed::class));
 });
 
 it('opens What\'s new on the stack whose menu opened it', function (): void {

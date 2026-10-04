@@ -15,6 +15,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
 use Modules\News\Internal\NewsOfAStack;
+use Modules\News\Internal\WhatEachStackLastNamed;
 
 use function str_repeat;
 
@@ -31,7 +32,7 @@ function theStackWhoseKindsAreChosen(): StackId
 /** Choosing kinds over a seal and a store a test can see into. */
 function markingOver(ASealInMemory $seal, NewsKeptInMemory $kept): MarkingAsNew
 {
-    return new MarkingAsNew(new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(1_790_000_000))));
+    return new MarkingAsNew(new NewsOfAStack($seal, $kept, FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), new WhatEachStackLastNamed()));
 }
 
 /**
