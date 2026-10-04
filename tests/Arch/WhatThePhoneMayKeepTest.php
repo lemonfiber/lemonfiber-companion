@@ -124,7 +124,7 @@ function theTypesADocblockWrites(string $docblock): array
                 default => 0,
             };
 
-            if ($depth === 0 && ctype_space($character)) {
+            if ($depth === 0 && trim($character) === '') {
                 break;
             }
 
