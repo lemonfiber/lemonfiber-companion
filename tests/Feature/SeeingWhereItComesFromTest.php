@@ -25,6 +25,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatNamesItsOrigins;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Where every service on this machine comes from.
@@ -65,7 +66,7 @@ function theOriginsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisComesFrom($provenance, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new WhereThisComesFrom($provenance, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

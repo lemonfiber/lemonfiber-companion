@@ -69,7 +69,7 @@ function aTabWithTheMenu(?AKeychainInMemory $keychain = null): HowCurrentThisSta
 function aScreenTheMenuOpens(): WhatTheWordsMean
 {
     $stack = theStackWhoseMenuIsOpened();
-    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

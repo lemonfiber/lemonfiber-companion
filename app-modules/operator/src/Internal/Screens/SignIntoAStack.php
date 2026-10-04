@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\HowTheSignInWent;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AMembersName;
@@ -22,12 +23,14 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -77,6 +80,7 @@ use function view;
 final class SignIntoAStack extends NativeComponent
 {
     use OffersTheAppsSettings;
+    use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
     /**
@@ -134,6 +138,8 @@ final class SignIntoAStack extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /** What the operator has typed into the password field. */

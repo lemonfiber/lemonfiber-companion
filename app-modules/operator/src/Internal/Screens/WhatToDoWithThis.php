@@ -26,6 +26,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\HearsWhatAStartWaitsOn;
@@ -42,6 +43,7 @@ use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -111,7 +113,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     use FollowsWhatTheVerbCameTo;
     use ShowsWhatTheYesWillRun;
     use HearsWhatAStartWaitsOn {
-        HearsWhatAStartWaitsOn::stop insteadof FindsItsWayAround;
+        HearsWhatAStartWaitsOn::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use FindsItsWayAround;
 
@@ -135,6 +137,8 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly HearingTheStart $hearingTheStart,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

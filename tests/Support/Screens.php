@@ -239,7 +239,7 @@ final readonly class Screens
      * Every trait a class uses, and every trait those use in turn: a screen
      * takes what a trait carries by way of another just as through one it names.
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<covariant object> $class
      *
      * @return list<ReflectionClass<object>>
      */

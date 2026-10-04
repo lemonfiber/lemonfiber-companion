@@ -17,11 +17,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCatalogue;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCatalogueReads;
 use Modules\Operator\Internal\ViewModels\TheCatalogueTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -63,6 +65,8 @@ final class WhatEachServiceIsFor extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

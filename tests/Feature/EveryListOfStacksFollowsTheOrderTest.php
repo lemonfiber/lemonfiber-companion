@@ -25,6 +25,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -100,6 +101,8 @@ it('offers the stacks to switch to in the order they were put in', function (): 
         AKeychainInMemory::working(),
         AroundThePhone::holding(threeStacksPutInOrder()),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => aStackInTheOrder('The loft', 'a')->id()->stored()]);
     $screen->chooseAStack();

@@ -179,7 +179,7 @@ it('notes a screen under a tab as where the operator is, and nothing for a scree
     $noting = new NotingWhereTheOperatorIs($was);
     $updates = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
     $updates->setParams(['stack' => $attic->id()->stored()]);
-    $words = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen());
+    $words = new WhatTheWordsMean(AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $words->setParams(['stack' => $attic->id()->stored()]);
     $nameless = new HowCurrentThisStackIs(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)), AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($attic)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing(), WhatThePhoneKeeps::noUpkeepYet());
     $nameless->setParams(['stack' => ' ']);

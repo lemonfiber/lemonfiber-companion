@@ -6,9 +6,10 @@ event stream, so the line is read off the stream rather than asked for. The code
 is `TheHealthSummary` and the `Hearing` and `Standings` ports in
 `app-modules/kernel`, `Summaries` and `Listeners` in `app-modules/sdk`,
 `WhatWasHeardSoFar` in `app-modules/health`, `PlatformStandings` in
-`app-modules/vault`, and `HoldsItsStacksStream` on each tab's screen,
-`HearsHowTheStackIs` on `HowThisStackIs` and `HearsHowEachStackIs` on
-`YourStacks` in `app-modules/operator`.
+`app-modules/vault`, and `HoldsItsStacksStream`, which `FindsItsWayAround`
+carries onto every operator's screen about a stack, `HearsHowTheStackIs` on
+`HowThisStackIs` and `HearsHowEachStackIs` on `YourStacks` in
+`app-modules/operator`.
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
@@ -31,7 +32,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen, holding one stream for each stack it is asked about. `HowThisStackIs` holds one `Listeners` and draws from `WhatWasHeardSoFar`, which is a value on the screen. `YourStacks` holds one too, with a `WhatWasHeardSoFar` for each stack in `WhatEachStackSaidSoFar` |
+| `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen, holding one stream for each stack it is asked about. Every operator's screen about a stack holds one through `HoldsItsStacksStream`, keeping what it heard in `WhatWasHeardSoFar`, which is a value on the screen, and `HowThisStackIs` draws the summary from it. `YourStacks` holds one too, with a `WhatWasHeardSoFar` for each stack in `WhatEachStackSaidSoFar` |
 | `N1-R68` | The first frame is published before the subscription is opened, and opening carries the bounded timeout every call carries | The screen is `#[Lazy]`, so its placeholder is published before `mount()` opens the stream. The stream is opened through the pinned client every call uses |
 | `N1-R69` | What arrived is taken on a declared cadence, without waiting for what has not | `#[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]` on `HoldsItsStacksStream::listen()`. `Listeners` reads with a wait of `Listeners::NO_LONGER_THAN_MS` and stops at the first read that finds nothing |
 | `N1-R70` | Twice the heartbeat in silence is a broken subscription: the last value is shown with its age, and a summary reads unknown | `WhatWasHeardSoFar::hasGoneQuiet()`, past thirty seconds with nothing heard; the screen lets go on the wake that notices. `HearingHowAStackIsTest` asserts both sides of the bound. The list's rows read kept words, so they keep the same bound from when a word was heard: past `WhatWasHeardSoFar::isStillCurrent()`, a kept word reads unknown with its age |

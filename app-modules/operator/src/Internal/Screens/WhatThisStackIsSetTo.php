@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
@@ -28,6 +29,7 @@ use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -93,6 +95,8 @@ final class WhatThisStackIsSetTo extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /** What the operator has typed into the one field. */

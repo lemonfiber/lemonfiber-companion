@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\HearsWhereTheWalkIs;
@@ -39,6 +40,7 @@ use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -82,7 +84,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
     use HearsWhereTheWalkIs {
-        HearsWhereTheWalkIs::stop insteadof FindsItsWayAround;
+        HearsWhereTheWalkIs::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
@@ -117,6 +119,8 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         private readonly Clock $clock,
         private readonly Capture $capture,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

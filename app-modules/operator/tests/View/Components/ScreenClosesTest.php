@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Blade;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
+use Modules\Operator\Internal\ViewModels\TheTabsAsMarked;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheTabs;
 use Native\Mobile\Edge\CallbackRegistry;
@@ -31,8 +32,8 @@ function itemsLitOn(?TheTabs $here): array
     try {
         NativeElementCollector::reset();
         Blade::render(
-            '<x-operator::screen-closes :goes="$goes" :here="$here" />',
-            ['goes' => WhereAStackIs::of(StackId::of(Nonce::of(str_repeat('a', Nonce::SHORTEST)))), 'here' => $here],
+            '<x-operator::screen-closes :goes="$goes" :here="$here" :marks="$marks" />',
+            ['goes' => WhereAStackIs::of(StackId::of(Nonce::of(str_repeat('a', Nonce::SHORTEST)))), 'here' => $here, 'marks' => new TheTabsAsMarked()],
         );
         $tree = NativeElementCollector::collect();
     } finally {

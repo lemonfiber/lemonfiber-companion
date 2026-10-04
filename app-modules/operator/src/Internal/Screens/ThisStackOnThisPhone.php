@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
 use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
+use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -28,9 +33,11 @@ use function view;
  * operator's order, or on a first run where there is none: every screen of a
  * stack that is gone is gone with it.
  */
+#[Lazy]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class ThisStackOnThisPhone extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 
     /**
@@ -51,6 +58,9 @@ final class ThisStackOnThisPhone extends NativeComponent
         private readonly TheWayAround $around,
         private readonly RemovingAStack $removing,
         private readonly MarkingAsNew $marking,
+        protected readonly SecureStorage $storage,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     public function stack(): Stack

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhereTheRoomWent;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRoomReads;
@@ -26,6 +27,7 @@ use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheRoomTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -77,6 +79,8 @@ final class HowFullThisMachineIs extends NativeComponent
         private readonly Clock $clock,
         private readonly Explaining $explaining,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

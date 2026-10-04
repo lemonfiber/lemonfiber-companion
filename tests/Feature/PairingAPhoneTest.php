@@ -29,6 +29,7 @@ use Tests\Support\Fakes\AStackThatMakesPairingCodes;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Pairing a phone: nothing asked on open, a code made on a tap and followed
@@ -96,6 +97,8 @@ function thePairingScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

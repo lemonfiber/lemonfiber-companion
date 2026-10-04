@@ -234,6 +234,8 @@ it('gives signing in to a stack the list of stacks and the menu, and not the bar
         AKeychainInMemory::working(),
         AroundThePhone::holding(StacksInMemory::holding($attic)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

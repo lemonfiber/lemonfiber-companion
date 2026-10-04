@@ -24,6 +24,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
@@ -32,6 +33,7 @@ use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSurveyTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -96,6 +98,8 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

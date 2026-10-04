@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -29,6 +30,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -101,6 +103,8 @@ final class WhatTheHouseholdAsked extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAnUpgradeReads;
 use Modules\Operator\Internal\Presenters\HowTheQualityReads;
@@ -34,6 +35,7 @@ use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -99,6 +101,8 @@ final class ChoosingHowGood extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

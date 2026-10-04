@@ -47,6 +47,7 @@ use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -89,6 +90,8 @@ function theScreenAVerbIsFollowedFrom(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         $hearing ?? AStackThatSaysWhatItWaitsOn::saying(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 

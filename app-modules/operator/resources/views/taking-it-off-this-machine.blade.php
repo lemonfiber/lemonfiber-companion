@@ -238,4 +238,4 @@
     />
 @endif
 
-<x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />
+<x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

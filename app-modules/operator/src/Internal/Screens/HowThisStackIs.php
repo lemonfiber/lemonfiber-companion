@@ -89,10 +89,7 @@ use function view;
 final class HowThisStackIs extends NativeComponent
 {
     use OffersTheAppsSettings;
-    use HearsHowTheStackIs {
-        HearsHowTheStackIs::stop insteadof FindsItsWayAround;
-        HearsHowTheStackIs::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
+    use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 

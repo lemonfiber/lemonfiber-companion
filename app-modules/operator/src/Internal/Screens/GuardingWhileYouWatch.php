@@ -28,6 +28,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheGuardSaw;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AsksWhatFormsItHas;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
@@ -36,6 +37,7 @@ use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -104,6 +106,8 @@ final class GuardingWhileYouWatch extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

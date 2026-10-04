@@ -111,7 +111,7 @@ trait ChoosesAStack
     /**
      * Whether this screen holds its own stack's stream, which the list then does not ask for.
      *
-     * No, for every screen but the one that says otherwise.
+     * No, for every screen that does not say otherwise.
      */
     protected function holdsItsStacksStream(): bool
     {

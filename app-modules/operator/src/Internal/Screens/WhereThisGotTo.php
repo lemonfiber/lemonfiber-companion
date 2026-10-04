@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
@@ -29,6 +30,7 @@ use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -76,6 +78,8 @@ final class WhereThisGotTo extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */

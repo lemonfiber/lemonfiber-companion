@@ -28,6 +28,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatAdvises;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Which app the household should watch on, device by device.
@@ -85,7 +86,7 @@ function theAdviceScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhichAppToWatchOn($advising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new WhichAppToWatchOn($advising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

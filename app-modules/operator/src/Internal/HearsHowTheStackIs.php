@@ -11,11 +11,12 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * The health summary a screen shows, held rather than read.
  *
- * The core publishes the summary on its event stream and nowhere else, so the
- * screen showing it holds that stream through {@see HoldsItsStacksStream}, and
- * draws the summary it holds as it arrives. What is here is what only the
- * screen drawing the summary does with it: open it out to what it counts, and
- * say it as one line.
+ * The core publishes the summary on its event stream and nowhere else, and
+ * every operator's screen about a stack holds that stream through
+ * {@see HoldsItsStacksStream}. What is here is what only the screen drawing the
+ * summary does with what it holds: open it out to what it counts, say it as one
+ * line, and open the stream as the screen mounts, opened out where What's new
+ * asked for that.
  *
  * **A screen opening on a stack starts from the summary kept from before**, as
  * of when it was read, rather than from nothing, because the stream keeps every
@@ -25,8 +26,6 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait HearsHowTheStackIs
 {
-    use HoldsItsStacksStream;
-
     /**
      * What a screen opening this one hands it to have what is wrong opened out.
      *

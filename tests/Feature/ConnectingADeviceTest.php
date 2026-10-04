@@ -44,6 +44,7 @@ use Tests\Support\Fakes\AStackThatHandsDevicesOver;
 use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Connecting a member's device: nothing asked on open, the hand-off asked for
@@ -114,6 +115,8 @@ function theConnectingScreen(
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -318,6 +321,8 @@ it('is offered on each member\'s card, told apart by their name', function (): v
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $household->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();
@@ -335,6 +340,8 @@ it('opens asking somebody in with the name it was sent with already typed', func
         AroundThePhone::holding(StacksInMemory::holding(theStackADeviceConnectsTo())),
         app(Translator::class),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $household->mount('Sam');
     $blank = clone $household;

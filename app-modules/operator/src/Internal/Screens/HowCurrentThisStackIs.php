@@ -22,7 +22,6 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
-use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -55,11 +54,6 @@ use function view;
  * **A withdrawn release is said, not offered.** A stack running one is told so,
  * and moving onto the pins a withdrawn release carries is not offered.
  *
- * **It holds the stack's event stream while it is in front**, through
- * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
- * wherever the operator is. Taking what the stream delivered sends nothing to
- * the stack.
- *
  * **It opens on what the phone kept, and acts only on a fresh reading.** The
  * first frame draws the reading kept from an earlier session, with how long
  * ago it was read, before the stack is asked anything; the fresh reading
@@ -79,10 +73,6 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
 {
     use OffersTheAppsSettings;
     use FollowsTheUpdateItTook;
-    use HoldsItsStacksStream {
-        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
-        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 

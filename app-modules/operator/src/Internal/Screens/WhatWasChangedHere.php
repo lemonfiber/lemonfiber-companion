@@ -17,12 +17,14 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\ViewModels\TheRecordTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -77,6 +79,8 @@ final class WhatWasChangedHere extends NativeComponent
         private readonly TheWayAround $around,
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

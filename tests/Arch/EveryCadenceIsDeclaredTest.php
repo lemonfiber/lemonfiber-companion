@@ -5,7 +5,8 @@ declare(strict_types=1);
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Operator\Internal\Screens\FindsItsWayAround;
+use Modules\Operator\Internal\HearsHowTheStackIs;
+use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
@@ -19,6 +20,7 @@ use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
+use Modules\Wayfinding\Api\Screens\FindsItsWayAroundAStack;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Screens;
@@ -230,17 +232,33 @@ it('the cadences this app declares are each a whole number of seconds', function
 /**
  * Whether a screen looks again at what it shows, by a poll of its own or one a trait gives it.
  *
- * The list of stacks the top bar opens is left out. Every screen draws it, and
- * it listens only while it is open and only to the stacks it lists, so what it
- * does says nothing about the screen beneath it.
+ * What a screen's chrome listens to is left out, where the screen has that
+ * chrome. The list of stacks the top bar opens listens only while it is open
+ * and only to the stacks it lists. The stack's stream every operator's screen
+ * about a stack holds marks the bar and counts what is new. Neither says
+ * anything about the screen beneath it, except on the screen that draws what
+ * the stream holds, the health summary, whose content is that stream.
  *
  * @param ReflectionClass<NativeComponent> $screen
  */
 function looksAgainAtWhatItShows(ReflectionClass $screen): bool
 {
-    $chrome = new ReflectionClass(FindsItsWayAround::class);
-    $itsOwn = array_map(static fn(ReflectionMethod $method): string => $method->getName(), $chrome->getMethods());
-    return array_any($screen->getMethods(), fn(ReflectionMethod $method): bool => $method->getAttributes(Poll::class) !== [] && ! in_array($method->getName(), $itsOwn, strict: true));
+    $traits = array_map(static fn(ReflectionClass $trait): string => $trait->getName(), Screens::traitsOf($screen));
+    $chrome = [FindsItsWayAroundAStack::class];
+
+    if (! in_array(HearsHowTheStackIs::class, $traits, strict: true)) {
+        $chrome[] = HoldsItsStacksStream::class;
+    }
+
+    $itsChrome = [];
+
+    foreach (array_intersect($chrome, $traits) as $trait) {
+        foreach (new ReflectionClass($trait)->getMethods() as $method) {
+            $itsChrome[] = $method->getName();
+        }
+    }
+
+    return array_any($screen->getMethods(), static fn(ReflectionMethod $method): bool => $method->getAttributes(Poll::class) !== [] && ! in_array($method->getName(), $itsChrome, strict: true));
 }
 
 it('every screen says whether what it shows changes on its own, and looks again only if it does', function (): void {

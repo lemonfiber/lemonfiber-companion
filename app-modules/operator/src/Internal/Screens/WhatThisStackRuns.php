@@ -17,7 +17,6 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\News\Api\Noticing;
-use Modules\Operator\Internal\HoldsItsStacksStream;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
@@ -74,11 +73,6 @@ use function view;
  * network nothing the rest of the time — which is what keeps this from being
  * the polling that is refused.
  *
- * **It holds the stack's event stream while it is in front**, through
- * {@see HoldsItsStacksStream}, so the bar marks a tab holding something new
- * wherever the operator is. Taking what the stream delivered sends nothing to
- * the stack.
- *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
@@ -91,10 +85,6 @@ final class WhatThisStackRuns extends NativeComponent
 {
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
-    use HoldsItsStacksStream {
-        HoldsItsStacksStream::stop insteadof FindsItsWayAround;
-        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAround;
-    }
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
 

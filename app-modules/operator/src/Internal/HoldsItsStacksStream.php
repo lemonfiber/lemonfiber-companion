@@ -21,11 +21,12 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * The stack's event stream, held by a screen about that stack while it is in front.
  *
- * Any screen about a stack can hold it, whatever it draws. Holding it is the
+ * Every operator's screen about a stack holds it, through
+ * {@see Screens\FindsItsWayAround}, whatever it draws. Holding it is the
  * screen's one read of what the stream carries: the health summary, and what
- * the stack names as newest of each kind. The subscription is opened once the
- * first frame is up, and after that the screen takes what has arrived on the
- * cadence it declares and never waits for more.
+ * the stack names as newest of each kind. The subscription is opened on the
+ * first wake after the first frame is up, and after that the screen takes what
+ * has arrived on the cadence it declares and never waits for more.
  *
  * **It is held only while somebody can see it.** Every wake asks the device
  * whether the app is in front, and lets go where it is not. Leaving the screen
@@ -73,11 +74,6 @@ trait HoldsItsStacksStream
      * `public` for the reason {@see $heard} is.
      */
     public ?TheTabsMarked $marked = null;
-
-    public function mount(): void
-    {
-        $this->listen();
-    }
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -131,13 +127,14 @@ trait HoldsItsStacksStream
      *
      * Every way off a screen ends here: a push, a pop, a replace, and the
      * platform parking the app. What was held stays, marked as no longer
-     * current, and a return opens the subscription again at once. The list of
-     * stacks the top bar's name opens is let go of with it, having
-     * subscriptions of its own.
+     * current, and a return opens the subscription again at once. What else
+     * the screen hears on subscriptions of its own, and the list of stacks the
+     * top bar's name opens, are let go of with it.
      */
     public function stop(): void
     {
         $this->heard = $this->heardSoFar()->after($this->listening->hearing->letGo(), $this->listening->clock->now())->wentAway();
+        $this->letGoOfWhatElseItHears();
         $this->letTheListOfStacksGo();
 
         parent::stop();
@@ -155,6 +152,14 @@ trait HoldsItsStacksStream
     {
         return true;
     }
+
+    /**
+     * Let go of what else this screen hears on subscriptions of its own, as it stops.
+     *
+     * Nothing, for a screen that hears nothing else. A screen that follows a
+     * walk or a start says otherwise, through the trait that holds it.
+     */
+    protected function letGoOfWhatElseItHears(): void {}
 
     /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
     abstract private function letTheListOfStacksGo(): void;

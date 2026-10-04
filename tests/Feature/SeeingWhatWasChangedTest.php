@@ -31,6 +31,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine has changed about itself, and how far each change goes back.
@@ -90,6 +91,8 @@ function theRecordScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(THE_RECORD_IS_READ_AT)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

@@ -43,25 +43,14 @@ trait HearsWhatAStartWaitsOn
      */
     public string $waitsOn = '';
 
-    /**
-     * Let go of the subscription whenever this screen stops being the one in front.
-     *
-     * Every way off a screen ends here. The last line stays. The list of
-     * stacks the top bar's name opens is let go of with it, having
-     * subscriptions of its own.
-     */
-    public function stop(): void
-    {
-        $this->hearingTheStart->letGo();
-        $this->letTheListOfStacksGo();
-
-        parent::stop();
-    }
-
     abstract public function stack(): Stack;
 
-    /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
-    abstract private function letTheListOfStacksGo(): void;
+    /** Let go of the start's subscription as the screen stops, keeping the last line. */
+    protected function letGoOfWhatElseItHears(): void
+    {
+        $this->hearingTheStart->letGo();
+    }
+
 
     /**
      * Take the stack's newest line for what a running start waits on.

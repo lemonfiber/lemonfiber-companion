@@ -35,6 +35,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatTakesCopies;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -83,7 +84,7 @@ function theCopyingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen());
+    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

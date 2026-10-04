@@ -31,6 +31,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -42,6 +43,7 @@ use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -122,6 +124,8 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         private readonly TheWayAround $around,
         private readonly Translator $catalogue,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

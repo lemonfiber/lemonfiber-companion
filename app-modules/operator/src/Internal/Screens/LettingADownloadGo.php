@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
@@ -30,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -101,6 +103,8 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

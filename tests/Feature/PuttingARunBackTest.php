@@ -46,6 +46,7 @@ use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\AStackThatPutsRunsBack;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Putting back one run the record shows: the record's own rows first, as the
@@ -115,6 +116,8 @@ function thePuttingARunBackScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(A_RUN_IS_PUT_BACK_AT)),
         new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        NoticingWhatIsNew::fromNothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $stamp]);
 

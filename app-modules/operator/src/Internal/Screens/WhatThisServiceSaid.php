@@ -27,12 +27,14 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Zone;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -123,6 +125,8 @@ final class WhatThisServiceSaid extends NativeComponent
         private readonly TheWayAround $around,
         private readonly LocalZone $here,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

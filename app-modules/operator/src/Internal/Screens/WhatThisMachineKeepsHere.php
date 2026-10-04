@@ -18,6 +18,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
@@ -26,6 +27,7 @@ use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Operator\Internal\ViewModels\WhatIsKeptTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -80,6 +82,8 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**

@@ -42,6 +42,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatBundles;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\NoticingWhatIsNew;
 use Tests\Support\WhatABundleSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -76,7 +77,7 @@ function theHelpScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen());
+    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening(), NoticingWhatIsNew::fromNothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

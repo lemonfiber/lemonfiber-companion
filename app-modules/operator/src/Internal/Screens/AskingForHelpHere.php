@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -33,6 +34,7 @@ use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\WhatHandingOverCameTo;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Wayfinding\Api\TheWayAround;
+use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -106,6 +108,8 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         private readonly TheWayAround $around,
         private readonly Sharing $sharing,
         protected readonly TheAppsSettings $settings,
+        protected readonly WhatItListensWith $listening,
+        protected readonly Noticing $noticing,
     ) {}
 
     /**
