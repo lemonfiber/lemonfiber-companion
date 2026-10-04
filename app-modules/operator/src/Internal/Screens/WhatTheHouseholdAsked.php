@@ -10,6 +10,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -25,11 +26,14 @@ use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHouseholdsAskingReads;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
+use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -57,6 +61,12 @@ use function view;
  * the thing I asked for* unanswered, which is the question the household
  * actually asks its operator. The two are told apart on the row rather than by
  * hiding one of them.
+ *
+ * **It opens on what the phone kept.** The first frame draws the reading kept
+ * from an earlier session, with how long ago it was read, before the stack is
+ * asked anything; the fresh reading replaces it and is kept in its place.
+ * Where the stack cannot be reached, the kept reading stays, beside what stood
+ * in the way. Every approval and decline waits for a fresh reading.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * watches is the household's business, and a diagnostic report is
@@ -102,7 +112,20 @@ final class WhatTheHouseholdAsked extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly KeepingWhatWasAsked $kept,
     ) {}
+
+    /**
+     * Open the stack's stream and ask the stack, behind the first frame.
+     *
+     * The first frame drew what the phone kept; the next frame asks, and what
+     * the stack says then replaces it.
+     */
+    public function mount(): void
+    {
+        $this->listen();
+        $this->answered = null;
+    }
 
 
     /** How many are shown, which is what the empty state asks. */
@@ -187,13 +210,14 @@ final class WhatTheHouseholdAsked extends NativeComponent
      *
      * It sends what was held rather than anything a template passes in, so the
      * request an operator read the reason against and the one the stack is told
-     * about are the same request.
+     * about are the same request. Refused while the reading drawn is one the
+     * phone kept: a request is decided only against a fresh reading.
      */
     public function decline(): void
     {
         $request = $this->turningDown;
 
-        if (! $request instanceof WhatOneRequestSays || ! $this->mayDecline()) {
+        if ($this->answer()->waitsForTheStack || ! $request instanceof WhatOneRequestSays || ! $this->mayDecline()) {
             return;
         }
 
@@ -237,16 +261,44 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
+     * The first frame: the reading the phone kept, drawn as the screen draws
+     * any, with its age and every decision on it waiting.
+     *
+     * Held as the answer for this frame alone; {@see mount()} asks behind it.
+     * Only where nothing was kept is the frame the platform's indicator.
+     */
+    protected function placeholder(): Element|View
+    {
+        return $this->kept->lastKept($this->stack()->id())->either(
+            kept: function (Requested $wanted, Instant $readAt, Instant $now): View {
+                $this->answered = new HowTheHouseholdsAskingReads()->kept($wanted, $readAt, $now, HowTheReadingWent::itCameBack());
+
+                return $this->render();
+            },
+            nothing: fn(): Element|View => parent::placeholder(),
+        );
+    }
+
+    /**
      * The row of that number in what was read, where it is waiting on a yes.
      *
      * Two refusals in one: a request this screen never showed, and one it
      * showed that is not waiting on anybody. The second matters as much as the
      * first — a request already declined is one an operator would be deciding
      * about twice, and the stack would be right to refuse the second.
+     *
+     * Nothing waits on a yes in a reading the phone kept: where a request stands
+     * now is the fresh reading's to say, so every row of a kept one is refused.
      */
     private function waitingOn(string $numbered): ?WhatOneRequestSays
     {
-        foreach ($this->answer()->requests as $request) {
+        $answer = $this->answer();
+
+        if ($answer->waitsForTheStack) {
+            return null;
+        }
+
+        foreach ($answer->requests as $request) {
             if ((string) $request->number === trim($numbered) && $request->wantsADecision) {
                 return $request;
             }
@@ -310,8 +362,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheHouseholdTurnedOutToWant => $this->asked($stack, $session),
-            notHeld: static fn(): WhatTheHouseholdTurnedOutToWant
-                => new HowTheHouseholdsAskingReads()->signedOut(),
+            notHeld: fn(): WhatTheHouseholdTurnedOutToWant => $this->besideWhatWasKept(new HowTheHouseholdsAskingReads()->signedOut()),
         );
     }
 
@@ -319,13 +370,32 @@ final class WhatTheHouseholdAsked extends NativeComponent
     private function asked(Stack $stack, Session $session): WhatTheHouseholdTurnedOutToWant
     {
         return $this->wanting->askedOf($stack, $session)->either(
-            these: static fn(Requested $wanted): WhatTheHouseholdTurnedOutToWant
-                => new HowTheHouseholdsAskingReads()->these($wanted),
+            these: function (Requested $wanted) use ($stack): WhatTheHouseholdTurnedOutToWant {
+                $this->kept->keep($stack->id(), $wanted);
+
+                return new HowTheHouseholdsAskingReads()->these($wanted);
+            },
             met: function (Obstacle $why) use ($stack): WhatTheHouseholdTurnedOutToWant {
                 $this->letGoOfTheSession($why, $stack);
 
-                return new HowTheHouseholdsAskingReads()->met($why);
+                return $this->besideWhatWasKept(new HowTheHouseholdsAskingReads()->met($why));
             },
+        );
+    }
+
+    /**
+     * A reading that did not come back, drawn beside the one the phone kept.
+     *
+     * No fresh reading arrived, so the kept one still stands, with its age and
+     * every decision on it waiting; only where nothing was kept is what stood
+     * in the way the whole screen.
+     */
+    private function besideWhatWasKept(WhatTheHouseholdTurnedOutToWant $unread): WhatTheHouseholdTurnedOutToWant
+    {
+        return $this->kept->lastKept($this->stack()->id())->either(
+            kept: static fn(Requested $wanted, Instant $readAt, Instant $now): WhatTheHouseholdTurnedOutToWant
+                => new HowTheHouseholdsAskingReads()->kept($wanted, $readAt, $now, $unread->askedNow),
+            nothing: static fn(): WhatTheHouseholdTurnedOutToWant => $unread,
         );
     }
 }

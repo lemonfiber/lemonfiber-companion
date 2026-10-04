@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Credential;
+use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Offer;
@@ -25,7 +26,9 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\Unsealed;
+use Modules\Kernel\Api\WhatWasDecided;
 use Modules\News\Internal\TheNewsAsKept;
+use Modules\Requests\Internal\TheRequestsAsKept;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Services\Internal\TheListingAsKept;
 use Modules\Updates\Internal\TheUpkeepAsKept;
@@ -67,6 +70,7 @@ const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheNewsAsKept::class,
     TheUpkeepAsKept::class,
     TheListingAsKept::class,
+    TheRequestsAsKept::class,
 ];
 
 /** The one other class that makes a value to seal: the seal, handing back what it opened. */
@@ -74,8 +78,9 @@ const THE_SEAL_THAT_OPENS = EncrypterSeal::class;
 
 /**
  * What the phone may not keep: a repair offer, an agreement or a confirmation,
- * the key of a command the stack may not have received, a credential, a
- * session, and pairing material.
+ * a decision about a request and the reason given for it, the key of a command
+ * the stack may not have received, a credential, a session, and pairing
+ * material.
  *
  * @var list<class-string>
  */
@@ -92,6 +97,8 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     AResetAgreed::class,
     HostingAgreed::class,
     TakingAnUpdate::class,
+    Decided::class,
+    WhatWasDecided::class,
     IdempotencyKey::class,
     Credential::class,
     Session::class,

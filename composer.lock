@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3ab997778c7366bed4863adb010f8dbd",
+    "content-hash": "80bfb07c208719fdb7b7e168d208a79e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3685,7 +3685,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "3f229fdd1250255f230980fb41b77c3d27691bc9"
+                "reference": "1f32b55be13bb02ae4ad45a9ce4cd0cb74cf9d0e"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3693,6 +3693,7 @@
                 "modules/design": "dev-main",
                 "modules/health": "dev-main",
                 "modules/kernel": "dev-main",
+                "modules/requests": "dev-main",
                 "modules/services": "dev-main",
                 "modules/stacks": "dev-main",
                 "modules/updates": "dev-main",
@@ -3726,6 +3727,45 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "The operator surface: navigation and screen composition only.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/requests",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/requests",
+                "reference": "f6e2a78391f6f98927a0edfe24df8adad25ac2fe"
+            },
+            "require": {
+                "illuminate/database": "^13.17",
+                "modules/kernel": "dev-main",
+                "modules/store-kit": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "capability"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Requests\\": "src/",
+                    "Modules\\Requests\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "What the household asked a stack for, and the reading of it the phone keeps.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14872,6 +14912,7 @@
         "modules/kernel": 20,
         "modules/news": 20,
         "modules/operator": 20,
+        "modules/requests": 20,
         "modules/sdk": 20,
         "modules/seal": 20,
         "modules/services": 20,

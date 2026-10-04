@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\News\Api\Noticing;
+use Modules\Requests\Internal\RequestsKept;
 use Modules\Services\Internal\ListingsKept;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 
@@ -54,7 +55,8 @@ it('asks the store of every kind of reading the phone keeps', function (): void 
 
     expect(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof HealthReadingsKept))->toHaveCount(1)
         ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof UpkeepReadingsKept))->toHaveCount(1)
-        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof ListingsKept))->toHaveCount(1);
+        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof ListingsKept))->toHaveCount(1)
+        ->and(array_filter($stores, static fn(ForgetsEverythingKept $store): bool => $store instanceof RequestsKept))->toHaveCount(1);
 });
 
 it('asks what notices news, which forgets the markers it keeps and what each stack last named', function (): void {

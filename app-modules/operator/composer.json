@@ -10,6 +10,7 @@
         "modules/design": "dev-main",
         "modules/health": "dev-main",
         "modules/kernel": "dev-main",
+        "modules/requests": "dev-main",
         "modules/services": "dev-main",
         "modules/stacks": "dev-main",
         "modules/updates": "dev-main",

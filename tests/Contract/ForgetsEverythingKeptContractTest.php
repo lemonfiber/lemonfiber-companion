@@ -29,6 +29,7 @@ use Modules\News\Api\Noticing;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\News\Internal\WhatEachStackLastNamed;
+use Modules\Requests\Internal\Store\RequestsInTheDatabase;
 use Modules\Services\Internal\Store\ListingsInTheDatabase;
 use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Vault\Api\PlatformStacks;
@@ -105,6 +106,7 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the news fake' => NewsKeptInMemory::empty(),
         'the updates adapter' => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => new ListingsInTheDatabase(AKeptDatabase::migrated()),
+        'the requests adapter' => new RequestsInTheDatabase(AKeptDatabase::migrated()),
         'every store together' => new EveryStoreThePhoneKeeps(ReadingsInMemory::empty(), ReadingsInMemory::empty()),
         'no store at all' => new EveryStoreThePhoneKeeps(),
     ];
@@ -114,10 +116,11 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
     }
 });
 
-it('forgets the readings an updates or services store keeps of every stack, and says how much that was', function (): void {
+it('forgets the readings an updates, services or requests store keeps of every stack, and says how much that was', function (): void {
     foreach ([
         'the updates adapter' => static fn(): UpkeepReadingsInTheDatabase => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => static fn(): ListingsInTheDatabase => new ListingsInTheDatabase(AKeptDatabase::migrated()),
+        'the requests adapter' => static fn(): RequestsInTheDatabase => new RequestsInTheDatabase(AKeptDatabase::migrated()),
         'the fake' => static fn(): ReadingsInMemory => ReadingsInMemory::empty(),
     ] as $which => $made) {
         $store = $made();

@@ -30,6 +30,7 @@ app-modules/
   connection/             pairing, session, multi-stack       (N1)
   stacks/                 stacks and their services
   services/               what a stack runs, kept between launches
+  requests/               what the household asked for, kept between launches
   health/                 verdict, findings, repairs          (N2)
   backups/                snapshots
   updates/                versions, apply, undo

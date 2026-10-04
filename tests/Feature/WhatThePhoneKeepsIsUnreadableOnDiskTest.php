@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -23,13 +24,17 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
@@ -38,6 +43,8 @@ use Modules\News\Api\Noticing;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\News\Internal\WhatEachStackLastNamed;
+use Modules\Requests\Api\KeepingWhatWasAsked;
+use Modules\Requests\Internal\Store\RequestsInTheDatabase;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Services\Internal\Store\ListingsInTheDatabase;
@@ -185,6 +192,41 @@ it('writes a kept listing of what a stack runs to the database file with nothing
         ->and($onDisk)->toContain('services_readings')
         ->and($onDisk)->not->toContain(THE_SERVICE_ONLY_THE_KEPT_LISTING_NAMES)
         ->and($onDisk)->not->toContain('Nextcloud')
+        ->and($onDisk)->not->toContain(THE_STACK_WHOSE_HEALTH_IS_KEPT);
+});
+
+/** A title only the kept reading of what the household asked for names, so finding it in the file finds the reading. */
+const THE_TITLE_ONLY_THE_KEPT_REQUESTS_NAME = 'the-attic-film-nobody-else-asked-for';
+
+/** Keep one reading of what the household asked for through the capability that decides it, over the real seal and the real store, and say whether it was written. */
+function keepTheRequestsIn(ConnectionInterface $database): string
+{
+    $keeping = new KeepingWhatWasAsked(
+        new EncrypterSeal(new PlatformSealKeys(APlatformStore::working()), new SystemEntropy()),
+        new RequestsInTheDatabase($database),
+        FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
+    );
+
+    return $keeping->keep(
+        StackId::of(Nonce::of(THE_STACK_WHOSE_HEALTH_IS_KEPT)),
+        Requested::of(Wanted::of(7, 'Mira', THE_TITLE_ONLY_THE_KEPT_REQUESTS_NAME, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))),
+    )->either(
+        down: static fn(): Code => Code::of('written'),
+        notKept: static fn(): Code => Code::of('not-kept'),
+    )->shown();
+}
+
+it('writes a kept reading of what a household asked for to the database file with nothing of it, or of its stack, left readable', function (): void {
+    $file = (string) tempnam(sys_get_temp_dir(), 'kept');
+    $written = keepTheRequestsIn(aDatabaseFileMigrated($file));
+    DB::disconnect('sqlite');
+    $onDisk = (string) file_get_contents($file);
+    unlink($file);
+
+    expect($written)->toBe('written')
+        ->and($onDisk)->toContain('requests_readings')
+        ->and($onDisk)->not->toContain(THE_TITLE_ONLY_THE_KEPT_REQUESTS_NAME)
+        ->and($onDisk)->not->toContain('Mira')
         ->and($onDisk)->not->toContain(THE_STACK_WHOSE_HEALTH_IS_KEPT);
 });
 

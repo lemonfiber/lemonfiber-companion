@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
+use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 
@@ -51,6 +52,12 @@ final readonly class WhatThePhoneKeeps
     public static function noListingYet(): KeepingWhatItRuns
     {
         return new KeepingWhatItRuns(ASealInMemory::working(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)));
+    }
+
+    /** Nothing kept of what any stack's household asked for. */
+    public static function noRequestsYet(): KeepingWhatWasAsked
+    {
+        return new KeepingWhatWasAsked(ASealInMemory::working(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)));
     }
 
     /** Letting go of readings older than they are kept for, with none kept to let go of. */
