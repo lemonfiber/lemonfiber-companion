@@ -1022,3 +1022,21 @@ it('says nothing about edited files where the update leaves none', function (): 
 
     expect($drawn)->not->toContain(__('stacks.edits.heading'));
 });
+
+it('offers nothing to put back a file the operator edited: the screen offers what it would with no edit at all', function (): void {
+    $leaving = static fn(TheStackEdits $edits): Upkeep => Upkeep::reported(
+        AgainstThePins::UpdatesAvailable,
+        Releases::none(),
+        Services::these(ServiceId::called('sonarr')),
+        Services::none(),
+        whatLastNightCameTo(),
+        HowTheNotesStand::Current,
+        $edits,
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
+
+    $edited = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"))))));
+    $untouched = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::none()))));
+
+    expect($edited->said())->toContain(__('stacks.edits.kept', ['path' => 'compose.yaml']))
+        ->and($edited->offers())->not->toBe([])->toBe($untouched->offers());
+});

@@ -32,6 +32,15 @@ it('says which stances wrote something', function (): void {
         ->and(Stance::Blocked->wroteSomething())->toBeFalse();
 });
 
+it('says which stances a yes could write', function (): void {
+    // Only a staged change waits on one. A blocked change is refused again
+    // when confirmed, and the other two have nothing left to agree to.
+    expect(Stance::Pending->canBeAgreedTo())->toBeTrue()
+        ->and(Stance::Blocked->canBeAgreedTo())->toBeFalse()
+        ->and(Stance::Unchanged->canBeAgreedTo())->toBeFalse()
+        ->and(Stance::Applied->canBeAgreedTo())->toBeFalse();
+});
+
 it('is the four words the wire has and no others', function (): void {
     // Held to the wire rather than to a list written here. A fifth stance
     // arrives as a case neither `match` has, and both raise rather than

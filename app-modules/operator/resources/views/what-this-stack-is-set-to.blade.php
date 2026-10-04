@@ -72,7 +72,11 @@
                         <x-design::note>{{ $this->proposalFor($setting->key)->refusalSaid }}</x-design::note>
                     @endif
 
-                    @unless ($this->proposalFor($setting->key)->holdsWhatWasAsked)
+                    {{-- Only a staged change waits on a yes. A blocked one is
+                         refused again when confirmed, an area the operator
+                         declared unmanaged among the reasons, so its yes
+                         would be a control that cannot write. --}}
+                    @if ($this->proposalFor($setting->key)->canBeAgreedTo)
                         @if ($this->proposalFor($setting->key)->mustBeAgreedFirst)
                             {{-- Before the control rather than after it. The
                                  core decides which changes cost something,
@@ -95,7 +99,7 @@
                             answers-to="{{ __('config.agree_to', ['key' => $setting->key]) }}"
                             tap="agree('{{ $setting->key }}')"
                         />
-                    @endunless
+                    @endif
                 @else
                     <x-design::action
                         label="{{ __('config.what_would_happen') }}"

@@ -61,6 +61,19 @@ enum Stance: string
     }
 
     /**
+     * Whether a yes could write it.
+     *
+     * Only a staged change waits on one. A blocked change is refused again
+     * when it is confirmed, for the same reason, so a yes offered under it is
+     * a control that cannot do what it says; and a setting that holds what was
+     * asked for has nothing left to agree to.
+     */
+    public function canBeAgreedTo(): bool
+    {
+        return $this === self::Pending;
+    }
+
+    /**
      * Whether anything was written.
      *
      * Beside {@see holdsWhatWasAsked()} rather than folded into it, because the

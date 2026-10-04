@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWouldBeUpdated;
@@ -246,4 +247,14 @@ it('says so where the phone would not open its settings', function (): void {
     $screen->openTheAppsSettings();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.settings_would_not_open'));
+});
+
+it('offers updating at the machine plainly: a copy another tool keeps is fine, and the command sits under the line that offers it', function (): void {
+    $brew = ThisCopyOfLemonfiber::reported('0.15.0', HowThisCopyGotThere::by(HowLemonfiberWasInstalled::Homebrew, 'brew'), WhereThisCopyStands::ManagedExternally, WhatIsReleased::said('0.15.0'), '', HowItWouldBeUpdated::byRunning('brew upgrade lemonfiber'), whatUpdatingBrings());
+    $screen = theCopyScreen(AStackThatChecksItself::with($brew));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $offered = array_search(__('stacks.itself.run_at_the_machine'), $drawn, strict: true);
+
+    expect($screen->answer()->tone)->toBe(Tone::Fine->value)
+        ->and(is_int($offered) ? $drawn[$offered + 1] ?? '' : '')->toBe('brew upgrade lemonfiber');
 });

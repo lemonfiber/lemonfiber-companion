@@ -27,10 +27,13 @@
     @if ($this->willRun !== '')
         {{-- The exact command the yes will run, from the stack's own
              rehearsal of it, read before agreeing rather than after. Nothing
-             is drawn until the stack has said, and nothing where it could
-             not: the question stands without it. --}}
+             is drawn until the stack has said, and a rehearsal that could not
+             be read is said as that, apart from a verb with no command: the
+             question stands either way. --}}
         <x-design::note>{{ __('stacks.command.will_run') }}</x-design::note>
         <x-design::verbatim>{{ $this->willRun }}</x-design::verbatim>
+    @elseif ($this->willRunUnread)
+        <x-design::note>{{ __('stacks.command.unread') }}</x-design::note>
     @endif
 
     {{-- How long for, as the stack reported it. Said here because

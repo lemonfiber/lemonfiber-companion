@@ -43,8 +43,9 @@ function saysNothingAtAll(WhatAChangeTurnedOutToBe $turned): void
         ->and($turned->costSaid)->toBe('')
         ->and($turned->stanceSaid)->toBe('')
         ->and($turned->mustBeAgreedFirst)->toBeFalse()
-        // The two that would be a lie rather than a blank.
+        // The three that would be a lie rather than a blank.
         ->and($turned->holdsWhatWasAsked)->toBeFalse()
+        ->and($turned->canBeAgreedTo)->toBeFalse()
         ->and($turned->wroteSomething)->toBeFalse()
         ->and($turned->refusalSaid)->toBe('');
 }

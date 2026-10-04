@@ -1023,6 +1023,7 @@ return [
     'command' => [
         'ran' => 'The command it ran',
         'will_run' => 'The command it will run',
+        'unread' => 'The stack could not say which command it will run',
     ],
 
     // Stack files the operator edited, wherever the stack reports them. Each

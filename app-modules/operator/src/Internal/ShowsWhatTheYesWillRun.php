@@ -20,10 +20,11 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * The command is the stack's: the verb being asked about is rehearsed by the
  * stack as soon as the question is put, and the line its rehearsal reports is
- * drawn above the yes once it arrives. Nothing is drawn until it has, and
- * nothing where the stack could not rehearse it or would not be reached: the
- * question stands without the line, because the line is something to read
- * before agreeing rather than a condition of agreeing.
+ * drawn above the yes once it arrives. Nothing is drawn until it has. Where
+ * the rehearsal could not be read, that is said in place of the line, so it
+ * is told apart from a verb with no command; the question stands either way,
+ * because the line is something to read before agreeing rather than a
+ * condition of agreeing.
  *
  * **It reads the using screen's own `$supervising` and `$storage`**, for the
  * reason {@see FollowsWhatTheVerbCameTo} gives, and lets go of a session the
@@ -39,6 +40,9 @@ trait ShowsWhatTheYesWillRun
     /** The command the verb being asked about will run, as the stack's rehearsal said it, or empty until it has. */
     public string $willRun = '';
 
+    /** Whether the rehearsal asked for could not be read, which is said rather than drawn as no command. */
+    public bool $willRunUnread = false;
+
     abstract public function stack(): Stack;
 
     /** Ask the stack to rehearse the verb now being asked about, and take its answer if it is already there. */
@@ -53,7 +57,7 @@ trait ShowsWhatTheYesWillRun
                 met: function (Obstacle $why) use ($stack): AsText {
                     $this->letGoOfTheSession($why, $stack);
 
-                    return AsText::nothing();
+                    return $this->unread();
                 },
             ),
             notHeld: static fn(): AsText => AsText::nothing(),
@@ -90,19 +94,27 @@ trait ShowsWhatTheYesWillRun
             // A report that was not a rehearsal is not a line the yes will run:
             // whatever it ran has already run, and saying it before the yes would
             // be saying it about the wrong thing.
-            done: static fn(WhatTheVerbCameTo $report): AsText => $report->was() === WhetherItWasRehearsed::Rehearsed
+            done: fn(WhatTheVerbCameTo $report): AsText => $report->was() === WhetherItWasRehearsed::Rehearsed
                 ? $report->whetherItRan(
                     ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
                     declined: static fn(): AsText => AsText::nothing(),
                 )
-                : AsText::nothing(),
-            ended: static fn(): AsText => AsText::nothing(),
+                : $this->unread(),
+            ended: fn(): AsText => $this->unread(),
             met: function (Obstacle $why) use ($stack): AsText {
                 $this->letGoOfTheSession($why, $stack);
 
-                return AsText::nothing();
+                return $this->unread();
             },
         )->said;
+    }
+
+    /** The rehearsal could not be read: no line, and that said. */
+    private function unread(): AsText
+    {
+        $this->willRunUnread = true;
+
+        return AsText::nothing();
     }
 
     /** Put away whatever was rehearsed for a question that is no longer on the screen. */
@@ -110,5 +122,6 @@ trait ShowsWhatTheYesWillRun
     {
         $this->rehearsalOfTheYes = null;
         $this->willRun = '';
+        $this->willRunUnread = false;
     }
 }

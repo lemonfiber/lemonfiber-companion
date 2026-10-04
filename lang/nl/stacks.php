@@ -900,6 +900,7 @@ return [
     'command' => [
         'ran' => 'De opdracht die is uitgevoerd',
         'will_run' => 'De opdracht die wordt uitgevoerd',
+        'unread' => 'De stack kon niet zeggen welke opdracht wordt uitgevoerd',
     ],
 
     // Stackbestanden die de beheerder heeft aangepast, waar de stack ze ook
