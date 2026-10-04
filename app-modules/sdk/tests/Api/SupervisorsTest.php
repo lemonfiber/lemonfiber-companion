@@ -216,7 +216,7 @@ function theKeysOfAttemptsAnswered(array $answers): array
     return $keys;
 }
 
-it('N1-R42 — names the attempt in the header, and not in what the action takes', function (): void {
+it('names the attempt in the header, and not in what the action takes', function (): void {
     $sent = whatWasSentSaying(aStopOfOneService());
 
     // Compared against what `Entropy` would hand out first, so this says where
@@ -233,7 +233,7 @@ it('N1-R42 — names the attempt in the header, and not in what the action takes
         ->and($sent->body()?->all())->toBe(['services' => ['sonarr']]);
 });
 
-it('N1-R42 — a second attempt is a second name, through the same adapter', function (): void {
+it('a second attempt is a second name, through the same adapter', function (): void {
     // The requirement's load-bearing half. A key that is minted once and held
     // makes the second verb a re-send of the first, which is the one thing a
     // key exists to stop being possible.
@@ -242,7 +242,7 @@ it('N1-R42 — a second attempt is a second name, through the same adapter', fun
     expect($second)->not->toBe($first);
 });
 
-it('N1-R42 — an attempt that was refused is not tried again under its own name', function (): void {
+it('an attempt that was refused is not tried again under its own name', function (): void {
     // The reconnection case, which is where holding a key looks kindest. The
     // first attempt does not reach the stack; the operator presses again, and
     // that is a new attempt rather than a replay of one nobody can see the
@@ -255,7 +255,7 @@ it('N1-R42 — an attempt that was refused is not tried again under its own name
     expect($again)->not->toBe($refused);
 });
 
-it('N2-R7 — asks for a verb at the path the SDK composes for it', function (): void {
+it('asks for a verb at the path the SDK composes for it', function (): void {
     $sent = whatWasSentSaying(AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr')));
 
     // `down`, not `stop`. The value is lemonfiber's word for the verb, and a
@@ -264,13 +264,13 @@ it('N2-R7 — asks for a verb at the path the SDK composes for it', function ():
     expect($sent->getUrl())->toEndWith('/api/actions/down');
 });
 
-it('N2-R7 — names one service under `services` and nothing else', function (): void {
+it('names one service under `services` and nothing else', function (): void {
     $sent = whatWasSentSaying(AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr')));
 
     expect($sent->body()?->all())->toBe(['services' => ['sonarr']]);
 });
 
-it('N2-R7 — names a whole form under `forms` and nothing else', function (): void {
+it('names a whole form under `forms` and nothing else', function (): void {
     // The two are different requests on that surface rather than one with an
     // option, so an empty list beside the one that applies would be a second,
     // silent subject in every request.
@@ -280,7 +280,7 @@ it('N2-R7 — names a whole form under `forms` and nothing else', function (): v
     expect($sent->body()?->all())->toBe(['forms' => ['downloads']]);
 });
 
-it('N2-R7 — asks for a start at the same door as a stop', function (): void {
+it('asks for a start at the same door as a stop', function (): void {
     $sent = whatWasSentSaying(AgreedTo::theForm(WhatToDoWithIt::Start, Form::called('media')));
 
     expect($sent->getUrl())->toEndWith('/api/actions/up');

@@ -108,7 +108,7 @@ function aHouseholdTelling(array $owed): array
     ];
 }
 
-it('N3-R4 — reads the sentences the core wrote, in the order it wrote them', function (): void {
+it('reads the sentences the core wrote, in the order it wrote them', function (): void {
     $said = whatOneMemberIsTold(aHouseholdTelling([
         'Anything you ask for goes to whoever looks after this house first.',
         'You have two left this month.',
@@ -127,7 +127,7 @@ it('reads an answer that is not one member\'s as nothing owed to anybody', funct
     expect(whatOneMemberIsTold(['available' => true, 'findings' => [], 'members' => []]))->toBe([]);
 });
 
-it('N3-R3 — refuses a household the stack says it could not read, rather than an empty one', function (): void {
+it('refuses a household the stack says it could not read, rather than an empty one', function (): void {
     // The one this reading would get most wrong. A member whose household could
     // not be read and a member with nothing to be told both arrive with no
     // sentences, and the contract carries `available` to tell them apart — a

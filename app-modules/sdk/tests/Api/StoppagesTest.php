@@ -62,7 +62,7 @@ function everyRowIn(Stalled $stalled): string
     return implode(' | ', $rows);
 }
 
-it('N2-R9 — reads a listing, keeping the stack\'s order', function (): void {
+it('reads a listing, keeping the stack\'s order', function (): void {
     $stalled = Stoppages::in(stuckSaying([
         'incomplete' => false,
         'items' => [

@@ -122,7 +122,7 @@ function oneLineForTheirs(ARequestOfTheirs $request): string
     )->said);
 }
 
-it('N10-R1, N10-R2, N10-R3 — reads lemonfiber\'s requests and its services\' as two lists', function (): void {
+it('reads lemonfiber\'s requests and its services\' as two lists', function (): void {
     $leaving = WhatLeaves::in(whatLeavesAs([oneOfOurRequests()], [oneOfTheirRequests()]));
 
     expect(array_map(oneLineFor(...), iterator_to_array($leaving->ours(), preserve_keys: false)))->toBe([
@@ -157,7 +157,7 @@ it('reads every request lemonfiber can make', function (WhatLemonfiberAsksFor $a
     expect(theFirstOfOurs($leaving)->asksFor())->toBe($asks);
 })->with(WhatLemonfiberAsksFor::cases());
 
-it('N10-R12 — a machine sending nothing is an answer', function (): void {
+it('a machine sending nothing is an answer', function (): void {
     $leaving = WhatLeaves::in(whatLeavesAs([], []));
 
     expect($leaving->ours())->toHaveCount(0)->and($leaving->theirs())->toHaveCount(0);
@@ -238,7 +238,7 @@ function whoPutTheServiceThere(ARequestOfTheirs $request): string
     )->said;
 }
 
-it('F7-R9 — reads who put each service there, on a recorded row and an unrecorded one alike', function (): void {
+it('reads who put each service there, on a recorded row and an unrecorded one alike', function (): void {
     // The unrecorded row is the one that matters: a plugin's service arrives
     // with no record of where it goes, and its origin is still read.
     $leaving = WhatLeaves::in(whatLeavesAs([], [

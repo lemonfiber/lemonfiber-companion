@@ -76,7 +76,7 @@ function aListingOf(array $repair): array
     ];
 }
 
-it('N2-R4 — reads all three clauses off an offered repair', function (): void {
+it('reads all three clauses off an offered repair', function (): void {
     $offer = Offers::offerIn(repairSaying(aListingOf(anOfferedRepair())));
     $said = '';
 
@@ -91,7 +91,7 @@ it('N2-R4 — reads all three clauses off an offered repair', function (): void 
         ->and($said)->toBe('Move the library onto the larger disk/1/possible');
 });
 
-it('N2-R4 — reads reversible as the word rather than carrying the boolean', function (): void {
+it('reads reversible as the word rather than carrying the boolean', function (): void {
     // The one field on this screen where reading it backwards means telling
     // somebody a thing can be undone when it cannot, which is why the wire's
     // boolean does not survive the boundary.
@@ -303,7 +303,7 @@ function aRunOf(mixed $one): array
     ];
 }
 
-it('N2-R5 — reads what became of a repair, and what a stopped one left', function (): void {
+it('reads what became of a repair, and what a stopped one left', function (): void {
     $run = Offers::mendedIn(repairSaying(aRunOf(anOutcomeOf([
         'outcome' => 'stopped',
         'leaving' => 'Half of it on the old disk',

@@ -50,7 +50,7 @@ function saysNothingAtAll(WhatAChangeTurnedOutToBe $turned): void
         ->and($turned->refusalSaid)->toBe('');
 }
 
-it('N1-R44 — a session that has ended carries no proposal at all', function (): void {
+it('a session that has ended carries no proposal at all', function (): void {
     $signedOut = new HowAChangeReads()->signedOut();
 
     expect($signedOut->went->isSignedIn)->toBeFalse()
@@ -59,7 +59,7 @@ it('N1-R44 — a session that has ended carries no proposal at all', function ()
     saysNothingAtAll($signedOut);
 });
 
-it('N1-R44 — a stack that could not be reached carries no proposal at all', function (): void {
+it('a stack that could not be reached carries no proposal at all', function (): void {
     // The obstacle is the one thing this arm does carry, and it is carried on
     // `went` rather than smeared across the fields a proposal would fill.
     $met = new HowAChangeReads()->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
@@ -70,7 +70,7 @@ it('N1-R44 — a stack that could not be reached carries no proposal at all', fu
     saysNothingAtAll($met);
 });
 
-it('N1-R44 — a tap with no setting open is a reading that came back saying nothing', function (): void {
+it('a tap with no setting open is a reading that came back saying nothing', function (): void {
     // Not an obstacle: nothing went wrong with the stack, and this is the arm
     // that must not be confusable with the one above. It came back, and it has
     // nothing to report — which is a different sentence from could not ask.

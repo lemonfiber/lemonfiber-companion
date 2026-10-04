@@ -158,13 +158,13 @@ function theKeysOfAgreementsAnswered(array $answers): array
     return $keys;
 }
 
-it('N1-R42 — an agreement names the attempt it is part of', function (): void {
+it('an agreement names the attempt it is part of', function (): void {
     [$key] = theKeysOfAgreementsAnswered([aRepairTakenOn()]);
 
     expect($key)->not->toBe('');
 });
 
-it('N1-R42 — a second agreement is a second name', function (): void {
+it('a second agreement is a second name', function (): void {
     // The same shape a verb is held to. A repair reaches the services and
     // changes an operator's disk, so carrying one out twice under one name is
     // the most expensive way this requirement can be broken.

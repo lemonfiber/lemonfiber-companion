@@ -67,7 +67,7 @@ function theRequestAskingAfterAShelf(Whose $whose): PendingRequest
         : throw new RuntimeException('The adapter sent nothing, so this case read nothing.');
 }
 
-it('N3-R14 — names whose shelf it is asking for', function (): void {
+it('names whose shelf it is asking for', function (): void {
     // There is no whole-household reading: the list is read from the media
     // server *as* an account, so a request that named nobody would be asking
     // a question the endpoint cannot answer — and one that named the wrong
@@ -79,7 +79,7 @@ it('N3-R14 — names whose shelf it is asking for', function (): void {
         ->and($sent->getUrl())->toContain(Api::HELD_ENDPOINT);
 });
 
-it('N3-R14 — asks nothing at all where the session is the operator\'s', function (): void {
+it('asks nothing at all where the session is the operator\'s', function (): void {
     // Refused before the round trip rather than after it. The operator is not
     // an account the media server can read a shelf as, so a request naming
     // them is one the stack would turn down — and spending it would be asking

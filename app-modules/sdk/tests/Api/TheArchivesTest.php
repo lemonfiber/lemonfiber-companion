@@ -39,11 +39,11 @@ it('reads a list that arrived as an object by position, not by key', function ()
     expect(iterator_to_array($copies, preserve_keys: false))->toBe(['lemonfiber-20260924-0300-full']);
 });
 
-it('N6-R9 — reads an empty list as no copy, which is an answer', function (): void {
+it('reads an empty list as no copy, which is an answer', function (): void {
     expect(TheArchives::in(archivesSaying(['archives' => []])))->toHaveCount(0);
 });
 
-it('N6-R9 — refuses a payload with no list, rather than reading it as empty', function (mixed $data): void {
+it('refuses a payload with no list, rather than reading it as empty', function (mixed $data): void {
     expect(fn(): mixed => TheArchives::in(archivesSaying($data)))->toThrow(ArchivesAreUnreadable::class, '`');
 })->with([
     'no payload' => ['nothing'],
@@ -51,7 +51,7 @@ it('N6-R9 — refuses a payload with no list, rather than reading it as empty', 
     'not a list' => [['archives' => 'none']],
 ]);
 
-it('N6-R9 — refuses a copy that is not a name, by its position, rather than dropping it', function (mixed $said): void {
+it('refuses a copy that is not a name, by its position, rather than dropping it', function (mixed $said): void {
     expect(fn(): mixed => TheArchives::in(archivesSaying(['archives' => ['lemonfiber-20260924-0300-full', $said]])))
         ->toThrow(ArchivesAreUnreadable::class, 'Archive 1 ');
 })->with(['blank' => [' '], 'a number' => [7], 'nothing' => [null]]);

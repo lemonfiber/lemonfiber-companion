@@ -27,7 +27,7 @@ use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
  * screen starts drawing the verdict on the signed-out frame is the day this
  * says whether there was one.
  */
-it('N1-R44 — a session that has ended carries no reading at all', function (): void {
+it('a session that has ended carries no reading at all', function (): void {
     $signedOut = new HowAListingReads()->signedOut();
 
     expect($signedOut->went->isSignedIn)->toBeFalse()

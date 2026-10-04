@@ -169,7 +169,7 @@ it('leaves the wrong kind to the client to report', function (): void {
         ->toThrow(UnexpectedKind::class);
 });
 
-it('N1-R13 — refuses an envelope in a wire version this app does not read', function (): void {
+it('refuses an envelope in a wire version this app does not read', function (): void {
     // Asserted here and not only over `Wire`, because what is being pinned is
     // that this translator asks. A gate nothing calls is a gate.
     //

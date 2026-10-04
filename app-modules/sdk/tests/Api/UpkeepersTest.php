@@ -184,7 +184,7 @@ it('says which of the two readings it wants', function (): void {
         ->and($sent['what'])->toBe('stack');
 });
 
-it('N1-R10 — tells a credential that was refused from a stack that is not answering', function (): void {
+it('tells a credential that was refused from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
@@ -195,7 +195,7 @@ it('N1-R10 — tells a credential that was refused from a stack that is not answ
     }
 });
 
-it('N2-R14 — a payload this side cannot read is an obstacle, not an exception', function (): void {
+it('a payload this side cannot read is an obstacle, not an exception', function (): void {
     // The case the fake cannot be asked about, because it has no payload to be
     // short of. An operator meets the same thing either way: the stack said
     // something, and this app cannot act on it.
@@ -232,14 +232,14 @@ it('confirms the update and names no services the action would refuse', function
     expect(whatWasSentAgreeing($mock))->toBe([UpdateField::Confirm->value => true]);
 });
 
-it('N2-R17 — carries the agreement through to the job the stack started', function (): void {
+it('carries the agreement through to the job the stack started', function (): void {
     // The started arm, named by the job the stack handed back, so a case
     // meaning to assert an evening is under way cannot pass by meeting an
     // obstacle whose name happens to match.
     expect(whatBecameOfTheTaking(whatTakingItMade(aTakingWasStarted())))->toBe('an-update');
 });
 
-it('N1-R10 — a refused taking is told apart from a stack that did not answer', function (): void {
+it('a refused taking is told apart from a stack that did not answer', function (): void {
     // The verb's own arms. They are separate code from the reading's, and a
     // refusal reaching an operator under the wrong headline sends them to reset
     // a credential that is working.
@@ -250,7 +250,7 @@ it('N1-R10 — a refused taking is told apart from a stack that did not answer',
         ->and(whatBecameOfTheTaking($silent))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 
-it('N2-R14 — an acknowledgement this side cannot read is an obstacle too', function (): void {
+it('an acknowledgement this side cannot read is an obstacle too', function (): void {
     // The stack started something and this app cannot say what. Reported as an
     // obstacle rather than thrown, because the operator's question is whether
     // the evening is under way and the honest answer is that it is not known.

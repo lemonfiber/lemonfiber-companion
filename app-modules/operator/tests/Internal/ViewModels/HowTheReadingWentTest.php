@@ -24,7 +24,7 @@ use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
  * field a caller happens to read: two situations that agree on `cameBack()` and
  * disagree on `met` are two different screens.
  */
-it('N1-R44 — a session that has ended met nothing, because nothing was asked', function (): void {
+it('a session that has ended met nothing, because nothing was asked', function (): void {
     $went = HowTheReadingWent::theSessionEnded();
 
     expect($went->isSignedIn)->toBeFalse()
@@ -42,7 +42,7 @@ it('a reading that came back has nothing to report and is the screen\'s own to d
         ->and($went->cameBack())->toBeTrue();
 });
 
-it('N1-R10 — something met carries what happened and what to do about it', function (): void {
+it('something met carries what happened and what to do about it', function (): void {
     // Both, because one is a fact about the world and the other is advice, and
     // a screen showing only the first leaves an operator with nothing to try.
     $went = HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
@@ -53,7 +53,7 @@ it('N1-R10 — something met carries what happened and what to do about it', fun
         ->and($went->cameBack())->toBeFalse();
 });
 
-it('N3-R13 — a refused credential is a session that ended rather than something met', function (): void {
+it('a refused credential is a session that ended rather than something met', function (): void {
     // The decision this type exists to hold. Eight presenters used to ask
     // `Obstacle::meansWeAreSignedOut()` separately, which is a rule kept by
     // everybody remembering — and a screen that read it the other way would go

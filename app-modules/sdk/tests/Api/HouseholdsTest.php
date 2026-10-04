@@ -135,7 +135,7 @@ it("refuses a payload that is not an object at all when reading one member's own
         ->toThrow(HouseholdIsUnreadable::class, 'data');
 });
 
-it('N3-R3 — refuses a household the stack says it could not read, rather than an empty one', function (): void {
+it('refuses a household the stack says it could not read, rather than an empty one', function (): void {
     // The field exists for this and the contract says so: a false `available`
     // is *why* the list is empty. Reading the empty list instead would tell an
     // operator there is nothing to decide, and a member that they have asked
@@ -275,7 +275,7 @@ it('refuses a state word it does not know, and names the ones it reads', functio
         ->toThrow(HouseholdIsUnreadable::class, 'pondering');
 });
 
-it('D7-R3 — a request nobody has sized is answered rather than refused', function (): void {
+it('a request nobody has sized is answered rather than refused', function (): void {
     // The one optional field with a real answer, and the contrast is the point:
     // every other absence here is a refusal. An unsized request is an ordinary
     // state of a queue, and `we do not know` is what belongs on the screen —
@@ -293,7 +293,7 @@ it('D7-R3 — a request nobody has sized is answered rather than refused', funct
         )->shown())->toBe('unknown');
 });
 
-it('D7-R3 — an estimate it cannot read is answered the same way as one that never came', function (): void {
+it('an estimate it cannot read is answered the same way as one that never came', function (): void {
     // The second of the two ways a size goes missing, landing where the first
     // one does. An estimate that arrived and makes no sense is still not a
     // reason to refuse the request: the row is decidable without a figure, and
@@ -347,7 +347,7 @@ it('reads requests by position even where the wire numbered them', function (): 
         ->and($wanted[1]->forWhat())->toBe('Second');
 });
 
-it('D7-R4 — an estimate says whether anybody measured it, and is read either way', function (): void {
+it('an estimate says whether anybody measured it, and is read either way', function (): void {
     // Both arms, because one of them alone cannot tell the fold from its
     // opposite: a reader that answered *measured* for everything and one that
     // answered *guessed* for everything each pass a test that only ever sends
@@ -371,7 +371,7 @@ it('D7-R4 — an estimate says whether anybody measured it, and is read either w
         ->and($howBig(1))->toBe('guessed-900000000');
 });
 
-it('D7-R3 — an estimate half-readable is no more use than none of it', function (): void {
+it('an estimate half-readable is no more use than none of it', function (): void {
     // The two halves of the check are asked separately, because a reader that
     // dropped either one would still pass a test that only ever breaks both.
     // A figure with no word for whether anybody measured it is a number an
@@ -395,7 +395,7 @@ it('D7-R3 — an estimate half-readable is no more use than none of it', functio
         ->and($howBig(1))->toBe('unknown');
 });
 
-it('N3-R7 — reads the reason a request was refused, and when', function (): void {
+it('reads the reason a request was refused, and when', function (): void {
     $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
         aMember('Robin', [[
             'id' => 1,
@@ -471,7 +471,7 @@ it('a refusal the stack did not time is read without one', function (): void {
     expect($said->shown())->toBe('unstated');
 });
 
-it('D7-R7 — a declined request carrying no reason is refused, not shown short', function (): void {
+it('a declined request carrying no reason is refused, not shown short', function (): void {
     // `declined` with nothing after it is the screen that sends somebody to ask
     // their operator in person, which is the whole thing the requirement exists
     // to prevent — and substituting *no reason given* would be this app writing
@@ -536,7 +536,7 @@ function theStandingRead(Wanted $one): string
     )->said;
 }
 
-it('N2-R11 — a status nobody named is a row, not the end of the reading', function (): void {
+it('a status nobody named is a row, not the end of the reading', function (): void {
     // The contract leaves `state` out where the request service reported a
     // status lemonfiber has no word for, rather than guessing it into the
     // nearest one. Refusing it took the household down with it: one request
@@ -563,7 +563,7 @@ it('N2-R11 — a status nobody named is a row, not the end of the reading', func
     ]);
 });
 
-it('N2-R11 — a standing nobody named wants no decision, and is not a decline', function (): void {
+it('a standing nobody named wants no decision, and is not a decline', function (): void {
     // Two things follow from *nobody named it* and both matter. Nothing offers
     // to approve it, because the app cannot say it is waiting. And it is not
     // read as a decline, which would demand the refusal sentence a declined row

@@ -169,7 +169,7 @@ it('reads where the notes stand off the changelog, apart from the pins', functio
         ->and($inStep->againstThePins())->toBe(AgainstThePins::UpdatesAvailable);
 });
 
-it('N2-R15 — reads the release in use off the changelog', function (): void {
+it('reads the release in use off the changelog', function (): void {
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep([
         'running' => aReleaseInUseSaying(),
     ]));
@@ -177,7 +177,7 @@ it('N2-R15 — reads the release in use off the changelog', function (): void {
     expect(whatItIsOn($upkeep))->toBe('4.0.15');
 });
 
-it('N2-R15 — a stack that named no release in use is not a stack running nothing', function (): void {
+it('a stack that named no release in use is not a stack running nothing', function (): void {
     // Absent rather than empty. Not having looked and running nothing are
     // different answers, and a screen handed a blank version would show the
     // second when the stack said the first.
@@ -201,7 +201,7 @@ it('reads the releases the changelog lists as history, withdrawn ones included',
         ->and($upkeep->hasSomethingToOffer())->toBeFalse();
 });
 
-it('N2-R18 — reads what became of each service the last update touched', function (): void {
+it('reads what became of each service the last update touched', function (): void {
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['applied' => [
         ['service' => 'jellyfin', 'ending' => 'not-reached', 'reversal' => 'restore'],
     ]]));
@@ -218,7 +218,7 @@ it('N2-R18 — reads what became of each service the last update touched', funct
         ->and($rows[0]->undo())->toBe(HowToUndoIt::Restore);
 });
 
-it('N2-R17 — leaves out a change the stack has already refused', function (): void {
+it('leaves out a change the stack has already refused', function (): void {
     // Not a service an update would change, so naming it in a confirmation
     // would have somebody agree to a service that was never going to move.
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
@@ -235,7 +235,7 @@ it('N2-R17 — leaves out a change the stack has already refused', function (): 
     expect($named)->toBe(['jellyfin']);
 });
 
-it('N2-R22 — names the services a change cannot be put back for', function (): void {
+it('names the services a change cannot be put back for', function (): void {
     // Per change and not per release. An update can move three services and be
     // undoable for two of them, and a warning covering all three is one an
     // operator learns to scroll past.
@@ -256,7 +256,7 @@ it('N2-R22 — names the services a change cannot be put back for', function ():
         ->and($upkeep->changing()->count())->toBe(3);
 });
 
-it('N2-R22 — leaves out a change the stack has refused, however it is marked', function (): void {
+it('leaves out a change the stack has refused, however it is marked', function (): void {
     // Whether undoing would work is a question about something that is not
     // going to happen, and naming the service would put it in a warning about
     // an evening it takes no part in.
@@ -274,7 +274,7 @@ it('N2-R22 — leaves out a change the stack has refused, however it is marked',
     expect($named)->toBe(['sonarr']);
 });
 
-it('N2-R22 — says so where nothing an update does is permanent', function (): void {
+it('says so where nothing an update does is permanent', function (): void {
     // The ordinary evening, and it has to read as one rather than as an
     // absence: a screen asking gets an answer either way.
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
@@ -284,7 +284,7 @@ it('N2-R22 — says so where nothing an update does is permanent', function (): 
     expect($upkeep->cannotBePutBack()->isEmpty())->toBeTrue();
 });
 
-it('N2-R22 — refuses a change that never said whether it can be put back', function (): void {
+it('refuses a change that never said whether it can be put back', function (): void {
     // Refused rather than defaulted. Reading an absent field as *this can be
     // undone* would drop the sentence the operator needs most, and drop it on
     // the one payload shape that failed to say.
@@ -293,7 +293,7 @@ it('N2-R22 — refuses a change that never said whether it can be put back', fun
     ]])))->toThrow(UpkeepIsUnreadable::class);
 });
 
-it('N2-R22 — refuses a change that answered with something other than yes or no', function (): void {
+it('refuses a change that answered with something other than yes or no', function (): void {
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
         ['service' => 'jellyfin', 'refused' => false, 'irreversible' => 'maybe'],
     ]])))->toThrow(UpkeepIsUnreadable::class);
@@ -398,7 +398,7 @@ it('refuses a service name that is not a word', function (): void {
     ])))->toThrow(UpkeepIsUnreadable::class, 'Change 1');
 });
 
-it('N2-R17 — goes on reading after a change the stack refused', function (): void {
+it('goes on reading after a change the stack refused', function (): void {
     // A refused change is skipped, not stopped at. A reader that broke out of
     // the loop would silently drop every service named after the first refusal,
     // and the confirmation would name fewer services than the update changes —

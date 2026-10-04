@@ -99,7 +99,7 @@ function whatARecordedChangeSaysOfItsLimits(Change $change): string
     )->said;
 }
 
-it('N11-R1 — reads the record with how far back it goes, keeping the stack\'s order', function (): void {
+it('reads the record with how far back it goes, keeping the stack\'s order', function (): void {
     $record = Records::in(aRecordOf([aRecordedChange('Newer'), aRecordedChange('Older', '1790110000')]));
 
     $done = [];
@@ -123,17 +123,17 @@ it('reads every part of one change', function (): void {
         ->and($change->alongside())->toBe(3);
 });
 
-it('N11-R3 — a change that came alone says one, which is the least it can say', function (): void {
+it('a change that came alone says one, which is the least it can say', function (): void {
     // The boundary itself. One is this change and nothing else; below it is
     // refused further down, and this is the value either side of that line.
     expect(theFirstChangeIn(Records::in(aRecordOf([aRecordedChange()])))->alongside())->toBe(1);
 });
 
-it('N11-R9 — a record of nothing is an answer rather than a gap', function (): void {
+it('a record of nothing is an answer rather than a gap', function (): void {
     expect(Records::in(aRecordOf([]))->count())->toBe(0);
 });
 
-it('N11-R2 — carries why putting it back stops short, and what to do instead', function (): void {
+it('carries why putting it back stops short, and what to do instead', function (): void {
     $change = theFirstChangeIn(Records::in(aRecordOf([[
         ...aRecordedChange(),
         'reversal' => 'partial',
@@ -188,7 +188,7 @@ it('refuses an envelope whose payload is not a payload at all', function (): voi
         ->toThrow(HistoryIsUnreadable::class, '`data`');
 });
 
-it('N11-R1 — refuses a record that will not say how far back it goes', function (): void {
+it('refuses a record that will not say how far back it goes', function (): void {
     // Absent, blank and not a word are one fault: the oldest row would read as
     // the machine's first day rather than the end of what is kept.
     expect(fn(): TheRecord => Records::in(historySaying(['changes' => []])))
@@ -228,7 +228,7 @@ it('refuses a row whose word is there and blank, which is the same fault', funct
         ->toThrow(HistoryIsUnreadable::class, '`did`');
 });
 
-it('N11-R10 — reads a zero stamp as an unreadable clock, never as 1970', function (): void {
+it('reads a zero stamp as an unreadable clock, never as 1970', function (): void {
     // Zero is what the stack writes where its clock would not answer. Read as
     // a moment it would put a change in 1970, confidently, on a screen.
     $unreadable = theFirstChangeIn(Records::in(aRecordOf([aRecordedChange(at: '0')])))->when();
@@ -243,7 +243,7 @@ it('N11-R10 — reads a zero stamp as an unreadable clock, never as 1970', funct
         ->and($known->isTheSameMomentAs(WhenItWasMade::at(Instant::atEpochSeconds(1))))->toBeTrue();
 });
 
-it('N11-R10 — refuses a when that is not seconds since the epoch written as digits', function (): void {
+it('refuses a when that is not seconds since the epoch written as digits', function (): void {
     // Each is something the core does not write. An ISO date would need a
     // guess at a format; a sign or a space is a conversion being forgiving
     // about a stamp that came from somewhere else; digits too long to fit are
@@ -259,7 +259,7 @@ it('refuses a when that arrives as a number rather than as the string the contra
         ->toThrow(HistoryIsUnreadable::class, '`at`');
 });
 
-it('N11-R2 — a reversal this app does not read names what it does read', function (): void {
+it('a reversal this app does not read names what it does read', function (): void {
     expect(fn(): TheRecord => Records::in(aRecordOf([[...aRecordedChange(), 'reversal' => 'mostly']])))->toThrow(
         HistoryIsUnreadable::class,
         implode(', ', array_map(
@@ -269,7 +269,7 @@ it('N11-R2 — a reversal this app does not read names what it does read', funct
     );
 });
 
-it('N11-R3 — refuses a count of what came with a change that cannot be true', function (): void {
+it('refuses a count of what came with a change that cannot be true', function (): void {
     // Absent, below one, and not a whole number are all refused: the count
     // includes the change it is on, so none of them is a small number.
     $without = aRecordedChange();

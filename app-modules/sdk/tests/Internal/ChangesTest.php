@@ -59,7 +59,7 @@ it('names every service a change is going to touch', function (): void {
     expect(theServicesNamedBy(Changes::in($changes)))->toBe(['jellyfin', 'sonarr']);
 });
 
-it('N2-R22 — names only the services nothing puts back', function (): void {
+it('names only the services nothing puts back', function (): void {
     $changes = whatAStackReportsItWouldChange([
         oneChangeAnUpdateWouldMake(),
         oneChangeAnUpdateWouldMake(['service' => 'sonarr', 'irreversible' => true]),

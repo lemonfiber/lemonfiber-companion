@@ -93,7 +93,7 @@ it('stands in for a stack with a payload the contract would accept', function ()
     expect(WhatTheContractAccepts::complaintsAbout('StoredEnvelope', ['api_version' => 1, 'kind' => 'stored', 'data' => whatALoftStores()]))->toBe([]);
 });
 
-it('N6-R7 — reads every list in order, and each secret flag the right way round', function (): void {
+it('reads every list in order, and each secret flag the right way round', function (): void {
     expect(everythingStored(whatALoftStores()))->toBe([
         'root /srv/lemonfiber Everything the stack writes',
         'kept The VPN credentials /srv/lemonfiber/secrets/vpn So the tunnel can be raised secret',
@@ -102,7 +102,7 @@ it('N6-R7 — reads every list in order, and each secret flag the right way roun
     ]);
 });
 
-it('N6-R7 — reads nothing it is not asked to, a value beside a secret included', function (): void {
+it('reads nothing it is not asked to, a value beside a secret included', function (): void {
     $data = whatALoftStores();
     $data['kept'][0] = [...$data['kept'][0], 'value' => 'hunter2'];
 
@@ -155,7 +155,7 @@ it('refuses a field that is missing, blank or not text, naming the list, the fie
     ['beside', 'what'], ['beside', 'why'],
 ]);
 
-it('N6-R7 — refuses a secret flag that is missing or not a yes or no, rather than calling it plain', function (): void {
+it('refuses a secret flag that is missing or not a yes or no, rather than calling it plain', function (): void {
     $row = whatALoftStores()['kept'][0];
     $withoutIt = $row;
     unset($withoutIt['secret']);

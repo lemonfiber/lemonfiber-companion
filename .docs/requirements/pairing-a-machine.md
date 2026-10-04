@@ -13,9 +13,9 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R6` | Two roads in — a camera and a person typing — and they are not equally safe | `Introducing`; `ADR-0018` chose the software comparison a camera makes (`PairingTest`) |
 | `N4-R3` | Typed entry exists on a device whose operator declined the camera | `Introducing` — it is a route, not a courtesy, and it has no software comparison behind it (`PermissionTest`) |
-| `N1-R18` | The pinned fingerprint is carried from the pairing material and never looked up on the network | `Introducing` — a fingerprint learned from the connection it is meant to validate proves nothing (`PairingTest`) |
+| `N1-R18` | The pinned fingerprint is carried from the pairing material and never looked up on the network | `Introducing` — a fingerprint learned from the connection it is meant to validate proves nothing (`PairingTest`, `PinnedClientsTest`) |
 | `N1-R22` | Trust is pinned to the stack rather than to where it answers | `Introducing`; a stack keyed on its address becomes a different stack when DHCP moves it (`ConfiguredTest`, `RecognisedTest`, `StackTest`) |
-| `N1-R11` | A device holds more than one stack, and a person has to tell them apart | `Introducing` asks for the name rather than deriving one (`ConfiguredTest`, `InterruptedTest`, `StackTest`) |
+| `N1-R11` | A device holds more than one stack, and a person has to tell them apart | `Introducing` asks for the name rather than deriving one (`ConfiguredTest`, `InterruptedTest`, `StackTest`, `AStandInStackTest`) |
 | `N1-R49` | Pairing material expires, and expiry is not reported as a typing mistake | `WhatTheCodeSaysSoFar` — telling somebody to check the characters sends them to look for a mistake that is not there (`PairingTest`) |
 | `N1-R50` | Typed pairing requires the fingerprint to be confirmed, and the app may not proceed without it | `FingerprintWasConfirmed`, which is a type rather than a `bool` |
 | `N1-R51` | The confirmation carries a short form derived from the whole fingerprint — what was compared, not merely that something was | `FingerprintWasConfirmed` (`AtAGlanceTest`) |

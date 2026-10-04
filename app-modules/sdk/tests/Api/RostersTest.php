@@ -440,7 +440,7 @@ it('refuses a payload that is not a shape at all', function (): void {
         ->toThrow(RosterIsUnreadable::class, 'data');
 });
 
-it('N2-R21 — reads what else the machine is running', function (): void {
+it('reads what else the machine is running', function (): void {
     // A second reading of the same envelope, because what the stack did not put
     // there is not part of the stack and the two collections cannot hold each
     // other's rows.
@@ -462,7 +462,7 @@ it('N2-R21 — reads what else the machine is running', function (): void {
         ->and($first->runs)->toBe(HowAServiceRuns::Running);
 });
 
-it('N2-R21 — a machine running only what the stack declares says so', function (): void {
+it('a machine running only what the stack declares says so', function (): void {
     // Empty is the ordinary answer rather than an absence. A machine with
     // nothing unaccounted for is the expected shape, and reading it as *the
     // stack did not say* would put a question on the screen where there is none.
@@ -473,7 +473,7 @@ it('N2-R21 — a machine running only what the stack declares says so', function
     expect(Rosters::whatElseIsRunning(aRosterSaying([...aRosterOf(), 'undeclared' => []]))->isEmpty())->toBeTrue();
 });
 
-it('N2-R21 — refuses a payload that is not a shape at all', function (): void {
+it('refuses a payload that is not a shape at all when asked what else the machine runs', function (): void {
     // The same refusal {@see Rosters::in} makes, asked of the second reading.
     // Both readings open the same envelope, and a `data` that is a sentence is
     // unreadable whichever question is being put to it.
@@ -482,7 +482,7 @@ it('N2-R21 — refuses a payload that is not a shape at all', function (): void 
     ))->toThrow(RosterIsUnreadable::class, 'data');
 });
 
-it('N2-R21 — refuses an undeclared entry that is not a row', function (): void {
+it('refuses an undeclared entry that is not a row', function (): void {
     // A list of the right name holding the wrong thing. Refused by the field
     // that carried it rather than read as a container with nothing to say,
     // because a sentence where a row belongs is the machine disagreeing with
@@ -493,7 +493,7 @@ it('N2-R21 — refuses an undeclared entry that is not a row', function (): void
     ])))->toThrow(RosterIsUnreadable::class, 'undeclared');
 });
 
-it('N2-R21 — names the first row where the machine keyed the list by name', function (): void {
+it('names the first row where the machine keyed the list by name', function (): void {
     // The reading takes a row's position from its key, which is what the
     // contract's list gives it. A machine that sent an object instead has no
     // position to give, and the reader falls back to the first — so a refusal
@@ -509,7 +509,7 @@ it('N2-R21 — names the first row where the machine keyed the list by name', fu
     ])))->toThrow(RosterIsUnreadable::class, 'Service 0');
 });
 
-it('N2-R21 — refuses a container the machine named but did not describe', function (): void {
+it('refuses a container the machine named but did not describe', function (): void {
     // `describes` is what the requirement means by *state what it is running*,
     // so a row without one cannot answer it. Refused by name rather than shown
     // blank, because a row that names a container and says nothing about it is

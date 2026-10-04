@@ -64,9 +64,9 @@ requirement is right and this page is a defect.
 | `N1-R1` | Parity across surfaces, rather than parity by everybody remembering | the catalogues, and the rules over them |
 | `N1-R2` | **Every action available from another surface is offered here**, unless a requirement says otherwise and why | **Not kept.** See *What is not built* below |
 | `N2-R1` | The app opens on the overall verdict, and says `unknown` as its own answer | `YourStacks`, whose every row says how that stack stands in the one line's own sentence, `HowTheOneLineReads`. A stack never heard reads unknown |
-| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` |
+| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` (`WorstFirstTest`) |
 | `N2-R3` | A finding carries its meaning and its remedy, in the core's own words, and its code one step away | `HowAFindingReads`; `WhatOneFindingSays::carriedToTheLogs()` hands a service finding's code to its logs, which `WhatThisServiceSaid` says above the lines, and `codeAtTheFoot()` keeps a machine finding's code in the detail at the foot of its card |
-| `G4-R3` | The cause is reported rather than each symptom independently | narrow, sort, then group — grouping last |
+| `G4-R3` | The cause is reported rather than each symptom independently | narrow, sort, then group — grouping last (`TheCauseBeforeItsSymptomsTest`) |
 | `G4-R4` | Plain explanation leads; technical detail is available and does not lead | it arrives on the row beneath everything above it |
 | `N1-R9`, `N2-R13` | An age comes out beside the word or not at all | both are broken by omission rather than by disagreement |
 | `N2-R14` | A value the contract did not carry is not substituted | *nought seconds* is the worst answer, and is refused |

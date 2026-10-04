@@ -95,7 +95,7 @@ function everyLineFolded(Scrollback $scrollback): string
     return implode(' | ', $rows);
 }
 
-it('N2-R10 — reads a window, keeping the order the service wrote in', function (): void {
+it('reads a window, keeping the order the service wrote in', function (): void {
     $window = Lines::in(aWindowOf('gluetun', 10, [
         aLogRow('tunnel up', 'gluetun', 'stdout', '2026-09-14T04:00:00Z'),
         aLogRow('no route to host', 'gluetun', 'stderr'),
@@ -104,7 +104,7 @@ it('N2-R10 — reads a window, keeping the order the service wrote in', function
     expect(everyLineFolded($window))->toBe('stdout/tunnel up | stderr/no route to host');
 });
 
-it('N2-R10 — carries the service and the bound off the window itself', function (): void {
+it('carries the service and the bound off the window itself', function (): void {
     // Taken from the SDK's own window rather than rebuilt here, because that
     // window already pairs what was asked for with what arrived — and a second
     // copy of the one decision this requirement turns on is the copy that
@@ -212,7 +212,7 @@ it('a line with no `at` key at all is a line with no moment', function (): void 
     expect($window->count())->toBe(1);
 });
 
-it('N1-R13 — a window on a wire version this app does not support is refused', function (): void {
+it('a window on a wire version this app does not support is refused', function (): void {
     // The gate, at the only place it can stand for a log read. A window is many
     // envelopes rather than one, and the client asserts each line's *kind* as it
     // builds the window while saying nothing about its version — so a window on

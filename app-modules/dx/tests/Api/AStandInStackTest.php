@@ -24,7 +24,7 @@ use function str_repeat;
 // wrong, on the one build somebody is looking at precisely to find out whether
 // the app is wrong.
 
-it('N1-R11 — no two stand-ins share an identity', function (): void {
+it('no two stand-ins share an identity', function (): void {
     // Identity is what keeps stacks apart, and two sharing one
     // would be one machine wearing two names: the store folds them together on
     // `remember()`, so whichever was seeded last would be the only one listed.
@@ -53,7 +53,7 @@ it('treats a machine it has never heard of as a working one', function (): void 
     expect(AStandInStack::howAStackOfThisIdentityBehaves($elsewhere))->toBe(AStandInStack::Answering);
 });
 
-it('N1-R10 — the three answer differently, which is the whole point', function (): void {
+it('the three answer differently, which is the whole point', function (): void {
     // A build where every machine answers well is a build where the screens an
     // operator meets on a bad evening are unreachable.
     // `WhatARefusalMeant` reads a session refused by its code as one to sign in
@@ -70,7 +70,7 @@ it('N1-R10 — the three answer differently, which is the whole point', function
         ->and(AStandInStack::RefusingTheSession->answersWith())->toBe(403);
 });
 
-it('N1-R60 — no address it carries can resolve anywhere', function (): void {
+it('no address it carries can resolve anywhere', function (): void {
     // RFC 2606 reserves `.invalid`, so were the stand-in client ever to miss a
     // request the failure would be a name that does not exist rather than a
     // connection to somebody's actual machine.
