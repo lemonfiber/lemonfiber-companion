@@ -26,6 +26,9 @@ enum HowLemonfiberWasInstalled: string
     /** lemonfiber's own installer. */
     case Installer = 'installer';
 
+    /** lemonfiber's own container image, so a newer image replaces it. */
+    case Image = 'image';
+
     /** Somewhere the stack recognises as none of the above. */
     case Elsewhere = 'elsewhere';
 

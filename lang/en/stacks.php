@@ -299,6 +299,7 @@ return [
             'cargo' => 'Installed with cargo',
             'distribution' => 'Installed by the system\'s package manager',
             'installer' => 'Installed with lemonfiber\'s installer',
+            'image' => 'Installed from lemonfiber\'s container image',
             'elsewhere' => 'Installed some other way',
             // Never read as a copy lemonfiber can replace.
             'untellable' => 'How it was installed could not be told',
