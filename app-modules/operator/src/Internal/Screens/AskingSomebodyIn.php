@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\Contracts\Translation\Translator;
-use Illuminate\View\View;
 
 use function is_string;
 
@@ -40,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -47,7 +47,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Asking somebody in: who is in already, what an invitation would grant, sending it, and handing it over.
@@ -87,6 +86,9 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     use ChoosesWhatAnInvitationAsks;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::asking-somebody-in';
     /** The sentence the text handed over leads to the address that turns the invitation down with. */
     private const string DECLINING = 'stacks.invitation.declining';
 
@@ -138,7 +140,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
         $this->name = $service;
     }
-
 
     /**
      * Ask again, which an obstacle must not take away.
@@ -300,16 +301,10 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         }
     }
 
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->howItIsGoing()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::asking-somebody-in');
     }
 
     /** Who is in, asked once per frame. */

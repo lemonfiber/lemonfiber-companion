@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use function array_filter;
 use function array_values;
-
-use Illuminate\View\View;
-
 use function in_array;
 
 use Modules\Kernel\Api\AGuardAskedFor;
@@ -34,13 +31,12 @@ use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * A guard on this machine's data location, for the forms the operator names,
@@ -76,6 +72,9 @@ final class GuardingWhileYouWatch extends NativeComponent
     use OffersTheAppsSettings;
     use AsksWhatFormsItHas;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::guarding-while-you-watch';
 
     /**
      * The forms named so far, by name, before any guard is asked about.
@@ -106,13 +105,6 @@ final class GuardingWhileYouWatch extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-
-
-    public function render(): View
-    {
-        return view('operator::guarding-while-you-watch');
-    }
 
     /** The forms a guard can be asked for, asked once and held while the screen is open. */
     public function answer(): TheFormsAsFound

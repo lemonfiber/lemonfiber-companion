@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
@@ -31,13 +30,12 @@ use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\WhatHandingOverCameTo;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Asking for help: a support bundle, described, written, and handed over by the operator.
@@ -76,6 +74,9 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::asking-for-help-here';
 
     /**
      * The bundle sent, with every choice as it was made.
@@ -109,17 +110,10 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->answer()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::asking-for-help-here');
     }
 
     /** Ask the stack to describe the bundle chosen, which writes nothing. */

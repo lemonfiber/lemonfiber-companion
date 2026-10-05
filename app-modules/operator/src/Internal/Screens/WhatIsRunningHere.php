@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -20,12 +19,11 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThisCopyReads;
 use Modules\Operator\Internal\ViewModels\ThisCopyTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Which version of lemonfiber this machine runs, how it got there, and whether a newer one exists.
@@ -50,6 +48,9 @@ final class WhatIsRunningHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-is-running-here';
 
     /**
      * What came back, once the frame has asked.
@@ -69,7 +70,6 @@ final class WhatIsRunningHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /**
      * Ask the machine again.
      *
@@ -79,12 +79,6 @@ final class WhatIsRunningHere extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::what-is-running-here');
     }
 
     /** What came back, asked once per frame. */

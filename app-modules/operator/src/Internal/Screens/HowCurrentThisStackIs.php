@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -73,6 +74,9 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::how-current-this-stack-is';
 
     /**
      * What came back, once the frame has asked.
@@ -103,7 +107,6 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         protected readonly WhatItListensWith $listening,
         private readonly KeepingTheLastUpkeep $kept,
     ) {}
-
 
     /**
      * Open the stack's stream and ask the stack, behind the first frame.
@@ -220,12 +223,6 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     public function cannotBePutBack(): int
     {
         return $this->asking instanceof TakingAnUpdate ? $this->asking->cannotBePutBack()->count() : 0;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::how-current-this-stack-is');
     }
 
     /**

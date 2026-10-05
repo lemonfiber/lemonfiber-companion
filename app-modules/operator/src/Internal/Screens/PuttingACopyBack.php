@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -29,6 +27,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingItBackWouldShow;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -36,7 +35,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Putting one copy back, rehearsed first and carried out only on a yes.
@@ -73,6 +71,9 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::putting-a-copy-back';
 
     /**
      * What the rehearsal came to, once the frame has asked.
@@ -106,17 +107,10 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->isWorking();
-    }
-
-    public function render(): View
-    {
-        return view('operator::putting-a-copy-back');
     }
 
     /** The copy this screen is about, by the name the route carries. */

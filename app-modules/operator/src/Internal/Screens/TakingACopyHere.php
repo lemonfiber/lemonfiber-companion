@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
@@ -28,6 +27,7 @@ use Modules\Operator\Internal\Presenters\HowAScopeReads;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -35,7 +35,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Taking a copy of this machine's stack: of all of it, or of one service.
@@ -64,6 +63,9 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::taking-a-copy-here';
 
     /**
      * The copy being asked about, while the operator decides.
@@ -91,17 +93,10 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->lastCopy()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::taking-a-copy-here');
     }
 
     /** The services a copy can be narrowed to, asked once per frame. */

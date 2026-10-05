@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -27,13 +25,12 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Putting the stack's configuration back to lemonfiber's own, previewed first
@@ -63,6 +60,9 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::putting-the-configuration-back';
 
     /**
      * What the preview came to, once the frame has asked.
@@ -101,17 +101,10 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->answer()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::putting-the-configuration-back');
     }
 
     /** The reading a frame draws: what the yes came to once it was given, and the preview until then. */

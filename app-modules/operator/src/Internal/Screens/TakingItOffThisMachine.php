@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-use Illuminate\View\View;
 
 use function is_string;
 
@@ -30,13 +29,12 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Taking lemonfiber off this machine: one removal chosen, read, agreed to on its own, and followed.
@@ -70,6 +68,9 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::taking-it-off-this-machine';
 
     /** The removal being read, as its own word, or empty while the four are in front of the operator to choose from. */
     public string $tier = WhichRemoval::Stop->value;
@@ -101,17 +102,10 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->answer()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::taking-it-off-this-machine');
     }
 
     /**

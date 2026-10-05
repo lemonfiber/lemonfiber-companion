@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -19,12 +18,11 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheFrontDoorReads;
 use Modules\Operator\Internal\ViewModels\TheFrontDoorTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * The household's front door: where it stands, whether it was chosen or worked out, and what else they can reach.
@@ -45,6 +43,9 @@ final class WhereTheHouseholdComesIn extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::where-the-household-comes-in';
 
     /**
      * What came back, once the frame has asked.
@@ -61,17 +62,10 @@ final class WhereTheHouseholdComesIn extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::where-the-household-comes-in');
     }
 
     /** What came back, asked once per frame. */

@@ -8,12 +8,14 @@ use function array_any;
 use function class_exists;
 use function explode;
 use function file_get_contents;
+use function is_string;
 
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 
 use function preg_match;
 use function preg_match_all;
@@ -114,10 +116,13 @@ final readonly class Screens
      * a constructed screen and therefore a container, a route and a stack — all
      * to learn a string written three lines from the method's signature.
      *
-     * A view name may carry a directory segment and a capital in it, so both
-     * are read: a pattern that could not spell one would answer nothing for
-     * that screen, and nothing is what this says about a screen that renders no
-     * view at all.
+     * A screen drawing its template through {@see DrawsItsTemplate} names it in
+     * its `TEMPLATE` constant, which is read as the trait reads it.
+     *
+     * A view name written out may carry a directory segment and a capital in
+     * it, so both are read: a pattern that could not spell one would answer
+     * nothing for that screen, and nothing is what this says about a screen
+     * that renders no view at all.
      *
      * @param ReflectionClass<object> $screen
      */
@@ -125,6 +130,12 @@ final readonly class Screens
     {
         if (! self::rendersAViewOfItsOwn($screen)) {
             return '';
+        }
+
+        $named = $screen->hasConstant('TEMPLATE') ? $screen->getConstant('TEMPLATE') : null;
+
+        if (is_string($named)) {
+            return $named;
         }
 
         $said = (string) file_get_contents((string) $screen->getFileName());

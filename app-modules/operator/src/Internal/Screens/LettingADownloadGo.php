@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -28,6 +26,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -35,7 +34,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Stopping seeding one completed download, its cost stated first and carried out only on a yes.
@@ -68,6 +66,9 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::letting-a-download-go';
 
     /**
      * What the offer came to, once the frame has asked.
@@ -104,17 +105,10 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->isWorking();
-    }
-
-    public function render(): View
-    {
-        return view('operator::letting-a-download-go');
     }
 
     /** The download this screen is about, by the name the route carries. */

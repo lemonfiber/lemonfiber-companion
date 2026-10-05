@@ -33,6 +33,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -91,6 +92,9 @@ final class HowThisStackIs extends NativeComponent
     use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::how-this-stack-is';
 
     /**
      * What came back, once the frame has asked.
@@ -138,7 +142,6 @@ final class HowThisStackIs extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
 
     /**
      * Each finding, as a row a template can read, in the order they were made.
@@ -284,16 +287,10 @@ final class HowThisStackIs extends NativeComponent
         return $this->goes()->logsOf(ServiceId::called($named));
     }
 
-
     /** Where one stopped item got to, followed through every service. */
     public function traceOf(string $item): string
     {
         return $this->goes()->traceOf(WhatToFollow::called($item));
-    }
-
-    public function render(): View
-    {
-        return view('operator::how-this-stack-is');
     }
 
     /**

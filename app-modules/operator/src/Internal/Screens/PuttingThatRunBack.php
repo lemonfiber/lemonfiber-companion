@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -33,6 +31,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -40,7 +39,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Putting back one run the record shows, agreed to against the record's own rows.
@@ -71,6 +69,9 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::putting-that-run-back';
 
     /**
      * What the record says of the run, once the frame has asked.
@@ -106,17 +107,10 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->isWorking();
-    }
-
-    public function render(): View
-    {
-        return view('operator::putting-that-run-back');
     }
 
     /** The stamp of the run this screen is about, as the route carries it. */

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Admitted;
@@ -26,13 +25,13 @@ use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Offering a stack the operator's password, once, in exchange for a session.
@@ -79,6 +78,9 @@ final class SignIntoAStack extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::sign-into-a-stack';
 
     /**
      * The password, as it stands in the field.
@@ -149,7 +151,6 @@ final class SignIntoAStack extends NativeComponent
     {
         return $this->went;
     }
-
 
     /** Whether the operator is in, which is when the way onwards is offered. */
     public function isSignedIn(): bool
@@ -285,12 +286,6 @@ final class SignIntoAStack extends NativeComponent
             WhichSurfaceTheyAreGiven::TheReport => $where->to(AStacksScreen::Health),
             WhichSurfaceTheyAreGiven::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($this->stack()->id()),
         };
-    }
-
-    /** The frame, by name. */
-    public function render(): View
-    {
-        return view('operator::sign-into-a-stack');
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -20,12 +19,11 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceReads;
 use Modules\Operator\Internal\ViewModels\TheAllowanceTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What this machine says the household may ask it for, on the operator's side.
@@ -43,6 +41,9 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-the-household-is-allowed';
 
     /** What came back, once the frame has asked. */
     public ?TheAllowanceTurnedOutToBe $answered = null;
@@ -55,8 +56,6 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** Ask the stack again. */
     public function again(): void
     {
@@ -67,12 +66,6 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
     public function answer(): TheAllowanceTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
-    }
-
-    /** The frame, by name. */
-    public function render(): View
-    {
-        return view('operator::what-the-household-is-allowed');
     }
 
     private function ask(): TheAllowanceTurnedOutToBe
