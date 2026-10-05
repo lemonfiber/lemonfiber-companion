@@ -37,6 +37,7 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\View\Components\PortRow;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -278,45 +279,48 @@ it('offers somebody to ask under what it counts, where an item said nothing to t
     );
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said($nothingToTry)));
     $listening->wakesAt(0);
-    $folded = WhatTheDeviceWouldDraw::by($listening->screen)->offers();
 
-    $listening->screen->expand();
-
-    expect($folded)->not->toContain(__('device.share_diagnostics'))
-        ->and(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->toContain(__('device.share_diagnostics'));
+    expect(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->toContain(__('device.share_diagnostics'));
 });
 
 it('offers nobody to ask under what it counts where every item names something to try', function (): void {
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
     $listening->wakesAt(0);
-    $listening->screen->expand();
 
     expect(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->not->toContain(__('device.share_diagnostics'));
 });
 
-it('opens the line out to what it counts, and folds it back', function (): void {
+it('draws what it counts under the line, as a figure and each item with its remedies', function (): void {
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
     $listening->wakesAt(0);
 
-    $folded = WhatTheDeviceWouldDraw::by($listening->screen)->said();
-
-    $listening->screen->expand();
-    $expanded = WhatTheDeviceWouldDraw::by($listening->screen)->said();
-
-    $listening->screen->expand();
+    $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
 
     // The worst thing is the heading, so the word's sentence is not said
-    // beside it; the count is one row; a current line says no age and no
-    // cadence, because it is being listened to.
-    expect($listening->screen->expanded)->toBeFalse()
-        ->and($folded)->toContain('The disk is full')
-        ->and($folded)->not->toContain(__(HowItStands::Broken->saidOnTheScreen()))
-        ->and($folded)->toContain(trans_choice('health.summary.wanting', 1))
-        ->and($folded)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
-        ->and($folded)->not->toContain('Nothing new can be downloaded')
-        ->and($expanded)->toContain('Nothing new can be downloaded')
-        ->and($expanded)->toContain('Make room')
-        ->and($expanded)->toContain(__('health.summary.also', ['what' => 'Imports are failing']));
+    // beside it; a current line says no age and no cadence, because it is
+    // being listened to.
+    expect($drawn)->toContain('The disk is full')
+        ->and($drawn)->not->toContain(__(HowItStands::Broken->saidOnTheScreen()))
+        ->and($drawn)->toContain(__('health.summary.needs_you'))
+        ->and($drawn)->toContain('1')
+        ->and($drawn)->toContain(trans_choice('health.summary.wanting', 1))
+        ->and($drawn)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
+        ->and($drawn)->toContain('Nothing new can be downloaded')
+        ->and($drawn)->toContain('Make room')
+        ->and($drawn)->toContain(__('health.summary.also', ['what' => 'Imports are failing']));
+});
+
+it('draws nothing it counts on a healthy line: no label, no figure, nothing to ask', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
+    ));
+    $listening->wakesAt(0);
+
+    $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($drawn)->toContain(__(HowItStands::Healthy->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__('health.summary.needs_you'))
+        ->and(WhatTheDeviceWouldDraw::by($listening->screen)->offers())->not->toContain(__('device.share_diagnostics'));
 });
 
 /**
@@ -493,7 +497,8 @@ it('draws what stopped moving by kind, one row per cause, with the service\'s wo
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAStoppedQueue())));
     $listening->wakesAt(0);
 
-    $said = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+    $said = explode(PortRow::BETWEEN, implode(PortRow::BETWEEN, $drawn));
 
     expect($said)->toContain(__('health.stopped_heading'))
         ->and($said)->toContain(__('health.stopped.repeated-import-failure'))
@@ -523,9 +528,11 @@ it('offers the trace of a stopped item, and of no cause several items share', fu
 
     $offers = WhatTheDeviceWouldDraw::by($listening->screen)->offers();
 
-    expect($offers)->toContain(__('health.trace.road_in', ['item' => 'Heat']))
-        ->and($offers)->toContain(__('health.trace.road_in', ['item' => 'Dune']))
-        ->and($offers)->not->toContain(__('health.trace.road_in', ['item' => 'Permission denied on /media/films']))
+    $roads = array_map(static fn(string $offer): string => explode(PortRow::BETWEEN, $offer)[0], $offers);
+
+    expect($roads)->toContain(__('health.trace.road_in', ['item' => 'Heat']))
+        ->and($roads)->toContain(__('health.trace.road_in', ['item' => 'Dune']))
+        ->and($roads)->not->toContain(__('health.trace.road_in', ['item' => 'Permission denied on /media/films']))
         ->and(NativeRouter::resolve($listening->screen->traceOf('Heat')))->toHaveKey('params.service', 'Heat');
 });
 
@@ -570,7 +577,6 @@ it('reads a service that stopped plainly at the top, with its standing, and carr
     );
 
     $listening->screen->mount();
-    $listening->screen->expand();
     $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
 
     expect($drawn)->toContain('Gluetun stopped with an error', whatTheTopCalls('health.standing_short.critical'))
@@ -585,15 +591,3 @@ function whatTheTopCalls(string $key): string
 
     return is_string($said) ? $said : '';
 }
-
-it('opens on what is wrong opened out where What\'s new opened it on a problem', function (): void {
-    $asked = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
-    $asked->screen->setData([HowThisStackIs::WHATS_WRONG_OPENED => true]);
-    $asked->screen->mount();
-
-    $plain = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
-    $plain->screen->mount();
-
-    expect($asked->screen->expanded)->toBeTrue()
-        ->and($plain->screen->expanded)->toBeFalse();
-});

@@ -193,6 +193,7 @@ final readonly class HowTheOneLineReads
 
         return new AnAffectedItemAsShown(
             severity: $item->severity()->saidOnTheScreen(),
+            tone: Tone::ofASeverity($item->severity())->value,
             summary: $item->summary(),
             meaning: $item->meaning(),
             remedies: $remedies,

@@ -65,9 +65,10 @@ return [
     'summary' => [
         'waiting' => 'Waiting to hear from this stack.',
         'as_of' => 'Updated :ago',
-        'notes' => '{1} See 1 note|[2,*] See :count notes',
-        'wanting' => '{1} See 1 problem|[2,*] See :count problems',
-        'reported' => '{1} See 1 item|[2,*] See :count items',
+        'needs_you' => 'Needs you',
+        'notes' => '{1} note, counted by cause|[2,*] notes, counted by cause',
+        'wanting' => '{1} problem, counted by cause|[2,*] problems, counted by cause',
+        'reported' => '{1} item, counted by cause|[2,*] items, counted by cause',
         'also' => 'Also because of this: :what',
     ],
     'because_of' => 'Because of: :title',

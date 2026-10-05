@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Design\Api\Typeface;
 use Modules\Design\View\Tone;
+use Modules\Operator\View\Components\PortRow;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -11,12 +12,12 @@ use Tests\TestCase;
 // so the application is booted.
 uses(TestCase::class);
 
-it('draws a port row as one target ending in a chevron, its port leading, a hairline under it', function (): void {
+it('draws a port row as one target ending in a chevron, read as its name and what is said about it, its port leading, a hairline under it', function (): void {
     $markup = '<x-operator::port-row tone="fine" name="Sonarr" said="Running" figure="3d" goes="\'/services/sonarr\'" />';
     $drawn = WhatMarkupDraws::drawn(sprintf('<native:column>%s</native:column>', $markup));
 
     expect(data_get($drawn, 'children.0.type'))->toBe('pressable')
-        ->and(data_get($drawn, 'children.0.props.a11y_label'))->toBe('Sonarr')
+        ->and(data_get($drawn, 'children.0.props.a11y_label'))->toBe(sprintf('Sonarr%sRunning', PortRow::BETWEEN))
         ->and(data_get($drawn, 'children.0.layout.min_height'))->toEqual(48)
         ->and(data_get($drawn, 'children.0.children.0.children.0.props.name'))->toBe(Tone::Fine->glyph())
         ->and(data_get($drawn, 'children.0.children.1.children.0.props.text'))->toBe('Sonarr')

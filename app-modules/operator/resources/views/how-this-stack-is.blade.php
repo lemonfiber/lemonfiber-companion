@@ -9,13 +9,21 @@
          it named nothing. A line that is not current reads as unknown and
          says when it was updated, so a stack nobody can vouch for right now
          is never drawn as healthy; a current one says no age, because it is
-         being listened to. --}}
-    <x-design::standing
-        :said="$this->summary()->worst === '' ? __($this->summary()->said) : $this->summary()->worst"
-        :tone="$this->summary()->tone"
-        :note="$this->summary()->ago->said === '' ? '' : __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)])"
-        :word="__($this->summary()->word)"
-    />
+         being listened to. The line is led by the stack's port, which is
+         the only thing that changes weight between healthy and not, so a
+         healthy line is drawn as clearly as an unhealthy one. The port is
+         read aloud as the standing in a word, as the word under the line
+         says it to the eye. --}}
+    <native:row class="w-full gap-3 items-center">
+        <x-operator::port :tone="$this->summary()->tone" :label="__($this->summary()->word)" />
+        <native:column class="flex-1 gap-1">
+            <x-design::title>{{ $this->summary()->worst === '' ? __($this->summary()->said) : $this->summary()->worst }}</x-design::title>
+            <x-design::note>{{ __($this->summary()->word) }}</x-design::note>
+            @if ($this->summary()->ago->said !== '')
+                <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)]) }}</x-design::note>
+            @endif
+        </native:column>
+    </native:row>
 
     @if ($this->summary()->met !== '')
         <x-design::notice tone="unknown">
@@ -30,17 +38,17 @@
         @endif
     @endif
 
-    {{-- How many, counted by cause, as the one row that opens them out;
-         offered only where it counts something. --}}
+    {{-- What needs the operator, drawn whenever the core counted something:
+         how many, counted by cause, as a figure under its label, and each
+         affected item on its severity's ground with what it costs, what to try
+         and what else is wrong because of it. A healthy stack counts nothing,
+         and none of this is drawn. --}}
     @if ($this->summary()->counted !== '')
-        <x-design::section>
-            <x-design::row :headline="trans_choice($this->summary()->counted, $this->summary()->howMany)" tap="expand()" />
-        </x-design::section>
-    @endif
+        <x-operator::heading>{{ __('health.summary.needs_you') }}</x-operator::heading>
+        <x-operator::figure :figure="(string) $this->summary()->howMany" :caption="trans_choice($this->summary()->counted, $this->summary()->howMany)" />
 
-    @if ($this->expanded)
         @forelse ($this->summary()->affected as $item)
-            <x-design::card>
+            <x-design::notice :tone="$item->tone">
                 <x-design::note>{{ __($item->severity) }}</x-design::note>
                 <x-design::strong>{{ $item->summary }}</x-design::strong>
                 <x-design::body>{{ $item->meaning }}</x-design::body>
@@ -57,9 +65,10 @@
                     {{-- Nothing: an item that took nothing else down with it has
                          nothing to add. --}}
                 @endforelse
-            </x-design::card>
+            </x-design::notice>
         @empty
-            <x-design::body>{{ __('health.no_findings') }}</x-design::body>
+            {{-- Nothing: a count the core made names the items it counted, and
+                 the figure above says how many. --}}
         @endforelse
 
         <x-operator::somebody-to-ask :cards="$this->summary()->affected" :goes="$this->goes()->to(AStacksScreen::Help)" />
@@ -69,23 +78,23 @@
          Slow is drawn apart and after, because it needs time rather than a
          fix, and shown as stuck it teaches an operator to read past the list. --}}
     @unless ($this->summary()->stopped === [])
-        <x-design::heading>{{ __('health.stopped_heading') }}</x-design::heading>
+        <x-operator::heading>{{ __('health.stopped_heading') }}</x-operator::heading>
     @endunless
 
     @forelse ($this->summary()->stopped as $row)
-        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
+        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" tone="attention" />
     @empty
         {{-- Nothing: the one line above already says how the stack stands, and
              a sentence saying the queue is clear is one the stack did not send. --}}
     @endforelse
 
     @unless ($this->summary()->slow === [])
-        <x-design::heading>{{ __('health.slow_heading') }}</x-design::heading>
+        <x-operator::heading>{{ __('health.slow_heading') }}</x-operator::heading>
         <x-design::body>{{ __('health.slow_explained') }}</x-design::body>
     @endunless
 
     @forelse ($this->summary()->slow as $row)
-        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
+        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" tone="working" />
     @empty
         {{-- Nothing: nothing is only slow. --}}
     @endforelse
@@ -112,9 +121,9 @@
                  the report names one by what the stack calls it. The id is a
                  key rather than a name, and is never shown in its place. --}}
             @if ($finding->called !== '')
-                <x-design::note>{{ __('health.about_the_service', ['about' => __($finding->about), 'service' => $finding->called]) }}</x-design::note>
+                <x-operator::heading>{{ __('health.about_the_service', ['about' => __($finding->about), 'service' => $finding->called]) }}</x-operator::heading>
             @else
-                <x-design::note>{{ __($finding->about) }}</x-design::note>
+                <x-operator::heading>{{ __($finding->about) }}</x-operator::heading>
             @endif
             <x-design::strong>{{ $finding->title }}</x-design::strong>
 
@@ -146,7 +155,7 @@
             @if ($finding->underneath !== '' || $finding->codeAtTheFoot() !== '')
                 <x-design::note>{{ __('health.what_it_says_underneath') }}</x-design::note>
                 @if ($finding->codeAtTheFoot() !== '')
-                    <x-design::verbatim>{{ $finding->codeAtTheFoot() }}</x-design::verbatim>
+                    <x-operator::stamp>{{ $finding->codeAtTheFoot() }}</x-operator::stamp>
                 @endif
                 @if ($finding->underneath !== '')
                     <x-design::verbatim>{{ $finding->underneath }}</x-design::verbatim>
@@ -179,7 +188,7 @@
 
     {{-- Under the findings: somebody who has just fixed something scrolls to
          the end of what was wrong, and that is where they ask whether it took. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
