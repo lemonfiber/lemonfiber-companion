@@ -51,9 +51,9 @@ use Native\Mobile\Edge\NativeComponent;
  * nothing leaves it as it was.
  *
  * **What answers what is handed to the screen that draws it.** The stream says
- * it when a listener arrives and whenever it changes; a screen that draws it
- * takes it through {@see heardWhatAnswersWhat()}, and every other screen lets
- * it pass. It is kept nowhere.
+ * it when a listener arrives and whenever it changes, and the last of it waits
+ * in {@see $whatAnswersWhatHeard} for a screen that draws it to take; every
+ * other screen leaves it there. It is kept nowhere on the phone.
  *
  * **It reads the screen's own `$listening` and `$storage`.** That is the
  * coupling, stated here because a trait cannot declare it: the ports the
@@ -74,6 +74,9 @@ trait HoldsItsStacksStream
      * what the view reads.
      */
     public ?WhatWasHeardSoFar $heard = null;
+
+    /** What answers what as the stream last said it, until a screen that draws it takes it. */
+    protected ?TheLinks $whatAnswersWhatHeard = null;
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -175,14 +178,6 @@ trait HoldsItsStacksStream
      */
     protected function letGoOfWhatElseItHears(): void {}
 
-    /**
-     * Take what answers what as the stack said it in this wake.
-     *
-     * Nothing, for a screen that does not draw it. The screen that does says
-     * otherwise.
-     */
-    protected function heardWhatAnswersWhat(TheLinks $links): void {}
-
     /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
     abstract private function letTheListOfStacksGo(): void;
 
@@ -207,12 +202,12 @@ trait HoldsItsStacksStream
         );
     }
 
-    /** Hand the screen what answers what as the stack said it in this wake, where it said it. */
+    /** Hold what answers what, where this wake said it, for a screen that draws it. */
     private function handOnWhatAnswersWhat(WhatWasHeard $heard): void
     {
         $heard->whatAnswersWhat(
             said: function (TheLinks $links) use ($heard): WhatWasHeard {
-                $this->heardWhatAnswersWhat($links);
+                $this->whatAnswersWhatHeard = $links;
 
                 return $heard;
             },

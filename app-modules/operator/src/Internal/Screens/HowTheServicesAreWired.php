@@ -155,10 +155,19 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
      * What the stack wires to what, or nothing while it waits for a frame of its own.
      *
      * Asked only on a frame that has not read the stack already, so it follows
-     * the services by a frame.
+     * the services by a frame, and drawn from the stack's stream instead once
+     * the stream says it.
      */
     public function whatAnswersWhat(): ?TheLinksTurnedOutToBe
     {
+        // What the stack's stream said since replaces what was last read.
+        $heard = $this->whatAnswersWhatHeard;
+
+        if ($heard instanceof TheLinks) {
+            $this->whatAnswersWhatHeard = null;
+            $this->linked = new HowTheLinksRead()->these($heard);
+        }
+
         if ($this->linked instanceof TheLinksTurnedOutToBe || ! $this->mayReadItsStack()) {
             return $this->linked;
         }
@@ -303,12 +312,6 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             : $this->put(
                 fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->whatBecameOf($stack, $session, Job::named($following)),
             );
-    }
-
-    /** What answers what as the stack's stream says it, drawn in place of what was last read. */
-    protected function heardWhatAnswersWhat(TheLinks $links): void
-    {
-        $this->linked = new HowTheLinksRead()->these($links);
     }
 
     /**
