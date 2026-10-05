@@ -287,9 +287,9 @@ final readonly class Records
      */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses:
-        // a row that carries the key and one that does not are the same
-        // refusal here, and the coalesce hides which one arrived.
+        // A guard rather than `?? null` on the subscript: a row that carries
+        // the key and one that does not are the same refusal here, and the
+        // coalesce hides which one arrived.
         if (! array_key_exists($field->value, $row)) {
             throw HistoryIsUnreadable::said($field, $position);
         }

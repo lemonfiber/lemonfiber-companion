@@ -137,8 +137,7 @@ final readonly class Menders implements Mending
      * What the stack says about that job, with nothing caught.
      *
      * Split from {@see whatBecameOf()} because the two are different questions
-     * — what the stack said, and what to make of not being able to ask it — and
-     * because `H8` counts the doors one method would otherwise have.
+     * — what the stack said, and what to make of not being able to ask it.
      *
      * `NoSuchJob` is caught *here* rather than beside the other raises, and the
      * placement is the argument: a name lemonfiber does not recognise is the

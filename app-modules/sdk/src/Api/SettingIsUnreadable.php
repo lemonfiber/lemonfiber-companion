@@ -13,10 +13,9 @@ use function sprintf;
  * The `config` envelope did not hold what the contract says it holds.
  *
  * The same refusal {@see HouseholdIsUnreadable} is, for the payload the
- * settings screen reads. Every one of these is a bug somewhere other than
- * here, so the message names the field: that is the only thing that shortens
- * the search. A developer reads it, so it is `sprintf` and never translated
- * (`L1`).
+ * settings screen reads. Every one of these is a bug somewhere other than here,
+ * so the message names the field: that is the only thing that shortens the
+ * search. A developer reads it, so it is `sprintf` and never translated.
  *
  * **A settings listing is worth refusing rather than salvaging, and the reason
  * is sharper than for a report.** A listing one row short is a setting the

@@ -15,7 +15,7 @@ use function sprintf;
  * The `space` envelope did not hold what the contract says it holds.
  *
  * {@see BandwidthIsUnreadable}'s refusal, for how full a machine is. A
- * developer reads it, so it is `sprintf` and never translated (`L1`).
+ * developer reads it, so it is `sprintf` and never translated.
  *
  * **A reading that could not be read is refused rather than defaulted**,
  * because the default for a missing level is a comfortable one, and that is

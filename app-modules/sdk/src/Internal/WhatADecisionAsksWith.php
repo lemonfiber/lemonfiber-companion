@@ -7,10 +7,9 @@ namespace Modules\Sdk\Internal;
 /**
  * The arguments one decision is sent with, carried out of a fold.
  *
- * {@see \Modules\Kernel\Api\Decided::why()} answers through a pair of
- * closures, both of which must produce an object — `D3` refuses a `mixed` on an
- * `Api` signature, and `C2` refuses a null, so the two arms cannot simply hand
- * back an array and nothing. This is what they hand back instead, and what
+ * {@see \Modules\Kernel\Api\Decided::why()} answers through a pair of closures,
+ * both of which must produce an object, so the two arms cannot simply hand back
+ * an array and nothing. This is what they hand back instead, and what
  * {@see \Modules\Kernel\Api\WhatToWalk::either()} hands back too: a title to
  * walk, or nothing named for the stack to choose from.
  *

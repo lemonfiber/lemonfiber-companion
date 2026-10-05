@@ -14,9 +14,9 @@ use function sprintf;
 /**
  * The `uninstall` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a list short by a field it could not read
- * would be shown as a machine with less on it than it has, and agreed to.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a list short by a field it could not read would be shown as a
+ * machine with less on it than it has, and agreed to.
  */
 final class UninstallIsUnreadable extends InvalidArgumentException
 {

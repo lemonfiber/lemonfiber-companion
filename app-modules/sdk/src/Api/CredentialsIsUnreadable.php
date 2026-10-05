@@ -14,10 +14,10 @@ use function sprintf;
 /**
  * The `credentials` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a credential dropped for being unreadable is
- * one the screen says the stack does not hold, and a state read as the nearest
- * one this app knows could draw an invalid credential as a working one.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a credential dropped for being unreadable is one the screen
+ * says the stack does not hold, and a state read as the nearest one this app
+ * knows could draw an invalid credential as a working one.
  */
 final class CredentialsIsUnreadable extends InvalidArgumentException
 {

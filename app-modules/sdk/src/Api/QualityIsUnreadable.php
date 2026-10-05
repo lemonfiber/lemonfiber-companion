@@ -16,9 +16,9 @@ use function sprintf;
  *
  * One refusal for the three because they are one subject read by one screen,
  * and the kind is named in every message. A developer reads it, so it is
- * `sprintf` and never translated (`L1`). Refused rather than salvaged: a
- * disposition read as the nearest one could call a held choice recorded, and
- * an operator would never be asked to confirm it.
+ * `sprintf` and never translated. Refused rather than salvaged: a disposition
+ * read as the nearest one could call a held choice recorded, and an operator
+ * would never be asked to confirm it.
  */
 final class QualityIsUnreadable extends InvalidArgumentException
 {

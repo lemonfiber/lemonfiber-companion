@@ -12,8 +12,8 @@ use function sprintf;
  * The `stored` envelope did not hold what the contract says it holds.
  *
  * Every one of these is a bug somewhere other than here, so the message names
- * the list and the position: that is the only thing that shortens the search.
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
+ * the list and the position: that is the only thing that shortens the search. A
+ * developer reads it, so it is `sprintf` and never translated.
  *
  * **Refused rather than salvaged.** A list of what a machine keeps that is one
  * row short is a thing somebody believes is not on their machine, and nothing

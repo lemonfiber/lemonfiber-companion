@@ -17,8 +17,8 @@ use function sprintf;
  *
  * {@see HostingIsUnreadable}'s refusal, for the record, and for its reason:
  * every one of these is a bug somewhere other than here, and the message names
- * the field, the row and what arrived because that is what shortens the
- * search. A developer reads it, so it is `sprintf` and never translated (`L1`).
+ * the field, the row and what arrived because that is what shortens the search.
+ * A developer reads it, so it is `sprintf` and never translated.
  *
  * **This record is refused rather than salvaged, and the direction of error is
  * the argument.** A row dropped for being unreadable is a change the screen

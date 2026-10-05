@@ -224,10 +224,9 @@ final readonly class Hosts
      */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses: a
-        // row that carries the key and a row that does not are the same refusal
-        // here, and the coalesce hides which one arrived from anybody reading
-        // the line.
+        // A guard rather than `?? null` on the subscript: a row that carries
+        // the key and a row that does not are the same refusal here, and the
+        // coalesce hides which one arrived from anybody reading the line.
         if (! array_key_exists($field->value, $row)) {
             throw HostingIsUnreadable::said($field, $position);
         }

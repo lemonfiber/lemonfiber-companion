@@ -16,10 +16,10 @@ use function sprintf;
 /**
  * The `clients` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a device dropped is one somebody holding it is
- * told nothing about, and a rating read as the nearest one could call a poorly
- * served device a good one.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a device dropped is one somebody holding it is told nothing
+ * about, and a rating read as the nearest one could call a poorly served device
+ * a good one.
  */
 final class ClientsIsUnreadable extends InvalidArgumentException
 {

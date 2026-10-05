@@ -19,7 +19,7 @@ use function sprintf;
  * for its reason: every one of these is a bug somewhere other than here, and
  * the message names the field and what arrived because that is the only thing
  * that shortens the search. A developer reads it, so it is `sprintf` and never
- * translated (`L1`).
+ * translated.
  *
  * **A stalled listing is worth refusing rather than salvaging**, and for a
  * sharper reason than a household is. A listing one row short reads as one

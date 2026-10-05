@@ -48,8 +48,8 @@ final readonly class WhatAnInvitationAsksWith
      */
     private static function asking(AnInvitationAskedFor $asked, bool $agreed): self
     {
-        // Collected by hand rather than through `iterator_to_array`, for the
-        // reason `C10` gives.
+        // Collected by hand rather than through `iterator_to_array`, whose
+        // `preserve_keys` argument would change nothing here.
         $libraries = [];
 
         foreach ($asked->libraries() as $library) {

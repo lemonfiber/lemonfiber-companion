@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * The `glossary` or `word` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
+ * A developer reads it, so it is `sprintf` and never translated.
  */
 final class GlossaryIsUnreadable extends InvalidArgumentException
 {

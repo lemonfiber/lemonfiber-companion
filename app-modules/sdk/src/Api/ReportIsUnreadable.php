@@ -24,7 +24,7 @@ use function sprintf;
  * reads, and for the same reason: every one of these is a bug somewhere other
  * than here, and the message says which field and what arrived because that is
  * the only thing that shortens the search. A developer reads it, so it is
- * `sprintf` and never translated (L1).
+ * `sprintf` and never translated.
  *
  * A report is worth refusing rather than salvaging. Half a report is the shape
  * that does damage — nine findings where ten ran reads as a stack with one

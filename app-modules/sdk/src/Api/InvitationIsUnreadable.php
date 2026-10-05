@@ -14,10 +14,10 @@ use function sprintf;
 /**
  * The `invitation` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a standing read as the nearest one could show
- * somebody who has joined as somebody invited, and they would be sent a link
- * to an account they already use.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a standing read as the nearest one could show somebody who has
+ * joined as somebody invited, and they would be sent a link to an account they
+ * already use.
  */
 final class InvitationIsUnreadable extends InvalidArgumentException
 {

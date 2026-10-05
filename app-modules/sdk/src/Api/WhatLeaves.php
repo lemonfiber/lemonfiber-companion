@@ -262,7 +262,6 @@ final readonly class WhatLeaves
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $row)) {
             throw OutboundIsUnreadable::said($list, $field, $position);
         }

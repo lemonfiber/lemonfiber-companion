@@ -103,7 +103,6 @@ final readonly class WhatAQualityAnswerCarries
      */
     private static function under(array $table, string $kind, NamesAWireField $parent, NamesAWireField $field): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $table) || ! is_string($table[$field->value]) || trim($table[$field->value]) === '') {
             throw QualityIsUnreadable::under($kind, $parent, $field);
         }

@@ -52,9 +52,9 @@ use function trim;
  * off the one answer that lists them.
  *
  * **A service that ended is built by a different constructor.** The wire may
- * carry `exit` and may not, and {@see Daemon::thatExited()} is what `C2` leaves
- * in place of a nullable seventh argument — so the decision *did this end with
- * a code* is made once, here, where the payload is in front of it.
+ * carry `exit` and may not, and {@see Daemon::thatExited()} stands in place of
+ * a nullable seventh argument — so the decision *did this end with a code* is
+ * made once, here, where the payload is in front of it.
  */
 final readonly class Rosters
 {
@@ -266,8 +266,8 @@ final readonly class Rosters
      */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses
-        // and {@see Stoppages::text()} explains.
+        // A guard rather than `?? null` on the subscript, which
+        // {@see Stoppages::text()} explains.
         if (! array_key_exists($field->value, $row)) {
             throw RosterIsUnreadable::said($field, $position);
         }

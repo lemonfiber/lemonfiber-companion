@@ -250,7 +250,6 @@ final readonly class WhereTheDoorIs
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
             throw FrontDoorIsUnreadable::missing($field);
         }
