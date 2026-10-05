@@ -14,7 +14,7 @@ use Throwable;
 /**
  * {@see Reaching}, said in the one module allowed to name what comes back.
  *
- * The kernel's port answers `object`, because `A7` keeps the SDK's name out of
+ * The kernel's port answers `object`, because the SDK's name stays out of
  * `kernel` and out of every capability. That is right and it is not enough: the
  * adapters in this module call the client's own methods, so an `object` would
  * have to be narrowed at eight call sites into a branch nothing can reach.
@@ -39,8 +39,8 @@ interface Clients extends Reaching
      * A client for this stack, held to the certificate it was introduced under.
      *
      * Narrowed from the port's `object` to the SDK's own type. `modules/sdk` is
-     * the one module whose manifest requires the SDK (`E3`), so this
-     * is the one interface that may say what a client is.
+     * the one module whose manifest requires the SDK, so this is the one
+     * interface that may say what a client is.
      */
     public function client(Stack $stack, Session $session): Client;
 

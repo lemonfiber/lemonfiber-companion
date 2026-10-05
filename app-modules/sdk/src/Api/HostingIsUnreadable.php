@@ -20,7 +20,7 @@ use function sprintf;
  * running, and for its reason: every one of these is a bug somewhere other than
  * here, and the message names the field and what arrived because that is the
  * only thing that shortens the search. A developer reads it, so it is `sprintf`
- * and never translated (`L1`).
+ * and never translated.
  *
  * **This listing is worth refusing rather than salvaging, and the direction of
  * error is the argument.** A row dropped for being unreadable is one fewer

@@ -11,11 +11,11 @@ use function sprintf;
 /**
  * An answer about moving in — the `adoption`, `import`, `beside` or `replacement` envelope — did not hold what the contract says it holds.
  *
- * One refusal for the four because they are one subject read by one screen,
- * and the kind is named in every message. A developer reads it, so it is
- * `sprintf` and never translated (`L1`). Refused rather than salvaged: a
- * stance read as the nearest one could call a move that did nothing applied,
- * and a list one row short hides something that did not come across.
+ * One refusal for the four because they are one subject read by one screen, and
+ * the kind is named in every message. A developer reads it, so it is `sprintf`
+ * and never translated. Refused rather than salvaged: a stance read as the
+ * nearest one could call a move that did nothing applied, and a list one row
+ * short hides something that did not come across.
  */
 final class MoveIsUnreadable extends InvalidArgumentException
 {

@@ -76,11 +76,11 @@ final readonly class WhatWasAskedFor
     /**
      * One field of a request, whatever it holds, or `null` where it is absent.
      *
-     * `C9` refuses `??` on a subscript because it reads as a default when it is
-     * really an admission that nobody knows whether the key is there. Here
-     * nobody does — the contract marks three of these optional — so the absence
-     * is answered once, in one place, and every caller below decides for itself
-     * what an absent field means. Two of them refuse and one of them answers
+     * A `??` on a subscript reads as a default when it is really an admission
+     * that nobody knows whether the key is there. Here nobody does — the
+     * contract marks three of these optional — so the absence is answered once,
+     * in one place, and every caller below decides for itself what an absent
+     * field means. Two of them refuse and one of them answers
      * {@see Size::unknown()}, which is the distinction a shared `??` would have
      * flattened.
      *
@@ -88,13 +88,9 @@ final readonly class WhatWasAskedFor
      */
     private static function under(array $row, NamesAWireField $field): mixed
     {
-        // Written as a guard rather than as a ternary because the two gates
-        // disagree about the ternary: rector rewrites
-        // `array_key_exists(...) ? $row[...] : null` to `??`, and `C9` refuses
-        // `??` on a subscript. Both are right about what they see — the point
-        // of `C9` is that a coalesce reads as a default when it is really an
-        // admission, and the point of this method is to make that admission
-        // once, in the open, where the callers can each answer it differently.
+        // A guard rather than a ternary, which rector rewrites to a `??` on the
+        // subscript. The point of this method is to make the admission once, in
+        // the open, where the callers can each answer it differently.
         if (! array_key_exists($field->value, $row)) {
             return null;
         }
@@ -149,9 +145,9 @@ final readonly class WhatWasAskedFor
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
-        // Through `under()` rather than a coalesce on the subscript: `C9` refuses
-        // the shape, and substituting what it usually means is refused, which is this
-        // app filling a gap the contract left.
+        // Through `under()` rather than a coalesce on the subscript:
+        // substituting what it usually means would be this app filling a gap
+        // the contract left.
         $reason = self::under($refused, WireField::Reason);
 
         if (! is_string($reason) || trim($reason) === '') {

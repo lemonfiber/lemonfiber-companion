@@ -18,8 +18,8 @@ use function sprintf;
  *
  * {@see ProvenanceIsUnreadable}'s refusal, for what leaves a machine, and for
  * its reason: every one of these is a bug somewhere other than here, and the
- * message names the list, the row and the field. A developer reads it, so it
- * is `sprintf` and never translated (`L1`).
+ * message names the list, the row and the field. A developer reads it, so it is
+ * `sprintf` and never translated.
  *
  * **Refused rather than salvaged, and here the direction of error is a privacy
  * claim.** A connection dropped for being unreadable is a connection the

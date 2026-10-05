@@ -11,8 +11,8 @@ use function sprintf;
 /**
  * The `alerts` envelope did not hold what the contract says it holds.
  *
- * {@see OutboundIsUnreadable}'s refusal, for what the operator is told about.
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
+ * {@see OutboundIsUnreadable}'s refusal, for what the operator is told about. A
+ * developer reads it, so it is `sprintf` and never translated.
  *
  * **An exception dropped for being unreadable is refused rather than
  * dropped**, because the screen would then say an event follows the preset

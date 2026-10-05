@@ -117,8 +117,8 @@ final readonly class Tellings
      * for the reason {@see Problems} gives: the generated envelope asserts its
      * payload without checking it, which is right for generated code and leaves
      * this side reading whatever came off a socket. Taking the declared shape
-     * here would make every guard below unreachable to the analyser and absent
-     * from the build.
+     * here would make every guard below read as unreachable, and it would be
+     * deleted.
      *
      * @param Envelope<mixed> $envelope
      */

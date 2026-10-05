@@ -51,10 +51,10 @@ use Modules\Kernel\Api\Whose;
  *
  * **Nothing here reads a timestamp.** The SDK hands over the ending as a count
  * of seconds, which is what lets this file convert with a named constructor and
- * no date library — `B1` forbids one for a good reason, and the wire format is
- * the client library's business rather than this application's. That boundary
- * was moved deliberately: an app that parses the stack's stamps is an app that
- * has to be told when the stack changes how it writes one.
+ * no date library — the wire format is the client library's business rather
+ * than this application's. That boundary was moved deliberately: an app that
+ * parses the stack's stamps is an app that has to be told when the stack
+ * changes how it writes one.
  *
  * **A `ConfigurationProblem` is deliberately not caught.** The SDK raises one
  * where a stack's stored address cannot be pinned, which means this app is
@@ -105,7 +105,7 @@ final readonly class Admissions implements Admitting
      *
      * Split from the exchange itself because the two are different questions —
      * whether the door opened, and what to say when it did not — and together
-     * they left one method with four ways out (`H8`).
+     * they left one method with four ways out.
      *
      * A `match` rather than six `catch` blocks, so the mapping reads as one
      * table. `RequestFailed`, `Unreachable` and `UnreadableResponse` go to

@@ -11,9 +11,9 @@ use function sprintf;
 /**
  * A `news-items` envelope, or a `news` event, did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: an item dropped from a list is one the phone
- * would never mark, and an onset guessed at would mark the wrong one.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: an item dropped from a list is one the phone would never mark,
+ * and an onset guessed at would mark the wrong one.
  */
 final class NewsIsUnreadable extends InvalidArgumentException
 {

@@ -23,7 +23,7 @@ use function trim;
  * The reader builds the refusal, because only the reader knows which list and
  * which entry the field was read from; this knows what an absent or mistyped
  * field looks like. Each guard is a test rather than `?? null` on the
- * subscript, which `C9` refuses.
+ * subscript, which would fold an absent field into a present one.
  */
 final readonly class Required
 {

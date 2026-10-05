@@ -14,9 +14,9 @@ use function sprintf;
 /**
  * The `self-update` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`). A
- * reading that could not be read is refused rather than defaulted, because
- * the default for a missing standing is *current*.
+ * A developer reads it, so it is `sprintf` and never translated. A reading that
+ * could not be read is refused rather than defaulted, because the default for a
+ * missing standing is *current*.
  */
 final class SelfUpdateIsUnreadable extends InvalidArgumentException
 {

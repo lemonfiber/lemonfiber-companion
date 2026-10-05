@@ -11,9 +11,9 @@ use function sprintf;
 /**
  * The `migration` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a survey one row short hides a service that
- * is already running, and an operator would choose a mode without it.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a survey one row short hides a service that is already
+ * running, and an operator would choose a mode without it.
  */
 final class MigrationIsUnreadable extends InvalidArgumentException
 {

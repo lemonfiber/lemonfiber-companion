@@ -14,10 +14,9 @@ use function sprintf;
 /**
  * The `front-door` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a standing read as the nearest one could call
- * a door nobody can reach an established one, and an operator would send
- * somebody there.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a standing read as the nearest one could call a door nobody
+ * can reach an established one, and an operator would send somebody there.
  */
 final class FrontDoorIsUnreadable extends InvalidArgumentException
 {

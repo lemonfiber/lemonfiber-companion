@@ -13,8 +13,8 @@ use function sprintf;
  *
  * The same refusal {@see OfferIsUnreadable} is, for the one envelope every
  * action that reaches the services is answered with: a developer reads it, so
- * it is `sprintf` and never translated (`L1`), and the message names the field
- * because that is the only thing that shortens the search.
+ * it is `sprintf` and never translated, and the message names the field because
+ * that is the only thing that shortens the search.
  *
  * **Apart from the refusals of the payloads that arrive through it**, because
  * the handle is not the answer. A repair, a start and a stop each end in a

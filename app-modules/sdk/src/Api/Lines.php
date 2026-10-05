@@ -129,7 +129,6 @@ final readonly class Lines
      */
     private static function text(array $row, NamesAWireField $field, int $position, bool $blankIsALine = false): string
     {
-        // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $row)) {
             throw LineIsUnreadable::said($field, $position);
         }

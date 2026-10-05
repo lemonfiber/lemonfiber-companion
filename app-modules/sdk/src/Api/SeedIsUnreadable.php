@@ -11,9 +11,9 @@ use function sprintf;
 /**
  * The `seed` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a state read as the nearest one could call a
- * failure wired, and a run shown one connection short hides one that broke.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a state read as the nearest one could call a failure wired,
+ * and a run shown one connection short hides one that broke.
  */
 final class SeedIsUnreadable extends InvalidArgumentException
 {

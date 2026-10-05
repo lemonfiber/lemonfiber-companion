@@ -15,7 +15,7 @@ use function sprintf;
  * for its reason: every one of these is a bug somewhere other than here, and
  * the message names the field, the row and what arrived because that is what
  * shortens the search. A developer reads it, so it is `sprintf` and never
- * translated (`L1`).
+ * translated.
  *
  * **A list of origins is refused rather than salvaged.** A service dropped for
  * being unreadable is a service the screen says this stack does not run — and

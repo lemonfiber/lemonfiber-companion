@@ -45,11 +45,10 @@ use Throwable;
 final readonly class PinnedClients implements Clients
 {
     /**
-     * `Client` rather than the port's `object`, which rector asked for and is
-     * right about: this file may name the SDK, so saying what it answers with
-     * costs nothing and tells a caller that already depends on the SDK what it
-     * has. The port stays `object` because `kernel` may not name the SDK at
-     * all — that is `A7`, and it is what keeps every capability testable
+     * `Client` rather than the port's `object`: this file may name the SDK, so
+     * saying what it answers with costs nothing and tells a caller that already
+     * depends on the SDK what it has. The port stays `object` because `kernel`
+     * does not name the SDK at all, which keeps every capability testable
      * without a network.
      */
     public function client(Stack $stack, Session $session): Client

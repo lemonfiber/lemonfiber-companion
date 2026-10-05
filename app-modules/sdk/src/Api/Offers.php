@@ -291,22 +291,20 @@ final readonly class Offers
     /**
      * One field of a row, whatever it holds, or `null` where it is absent.
      *
-     * `C9` refuses `??` on a subscript because it reads as a default when it is
-     * really an admission that nobody knows whether the key is there. Here
-     * nobody does — the contract marks several of these optional — so the
-     * absence is answered once, in one place, and every caller decides for
-     * itself what it means. Most refuse; `leaving` answers
-     * {@see LeftBehind::nothing()}, which is the distinction a shared `??`
-     * would have flattened. The same helper {@see Households} carries, for the
-     * same reason.
+     * A `??` on a subscript reads as a default when it is really an admission
+     * that nobody knows whether the key is there. Here nobody does — the
+     * contract marks several of these optional — so the absence is answered
+     * once, in one place, and every caller decides for itself what it means.
+     * Most refuse; `leaving` answers {@see LeftBehind::nothing()}, which is the
+     * distinction a shared `??` would have flattened. The same helper
+     * {@see Households} carries, for the same reason.
      *
      * @param array<mixed> $row
      */
     private static function under(array $row, NamesAWireField $field): mixed
     {
-        // A guard rather than a ternary: rector rewrites
-        // `array_key_exists(...) ? $row[...] : null` to `??`, which `C9` then
-        // refuses. Both gates are right about what they see.
+        // A guard rather than a ternary, which rector rewrites to a `??` on the
+        // subscript.
         if (! array_key_exists($field->value, $row)) {
             return null;
         }

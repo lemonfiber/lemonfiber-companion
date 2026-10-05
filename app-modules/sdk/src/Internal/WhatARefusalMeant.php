@@ -70,9 +70,9 @@ final readonly class WhatARefusalMeant
     /**
      * The status a stack without codes answers a session it will not accept with.
      *
-     * Named rather than written as `401` at the comparison, which is `D6`: a
-     * bare number at a call site says nothing about which of the several
-     * statuses this application distinguishes it is.
+     * Named rather than written as `401` at the comparison: a bare number at a
+     * call site says nothing about which of the several statuses this
+     * application distinguishes it is.
      */
     private const int SESSION_IS_NOT_ACCEPTED = 401;
 

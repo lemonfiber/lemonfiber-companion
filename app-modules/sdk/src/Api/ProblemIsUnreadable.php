@@ -20,7 +20,7 @@ use function sprintf;
  * this app, a proxy rewriting a body, a fixture written by hand — and the
  * message says which field and what arrived, because that is the only thing
  * that shortens the search. A developer reads it, so it is `sprintf` and never
- * translated (L1).
+ * translated.
  *
  * It refuses rather than substitutes. The generated envelope asserts its
  * payload's shape without checking it, so what reaches here is whatever came

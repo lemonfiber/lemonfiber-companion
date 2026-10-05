@@ -14,8 +14,8 @@ use function sprintf;
 /**
  * The `bandwidth` envelope did not hold what the contract says it holds.
  *
- * {@see AlertsAreUnreadable}'s refusal, for how the line is shared. A
- * developer reads it, so it is `sprintf` and never translated (`L1`).
+ * {@see AlertsAreUnreadable}'s refusal, for how the line is shared. A developer
+ * reads it, so it is `sprintf` and never translated.
  *
  * **A line that could not be read is refused rather than defaulted**, because
  * the default for a missing limit is *unlimited*, and that is the answer

@@ -19,7 +19,7 @@ use function sprintf;
  * screen reads, and for its reason: every one of these is a bug somewhere other
  * than here, and the message names the field and what arrived because that is
  * the only thing that shortens the search. A developer reads it, so it is
- * `sprintf` and never translated (`L1`).
+ * `sprintf` and never translated.
  *
  * **A household is worth refusing rather than salvaging**, and more sharply
  * than a report is. A report one finding short reads as a stack with one fewer

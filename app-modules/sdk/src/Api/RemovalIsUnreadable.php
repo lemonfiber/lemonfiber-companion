@@ -14,9 +14,9 @@ use function sprintf;
 /**
  * The `removal` envelope did not hold what the contract says it holds.
  *
- * A developer reads it, so it is `sprintf` and never translated (`L1`).
- * Refused rather than salvaged: a reach read as the nearest one could show
- * somebody still holding an account as somebody gone.
+ * A developer reads it, so it is `sprintf` and never translated. Refused rather
+ * than salvaged: a reach read as the nearest one could show somebody still
+ * holding an account as somebody gone.
  */
 final class RemovalIsUnreadable extends InvalidArgumentException
 {

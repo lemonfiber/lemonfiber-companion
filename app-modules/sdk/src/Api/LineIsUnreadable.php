@@ -16,11 +16,11 @@ use function sprintf;
 /**
  * A `log` envelope did not hold what the contract says it holds.
  *
- * The same refusal {@see StuckIsUnreadable} is, for the log window's payload, and for
- * its reason: every one of these is a bug somewhere other than here, and the
- * message names the field and the position because that is the only thing that
- * shortens the search. A developer reads it, so it is `sprintf` and never
- * translated (`L1`).
+ * The same refusal {@see StuckIsUnreadable} is, for the log window's payload,
+ * and for its reason: every one of these is a bug somewhere other than here,
+ * and the message names the field and the position because that is the only
+ * thing that shortens the search. A developer reads it, so it is `sprintf` and
+ * never translated.
  *
  * **A window is refused rather than shown short.** A log read is the thing an
  * operator turns to when the rest of the app has not explained something, and a

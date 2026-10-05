@@ -27,23 +27,22 @@ use Modules\Sdk\Internal\Wire;
  * one direction of that translation lives here, and it is the only place the
  * two vocabularies are held against each other.
  *
- * **It parses rather than casts.** The generated envelope declares its payload's
- * shape and asserts it without checking — which is correct for generated code,
- * because the contract is the authority and a client that re-validated it
- * would be a second opinion about the same document. What actually arrives is
- * whatever came off a socket, from a server that may be newer than this app.
- * So every field is read, checked, and refused where it is not what it claims
- * (C9): the alternative is a `Severity` that came out of a cast and a screen
- * that shows a critical failure as an advisory.
+ * **It parses rather than casts.** The generated envelope declares its
+ * payload's shape and asserts it without checking — which is correct for
+ * generated code, because the contract is the authority and a client that
+ * re-validated it would be a second opinion about the same document. What
+ * actually arrives is whatever came off a socket, from a server that may be
+ * newer than this app. So every field is read, checked, and refused where it is
+ * not what it claims: the alternative is a `Severity` that came out of a cast
+ * and a screen that shows a critical failure as an advisory.
  *
- * **It raises rather than refuses, and that is not a breach of C1.** C1 is
- * about a refusal crossing a module boundary — something an operator acts on —
- * and `ProblemIsUnreadable` is not one: it says the answer was not an error in
- * the shape the contract describes, which is a fault in a server, a proxy or a
- * fixture. There is no `Problem` to hand back, because being unable to read one
- * is the thing that happened. It is raised without an `@throws` for the reason
- * `CodeIsBlank` gives: a caller has nothing to do differently, and marking it
- * checked would put a catch block at every call site that could only rethrow.
+ * **It raises rather than refuses.** `ProblemIsUnreadable` is not something an
+ * operator acts on: it says the answer was not an error in the shape the
+ * contract describes, which is a fault in a server, a proxy or a fixture. There
+ * is no `Problem` to hand back, because being unable to read one is the thing
+ * that happened. It is raised without an `@throws` for the reason `CodeIsBlank`
+ * gives: a caller has nothing to do differently, and marking it checked would
+ * put a catch block at every call site that could only rethrow.
  *
  * **The two the kernel drops are dropped here too.** `detail` and `cause` are
  * on the wire and absent from `Problem`, and this is where that decision is
@@ -79,8 +78,8 @@ final readonly class Problems
      * `UnexpectedKind` is left to travel — and then asserts the payload's shape
      * without checking it. That assertion is correct for generated code and it
      * is not a fact about the socket, so the type is widened back to what is
-     * actually known here. Otherwise the checks below are lines the analyser
-     * calls redundant and the next reader deletes.
+     * actually known here. Otherwise the checks below read as redundant and the
+     * next reader deletes them.
      *
      * @param Envelope<mixed> $envelope
      */

@@ -331,12 +331,11 @@ final readonly class Reports
      */
     private static function underneath(array $verdict): WhatItSaysUnderneath
     {
-        // Written out rather than with `??`, which `C9` refuses on a subscript
-        // and is right to: that idiom reads as a default and cannot be told
-        // from one substituting for a field the payload should have carried.
-        // This is the field where the distinction is real — the contract marks
-        // it optional, so absent is the core having nothing to add rather than
-        // a conversation gone wrong.
+        // Written out rather than with `??` on a subscript: that idiom reads as
+        // a default and cannot be told from one substituting for a field the
+        // payload should have carried. This is the field where the distinction
+        // is real — the contract marks it optional, so absent is the core
+        // having nothing to add rather than a conversation gone wrong.
         if (! array_key_exists(WireField::Detail->value, $verdict)) {
             return WhatItSaysUnderneath::none();
         }
@@ -375,11 +374,11 @@ final readonly class Reports
     /**
      * How much a problem matters, as the engine judged it.
      *
-     * Refused rather than defaulted where the word is not one this app knows:
-     * a verdict whose severity reads as advisory because it could not be parsed
+     * Refused rather than defaulted where the word is not one this app knows: a
+     * verdict whose severity reads as advisory because it could not be parsed
      * is a fault shown quietly, and quiet is the one thing a critical finding
-     * must not be. `D4`'s argument, and {@see self::category()} makes the same
-     * one about a check's family.
+     * must not be. {@see self::category()} makes the same argument about a
+     * check's family.
      *
      * @throws ReportIsUnreadable
      */
@@ -446,9 +445,9 @@ final readonly class Reports
      * the second would have caught — and unreachable checks are the ones no
      * test can defend.
      *
-     * Written out rather than coalesced, which `C9` refuses by name: a `??` on
-     * a subscript folds absent, present-and-null and present-and-wrong-type
-     * into one answer, and the one it picks reads as "carry on".
+     * Written out rather than coalesced: a `??` on a subscript folds absent,
+     * present-and-null and present-and-wrong-type into one answer, and the one
+     * it picks reads as "carry on".
      *
      * @param  array<mixed>  $row
      * @return array<mixed>
