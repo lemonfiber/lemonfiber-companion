@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -148,14 +149,14 @@
     {{-- A guard held by a screen of this app, apart from everything above:
          it outlives nothing, and it is never one of the hosted rows. --}}
     <x-design::note>{{ __('stacks.guard.apart') }}</x-design::note>
-    <x-design::action label="{{ __('stacks.guard.road_in') }}" :goes="$this->goes()->ofItself()->guard()" tone="tonal" />
+    <x-design::action label="{{ __('stacks.guard.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Guard)" tone="tonal" />
 @endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

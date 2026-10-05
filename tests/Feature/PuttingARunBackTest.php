@@ -38,6 +38,7 @@ use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -630,5 +631,5 @@ it('renders its own view, and the way back to the machine is a route', function 
 
     expect($screen->render()->name())->toBe('operator::putting-that-run-back')
         ->and($screen->stampNamed())->toBe(THE_RUN_PUT_BACK)
-        ->and(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });

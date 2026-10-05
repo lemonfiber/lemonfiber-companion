@@ -32,6 +32,7 @@ use Modules\Operator\Internal\Presenters\HowAStackReads;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -277,7 +278,7 @@ final class HowThisStackIs extends NativeComponent
         $named = trim($service);
 
         if ($named === '') {
-            return $this->goes()->health();
+            return $this->goes()->to(AStacksScreen::Health);
         }
 
         return $this->goes()->logsOf(ServiceId::called($named));

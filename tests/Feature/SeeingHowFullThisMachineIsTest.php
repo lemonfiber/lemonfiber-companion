@@ -40,6 +40,7 @@ use Modules\Operator\Internal\ViewModels\ADownloadAsShown;
 use Modules\Operator\Internal\ViewModels\ALineAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\AVolumeAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -245,7 +246,7 @@ it('offers stopping seeding on every download alike, asking again and asking wha
 
 it('opens stopping seeding on the download whose row it is on, by its own screen', function (): void {
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()));
-    $goes = $screen->goes()->ofItself()->changing()->lettingGo('Some.Film.2024');
+    $goes = $screen->goes()->lettingGo('Some.Film.2024');
 
     expect($goes)->toBe(sprintf('/stacks/%s/room/Some.Film.2024', theStackWhoseRoomIsRead()->id()->stored()))
         ->and(NativeRouter::resolve($goes))->not->toBeNull()
@@ -325,8 +326,8 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->room()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Room)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

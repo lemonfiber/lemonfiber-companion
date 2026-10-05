@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Kernel\Api\WhereTheServicesDisagree;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -229,7 +230,7 @@ it('is reached by a route carrying the title as it was drawn, and goes back to h
     $screen = theTraceScreen(AStackThatTraces::with(aFilmThatArrived()));
 
     expect(NativeRouter::resolve($screen->goes()->traceOf(WhatToFollow::called('AC/DC: Live'))))->toHaveKey('params.service', 'AC/DC: Live')
-        ->and(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and($screen->render()->name())->toBe('operator::where-this-got-to');
 });
 

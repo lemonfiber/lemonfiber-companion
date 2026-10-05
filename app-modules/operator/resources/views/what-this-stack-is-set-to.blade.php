@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -164,7 +165,7 @@
          before anything is agreed to. Offered on every reading that came
          back: which files differ is the stack's to say, and this listing of
          settings does not. --}}
-    <x-design::action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->ofItself()->changing()->reset()" tone="tonal" />
+    <x-design::action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->to(AStacksScreen::Reset)" tone="tonal" />
 
     {{-- First-run setup, declined with the reason where somebody looking for
          it would look: a phone cannot perform the act that makes a phone
@@ -183,7 +184,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

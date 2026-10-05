@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -9,7 +10,7 @@
          outlives the screen is the hosting screen, named here and kept apart. --}}
     <x-design::body>{{ __('stacks.guard.lives_while_asked') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_hosted') }}</x-operator::note>
-    <x-operator::quiet-action label="{{ __('stacks.guard.to_host_one') }}" :goes="$this->goes()->keepsRunning()" />
+    <x-operator::quiet-action label="{{ __('stacks.guard.to_host_one') }}" :goes="$this->goes()->to(AStacksScreen::Hosting)" />
 
 @if ($this->asking !== null)
     {{-- Asked before it starts, naming the forms it would stop. --}}
@@ -53,7 +54,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->lastGuard()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @endif
 
@@ -96,7 +97,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

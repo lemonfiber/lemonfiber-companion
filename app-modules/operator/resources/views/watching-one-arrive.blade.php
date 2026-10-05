@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -127,7 +128,7 @@
                         <x-design::row
                             :headline="__($next->said)"
                             :supporting="__('health.walkthrough.where_to_watch')"
-                            :goes="$this->goes()->whoGetsIn()->clients()"
+                            :goes="$this->goes()->to(AStacksScreen::Clients)"
                             :answers-to="__($next->said)"
                         />
                     @else
@@ -183,7 +184,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

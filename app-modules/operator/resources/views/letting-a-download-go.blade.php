@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -6,7 +7,7 @@
     {{-- Opened on no download at all, so there is nothing to ask about and
          nothing to agree to. How full the machine is lists each one. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.names_no_download') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
+    <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the offer
          above it, so an offer cannot read as something that happened. --}}
@@ -14,7 +15,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @elseif ($this->done()->isWorking)
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
@@ -23,18 +24,18 @@
              the machine is says whether it is still there. --}}
         <x-operator::emphasis>{{ __('stacks.let_go.no_outcome', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.no_outcome_action') }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
+        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @elseif ($this->done()->wasRehearsed)
         {{-- A rehearsal, said to be one before anything else, and never
              worded as room freed: the client still holds all of it. --}}
         <x-operator::heading>{{ __('stacks.let_go.a_rehearsal') }}</x-operator::heading>
         <x-operator::emphasis>{{ __('stacks.let_go.rehearsed', ['download' => $this->done()->name]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.nothing_freed', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
+        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @else
         <x-operator::emphasis>{{ __('stacks.let_go.let_go', ['download' => $this->done()->name]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.occupied', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
+        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @endif
 
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
@@ -78,7 +79,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

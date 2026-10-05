@@ -25,11 +25,11 @@ final readonly class HowAGlossReads
             return new AGlossAsShown(
                 word: $word->word(),
                 short: $word->short(),
-                goes: $word->deep() === '' ? '' : $goes->ofItself()->wordAbout(AWordInUse::named($word->word())),
+                goes: $word->deep() === '' ? '' : $goes->wordAbout(AWordInUse::named($word->word())),
             );
         }
 
-        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', asks: $goes->ofItself()->wordAbout($drawn));
+        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', asks: $goes->wordAbout($drawn));
     }
 
     /** A word drawn as it came, while the glossary waits for the next frame. */

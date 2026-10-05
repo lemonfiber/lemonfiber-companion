@@ -200,9 +200,9 @@ it('the machine is asked once for a frame, and again when asked to', function ()
 it('the way here and the way back are routes', function (): void {
     $screen = theVersionsScreen(AStackThatNamesItsVersions::with(versionsWithTheirNotes()));
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->versions()))->not->toBeNull()
-        ->and($screen->goes()->ofItself()->versions())->toBe(AStacksScreen::Versions->forTheStack($screen->stack()->id()))
-        ->and(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Versions)))->not->toBeNull()
+        ->and($screen->goes()->to(AStacksScreen::Versions))->toBe(AStacksScreen::Versions->forTheStack($screen->stack()->id()))
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

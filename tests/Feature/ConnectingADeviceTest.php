@@ -224,8 +224,8 @@ it('offers to invite somebody with no account, with their name already typed', f
     expect($drawn)->toContain('Nobody called Sam has an account yet.')
         ->and($drawn)->not->toContain(__('stacks.handoff.on_their_device'))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.handoff.invite_them'))
-        ->and($screen->goes()->whoGetsIn()->inviting('Sam'))->toBe(AStacksScreen::InviteNamed->forTheStacksMember($stack, SomebodyInTheHousehold::called('Sam')))
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->inviting('a/b')))->not->toBeNull();
+        ->and($screen->goes()->inviting('Sam'))->toBe(AStacksScreen::InviteNamed->forTheStacksMember($stack, SomebodyInTheHousehold::called('Sam')))
+        ->and(NativeRouter::resolve($screen->goes()->inviting('a/b')))->not->toBeNull();
 });
 
 it('sends what else there is to do to the screen that does it', function (WhatTheHandoffNeedsNext $next, string $said): void {
@@ -352,9 +352,9 @@ it('the way here is a route, with the name encoded', function (): void {
     $screen = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::ended()));
     $stack = theStackADeviceConnectsTo()->id();
 
-    expect(NativeRouter::resolve($screen->goes()->whoGetsIn()->connecting('a/b')))->not->toBeNull()
-        ->and($screen->goes()->whoGetsIn()->connecting('a/b'))->toBe(sprintf('/stacks/%s/device/a%%2Fb', $stack->stored()))
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->frontDoor()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->connecting('a/b')))->not->toBeNull()
+        ->and($screen->goes()->connecting('a/b'))->toBe(sprintf('/stacks/%s/device/a%%2Fb', $stack->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::FrontDoor)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

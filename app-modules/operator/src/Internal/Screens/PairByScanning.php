@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -277,7 +278,7 @@ final class PairByScanning extends NativeComponent
      */
     public function onwardsTo(): string
     {
-        return WhereAStackIs::rememberedAs($this->paired)->signIn();
+        return WhereAStackIs::rememberedAs($this->paired)->to(AStacksScreen::SignIn);
     }
 
     /**

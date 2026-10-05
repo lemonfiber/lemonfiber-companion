@@ -476,10 +476,10 @@ it('the way here and the way back are routes, with the name encoded', function (
     $screen = theRemovalScreen(AStackThatTakesThemOut::answering());
     $stack = theStackSomebodyLeaves()->id();
 
-    expect(NativeRouter::resolve($screen->goes()->whoGetsIn()->takingOut('anna')))->not->toBeNull()
-        ->and($screen->goes()->whoGetsIn()->takingOut('a/b'))->toBe(AStacksScreen::TakeOut->forTheStacksMember($stack, SomebodyInTheHousehold::called('a/b')))
-        ->and($screen->goes()->whoGetsIn()->takingOut('a/b'))->toBe(sprintf('/stacks/%s/household/a%%2Fb', $stack->stored()))
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->invite()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->takingOut('anna')))->not->toBeNull()
+        ->and($screen->goes()->takingOut('a/b'))->toBe(AStacksScreen::TakeOut->forTheStacksMember($stack, SomebodyInTheHousehold::called('a/b')))
+        ->and($screen->goes()->takingOut('a/b'))->toBe(sprintf('/stacks/%s/household/a%%2Fb', $stack->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Invite)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

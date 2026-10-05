@@ -239,7 +239,7 @@ it('offers somebody to ask once, at the foot of the findings, where any said not
     $offered = array_filter(WhatTheDeviceWouldDraw::by($screen)->offers(), static fn(mixed $said): bool => $said === __('device.share_diagnostics'));
 
     expect($offered)->toHaveCount(1)
-        ->and($screen->goes()->help())->toBe(AStacksScreen::Help->forTheStack(theStackBeingLookedAt()->id()));
+        ->and($screen->goes()->to(AStacksScreen::Help))->toBe(AStacksScreen::Help->forTheStack(theStackBeingLookedAt()->id()));
 });
 
 it('offers nobody to ask where every finding names something to try', function (): void {
@@ -406,7 +406,7 @@ it('a keychain that will not open asks for the password rather than breaking', f
 it('signing in again goes to this stack and no other', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->goes()->signIn())
+    expect($screen->goes()->to(AStacksScreen::SignIn))
         ->toBe(sprintf('/stacks/%s/sign-in', theStackBeingLookedAt()->id()->stored()));
 });
 
@@ -886,9 +886,9 @@ it('what the household asked for is one tap from the machine it is about', funct
     // makes the requests screen reachable rather than merely present.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->goes()->requests())
+    expect($screen->goes()->to(AStacksScreen::Requests))
         ->toBe(AStacksScreen::Requests->forTheStack(theStackBeingLookedAt()->id()))
-        ->and(NativeRouter::resolve($screen->goes()->requests()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Requests)))->not->toBeNull();
 });
 
 it('what this machine would put right is one tap from the machine', function (): void {
@@ -899,9 +899,9 @@ it('what this machine would put right is one tap from the machine', function ():
     // repairs for all of them under a heading naming one.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->goes()->repairs())
+    expect($screen->goes()->to(AStacksScreen::Repairs))
         ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()))
-        ->and(NativeRouter::resolve($screen->goes()->repairs()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Repairs)))->not->toBeNull();
 });
 
 it('what stopped coming in is one tap from the machine', function (): void {
@@ -966,7 +966,7 @@ it('a finding about the machine has no log to go to, and asking for one comes aw
     $rows = $screen->findings();
 
     expect($rows[0]->service)->toBe('')
-        ->and($screen->logsOf($rows[0]->service))->toBe($screen->goes()->health())
+        ->and($screen->logsOf($rows[0]->service))->toBe($screen->goes()->to(AStacksScreen::Health))
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
 });
 
@@ -977,7 +977,7 @@ it('a name that is only whitespace is no name either', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     foreach ([' ', '   ', "\t", "\n"] as $blank) {
-        expect($screen->logsOf($blank))->toBe($screen->goes()->health(), sprintf('logsOf(%s)', var_export($blank, return: true)));
+        expect($screen->logsOf($blank))->toBe($screen->goes()->to(AStacksScreen::Health), sprintf('logsOf(%s)', var_export($blank, return: true)));
     }
 });
 

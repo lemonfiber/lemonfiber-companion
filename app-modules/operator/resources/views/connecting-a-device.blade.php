@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
@@ -8,7 +9,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->going()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
             ask-again="show()"
         />
     @elseif ($this->going()->isWorking)
@@ -84,13 +85,13 @@
             <x-design::action label="{{ __('health.ask_again') }}" tap="show()" />
         @endif
         @if ($this->going()->handoff->invites)
-            <x-design::link label="{{ __('stacks.handoff.invite_them') }}" :goes="$this->goes()->whoGetsIn()->inviting($this->named())" />
+            <x-design::link label="{{ __('stacks.handoff.invite_them') }}" :goes="$this->goes()->inviting($this->named())" />
         @endif
         @if ($this->going()->handoff->starts)
-            <x-design::link label="{{ __('navigation.services') }}" :goes="$this->goes()->services()" />
+            <x-design::link label="{{ __('navigation.services') }}" :goes="$this->goes()->to(AStacksScreen::Services)" />
         @endif
         @if ($this->going()->handoff->records)
-            <x-design::link label="{{ __('navigation.menu.front_door') }}" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
+            <x-design::link label="{{ __('navigation.menu.front_door') }}" :goes="$this->goes()->to(AStacksScreen::FrontDoor)" />
         @endif
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either

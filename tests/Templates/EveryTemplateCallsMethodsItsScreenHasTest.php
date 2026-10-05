@@ -28,9 +28,9 @@ use Tests\Support\Tree;
 /**
  * Every method a template asks its own screen for.
  *
- * Only the first call in a chain: `$this->goes()->health()` asks this screen for
- * `goes` and asks whatever that answers for the rest, which is a different
- * class's business and not this rule's.
+ * Only the first call in a chain: `$this->goes()->to(AStacksScreen::Health)`
+ * asks this screen for `goes` and asks whatever that answers for the rest,
+ * which is a different class's business and not this rule's.
  *
  * @return list<string>
  */

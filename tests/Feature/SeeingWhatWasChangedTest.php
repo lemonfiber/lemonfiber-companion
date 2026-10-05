@@ -24,6 +24,7 @@ use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\ViewModels\AMomentOnTheRecord;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -306,7 +307,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way back to the machine is a route as well', function (): void {
     $screen = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching('the last 50 runs')));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
@@ -333,5 +334,5 @@ it('leads from each moment to putting back what was done then, by the stamp the 
         ->and(array_map(static fn(AMomentOnTheRecord $moment): string => $moment->leadsWith, $moments))
         ->toBe(['Pointed Sonarr at the new library', 'Wrote the first configuration'])
         ->and($ways)->toHaveCount(2)
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->puttingARunBack($moments[0]->stamp)))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->puttingARunBack($moments[0]->stamp)))->not->toBeNull();
 });

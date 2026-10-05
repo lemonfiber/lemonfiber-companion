@@ -32,6 +32,7 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\ViewModels\AMemberAsShown;
 use Modules\Operator\Internal\ViewModels\AnUnratedChoiceAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
@@ -689,8 +690,8 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theInvitationScreen(AStackThatInvites::answering());
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->invite()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Invite)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

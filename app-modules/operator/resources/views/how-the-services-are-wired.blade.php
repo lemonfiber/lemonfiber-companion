@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -18,7 +19,7 @@
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->choice->went"
-                    :sign-in-goes-to="$this->goes()->signIn()"
+                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
                 />
             @elseif ($this->choice->refused !== null)
                 <x-design::body>{{ __('stacks.wiring.fills.not_chosen') }}</x-design::body>
@@ -66,7 +67,7 @@
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->whatAnswersWhat()->went"
             ask-again=""
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @elseif ($this->whatAnswersWhat()->refused !== null)
         {{-- A wiring the stack could not read is said through its own words,
@@ -193,7 +194,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howItIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @endif
 </x-operator::content>
@@ -201,7 +202,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

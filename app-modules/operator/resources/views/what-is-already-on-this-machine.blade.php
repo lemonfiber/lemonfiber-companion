@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -169,7 +170,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howTheMoveIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
         <x-operator::try-again :went="$this->howTheMoveIsGoing()->went" tap="tryAgain()" />
     @endif
@@ -183,7 +184,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

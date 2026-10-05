@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
 <x-wayfinding::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -108,7 +109,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\ViewModels\AServiceAsCatalogued;
 use Modules\Operator\Internal\ViewModels\AServiceDroppedAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -224,6 +225,6 @@ it('renders its own view, is reached from the machine, and the way back is a rou
     $screen = theCatalogueScreen(AStackThatCatalogues::with(aCatalogueOfTwo()));
 
     expect($screen->render()->name())->toBe('operator::what-each-service-is-for')
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->catalogue()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Catalogue)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });

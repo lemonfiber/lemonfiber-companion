@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -71,7 +72,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->answer()->askedNow"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->signIn()"
+                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
             />
         @endif
         <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -205,7 +206,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->lastUpdate()->went"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->signIn()"
+                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
             />
         @endif
         <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
@@ -281,7 +282,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

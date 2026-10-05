@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -51,7 +52,7 @@
                 <x-design::row
                     :headline="$name"
                     :supporting="__('stacks.keeps.put_back')"
-                    :goes="$this->goes()->ofItself()->changing()->puttingBack($name)"
+                    :goes="$this->goes()->puttingBack($name)"
                     :answers-to="__('stacks.keeps.put_back_that', ['copy' => $name])"
                 />
             @empty
@@ -80,11 +81,11 @@
             @endif
         @endif
         @unless ($this->copies()->went->isSignedIn)
-            <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
+            <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
         @endunless
     @endif
 
-    <x-design::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->ofItself()->changing()->copy()" />
+    <x-design::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->to(AStacksScreen::Copy)" />
 
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
@@ -92,7 +93,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

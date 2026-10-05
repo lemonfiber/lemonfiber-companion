@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHouseholdBegins;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -232,7 +233,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWhoseNamingWasRefused()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and(NativeRouter::resolve(TheMenu::FrontDoor->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 

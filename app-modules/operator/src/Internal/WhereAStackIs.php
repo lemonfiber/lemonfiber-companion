@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\ARun;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
@@ -13,34 +18,25 @@ use Modules\Stacks\Api\AStacksScreen;
 /**
  * Where one stack's screens live, which is the only place that knows.
  *
- * `HowThisStackIs::signInAt()` said the URI was built in PHP so it would have
- * one spelling. That was the right idea and it stopped half way: the spelling
- * left the templates and landed in six classes, each building
- * `/stacks/%s/sign-in` for itself, while the provider declared a seventh. A
- * rename would have had to be found in all of them, and the one that was missed
- * would be a button leading nowhere — which is the failure the original move
- * was made to prevent.
- *
  * The paths themselves are {@see AStacksScreen}'s, which the provider registers
  * from. This is the half that knows *which machine*; that one knows *which
- * screen*, and neither can be renamed without the other following.
+ * screen*, and neither can be renamed without the other following. A screen
+ * that sends somebody to another of the machine's screens asks here rather
+ * than building `/stacks/%s/…` for itself, so a rename has one place to land.
  *
- * **One accessor per screen rather than one per destination on each screen.**
- * `HowThisStackIs` is the screen every other is reached from, so each new
- * destination arrived on it as another `somethingAreAt()` — three of them, on
- * the way to the twenty-method ceiling that is refused. Handing out one of
- * these instead means the next destination costs no method at all.
+ * **One route table.** A screen reached by naming the machine alone is
+ * {@see self::to()} with its case, so the next such screen costs no method
+ * here. The rest each take the one more thing their path carries, as text from
+ * a template or as the value already named, and give it its type on the way
+ * through.
  *
  * **It takes what a pairing wrote down and gives it a name here.** Two screens
  * reach this holding only the identifier and nothing else, before anything has
- * looked the stack back up — and a type that refused them would have those two
- * building the URI by hand, which is the situation this exists to end. So the
- * string is admitted at {@see self::rememberedAs()} and becomes a
- * {@see StackId} there, which is the one place `D2` allows a primitive across
- * a boundary: a named constructor, where it is checked and given a name.
+ * looked the stack back up. The string is admitted at {@see self::rememberedAs()}
+ * and becomes a {@see StackId} there, where it is checked and given a name.
  *
  * `Internal` because where a screen lives is a detail of this module's own
- * surface; `E2`'s promise is that it can be renamed without reading another.
+ * surface, which can be renamed without reading another.
  */
 final readonly class WhereAStackIs
 {
@@ -64,76 +60,16 @@ final readonly class WhereAStackIs
         return new self(StackId::rememberedAs($stored));
     }
 
-    /** How this machine is doing, which is what the app is for. */
-    public function health(): string
-    {
-        return AStacksScreen::Health->forTheStack($this->stack);
-    }
-
-    /** Where a password is offered, and where a session that ended is renewed. */
-    public function signIn(): string
-    {
-        return AStacksScreen::SignIn->forTheStack($this->stack);
-    }
-
-    /** What the household has asked this machine for. */
-    public function requests(): string
-    {
-        return AStacksScreen::Requests->forTheStack($this->stack);
-    }
-
-    /** What this machine would put right, stated before any yes. */
-    public function repairs(): string
-    {
-        return AStacksScreen::Repairs->forTheStack($this->stack);
-    }
-
-    /** What this machine is running, and the verbs about it. */
-    public function services(): string
-    {
-        return AStacksScreen::Services->forTheStack($this->stack);
-    }
-
-    /** What this machine keeps running with nobody signed in. */
-    public function keepsRunning(): string
-    {
-        return AStacksScreen::Hosting->forTheStack($this->stack);
-    }
-
-    /** Everything this machine is set to. */
-    public function settings(): string
-    {
-        return AStacksScreen::Settings->forTheStack($this->stack);
-    }
-
-    /** Where this machine stands on being up to date. */
-    public function updates(): string
-    {
-        return AStacksScreen::Updates->forTheStack($this->stack);
-    }
-
-    /** Where a report about this machine is put together for somebody helping. */
-    public function help(): string
-    {
-        return AStacksScreen::Help->forTheStack($this->stack);
-    }
-
     /**
-     * Where what this machine keeps about itself is: what it changed, what it
-     * runs, what it sends and what it wakes somebody for.
+     * One of this machine's screens that naming the machine is enough to reach.
+     *
+     * A case whose path carries more than the machine is refused by
+     * {@see AStacksScreen::forTheStack()}, so a button cannot be handed a path
+     * that resolves to nothing; those screens are the methods below.
      */
-    public function ofItself(): WhatItKeepsOfItself
+    public function to(AStacksScreen $screen): string
     {
-        return WhatItKeepsOfItself::of($this->stack);
-    }
-
-    /**
-     * Where who gets in is: the credentials it holds, which app to watch on,
-     * and the household's front door.
-     */
-    public function whoGetsIn(): WhoGetsIn
-    {
-        return WhoGetsIn::of($this->stack);
+        return $screen->forTheStack($this->stack);
     }
 
     /** Where one item got to on this machine. */
@@ -160,16 +96,63 @@ final readonly class WhereAStackIs
      * The same screen as the one above, because what an operator is choosing
      * between is identical and only the name the stack is told differs.
      *
-     * Text on the way in and a {@see Form} on the way out, which is the one
-     * place on this class the conversion happens. A form reaches a screen as
-     * the name the stack sent — the listing carries `list<string>` and the verb
-     * has always been asked for by that name — and what puts those strings
-     * there is {@see Form::named()}, so a blank cannot arrive by that road.
-     * {@see Form::called()} refuses one anyway, which is the check the boundary
-     * is entitled to rather than a raise waiting on a tap.
+     * Text on the way in and a {@see Form} on the way out. A form reaches a
+     * screen as the name the stack sent — the listing carries `list<string>`
+     * and the verb has always been asked for by that name — and what puts those
+     * strings there is {@see Form::named()}, so a blank cannot arrive by that
+     * road. {@see Form::called()} refuses one anyway, which is the check the
+     * boundary is entitled to rather than a raise waiting on a tap.
      */
     public function doingWithTheForm(string $named): string
     {
         return AStacksScreen::Doing->forTheStacksForm($this->stack, Form::called($named));
+    }
+
+    /** What one of lemonfiber's words means, opened on its own. */
+    public function wordAbout(AWordInUse $word): string
+    {
+        return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
+    }
+
+    /**
+     * Where one member is taken out of the household, by the name their account is held under.
+     *
+     * Text on the way in, because a template holds the names as text, and a
+     * {@see SomebodyInTheHousehold} on the way out, which refuses a blank. The
+     * same holds for every method below that takes text.
+     */
+    public function takingOut(string $named): string
+    {
+        return AStacksScreen::TakeOut->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /** Where somebody is asked in with their name already typed. */
+    public function inviting(string $named): string
+    {
+        return AStacksScreen::InviteNamed->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /** Where one member's device is connected, by the name their account is held under. */
+    public function connecting(string $named): string
+    {
+        return AStacksScreen::Device->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /** Putting one of this machine's copies back, by the name it was listed under. */
+    public function puttingBack(string $named): string
+    {
+        return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
+    }
+
+    /** Putting back one run the record shows, by the stamp it keeps it under. */
+    public function puttingARunBack(string $stamp): string
+    {
+        return AStacksScreen::RunBack->forTheStacksRun($this->stack, ARun::stamped($stamp));
+    }
+
+    /** Stopping seeding one of this machine's completed downloads, by the name the account gave it. */
+    public function lettingGo(string $named): string
+    {
+        return AStacksScreen::LetGo->forTheStacksDownload($this->stack, ADownloadHeld::named($named));
     }
 }
