@@ -230,6 +230,7 @@ return [
             'cargo' => 'Geïnstalleerd met cargo',
             'distribution' => 'Geïnstalleerd door de pakketbeheerder van het systeem',
             'installer' => 'Geïnstalleerd met de installer van lemonfiber',
+            'image' => 'Geïnstalleerd vanuit de containerimage van lemonfiber',
             'elsewhere' => 'Op een andere manier geïnstalleerd',
             'untellable' => 'Hoe hij geïnstalleerd is kon niet bepaald worden',
         ],

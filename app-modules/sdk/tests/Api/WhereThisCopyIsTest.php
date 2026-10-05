@@ -107,7 +107,7 @@ it('refuses a word it has no case for, naming the field and every word it reads'
     expect(fn(): ThisCopyOfLemonfiber => WhereThisCopyIs::in(selfUpdateSaying([...aPlainCopy(), $field => $said])))
         ->toThrow(SelfUpdateIsUnreadable::class, sprintf('`%s` is `%s`, and this app reads %s', $field, $said, $accepts));
 })->with([
-    ['installed', 'snap', '`homebrew`, `scoop`, `winget`, `cargo`, `distribution`, `installer`, `elsewhere`, `untellable`.'],
+    ['installed', 'snap', '`homebrew`, `scoop`, `winget`, `cargo`, `distribution`, `installer`, `image`, `elsewhere`, `untellable`.'],
     ['standing', 'fine', '`current`, `update-available`, `managed-externally`, `check-failed`.'],
 ]);
 
