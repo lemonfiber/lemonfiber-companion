@@ -1,6 +1,6 @@
 # Design
 
-The colour roles and the elements every surface renders through.
+The colour roles, faces and measures, and the elements every surface renders through.
 
 ## Colour roles
 
@@ -20,15 +20,24 @@ opens over is marked `Api\TakesTheThemeItOpensOver`. `resources/tokens.json`
 is a copy of the brand's token file, and `tests/Arch/BrandPaletteParityTest.php`
 checks every role against it.
 
-## Faces
+## Faces and measures
 
-`Api\Typeface` names every face the app bundles: Golos Text at four weights
-for interface text, and DM Mono at two for figures, identifiers, timestamps and
-log text. Each is a file in the application's `resources/fonts`, beside its
-family's licence, and the build copies both into each platform's bundle. A text
-element names its face in a `font` attribute, with the weight class that face
-is; a widget is drawn in `Typeface::Interface`, which the composition root sets
-as the face for anything that names none.
+`Api\Typeface` names every face the app bundles: Golos Text at the brand's
+body weight (500) and its display weight (800) for interface text, and DM Mono
+at two weights for figures, identifiers, timestamps and log text. Each is a
+file in the application's `resources/fonts`, beside its family's licence, and
+the build copies both into each platform's bundle. A text element names its
+face in a `font` attribute, with the weight class that face is; a widget is
+drawn in `Typeface::Interface`, which the composition root sets as the face for
+anything that names none.
+
+`Api\TypeSize` names the brand's text sizes the app sets (eyebrow 12, caption
+13, body 15 and its smallest display size, 27), each the size at the platform's
+default text size, which the platform scales. `Api\Radius` names the brand's
+radii: `sm` and `md` for anything drawn here, and the pill for a chip. Every
+gap, padding and margin is one of the brand's spacing steps.
+`tests/Arch/BrandMeasuresParityTest.php` holds the enums and every template
+to `resources/tokens.json`.
 
 ## Elements
 

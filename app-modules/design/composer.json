@@ -19,7 +19,7 @@
             "floors": {
                 "coverage": 100,
                 "mutation": 0,
-                "mutation-is-zero-because": "Three enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` against the brand's own token file in both themes, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a colour spelled differently, and those four refuse one by name."
+                "mutation-is-zero-because": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name."
             },
             "kind": "design"
         }

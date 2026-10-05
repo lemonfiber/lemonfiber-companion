@@ -10,10 +10,12 @@ use Closure;
 
 use function is_string;
 
+use Modules\Design\Api\Radius;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\Theme;
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\Typeface;
+use Modules\Design\Api\TypeSize;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Kernel\Api\SecureStorage;
@@ -76,6 +78,37 @@ final class TheTheme implements WhichThemeIsOnTheGlass
     ];
 
     /**
+     * What each of mobile-ui's corner radii is drawn with.
+     *
+     * The package names four radii and the brand allows two inside the app,
+     * so the package's large radius is the brand's `md` as well: the corner a
+     * field, a sheet and a button group are drawn with. Its full radius is the
+     * brand's pill, which the chip takes (`scripts/patch_nativephp.php`).
+     */
+    public const array WIDGET_RADII = [
+        'radius-sm' => Radius::Small,
+        'radius-md' => Radius::Medium,
+        'radius-lg' => Radius::Medium,
+        'radius-full' => Radius::Pill,
+    ];
+
+    /**
+     * What each of mobile-ui's text sizes is set at.
+     *
+     * The package sets a chip's and a field's label small, a field and a
+     * button at the middle size, and a tall button large. The brand's caption
+     * and body cover those, so a tall button's label is set at the body size
+     * as every other line that is tapped is; its largest is the brand's
+     * smallest display size.
+     */
+    public const array WIDGET_SIZES = [
+        'font-sm' => TypeSize::Caption,
+        'font-md' => TypeSize::Body,
+        'font-lg' => TypeSize::Body,
+        'font-xl' => TypeSize::DisplayM,
+    ];
+
+    /**
      * The alias mobile-ui draws a widget in, and a text element that names no face.
      *
      * Set before the colours are merged, because the merge is what carries
@@ -106,8 +139,9 @@ final class TheTheme implements WhichThemeIsOnTheGlass
      * resolver replaces the one before it, which is what makes this
      * idempotent. The widget theme is merged rather than loaded: the keys the
      * design module maps are replaced, and the ones it does not assert stay.
-     * The interface face is set with it, the same in both themes, so a widget
-     * is drawn in it from the first frame.
+     * The brand's radii, its text sizes and the interface face are set with
+     * it, the same in both themes, so a widget is drawn in them from the first
+     * frame.
      */
     public function paint(WhoseTheme $theme): void
     {
@@ -119,7 +153,10 @@ final class TheTheme implements WhichThemeIsOnTheGlass
         $colours = array_map(static fn(ThemeToken $role): string => $role->in($theme), self::WIDGET_ROLES);
 
         WhatTheWidgetsPaintWith::fonts([self::THE_FACE_WHERE_NONE_IS_NAMED => Typeface::Interface->value]);
-        WhatTheWidgetsPaintWith::merge(['light' => $colours, 'dark' => $colours]);
+        $radii = array_map(static fn(Radius $radius): int => $radius->points(), self::WIDGET_RADII);
+        $sizes = array_map(static fn(TypeSize $size): int => $size->points(), self::WIDGET_SIZES);
+
+        WhatTheWidgetsPaintWith::merge(['light' => $colours, 'dark' => $colours, ...$radii, ...$sizes]);
 
         $this->painted = $theme;
     }

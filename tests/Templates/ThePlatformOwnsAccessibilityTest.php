@@ -12,7 +12,7 @@ use Tests\Support\Template;
 // stills its animations because the operating system told it to. Nothing has to
 // be written for that to work.
 //
-// What breaks it is writing something. A fixed pixel size does not scale when
+// What breaks it is writing something. A fixed line spacing does not grow when
 // somebody turns text size up, because a number is a number; an animation with a
 // duration this app chose does not stop when reduced-motion is on, because
 // nothing asked. Both look correct on the machine they were written on, where
@@ -27,14 +27,16 @@ use Tests\Support\Template;
 $templates = Template::all();
 
 /**
- * Class patterns that pin a size the platform is meant to choose.
+ * Class patterns that pin a measure the platform is meant to scale.
  *
- * Tailwind's named steps — `text-lg`, `text-sm` — are fine and are not here: the
- * EDGE parser turns them into the platform's own text styles, which scale. What
- * does not scale is an arbitrary value, which is passed through as a number.
+ * A text size is not among them. A named step and a bracketed one reach the
+ * renderer alike, as a size in points, and both renderers scale it: iOS with
+ * Dynamic Type relative to its body style, Android as `sp`. Which sizes a
+ * template may set is the brand's, and `tests/Arch/BrandMeasuresParityTest.php`
+ * holds every one to them. A bracketed line height or tracking is different:
+ * iOS applies it as a fixed spacing, which stays put while the text grows.
  */
 const PINS_A_SIZE = [
-    '/\btext-\[[^\]]+\]/',
     '/\bleading-\[[^\]]+\]/',
     '/\btracking-\[[^\]]+\]/',
 ];
@@ -67,7 +69,7 @@ it('there is a template to read, with elements in it', function () use ($templat
 });
 
 foreach ($templates as $template) {
-    it(sprintf('nothing in %s pins a size the platform should choose', $template->path), function () use ($template): void {
+    it(sprintf('nothing in %s pins a measure the platform should scale', $template->path), function () use ($template): void {
         $pinned = [];
 
         foreach (explode("\n", $template->source) as $at => $line) {
@@ -79,12 +81,12 @@ foreach ($templates as $template) {
         }
 
         expect($pinned)->toBe([], sprintf(
-            "These pin a text size the platform is meant to choose:\n  %s\n\n"
-            . 'An arbitrary Tailwind value is passed through as a number, and a number '
-            . 'does not grow when somebody turns text size up — so the screen that looks '
-            . "right on a developer's phone is the one an operator cannot read.\n"
-            . 'Use a named step (`text-sm`, `text-lg`), which the EDGE parser turns into '
-            . 'the platform\'s own text style and which scales with the device (N4-R14).',
+            "These pin a line height or tracking the platform is meant to scale:\n  %s\n\n"
+            . 'A bracketed line height or tracking is applied as a fixed spacing on iOS, '
+            . 'which does not grow when somebody turns text size up — so the screen that '
+            . "looks right on a developer's phone is the one an operator cannot read.\n"
+            . 'Leave the line height and tracking to the platform, which scales them with '
+            . 'the text (N4-R14).',
             implode("\n  ", $pinned),
         ));
     });

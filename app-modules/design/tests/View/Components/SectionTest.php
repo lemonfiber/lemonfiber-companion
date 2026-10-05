@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\Radius;
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhoseTheme;
 use Tests\Support\WhatMarkupDraws;
@@ -20,7 +21,7 @@ it('draws a section as its label over a card holding its rows', function (): voi
         ->and(data_get($drawn, 'children.1.style.bg_color'))->toBe(ThemeToken::Surface->in(WhoseTheme::Member))
         ->and(data_get($drawn, 'children.1.style.border_color'))->toBe(ThemeToken::Line->in(WhoseTheme::Member))
         ->and(data_get($drawn, 'children.1.props.dark_border_color'))->toBeNull()
-        ->and(data_get($drawn, 'children.1.style.border_radius'))->toBe(16.0);
+        ->and(data_get($drawn, 'children.1.style.border_radius'))->toEqual(Radius::Medium->points());
 });
 
 it('draws a section with no label as the card alone', function (): void {
