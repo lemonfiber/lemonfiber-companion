@@ -155,13 +155,13 @@ final readonly class Screen
      * ever enter. `ScreenTest` pins the fact it rested on instead, so the day
      * that stops being true it fails here rather than fataling on a handset.
      *
-     * Yes is `true` and nothing else ({@see WhatTheBridgeAnswered::says()}), and
-     * that matters. A `NO_DEVICE` answer decodes to an array with no
+     * Yes is `true` and nothing else ({@see WhatTheBridgeAnswered::says()}),
+     * and that matters. A `NO_DEVICE` answer decodes to an array with no
      * `protected` key, and a loose check on a missing key is the kind of false
      * that turns into a true the day somebody returns `"false"`. The key is
      * asked for rather than defaulted, which is the same distinction one step
      * earlier: `?? false` cannot say whether the bridge answered no or answered
-     * nothing at all (`C9`).
+     * nothing at all.
      */
     private function ask(Call $function): bool
     {

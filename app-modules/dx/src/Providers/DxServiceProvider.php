@@ -37,13 +37,12 @@ final class DxServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        // Inside the callback rather than beside it, and the reason is the
-        // distinction `A9` exists to draw: a provider may describe what will
-        // happen and may not make it happen. Everything below runs once the
-        // application is booted and its configuration is settled — not while an
-        // operator is watching a splash screen — so reading a setting and
-        // asking the container for one are both fair here, and neither would be
-        // a line higher up.
+        // Inside the callback rather than beside it, and the reason is this
+        // distinction: a provider may describe what will happen and may not
+        // make it happen. Everything below runs once the application is booted
+        // and its configuration is settled — not while an operator is watching
+        // a splash screen — so reading a setting and asking the container for
+        // one are both fair here, and neither would be a line higher up.
         //
         // It also answers the one thing that has to be true for the switch to
         // work at all: the composition root has bound every port by then, so

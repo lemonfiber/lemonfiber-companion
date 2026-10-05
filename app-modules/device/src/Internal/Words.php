@@ -23,11 +23,10 @@ use function is_string;
  * instead puts the mistyped key in front of whoever is looking at the screen,
  * where it is unmistakable and costs nobody a crash.
  *
- * **It takes the translator rather than calling `__()`.** `A4` is the rule and
- * the constructor is the reason: a class that reaches the container stops
- * telling the truth about what it needs, and a reader has to run it to find
- * out. It also makes the catalogue substitutable in a test without touching
- * global state, which `A6` cares about.
+ * **It takes the translator rather than calling `__()`.** A class that reaches
+ * the container stops telling the truth about what it needs, and a reader has
+ * to run it to find out. It also makes the catalogue substitutable in a test
+ * without touching global state.
  */
 final readonly class Words
 {

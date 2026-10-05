@@ -333,8 +333,8 @@ final readonly class WhatTheWireWouldAnswer
      * The body one path sends, whichever of the four shapes it has.
      *
      * Split from {@see to()} because that method had four ways out and this has
-     * one question (`H8`): the status is the machine's and belongs to every
-     * path, and which body a path sends is a property of the path.
+     * one question: the status is the machine's and belongs to every path, and
+     * which body a path sends is a property of the path.
      *
      * @return array<string, mixed>|string
      */
@@ -342,9 +342,8 @@ final readonly class WhatTheWireWouldAnswer
     {
         // The four paths whose body is not one envelope built from the
         // contract's declaration, the two answers work redeems into, and then
-        // everything else. `match` rather than early returns, because what
-        // this is doing is naming a path rather than deciding anything (`H8`,
-        // `C5`).
+        // everything else. `match` rather than early returns, because what this
+        // is doing is naming a path rather than deciding anything.
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),

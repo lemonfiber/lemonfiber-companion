@@ -28,8 +28,8 @@ final readonly class WithoutWhatWasLeftOut
             }
         }
 
-        // Spread rather than handed over as an array: `D1` keeps arrays out of
-        // a published signature.
+        // Spread rather than handed over as an array, which a published
+        // signature does not take.
         return Daemons::of($daemons->running(), $daemons->disturbs(), ...$kept)->asked($daemons->active(), $daemons->leftOut());
     }
 }

@@ -19,10 +19,10 @@ use function nativephp_call;
  * connected device and answers `{"status":"error","code":"NO_DEVICE"}` when
  * there is none; under test a bound `FakeBridge` intercepts it in-process.
  * Every capability here asks it the same way and reads the same envelope, so
- * the asking and the reading are here once: an answer that is not a JSON
- * object is no answer, and a word or a flag that is not there, or is not a
- * word or a flag, is nothing — asked for rather than defaulted, because `??`
- * cannot say whether the bridge answered no or answered nothing at all (`C9`).
+ * the asking and the reading are here once: an answer that is not a JSON object
+ * is no answer, and a word or a flag that is not there, or is not a word or a
+ * flag, is nothing — asked for rather than defaulted, because `??` cannot say
+ * whether the bridge answered no or answered nothing at all.
  */
 final readonly class WhatTheBridgeAnswered
 {

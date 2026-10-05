@@ -221,9 +221,8 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      * What the SDK's endpoint declarations say.
      *
      * Through {@see TheInstalledPackage}, which is the one file in this module
-     * allowed to open one — `B3`, and the reason it is worth obeying here is
-     * that a missing package and a misread docblock are different failures
-     * fixed in different places.
+     * allowed to open one, because a missing package and a misread docblock are
+     * different failures fixed in different places.
      */
     private static function whatApiDeclares(): string
     {

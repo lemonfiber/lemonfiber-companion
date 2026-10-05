@@ -23,12 +23,12 @@ use function trim;
  * function of what is in the box, which is also what makes it testable without a
  * screen.
  *
- * **The catch lives here, once.** {@see Pairing::read()} raises, and it is right
- * to: there is no half-paired stack to carry on with, and a caller acting on a
- * pairing that did not parse is the failure the refusal exists to stop. What
- * that leaves is a surface, where a refusal is not an error condition but the
- * ordinary state of a field somebody is halfway through filling in, arriving
- * once per keystroke. `C1` says the module boundary answers with an outcome, and
+ * **The catch lives here, once.** {@see Pairing::read()} raises, and it is
+ * right to: there is no half-paired stack to carry on with, and a caller acting
+ * on a pairing that did not parse is the failure the refusal exists to stop.
+ * What that leaves is a surface, where a refusal is not an error condition but
+ * the ordinary state of a field somebody is halfway through filling in,
+ * arriving once per keystroke. The module boundary answers with an outcome, and
  * this is that boundary.
  *
  * **It is the only place a {@see FingerprintWasConfirmed} is made.** That is
@@ -64,8 +64,7 @@ final readonly class WhatTheCodeSaysSoFar
      * check the characters sends them to look for a mistake that is not there.
      *
      * Neither catch is broad. `Throwable` here would absorb a misspelled method
-     * in the kernel and render it as "check your code", which is `C6`'s own
-     * example of the thing it refuses.
+     * in the kernel and render it as "check your code".
      */
     public static function read(string $said, HowItWasRead $how, Clock $clock): self
     {

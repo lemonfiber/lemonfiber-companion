@@ -10,8 +10,8 @@ namespace Modules\Dx\Internal;
  * A stand-in session that had already ended, or pairing material that had
  * already expired, would take the first run with it, at a moment nobody would
  * connect to a date written here. Written rather than counted from a clock:
- * `B1` keeps time behind a port, and material assembled from the moment it
- * was read would make two runs of the same stand-in answer differently.
+ * time is behind a port, and material assembled from the moment it was read
+ * would make two runs of the same stand-in answer differently.
  *
  * Two spellings of the one moment, because a pairing code carries seconds
  * since the epoch and the wire carries an RFC 3339 stamp. They sit together

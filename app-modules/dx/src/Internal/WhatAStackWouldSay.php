@@ -170,8 +170,8 @@ final readonly class WhatAStackWouldSay
     {
         // The last part rather than the second, which is the same answer
         // without asking whether a key type was written: `array<string, Foo>`
-        // and `array<Foo>` both declare `Foo` last. `C9` is right that the
-        // `??` it replaces was an admission nobody knew what was there.
+        // and `array<Foo>` both declare `Foo` last. The `??` it replaces was an
+        // admission nobody knew what was there.
         $parts = WhatTheContractDeclares::split($type, ',');
         $holds = $parts === [] ? 'string' : $parts[count($parts) - 1];
 
@@ -210,10 +210,10 @@ final readonly class WhatAStackWouldSay
     /**
      * One scalar, by what its type says it is.
      *
-     * Split where the question changes, which `H8` is right about: above, *did
-     * the contract write the value down*, and a type that is its own value is
-     * answered by handing it back; below, *what is this type called*, which is
-     * a vocabulary rather than a value.
+     * Split where the question changes: above, *did the contract write the
+     * value down*, and a type that is its own value is answered by handing it
+     * back; below, *what is this type called*, which is a vocabulary rather
+     * than a value.
      */
     private static function aLeaf(string $type, string $called, int $at = 0): mixed
     {
@@ -248,7 +248,7 @@ final readonly class WhatAStackWouldSay
      *
      * A reader checking `is_int` on a field declared `0` would refuse the
      * string `'0'`, and JSON carries the difference — so the conversion is part
-     * of answering correctly rather than a cast to quiet an analyser.
+     * of answering correctly rather than a cast.
      */
     private static function thatNumber(string $type): float|int
     {

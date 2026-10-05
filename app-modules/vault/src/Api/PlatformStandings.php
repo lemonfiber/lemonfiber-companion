@@ -64,9 +64,9 @@ final readonly class PlatformStandings implements Standings
         $record = $this->whatEachStackSaid()->rows;
         $under = $stack->stored();
 
-        // Written out rather than coalesced, which `C9` refuses by name: a `??`
-        // on a subscript folds absent, present-and-null and present-and-the-
-        // wrong-type into one answer, and the one it picks reads as *carry on*.
+        // Written out rather than coalesced: a `??` on a subscript folds
+        // absent, present-and-null and present-and-the- wrong-type into one
+        // answer, and the one it picks reads as *carry on*.
         if (! array_key_exists($under, $record) || ! is_array($record[$under])) {
             return Showing::waiting();
         }

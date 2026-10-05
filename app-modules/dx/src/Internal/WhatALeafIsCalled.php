@@ -7,8 +7,8 @@ namespace Modules\Dx\Internal;
 /**
  * The words the notation writes a value with no parts inside it as.
  *
- * `D4`'s subject exactly: four words, fixed by somebody else's syntax, that
- * were four string literals beside `===` in a `match`. As an enum they are a
+ * A closed set exactly: four words, fixed by somebody else's syntax, that were
+ * four string literals beside `===` in a `match`. As an enum they are a
  * vocabulary with a name, and a reader meeting `Bool` does not have to work out
  * whether the string was the word `bool` or a value that happened to spell it.
  *

@@ -16,15 +16,15 @@ use function trim;
  * {@see WhoThisAppIs} declares the identity; this is what happens when a build
  * says something else.
  *
- * **Outside the modules on purpose.** `D2` and `D3` hold a module's `Api` to
- * value objects rather than primitives, and rightly: a string crossing a module
- * boundary is a string any caller could have swapped. What arrives here is not
- * a value of this application's at all — it is whatever an environment carried,
- * which may be anything and is most usefully described as `mixed`. Composing
- * the application is where that belongs. Refused rather than ignored, and that is the whole of
- * it: a configured identity silently dropped is the same failure as one
- * silently used, because in both cases somebody set a value believing it did
- * something.
+ * **Outside the modules on purpose.** A module's `Api` takes value objects
+ * rather than primitives, because a string crossing a module boundary is a
+ * string any caller could have swapped. What arrives here is not a value of
+ * this application's at all — it is whatever an environment carried, which may
+ * be anything and is most usefully described as `mixed`. Composing the
+ * application is where that belongs. Refused rather than ignored, and that is
+ * the whole of it: a configured identity silently dropped is the same failure
+ * as one silently used, because in both cases somebody set a value believing it
+ * did something.
  *
  * **Asked where the identity is decided, which is the config file.** A build
  * step runs in whatever environment somebody gave it and can differ from the

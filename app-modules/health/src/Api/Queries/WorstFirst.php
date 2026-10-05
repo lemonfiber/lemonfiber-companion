@@ -45,7 +45,7 @@ use function usort;
  * the only evidence of which came first.
  *
  * A query, so it answers with the findings rather than with an `Outcome`:
- * asking how to order a list cannot be refused (M1).
+ * asking how to order a list cannot be refused.
  */
 final readonly class WorstFirst
 {
@@ -70,9 +70,9 @@ final readonly class WorstFirst
 
         usort($ordered, $this->whichComesFirst(...));
 
-        // Spread rather than handed over as an array: `D1` keeps arrays out
-        // of a published signature, and a collection that took one would be the
-        // hole rather than the exception.
+        // Spread rather than handed over as an array: a collection whose
+        // published signature took one would be the hole rather than the
+        // exception.
         return Findings::of(...$ordered);
     }
 

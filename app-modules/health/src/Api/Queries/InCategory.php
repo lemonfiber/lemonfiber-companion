@@ -28,7 +28,7 @@ use Modules\Kernel\Api\Findings;
  * nothing to say — a family the product recognises where this stack raised
  * nothing, or where the checks that fill it do not exist yet. It is not a
  * missing report and it is not an error, which is why this returns `Findings`
- * rather than anything that could refuse (M1).
+ * rather than anything that could refuse.
  */
 final readonly class InCategory
 {
@@ -47,8 +47,8 @@ final readonly class InCategory
             }
         }
 
-        // Spread rather than handed over as an array: `D1` keeps arrays out of
-        // a published signature.
+        // Spread rather than handed over as an array, which a published
+        // signature does not take.
         return Findings::of(...$kept);
     }
 }

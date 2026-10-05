@@ -14,9 +14,8 @@ use Native\Mobile\Edge\NativeRouter;
  * NativePHP's own router builds a screen with `new $class` — no container, and
  * `mount()` takes no arguments — so a screen has no way to be given a port.
  * Every screen after the first reads something, so without this the choice is a
- * screen that reaches the container itself, which is the service location `A3`
- * refuses and for the reason `A3` gives: a class that reaches the container
- * stops telling the truth about what it needs.
+ * screen that reaches the container itself, and a class that reaches the
+ * container stops telling the truth about what it needs.
  *
  * One method is overridden and the other three lines are the parent's, in the
  * parent's order. That is deliberate: a screen still gets its router, its route

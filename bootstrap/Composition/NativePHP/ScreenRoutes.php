@@ -19,13 +19,13 @@ use function sprintf;
 /**
  * `Route::native()`, building each screen through the container.
  *
- * NativePHP registers a macro of this name whose route closure does
- * `new NativeRouter` — and that router builds a screen with `new $class`, so a
+ * NativePHP registers a macro of this name whose route closure does `new
+ * NativeRouter` — and that router builds a screen with `new $class`, so a
  * screen cannot be given a port. The only alternative is a screen that reaches
- * the container itself, which `A3` refuses and for the reason `A3` gives: a
- * class that reaches the container stops telling the truth about what it needs.
- * {@see ScreenRouter} is the fix, and this is what gets it used — the vendor's
- * closure names its own router directly, so there is no seam to swap.
+ * the container itself, and a class that reaches the container stops telling
+ * the truth about what it needs. {@see ScreenRouter} is the fix, and this is
+ * what gets it used — the vendor's closure names its own router directly, so
+ * there is no seam to swap.
  *
  * **A macro of the same name replaces the one before it**, so this is a
  * substitution rather than a second spelling. Nothing in the application has to
@@ -49,12 +49,12 @@ use function sprintf;
  * carrying the branch would mean naming a class that is not there.
  *
  * **Restoring the navigation stack after a hot reload.** That reads
- * `storage/framework/.hot_restart` directly, and `B3` puts the filesystem
- * behind a port for a reason this case does not escape. The cost is named
- * rather than hidden: after saving a file during `native:run`, the app returns
- * to the entry screen instead of where the developer was. It is a development
- * convenience and nothing an operator ever sees; making it work again means a
- * filesystem port and an adapter, not a `file_exists` here.
+ * `storage/framework/.hot_restart` directly, and the filesystem is behind a
+ * port for a reason this case does not escape. The cost is named rather than
+ * hidden: after saving a file during `native:run`, the app returns to the entry
+ * screen instead of where the developer was. It is a development convenience
+ * and nothing an operator ever sees; making it work again means a filesystem
+ * port and an adapter, not a `file_exists` here.
  *
  * `ScreenRoutesReplaceTheVendorsTest` holds both halves — that the macro is
  * ours, and that the reason it is ours is still true of the installed package.

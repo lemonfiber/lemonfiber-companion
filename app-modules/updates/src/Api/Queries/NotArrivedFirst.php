@@ -35,7 +35,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
  * the ranking the paragraph above refuses.
  *
  * A query, so it answers with the services rather than with an `Outcome`:
- * asking how to order a list cannot be refused (`M1`).
+ * asking how to order a list cannot be refused.
  */
 final readonly class NotArrivedFirst
 {
@@ -54,9 +54,9 @@ final readonly class NotArrivedFirst
             $wanting[] = $took;
         }
 
-        // Spread rather than handed over as an array: `D1` keeps arrays out of
-        // a published signature, and a collection that took one would be the
-        // hole rather than the exception.
+        // Spread rather than handed over as an array: a collection whose
+        // published signature took one would be the hole rather than the
+        // exception.
         return HowServicesTookIt::these(...$wanting, ...$arrived);
     }
 }

@@ -10,8 +10,8 @@ use Modules\Kernel\Api\Networking;
 /**
  * What the platform says about this device's network.
  *
- * `B3` puts a platform call behind an adapter and this is the whole of this
- * one: one question, asked once, with nothing else asked for.
+ * A platform call sits behind an adapter and this is the whole of this one: one
+ * question, asked once, with nothing else asked for.
  *
  * **The kind of connection is never fetched, rather than fetched and dropped.**
  * Both platforms report whether the link is wifi, cellular or ethernet, whether
