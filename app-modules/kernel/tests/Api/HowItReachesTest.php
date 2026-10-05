@@ -7,12 +7,15 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\AWiringExplainsNothing;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\HowItReaches;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\WhatSettledIt;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
 use Tests\Support\WhatTheReachSaid;
@@ -20,10 +23,10 @@ use Tests\Support\WhatTheReachSaid;
 function whatTheReachGave(HowItReaches $reaches): WhatTheReachSaid
 {
     return $reaches->whichever(
-        asked: static fn(Capability $capability, Services $services, WhatSettledIt $settled): WhatTheReachSaid
-            => new WhatTheReachSaid('asked', $capability->named(), $services, $settled, ''),
+        asked: static fn(Capability $capability, Services $services, WhatSettledIt $settled, TheClaimants $claimants): WhatTheReachSaid
+            => new WhatTheReachSaid('asked', $capability->named(), $services, $settled, '', $claimants),
         byName: static fn(ServiceId $service, string $why): WhatTheReachSaid
-            => new WhatTheReachSaid('by-name', $service->named(), Services::none(), null, $why),
+            => new WhatTheReachSaid('by-name', $service->named(), Services::none(), null, $why, TheClaimants::none()),
     );
 }
 
@@ -44,6 +47,7 @@ it('takes a reader to the arm the core sent', function (): void {
         Capability::called('download-client'),
         Services::these(ServiceId::called('sabnzbd')),
         WhatSettledIt::outright(),
+        TheClaimants::none(),
     ));
 
     $named = whatTheReachGave(HowItReaches::byName(ServiceId::called('qbittorrent'), 'the operator said so'));
@@ -54,15 +58,23 @@ it('takes a reader to the arm the core sent', function (): void {
         ->and($named->subject)->toBe('qbittorrent');
 });
 
-it('hands an asked reach what answers it and how that was settled', function (): void {
+it('hands an asked reach what answers it, how that was settled and every claimant', function (): void {
     $said = whatTheReachGave(HowItReaches::asked(
         Capability::called('download-client'),
         Services::these(ServiceId::called('sabnzbd'), ServiceId::called('qbittorrent')),
         WhatSettledIt::chosen(Services::none(), WhoSettledIt::Operator, WhyItWasChosen::unstated()),
+        TheClaimants::these(AClaimant::of(ServiceId::called('sabnzbd'), WhoPutItThere::bundled()), AClaimant::of(ServiceId::called('qbittorrent'), WhoPutItThere::plugin('torrents'))),
     ));
 
+    $claimed = [];
+
+    foreach ($said->claimants as $claimant) {
+        $claimed[] = $claimant->service()->named();
+    }
+
     expect(theServicesReached($said->services))->toBe(['sabnzbd', 'qbittorrent'])
-        ->and($said->settled)->not->toBeNull();
+        ->and($said->settled)->not->toBeNull()
+        ->and($claimed)->toBe(['sabnzbd', 'qbittorrent']);
 });
 
 it('carries the reason a service was named, trimmed', function (): void {
@@ -92,9 +104,11 @@ it('gives an asked reach no reason, because nobody gave it an instruction', func
         Capability::called('indexer'),
         Services::none(),
         WhatSettledIt::unfilled(),
+        TheClaimants::none(),
     ));
 
     expect($asked->arm)->toBe('asked')
         ->and($asked->subject)->toBe('indexer')
-        ->and(theServicesReached($asked->services))->toBe([]);
+        ->and(theServicesReached($asked->services))->toBe([])
+        ->and($asked->claimants)->toHaveCount(0);
 });

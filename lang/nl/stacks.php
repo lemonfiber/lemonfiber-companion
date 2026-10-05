@@ -637,6 +637,21 @@ return [
         'no_connections' => 'Deze ronde probeerde geen verbinding',
         'cannot_wire' => 'Wat deze ronde niet kan verbinden',
         'nothing_unsupported' => 'Elke service hier is er een waar deze ronde mee kan praten',
+        'fills' => [
+            'label' => 'Wie wat beantwoordt',
+            'asks' => ':by vraagt om :capability',
+            'outright' => 'Beantwoord door :service',
+            'each' => 'Beantwoord door elk van :services',
+            'contested' => 'Meer dan één service claimt dit, en niets antwoordt tot jij kiest',
+            'claimed_by' => 'Geclaimd door',
+            'chosen_operator' => 'Jij koos :service boven :over',
+            'chosen_stack' => 'De stack koos :service boven :over',
+            'why' => 'Waarom: :why',
+            'unfilled' => 'Niets beantwoordt dit',
+            'by_name' => 'Bij naam verbonden met :service, niet om wat het doet',
+            'none' => 'De stack vraagt niets van zijn services',
+            'unreadable' => 'Wie wat beantwoordt kon niet gelezen worden',
+        ],
     ],
 
     'room' => [

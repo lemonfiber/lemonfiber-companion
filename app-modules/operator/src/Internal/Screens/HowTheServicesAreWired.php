@@ -6,16 +6,19 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatItShowsDoes;
@@ -23,7 +26,10 @@ use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowTheLinksRead;
 use Modules\Operator\Internal\Presenters\HowTheWiringReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
+use Modules\Operator\Internal\ViewModels\TheLinksTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -36,6 +42,12 @@ use function view;
 
 /**
  * Wiring a stack's services to each other, and how each connection turned out.
+ *
+ * **What answers what comes first.** Every capability a service asks for,
+ * which service answers it and how that was settled, read fresh each time the
+ * screen opens and each time it is asked again, and kept nowhere on the phone.
+ * It is read and nothing more: a contest is drawn as one, with every claimant
+ * and nothing picked.
  *
  * **A run is offered as the act it is.** It changes nothing already right and
  * keeps what the operator changed, so there is no question before it. What
@@ -61,6 +73,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
+    use ReadsAStackOnceAFrame;
 
     /** The handle of the run being followed, while there is one. */
     public ?string $following = null;
@@ -68,8 +81,12 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     /** Where the run has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?TheWiringTurnedOutToBe $going = null;
 
+    /** What answers what, once this frame has asked. Public for the same reason. */
+    public ?TheLinksTurnedOutToBe $linked = null;
+
     public function __construct(
         private readonly WiringTheServices $wiring,
+        private readonly Linking $linking,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
@@ -81,7 +98,40 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     /** The services the stack runs, which a run wires to each other; asked once per frame. */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->answered ??= $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+        if (! $this->answered instanceof WhatThisStackRunsTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+        }
+
+        return $this->answered;
+    }
+
+    /**
+     * What the stack wires to what, or nothing while it waits for a frame of its own.
+     *
+     * Asked only on a frame that has not read the stack already, so it follows
+     * the services by a frame.
+     */
+    public function whatAnswersWhat(): ?TheLinksTurnedOutToBe
+    {
+        if ($this->linked instanceof TheLinksTurnedOutToBe || ! $this->mayReadItsStack()) {
+            return $this->linked;
+        }
+
+        $stack = $this->stack();
+
+        return $this->linked = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): TheLinksTurnedOutToBe => $this->linking->linkedOn($stack, $session)->either(
+                links: static fn(TheLinks $links): TheLinksTurnedOutToBe => new HowTheLinksRead()->these($links),
+                refused: static fn(ARefusalInItsWords $why): TheLinksTurnedOutToBe => new HowTheLinksRead()->refused($why),
+                met: function (Obstacle $why) use ($stack): TheLinksTurnedOutToBe {
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return new HowTheLinksRead()->met($why);
+                },
+            ),
+            notHeld: static fn(): TheLinksTurnedOutToBe => new HowTheLinksRead()->signedOut(),
+        );
     }
 
     /** Start a wiring run. */
@@ -106,6 +156,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     public function again(): void
     {
         $this->answered = null;
+        $this->linked = null;
         $going = $this->going;
 
         if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->went->cameBack()) {
@@ -136,6 +187,8 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::how-the-services-are-wired');
     }
 

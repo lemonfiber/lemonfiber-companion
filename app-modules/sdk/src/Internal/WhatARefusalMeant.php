@@ -205,6 +205,27 @@ final readonly class WhatARefusalMeant
             RefusalCode::OfferMoved,
             RefusalCode::AnotherOffer,
             RefusalCode::AnotherReading => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            // The stack unable to read what it holds — its own description, or
+            // the record of what is installed — and refusing a choice of what
+            // fills a capability. Its words say what stood in the way; the
+            // status it arrived at still says whether the session or the
+            // account was what did.
+            RefusalCode::StackUnreadable,
+            RefusalCode::StackUnusable,
+            RefusalCode::StackNotEmbedded,
+            RefusalCode::StackNotSetUp,
+            RefusalCode::StackNotWritten,
+            RefusalCode::StackInvalid,
+            RefusalCode::StackMalformed,
+            RefusalCode::StackUnrecognised,
+            RefusalCode::StackNeedsNewer,
+            RefusalCode::Unrecorded,
+            RefusalCode::NoSuchFiller,
+            RefusalCode::CannotFill,
+            RefusalCode::NothingAsks,
+            RefusalCode::ChoiceUnwritable,
+            RefusalCode::WiringMoved,
+            RefusalCode::Unreasonable => self::byStatus($why->status()),
         };
     }
 

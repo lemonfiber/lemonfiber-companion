@@ -12,8 +12,9 @@ use function trim;
  * What one service reaches, and on whose decision.
  *
  * Two arms, and the difference between them is who decided. **Asked** carries a
- * capability, the services that answer it and how that was settled: the
- * operator said what they wanted and the core worked out what provides it.
+ * capability, the services that answer it, how that was settled and every
+ * service that claims it with where it came from: the operator said what they
+ * wanted and the core worked out what provides it.
  * **By name** carries one service and the reason it was named: somebody gave an
  * instruction and the core carried it out.
  *
@@ -34,6 +35,7 @@ final readonly class HowItReaches
         private ?Capability $capability,
         private Services $services,
         private ?WhatSettledIt $settled,
+        private TheClaimants $claimants,
         private ?ServiceId $named,
         // Absent as `null`, like every other field only one arm carries. A
         // blank reason is not the absent one: `byName()` refuses it, so `''` is
@@ -43,16 +45,17 @@ final readonly class HowItReaches
     ) {}
 
     /**
-     * A capability was asked for: this is the capability, what answers it, and
-     * how that was settled.
+     * A capability was asked for: this is the capability, what answers it, how
+     * that was settled, and every service that claims it.
      */
-    public static function asked(Capability $capability, Services $services, WhatSettledIt $settled): self
+    public static function asked(Capability $capability, Services $services, WhatSettledIt $settled, TheClaimants $claimants): self
     {
         return new self(
             arm: HowItWasReached::Asked,
             capability: $capability,
             services: $services,
             settled: $settled,
+            claimants: $claimants,
             named: null,
             why: null,
         );
@@ -78,6 +81,7 @@ final readonly class HowItReaches
             capability: null,
             services: Services::none(),
             settled: null,
+            claimants: TheClaimants::none(),
             named: $service,
             why: $reason,
         );
@@ -89,7 +93,7 @@ final readonly class HowItReaches
      * @template TAsked of object
      * @template TByName of object
      *
-     * @param  Closure(Capability, Services, WhatSettledIt): TAsked  $asked  given the capability, what answers it, and how that was settled
+     * @param  Closure(Capability, Services, WhatSettledIt, TheClaimants): TAsked  $asked  given the capability, what answers it, how that was settled, and every claimant
      * @param  Closure(ServiceId, string): TByName  $byName  given the service named and the reason it was
      * @return TAsked|TByName
      */
@@ -119,6 +123,6 @@ final readonly class HowItReaches
         /** @var WhatSettledIt $settled */
         $settled = $this->settled;
 
-        return $asked($capability, $this->services, $settled);
+        return $asked($capability, $this->services, $settled, $this->claimants);
     }
 }

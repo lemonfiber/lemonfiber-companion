@@ -2,28 +2,46 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\AConnection;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ALink;
+use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
+use Modules\Kernel\Api\HowItReaches;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheClaimants;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheWiring;
+use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
+use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatSettledIt;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereAConnectionStands;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoSetIt;
+use Modules\Kernel\Api\WhoSettledIt;
+use Modules\Kernel\Api\WhyItWasChosen;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
+use Modules\Operator\Internal\ViewModels\AClaimantAsShown;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -32,6 +50,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatSaysWhatAnswersWhat;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWires;
 use Tests\Support\Fakes\StacksInMemory;
@@ -60,6 +79,7 @@ function theWiringScreen(
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
     ?AStackThatSupervises $supervising = null,
+    ?AStackThatSaysWhatAnswersWhat $linking = null,
 ): HowTheServicesAreWired {
     $stack = theStackWhoseServicesAreWired();
     $keychain ??= AKeychainInMemory::working();
@@ -68,7 +88,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -451,4 +471,134 @@ it('draws an area the operator declared unmanaged as left alone in their words, 
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.failed'))
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.skipped'))
         ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+});
+
+/** A link asking for a capability, each claimant with where it came from. */
+function aLinkAskingFor(string $by, string $capability, Services $reached, WhatSettledIt $settled, AClaimant ...$claimants): ALink
+{
+    return ALink::from(ServiceId::called($by), HowItReaches::asked(Capability::called($capability), $reached, $settled, TheClaimants::these(...$claimants)));
+}
+
+/** What a stack wires to what, one link of every kind. */
+function aStackWiringOneOfEach(): TheLinks
+{
+    $bundled = static fn(string $service): AClaimant => AClaimant::of(ServiceId::called($service), WhoPutItThere::bundled());
+
+    return TheLinks::of(
+        WhatNothingFills::these(Unfilled::of(ServiceId::called('lidarr'), Capability::called('music-tagger'))),
+        aLinkAskingFor('sonarr', 'download-client', Services::these(ServiceId::called('qbittorrent')), WhatSettledIt::outright(), $bundled('qbittorrent')),
+        aLinkAskingFor('prowlarr', 'arr', Services::these(ServiceId::called('sonarr'), ServiceId::called('radarr')), WhatSettledIt::each(), $bundled('sonarr'), $bundled('radarr')),
+        aLinkAskingFor('seerr', 'media-server', Services::none(), WhatSettledIt::contested(Services::these(ServiceId::called('plex'), ServiceId::called('jellyfin'))), $bundled('jellyfin'), AClaimant::of(ServiceId::called('plex'), WhoPutItThere::plugin('plex'))),
+        aLinkAskingFor('radarr', 'indexer', Services::these(ServiceId::called('prowlarr')), WhatSettledIt::chosen(Services::these(ServiceId::called('jackett')), WhoSettledIt::Operator, WhyItWasChosen::stated('Jackett is too slow here')), $bundled('prowlarr'), $bundled('jackett')),
+        aLinkAskingFor('bazarr', 'subtitles', Services::these(ServiceId::called('opensubtitles')), WhatSettledIt::chosen(Services::these(ServiceId::called('subscene')), WhoSettledIt::Stack, WhyItWasChosen::unstated())),
+        aLinkAskingFor('lidarr', 'music-tagger', Services::none(), WhatSettledIt::unfilled()),
+        ALink::from(ServiceId::called('jellyfin'), HowItReaches::byName(ServiceId::called('tdarr'), 'Transcoding runs on the other machine')),
+    );
+}
+
+it('opens on what answers what, above the services and the run, in the stack\'s words and order', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach())))->said();
+    $at = static fn(mixed $line): int => (int) array_search($line, $drawn, strict: true);
+
+    expect($drawn)->toContain(
+        __('stacks.wiring.fills.asks', ['by' => 'sonarr', 'capability' => 'download-client']),
+        __('stacks.wiring.fills.outright', ['service' => 'qbittorrent']),
+        __('stacks.wiring.fills.each', ['services' => 'sonarr, radarr']),
+        __('stacks.wiring.fills.unfilled'),
+        __('stacks.wiring.fills.by_name', ['service' => 'tdarr']),
+        __('stacks.wiring.fills.why', ['why' => 'Transcoding runs on the other machine']),
+        __(WhoSetIt::Bundled->ofAService()),
+        __('stacks.wiring.fills.label'),
+        __('stacks.wiring.services'),
+    )->and($at(__('stacks.wiring.fills.label')))->toBeLessThan($at(__('stacks.wiring.services')))
+        ->and($at(__('stacks.wiring.fills.asks', ['by' => 'sonarr', 'capability' => 'download-client'])))
+        ->toBeLessThan($at(__('stacks.wiring.fills.asks', ['by' => 'prowlarr', 'capability' => 'arr'])))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.none'))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.unreadable'));
+});
+
+it('tells a choice the operator made from one the stack made, with the reason where one was given', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach())))->said();
+
+    expect($drawn)->toContain(
+        __('stacks.wiring.fills.chosen_operator', ['service' => 'prowlarr', 'over' => 'jackett']),
+        __('stacks.wiring.fills.why', ['why' => 'Jackett is too slow here']),
+        __('stacks.wiring.fills.chosen_stack', ['service' => 'opensubtitles', 'over' => 'subscene']),
+    )->and($drawn)->not->toContain(__('stacks.wiring.fills.chosen_operator', ['service' => 'opensubtitles', 'over' => 'subscene']))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.chosen_stack', ['service' => 'prowlarr', 'over' => 'jackett']));
+});
+
+it('draws a contest as one, naming every claimant in the contest\'s order with where it came from, and offers no choice', function (): void {
+    $screen = theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach()));
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $contest = $screen->whatAnswersWhat()?->links[2];
+
+    expect($contest?->isContested)->toBeTrue()
+        ->and(array_map(static fn(AClaimantAsShown $claimant): string => $claimant->name, $contest->claimants ?? []))->toBe(['plex', 'jellyfin'])
+        ->and($drawn->said())->toContain(__('stacks.wiring.fills.contested'), __('stacks.wiring.fills.claimed_by'), __(WhoSetIt::Plugin->ofAService(), ['named' => 'plex']))
+        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+});
+
+it('says the stack asks nothing of its services where it wires nothing, and is not a wiring it could not read', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none()))))->said();
+
+    expect($drawn)->toContain(__('stacks.wiring.fills.none'))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.unreadable'));
+});
+
+it('says a wiring the stack could not read could not be read, in the stack\'s words, and never draws it as settled', function (): void {
+    $why = ARefusalInItsWords::said('The record of what is installed cannot be read', 'Nothing can be said about what fills what until it reads.', WhatTheRefusalNamed::as('/var/lib/lemonfiber/plugins.json'));
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::refusing($why)))->said();
+
+    expect($drawn)->toContain(__('stacks.wiring.fills.unreadable'), 'The record of what is installed cannot be read', 'Nothing can be said about what fills what until it reads.')
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.none'))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.unfilled'));
+});
+
+it('says what answers what could not be read where the stack was not reached, and still draws the services', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->said();
+
+    expect($drawn)->toContain(__('stacks.wiring.fills.unreadable'), __('stacks.wiring.services'))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.none'));
+});
+
+it('asks what answers what once a frame, afresh when asked again, and keeps none of it between screens', function (): void {
+    $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
+    $screen = theWiringScreen(AStackThatWires::answering(), linking: $linking);
+
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    WhatTheDeviceWouldDraw::by($screen);
+    $once = $linking->askings();
+    $screen->again();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    WhatTheDeviceWouldDraw::onTheSecondFrame(theWiringScreen(AStackThatWires::answering(), linking: $linking));
+
+    expect($once)->toBe(1)
+        ->and($linking->askings())->toBe(3)
+        ->and($linking->askedAbout()?->id()->stored())->toBe(theStackWhoseServicesAreWired()->id()->stored());
+});
+
+it('asks nothing of a stack this device holds no session for', function (): void {
+    $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
+    $screen = theWiringScreen(AStackThatWires::answering(), signedIn: false, linking: $linking);
+
+    expect($screen->whatAnswersWhat()?->went->isSignedIn)->toBeFalse()
+        ->and($linking->askings())->toBe(0);
+});
+
+it('reads the services on the first frame and what answers what on the next, a reading a frame', function (): void {
+    $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theWiringScreen(AStackThatWires::answering(), supervising: $supervising, linking: $linking);
+
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+    $askedOnTheFirst = [$supervising->askings(), $linking->askings()];
+    $second = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($askedOnTheFirst)->toBe([1, 0])
+        ->and($first)->toContain(__('stacks.wiring.fills.label'), __('stacks.wiring.services'))
+        ->and($first)->not->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
+        ->and($screen->waitsForTheNextFrame())->toBeFalse()
+        ->and([$supervising->askings(), $linking->askings()])->toBe([1, 1])
+        ->and($second)->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']));
 });

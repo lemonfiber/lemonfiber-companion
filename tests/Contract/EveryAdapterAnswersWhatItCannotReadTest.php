@@ -135,6 +135,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -347,6 +348,7 @@ function everyAdapterCallThatReads(): array
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
         'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
+        'Linkers::linkedOn' => static fn(): object => new Linkers($clients)->linkedOn($stack, $session),
         'Copiers::take' => static fn(): object
             => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
         'Copiers::whatBecameOf' => static fn(): object
