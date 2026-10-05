@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenTheLockAsks;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Override;
-
-use function view;
 
 /**
  * The lock, and nothing behind it.
@@ -40,6 +38,10 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class Locked extends NativeComponent
 {
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::locked';
+
     /** Whether the screen under this awaits the outcome of something it sent. */
     public const string AWAITS = 'awaits';
 
@@ -90,11 +92,6 @@ final class Locked extends NativeComponent
     /** The device's back button leaves the lock where it is. */
     #[Override]
     public function onBackPressed(): void {}
-
-    public function render(): View
-    {
-        return view('operator::locked');
-    }
 
     /**
      * Back to the screen the lock went over, or on to the one it stood in for.

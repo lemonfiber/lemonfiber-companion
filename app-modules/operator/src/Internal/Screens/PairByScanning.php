@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
@@ -25,11 +24,11 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Pairing a stack by pointing the camera at the code on its screen.
@@ -74,6 +73,9 @@ final class PairByScanning extends NativeComponent
 {
     use HasAWayBack;
     use OffersTheAppsSettings;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::pair-by-scanning';
     /**
      * What the operator is calling this machine.
      *
@@ -291,12 +293,6 @@ final class PairByScanning extends NativeComponent
     public function theListIsAt(): string
     {
         return AScreenWithoutAStack::TheList->value;
-    }
-
-    /** The frame, by name. */
-    public function render(): View
-    {
-        return view('operator::pair-by-scanning');
     }
 
     /**

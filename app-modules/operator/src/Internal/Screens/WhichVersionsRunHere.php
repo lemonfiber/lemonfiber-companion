@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -19,12 +18,11 @@ use Modules\Kernel\Api\WhatRunsHere;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheVersionsRead;
 use Modules\Operator\Internal\ViewModels\TheVersionsTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Which versions this machine runs — lemonfiber, the stack, the container engine — and what the running release changed.
@@ -47,6 +45,9 @@ final class WhichVersionsRunHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::which-versions-run-here';
 
     /** What came back, once the frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?TheVersionsTurnedOutToBe $answered = null;
@@ -59,17 +60,10 @@ final class WhichVersionsRunHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::which-versions-run-here');
     }
 
     /** What came back, asked once per frame. */

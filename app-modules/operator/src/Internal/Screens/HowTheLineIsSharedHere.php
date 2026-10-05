@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -21,12 +20,11 @@ use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheLineReads;
 use Modules\Operator\Internal\ViewModels\HowTheLineTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * How this machine shares its line with the household.
@@ -53,6 +51,9 @@ final class HowTheLineIsSharedHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::how-the-line-is-shared-here';
 
     /**
      * What came back, once the frame has asked.
@@ -73,7 +74,6 @@ final class HowTheLineIsSharedHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /**
      * Ask the machine again.
      *
@@ -83,12 +83,6 @@ final class HowTheLineIsSharedHere extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::how-the-line-is-shared-here');
     }
 
     /** What came back, asked once per frame. */

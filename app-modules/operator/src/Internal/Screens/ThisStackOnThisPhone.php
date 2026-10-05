@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
@@ -15,12 +14,11 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Stack settings: what this phone keeps of one stack, and Remove from phone.
@@ -37,6 +35,9 @@ final class ThisStackOnThisPhone extends NativeComponent
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::this-stack-on-this-phone';
 
     /**
      * The stack this page is about, read once.
@@ -143,9 +144,4 @@ final class ThisStackOnThisPhone extends NativeComponent
         $this->replaceTheWholeStack($landing);
     }
 
-
-    public function render(): View
-    {
-        return view('operator::this-stack-on-this-phone');
-    }
 }

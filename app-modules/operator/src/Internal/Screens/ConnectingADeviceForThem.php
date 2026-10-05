@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -28,6 +26,7 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
 use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -35,7 +34,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Connecting one member's device: the code that points it at the media server, and whether it has signed in.
@@ -59,6 +57,9 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::connecting-a-device';
 
     /** The handle of the hand-off being worked out, while there is one. */
     public ?string $following = null;
@@ -82,19 +83,12 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
-
     /** The member this screen is about, by the name the route carries. */
     public function named(): string
     {
         $named = $this->param('service');
 
         return is_string($named) ? $named : '';
-    }
-
-    public function render(): View
-    {
-        return view('operator::connecting-a-device');
     }
 
     /** Where the hand-off has got to, or that nothing was asked yet. */

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\Clock;
@@ -26,13 +25,12 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Pairing another phone with this stack: a code it scans, or a line it types.
@@ -65,6 +63,9 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::pairing-a-phone';
 
     /** The handle of the code being made, while there is one. Never kept past this screen. */
     public ?string $following = null;
@@ -94,13 +95,6 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-
-
-    public function render(): View
-    {
-        return view('operator::pairing-a-phone');
-    }
 
     /** Where making a code has got to, or that none was asked for. */
     public function going(): HowThePairingCodeWent

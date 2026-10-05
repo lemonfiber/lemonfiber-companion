@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -19,12 +18,11 @@ use Modules\Kernel\Api\WhereTheServicesComeFrom;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheOriginsRead;
 use Modules\Operator\Internal\ViewModels\TheOriginsTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Where every service on this machine comes from.
@@ -53,6 +51,9 @@ final class WhereThisComesFrom extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::where-this-comes-from';
 
     /**
      * What came back, once the frame has asked.
@@ -71,17 +72,10 @@ final class WhereThisComesFrom extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::where-this-comes-from');
     }
 
     /** What came back, asked once per frame. */

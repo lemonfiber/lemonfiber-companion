@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Concealed;
@@ -19,12 +18,11 @@ use Modules\Kernel\Api\WhatToWatchOn;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAdviceReads;
 use Modules\Operator\Internal\ViewModels\TheAdviceTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * Which app somebody in the household should watch on, device by device, and what to do when it does not work.
@@ -45,6 +43,9 @@ final class WhichAppToWatchOn extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::which-app-to-watch-on';
 
     /**
      * What came back, once the frame has asked.
@@ -61,17 +62,10 @@ final class WhichAppToWatchOn extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::which-app-to-watch-on');
     }
 
     /** What came back, asked once per frame. */

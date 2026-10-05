@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
@@ -30,13 +29,12 @@ use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSurveyTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What is already on this machine that is not lemonfiber's, and moving in beside it.
@@ -68,6 +66,9 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-is-already-on-this-machine';
 
     /**
      * What came back, once the frame has asked.
@@ -98,7 +99,6 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
 
     /**
      * Ask the machine again, which an obstacle must not take away.
@@ -211,16 +211,10 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         }
     }
 
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->howTheMoveIsGoing()->isWorking;
-    }
-
-    public function render(): View
-    {
-        return view('operator::what-is-already-on-this-machine');
     }
 
     /** What came back, asked once per frame. */

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\Opening;
@@ -41,12 +40,11 @@ use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Modules\Wayfinding\Api\WhereTappingLeads;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * The screen a launch lands on: the machines this device knows, or an
@@ -102,6 +100,9 @@ final class YourStacks extends NativeComponent
     use HasAWayBack;
     use OffersTheAppsSettings;
     use HearsHowEachStackIs;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::your-stacks';
 
     public ?Launch $launched = null;
 
@@ -461,20 +462,6 @@ final class YourStacks extends NativeComponent
         }
 
         return $this->saved === WhatWasKeptAtOpening::Cleared;
-    }
-
-    /**
-     * The frame, by name.
-     *
-     * A `View` rather than an `Element`: the base class accepts either, and a
-     * Blade file is the half of a screen `tests/Templates` can read. An element
-     * tree assembled in PHP would be invisible to every rule in that suite —
-     * `F3`'s vocabulary check, `F5`'s screen-reader check and `L1`'s refusal of
-     * an English sentence all work over the text of a template.
-     */
-    public function render(): View
-    {
-        return view('operator::your-stacks');
     }
 
     /**

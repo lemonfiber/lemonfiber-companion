@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use InvalidArgumentException;
 use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
@@ -24,10 +23,9 @@ use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * The phone's own settings: the lock, readings, the order of the stacks and
@@ -41,6 +39,9 @@ use function view;
 final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeItOpensOver
 {
     use HasAWayBack;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::how-this-phone-is-set';
     /** How long the app may be away before the lock asks again, once read. */
     public ?LockAfter $lockAfter = null;
 
@@ -214,11 +215,6 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
 
         $this->stacks->putInOrder(...$order);
         $this->stacksShown = null;
-    }
-
-    public function render(): View
-    {
-        return view('operator::how-this-phone-is-set');
     }
 
     /** Keep the operator's choice, which lets go of every reading older than it now. */

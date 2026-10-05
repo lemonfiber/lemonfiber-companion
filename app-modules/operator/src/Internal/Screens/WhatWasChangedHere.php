@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -21,12 +20,11 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\ViewModels\TheRecordTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What this machine has changed about itself, and how far each change goes back.
@@ -60,6 +58,9 @@ final class WhatWasChangedHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-was-changed-here';
 
     /**
      * What came back, once the frame has asked.
@@ -80,7 +81,6 @@ final class WhatWasChangedHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /**
      * Ask the machine again.
      *
@@ -90,12 +90,6 @@ final class WhatWasChangedHere extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::what-was-changed-here');
     }
 
     /** What came back, asked once per frame. */

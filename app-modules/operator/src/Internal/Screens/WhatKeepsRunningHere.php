@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use function array_any;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HandingOver;
@@ -28,12 +27,11 @@ use Modules\Operator\Internal\Presenters\HowHostingReads;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What this machine keeps running when nobody is signed in.
@@ -83,6 +81,9 @@ final class WhatKeepsRunningHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-keeps-running-here';
 
     /**
      * What came back, once the frame has asked.
@@ -109,7 +110,6 @@ final class WhatKeepsRunningHere extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
 
     /**
      * Ask the machine again.
@@ -177,12 +177,6 @@ final class WhatKeepsRunningHere extends NativeComponent
     public function neverMind(): void
     {
         $this->asking = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::what-keeps-running-here');
     }
 
     /**

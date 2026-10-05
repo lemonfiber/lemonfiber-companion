@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
@@ -35,6 +33,7 @@ use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -42,7 +41,6 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * What this stack would put right, stated before anybody is asked to agree.
@@ -83,6 +81,9 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-would-be-put-right';
 
     /**
      * What came back, once the frame has asked.
@@ -150,7 +151,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
 
     /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
@@ -359,16 +359,10 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         $this->agreeTo($yesTo);
     }
 
-
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
         return $this->isWorking();
-    }
-
-    public function render(): View
-    {
-        return view('operator::what-would-be-put-right');
     }
 
     /**

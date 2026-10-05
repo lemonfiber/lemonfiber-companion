@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
@@ -20,12 +19,11 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCatalogueReads;
 use Modules\Operator\Internal\ViewModels\TheCatalogueTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What each service on this machine is for, and what became of any it dropped.
@@ -50,6 +48,9 @@ final class WhatEachServiceIsFor extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::what-each-service-is-for';
 
     /**
      * What came back, once the frame has asked.
@@ -66,17 +67,10 @@ final class WhatEachServiceIsFor extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, which an obstacle must not take away. */
     public function again(): void
     {
         $this->answered = null;
-    }
-
-
-    public function render(): View
-    {
-        return view('operator::what-each-service-is-for');
     }
 
     /** What came back, asked once per frame. */

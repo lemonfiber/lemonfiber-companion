@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowWhatAMemberAskedForReads;
@@ -26,11 +25,10 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function view;
 
 /**
  * What this machine says the person holding the session is owed.
@@ -75,6 +73,9 @@ final class WhatYouAreOwed extends NativeComponent
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'household::what-you-are-owed';
 
     /**
      * What came back, once the frame has asked: both halves of one reading.
@@ -157,11 +158,6 @@ final class WhatYouAreOwed extends NativeComponent
     public function signIn(): string
     {
         return AStacksScreen::SignIn->forTheStack($this->stack()->id());
-    }
-
-    public function render(): View
-    {
-        return view('household::what-you-are-owed');
     }
 
     /**

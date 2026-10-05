@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Illuminate\View\View;
 use Modules\Connection\Api\FingerprintWasConfirmed;
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
@@ -22,11 +21,11 @@ use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * Pairing a stack by typing the code, rather than by pointing a camera at it.
@@ -69,6 +68,9 @@ use function view;
 final class PairByTyping extends NativeComponent
 {
     use HasAWayBack;
+    use DrawsItsTemplate;
+
+    public const string TEMPLATE = 'operator::pair-by-typing';
     /**
      * The pairing code, as it stands in the field.
      *
@@ -288,12 +290,6 @@ final class PairByTyping extends NativeComponent
     public function theListIsAt(): string
     {
         return AScreenWithoutAStack::TheList->value;
-    }
-
-    /** The frame, by name. */
-    public function render(): View
-    {
-        return view('operator::pair-by-typing');
     }
 
     /**
