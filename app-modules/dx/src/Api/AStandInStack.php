@@ -101,9 +101,8 @@ enum AStandInStack: string
      * on another address is the same machine.
      *
      * **A machine this module has never heard of behaves as the working one,
-     * and that is stated here rather than decided by the caller.** `C2` refuses
-     * an `Api` method that answers with null, and it is right about this one
-     * for a reason beyond the rule: *not one of mine* and *broken* are
+     * and that is stated here rather than decided by the caller.** An `Api`
+     * method does not answer with null: *not one of mine* and *broken* are
      * different facts, and a caller handed `null` has to know which of them to
      * turn it into. A device holding a real pairing beside the stand-ins is a
      * state somebody can get into, and the conservative answer there is that
@@ -157,8 +156,7 @@ enum AStandInStack: string
      *
      * Written here rather than taken from the translator, and this is the one
      * place in the application where that is right: a stack's name is what its
-     * owner typed, so it is data rather than the app's own words. `L1` reads
-     * only the directories a screen is drawn from, and this is not one.
+     * owner typed, so it is data rather than the app's own words.
      *
      * Obvious on purpose, for {@see \Modules\Dx\Internal\WhatAStackWouldSay}'s
      * reason: anybody looking at the list should be able to tell in a second

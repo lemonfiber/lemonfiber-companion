@@ -7,11 +7,11 @@ namespace Modules\Dx\Internal;
 /**
  * The punctuation a declared type is written with.
  *
- * `D4` asks that a closed set be an enum rather than a literal beside `===`,
- * and this is as closed as a set gets: the notation is somebody else's and
- * these five characters are the whole of what this module reads structurally.
- * A sixth would be a change to PHPStan's syntax, which is exactly the kind of
- * event a named case makes visible and a bare `'{'` does not.
+ * An enum rather than a literal beside `===`, because this is as closed as a
+ * set gets: the notation is somebody else's and these five characters are the
+ * whole of what this module reads structurally. A sixth would be a change to
+ * PHPStan's syntax, which is exactly the kind of event a named case makes
+ * visible and a bare `'{'` does not.
  *
  * Named for what each one does to a reading rather than for its shape. `'<'` is
  * an angle bracket in every language and *opens a parameter* in this one, and

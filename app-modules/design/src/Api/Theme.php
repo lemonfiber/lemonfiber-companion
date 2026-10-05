@@ -12,10 +12,10 @@ use Closure;
  * `TailwindParser` hands a resolver a bare token name, whatever a template
  * wrote after `bg-theme-`, and reads null as "this token means nothing here".
  * Null lives inside these closures and nowhere else: the parser's contract
- * wants it, and C2 refuses it on anything else a module publishes.
+ * wants it, and nothing else a module publishes answers with it.
  *
  * The composition root registers them; building them reads no file and reaches
- * no network, so a frame arrives without waiting on any of it (A9).
+ * no network, so a frame arrives without waiting on any of it.
  */
 final readonly class Theme
 {

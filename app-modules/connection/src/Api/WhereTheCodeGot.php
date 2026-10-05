@@ -18,10 +18,9 @@ use function sprintf;
  * "invalid code" three times for three different situations, twice while they
  * are still typing.
  *
- * An enum rather than a set of booleans on the view model, which `D4` asks for
- * and which pays here in particular: the four are exclusive, and a pair of
- * booleans is a shape in which *unreadable and expired* is a state somebody can
- * construct.
+ * An enum rather than a set of booleans on the view model, which pays here in
+ * particular: the four are exclusive, and a pair of booleans is a shape in
+ * which *unreadable and expired* is a state somebody can construct.
  */
 enum WhereTheCodeGot: string
 {
@@ -63,15 +62,15 @@ enum WhereTheCodeGot: string
      * naming a key per case spells every stem twice — once as the case's value
      * and once as the string beside it — and two spellings of one name drift.
      *
-     * A key rather than a sentence, because `L1` puts the words in the
-     * catalogue and `A4` keeps the translator out of a class that did not ask
-     * for one — the template is where `__()` is called, and the template is
-     * also the half `tests/Templates` can read.
+     * A key rather than a sentence, because the words are the catalogue's and
+     * the translator stays out of a class that did not ask for one — the
+     * template is where `__()` is called, and the template is also the half
+     * `tests/Templates` can read.
      *
-     * On the enum rather than on the screen for the reason `D4` gives about
-     * closed sets: there are four states and there are four sentences, and a
-     * `match` with no default arm is what makes a fifth state a failure here
-     * rather than a field with nothing under it.
+     * On the enum rather than on the screen because the set is closed: there
+     * are four states and there are four sentences, and a `match` with no
+     * default arm is what makes a fifth state a failure here rather than a
+     * field with nothing under it.
      *
      * The pairing worth reading twice is `Unreadable` against `Expired`. An
      * expired code was typed perfectly, and sending its operator to check the

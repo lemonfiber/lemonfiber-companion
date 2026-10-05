@@ -33,10 +33,10 @@ use Modules\Kernel\Api\Shape;
  *
  * **One reading per stack.** Keeping a reading replaces the one kept before it.
  *
- * **Every answer is a value** (`C1`). A store that cannot be reached keeps
- * nothing, finds nothing and forgets nothing, and says so: a reading that was
- * not kept costs the next opening its first frame, which a screen already
- * draws for a stack it has never heard from.
+ * **Every answer is a value.** A store that cannot be reached keeps nothing,
+ * finds nothing and forgets nothing, and says so: a reading that was not kept
+ * costs the next opening its first frame, which a screen already draws for a
+ * stack it has never heard from.
  */
 interface HealthReadingsKept extends ForgetsEverythingKept, ForgetsOldReadings
 {

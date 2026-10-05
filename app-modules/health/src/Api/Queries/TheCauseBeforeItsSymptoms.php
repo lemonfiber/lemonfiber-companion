@@ -38,7 +38,7 @@ use Modules\Kernel\Api\Findings;
  * say them: narrow, sort, group.
  *
  * A query, so it answers with the findings rather than with an `Outcome`:
- * asking how to arrange a list cannot be refused (`M1`).
+ * asking how to arrange a list cannot be refused.
  */
 final readonly class TheCauseBeforeItsSymptoms
 {

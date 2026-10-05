@@ -19,10 +19,10 @@ use const PHP_URL_PORT;
 /**
  * What the platform says about this app and the local network, on the way to one address.
  *
- * `B3` puts a platform call behind an adapter, and this is the whole of this
- * one: the address's host and port go to the bridge, and one word comes back.
- * Where the address names no port, it is the one its scheme does: every paired
- * stack is reached over `https`.
+ * A platform call sits behind an adapter, and this is the whole of this one:
+ * the address's host and port go to the bridge, and one word comes back. Where
+ * the address names no port, it is the one its scheme does: every paired stack
+ * is reached over `https`.
  *
  * **Where the reading of silence lives.** A platform that cannot be asked
  * answers *not refused*, decided by `LocalNetworkRule` on the handset and by

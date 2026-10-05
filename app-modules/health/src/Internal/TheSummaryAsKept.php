@@ -33,7 +33,7 @@ use Modules\Kernel\Api\WhatStoppedMoving;
  *
  * **Read back by the shape it says it was written in.** The match over
  * {@see Shape} is where a later layout has to be answered: a shape this build
- * writes and cannot read is a case the analyser refuses to leave out.
+ * writes and cannot read is a case the `match` cannot leave out.
  *
  * **Anything that does not read is nothing.** A kept summary is sealed, so
  * what opens is what this phone wrote; one that still does not read as a

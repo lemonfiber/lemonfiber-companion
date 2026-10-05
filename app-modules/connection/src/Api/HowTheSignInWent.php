@@ -159,10 +159,9 @@ enum HowTheSignInWent: string
     /**
      * The key for the sentence naming what happened.
      *
-     * A key rather than the words, which is `A4` and `L1` together: an enum
-     * reaching for a translator it never asked for is a class that has stopped
-     * telling the truth about what it needs, and the template is where `__()`
-     * belongs.
+     * A key rather than the words: an enum reaching for a translator it never
+     * asked for is a class that has stopped telling the truth about what it
+     * needs, and the template is where `__()` belongs.
      *
      * **Built from the case rather than listed against it**, which is
      * {@see Permission::reason()}'s shape and the reason is the same: a `match`

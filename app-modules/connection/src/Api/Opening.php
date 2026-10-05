@@ -39,18 +39,18 @@ use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
  * the socket, and they are told apart. Asking it before the pairing
  * check would put the question to a device that has nothing to reach.
  *
- * **What this does not do is reach the stack.** `F4` says a frame is not where
- * a socket is opened, and nothing but a declared cadence or the operator
- * makes a screen reach a machine, and opening
- * the app is the moment both are easiest to break — four paired machines, on a
- * home network, one of them asleep. So *ready* here means *paired, unlocked and
- * ready to be asked*, and the asking belongs to the screen the operator chose.
- * The `blocked` arm is therefore only ever reached by what a launch can learn
- * without sending anything, and having no network is the one thing that is.
+ * **What this does not do is reach the stack.** A frame is not where a socket
+ * is opened, and nothing but a declared cadence or the operator makes a screen
+ * reach a machine, and opening the app is the moment both are easiest to break
+ * — four paired machines, on a home network, one of them asleep. So *ready*
+ * here means *paired, unlocked and ready to be asked*, and the asking belongs
+ * to the screen the operator chose. The `blocked` arm is therefore only ever
+ * reached by what a launch can learn without sending anything, and having no
+ * network is the one thing that is.
  *
- * A query rather than a command, so it answers rather than refuses (`M1`):
- * *what did the app find* has no failure case, only four answers, and two of
- * them are ordinary.
+ * A query rather than a command, so it answers rather than refuses: *what did
+ * the app find* has no failure case, only four answers, and two of them are
+ * ordinary.
  */
 final readonly class Opening
 {

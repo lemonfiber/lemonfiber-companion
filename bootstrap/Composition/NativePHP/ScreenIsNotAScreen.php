@@ -17,9 +17,8 @@ use function sprintf;
  * sees is a fatal about an undefined method, three frames inside the vendor
  * package, at the moment the app launches.
  *
- * Named here instead. `C3` asks for a module-owned exception rather than a bare
- * `RuntimeException`, and this is the one failure this composition can produce
- * that is not somebody else's.
+ * Named here instead, rather than a bare `RuntimeException`: this is the one
+ * failure this composition can produce that is not somebody else's.
  */
 final class ScreenIsNotAScreen extends RuntimeException
 {

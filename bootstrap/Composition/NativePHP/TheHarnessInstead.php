@@ -39,7 +39,7 @@ final readonly class TheHarnessInstead implements Runloop
      * A route that exists, answered without running anything.
      *
      * `200` means *this route is registered and names a screen* and nothing
-     * about the screen itself, which is what `D6` asks the number to say.
+     * about the screen itself.
      */
     private const int THE_ROUTE_IS_THERE = 200;
 

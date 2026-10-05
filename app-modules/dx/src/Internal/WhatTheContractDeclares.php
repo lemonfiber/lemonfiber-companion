@@ -57,10 +57,11 @@ final readonly class WhatTheContractDeclares
     /**
      * Where the generated envelopes are written.
      *
-     * Public because `G12` reads the same directory for a different question —
-     * which envelope declares which kind — and a second spelling of the path
-     * would be a second thing to move the day the package is laid out
-     * differently, with only one of them raising when it was missed.
+     * Public because the stand-in check reads the same directory for a
+     * different question — which envelope declares which kind — and a second
+     * spelling of the path would be a second thing to move the day the package
+     * is laid out differently, with only one of them raising when it was
+     * missed.
      */
 
     /**
@@ -288,8 +289,7 @@ final readonly class WhatTheContractDeclares
         // Split where the question changes. Above: *is this a collection*, and
         // both answers to that are a walk into whatever it holds under the same
         // `[]`. Below: *which fields*, which is a different reading of a
-        // different notation. `H8` counts the doors and is right that four of
-        // them were two methods.
+        // different notation.
         if (str_starts_with($type, 'list<') || str_starts_with($type, 'array<')) {
             return self::everyPathIn(self::whatItHolds($type), sprintf('%s%s', $under, self::EACH));
         }

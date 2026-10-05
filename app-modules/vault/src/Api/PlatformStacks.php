@@ -60,9 +60,8 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
      *
      * The store keeps the key and writes an empty list into it, so a device
      * that has been unpaired answers `Found` with something in it. Named rather
-     * than compared against inline: `D4` refuses a value checked against a
-     * literal, and the reason applies here — this is the encoding's word for
-     * empty, and it belongs beside the encoding.
+     * than compared against inline: this is the encoding's word for empty, and
+     * it belongs beside the encoding.
      */
     private const string NOTHING_WRITTEN_DOWN = '[]';
 

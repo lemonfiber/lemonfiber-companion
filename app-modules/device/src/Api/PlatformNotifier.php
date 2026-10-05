@@ -29,11 +29,11 @@ use function sprintf;
  * front of a third party. A local notification is composed and displayed on the
  * handset and never leaves it.
  *
- * **The words come from the translator, keyed by the type.** A {@see Notification}
- * carries a code and nothing else sayable, so there is no sentence to pass
- * through — this looks up two keys and fills them in. `L1` wants the words in
- * the catalogue, and a notification may carry no credential and no household
- * member's name; the same design serves both.
+ * **The words come from the translator, keyed by the type.** A
+ * {@see Notification} carries a code and nothing else sayable, so there is no
+ * sentence to pass through — this looks up two keys and fills them in. The
+ * words live in the catalogue, and a notification may carry no credential and
+ * no household member's name; the same design serves both.
  *
  * **Why our own bridge rather than the marketplace plugin.** Two reasons, both
  * of them things a screen has to say a different sentence about. The plugin

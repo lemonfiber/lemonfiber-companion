@@ -140,13 +140,13 @@ final readonly class ThePairingsAsWritten
      * Separated from reading them because the two decide different things: this
      * one is about the envelope — is this our shape, does it hold a list — and
      * {@see rebuilt()} is about what is inside. Together they were one method
-     * with four ways out, which is the shape SonarCloud names `S1142` and is
-     * right to: a reader counting the exits is a reader who has lost the thread.
+     * with four ways out, and a reader counting the exits is a reader who has
+     * lost the thread.
      *
      * Answers the rows or nothing, rather than a `bool` beside a second read of
-     * the same array. `C2` is about a published signature; this is private, and
-     * a predicate here would narrow nothing for the analyser, so the caller
-     * would re-check what this had just established.
+     * the same array. A nullable is fine on a private method, and a predicate
+     * here would narrow nothing, so the caller would re-check what this had
+     * just established.
      *
      * @return list<mixed>|null
      */
@@ -218,13 +218,13 @@ final readonly class ThePairingsAsWritten
             return null;
         }
 
-        // `InvalidArgumentException` rather than `Throwable`, which `C6` refuses
-        // and is right to: every refusal this can legitimately meet is one of
-        // the four value types saying the row is not one — a blank name, a
-        // digest of the wrong length, an address with no scheme, an identifier
-        // that is empty — and all four are that family. Anything outside it is
-        // a bug in this method, and absorbing those is how a misspelled call
-        // comes to be reported as a corrupt record.
+        // `InvalidArgumentException` rather than `Throwable`: every refusal
+        // this can legitimately meet is one of the four value types saying the
+        // row is not one — a blank name, a digest of the wrong length, an
+        // address with no scheme, an identifier that is empty — and all four
+        // are that family. Anything outside it is a bug in this method, and
+        // absorbing those is how a misspelled call comes to be reported as a
+        // corrupt record.
         try {
             return Stack::of(
                 StackId::rememberedAs($id),
@@ -240,9 +240,9 @@ final readonly class ThePairingsAsWritten
     /**
      * One named part of a row, where the row has it and it is text.
      *
-     * Named rather than read with `??`, which `C9` refuses: `$row['id'] ?? null`
-     * reads as a default and is really a suppressed notice, and the two are
-     * indistinguishable at the call site.
+     * Named rather than read with `??`: `$row['id'] ?? null` reads as a default
+     * and is really a suppressed notice, and the two are indistinguishable at
+     * the call site.
      *
      * @param array<mixed> $row
      */

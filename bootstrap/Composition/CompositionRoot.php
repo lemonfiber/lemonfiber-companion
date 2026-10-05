@@ -239,10 +239,9 @@ final class CompositionRoot extends ServiceProvider
         // declared identity is applied over it here, and a build configured as
         // another application is refused rather than quietly overridden.
         //
-        // Not work, which `A9` refuses in a provider: no read of the
-        // environment, no file, no socket. It is one value replaced with the
-        // one this repository declares, and the build commands that assemble a
-        // bundle read the config after this has run.
+        // Not work: no read of the environment, no file, no socket. It is one
+        // value replaced with the one this repository declares, and the build
+        // commands that assemble a bundle read the config after this has run.
         config()->set(
             self::WHAT_THE_PLATFORM_INSTALLS_US_AS,
             WhatThisBuildInstallsAs::orRefuse(config(self::WHAT_THE_PLATFORM_INSTALLS_US_AS)),
@@ -269,8 +268,8 @@ final class CompositionRoot extends ServiceProvider
         // `Route::native()`, replaced so that a screen is built through the
         // container rather than with `new`. NativePHP's own router cannot give
         // a screen a port, and a screen that reached the container itself would
-        // be the service location `A3` refuses — so the substitution happens
-        // here, where naming the container is what this directory is for.
+        // be service location — so the substitution happens here, where naming
+        // the container is what this directory is for.
         //
         // In `boot()` and after the macro it replaces, which the NativePHP
         // package adds in its own boot. Provider order between two discovered
@@ -309,7 +308,7 @@ final class CompositionRoot extends ServiceProvider
         // only place in the codebase allowed to say it. Everything else takes a
         // `Clock` and never learns it got the platform's rather than a frozen
         // one — which is what makes a test about an expiring session a
-        // statement rather than a wait (A3, B1, G8).
+        // statement rather than a wait.
         //
         // Bound as a singleton because reading the time is stateless and a
         // second instance would answer identically; one object is the honest
@@ -319,14 +318,13 @@ final class CompositionRoot extends ServiceProvider
         // The other hidden input, bound the same way and with the same
         // consequence: nothing that needs a value nobody can guess learns
         // whether it got the platform's randomness or a counter, which is what
-        // makes a test about a retry a statement rather than a guess
-        // (A3, B2, G8).
+        // makes a test about a retry a statement rather than a guess.
         $this->app->singleton(Entropy::class, static fn(): Entropy => new SystemEntropy());
 
         // Not a singleton. The platform's store is a handle to something
         // outside this process, and holding one for the life of a long-running
-        // app (I1) is how a keychain that was unlocked at launch goes on
-        // reading as unlocked after the device has locked.
+        // app is how a keychain that was unlocked at launch goes on reading as
+        // unlocked after the device has locked.
         $this->app->bind(
             SecureStorage::class,
             static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
@@ -339,8 +337,8 @@ final class CompositionRoot extends ServiceProvider
         //
         // Not a singleton, for `SecureStorage`'s reason: the share sheet is a
         // handle to something outside this process, and one held for the life
-        // of a long-running app (`I1`) is a handle to a platform state that has
-        // since moved on.
+        // of a long-running app is a handle to a platform state that has since
+        // moved on.
         $this->app->bind(Sharing::class, static fn(): Sharing => new PlatformShare(new TheSheet()));
 
         // Whether this device is on a network at all, which is the one question
@@ -372,7 +370,7 @@ final class CompositionRoot extends ServiceProvider
 
         // Bound, not a singleton, for the same reason the store above is not:
         // the bridge's centre is a handle to something outside this process,
-        // and this runtime is persistent (I1).
+        // and this runtime is persistent.
         //
         // Local rather than pushed, which is the decision this line records. A
         // push payload reaches the handset through Google's or Apple's relay —
@@ -414,10 +412,8 @@ final class CompositionRoot extends ServiceProvider
         // material is the one payload where that is a disclosure.
         $this->app->bind(
             Scanning::class,
-            // Built in a named method rather than here, because `make()` raises
-            // a checked exception and the analyser refuses one raised inside a
-            // closure. That is the same rule that put the container behind a
-            // method for the screen router, and it lands the same way.
+            // Built in a named method rather than here, for the reason
+            // `screen()` gives.
             $this->theScanner(...),
         );
 
@@ -597,10 +593,10 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
 
         // The kernel's name for the same thing, so a capability can say *a way
-        // to reach a stack* without naming the SDK (`A7`). One binding rather
-        // than two adapters: the narrowed interface extends the port, so what
-        // answers here is whatever answers above — and a stand-in put over one
-        // of them cannot be missed by a caller that asked for the other.
+        // to reach a stack* without naming the SDK. One binding rather than two
+        // adapters: the narrowed interface extends the port, so what answers
+        // here is whatever answers above — and a stand-in put over one of them
+        // cannot be missed by a caller that asked for the other.
         $this->app->bind(Reaching::class, Clients::class);
 
         // The one place a credential is offered to a stack, bound beside the
@@ -667,7 +663,7 @@ final class CompositionRoot extends ServiceProvider
         // can turn the question into an instruction.
         //
         // The agreement half of it does change a stack, so it is handed the
-        // randomness a key for one attempt is minted from (`B2`).
+        // randomness a key for one attempt is minted from.
         $this->app->bind(Mending::class, Menders::class);
 
         // What a stack is set to, read every time it is shown rather than
@@ -812,7 +808,7 @@ final class CompositionRoot extends ServiceProvider
         //
         // Handed randomness for the same reason the repairs adapter is: a verb
         // changes a stack, and an action that changes one names the attempt it
-        // is part of (`B2`).
+        // is part of.
         $this->app->bind(Supervising::class, Supervisors::class);
 
         // Where a stack stands on being up to date, and taking one. Both halves
@@ -849,13 +845,12 @@ final class CompositionRoot extends ServiceProvider
      * The camera, with the catalogue the prompt over it is captioned from.
      *
      * A method rather than a closure, for two reasons that both point here.
-     * `Container::make()` raises a checked exception and the analyser refuses
-     * one raised inside a closure — the same rule that put the screen router's
-     * container behind a method. And a container may not be a *parameter*
-     * either, so this reaches the provider's own `$this->app` rather than being
-     * handed one: a class that receives a container can resolve anything, which
-     * is what the rule is about, and a provider already has one by being a
-     * provider.
+     * `Container::make()` raises a checked exception, which a closure may not,
+     * for the reason {@see self::screen()} gives. And a container may not be a
+     * *parameter* either, so this reaches the provider's own `$this->app`
+     * rather than being handed one: a class that receives a container can
+     * resolve anything, which is what the rule is about, and a provider already
+     * has one by being a provider.
      */
     private function theScanner(): Scanning
     {
@@ -866,15 +861,14 @@ final class CompositionRoot extends ServiceProvider
      * One screen, built with whatever it declared in its constructor — or the
      * lock, while the device's lock stands, which {@see BehindTheLock} decides.
      *
-     * The one place a screen meets a port. NativePHP builds a screen with
-     * `new $class`, so without this a screen could hold nothing — and a screen
-     * that reached the container itself is the service location `A3` refuses.
+     * The one place a screen meets a port. NativePHP builds a screen with `new
+     * $class`, so without this a screen could hold nothing — and a screen that
+     * reached the container itself would hide what it needs.
      *
-     * Here rather than as a closure handed to {@see ScreenRoutes}, and that is
-     * the analyser's rule rather than a preference: `make()` raises where a
-     * route names a class this application does not have, and raising a checked
-     * exception inside a closure is forbidden because a closure's caller cannot
-     * see what it throws. A method's can.
+     * Here rather than as a closure handed to {@see ScreenRoutes}: `make()`
+     * raises where a route names a class this application does not have, and
+     * raising a checked exception inside a closure is forbidden because a
+     * closure's caller cannot see what it throws. A method's can.
      *
      * `mixed` rather than `NativeComponent`, so that the check about what came
      * back lives with the router that is about to call methods on it.

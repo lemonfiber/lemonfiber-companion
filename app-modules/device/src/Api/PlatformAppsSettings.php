@@ -11,9 +11,9 @@ use Modules\Kernel\Api\WhetherTheSettingsOpened;
 /**
  * This app's page in the phone's settings, asked for through lemonfiber's own call.
  *
- * `B3` puts a platform call behind an adapter, and this is the whole of this
- * one: the bridge answers whether the page opened, and this says it in the
- * kernel's terms. What counts as opened is {@see AppsSettings}' to decide.
+ * A platform call sits behind an adapter, and this is the whole of this one:
+ * the bridge answers whether the page opened, and this says it in the kernel's
+ * terms. What counts as opened is {@see AppsSettings}' to decide.
  */
 final readonly class PlatformAppsSettings implements TheAppsSettings
 {

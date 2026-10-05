@@ -26,10 +26,10 @@ use Modules\Dx\Api\WorkLeftRunningThisRunKeeps;
  * even by accident.
  *
  * **A list rather than a scan of the directory.** Discovering implementations
- * would mean reading the filesystem or reflecting over classes, and `B3` and
- * `P4` both refuse that — rightly, because a registry that finds its own
- * entries is a registry whose contents depend on what happened to be autoloaded
- * at the moment it was asked. A line is also a place a reviewer looks.
+ * would mean reading the filesystem or reflecting over classes, and a registry
+ * that finds its own entries is a registry whose contents depend on what
+ * happened to be autoloaded at the moment it was asked. A line is also a place
+ * a reviewer looks.
  *
  * Instances rather than class names, so nothing here has to build anything from
  * a string. What each one replaces is the instance's own answer.

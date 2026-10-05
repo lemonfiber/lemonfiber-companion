@@ -27,12 +27,12 @@ use function str_replace;
  * other places spelled it again, and nothing compared the two.
  *
  * **That gap could not fail a test.** The screens' tests hold a *third* copy —
- * a test asserting `sprintf('/stacks/%s/requests', ...)` against a screen that
+ * a test asserting `sprintf('/stacks/%s/requests',...)` against a screen that
  * builds the same `sprintf` compares two spellings and never asks what was
  * registered. So renaming a route in the provider alone left the whole suite
- * green, the analyser green, the rules green, and every button on the hub
- * pointing at a path nothing serves. It surfaced as an operator tapping and
- * nothing happening, on a handset, at runtime.
+ * green and every button on the hub pointing at a path nothing serves. It
+ * surfaced as an operator tapping and nothing happening, on a handset, at
+ * runtime.
  *
  * The registrations are unnamed — `Router::native()` takes a pattern and a
  * class and nothing else — so there is no `route()` to ask, which is why this
@@ -49,7 +49,7 @@ use function str_replace;
  *
  * `Api` rather than `Internal`, and that is the whole of the move: the two
  * surfaces reach it through this module's published surface, which is the only
- * way `E2` lets either of them reach anything here at all.
+ * way either of them reaches anything here at all.
  */
 enum AStacksScreen: string
 {
@@ -338,9 +338,9 @@ enum AStacksScreen: string
      * thing filling it, which is why it is a second method rather than a wider
      * first one. The screen at the other end reads a service first and a form
      * second, so the path carries a name and not a kind — and a single builder
-     * taking `string` would be the one thing `D2` is about here: a form name
-     * and a service name are both text, and passing one where the other belongs
-     * would compile and ship.
+     * taking `string` would undo the types: a form name and a service name are
+     * both text, and passing one where the other belongs would compile and
+     * ship.
      */
     public function forTheStacksForm(StackId $stack, Form $form): string
     {

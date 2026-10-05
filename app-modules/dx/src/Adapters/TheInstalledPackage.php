@@ -17,25 +17,25 @@ use function sprintf;
 /**
  * The one file in this module that touches a filesystem.
  *
- * `B3` puts IO in an adapter and nowhere else, and this is that adapter. The
+ * IO happens in an adapter and nowhere else, and this is that adapter. The
  * module's other classes read the installed SDK's source — its envelope
- * declarations, its endpoint declarations — and none of them opens a file:
- * they ask this, which is why `B3`'s permission is a single directory rather
- * than a module.
+ * declarations, its endpoint declarations — and none of them opens a file: they
+ * ask this, which is why the permission is a single directory rather than a
+ * module.
  *
- * Concentrating it here is worth more than rule compliance. What the readers
- * above do is parse; what this does is find and fetch. Those fail differently
- * and are fixed differently — a missing package is a composer problem and a
- * misread `array{…}` is a notation problem — and keeping them apart means a
- * failure names which of the two it is.
+ * Concentrating it here is worth more than tidiness. What the readers above do
+ * is parse; what this does is find and fetch. Those fail differently and are
+ * fixed differently — a missing package is a composer problem and a misread
+ * `array{…}` is a notation problem — and keeping them apart means a failure
+ * names which of the two it is.
  *
  * **Where the package is, is asked rather than worked out.** The module is read
  * in two places that disagree about where the application root is: a suite runs
  * from the repository and a debug build runs from a bundle the packager
  * assembled. `InstalledVersions` is written by the autoloader either way and
  * answers with the version actually installed rather than the one somebody
- * expected. Reflection would answer too and `P4` refuses it, for a reason that
- * holds here: a member reached by name is a member no rule can find.
+ * expected. Reflection would answer too, but a member reached by name is a
+ * member no rule can find.
  */
 final readonly class TheInstalledPackage
 {
@@ -57,10 +57,9 @@ final readonly class TheInstalledPackage
      * because every caller has a sentence for an empty reading and none has a
      * sentence for a raise arriving out of an expectation.
      *
-     * Asked before it is read rather than read under `@`. Suppression is
-     * refused here for `G11`'s reason: a warning raised under it is dropped
-     * before the result sees it, so the run prints the warning and still exits
-     * zero.
+     * Asked before it is read rather than read under `@`. Suppression would
+     * drop a warning before the result sees it, so the run prints the warning
+     * and still exits zero.
      */
     public static function text(string $relative): string
     {
@@ -86,10 +85,9 @@ final readonly class TheInstalledPackage
      *
      * In the order `glob` answers, which is alphabetical, so the order is
      * stable across machines without sorting it. That matters more than it
-     * looks: `L6` is right that sorting text by byte order is wrong for
-     * anything a person reads, and a sort here would be a sort of class names
-     * nobody reads — so the honest answer is not a different comparator but no
-     * sort at all.
+     * looks: sorting text by byte order is wrong for anything a person reads,
+     * and a sort here would be a sort of class names nobody reads — so the
+     * honest answer is not a different comparator but no sort at all.
      *
      * @return list<string>
      */
