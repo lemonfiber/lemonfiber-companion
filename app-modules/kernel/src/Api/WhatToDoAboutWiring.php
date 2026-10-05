@@ -16,11 +16,15 @@ enum WhatToDoAboutWiring: string
     /** Wire them, or finish what an earlier run could not. */
     case Wire = 'wire';
 
+    /** Choose which service fills a capability, or work out what that would come to. */
+    case Fill = 'fill';
+
     /** lemonfiber's word for it, which this app's word is allowed to differ from. */
     public function asked(): string
     {
         return match ($this) {
             self::Wire => 'seed',
+            self::Fill => 'wiring-fill',
         };
     }
 }

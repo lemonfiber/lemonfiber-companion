@@ -207,9 +207,9 @@ final readonly class WhatARefusalMeant
             RefusalCode::AnotherReading => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
             // The stack unable to read what it holds — its own description, or
             // the record of what is installed — and refusing a choice of what
-            // fills a capability. Its words say what stood in the way; the
-            // status it arrived at still says whether the session or the
-            // account was what did.
+            // fills a capability, which `Fillers` also reads by its code. Its
+            // words say what stood in the way; the status it arrived at still
+            // says whether the session or the account was what did.
             RefusalCode::StackUnreadable,
             RefusalCode::StackUnusable,
             RefusalCode::StackNotEmbedded,

@@ -45,6 +45,7 @@ use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
+use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UndoField;
 use Modules\Sdk\Api\Fields\UninstallField;
@@ -115,6 +116,7 @@ function everyFieldNamedOnTheWire(): array
         ...StopSeedingField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
+        ...SubstitutionField::cases(),
         ...TraceField::cases(),
         ...UndoField::cases(),
         ...UninstallField::cases(),

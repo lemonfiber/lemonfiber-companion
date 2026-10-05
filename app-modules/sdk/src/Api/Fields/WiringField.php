@@ -29,9 +29,6 @@ enum WiringField: string implements NamesAWireField
     /** Which arm of what a link reaches this is: asked for a capability, or kept to a named service. */
     case How = 'how';
 
-    /** The capability a link asks for, or that nothing fills. */
-    case Capability = 'capability';
-
     /** Where each service that claims a capability came from, by the service's name. */
     case Origins = 'origins';
 

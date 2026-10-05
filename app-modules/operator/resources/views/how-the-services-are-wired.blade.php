@@ -6,9 +6,56 @@
 
     {{-- What answers what, before the services and the run: every capability
          a service asks for, which service answers it and how that was settled,
-         in the stack's words and order. Read only; a contest is drawn with
-         every claimant and nothing picked. --}}
+         in the stack's words and order. A contest is drawn with every
+         claimant and nothing picked. --}}
     <x-design::heading>{{ __('stacks.wiring.fills.label') }}</x-design::heading>
+    @if ($this->choice !== null)
+        {{-- A choice being made, above the rows it is made from: what it would
+             come to before the yes, or what became of it. --}}
+        <x-design::card>
+            <x-design::strong>{{ __('stacks.wiring.fills.choose') }}</x-design::strong>
+            @if (! $this->choice->went->cameBack())
+                <x-operator::what-stood-in-the-way
+                    :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                    :went="$this->choice->went"
+                    :sign-in-goes-to="$this->goes()->signIn()"
+                />
+            @elseif ($this->choice->refused !== null)
+                <x-design::body>{{ __('stacks.wiring.fills.not_chosen') }}</x-design::body>
+                <x-operator::refused-in-its-words :refused="$this->choice->refused" />
+            @else
+                @if ($this->choice->said !== '')
+                    <x-design::body>{{ __($this->choice->said, $this->choice->saidWith) }}</x-design::body>
+                @endif
+                @if ($this->choice->meaning !== '')
+                    {{-- The stack's own account: which parts of a reading moved,
+                         or what stood in the way of keeping it. --}}
+                    <x-design::note>{{ $this->choice->meaning }}</x-design::note>
+                @endif
+                @if ($this->choice->reading !== null)
+                    {{-- Everything the choice comes to, before the yes: what
+                         answers now and what would after, what asks for it,
+                         and what it would leave unanswered. --}}
+                    <x-design::strong>{{ $this->choice->reading->capability }}</x-design::strong>
+                    <x-design::body>{{ __($this->choice->reading->reachesSaid, $this->choice->reading->reachesWith) }}</x-design::body>
+                    <x-design::body>{{ __('stacks.wiring.fills.would_reach', ['service' => $this->choice->reading->now]) }}</x-design::body>
+                    <x-design::body>{{ __('stacks.wiring.fills.asked_by', ['services' => $this->choice->reading->askedBy]) }}</x-design::body>
+                    @forelse ($this->choice->reading->leaves as $left)
+                        <x-design::body>{{ __('stacks.wiring.fills.leaves_unfilled', $left) }}</x-design::body>
+                    @empty
+                        <x-design::body>{{ __('stacks.wiring.fills.leaves_nothing') }}</x-design::body>
+                    @endforelse
+                    <native:outlined-text-input native:model="because" label="{{ __('stacks.wiring.fills.reason') }}" />
+                @endif
+            @endif
+        </x-design::card>
+        @if ($this->choice->reading !== null)
+            <x-design::action label="{{ __('stacks.wiring.fills.agree') }}" tap="agree()" />
+            <x-design::action label="{{ __('stacks.wiring.fills.never_mind') }}" tap="letGo()" tone="tonal" />
+        @else
+            <x-design::action label="{{ __('stacks.wiring.fills.close') }}" tap="letGo()" tone="tonal" />
+        @endif
+    @endif
     @if ($this->whatAnswersWhat() === null)
         {{-- This frame read the services, so what answers what is read on
              the next one. --}}
@@ -38,6 +85,7 @@
                     <x-design::body>{{ __($link->settledSaid) }}</x-design::body>
                     <x-operator::claimed-by :claimants="$link->claimants" />
                 </x-design::notice>
+                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" />
             @else
                 <x-design::card>
                     <x-design::strong>{{ $link->asks === '' ? $link->by : __($link->asks, $link->asksWith) }}</x-design::strong>
@@ -47,6 +95,7 @@
                     @endif
                     <x-operator::claimed-by :claimants="$link->claimants" />
                 </x-design::card>
+                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" />
             @endif
         @empty
             <x-design::body>{{ __('stacks.wiring.fills.none') }}</x-design::body>

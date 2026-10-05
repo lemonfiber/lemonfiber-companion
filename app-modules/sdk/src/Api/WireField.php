@@ -751,6 +751,18 @@ enum WireField: string implements NamesAWireField
     /** When a check went wrong, in whole seconds since the epoch. */
     case Onset = 'onset';
 
-    /** Who asked: the member behind a request, and the service a link runs from. */
+    /**
+     * Who asked: the member behind a request, the service a link runs from,
+     * and the service a choice of filler would leave without a capability.
+     */
     case By = 'by';
+
+    /** The capability a link asks for, that nothing fills, or that a choice fills. */
+    case Capability = 'capability';
+
+    /** What stood before: the data root a copy was taken against, and the service a choice of filler replaces. */
+    case Was = 'was';
+
+    /** What stands after: the data root a copy goes to here, and the service a choice of filler makes answer. */
+    case Now = 'now';
 }

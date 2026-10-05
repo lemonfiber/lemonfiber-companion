@@ -28,6 +28,7 @@ use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\Unsupported;
+use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
@@ -50,6 +51,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatChoosesFillers;
 use Tests\Support\Fakes\AStackThatSaysWhatAnswersWhat;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWires;
@@ -88,7 +90,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -528,7 +530,7 @@ it('tells a choice the operator made from one the stack made, with the reason wh
         ->and($drawn)->not->toContain(__('stacks.wiring.fills.chosen_stack', ['service' => 'prowlarr', 'over' => 'jackett']));
 });
 
-it('draws a contest as one, naming every claimant in the contest\'s order with where it came from, and offers no choice', function (): void {
+it('draws a contest as one, naming every claimant in the contest\'s order with where it came from, and offers each of them', function (): void {
     $screen = theWiringScreen(AStackThatWires::answering(), linking: AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach()));
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
     $contest = $screen->whatAnswersWhat()?->links[2];
@@ -536,7 +538,7 @@ it('draws a contest as one, naming every claimant in the contest\'s order with w
     expect($contest?->isContested)->toBeTrue()
         ->and(array_map(static fn(AClaimantAsShown $claimant): string => $claimant->name, $contest->claimants ?? []))->toBe(['plex', 'jellyfin'])
         ->and($drawn->said())->toContain(__('stacks.wiring.fills.contested'), __('stacks.wiring.fills.claimed_by'), __(WhoSetIt::Plugin->ofAService(), ['named' => 'plex']))
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+        ->and($contest?->choices)->toBe(['plex', 'jellyfin']);
 });
 
 it('says the stack asks nothing of its services where it wires nothing, and is not a wiring it could not read', function (): void {

@@ -145,6 +145,14 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => NEVER_ASKED_FOR_A_REHEARSAL,
     ],
     [
+        'path' => 'SubstitutionEnvelope.rehearsed',
+        'because' => 'Whether a choice of filler was rehearsed. lemonfiber answers a choice\'s reading as the reading itself, with this `false` whether or not `dry_run` was sent; whether anything was written is `applied`, which is read.',
+    ],
+    [
+        'path' => 'SubstitutionEnvelope.substitution.setting',
+        'because' => 'The setting a choice of filler is recorded under, in lemonfiber\'s own spelling of it. The screen says the same thing in the operator\'s terms, from the capability and the service that would answer it.',
+    ],
+    [
         'path' => 'StoredEnvelope.rehearsed',
         'because' => NEVER_ASKED_FOR_A_REHEARSAL,
     ],

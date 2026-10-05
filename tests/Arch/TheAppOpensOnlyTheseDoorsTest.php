@@ -275,6 +275,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     // keeps what the operator changed, and it overwrites nothing of theirs.
     'seed' => 'wires the services to each other, keeping what the operator changed and changing nothing already right',
 
+    // Chooses which service answers a capability two or more claim. Without
+    // an offer it works the choice out and writes nothing, and it is sent as
+    // a rehearsal besides; the write names the reading the operator was
+    // shown, and the stack refuses it where that reading has moved.
+    'wiring-fill' => 'chooses which service answers a capability, having first said what answers it now, what would after, and what it would leave unfilled',
+
     // A guard on the data location for the forms the operator names. It
     // stops those forms if the location goes, and never starts them again;
     // it is held only while the screen that started it keeps asking.

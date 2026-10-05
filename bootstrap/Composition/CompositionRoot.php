@@ -54,6 +54,7 @@ use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Cataloguing;
+use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
@@ -148,6 +149,7 @@ use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Guards;
@@ -712,6 +714,10 @@ final class CompositionRoot extends ServiceProvider
         // for the same reason: one place decides whether a certificate is
         // checked.
         $this->app->bind(Linking::class, Linkers::class);
+
+        // Choosing what fills a capability, bound beside what the stack wires
+        // to what for the same reason.
+        $this->app->bind(ChoosingAFiller::class, Fillers::class);
 
         // What leaves a stack, bound beside what it keeps about itself for the
         // same reason: one place decides whether a certificate is checked.
