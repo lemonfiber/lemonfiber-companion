@@ -49,7 +49,8 @@ function everyFileThatReadsAnEnvelope(): array
     return $found;
 }
 
-it('W7 — every reader puts its envelope through the wire gate', function (): void {
+// W7 — every reader puts its envelope through the wire gate before reading the payload
+it('every reader puts its envelope through the wire gate', function (): void {
     $readers = everyFileThatReadsAnEnvelope();
     $ungated = [];
 

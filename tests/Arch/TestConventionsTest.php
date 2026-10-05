@@ -173,7 +173,8 @@ function isReachedFromTheTestCase(array $tokens, int $at): bool
         && in_array($receiver[1], ['$this', 'self', 'static'], strict: true);
 }
 
-it('G5 — a test asserts one way', function (): void {
+// G5 — one assertion idiom
+it('a test asserts one way', function (): void {
     $offenders = [];
     $read = [];
 
@@ -202,7 +203,8 @@ it('G5 — a test asserts one way', function (): void {
     ));
 });
 
-it('G5 — the reading tells PHPUnit\'s assertion from somebody else\'s method', function (): void {
+// G5 — one assertion idiom
+it('the reading tells PHPUnit\'s assertion from somebody else\'s method', function (): void {
     // The judgement, handed both shapes. A rule that answered yes to everything
     // spelled `assert` would pass the file above just as well, and that is the
     // reading this one replaced: `bridge/tests/ScreenTest.php` calls
@@ -218,7 +220,8 @@ it('G5 — the reading tells PHPUnit\'s assertion from somebody else\'s method',
         ->and(callsAPhpunitAssertion('<?php $said = \'assertSame(\';'))->toBeFalse();
 });
 
-it('G1 — nothing mocks a type we do not own', function (): void {
+// G1 — no mocking types you do not own
+it('nothing mocks a type we do not own', function (): void {
     // Read as text rather than as a namespace expectation: `PHPUnit\` is not a
     // registered PSR-4 prefix here, so an expectation naming it resolves to no
     // files, and Mockery is not installed — which would make the rule report
@@ -259,7 +262,8 @@ it('G1 — nothing mocks a type we do not own', function (): void {
 // Arch and Templates alone: a `->only()` in a module test cannot suppress a suite
 // that never loads module tests. The residual hole is an `->only()` inside
 // tests/Arch itself, which narrows the Arch run and takes this with it.
-it('G6 — no committed ->only(, and no skip without a reason', function (): void {
+// G6 — no committed ->only(, and no ->skip() whose last argument is not the reason
+it('no committed ->only(, and no skip without a reason', function (): void {
     $offenders = [];
     $read = [];
 
@@ -347,7 +351,8 @@ function isReachedWithAnArrow(array $tokens, int $at): bool
     return is_array($before) && $before[0] === T_OBJECT_OPERATOR;
 }
 
-it('H7 — a test is named for the behaviour it pins', function (): void {
+// H7 — a test is named and described for the behaviour it pins
+it('a test is named for the behaviour it pins', function (): void {
     $offenders = [];
     $read = [];
 
@@ -387,7 +392,8 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
     ));
 });
 
-it('G10 — a test file declares no class, interface, trait or enum', function (): void {
+// G10 — no two test files declare the same helper or file-level constant name
+it('a test file declares no class, interface, trait or enum', function (): void {
     $declared = namesTestFilesDeclare();
     $offenders = [];
 
@@ -412,7 +418,8 @@ it('G10 — a test file declares no class, interface, trait or enum', function (
     ));
 });
 
-it('G10 — no test helper shares its name with a class, whatever the case', function (): void {
+// G10 — no two test files declare the same helper or file-level constant name
+it('no test helper shares its name with a class, whatever the case', function (): void {
     $declared = namesTestFilesDeclare();
     $clashes = [];
 
@@ -438,7 +445,8 @@ it('G10 — no test helper shares its name with a class, whatever the case', fun
     ));
 });
 
-it('G10 — no two test files share a helper or constant name', function (): void {
+// G10 — no two test files declare the same helper or file-level constant name
+it('no two test files share a helper or constant name', function (): void {
     $declared = helpersByName();
     $clashes = [];
 

@@ -44,7 +44,8 @@ function holdsSource(string $tree): bool
     );
 }
 
-it('G9 — the coverage report is there to be read', function (): void {
+// G9 — no measured tree is below the coverage floor its nearest manifest declared
+it('the coverage report is there to be read', function (): void {
     expect(Coverage::reportExists())->toBeTrue(sprintf(
         "No coverage report at %s.\n\n"
         . 'Run `composer test:report`, which writes the clover and JUnit reports. This '
@@ -56,7 +57,8 @@ it('G9 — the coverage report is there to be read', function (): void {
     ));
 });
 
-it('G9 — every measured tree meets the coverage floor its manifest declared', function (): void {
+// G9 — no measured tree is below the coverage floor its nearest manifest declared
+it('every measured tree meets the coverage floor its manifest declared', function (): void {
     $coverage = Coverage::fromReport();
     $below = [];
     $empty = [];
@@ -105,7 +107,8 @@ it('G9 — every measured tree meets the coverage floor its manifest declared', 
     ));
 });
 
-it('G9 — the slack between the floors and the real numbers is visible', function (): void {
+// G9 — no measured tree is below the coverage floor its nearest manifest declared
+it('the slack between the floors and the real numbers is visible', function (): void {
     $coverage = Coverage::fromReport();
     $slack = [];
 
@@ -142,7 +145,8 @@ it('G9 — the slack between the floors and the real numbers is visible', functi
     ));
 });
 
-it('G9 — a tree that holds code was measured, and nothing passed over an empty report', function (): void {
+// G9 — no measured tree is below the coverage floor its nearest manifest declared
+it('a tree that holds code was measured, and nothing passed over an empty report', function (): void {
     // The printout below says how many trees held no code. A tree that holds
     // none is genuinely not a failure, which is why that number is reported
     // rather than asserted — but *holds no code* and *was measured as nothing*

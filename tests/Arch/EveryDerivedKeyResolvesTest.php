@@ -506,7 +506,8 @@ function aPairPerCase(array $cases, Closure $keys): array
     return array_merge(...array_map($keys, $cases));
 }
 
-it('L7 — every key an enum builds for itself is a line the catalogue holds', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every key an enum builds for itself is a line the catalogue holds', function (): void {
     $missing = [];
     $asked = [];
 
@@ -616,7 +617,8 @@ function theEnumDeclaredIn(string $source): ?string
     return sprintf('%s\\%s', $under[1], $called[1]);
 }
 
-it('L7 — every enum that builds a catalogue key is asked above', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every enum that builds a catalogue key is asked above', function (): void {
     // The gap the table's own comment leaves open. `everyDerivedKey()` is
     // maintained by hand for a good reason — a scan would have to guess which
     // methods return keys — but an enum written after the table and never added

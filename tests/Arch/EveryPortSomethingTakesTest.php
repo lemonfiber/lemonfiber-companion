@@ -110,7 +110,8 @@ it('finds the ports the composition root binds', function (): void {
     expect(count(everyPortTheRootBinds()))->toBeGreaterThan(10);
 });
 
-it('G8 — every port the application binds is one something takes', function (): void {
+// G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
+it('every port the application binds is one something takes', function (): void {
     $decorative = [];
 
     foreach (everyPortTheRootBinds() as $port) {
@@ -132,7 +133,8 @@ it('G8 — every port the application binds is one something takes', function ()
     ));
 });
 
-it('G8 — a port that has grown a consumer is taken off the waiting list', function (): void {
+// G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
+it('a port that has grown a consumer is taken off the waiting list', function (): void {
     // The teeth. A register whose entries are never checked is a list that
     // describes the repository as it was, and the entry that goes stale first
     // is the one somebody finally wired up — which is the moment the register
@@ -155,7 +157,8 @@ it('G8 — a port that has grown a consumer is taken off the waiting list', func
     ));
 });
 
-it('G8 — the waiting list does not grow', function (): void {
+// G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
+it('the waiting list does not grow', function (): void {
     expect(count(NOTHING_TAKES_IT_YET))->toBeLessThanOrEqual(HOW_MANY_MAY_WAIT, sprintf(
         "%d ports are bound with nothing taking them, and the ceiling is %d.\n"
         . 'The list may get shorter and may not get longer: a port bound before its first '

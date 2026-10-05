@@ -49,7 +49,8 @@ $ourCode = OurCode::namespaces();
 // 'Illuminate\Support\Facades']` reports nothing at all, while either entry
 // alone reports — so mixing the two kinds silently disables the whole rule.
 foreach (['app', 'resolve'] as $located) {
-    arch(sprintf('A3 — a class asks for what it needs rather than calling %s()', $located))
+    // A3 — no service location
+    arch(sprintf('a class asks for what it needs rather than calling %s()', $located))
         ->expect($located)
         ->not->toBeUsedIn($ourCode);
 }
@@ -66,17 +67,21 @@ $outsideTheComposition = array_values(array_filter(
 ));
 
 foreach (['Illuminate\Support\Facades', 'Illuminate\Container'] as $global) {
-    arch(sprintf('A2/A4 — %s is a global lookup no constructor mentions', $global))
+    // A2 — no facades
+    // A4 — no container-reaching helpers
+    arch(sprintf('%s is a global lookup no constructor mentions', $global))
         ->expect($global)
         ->not->toBeUsedIn($outsideTheComposition);
 }
 
-arch('A5 — configuration is read from config, never from the environment')
+// A5 — env() only inside config/
+arch('configuration is read from config, never from the environment')
     ->expect('env')
     ->toOnlyBeUsedIn('Config');
 
 foreach (['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'] as $orm) {
-    arch(sprintf('A1 — no %s anywhere', $orm))
+    // A1 — no Eloquent, no Active Record
+    arch(sprintf('no %s anywhere', $orm))
         ->expect($orm)
         ->not->toBeUsedIn($ourCode);
 }
@@ -90,7 +95,8 @@ foreach (['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'] as $orm) 
 // ---------------------------------------------------------------------------
 
 foreach (['Carbon', 'Illuminate\Support\Carbon', 'DateTime', 'DateTimeImmutable'] as $ambient) {
-    arch(sprintf('B1 — %s does not reach the kernel', $ambient))
+    // B1 — time only through the Clock port
+    arch(sprintf('%s does not reach the kernel', $ambient))
         ->expect($ambient)
         ->not->toBeUsedIn('Modules\Kernel\Api');
 }
@@ -111,7 +117,8 @@ foreach (['Carbon', 'Illuminate\Support\Carbon', 'DateTime', 'DateTimeImmutable'
 // constructors, which is the half that matters — a file can throw a global
 // `\RuntimeException` without importing anything.
 foreach (['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentException'] as $bare) {
-    arch(sprintf('C3 — %s says nothing a catch block can act on', $bare))
+    // C3 — every thrown exception is module-owned, never bare \Exception/\RuntimeException
+    arch(sprintf('%s says nothing a catch block can act on', $bare))
         ->expect($bare)
         ->not->toBeUsedIn($ourCode);
 }
@@ -126,16 +133,19 @@ foreach (['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentExc
 // expectation — the name of the failing rule is what tells you which word was
 // used, so each word gets its own name.
 foreach (['Manager', 'Helper', 'Util', 'Utils', 'Service', 'Data', 'Info'] as $vague) {
-    arch(sprintf('H1 — no class is named %s, a name that permits anything', $vague))
+    // H1 — no Manager, Helper, Util, Service, Data, Info suffixes
+    arch(sprintf('no class is named %s, a name that permits anything', $vague))
         ->expect($ourCode)
         ->not->toHaveSuffix($vague);
 }
 
-arch('H2 — an interface is named for what it does, not for being an interface')
+// H2 — no Interface/Abstract affixes on type names
+arch('an interface is named for what it does, not for being an interface')
     ->expect($ourCode)
     ->not->toHaveSuffix('Interface');
 
-arch('H2 — an abstract class is named for what it is, not for being abstract')
+// H2 — no Interface/Abstract affixes on type names
+arch('an abstract class is named for what it is, not for being abstract')
     ->expect($ourCode)
     ->not->toHavePrefix('Abstract');
 
@@ -145,7 +155,8 @@ arch('H2 — an abstract class is named for what it is, not for being abstract')
 // the catch site, which is where the name is actually used. The suffix also
 // hides the duplicate: StackUnreachableException and CannotReachStackException
 // look like two different things in a directory listing.
-arch('H6 — an exception is named for what happened, not for being an exception')
+// H6 — an exception is named for what happened, not for being an exception
+arch('an exception is named for what happened, not for being an exception')
     ->expect($ourCode)
     ->not->toHaveSuffix('Exception');
 
@@ -184,7 +195,8 @@ arch('no debugging survives a commit')
 // type. This matters most for the screen states (Loading, Ready, Refused,
 // Stale) — shipmonk's ForbidMatchDefaultArmForEnums is the other half, because
 // a `default` arm silently restores the hole the enum just closed.
-arch('D4 — a closed set is an enum, not a handful of string constants')
+// D4 — enums for every closed set, never string constants and never a literal compared against
+arch('a closed set is an enum, not a handful of string constants')
     ->expect($ourCode)
     ->not->toHaveSuffix('Status')
     ->not->toHaveSuffix('State')

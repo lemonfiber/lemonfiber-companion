@@ -18,10 +18,12 @@ use Modules\Operator\View\Components\Action;
 // version of this that always took the drawn label would draw every screen
 // exactly as it does now.
 
-it('F5 — a control answers to its drawn words where it is given no name of its own', function (): void {
+// F5 — every interactive element announces itself to a screen reader
+it('a control answers to its drawn words where it is given no name of its own', function (): void {
     expect(new Action(label: 'Start it')->named)->toBe('Start it');
 });
 
-it('F5 — and to the fuller name where it is', function (): void {
+// F5 — every interactive element announces itself to a screen reader
+it('answers to the fuller name where it is given one', function (): void {
     expect(new Action(label: 'Start it', answersTo: 'Start Sonarr')->named)->toBe('Start Sonarr');
 });

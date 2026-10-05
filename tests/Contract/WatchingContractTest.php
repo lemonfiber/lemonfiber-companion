@@ -254,7 +254,8 @@ it('the operator has no shelf, and that is an answer', function (): void {
     )->said)->toEqual(KindOfObstacle::NotForThisAccount->value);
 });
 
-it('G12 — the payload this suite stands a shelf in with is one a stack would send', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('the payload this suite stands a shelf in with is one a stack would send', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('HeldEnvelope', whatAStackSendsAboutAShelf([
         oneHoldingOnTheWire('a1', 'A film', 'film', 1999),
         oneHoldingOnTheWire('b2', 'A series', 'series', null),

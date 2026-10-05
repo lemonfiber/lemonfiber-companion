@@ -59,7 +59,8 @@ function namesTheKeyArgument(array $arguments): bool
     );
 }
 
-it('C10 — nothing passes an argument that cannot change the answer', function (): void {
+// C10 — no argument that cannot change the answer
+it('nothing passes an argument that cannot change the answer', function (): void {
     $offenders = [];
 
     $sources = [
@@ -96,7 +97,8 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
     ));
 });
 
-it('C10 — the reading finds the argument wherever in the call it was written', function (): void {
+// C10 — no argument that cannot change the answer
+it('the reading finds the argument wherever in the call it was written', function (): void {
     // The judgement, handed both spellings. A collection reaching the call as
     // its own accessor puts a `)` between the function name and the argument,
     // and that is the spelling a rule anchored on the opening bracket cannot

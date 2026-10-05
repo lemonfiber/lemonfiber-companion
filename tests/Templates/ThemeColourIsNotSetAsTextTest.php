@@ -24,7 +24,7 @@ use Tests\Support\Template;
 $templates = Template::all();
 
 foreach ($templates as $template) {
-    it(sprintf('DES-R15 — %s sets no unreadable theme colour as text', $template->path), function () use ($template): void {
+    it(sprintf('%s sets no unreadable theme colour as text', $template->path), function () use ($template): void {
         $offenders = [];
 
         foreach ($template->classStrings() as $classString) {

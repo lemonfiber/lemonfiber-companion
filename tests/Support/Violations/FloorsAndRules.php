@@ -49,7 +49,7 @@ final readonly class FloorsAndRules
                             "floors": {}
                         },
                 JSON,
-                'G7 — every measured tree is held',
+                'every measured tree is held',
                 'bridge/src',
             ),
 
@@ -64,7 +64,7 @@ final readonly class FloorsAndRules
                 'phpunit.xml',
                 '            <directory>bootstrap/Composition</directory>',
                 "            <directory>bootstrap/Composition</directory>\n            <directory>database</directory>",
-                'G7 — no manifest is nearest',
+                'no manifest is nearest',
                 'database',
             ),
 
@@ -79,7 +79,7 @@ final readonly class FloorsAndRules
                     </package>
                   </project>
                 </coverage>
-                XML, 'G9 — every measured tree meets', 'app-modules/health/src is at 25.0%'),
+                XML, 'every measured tree meets', 'app-modules/health/src is at 25.0%'),
         ];
     }
 
@@ -115,7 +115,7 @@ final readonly class FloorsAndRules
                 arch('a namespace nothing registers')
                     ->expect('Native')
                     ->not->toBeUsed();
-                PHP, 'R3 — every namespace an expectation names resolves', 'MalformedRuleTest'),
+                PHP, 'every namespace an expectation names resolves', 'MalformedRuleTest'),
 
             // A tree held to a coverage floor that no gate reads, which is the
             // A port on the waiting list that something now takes. An edit
@@ -206,7 +206,7 @@ final readonly class FloorsAndRules
                 'phpunit.xml',
                 '            <directory>bridge/src</directory>',
                 "            <directory>bridge/src</directory>\n            <directory>lang</directory>",
-                'R4 —',
+                'the analyser reads every tree this repository owns',
                 'lang',
             ),
         ];

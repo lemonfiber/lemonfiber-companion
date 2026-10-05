@@ -123,7 +123,8 @@ function everyRouteTheAppServes(string $stack): array
     return $routes;
 }
 
-it('F15 — every screen the router serves draws something when it is drawn', function (): void {
+// F15 — every screen the router serves is built the way the app builds it, drawn, and draws something
+it('every screen the router serves draws something when it is drawn', function (): void {
     config(['dx.stands_in' => true]);
     app()->register(new DxServiceProvider(app()), force: true);
 

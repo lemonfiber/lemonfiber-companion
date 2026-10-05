@@ -36,7 +36,8 @@ it('refuses a holding with nothing to identify it by', function (): void {
         ->and(fn(): object => HoldingId::called(''))->toThrow(HoldingIsUnnamed::class);
 });
 
-it('C2 — says whether the core dated a holding rather than answering with nothing', function (): void {
+// C2 — no null for absence
+it('says whether the core dated a holding rather than answering with nothing', function (): void {
     // A plain nullable cannot say which of *nobody dated this* and *this is
     // the year* it means, and the guess that gets made is a zero printed
     // beside a title.
@@ -53,7 +54,8 @@ it('C2 — says whether the core dated a holding rather than answering with noth
     expect($dated)->toBe(['1999'])->and($undated)->toBe(['undated']);
 });
 
-it('D1 — hands out a shelf in the order the core listed it', function (): void {
+// D1 — no array in a public Api signature
+it('hands out a shelf in the order the core listed it', function (): void {
     // The order is part of what the collection carries: a shelf arrives
     // ordered by whoever built it, and re-sorting here would be this app
     // deciding what a member sees first.
@@ -89,7 +91,8 @@ it('hands out a list however it was built', function (): void {
     expect($shelf->count())->toBe(1);
 });
 
-it('L1 — names the key a screen shows each medium under', function (): void {
+// L1 — text a person reads comes from the translator
+it('names the key a screen shows each medium under', function (): void {
     expect(Medium::Film->saidOnTheScreen())->toBe('household.medium.film')
         ->and(Medium::Series->saidOnTheScreen())->toBe('household.medium.series')
         ->and(Medium::Other->saidOnTheScreen())->toBe('household.medium.other');

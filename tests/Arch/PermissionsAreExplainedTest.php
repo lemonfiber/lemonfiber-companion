@@ -29,7 +29,7 @@ use Tests\Support\Manifests;
 // builds its own copy of a key is a rule that can pass while the screen shows
 // the key itself.
 
-it('N4-R2 — every permission is explained in the app\'s own words', function (): void {
+it('every permission is explained in the app\'s own words', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {
@@ -56,7 +56,7 @@ it('N4-R2 — every permission is explained in the app\'s own words', function (
     ));
 });
 
-it('N4-R3 — every permission says what still works without it', function (): void {
+it('every permission says what still works without it', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {
@@ -87,7 +87,7 @@ it('N4-R3 — every permission says what still works without it', function (): v
     ));
 });
 
-it('N4-R16 — the local-network purpose is declared, and is not a placeholder', function (): void {
+it('the local-network purpose is declared, and is not a placeholder', function (): void {
     // The one purpose string the platform reads rather than the app: iOS shows
     // `NSLocalNetworkUsageDescription` in its own dialog, and a build without it
     // is rejected at review. A build carrying a marker somebody left for
@@ -121,7 +121,7 @@ it('N4-R16 — the local-network purpose is declared, and is not a placeholder',
     ));
 });
 
-it('N4-R16 — the purpose says what the network is used for, in the operator\'s terms', function (): void {
+it('the purpose says what the network is used for, in the operator\'s terms', function (): void {
     // The half a placeholder check cannot reach. "Required for the app to
     // function" is not a placeholder and is not an explanation either; what the
     // requirement asks for is what the network is *used for*.

@@ -19,7 +19,8 @@ use Tests\Support\Module;
 // whatever they register. That also makes it a composition-root test, which is
 // why it lives in the Feature suite.
 
-it('E5 — no listener reacts to an event its module may not name', function (): void {
+// E5 — a listener obeys the module kinds, checked in the dispatcher rather than in the imports
+it('no listener reacts to an event its module may not name', function (): void {
     $dispatcher = app(Dispatcher::class);
 
     expect($dispatcher)->toBeInstanceOf(Events::class);

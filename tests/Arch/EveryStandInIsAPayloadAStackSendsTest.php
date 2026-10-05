@@ -393,7 +393,8 @@ function everyEnvelopeAStandInJudges(): array
     return $envelopes;
 }
 
-it('G12 — every payload stood in for a stack is read against the contract', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('every payload stood in for a stack is read against the contract', function (): void {
     $said = whatEveryTestFileSays();
     $unchecked = [];
 
@@ -427,7 +428,8 @@ it('G12 — every payload stood in for a stack is read against the contract', fu
     ));
 });
 
-it('G12 — a kind stood in for is one the contract has an envelope for', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('a kind stood in for is one the contract has an envelope for', function (): void {
     $reads = whichEnvelopeReadsEachKind();
     $said = whatEveryTestFileSays();
     $unknown = [];
@@ -457,7 +459,8 @@ it('G12 — a kind stood in for is one the contract has an envelope for', functi
     ));
 });
 
-it('G12 — the rule has something to read, so a silent pass is not one', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('the rule has something to read, so a silent pass is not one', function (): void {
     // What makes the rules above mean anything. A mark that matched no file
     // would report no violations, which reads exactly like compliance — and
     // this is the failure mode the rule exists to catch, arriving through the
@@ -468,7 +471,8 @@ it('G12 — the rule has something to read, so a silent pass is not one', functi
         ->and(whichEnvelopeReadsEachKind())->not->toBe([]);
 });
 
-it('G12 — every envelope a reader unwraps has a stand-in judged against the contract', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('every envelope a reader unwraps has a stand-in judged against the contract', function (): void {
     // The third of the three floors under this rule, and the one about the
     // register rather than about a file. The first is the rule itself: every
     // stand-in judges the body it builds. The second is above: there is at

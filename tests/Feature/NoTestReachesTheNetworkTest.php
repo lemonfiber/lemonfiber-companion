@@ -53,7 +53,8 @@ function aStackNobodyIsListeningOn(): Stack
     );
 }
 
-it('G3 — a stack read with no mock in front of it never reaches a socket', function (): void {
+// G3 — no test reaches the network
+it('a stack read with no mock in front of it never reaches a socket', function (): void {
     // Caught rather than expected, and the class is what is compared. A
     // `toThrow` says only that the wrong thing happened; this says which — and
     // the difference between Saloon's refusal and a connection error is the
@@ -83,7 +84,8 @@ it('G3 — a stack read with no mock in front of it never reaches a socket', fun
     expect($said)->toBe(NoMockResponseFoundException::class);
 });
 
-it('G3 — the facade is stopped as well, for the calls that do not go through the SDK', function (): void {
+// G3 — no test reaches the network
+it('the facade is stopped as well, for the calls that do not go through the SDK', function (): void {
     // The half that was already here. Kept as a case rather than trusted,
     // because the two are arranged in the same `beforeEach` and a change to one
     // is a change to the file the other lives in.
@@ -123,7 +125,8 @@ it('leaves a response behind, for the case below', function (): void {
     expect(MockClient::getGlobal()?->isEmpty())->toBeFalse();
 });
 
-it('G3 — starts with an empty global mock however the last test left it', function (): void {
+// G3 — no test reaches the network
+it('starts with an empty global mock however the last test left it', function (): void {
     expect(MockClient::getGlobal())->not->toBeNull()
         ->and(MockClient::getGlobal()?->isEmpty())->toBeTrue();
 });

@@ -195,7 +195,8 @@ function contractPathFor(string $port): string
     return sprintf('tests/Contract/%sContractTest.php', shortNameOf($port));
 }
 
-it('G2 — the ports this rule judges are found', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('the ports this rule judges are found', function (): void {
     // The floor under every rule below. The reading walks the trees
     // `phpunit.xml` measures and keeps the interfaces among them, so a tree
     // dropped from that file or a class map that stopped resolving leaves each
@@ -204,7 +205,8 @@ it('G2 — the ports this rule judges are found', function (): void {
     expect(ports())->not->toBe([], 'no interface was found in any measured tree, so this rule read nothing');
 });
 
-it('G2 — every port has a contract test', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('every port has a contract test', function (): void {
     $missing = [];
 
     foreach (ports() as $port) {
@@ -231,7 +233,8 @@ it('G2 — every port has a contract test', function (): void {
     ));
 });
 
-it('G2 — every contract is run against at least two implementations', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('every contract is run against at least two implementations', function (): void {
     $candidates = everythingThatCouldImplementOne();
     $thin = [];
 
@@ -259,7 +262,8 @@ it('G2 — every contract is run against at least two implementations', function
     ));
 });
 
-it('G2 — no implementation is left out of its port\'s contract', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('no implementation is left out of its port\'s contract', function (): void {
     $candidates = everythingThatCouldImplementOne();
     $unproven = [];
 
@@ -291,7 +295,8 @@ it('G2 — no implementation is left out of its port\'s contract', function (): 
     ));
 });
 
-it('G2 — every port on the register says why it is waiting', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('every port on the register says why it is waiting', function (): void {
     // A row with no reason is a row nobody can act on, and the reason is the
     // only part that survives the person who wrote it. Whether the wait is a
     // gap or a duplicate of cover that already exists is the difference between
@@ -315,7 +320,8 @@ it('G2 — every port on the register says why it is waiting', function (): void
     ));
 });
 
-it('G2 — a port that has grown a contract comes off the register', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('a port that has grown a contract comes off the register', function (): void {
     // The teeth. A register whose entries are never checked describes the
     // repository as it was, and the entry that goes stale first is the one
     // somebody finally wrote the contract for — which is the moment the
@@ -349,7 +355,8 @@ it('G2 — a port that has grown a contract comes off the register', function ()
     ));
 });
 
-it('G2 — the register does not grow', function (): void {
+// G2 — every port has one contract test, run against the real adapter and its fake
+it('the register does not grow', function (): void {
     expect(count(NOTHING_HOLDS_IT_YET))->toBeLessThanOrEqual(HOW_MANY_MAY_GO_UNHELD, sprintf(
         "%d ports are waiting for a contract, and the ceiling is %d.\n"
         . 'The register may get shorter and may not get longer. A port written before its '

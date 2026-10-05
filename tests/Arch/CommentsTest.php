@@ -292,7 +292,8 @@ function narrativeMarker(string $marker): string
     return sprintf('/(?<![A-Za-z])%ss?(?![A-Za-z])/i', preg_quote($marker, '/'));
 }
 
-it('K1 — a comment says what is true, not what happened', function (): void {
+// K1 — a comment states the situation and why, never the history of how it came to be
+it('a comment says what is true, not what happened', function (): void {
     // Split so that this list is not itself a run of the phrases it refuses.
     $markers = [
         'previous' . 'ly', 'used ' . 'to be', 'was ' . 'broken', 'I ' . 'found',
@@ -370,7 +371,8 @@ function templatesIn(array $lines): array
     return $named;
 }
 
-it('K2 — a docblock says what a type cannot', function (): void {
+// K2 — a docblock only where a native type cannot speak
+it('a docblock says what a type cannot', function (): void {
     $offenders = [];
     $read = [];
 
@@ -414,7 +416,8 @@ it('K2 — a docblock says what a type cannot', function (): void {
     ));
 });
 
-it('K3 — a docblock does not say the same thing twice', function (): void {
+// K3 — a docblock says a thing once
+it('a docblock does not say the same thing twice', function (): void {
     // The defect this exists for was a paragraph pasted twice into
     // `PairingIsNotReadable`, with every `{@see}` and every backticked class
     // name stripped out of the copy. What was left read as a sentence with
@@ -463,7 +466,8 @@ it('K3 — a docblock does not say the same thing twice', function (): void {
     ));
 });
 
-it('K4 — a docblock has something to describe', function (): void {
+// K4 — a docblock describes a symbol, never another docblock
+it('a docblock has something to describe', function (): void {
     // A docblock on the line after another docblock describes nothing. PHP
     // attaches the *second* one to whatever follows, and the first is left
     // pointing at it — so the method it was written for now has none, and the

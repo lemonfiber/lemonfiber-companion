@@ -41,7 +41,8 @@ function everyMethodATemplateAsksFor(Template $template): array
     return array_values(array_unique($asked[1]));
 }
 
-it('F10 — every method a template calls is one its screen has', function (): void {
+// F10 — every method a template calls is one its screen has, and every screen that renders is paired
+it('every method a template calls is one its screen has', function (): void {
     $screens = Screens::byTheViewTheyRender();
 
     // Assert the reading before what it says. A mapping that found no screens
@@ -117,7 +118,8 @@ function theStateABindingCanReach(ReflectionClass $screen): array
     return $kept;
 }
 
-it('F10 — every property a template binds is one its screen keeps where a binding can reach it', function (): void {
+// F10 — every method a template calls is one its screen has, and every screen that renders is paired
+it('every property a template binds is one its screen keeps where a binding can reach it', function (): void {
     // The same join as the case above, for state rather than for a method, and
     // it is the one that became silent. `nativephp/mobile` 4.4.1 expanded a
     // binding to a bare variable, so a name the screen did not keep was an
@@ -173,7 +175,8 @@ it('F10 — every property a template binds is one its screen keeps where a bind
         ));
 });
 
-it('F10 — every screen that renders is one this rule pairs', function (): void {
+// F10 — every method a template calls is one its screen has, and every screen that renders is paired
+it('every screen that renders is one this rule pairs', function (): void {
     // The other direction, and it is about the mapping rather than the markup:
     // a screen whose `render()` this could not read would be silently left out,
     // and a rule that quietly judges eight of ten files is the shape every

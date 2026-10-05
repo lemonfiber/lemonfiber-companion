@@ -77,7 +77,8 @@ function everyScreen(): array
     return $found;
 }
 
-it('F2 — a presenter is handed data, not a way to go and get it', function (): void {
+// F2 — presenters are pure
+it('a presenter is handed data, not a way to go and get it', function (): void {
     $offenders = [];
 
     foreach (everyPresenter() as $name) {
@@ -118,7 +119,8 @@ it('F2 — a presenter is handed data, not a way to go and get it', function ():
 // This is F2's, and it is kept beside F2 rather than there for that reason: the
 // two must move together if the directory is ever renamed.
 
-it('F2 — the presenters the rule judges are found', function (): void {
+// F2 — presenters are pure
+it('the presenters the rule judges are found', function (): void {
     // A floor rather than a count, because an exact number is a number somebody
     // edits to make a red run green — and what is worth catching is not one
     // presenter arriving or leaving, it is the set collapsing, which is what a
@@ -141,7 +143,8 @@ it('F2 — the presenters the rule judges are found', function (): void {
         ->and(count(everyPresenter()))->toBeGreaterThanOrEqual(count(everyScreen()));
 });
 
-it('F2 — the selection is watched refusing', function (): void {
+// F2 — presenters are pure
+it('the selection is watched refusing', function (): void {
     // The assertion above holds just as well for a selection that says yes to
     // everything, and that is the failure this whole file is about. So the
     // filter is handed the two shapes it has to tell apart: a screen and a view

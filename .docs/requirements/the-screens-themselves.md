@@ -21,7 +21,7 @@ requirement is right and this page is a defect.
 | `N1-R63` | Pairing a machine already held updates it rather than adding a second, and the screen says so | `PairByScanning`, `PairByTyping`, through `Remembering`; `HowThePairingWent::PairedAgain` |
 | `N1-R64` | A re-pairing that changed the certificate ends the session, and the screen says to sign in again | `HowThePairingWent::PairedAgainOnANewCertificate` |
 | `N4-R1` | The platform's prompt is raised at the point of first use, not on launch | the camera opens when the operator asks for it (`PermissionTest`, `NotifierContractTest`) |
-| `N4-R2` | The app's own sentence goes up first, in front of a button; the button is what opens the camera | `PairByScanning` (`AskedTest`, `ScanningContractTest`) |
+| `N4-R2` | The app's own sentence goes up first, in front of a button; the button is what opens the camera | `PairByScanning` (`AskedTest`, `ScanningContractTest`, `PermissionsAreExplainedTest`) |
 | `N4-R2` | The app's own reason for the local network, and what still works without it, come before the first pairing, which is the reach the platform asks permission at | `WhereTheFirstRunIs::TheLocalNetwork`, the step before pairing, drawing `Permission::LocalNetwork`'s reason and alternative; `TheFirstRunIsASequenceTest` |
 | `N4-R4` | Something declined is not re-asked for automatically | there is a button rather than an automatic retry (`AskedTest`, `NotifierContractTest`) |
 

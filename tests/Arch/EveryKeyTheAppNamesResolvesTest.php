@@ -83,7 +83,8 @@ function keysNamedInSource(): array
     return $found;
 }
 
-it('L7 — every key the application names is in the catalogue', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every key the application names is in the catalogue', function (): void {
     $named = keysNamedInSource();
 
     // Not a guard against an empty repository — a guard against the patterns

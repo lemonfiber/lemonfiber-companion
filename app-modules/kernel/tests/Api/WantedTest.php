@@ -88,7 +88,8 @@ it('says which requests are waiting on the operator', function (): void {
     expect($wanting)->toBe(['waiting-for-approval']);
 });
 
-it('L7 — every standing names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every standing names a line, built from the case', function (): void {
     foreach (Waiting::cases() as $standing) {
         expect($standing->saidOnTheScreen())
             ->toBe(sprintf('household.%s', $standing->value), $standing->name);

@@ -70,7 +70,7 @@ final readonly class Templates
                 <native:column class="{{ $open ? 'bg-theme-accnt' : 'bg-red-500' }}">
                     <native:text class="{{ $open ? 'text-theme-accent' : '' }}">{{ __('health.standing.healthy') }}</native:text>
                 </native:column>
-                BLADE, 'F9 —', 'runtime-class'),
+                BLADE, 'no class list in a template is decided at runtime', 'runtime-class'),
 
             // A field somebody types into, with nothing to say for itself. The
             // component the screens use rather than one they do not, because
@@ -226,7 +226,7 @@ final readonly class Templates
                         return 'the loft';
                     }
                 }
-                PHP, 'F17 — every screen about a stack in either surface carries the menu', 'AScreenWithoutTheMenu'),
+                PHP, 'every screen about a stack in either surface carries the menu', 'AScreenWithoutTheMenu'),
 
             Fixture::suite('F17', 'app-modules/household/src/Internal/Screens/Fixtures/AMembersScreenWithoutTheMenu.php', <<<'PHP'
                 <?php
@@ -242,14 +242,14 @@ final readonly class Templates
                         return 'the loft';
                     }
                 }
-                PHP, 'F17 — every screen about a stack in either surface carries the menu', 'AMembersScreenWithoutTheMenu'),
+                PHP, 'every screen about a stack in either surface carries the menu', 'AMembersScreenWithoutTheMenu'),
 
             Fixture::edit(
                 'F18',
                 'app-modules/stacks/src/Api/AStacksScreen.php',
                 "    case Reset = '/stacks/{stack}/reset';",
                 "    case Reset = '/stacks/{stack}/reset';\n\n    case Stranded = '/stacks/{stack}/stranded';",
-                'F18 — every screen of one stack is a tab, a menu item',
+                'every screen of one stack is a tab, a menu item',
                 'Stranded',
             ),
 
@@ -258,7 +258,7 @@ final readonly class Templates
                 'lang/nl/navigation.php',
                 "        'requests' => 'Verzoeken',",
                 "        'requests' => 'Alles wat het huishouden heeft gevraagd.',",
-                'L8 — every navigation label is at most three words',
+                'every navigation label is at most three words',
                 'navigation.menu.requests',
             ),
         ];

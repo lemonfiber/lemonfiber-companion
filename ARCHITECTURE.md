@@ -865,11 +865,10 @@ This repository holds none. `NoRequirementIdInACommentTest` is what keeps it
 that way, and it is a flat refusal rather than a ratchet: a floor that has
 reached the ground is a rule rather than a promise.
 
-The Kotlin and Swift under `bridge/` are held by the same file, and the rule is
-wider on that side. A native source may not name a requirement anywhere — in a
-comment or in a test's own title. Both languages write their test names as
-sentences a reader reads, and neither has a middle layer to put a citation in, so
-there is nowhere in either that a number would be doing anything but gesturing.
+The rule reaches a test's own title too, in PHP as in the Kotlin and Swift under
+`bridge/`: a test's name is a sentence a reader reads, and the row that cites the
+requirement names the test file, so a number in the title would be doing nothing
+but gesturing (G13). A native source may not name a requirement anywhere.
 
 ### Tests
 
@@ -887,6 +886,8 @@ there is nowhere in either that a number would be doing anything but gesturing.
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 | G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
 | G12 | A suite standing a payload in for a stack reads it against the contract | arch: over the suites that write a wire body |
+| G13 | No test's title names a requirement: the requirement's row under `.docs/requirements/` names the test file instead | arch: `NoRequirementIdInACommentTest`, over every `it`, `test`, `arch` and `describe` title in the PHP test trees, as it already reads every Kotlin and Swift test |
+| G14 | No test's title names a rule: an architecture test carries its rule's identifier in a comment directly above it, which is where `TheRulesAreRealTest` reads it | arch: `NoRuleIdInATestTitleTest`, over every `it`, `test` and `arch` title in the PHP test trees |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else

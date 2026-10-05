@@ -40,7 +40,7 @@ final readonly class SizeAndPlacement
                 it('is the only test that will run', function (): void {
                     expect(true)->toBeTrue();
                 })->only();
-                PHP, 'G6 —', 'NarrowedTest'),
+                PHP, 'no committed ->only(, and no skip without a reason', 'NarrowedTest'),
 
             // The row's other half, and the shape that is not empty brackets.
             // `skip(true)` switches a test off as completely as `skip()` does
@@ -57,7 +57,7 @@ final readonly class SizeAndPlacement
                 it('is switched off, and says nothing about what it is waiting for', function (): void {
                     expect(true)->toBeTrue();
                 })->skip(true);
-                PHP, 'G6 —', 'SilentlySkippedTest'),
+                PHP, 'no committed ->only(, and no skip without a reason', 'SilentlySkippedTest'),
 
             Fixture::suite('H7', 'app-modules/health/tests/Fixtures/MiscTest.php', <<<'PHP'
                 <?php
@@ -67,7 +67,7 @@ final readonly class SizeAndPlacement
                 it('holds a behaviour', function (): void {
                     expect(true)->toBeTrue();
                 });
-                PHP, 'H7 —', 'MiscTest'),
+                PHP, 'a test is named for the behaviour it pins', 'MiscTest'),
 
             Fixture::suite('G8', 'app-modules/kernel/src/Api/Fixtures/Unbound.php', <<<'PHP'
                 <?php
@@ -80,7 +80,7 @@ final readonly class SizeAndPlacement
                 {
                     public function answer(): string;
                 }
-                PHP, 'G8 —', 'Unbound'),
+                PHP, 'every port is bound to exactly one adapter', 'Unbound'),
 
             // A port with no contract beside it. The same shape as `Unbound`
             // above and reported by a different rule, which is the point: one
@@ -97,7 +97,7 @@ final readonly class SizeAndPlacement
                 {
                     public function answer(): string;
                 }
-                PHP, 'G2 —', 'Unproven'),
+                PHP, 'every port has a contract test', 'Unproven'),
         ];
     }
 
@@ -113,7 +113,7 @@ final readonly class SizeAndPlacement
                 namespace Bootstrap;
 
                 final readonly class Stray {}
-                PHP, 'W1 —', 'Stray'),
+                PHP, 'the composition root is the only class under bootstrap/', 'Stray'),
 
             // A namespace no autoloader maps, rather than another real module's:
             // PSR-4 would resolve the same file under two names and PHP would
@@ -126,11 +126,11 @@ final readonly class SizeAndPlacement
                 namespace Modules\Elsewhere\Fixtures;
 
                 final readonly class Borrowed {}
-                PHP, 'W2 —', 'Borrowed'),
+                PHP, 'a module declares only its own namespace', 'Borrowed'),
 
             Fixture::suite('W3', 'resources/views/Fixtures/stray.blade.php', <<<'BLADE'
                 <native:text>a screen with no module</native:text>
-                BLADE, 'W3 —', 'stray.blade.php'),
+                BLADE, 'the root holds suites, not scattered tests', 'stray.blade.php'),
 
             // W3's other clause. The fixture above is a Blade file in the root
             // view directory; this is a test file in the root `tests/` that is
@@ -145,7 +145,7 @@ final readonly class SizeAndPlacement
                 it('sits in no suite at all', function (): void {
                     expect(true)->toBeTrue();
                 });
-                PHP, 'W3 —', 'tests/Fixtures'),
+                PHP, 'the root holds suites, not scattered tests', 'tests/Fixtures'),
 
             Fixture::suite('W4', 'app-modules/health/tests/Fixtures/BorrowedTest.php', <<<'PHP'
                 <?php
@@ -157,7 +157,7 @@ final readonly class SizeAndPlacement
                 it('answers to another module', function (): void {
                     expect(true)->toBeTrue();
                 });
-                PHP, 'W4 —', 'BorrowedTest'),
+                PHP, 'a module test answers to its module', 'BorrowedTest'),
 
             // Two classes in one source file, which is the case `W6` exists
             // for: the first answers for the path and the second is judged by
@@ -187,7 +187,7 @@ final readonly class SizeAndPlacement
                 {
                     public function __construct(public string $said = '') {}
                 }
-                PHP, 'W6 —', 'TheSecondOneNobodySees'),
+                PHP, 'a source file declares one class', 'TheSecondOneNobodySees'),
 
             Fixture::suite('W5', 'app-modules/health/tests/Fixtures/SaysNothingTest.php', <<<'PHP'
                 <?php
@@ -199,7 +199,7 @@ final readonly class SizeAndPlacement
                 it('imports a name into the namespace it is already in', function (): void {
                     expect(Closure::class)->toBe('Closure');
                 });
-                PHP, 'W5 —', 'SaysNothingTest'),
+                PHP, 'no import in a global-namespace file says nothing', 'SaysNothingTest'),
 
             // Inside the SDK module, because that is where W7 looks — a reader
             // planted anywhere else would prove the rule green while refusing
@@ -222,7 +222,7 @@ final readonly class SizeAndPlacement
                         return $envelope->data;
                     }
                 }
-                PHP, 'W7 —', 'ReadsUnchecked'),
+                PHP, 'every reader puts its envelope through the wire gate', 'ReadsUnchecked'),
 
             // A source file, not a test: C10 exempts tests deliberately, so a
             // fixture planted under `tests/` would prove the rule green while
@@ -269,7 +269,7 @@ final readonly class SizeAndPlacement
                         return iterator_to_array($findings, preserve_keys: false);
                     }
                 }
-                PHP, 'C10 —', 'KeepsKeys.php'),
+                PHP, 'nothing passes an argument that cannot change the answer', 'KeepsKeys.php'),
 
             // The same argument with the collection arriving as a call, which
             // is how a query hands over its own. It needs a fixture of its own
@@ -300,7 +300,7 @@ final readonly class SizeAndPlacement
                         return $findings;
                     }
                 }
-                PHP, 'C10 —', 'KeepsKeysFromACall.php'),
+                PHP, 'nothing passes an argument that cannot change the answer', 'KeepsKeysFromACall.php'),
         ];
     }
 }

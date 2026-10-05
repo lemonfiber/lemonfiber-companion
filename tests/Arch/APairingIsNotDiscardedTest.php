@@ -52,7 +52,7 @@ function everyRemovingMethodOf(string $named): array
     return $found;
 }
 
-it('N1-R34 — the port that keeps a pairing offers one way to take it away, and only that', function (): void {
+it('the port that keeps a pairing offers one way to take it away, and only that', function (): void {
     expect(everyRemovingMethodOf(Stacks::class))->toBe(['forgetTheStack'], sprintf(
         "`Stacks` declares these, and each of them takes a pairing away:\n  %s\n\n"
         . '`N1-R34` says a discard of retained state must not take the pairing or its pinned '
@@ -61,7 +61,7 @@ it('N1-R34 — the port that keeps a pairing offers one way to take it away, and
     ));
 });
 
-it('N1-R34 — nor does the adapter that writes it down', function (): void {
+it('the adapter that writes a pairing down offers no other way to take it away either', function (): void {
     // The same failure one layer down and reachable by anything in that module,
     // which is why the port alone is not enough to ask.
     expect(everyRemovingMethodOf(PlatformStacks::class))->toBe(['forgetTheStack']);
@@ -76,7 +76,7 @@ it('the port that keeps a session still offers signing out beside the removal, w
     expect(everyRemovingMethodOf(SecureStorage::class))->toBe(['forget', 'forgetTheStack']);
 });
 
-it('N1-R34 — nothing but removing a stack from the phone asks to forget one', function (): void {
+it('nothing but removing a stack from the phone asks to forget one', function (): void {
     $root = dirname(__DIR__, 2);
     $composition = glob(sprintf('%s/bootstrap/Composition/*.php', $root));
     $sources = $composition === false ? [] : $composition;

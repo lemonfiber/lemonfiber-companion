@@ -23,7 +23,8 @@ use Tests\Support\WhereAScreenCanSendYou;
 // `@navigate` transitively. The reachable set is the answer; a screen outside it
 // is named.
 
-it('F12 — the app opens on a screen the router serves', function (): void {
+// F12 — every screen can be reached from the one the app opens on, by following navigation from screen to screen
+it('the app opens on a screen the router serves', function (): void {
     // The entry is derived rather than named. A rule that started at
     // `your-stacks` because somebody wrote that down would go on passing on the
     // day the app opens on something else, having walked from a screen nobody
@@ -46,7 +47,8 @@ it('F12 — the app opens on a screen the router serves', function (): void {
     ));
 });
 
-it('F12 — every screen the router serves is one this walk knows about', function (): void {
+// F12 — every screen can be reached from the one the app opens on, by following navigation from screen to screen
+it('every screen the router serves is one this walk knows about', function (): void {
     // The floor, and it is not a number somebody picked. Two readings find
     // screens — the router's registry, and the class discovery every module
     // rule is built on — and this rule is only as good as the second. Package
@@ -75,7 +77,8 @@ it('F12 — every screen the router serves is one this walk knows about', functi
     ));
 });
 
-it('F12 — every way off a screen names a screen this rule can follow', function (): void {
+// F12 — every screen can be reached from the one the app opens on, by following navigation from screen to screen
+it('every way off a screen names a screen this rule can follow', function (): void {
     // An edge that cannot be resolved is the one failure this rule must never
     // absorb. Dropped quietly it goes one of two ways, and the second is the
     // one that matters: a screen reached only through the dropped edge is
@@ -104,7 +107,8 @@ it('F12 — every way off a screen names a screen this rule can follow', functio
     ));
 });
 
-it('F12 — the walk crosses at least one edge for every screen but the first', function (): void {
+// F12 — every screen can be reached from the one the app opens on, by following navigation from screen to screen
+it('the walk crosses at least one edge for every screen but the first', function (): void {
     // The other floor, derived the same way. A graph in which every screen is
     // reachable from one opening screen has an edge arriving at each of the
     // others, so there are at least as many edges as there are screens after
@@ -127,7 +131,8 @@ it('F12 — the walk crosses at least one edge for every screen but the first', 
     ));
 });
 
-it('F12 — every screen can be reached from the one the app opens on', function (): void {
+// F12 — every screen can be reached from the one the app opens on, by following navigation from screen to screen
+it('every screen can be reached from the one the app opens on', function (): void {
     // The rule. Everything above is about whether it is reading anything.
     $where = WhereAScreenCanSendYou::read();
     $screens = theScreensThisWalkKnows();

@@ -24,7 +24,8 @@ pest()->group('holds:bootstrap/Composition');
 // for anything. The composition root is the one place where the answer is
 // wrong, and this is the one test that looks there.
 
-it('G8 — every port is bound to exactly one adapter', function (): void {
+// G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
+it('every port is bound to exactly one adapter', function (): void {
     $unbound = [];
 
     foreach (Module::all() as $module) {
@@ -100,7 +101,8 @@ function builtFromTheContainer(string $port): mixed
     return app()->make($port);
 }
 
-it('G8 — every port resolves to something that is actually that port', function (): void {
+// G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
+it('every port resolves to something that is actually that port', function (): void {
     // `bound()` answers true for a binding that raises the moment anybody asks
     // it for anything, which is the same failure at the same moment with an
     // extra step. A closure naming a class that is not there, an adapter whose

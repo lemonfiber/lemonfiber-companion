@@ -27,7 +27,9 @@ use Tests\Support\Tree;
 // and a file whose declared name does not match its path is skipped by class
 // discovery while still being loaded and run.
 
-it('A6/I1 — declares no static property anywhere in a module', function (): void {
+// A6 — no mutable static state
+// I1 — the runtime is persistent
+it('declares no static property anywhere in a module', function (): void {
     $offenders = [];
     $read = [];
 
@@ -54,7 +56,9 @@ it('A6/I1 — declares no static property anywhere in a module', function (): vo
     ));
 });
 
-it('A6/I1 — nor a static variable inside a method', function (): void {
+// A6 — no mutable static state
+// I1 — the runtime is persistent
+it('no method holds a static variable', function (): void {
     $offenders = [];
 
     $sources = [

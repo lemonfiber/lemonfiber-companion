@@ -40,7 +40,8 @@ function translations(): array
     return $found;
 }
 
-it('L2 — the locales carry the same keys', function (): void {
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('the locales carry the same keys', function (): void {
     $locales = translations();
 
     expect($locales)->not->toBeEmpty('No locale directory was read, so this compares nothing.');
@@ -73,7 +74,8 @@ it('L2 — the locales carry the same keys', function (): void {
     ));
 });
 
-it('L2 — a locale the spell checker cannot read is excluded from it', function (): void {
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('a locale the spell checker cannot read is excluded from it', function (): void {
     $configuration = file_get_contents(Tree::at('typos.toml'));
 
     // Read out of the `extend-exclude` list rather than looked for anywhere in
@@ -107,7 +109,8 @@ it('L2 — a locale the spell checker cannot read is excluded from it', function
     ));
 });
 
-it('L2 — no translation is a placeholder for one', function (): void {
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('no translation is a placeholder for one', function (): void {
     $offenders = [];
 
     foreach (translations() as $locale => $keys) {
@@ -158,7 +161,8 @@ function thePlaceholdersIn(string $line): array
     return array_values(array_unique($named));
 }
 
-it('L2 — every locale names the same placeholders in a line', function (): void {
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('every locale names the same placeholders in a line', function (): void {
     // The gap the parity check above leaves open, and it is not a small one: a
     // key present in both locales with a sentence in each satisfies every rule
     // in this file, and puts the placeholder itself on the glass the day a

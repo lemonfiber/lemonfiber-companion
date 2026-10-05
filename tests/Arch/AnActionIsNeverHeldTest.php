@@ -110,7 +110,7 @@ function saysItHoldsManyOf(string $line, string $held): bool
     ) === 1;
 }
 
-it('N1-R41 — nothing holds a collection of actions waiting to be sent', function (): void {
+it('nothing holds a collection of actions waiting to be sent', function (): void {
     $queues = [];
     $read = [];
 
@@ -147,7 +147,7 @@ it('N1-R41 — nothing holds a collection of actions waiting to be sent', functi
     ));
 });
 
-it('N1-R41 — the reading finds a holding wherever the class wrote it down', function (): void {
+it('the reading finds a holding wherever the class wrote it down', function (): void {
     // The judgement, handed each of the three spellings. A fixture can only be
     // written one way at a time, and the two that were missing are the two this
     // codebase actually uses — so which one a fixture happens to pick is
@@ -164,7 +164,7 @@ it('N1-R41 — the reading finds a holding wherever the class wrote it down', fu
     expect(saysItHoldsManyOf('     * @var list<Finding> $found', 'Attempted'))->toBeFalse();
 });
 
-it('N1-R42 — nothing holds the key that names one attempt', function (): void {
+it('nothing holds the key that names one attempt', function (): void {
     // The rule above reads a queue, and a queue is not the only way a key
     // survives. A property typed `IdempotencyKey` is not an array and carries
     // no `@var`, so it walks past that check entirely — and one is enough: a
@@ -219,7 +219,7 @@ it('N1-R42 — nothing holds the key that names one attempt', function (): void 
     ));
 });
 
-it('N1-R41 — an attempt has no arm meaning "pending"', function (): void {
+it('an attempt has no arm meaning "pending"', function (): void {
     // The absence that keeps the requirement. A third arm would be reasonable
     // to add and is the whole thing the ADR argues against, so its absence is
     // asserted rather than trusted.

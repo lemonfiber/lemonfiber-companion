@@ -100,7 +100,8 @@ function whatIsWrongWith(string $stem, array $declared): string
     return '';
 }
 
-it('W6 — a source file declares one class, and it is the one its path names', function (): void {
+// W6 — a source file declares one class, and it is the one its path names
+it('a source file declares one class, and it is the one its path names', function (): void {
     $offenders = [];
 
     foreach (everySourceFile() as $file) {
@@ -122,7 +123,8 @@ it('W6 — a source file declares one class, and it is the one its path names', 
     ));
 });
 
-it('W6 — the judgement is watched refusing', function (): void {
+// W6 — a source file declares one class, and it is the one its path names
+it('the judgement is watched refusing', function (): void {
     // The two halves, each shown saying no. Asserting only over the tree would
     // hold just as well for a judgement that says yes to everything — and a
     // clean tree is exactly what this repository has today, so there is nothing
@@ -136,7 +138,8 @@ it('W6 — the judgement is watched refusing', function (): void {
     expect(whatIsWrongWith('routes', []))->toBe('');
 });
 
-it('W6 — the files the rule reads are found', function (): void {
+// W6 — a source file declares one class, and it is the one its path names
+it('the files the rule reads are found', function (): void {
     // The guard asked for, on this rule's own selection. It is not the
     // cure for what W6 refuses — that is the whole argument above — but this
     // rule discovers a file list like any other, and that list going empty

@@ -41,7 +41,8 @@ use Tests\Support\Module;
 // one rule in the spec, and a reader who has seen `F4` enforced would take the
 // whole requirement as held.
 
-it('F4 — a screen that waits on a port paints something first', function (): void {
+// F4 — a screen that takes a port carries #[Lazy]; one whose content changes while open carries #[Poll]
+it('a screen that waits on a port paints something first', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
@@ -117,7 +118,7 @@ function waitsOnAPort(ReflectionClass $class): bool
 // only part of "where did this come from" that is visible to a rule at all —
 // what a screen does with the id afterwards is F2 and review.
 
-it('N1-R39 — a screen that shows a stack\'s data is told which stack', function (): void {
+it('a screen that shows a stack\'s data is told which stack', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {

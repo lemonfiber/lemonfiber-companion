@@ -28,7 +28,8 @@ const REACHED_FROM_THEIR_SCREEN = [
     'Versions' => 'Versions details what About says is running, and is reached from About',
 ];
 
-it('F18 — every screen of one stack is a tab, a menu item, or a step named with where it begins', function (): void {
+// F18 — every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins
+it('every screen of one stack is a tab, a menu item, or a step named with where it begins', function (): void {
     $covered = [
         ...array_map(static fn(TheMenu $item): string => $item->screen()->name, TheMenu::cases()),
         ...array_map(static fn(TheTabs $tab): string => $tab->screen()->name, TheTabs::cases()),

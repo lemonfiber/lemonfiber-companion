@@ -62,7 +62,8 @@ it('finds the stores to wall off, and every one bound where a store is bound', f
         )))->toBe([]);
 });
 
-it('A11 — nothing outside a store names a class in it, but the composition root', function (): void {
+// A11 — a store is reached through its port
+it('nothing outside a store names a class in it, but the composition root', function (): void {
     $offenders = [];
 
     foreach (everyFileOutsideAStore() as $file => $module) {

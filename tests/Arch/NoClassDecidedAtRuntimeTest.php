@@ -58,7 +58,8 @@ use Tests\Support\Template;
 // no other rule going red. A requirement that survives only as a side effect is
 // one nobody will think to check when the side effect goes.
 
-it('F9 — no class list in a template is decided at runtime', function (): void {
+// F9 — a class list is written out, never decided at runtime
+it('no class list in a template is decided at runtime', function (): void {
     $refused = [
         // The same attribute `classStrings()` reads, narrowed to the values it
         // cannot hand on: an echo, a raw echo, or a directive written inside

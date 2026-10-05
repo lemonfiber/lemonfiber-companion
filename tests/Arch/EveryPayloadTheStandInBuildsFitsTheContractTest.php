@@ -34,7 +34,7 @@ it('finds the envelopes it claims to read', function (): void {
     expect(WhatTheContractDeclares::everyEnvelope())->not->toBeEmpty();
 });
 
-it('N1-R59 — every payload the stand-in builds is one the contract accepts', function (): void {
+it('every payload the stand-in builds is one the contract accepts', function (): void {
     $refused = [];
 
     foreach (WhatTheContractDeclares::everyEnvelope() as $envelope) {

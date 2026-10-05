@@ -19,7 +19,8 @@ use Tests\Support\Tree;
 // named where it sits: the root `resources/views` walk in W3 is supposed to
 // find nothing, and a floor demanding otherwise would ask for the violation.
 
-it('W1 — the composition root is the only class under bootstrap/', function (): void {
+// W1 — bootstrap/ holds no class but the composition root
+it('the composition root is the only class under bootstrap/', function (): void {
     $strays = [];
     $under = Tree::filesUnder(Tree::at('bootstrap'), '.php');
 
@@ -53,7 +54,8 @@ it('W1 — the composition root is the only class under bootstrap/', function ()
     ));
 });
 
-it('W2 — a module declares only its own namespace', function (): void {
+// W2 — a module's src/ declares only its own namespace
+it('a module declares only its own namespace', function (): void {
     $strays = [];
     $read = [];
 
@@ -80,7 +82,8 @@ it('W2 — a module declares only its own namespace', function (): void {
     ));
 });
 
-it('W3 — the root holds suites, not scattered tests', function (): void {
+// W3 — root tests/ holds only the suites
+it('the root holds suites, not scattered tests', function (): void {
     // Each of these is a suite in phpunit.xml with a job attached to it. A
     // directory that is not one is a directory nothing runs.
     $suites = ['Arch', 'Templates', 'Contract', 'Feature', 'Floors', 'Guards', 'Support'];
@@ -121,7 +124,8 @@ it('W3 — the root holds suites, not scattered tests', function (): void {
     ));
 });
 
-it('W4 — a module test answers to its module', function (): void {
+// W4 — a module's tests are namespaced for that module
+it('a module test answers to its module', function (): void {
     $strays = [];
     $read = [];
 

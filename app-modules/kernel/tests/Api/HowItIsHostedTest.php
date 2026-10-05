@@ -65,7 +65,8 @@ it('every standing keeps its own word, so none is drawn as another', function ()
         ->and(array_unique($said))->toHaveCount(6);
 });
 
-it('L7 — every standing names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every standing names a line, built from the case', function (): void {
     foreach (HowItIsHosted::cases() as $standing) {
         expect($standing->saidOnTheScreen())
             ->toBe(sprintf('stacks.hosting.%s', $standing->value), $standing->name);

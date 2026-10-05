@@ -457,7 +457,7 @@ function everyDoorTheClientHas(): array
     return $found;
 }
 
-it('N1-R4, N2-R12 — the app opens only the doors it has a reason for', function (): void {
+it('the app opens only the doors it has a reason for', function (): void {
     $opened = everyDoorTheAppOpens();
 
     expect($opened)->not->toBe([], 'no call on a client was found anywhere, so this rule read nothing');
@@ -494,7 +494,7 @@ it('every door this rule names is one the client still has', function (): void {
     ));
 });
 
-it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a name', function (): void {
+it('the door that writes whatever it is told is never told a name', function (): void {
     // Named rather than left to the list above, because this is the one that
     // matters and a reader of the list should not have to work out which.
     // Asked by name through reflection, so a client that stopped having `act()`
@@ -531,7 +531,7 @@ it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a n
     ));
 });
 
-it('N2-R7 — every action this app asks for has a reason, and every reason an action', function (): void {
+it('every action this app asks for has a reason, and every reason an action', function (): void {
     // Both directions, because they catch different mistakes. The forward check
     // finds a case that lost its reason; only the reverse finds the verb
     // somebody adds to this list by hand, which is the edit that would widen

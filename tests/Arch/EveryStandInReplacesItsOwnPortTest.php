@@ -25,7 +25,7 @@ use Modules\Dx\Internal\TheStandIns;
 // Written over the registry rather than over the one entry in it, so the day a
 // second arrives this covers it without being edited.
 
-it('Q-R72 — no two stand-ins claim the same port', function (): void {
+it('no two stand-ins claim the same port', function (): void {
     $claimed = [];
     $twice = [];
 
@@ -50,7 +50,7 @@ it('Q-R72 — no two stand-ins claim the same port', function (): void {
     ));
 });
 
-it('Q-R72 — a stand-in replaces a port, and answers with something that is one', function (): void {
+it('a stand-in replaces a port, and answers with something that is one', function (): void {
     $wrong = [];
 
     foreach (TheStandIns::all() as $standIn) {

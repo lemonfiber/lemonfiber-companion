@@ -137,7 +137,8 @@ it('finds the store classes it judges', function (): void {
     expect(everyStoreClass())->not->toBe([]);
 });
 
-it('A12 — a store class takes and gives only sealed payloads, keyed hashes and their bookkeeping', function (): void {
+// A12 — a store takes and gives only what is sealed
+it('a store class takes and gives only sealed payloads, keyed hashes and their bookkeeping', function (): void {
     $offenders = [];
 
     foreach (everyStoreClass() as $store) {

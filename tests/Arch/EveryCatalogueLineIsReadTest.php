@@ -141,7 +141,8 @@ function everyKeyADerivationCouldBuild(string $said): array
     return $built;
 }
 
-it('L7 — every line the catalogue holds is one the application can show', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every line the catalogue holds is one the application can show', function (): void {
     $said = everythingTheAppSays();
     $reachable = everyKeyADerivationCouldBuild($said);
     $waiting = writtenBeforeItsScreen();
@@ -167,7 +168,8 @@ it('L7 — every line the catalogue holds is one the application can show', func
     ));
 });
 
-it('L7 — no line waits for a screen that has already arrived', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('no line waits for a screen that has already arrived', function (): void {
     // The exemption list cannot be allowed to go stale, for the reason
     // `composer-dependency-analyser.php` writes out about its own: an ignore
     // that no longer applies is a dead line somebody has to wonder about, and

@@ -109,7 +109,9 @@ const MUTABLE_BY_DESIGN = [
 ];
 
 foreach ($modules as $module) {
-    it(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value), function () use ($module): void {
+    // A7 — Illuminate\* forbidden in kernel, in a capability everywhere but its store
+    // E4 — Native\* confined to design, surface, wayfinding, device, vault
+    it(sprintf('%s stays inside what a %s module may name', $module->name, $module->kind->value), function () use ($module): void {
         $offenders = reachesOutsideItsKind($module);
 
         expect($offenders)->toBe([], sprintf(
@@ -124,7 +126,8 @@ foreach ($modules as $module) {
         ));
     });
 
-    it(sprintf("E1 — %s respects the other modules' boundaries", $module->name), function () use ($module): void {
+    // E1 — module kind enforcement
+    it(sprintf("%s respects the other modules' boundaries", $module->name), function () use ($module): void {
         $offenders = reachesOutside($module, $module->forbiddenModuleNamespaces());
 
         expect($offenders)->toBe([], sprintf(
@@ -136,7 +139,8 @@ foreach ($modules as $module) {
         ));
     });
 
-    it(sprintf('E2 — %s publishes an Api and keeps the rest to itself', $module->name), function () use ($module): void {
+    // E2 — Api is the published surface
+    it(sprintf('%s publishes an Api and keeps the rest to itself', $module->name), function () use ($module): void {
         $internal = sprintf('%s\\Internal', $module->namespace);
         $intruders = [];
 
@@ -301,7 +305,8 @@ function reachesOutsideItsKind(Module $module): array
 // Two names rather than a prefix, so a third module cannot arrive here by
 // accident: this list is short enough that adding to it is a decision somebody
 // makes on purpose.
-arch('E3 — the SDK is named in exactly one module, and read by the one that stands in for it')
+// E3 — the SDK is named only by the sdk adapter and by the stand-in for it
+arch('the SDK is named in exactly one module, and read by the one that stands in for it')
     ->expect('Lemonfiber\Sdk')
     ->toOnlyBeUsedIn(['Modules\Sdk', 'Modules\Dx']);
 
@@ -314,19 +319,23 @@ arch('E3 — the SDK is named in exactly one module, and read by the one that st
 // One symbol per rule: a list on the left of an expectation is read as "uses
 // all of these", and a class, a facade and a function in one list report
 // nothing at all.
-arch('S4 — the encrypter is named in the seal module and nowhere else')
+// S4 — Illuminate\Encryption\Encrypter is named in the seal module and nowhere else
+arch('the encrypter is named in the seal module and nowhere else')
     ->expect('Illuminate\Encryption\Encrypter')
     ->toOnlyBeUsedIn('Modules\Seal');
 
-arch('S5 — the Crypt facade is named in the seal module and nowhere else')
+// S5 — the Crypt facade is named in the seal module and nowhere else
+arch('the Crypt facade is named in the seal module and nowhere else')
     ->expect('Illuminate\Support\Facades\Crypt')
     ->toOnlyBeUsedIn('Modules\Seal');
 
-arch('S6 — a keyed hash is taken in the seal module and nowhere else')
+// S6 — hash_hmac is called in the seal module and nowhere else
+arch('a keyed hash is taken in the seal module and nowhere else')
     ->expect('hash_hmac')
     ->toOnlyBeUsedIn('Modules\Seal');
 
-it('E3 — only the sdk adapter speaks HTTP', function (): void {
+// E3 — the SDK is named only by the sdk adapter and by the stand-in for it
+it('only the sdk adapter speaks HTTP', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
@@ -406,7 +415,8 @@ arch('nothing opens a socket by hand')
 // of these", so three adapters in one expectation would report only a module
 // that named every one of them — and a module naming a single adapter, which is
 // the whole failure being guarded against, would pass.
-it('E1 — only the composition root names an adapter', function (): void {
+// E1 — module kind enforcement
+it('only the composition root names an adapter', function (): void {
     $adapters = array_map(
         static fn(Module $m): string => $m->namespace,
         array_values(array_filter(

@@ -210,7 +210,8 @@ it('says a word heard in the future was heard just now', function (): void {
     expect(whatTheRowSays($stack, $standings))->toBe('health.standing.healthy|health.ago.minutes|0');
 });
 
-it('L1 — every band names a line, and it counts on the number beside it', function (): void {
+// L1 — text a person reads comes from the translator
+it('every band names a line, and it counts on the number beside it', function (): void {
     // `trans_choice` is what the template calls, because *a minute ago* and
     // *two minutes ago* are not the same sentence in either language this app
     // speaks. A line written without the plural forms renders the same words

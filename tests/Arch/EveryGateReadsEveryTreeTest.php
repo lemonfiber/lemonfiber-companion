@@ -136,7 +136,8 @@ function relativeTree(string $tree): string
     return trim($tree, '/');
 }
 
-it('R4 — every tree phpunit.xml names is on disk', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('every tree phpunit.xml names is on disk', function (): void {
     // The floor, and it is the one number here that is not written down
     // anywhere: a tree `phpunit.xml` names and nothing matches is a suite that
     // runs nothing or a source tree measured by nothing, and every comparison
@@ -164,7 +165,8 @@ it('R4 — every tree phpunit.xml names is on disk', function (): void {
         ->and(OurCode::phpFiles())->not->toBe([]);
 });
 
-it('R4 — the analyser reads every tree this repository owns', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('the analyser reads every tree this repository owns', function (): void {
     $paths = neonListUnder('paths');
     $unread = [];
 
@@ -186,7 +188,8 @@ it('R4 — the analyser reads every tree this repository owns', function (): voi
     ));
 });
 
-it('R4 — the refactorer reads them too', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('the refactorer reads them too', function (): void {
     $rector = (string) file_get_contents(Tree::at('rector.php'));
 
     preg_match_all("/__DIR__\s*\.\s*'\/([^']+)'/", $rector, $named);
@@ -211,7 +214,8 @@ it('R4 — the refactorer reads them too', function (): void {
     ));
 });
 
-it('R4 — an exemption for the tests names every place tests live', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('an exemption for the tests names every place tests live', function (): void {
     // This repository keeps its tests in three homes: the root suites under
     // `tests/`, each module's own under `app-modules/<name>/tests`, and the
     // plugin's under `bridge/tests`. All three are testsuites in `phpunit.xml`
@@ -250,7 +254,8 @@ it('R4 — an exemption for the tests names every place tests live', function ()
     ));
 });
 
-it('R4 — every tree the coverage floor measures is judged by the architecture rules', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('every tree the coverage floor measures is judged by the architecture rules', function (): void {
     // The third list, and the one with no file of its own to check: the
     // architecture expectations resolve namespaces, not paths, so a tree is in
     // scope exactly when some registered PSR-4 prefix points into it.
@@ -306,7 +311,8 @@ function namesSomethingIn(string $directory): bool
     return false;
 }
 
-it('R4 — every tree the scanner is pointed at is on disk', function (): void {
+// R4 — every tree phpunit.xml measures or runs is read by the analyser, by the refactorer and by the architecture rules
+it('every tree the scanner is pointed at is on disk', function (): void {
     // `sonar-project.properties` names its trees in a file no other rule here
     // reads, and the scanner refuses to start on one that is not there:
     //

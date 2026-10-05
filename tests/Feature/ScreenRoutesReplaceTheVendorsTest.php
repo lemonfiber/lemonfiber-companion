@@ -48,7 +48,8 @@ pest()->group('holds:bootstrap/Composition');
 // for it is still true of the installed package — a fork that outlives its
 // reason is worse than the gap it closed, because nobody goes back to look.
 
-it('A3 — the macro registered is ours, not the package\'s', function (): void {
+// A3 — no service location
+it('the macro registered is ours, not the package\'s', function (): void {
     // Asked of the behaviour rather than of the closure's identity: a macro is
     // a closure in an array, and comparing it to anything would be comparing it
     // to a copy of itself. What distinguishes ours is the router it builds

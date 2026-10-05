@@ -98,7 +98,8 @@ function notTurnedOn(array $declared, array $required): array
     return $found;
 }
 
-it('G11 — the reading that decides both of those can say no', function (): void {
+// G11 — a diagnostic fails the run, and no setting exempts one
+it('the reading that decides both of those can say no', function (): void {
     // The two rules below have only ever been asked about a file where the answer
     // is "nothing missing", and everything they demonstrate in that state is
     // equally true of a function that answers `[]` whatever it is handed. There is
@@ -130,7 +131,8 @@ it('G11 — the reading that decides both of those can say no', function (): voi
         ->toBe(['failOnWarning is not declared']);
 });
 
-it('G11 — a reported diagnostic ends the run', function (): void {
+// G11 — a diagnostic fails the run, and no setting exempts one
+it('a reported diagnostic ends the run', function (): void {
     // Everything PHPUnit can be told to act on that this suite treats as a
     // defect. `failOnSkipped` and `failOnIncomplete` are deliberately absent:
     // G6 permits a skipped test that gives a reason, and a rule here would
@@ -155,7 +157,8 @@ it('G11 — a reported diagnostic ends the run', function (): void {
     ));
 });
 
-it('G11 — a suppressed diagnostic is still reported', function (): void {
+// G11 — a diagnostic fails the run, and no setting exempts one
+it('a suppressed diagnostic is still reported', function (): void {
     // One attribute per kind, because PHPUnit has one per kind and a missing
     // one is silent about exactly the kind it names.
     $missing = notTurnedOn(settingsDeclaredAt('/phpunit/source'), [
@@ -180,7 +183,8 @@ it('G11 — a suppressed diagnostic is still reported', function (): void {
     ));
 });
 
-it('G11 — a diagnostic our code provoked inside a dependency still counts', function (): void {
+// G11 — a diagnostic fails the run, and no setting exempts one
+it('a diagnostic our code provoked inside a dependency still counts', function (): void {
     $declared = settingsDeclaredAt('/phpunit/source');
     $narrowed = [];
 
