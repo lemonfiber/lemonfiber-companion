@@ -113,14 +113,14 @@ final readonly class HowTheLinksRead
     private function asked(string $by, Capability $capability, Services $services, WhatSettledIt $settled, TheClaimants $claimants): ALinkAsShown
     {
         $reached = self::named($services);
+        $asks = ['by' => $by, 'capability' => $capability->named()];
 
         return $settled->whichever(
-            outright: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.outright', ['service' => $reached], $claimants),
-            each: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.each', ['services' => $reached], $claimants),
-            contested: fn(Services $contesting): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.contested', [], $claimants, inTheContestsOrder: $contesting),
+            outright: fn(): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.outright', ['service' => $reached], $claimants),
+            each: fn(): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.each', ['services' => $reached], $claimants),
+            contested: fn(Services $contesting): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.contested', [], $claimants, inTheContestsOrder: $contesting),
             chosen: fn(Services $over, WhoSettledIt $whose, WhyItWasChosen $why): ALinkAsShown => $this->settled(
-                $by,
-                $capability,
+                $asks,
                 $services,
                 $whose === WhoSettledIt::Operator ? 'stacks.wiring.fills.chosen_operator' : 'stacks.wiring.fills.chosen_stack',
                 ['service' => $reached, 'over' => self::named($over)],
@@ -130,24 +130,25 @@ final readonly class HowTheLinksRead
                     unstated: static fn(): WhatTheCatalogueNames => new WhatTheCatalogueNames(''),
                 )->said,
             ),
-            unfilled: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.unfilled', [], $claimants),
+            unfilled: fn(): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.unfilled', [], $claimants),
         );
     }
 
     /**
      * One asked link, as the row that draws it.
      *
-     * @param array<string, string> $settledWith
+     * @param array{by: string, capability: string} $asks        the service that asked and the capability, which fill the line that heads it
+     * @param array<string, string>                 $settledWith
      */
-    private function settled(string $by, Capability $capability, Services $answering, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, string $why = ''): ALinkAsShown
+    private function settled(array $asks, Services $answering, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, string $why = ''): ALinkAsShown
     {
         $shown = $inTheContestsOrder instanceof Services ? $this->contesting($inTheContestsOrder, $claimants) : $this->claiming($claimants);
 
         return new ALinkAsShown(
-            by: $by,
-            capability: $capability->named(),
+            by: $asks['by'],
+            capability: $asks['capability'],
             asks: 'stacks.wiring.fills.asks',
-            asksWith: ['by' => $by, 'capability' => $capability->named()],
+            asksWith: $asks,
             settledSaid: $settledSaid,
             settledWith: $settledWith,
             isContested: $inTheContestsOrder instanceof Services,
