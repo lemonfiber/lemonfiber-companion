@@ -35,6 +35,7 @@ use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -54,6 +55,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChoosesFillers;
 use Tests\Support\Fakes\AStackThatSaysWhatAnswersWhat;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWires;
 use Tests\Support\Fakes\StacksInMemory;
@@ -83,6 +85,7 @@ function theWiringScreen(
     bool $signedIn = true,
     ?AStackThatSupervises $supervising = null,
     ?AStackThatSaysWhatAnswersWhat $linking = null,
+    ?AStackThatSpeaksUp $hearing = null,
 ): HowTheServicesAreWired {
     $stack = theStackWhoseServicesAreWired();
     $keychain ??= AKeychainInMemory::working();
@@ -91,7 +94,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -604,4 +607,34 @@ it('reads the services on the first frame and what answers what on the next, a r
         ->and($screen->waitsForTheNextFrame())->toBeFalse()
         ->and([$supervising->askings(), $linking->askings()])->toBe([1, 1])
         ->and($second)->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']));
+});
+
+it('draws what answers what again from the stack\'s stream when it changes, without reading it again', function (): void {
+    $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
+    $settled = TheLinks::of(
+        WhatNothingFills::none(),
+        aLinkAskingFor('seerr', 'media-server', Services::these(ServiceId::called('plex')), WhatSettledIt::chosen(Services::these(ServiceId::called('jellyfin')), WhoSettledIt::Operator, WhyItWasChosen::unstated()), AClaimant::of(ServiceId::called('jellyfin'), WhoPutItThere::bundled()), AClaimant::of(ServiceId::called('plex'), WhoPutItThere::plugin('plex'))),
+    );
+    $screen = theWiringScreen(AStackThatWires::answering(), linking: $linking, hearing: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::aSignOfLife()->wiredAs($settled)));
+
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->listen();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('stacks.wiring.fills.chosen_operator', ['service' => 'plex', 'over' => 'jellyfin']))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.contested'))
+        ->and($drawn)->not->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
+        ->and($screen->whatAnswersWhat()?->links)->toHaveCount(1)
+        ->and($linking->askings())->toBe(1);
+});
+
+it('leaves what answers what as it was read where the stream says nothing of it', function (): void {
+    $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
+    $screen = theWiringScreen(AStackThatWires::answering(), linking: $linking, hearing: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::aSignOfLife()));
+
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->listen();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
+        ->and($linking->askings())->toBe(1);
 });

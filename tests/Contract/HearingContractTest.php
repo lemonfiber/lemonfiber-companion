@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use Modules\Dx\Internal\WhatAStackWouldSay;
+use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
+use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HowItReaches;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\Instant;
@@ -20,17 +24,25 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\RequestId;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatFollowedFromIt;
+use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -710,4 +722,135 @@ it('stands in for a stack with the newest it names as the contract would accept'
         expect(WhatTheContractAccepts::complaintsAbout('NewsEnvelope', $said))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
     }
+});
+
+/**
+ * What answers what as a stack says it on the stream, changed where a case says.
+ *
+ * @param  array<mixed>  $changed
+ * @return array<string, mixed>
+ */
+function aWiringSaid(string $answering = 'qbittorrent', array $changed = []): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'wiring',
+        'data' => [
+            'wired' => [
+                ['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [$answering], 'settled' => ['settled' => 'outright'], 'origins' => [$answering => ['origin' => 'bundled']]]],
+            ],
+            'unfilled' => [['by' => 'lidarr', 'capability' => 'music-tagger']],
+            ...$changed,
+        ],
+    ];
+}
+
+/**
+ * One wiring event as the core frames it.
+ *
+ * @param  array<mixed>  $changed
+ */
+function aWiringEvent(string $answering = 'qbittorrent', array $changed = []): string
+{
+    return anEvent('wiring', json_encode(aWiringSaid($answering, $changed), JSON_THROW_ON_ERROR));
+}
+
+/** What both implementations answer with, where a stack says that wiring. */
+function theWiringThatStackSaid(): TheLinks
+{
+    return TheLinks::of(
+        WhatNothingFills::these(Unfilled::of(ServiceId::called('lidarr'), Capability::called('music-tagger'))),
+        ALink::from(ServiceId::called('sonarr'), HowItReaches::asked(
+            Capability::called('download-client'),
+            Services::these(ServiceId::called('qbittorrent')),
+            WhatSettledIt::outright(),
+            TheClaimants::these(AClaimant::of(ServiceId::called('qbittorrent'), WhoPutItThere::bundled())),
+        )),
+    );
+}
+
+/** What a wake said of the wiring, as one line, or that it said nothing of it. */
+function whatWasWiredAsAWord(WhatWasHeard $heard): string
+{
+    return $heard->whatAnswersWhat(
+        said: static function (TheLinks $links): TheWordCarriedOut {
+            $wired = [];
+            $unfilled = [];
+
+            foreach ($links as $link) {
+                $wired[] = $link->reaches()->whichever(
+                    asked: static fn(Capability $capability, Services $services): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
+                        '%s asks %s of %s',
+                        $link->by()->named(),
+                        $capability->named(),
+                        implode('+', array_map(static fn(ServiceId $service): string => $service->named(), iterator_to_array($services, preserve_keys: false))),
+                    )),
+                    byName: static fn(ServiceId $service): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s by name to %s', $link->by()->named(), $service->named())),
+                )->said;
+            }
+
+            foreach ($links->unfilled() as $nothing) {
+                $unfilled[] = sprintf('%s lacks %s', $nothing->asking()->named(), $nothing->capability()->named());
+            }
+
+            return new TheWordCarriedOut(sprintf('wired [%s], unfilled [%s]', implode('|', $wired), implode('|', $unfilled)));
+        },
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing wired'),
+    )->said;
+}
+
+/**
+ * What one way of listening hears of the wiring across as many wakes as asked.
+ *
+ * @return list<string>
+ */
+function whatWakesHearWired(Hearing $hearing, int $wakes): array
+{
+    $wired = [];
+
+    for ($wake = 0; $wake < $wakes; $wake++) {
+        $heard = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+        $wired[] = sprintf('%s; %s; %s', whatWasHeardAsAWord($heard), whatWasNamedAsAWord($heard), whatWasWiredAsAWord($heard));
+    }
+
+    return $wired;
+}
+
+it('hears what answers what beside the summary and the newest, and nothing wired where it says nothing of it', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(sprintf('%s%s%s', aDashboardEvent(whatAHealthyStackSaysOfItsHealth()), aNewsEvent(), aWiringEvent()))],
+        [WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())->wiredAs(theWiringThatStackSaid())],
+    ) as $which => $make) {
+        expect(whatWakesHearWired($make(), 2))->toBe([
+            'healthy, 0 wanting, worst "", {}; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]; wired [sonarr asks download-client of qbittorrent], unfilled [lidarr lacks music-tagger]',
+            'closed; nothing named; nothing wired',
+        ], $which);
+    }
+});
+
+it('hears what answers what on its own as a sign of life, and only the last of it', function (): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(sprintf('%s%s', aWiringEvent('transmission'), aWiringEvent()))],
+        [WhatWasHeard::aSignOfLife()->wiredAs(theWiringThatStackSaid())],
+    ) as $which => $make) {
+        expect(whatWakesHearWired($make(), 1))->toBe(['alive; nothing named; wired [sonarr asks download-client of qbittorrent], unfilled [lidarr lacks music-tagger]'], $which);
+    }
+});
+
+it('cannot hear a wiring it cannot read, and says so as a stack that did not answer', function (array $changed): void {
+    foreach (everyWayOfListening(
+        [MockResponse::make(aWiringEvent(changed: $changed))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    ) as $which => $make) {
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+    }
+})->with([
+    'links that are not a list' => [['wired' => 'all of them']],
+    'nothing said of what nothing fills' => [['unfilled' => null]],
+    'a link with no service asking' => [['wired' => [['reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'elsewhere']]]]],
+]);
+
+it('stands in for a stack with the wiring it says as the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('WiringEnvelope', aWiringSaid()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

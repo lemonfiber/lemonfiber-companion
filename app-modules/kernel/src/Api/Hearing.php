@@ -9,7 +9,9 @@ namespace Modules\Kernel\Api;
  *
  * The core publishes its health summary on its event stream and nowhere else,
  * and the newest of each kind it names the same way, so a screen showing
- * either holds the stream rather than reading. Holding it is that screen's one
+ * either holds the stream rather than reading. What answers what rides the
+ * same stream whenever it changes, so a screen drawing it hears each change
+ * without asking again. Holding it is that screen's one
  * read: the stack sends to every listener from the gather it already runs, and
  * taking what arrived sends nothing back.
  *

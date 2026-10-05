@@ -61,7 +61,8 @@ use function view;
  *
  * **What answers what comes first.** Every capability a service asks for,
  * which service answers it and how that was settled, read fresh each time the
- * screen opens and each time it is asked again, and kept nowhere on the phone.
+ * screen opens and each time it is asked again, drawn again whenever the
+ * stack's stream says it changed, and kept nowhere on the phone.
  * A contest is drawn as one, with every claimant and nothing picked.
  *
  * **Choosing who answers is two steps with the operator between them.**
@@ -302,6 +303,12 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             : $this->put(
                 fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->whatBecameOf($stack, $session, Job::named($following)),
             );
+    }
+
+    /** What answers what as the stack's stream says it, drawn in place of what was last read. */
+    protected function heardWhatAnswersWhat(TheLinks $links): void
+    {
+        $this->linked = new HowTheLinksRead()->these($links);
     }
 
     /**

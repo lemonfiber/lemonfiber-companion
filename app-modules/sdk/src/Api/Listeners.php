@@ -17,6 +17,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Generated\NewsEnvelope;
+use Lemonfiber\Sdk\Generated\WiringEnvelope;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
@@ -47,7 +48,10 @@ use Modules\Sdk\Internal\WhatArrivedOnTheStream;
  * once. Each call takes what {@see AStreamHeldOpen::taken()} finds, reads the
  * last `dashboard` event among it, and hands that back, with the last `news`
  * event beside it where one arrived: the newest of each kind the stack names,
- * which it says when a listener arrives and whenever it changes. The wait for
+ * which it says when a listener arrives and whenever it changes. The last
+ * `wiring` event rides beside it the same way: what answers what, said when a
+ * listener arrives and whenever it changes, in the envelope its own reading
+ * answers with. The wait for
  * the next event is spent between calls, on the screen's cadence, rather than
  * inside one.
  *
@@ -128,7 +132,7 @@ final class Listeners implements Hearing
             return $this->heard($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|LinksAreUnreadable|VersionIsBlank|RequestIsUnnumbered $why) {
             $this->letGoOf($stack);
 
             return WhatWasHeard::met($this->clients->whatStoodInTheWay($stack, $why));
@@ -147,6 +151,7 @@ final class Listeners implements Hearing
     {
         $latest = $arrived->theLast(DashboardEnvelope::KIND);
         $newest = $arrived->theLast(NewsEnvelope::KIND);
+        $wiring = $arrived->theLast(WiringEnvelope::KIND);
 
         if ($arrived->ended) {
             $this->letGoOf($stack);
@@ -163,6 +168,8 @@ final class Listeners implements Hearing
             default => WhatWasHeard::nothing(),
         };
 
-        return $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
+        $heard = $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
+
+        return $wiring instanceof ServerEvent ? $heard->wiredAs(Links::in(new EnvelopeReader()->read($wiring->data))) : $heard;
     }
 }

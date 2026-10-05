@@ -9,11 +9,16 @@ use function implode;
 use function it;
 
 use Modules\Kernel\Api\AReleaseNamed;
+use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\Unfilled;
+use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
@@ -69,4 +74,35 @@ it('carries what the stack named as newest beside whichever arm it took, and not
         ->and(theWordForWhatWasNamed($said))->toBe('named 2.4.0')
         ->and(theWordForWhichArmWasHeard($said))->toBe('said healthy')
         ->and(theWordForWhatWasNamed(WhatWasHeard::aSignOfLife()))->toBe('named nothing');
+});
+
+/** What answers what as one word: what nothing fills, or that nothing was said. */
+function theWordForWhatAnswersWhat(WhatWasHeard $heard): string
+{
+    return $heard->whatAnswersWhat(
+        said: static function (TheLinks $links): TheWordCarriedOut {
+            $unfilled = [];
+
+            foreach ($links->unfilled() as $nothing) {
+                $unfilled[] = sprintf('%s lacks %s', $nothing->asking()->named(), $nothing->capability()->named());
+            }
+
+            return new TheWordCarriedOut(sprintf('wired, %s', implode(', ', $unfilled)));
+        },
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('said nothing of the wiring'),
+    )->said;
+}
+
+it('carries what answers what beside whichever arm it took and beside the newest, and nothing where it said nothing', function (): void {
+    $links = TheLinks::of(WhatNothingFills::these(Unfilled::of(ServiceId::called('lidarr'), Capability::called('music-tagger'))));
+    $newest = new TheNewestNamed(WhatTheStackListed::these(AReleaseNamed::versioned('2.4.0')), WhatTheStackListed::these(), WhatTheStackListed::unread());
+    $both = WhatWasHeard::aSignOfLife()->wiredAs($links)->naming($newest);
+    $theOtherWay = WhatWasHeard::aSignOfLife()->naming($newest)->wiredAs($links);
+
+    expect(theWordForWhatAnswersWhat($both))->toBe('wired, lidarr lacks music-tagger')
+        ->and(theWordForWhatWasNamed($both))->toBe('named 2.4.0')
+        ->and(theWordForWhatAnswersWhat($theOtherWay))->toBe('wired, lidarr lacks music-tagger')
+        ->and(theWordForWhatWasNamed($theOtherWay))->toBe('named 2.4.0')
+        ->and(theWordForWhichArmWasHeard($both))->toBe('alive')
+        ->and(theWordForWhatAnswersWhat(WhatWasHeard::aSignOfLife()))->toBe('said nothing of the wiring');
 });

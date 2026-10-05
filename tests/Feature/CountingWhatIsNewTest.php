@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
+use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
@@ -13,12 +14,16 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RequestId;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\Unfilled;
+use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
@@ -174,6 +179,22 @@ it('counts what is new of every kind beside What\'s new, and says it with the la
         ->and(trans_choice('news.new_on_tab', 4, ['tab' => __('navigation.menu.whats_new')]))->toBe('What\'s new, 4 new')
         ->and(trans_choice('news.new_on_tab', 3, ['tab' => __('navigation.menu.whats_new', locale: 'nl')], 'nl'))->toBe('Wat is nieuw, 3 nieuw');
 })->with(['updates', 'the words the menu opens']);
+
+it('counts what is new on a screen that does not draw what answers what, whatever the stream says of the wiring', function (): void {
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $wired = TheLinks::of(WhatNothingFills::these(Unfilled::of(ServiceId::called('lidarr'), Capability::called('music-tagger'))));
+    $stream = AStackThatSpeaksUp::holdingOpen(
+        whatTheBarnNamesAsNewest(['2.3.0'], [9], [['disk.space', 1_790_000_000]])->wiredAs($wired),
+        whatTheBarnNamesAsNewest(['2.4.0', '2.3.0'], [11, 10, 9], [['vpn.leak', 1_790_000_600], ['disk.space', 1_790_000_000]])->wiredAs($wired),
+    );
+    $screen = aBarnScreenHearing('updates', $stream, $clock);
+
+    $screen->listen();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $screen->listen();
+
+    expect(theWhatsNewRow($screen)['badge'])->toBe('4');
+});
 
 it('draws no count beside What\'s new where nothing is new, as on the first reading', function (): void {
     $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
