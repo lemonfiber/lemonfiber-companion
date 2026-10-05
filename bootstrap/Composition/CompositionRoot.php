@@ -202,7 +202,6 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\TreeObservers;
 
 /**
@@ -311,7 +310,7 @@ final class CompositionRoot extends ServiceProvider
         // fact about this composition rather than about routing. A suite must
         // never enter the real one: it blocks against the bridge, so a test
         // that reached it would hang rather than fail.
-        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop($this->paintTheThemeFor(...));
+        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop($this->theTheme()->forTheScreen(...));
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
 
@@ -873,12 +872,6 @@ final class CompositionRoot extends ServiceProvider
     private function paintTheMembersTheme(): void
     {
         $this->theTheme()->paint(WhoseTheme::Member);
-    }
-
-    /** The theme the screen coming to the front is drawn in, painted where it is not the one on the glass. */
-    private function paintTheThemeFor(NativeComponent $screen): void
-    {
-        $this->theTheme()->forTheScreen($screen);
     }
 
     /** The one theme on the glass, made the first time anything asks for it. */
