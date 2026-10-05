@@ -154,8 +154,8 @@ final readonly class TheRestore
         }
 
         return WhereTheDataGoes::elsewhere(ARelocation::from(
-            self::text($moved, RestoreField::Was),
-            self::text($moved, RestoreField::Now),
+            self::text($moved, WireField::Was),
+            self::text($moved, WireField::Now),
         ));
     }
 

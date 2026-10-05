@@ -122,6 +122,7 @@ it('carries lemonfiber\'s value beside the operator\'s, and refuses a conflict w
         ->and(static fn(): HowAConnectionEnded => HowAConnectionEnded::conflicted(' ', '/mnt/downloads'))->toThrow(TheWiringSaysNothing::class, '`ours`');
 });
 
-it('asks for a wiring run by lemonfiber\'s name for it', function (): void {
-    expect(WhatToDoAboutWiring::Wire->asked())->toBe('seed');
+it('asks for a wiring run and a choice of filler by lemonfiber\'s names for them', function (): void {
+    expect(WhatToDoAboutWiring::Wire->asked())->toBe('seed')
+        ->and(WhatToDoAboutWiring::Fill->asked())->toBe('wiring-fill');
 });

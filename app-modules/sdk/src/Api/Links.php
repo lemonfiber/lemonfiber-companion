@@ -112,7 +112,7 @@ final readonly class Links
         return match (HowItWasReached::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WiringField::How, $said, $position)) {
             HowItWasReached::ByName => HowItReaches::byName(ServiceId::called(self::text($reaches, WiringField::Wired, WireField::Service, $position)), self::text($reaches, WiringField::Wired, WireField::Why, $position)),
             HowItWasReached::Asked => HowItReaches::asked(
-                Capability::called(self::text($reaches, WiringField::Wired, WiringField::Capability, $position)),
+                Capability::called(self::text($reaches, WiringField::Wired, WireField::Capability, $position)),
                 self::services($reaches, WireField::Services, $position),
                 self::settled($reaches, $position),
                 self::claimants($reaches, $position),
@@ -207,7 +207,7 @@ final readonly class Links
 
             $found[] = Unfilled::of(
                 ServiceId::called(self::text($row, WiringField::Unfilled, WireField::By, $position)),
-                Capability::called(self::text($row, WiringField::Unfilled, WiringField::Capability, $position)),
+                Capability::called(self::text($row, WiringField::Unfilled, WireField::Capability, $position)),
             );
             $position++;
         }

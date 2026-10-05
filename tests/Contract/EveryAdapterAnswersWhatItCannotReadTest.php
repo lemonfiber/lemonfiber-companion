@@ -13,6 +13,8 @@ use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadOnDisk;
+use Modules\Kernel\Api\AFill;
+use Modules\Kernel\Api\AFillAgreed;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AGuardAskedFor;
@@ -35,6 +37,7 @@ use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
+use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Change;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
@@ -94,6 +97,7 @@ use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
+use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheRemovalFound;
@@ -127,6 +131,7 @@ use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Guards;
@@ -303,6 +308,12 @@ function aRunToSpoilTheAnswerTo(): ARunAgreedTo
     return ARunAgreedTo::by(TheRecord::reaching('the last 50 runs', $change)->theRun(ARun::stamped('0')));
 }
 
+/** A choice of filler the stack worked out, to agree against. */
+function aFillToSpoilTheAnswerTo(): AFillAgreed
+{
+    return AFillAgreed::after(AFill::read(Capability::called('media-server'), ServiceId::called('plex'), Services::none(), Services::none(), WhatNothingFills::none(), '', 'cafe0001'), '');
+}
+
 /** A reading of the services, to agree against. */
 function anUninstallToSpoilTheAnswerTo(): AnUninstallAgreed
 {
@@ -349,6 +360,10 @@ function everyAdapterCallThatReads(): array
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
         'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
         'Linkers::linkedOn' => static fn(): object => new Linkers($clients)->linkedOn($stack, $session),
+        'Fillers::whatItWouldComeTo' => static fn(): object
+            => new Fillers($clients, $entropy)->whatItWouldComeTo($stack, $session, Capability::called('media-server'), ServiceId::called('plex')),
+        'Fillers::choose' => static fn(): object
+            => new Fillers($clients, $entropy)->choose($stack, $session, aFillToSpoilTheAnswerTo()),
         'Copiers::take' => static fn(): object
             => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
         'Copiers::whatBecameOf' => static fn(): object
@@ -536,8 +551,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * upgrade the envelopes each is answered with. So are a finished copy, the
  * listing a restore answers without a yes, and a finished restore, what a
  * start, a stop or a restart came to, both what stopping seeding would cost
- * and what it came to, what taking somebody out came to, and what taking
- * lemonfiber off came to.
+ * and what it came to, what taking somebody out came to, what taking
+ * lemonfiber off came to, and a choice of filler, read or made.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -562,6 +577,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),
+        str_starts_with($which, 'Fillers::') => sprintf('%sSubstitutionEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

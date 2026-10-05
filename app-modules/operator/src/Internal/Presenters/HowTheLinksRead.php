@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function count;
 use function implode;
 
 use Modules\Kernel\Api\ALink;
@@ -34,6 +35,9 @@ final readonly class HowTheLinksRead
 {
     /** What stands between two services named on one line. */
     private const string BETWEEN = ', ';
+
+    /** How many claimants it takes for there to be a choice between them. */
+    private const int A_CHOICE = 2;
 
     /**
      * This device no longer holds a session for that stack.
@@ -70,6 +74,18 @@ final readonly class HowTheLinksRead
         return new TheLinksTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), links: [], refused: null);
     }
 
+    /** Services, named in the stack's order. */
+    public static function named(Services $services): string
+    {
+        $named = [];
+
+        foreach ($services as $service) {
+            $named[] = $service->named();
+        }
+
+        return implode(self::BETWEEN, $named);
+    }
+
     /** One link, on the arm it was reached by. */
     private function link(ALink $link): ALinkAsShown
     {
@@ -80,6 +96,7 @@ final readonly class HowTheLinksRead
                 => $this->asked($by, $capability, $services, $settled, $claimants),
             byName: static fn(ServiceId $service, string $why): ALinkAsShown => new ALinkAsShown(
                 by: $by,
+                capability: '',
                 asks: '',
                 asksWith: [],
                 settledSaid: 'stacks.wiring.fills.by_name',
@@ -87,6 +104,7 @@ final readonly class HowTheLinksRead
                 isContested: false,
                 why: $why,
                 claimants: [],
+                choices: [],
             ),
         );
     }
@@ -94,24 +112,25 @@ final readonly class HowTheLinksRead
     /** A capability asked for, with how it settled and every claimant. */
     private function asked(string $by, Capability $capability, Services $services, WhatSettledIt $settled, TheClaimants $claimants): ALinkAsShown
     {
-        $reached = $this->named($services);
+        $reached = self::named($services);
 
         return $settled->whichever(
-            outright: fn(): ALinkAsShown => $this->settled($by, $capability, 'stacks.wiring.fills.outright', ['service' => $reached], $claimants),
-            each: fn(): ALinkAsShown => $this->settled($by, $capability, 'stacks.wiring.fills.each', ['services' => $reached], $claimants),
-            contested: fn(Services $contesting): ALinkAsShown => $this->settled($by, $capability, 'stacks.wiring.fills.contested', [], $claimants, inTheContestsOrder: $contesting),
+            outright: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.outright', ['service' => $reached], $claimants),
+            each: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.each', ['services' => $reached], $claimants),
+            contested: fn(Services $contesting): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.contested', [], $claimants, inTheContestsOrder: $contesting),
             chosen: fn(Services $over, WhoSettledIt $whose, WhyItWasChosen $why): ALinkAsShown => $this->settled(
                 $by,
                 $capability,
+                $services,
                 $whose === WhoSettledIt::Operator ? 'stacks.wiring.fills.chosen_operator' : 'stacks.wiring.fills.chosen_stack',
-                ['service' => $reached, 'over' => $this->named($over)],
+                ['service' => $reached, 'over' => self::named($over)],
                 $claimants,
                 why: $why->saying(
                     stated: static fn(string $said): WhatTheCatalogueNames => new WhatTheCatalogueNames($said),
                     unstated: static fn(): WhatTheCatalogueNames => new WhatTheCatalogueNames(''),
                 )->said,
             ),
-            unfilled: fn(): ALinkAsShown => $this->settled($by, $capability, 'stacks.wiring.fills.unfilled', [], $claimants),
+            unfilled: fn(): ALinkAsShown => $this->settled($by, $capability, $services, 'stacks.wiring.fills.unfilled', [], $claimants),
         );
     }
 
@@ -120,18 +139,60 @@ final readonly class HowTheLinksRead
      *
      * @param array<string, string> $settledWith
      */
-    private function settled(string $by, Capability $capability, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, string $why = ''): ALinkAsShown
+    private function settled(string $by, Capability $capability, Services $answering, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, string $why = ''): ALinkAsShown
     {
+        $shown = $inTheContestsOrder instanceof Services ? $this->contesting($inTheContestsOrder, $claimants) : $this->claiming($claimants);
+
         return new ALinkAsShown(
             by: $by,
+            capability: $capability->named(),
             asks: 'stacks.wiring.fills.asks',
             asksWith: ['by' => $by, 'capability' => $capability->named()],
             settledSaid: $settledSaid,
             settledWith: $settledWith,
             isContested: $inTheContestsOrder instanceof Services,
             why: $why,
-            claimants: $inTheContestsOrder instanceof Services ? $this->contesting($inTheContestsOrder, $claimants) : $this->claiming($claimants),
+            claimants: $shown,
+            choices: $this->choosable($shown, $answering),
         );
+    }
+
+    /**
+     * The claimants an operator may choose to answer a capability, in the order they are shown.
+     *
+     * None where fewer than two services claim it, since there is nothing to
+     * choose between, and never a service that answers it already.
+     *
+     * @param  list<AClaimantAsShown> $claimants
+     * @return list<string>
+     */
+    private function choosable(array $claimants, Services $answering): array
+    {
+        if (count($claimants) < self::A_CHOICE) {
+            return [];
+        }
+
+        $choices = [];
+
+        foreach ($claimants as $claimant) {
+            if (! $this->answers($claimant->name, $answering)) {
+                $choices[] = $claimant->name;
+            }
+        }
+
+        return $choices;
+    }
+
+    /** Whether a service is one of those answering. */
+    private function answers(string $named, Services $answering): bool
+    {
+        foreach ($answering as $service) {
+            if ($service->isTheSameAs(ServiceId::called($named))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -175,17 +236,5 @@ final readonly class HowTheLinksRead
         }
 
         return $shown;
-    }
-
-    /** Services, named in the stack's order. */
-    private function named(Services $services): string
-    {
-        $named = [];
-
-        foreach ($services as $service) {
-            $named[] = $service->named();
-        }
-
-        return implode(self::BETWEEN, $named);
     }
 }

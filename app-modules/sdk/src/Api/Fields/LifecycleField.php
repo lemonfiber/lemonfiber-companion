@@ -25,7 +25,8 @@ enum LifecycleField: string implements NamesAWireField
 
     /**
      * Sent rather than read: asks for a verb as a rehearsal, which the stack
-     * reports as the `lifecycle` envelope with `rehearsed` set, having done none of it.
+     * reports as the `lifecycle` envelope with `rehearsed` set, having done none of it,
+     * and asks for a choice of filler as its reading, which writes nothing either.
      */
     case DryRun = 'dry_run';
 }

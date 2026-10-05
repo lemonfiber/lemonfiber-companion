@@ -13,8 +13,9 @@ use function sprintf;
  *
  * A confirmation is only ever about something the stack put in front of the
  * operator: a choice it held, an upgrade it described without carrying out,
- * a way of moving in it staged, a run its record shows can go back, or a
- * preview of putting the configuration back that would revert something.
+ * a way of moving in it staged, a run its record shows can go back, a
+ * preview of putting the configuration back that would revert something, or a
+ * choice of what fills a capability worked out and not yet made.
  * Building one against anything else means a screen offered a yes it should
  * not have, which is a fault in the surface rather than a situation the
  * operator can resolve.
@@ -58,6 +59,12 @@ final class ThereIsNothingToAgreeTo extends InvalidArgumentException
     public static function reverted(): self
     {
         return new self('A reset was agreed to against one already carried out, and only a preview waits on a yes.');
+    }
+
+    /** The choice of what fills a capability was already made, so there is no reading to agree to. */
+    public static function made(): self
+    {
+        return new self('A choice of what fills a capability was agreed to against one already made, and only a reading waits on a yes.');
     }
 
     /** The preview reverts no file and no connection, so a yes would agree to nothing. */

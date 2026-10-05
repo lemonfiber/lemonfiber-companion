@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Connection\Internal\TheSettingsAsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
+use Modules\Kernel\Api\AFillAgreed;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAffectedItem;
@@ -95,6 +96,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     AnUninstallAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,
+    AFillAgreed::class,
     HostingAgreed::class,
     TakingAnUpdate::class,
     Decided::class,

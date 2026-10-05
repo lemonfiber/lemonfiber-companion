@@ -51,12 +51,6 @@ enum RestoreField: string implements NamesAWireField
     /** Where the data went instead of where it came from, after one. */
     case Relocated = 'relocated';
 
-    /** The data root the copy was taken against. */
-    case Was = 'was';
-
-    /** The data root it goes to on this machine. */
-    case Now = 'now';
-
     /** The version of lemonfiber that took the copy, on a restore's report. */
     case FromVersion = 'from_version';
 }
