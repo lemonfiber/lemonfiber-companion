@@ -69,6 +69,8 @@ function pairingsSetAsText(): array
         [ThemeToken::Text, ThemeToken::AlarmTint],
         [ThemeToken::Muted, ThemeToken::WarnTint],
         [ThemeToken::Muted, ThemeToken::AlarmTint],
+        [ThemeToken::OwnAction, ThemeToken::Surface],
+        [ThemeToken::OwnAction, ThemeToken::Raised],
     ];
 }
 
@@ -86,6 +88,8 @@ function glyphsOnTheirGrounds(): array
             $pairs[] = [$glyph, $ground];
         }
     }
+
+    $pairs[] = [ThemeToken::OnAlarm, ThemeToken::Alarm];
 
     return $pairs;
 }
@@ -133,7 +137,9 @@ it('sets as text only the roles that are foregrounds', function (): void {
         ->and(ThemeToken::Muted->safeAsText())->toBeTrue()
         ->and(ThemeToken::Faint->safeAsText())->toBeTrue()
         ->and(ThemeToken::OnAccent->safeAsText())->toBeTrue()
+        ->and(ThemeToken::OwnAction->safeAsText())->toBeTrue()
         ->and(ThemeToken::Accent->safeAsText())->toBeFalse()
+        ->and(ThemeToken::OnAlarm->safeAsText())->toBeFalse()
         ->and(ThemeToken::Surface->safeAsText())->toBeFalse()
         ->and(ThemeToken::Raised->safeAsText())->toBeFalse()
         ->and(ThemeToken::Line->safeAsText())->toBeFalse()
@@ -192,7 +198,7 @@ it('sets the member\'s text in paper and text-muted alone, and only the operator
         ->and(ThemeToken::Faint->in(WhoseTheme::Operator))->toBe('#8D8972');
 });
 
-it('tells the two themes apart by the ground, the faintest text and how a thing stands alone', function (): void {
+it('tells the two themes apart by the ground, the faintest text, how a thing stands and the operator\'s own actions alone', function (): void {
     $differ = [];
 
     foreach (ThemeToken::cases() as $role) {
@@ -210,6 +216,7 @@ it('tells the two themes apart by the ground, the faintest text and how a thing 
         ThemeToken::Activity,
         ThemeToken::WarnTint,
         ThemeToken::AlarmTint,
+        ThemeToken::OwnAction,
     ]);
 });
 
@@ -223,3 +230,23 @@ it('resolves no name it was not given', function (): void {
         ->and(ThemeToken::tryFrom('on-surface'))->toBeNull()
         ->and(ThemeToken::tryFrom('primary'))->toBeNull();
 });
+
+it('sets lemon as words only in the operator\'s own actions, and only in the operator\'s theme', function (): void {
+    $lemonAsWords = [];
+
+    foreach (WhoseTheme::cases() as $theme) {
+        foreach (ThemeToken::cases() as $role) {
+            if ($role->safeAsText() && $role->in($theme) === ThemeToken::Accent->in($theme)) {
+                $lemonAsWords[] = [$role, $theme];
+            }
+        }
+    }
+
+    expect($lemonAsWords)->toBe([[ThemeToken::OwnAction, WhoseTheme::Operator]])
+        ->and(ThemeToken::OwnAction->in(WhoseTheme::Member))->toBe(ThemeToken::Muted->in(WhoseTheme::Member))
+        ->and(ThemeToken::Accent->safeAsText())->toBeFalse();
+});
+
+it('draws the glyph on an alarm fill in ink, in both themes', function (WhoseTheme $theme): void {
+    expect(ThemeToken::OnAlarm->in($theme))->toBe(ThemeToken::OnAccent->in($theme));
+})->with(WhoseTheme::cases());
