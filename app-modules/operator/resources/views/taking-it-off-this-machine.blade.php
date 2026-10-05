@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -173,7 +174,7 @@
                 <x-design::body>{{ __('uninstall.copy_first', ['said' => $this->answer()->reading->copyFirst]) }}</x-design::body>
             @else
                 <x-design::body>{{ __('uninstall.no_copy_first') }}</x-design::body>
-                <x-operator::quiet-action label="{{ __('uninstall.take_a_copy') }}" :goes="$this->goes()->ofItself()->changing()->copy()" />
+                <x-operator::quiet-action label="{{ __('uninstall.take_a_copy') }}" :goes="$this->goes()->to(AStacksScreen::Copy)" />
             @endif
             <x-operator::emphasis>{{ __('uninstall.ends_this_session') }}</x-operator::emphasis>
         @endif
@@ -234,7 +235,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

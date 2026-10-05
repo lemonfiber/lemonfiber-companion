@@ -40,9 +40,10 @@ use function str_replace;
 /**
  * The navigation an operator can actually perform, as a graph.
  *
- * A screen's ways off it are written as `@navigate="{{ $this->goes()->health() }}"`
- * — an accessor call rather than a path — so following one means resolving the
- * accessor to a screen the way the device will at render time. Three readings
+ * A screen's ways off it are written as
+ * `@navigate="{{ $this->goes()->to(AStacksScreen::Health) }}"` or through an
+ * accessor — a call rather than a path — so following one means resolving it
+ * to a screen the way the device will at render time. Three readings
  * do that, and every one of them is {@see Screens}': which accessor answers
  * with which case, which path each case hands out, and which screen the router
  * serves under it.
@@ -199,7 +200,7 @@ final readonly class WhereAScreenCanSendYou
      * The accessors declared somewhere other than on a screen.
      *
      * Keyed by the accessor alone, because that is how a template names one:
-     * `$this->goes()->health()` says which accessor and never which type. The
+     * `$this->goes()->logsOf($service)` says which accessor and never which type. The
      * type is the one that knows where a machine's screens are, found by not
      * being a screen itself rather than by name.
      *
@@ -395,14 +396,15 @@ final readonly class WhereAScreenCanSendYou
     /**
      * The cases a body builds a path from by name, with no accessor between.
      *
-     * A screen that sends somebody to a screen another surface draws names the
-     * case itself, because the accessors here are this surface's own screens.
+     * A screen reached by naming the machine alone is named by its case, handed
+     * to `WhereAStackIs::to()`; a screen another surface draws is built from its
+     * case directly, because the accessors here are this surface's own screens.
      *
      * @return list<string>
      */
     private function namedOutright(string $php): array
     {
-        preg_match_all('/\b(AStacksScreen|AScreenWithoutAStack)::(\w+)->for\w*\(/', $php, $named, PREG_SET_ORDER);
+        preg_match_all('/\b(AStacksScreen|AScreenWithoutAStack)::(\w+)(?:->for\w*\(|\s*\))/', $php, $named, PREG_SET_ORDER);
 
         return array_map(static fn(array $case): string => sprintf('%s::%s', $case[1], $case[2]), $named);
     }

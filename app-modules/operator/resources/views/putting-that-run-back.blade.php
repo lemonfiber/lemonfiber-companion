@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -6,7 +7,7 @@
     {{-- Opened on no run at all, so there is nothing to show and nothing to
          agree to. The record is where one is chosen. --}}
     <x-operator::emphasis>{{ __('stacks.run_back.names_no_run') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
+    <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the record's
          rows above it. --}}
@@ -14,7 +15,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @elseif ($this->done()->isWorking)
         <x-operator::emphasis>{{ __('stacks.run_back.putting_back') }}</x-operator::emphasis>
@@ -29,13 +30,13 @@
         <x-operator::heading>{{ __('stacks.run_back.refused') }}</x-operator::heading>
         <x-operator::refused-in-its-words :refused="$this->done()->refused" />
         <x-design::body>{{ __('stacks.run_back.refused_same_answer') }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
+        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: it may well have gone back, and the record is where
              to look. --}}
         <x-operator::emphasis>{{ __('stacks.run_back.no_outcome') }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.run_back.no_outcome_action') }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
+        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @else
         @if ($this->done()->rehearsed)
             {{-- A rehearsal, and said to be one before anything else: nothing
@@ -84,7 +85,7 @@
             <x-operator::note>{{ __($this->done()->noneReversed) }}</x-operator::note>
         @endforelse
 
-        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
+        <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @endif
 
     @if ($this->done()->refused === null)
@@ -94,7 +95,7 @@
     {{-- The record holds nothing under this stamp: it may have fallen past
          the horizon, or been put back already. Nothing is offered. --}}
     <x-operator::emphasis>{{ __('stacks.run_back.not_on_the_record') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
+    <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 @else
     {{-- The agreement, drawn from the record's own rows. The stack puts the
@@ -141,7 +142,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

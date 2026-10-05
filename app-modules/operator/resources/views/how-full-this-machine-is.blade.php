@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -87,7 +88,7 @@
             <x-design::action
                 label="{{ __('stacks.room.stop_seeding') }}"
                 answers-to="{{ __('stacks.room.stop_seeding_that', ['download' => $download->name]) }}"
-                :goes="$this->goes()->ofItself()->changing()->lettingGo($download->name)"
+                :goes="$this->goes()->lettingGo($download->name)"
                 tone="tonal"
             />
         </x-design::card>
@@ -103,7 +104,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

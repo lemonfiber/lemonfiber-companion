@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -6,7 +7,7 @@
     {{-- Opened on nobody, so there is nothing to ask about and nothing to
          agree to. Who is in is where somebody is chosen. --}}
     <x-operator::emphasis>{{ __('stacks.removal.names_nobody') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->whoGetsIn()->invite()" />
+    <x-operator::action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->to(AStacksScreen::Invite)" />
 @else
     <x-operator::heading>{{ __('stacks.removal.taking_out', ['name' => $this->answer()->name]) }}</x-operator::heading>
 
@@ -75,7 +76,7 @@
         @endif
     @endif
 
-    <x-operator::quiet-action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->whoGetsIn()->invite()" />
+    <x-operator::quiet-action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->to(AStacksScreen::Invite)" />
 @endif
 </x-operator::content>
 @else
@@ -90,7 +91,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

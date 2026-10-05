@@ -282,7 +282,7 @@ final class SignIntoAStack extends NativeComponent
         $where = WhereAStackIs::of($this->stack()->id());
 
         return match ($this->given) {
-            WhichSurfaceTheyAreGiven::TheReport => $where->health(),
+            WhichSurfaceTheyAreGiven::TheReport => $where->to(AStacksScreen::Health),
             WhichSurfaceTheyAreGiven::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($this->stack()->id()),
         };
     }

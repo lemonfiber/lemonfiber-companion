@@ -30,6 +30,7 @@ use Modules\Operator\Internal\ViewModels\SomethingKeptAsShown;
 use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Storekeepers;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Saloon\Http\Faking\MockClient;
@@ -336,8 +337,8 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way back to the machine is a route as well', function (): void {
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies());
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->keeps()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Keeps)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

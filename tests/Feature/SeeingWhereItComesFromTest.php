@@ -19,6 +19,7 @@ use Modules\Kernel\Api\WhereTheServicesComeFrom;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\ViewModels\WhereOneServiceComesFrom;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -187,7 +188,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way back to the machine is a route as well', function (): void {
     $screen = theOriginsScreen(AStackThatNamesItsOrigins::with(twoServicesAndWhereTheyComeFrom()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

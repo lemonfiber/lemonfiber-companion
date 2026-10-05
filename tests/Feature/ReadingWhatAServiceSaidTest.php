@@ -559,7 +559,7 @@ it('the builder and the router agree about which service a path names', function
 it('the way back to the machine is a route as well', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

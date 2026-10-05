@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -56,7 +57,7 @@
 @endif
 
 @if ($this->wasAgreedTo())
-    <x-operator::action label="{{ __('stacks.reset.see_the_settings') }}" :goes="$this->goes()->settings()" />
+    <x-operator::action label="{{ __('stacks.reset.see_the_settings') }}" :goes="$this->goes()->to(AStacksScreen::Settings)" />
 @endif
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 </x-operator::content>
@@ -66,7 +67,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -8,7 +9,7 @@
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('stacks.put_back.names_no_copy') }}</x-design::strong>
     </x-design::notice>
-    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words, and not a fault: nothing is listed,
          so nothing can be agreed to, and asking the same again is answered
@@ -16,7 +17,7 @@
     <x-design::heading>{{ __('stacks.put_back.would_not_list') }}</x-design::heading>
     <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
     <x-design::body>{{ __('stacks.put_back.same_answer') }}</x-design::body>
-    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
@@ -24,7 +25,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @elseif ($this->done()->isWorking)
         <x-design::standing
@@ -69,7 +70,7 @@
             @endif
         </x-design::card>
 
-        <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+        <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
     @endif
 
     @if ($this->done()->refused === null)
@@ -128,7 +129,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

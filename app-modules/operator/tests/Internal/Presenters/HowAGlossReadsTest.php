@@ -36,7 +36,7 @@ it('draws a word the glossary does not carry as it came, with no gloss, and the 
     $gloss = new HowAGlossReads()->of(TheGlossary::of(), AWordInUse::named('Grabber'), whereTheGlossedStackIs());
 
     expect([$gloss->word, $gloss->short, $gloss->goes])->toBe(['Grabber', '', ''])
-        ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->ofItself()->wordAbout(AWordInUse::named('Grabber')));
+        ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->wordAbout(AWordInUse::named('Grabber')));
 });
 
 it('offers no asking for a word the glossary carries', function (): void {

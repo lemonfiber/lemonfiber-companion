@@ -331,7 +331,7 @@ final class YourStacks extends NativeComponent
      */
     public function signInAt(Stack $stack): string
     {
-        return WhereAStackIs::of($stack->id())->signIn();
+        return WhereAStackIs::of($stack->id())->to(AStacksScreen::SignIn);
     }
 
     /**

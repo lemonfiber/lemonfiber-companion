@@ -258,8 +258,8 @@ it('the way back to this machine and to signing in are both this screen', functi
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
     $named = theStackWhoseHouseholdIsRead()->id();
 
-    expect($screen->goes()->health())->toBe(AStacksScreen::Health->forTheStack($named))
-        ->and($screen->goes()->signIn())->toBe(AStacksScreen::SignIn->forTheStack($named));
+    expect($screen->goes()->to(AStacksScreen::Health))->toBe(AStacksScreen::Health->forTheStack($named))
+        ->and($screen->goes()->to(AStacksScreen::SignIn))->toBe(AStacksScreen::SignIn->forTheStack($named));
 });
 
 it('the screen is registered under the route that reaches it', function (): void {
@@ -285,8 +285,8 @@ it('the way back from the requests screen is a route as well', function (): void
     // came to see what the house asked, answered it, and want the machine.
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->signIn()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::SignIn)))->not->toBeNull();
 });
 
 it('renders the frame it is named for', function (): void {

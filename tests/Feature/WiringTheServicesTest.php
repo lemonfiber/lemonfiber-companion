@@ -46,6 +46,7 @@ use Modules\Operator\Internal\ViewModels\AClaimantAsShown;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -449,7 +450,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theWiringScreen(AStackThatWires::answering());
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and(NativeRouter::resolve(TheMenu::Connections->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 

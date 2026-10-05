@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -335,7 +336,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with(aSurveyOfAMachineInUse()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and(NativeRouter::resolve(TheMenu::AlreadyInstalled->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 

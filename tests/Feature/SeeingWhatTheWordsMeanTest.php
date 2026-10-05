@@ -19,6 +19,7 @@ use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\ViewModels\AWordAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -192,8 +193,8 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->words()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Words)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
@@ -228,14 +229,14 @@ it('opens on no word where the route names none', function (): void {
 it('the way to one word is a route to this screen', function (): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named('pin'))))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->wordAbout(AWordInUse::named('pin'))))->not->toBeNull();
 });
 
 it('carries a word with a space or a slash to the screen as it was drawn', function (): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
 
     foreach (['port forwarding', 'AC/DC', 'Dune: Part Two'] as $word) {
-        expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named($word))))->toHaveKey('params.service', $word);
+        expect(NativeRouter::resolve($screen->goes()->wordAbout(AWordInUse::named($word))))->toHaveKey('params.service', $word);
     }
 });
 

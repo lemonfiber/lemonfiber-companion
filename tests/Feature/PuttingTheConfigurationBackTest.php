@@ -25,6 +25,7 @@ use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
 use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -581,7 +582,7 @@ it('has nothing to report for a yes nobody gave', function (): void {
 it('names where it goes and what it draws', function (): void {
     $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset());
 
-    expect($screen->goes()->ofItself()->changing()->reset())->toEndWith('/reset')
+    expect($screen->goes()->to(AStacksScreen::Reset))->toEndWith('/reset')
         ->and($screen->render()->name())->toBe('operator::putting-the-configuration-back');
 });
 

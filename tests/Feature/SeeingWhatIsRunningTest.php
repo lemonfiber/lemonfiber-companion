@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatIsReleased;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -138,7 +139,7 @@ it('leads to which versions run, and what the running release changed', function
     $screen = theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.versions.road_in'))
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->versions()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Versions)))->not->toBeNull();
 });
 
 it('says what an update brings and leaves behind, and that the services are updated elsewhere', function (): void {
@@ -211,7 +212,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('the way here and the way back are routes', function (): void {
     $screen = theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and(NativeRouter::resolve(TheMenu::About->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 

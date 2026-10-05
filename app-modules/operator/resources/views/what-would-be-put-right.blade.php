@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
@@ -5,7 +6,7 @@
     @unless ($this->isSignedIn())
         {{-- The session has ended, so nothing was asked. --}}
         <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
-        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
+        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
     @elseif ($this->offer()->went->met !== '')
         {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}

@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -61,7 +62,7 @@
             <x-design::body>{{ __('health.no_findings') }}</x-design::body>
         @endforelse
 
-        <x-operator::somebody-to-ask :cards="$this->summary()->affected" :goes="$this->goes()->help()" />
+        <x-operator::somebody-to-ask :cards="$this->summary()->affected" :goes="$this->goes()->to(AStacksScreen::Help)" />
     @endif
 
     {{-- What stopped moving in the queue, worst first, one row per cause.
@@ -168,7 +169,7 @@
         <x-design::body>{{ __('health.no_findings') }}</x-design::body>
     @endforelse
 
-    <x-operator::somebody-to-ask :cards="$this->findings()" :goes="$this->goes()->help()" />
+    <x-operator::somebody-to-ask :cards="$this->findings()" :goes="$this->goes()->to(AStacksScreen::Help)" />
 
     {{-- Said once, and only where a row is marked, so what an unmarked row
          is never has to be inferred. --}}
@@ -184,7 +185,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

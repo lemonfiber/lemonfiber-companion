@@ -600,7 +600,7 @@ it('the screen is registered under the route that reaches it', function (): void
 it('the way back to the machine and on to the logs are routes as well', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
 
-    expect(NativeRouter::resolve($screen->goes()->services()))->not->toBeNull()
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Services)))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->goes()->logsOf(ServiceId::called('sonarr'))))->not->toBeNull();
 });
 

@@ -96,7 +96,7 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
  */
 function theScreenASignedOutOperatorIsSentTo(string $stack): string
 {
-    $goes = WhereAStackIs::rememberedAs($stack)->signIn();
+    $goes = WhereAStackIs::rememberedAs($stack)->to(AStacksScreen::SignIn);
 
     foreach (AStacksScreen::cases() as $case) {
         if ($case->forTheStack(StackId::rememberedAs($stack)) === $goes) {

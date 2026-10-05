@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
+use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -282,7 +283,7 @@ it('keeps the session when the machine could not be reached', function (): void 
 it('names where it goes and what it draws', function (): void {
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
 
-    expect($screen->goes()->settings())->toContain('/settings')
+    expect($screen->goes()->to(AStacksScreen::Settings))->toContain('/settings')
         ->and($screen->render()->name())->toBe('operator::what-this-stack-is-set-to');
 });
 

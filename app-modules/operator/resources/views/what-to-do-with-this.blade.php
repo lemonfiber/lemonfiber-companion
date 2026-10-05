@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -11,7 +12,7 @@
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->answer()->askedNow"
             ask-again=""
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @endif
     <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -103,7 +104,7 @@
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('health.nothing_of_that_name', ['name' => $this->thing()->named]) }}</x-design::strong>
     </x-design::notice>
-    <x-design::action label="{{ __('health.back_to_what_runs') }}" :goes="$this->goes()->services()" />
+    <x-design::action label="{{ __('health.back_to_what_runs') }}" :goes="$this->goes()->to(AStacksScreen::Services)" />
 @else
     {{-- Which thing, and for a service how it stands, as the glyph and
          words its row on the list carries. --}}
@@ -130,7 +131,7 @@
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->whatItCameTo()->went"
                     ask-again=""
-                    :sign-in-goes-to="$this->goes()->signIn()"
+                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
                 />
                 <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
             @elseif ($this->whatItCameTo()->isWorking)
@@ -224,7 +225,7 @@
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->rehearsal()->went"
                     ask-again=""
-                    :sign-in-goes-to="$this->goes()->signIn()"
+                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
                 />
             @else
                 @if ($this->rehearsal()->runningUnread)
@@ -317,7 +318,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

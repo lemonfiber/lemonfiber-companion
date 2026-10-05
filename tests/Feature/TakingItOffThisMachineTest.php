@@ -822,7 +822,7 @@ it('the way here and the way to a copy are routes', function (): void {
     expect(NativeRouter::resolve(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id())))->not->toBeNull()
         ->and(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id()))->toBe(AStacksScreen::Uninstall->forTheStack($stack))
         ->and(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id()))->toBe(sprintf('/stacks/%s/uninstall', $stack->stored()))
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->copy()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Copy)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

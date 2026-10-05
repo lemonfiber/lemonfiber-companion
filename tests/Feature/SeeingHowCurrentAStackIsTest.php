@@ -33,6 +33,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Modules\Sdk\Api\Standings;
+use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -673,7 +674,7 @@ it('an obstacle meaning the session ended renders the sign-in', function (): voi
 it('reaches this machine\'s other screens', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
-    expect($screen->goes()->signIn())->toContain(theStackWhoseUpkeepIsRead()->id()->stored());
+    expect($screen->goes()->to(AStacksScreen::SignIn))->toContain(theStackWhoseUpkeepIsRead()->id()->stored());
 });
 
 it('offers taking one only where the stack said there is one', function (): void {

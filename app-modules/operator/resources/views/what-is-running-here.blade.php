@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -56,7 +57,7 @@
     <x-design::note>{{ __('stacks.itself.not_the_services') }}</x-design::note>
 
     {{-- The versions under this one, and what the running release changed. --}}
-    <x-design::link label="{{ __('stacks.versions.road_in') }}" :goes="$this->goes()->ofItself()->versions()" />
+    <x-design::link label="{{ __('stacks.versions.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Versions)" />
 
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
@@ -64,7 +65,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

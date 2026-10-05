@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -152,7 +153,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howItIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->signIn()"
+            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
         />
     @endif
 
@@ -184,13 +185,13 @@
             <x-design::link
                 label="{{ __('stacks.handoff.title') }}"
                 answers-to="{{ __('stacks.handoff.title_for', ['name' => $member->name]) }}"
-                :goes="$this->goes()->whoGetsIn()->connecting($member->name)"
+                :goes="$this->goes()->connecting($member->name)"
             />
             {{-- Taking them out of the household is its own screen, where
                  what it would cost is read before anything is agreed to. --}}
             <x-design::link
                 label="{{ __('stacks.removal.would_take_them_out', ['name' => $member->name]) }}"
-                :goes="$this->goes()->whoGetsIn()->takingOut($member->name)"
+                :goes="$this->goes()->takingOut($member->name)"
             />
         </x-design::card>
     @empty
@@ -206,7 +207,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->signIn()"
+        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
     />
 @endif
 

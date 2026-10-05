@@ -39,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereItStoppedAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
@@ -657,7 +658,7 @@ it('names what to do next where it finished, and what the import did', function 
         ->and($offered)->not->toContain(__(WhatToDoNext::MoreContent->saidOnTheScreen()))
         ->and($offered)->not->toContain(__(WhatToDoNext::Household->saidOnTheScreen()))
         ->and($drawn)->toContain(__('health.walkthrough.where_to_watch'))
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->clients()))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Clients)))->not->toBeNull();
 
     expect($drawn)->toContain(
         __('health.walkthrough.what_next'),

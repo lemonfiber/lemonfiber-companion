@@ -28,6 +28,7 @@ use Modules\Operator\Internal\ViewModels\ADownloadAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -507,8 +508,8 @@ it('renders its own view, and the way back is a route', function (): void {
     $screen = theLettingGoScreen(aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::stillRunning()));
 
     expect($screen->render()->name())->toBe('operator::letting-a-download-go')
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->room()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->lettingGo('Some Film/2024')))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Room)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->lettingGo('Some Film/2024')))->not->toBeNull();
 });
 
 it('asked again before anything was read, asks for the offer when the frame reads it, and only then', function (): void {

@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -232,7 +233,7 @@ it('the way back to the machine is a route as well', function (): void {
         twoThingsNobodyDeclared(),
     ));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

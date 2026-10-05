@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
-use Modules\Operator\Internal\WhatItIsAskedToChange;
-use Modules\Operator\Internal\WhatItKeepsOfItself;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\WhereAStackIs;
-use Modules\Operator\Internal\WhoGetsIn;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -148,72 +147,55 @@ it('the builder and the router agree about which machine a path names', function
     // the pattern matches any single segment — and would open somebody else's
     // machine.
     $named = Screens::aStackInTheUri();
-    $resolved = NativeRouter::resolve(WhereAStackIs::rememberedAs($named)->repairs());
+    $resolved = NativeRouter::resolve(WhereAStackIs::rememberedAs($named)->to(AStacksScreen::Repairs));
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
     expect($params['stack'] ?? null)->toBe($named);
 });
 
 it('every way this app asks where a machine is hands back a path the router knows', function (): void {
-    // `WhereAStackIs` is the one place a stack's routes are spelled, and each
-    // accessor on it is a single line — which is exactly the line that gets
-    // added and never called from a test, because a template calls it and a
-    // template is not executed here. `services()` arrived that way.
+    // `WhereAStackIs` is the one place a stack's routes are spelled, and a
+    // template is not executed here, so a destination a template asks for is
+    // exactly the one nothing else would call.
     //
-    // Read off the type rather than listed, so the next destination is covered
-    // without anybody remembering this file — the argument
-    // `everyPathAScreenHandsOut()` makes about the enum, made about the type
-    // that hands the enum's paths out.
-    //
-    // An accessor may hand out a further set of paths rather than one —
-    // `ofItself()` does, for the screens about what a machine keeps of itself,
-    // and `changing()` on that, for the screens that change it, and
-    // `whoGetsIn()`, for who gets in to it — and the sweep follows each, so a
-    // route moved there is still read here rather than falling out of sight
-    // with the move.
+    // Read off the enum and the type rather than listed, so the next
+    // destination is covered without anybody remembering this file: every
+    // screen naming the machine is enough to reach goes through `to()`, and
+    // every accessor taking one more thing is called with a sample of it.
     $where = WhereAStackIs::rememberedAs(Screens::aStackInTheUri());
     $unknown = [];
     $asked = 0;
-    $toSweep = [$where];
 
-    while ($toSweep !== []) {
-        $holder = array_shift($toSweep);
+    foreach (AStacksScreen::cases() as $screen) {
+        if ($screen->alsoNeedsAService()) {
+            continue;
+        }
 
-        foreach (new ReflectionClass($holder)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->isStatic() || $method->getNumberOfParameters() > 0) {
-                continue;
-            }
+        $asked++;
 
-            $asked++;
-
-            $path = $method->invoke($holder);
-
-            if ($path instanceof WhatItKeepsOfItself || $path instanceof WhatItIsAskedToChange || $path instanceof WhoGetsIn) {
-                $toSweep[] = $path;
-
-                continue;
-            }
-
-            // `is_string` as well as resolvable: an accessor that handed back
-            // anything else is a `@navigate` with an array in it, which the
-            // router cannot be asked about at all.
-            if (! is_string($path) || NativeRouter::resolve($path) === null) {
-                $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
-            }
+        if (NativeRouter::resolve($where->to($screen)) === null) {
+            $unknown[] = sprintf('to(AStacksScreen::%s) hands back a path the router does not know', $screen->name);
         }
     }
 
-    // The one that needs a service, which the sweep cannot call blind.
-    if (NativeRouter::resolve($where->logsOf(ServiceId::called('gluetun'))) === null) {
-        $unknown[] = 'logsOf() hands back a path the router does not know';
+    foreach (new ReflectionClass(WhereAStackIs::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        if ($method->isStatic() || $method->getName() === 'to') {
+            continue;
+        }
+
+        $asked++;
+
+        // `is_string` as well as resolvable: an accessor that handed back
+        // anything else is a `@navigate` with an array in it, which the
+        // router cannot be asked about at all.
+        $path = $method->invoke($where, aSampleOf($method->getParameters()[0]));
+
+        if (! is_string($path) || NativeRouter::resolve($path) === null) {
+            $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+        }
     }
 
-    // And the one that needs a run, for the same reason.
-    if (NativeRouter::resolve($where->ofItself()->changing()->puttingARunBack('1790150000')) === null) {
-        $unknown[] = 'puttingARunBack() hands back a path the router does not know';
-    }
-
-    expect($asked)->toBeGreaterThan(1, 'no accessor was read off `WhereAStackIs`, so this rule read nothing');
+    expect($asked)->toBeGreaterThan(1, 'no destination was read off `WhereAStackIs`, so this rule read nothing');
 
     expect($unknown)->toBe([], sprintf(
         "These hand out a path nothing is registered under:\n  %s\n\n"
@@ -222,6 +204,25 @@ it('every way this app asks where a machine is hands back a path the router know
         implode("\n  ", $unknown),
     ));
 });
+
+/**
+ * Something one accessor on `WhereAStackIs` can be handed, by what it takes.
+ *
+ * A run is kept under a stamp, so the text an accessor takes by that name is
+ * one; every other text is a name.
+ */
+function aSampleOf(ReflectionParameter $taken): object|string
+{
+    $type = $taken->getType();
+    $named = $type instanceof ReflectionNamedType ? $type->getName() : 'string';
+
+    return match ($named) {
+        ServiceId::class => ServiceId::called('gluetun'),
+        WhatToFollow::class => WhatToFollow::called('Dune'),
+        AWordInUse::class => AWordInUse::named('Grabber'),
+        default => $taken->getName() === 'stamp' ? '1790150000' : 'gluetun',
+    };
+}
 
 it('every way this app asks where a machine is is somewhere a template can send you', function (): void {
     // The other direction of the rule above, and the failure it cannot see.
@@ -237,7 +238,9 @@ it('every way this app asks where a machine is is somewhere a template can send 
     //
     // `updates()` arrived exactly that way: route registered, path handed out,
     // router happy, every gate green, no way in.
-    $linked = destinationsTemplatesNavigateTo();
+    // A presenter that builds a path for a template counts as well: the word
+    // a glossary opens on is handed to the screen inside the gloss it shows.
+    $linked = [...destinationsTemplatesNavigateTo(), ...destinationsPresentersHandOut()];
     $stranded = [];
     $asked = 0;
 
@@ -332,6 +335,26 @@ function destinationsTemplatesNavigateTo(): array
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $template) {
         preg_match_all('/->([a-zA-Z]+)\(/', (string) file_get_contents($template), $found);
+
+        foreach ($found[1] as $name) {
+            $named[] = $name;
+        }
+    }
+
+    return array_values(array_unique($named));
+}
+
+/**
+ * Every accessor a presenter calls on where a machine is, by name.
+ *
+ * @return list<string>
+ */
+function destinationsPresentersHandOut(): array
+{
+    $named = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules/operator/src/Internal/Presenters'), '.php') as $presenter) {
+        preg_match_all('/\$goes->([a-zA-Z]+)\(/', (string) file_get_contents($presenter), $found);
 
         foreach ($found[1] as $name) {
             $named[] = $name;

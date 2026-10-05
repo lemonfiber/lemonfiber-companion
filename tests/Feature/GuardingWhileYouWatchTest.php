@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -474,8 +475,8 @@ it('a stack that declares no forms says so', function (): void {
 it('the way here, from what keeps running, and the way to hosting one are routes', function (): void {
     $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()));
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->guard()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->keepsRunning()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Guard)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Hosting)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

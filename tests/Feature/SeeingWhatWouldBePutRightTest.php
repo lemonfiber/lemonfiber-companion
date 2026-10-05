@@ -269,8 +269,8 @@ it('the screen is registered under the route that reaches it', function (): void
 it('the way back to the machine is a route as well', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
 
-    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->signIn()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::SignIn)))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
