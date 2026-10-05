@@ -5,12 +5,14 @@ The colour roles, faces and measures, and the elements every surface renders thr
 ## Colour roles
 
 `Api\ThemeToken` names the roles (accent, on-accent, surface, raised, text,
-muted, faint, line, and the severities ok, warn, alarm, activity, warn-tint and
-alarm-tint) and the hex each paints in the member's theme and in the
-operator's, both from the brand's ink theme. Only the operator's theme paints
-a severity as one; the member's paints those roles as text and as the raised
-surface. `Api\WhoseTheme` names the two
-themes, and whose session a screen is drawn for chooses between them.
+muted, faint, line, the severities ok, warn, alarm, activity, warn-tint and
+alarm-tint, on-alarm for the glyph on an alarm fill, and own-action for the
+words of the operator's quieter actions) and the hex each paints in the
+member's theme and in the operator's, both from the brand's ink theme. Only
+the operator's theme paints a severity as one, and lemon as words only in
+own-action; the member's paints those roles as text, as the raised surface and
+as muted text. `Api\WhoseTheme` names the two themes, and whose session a
+screen is drawn for chooses between them.
 `Api\Theme::resolver()` is what the composition root gives EDGE's
 `TailwindParser` for the screen on view, as its light and its dark resolver
 alike, so a theme paints the same whatever the phone is set to. An element

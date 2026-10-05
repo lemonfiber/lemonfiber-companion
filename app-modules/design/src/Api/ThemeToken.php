@@ -26,7 +26,9 @@ namespace Modules\Design\Api;
  * theme draws no severity colour, so there those roles paint as text and as a
  * raised surface do. Every severity also has a glyph of its own
  * ({@see \Modules\Design\View\Tone}), so colour is never the only thing
- * that says it.
+ * that says it. In the operator's theme lemon also sets the words of the
+ * operator's own quieter actions; the member's theme sets lemon as nothing but
+ * the one primary action's fill.
  */
 enum ThemeToken: string
 {
@@ -76,6 +78,19 @@ enum ThemeToken: string
 
     /** The ground of a notice about something broken: the brand's `alarm-tint`. */
     case AlarmTint = 'alarm-tint';
+
+    /** The brand's `ink`, the glyph on an `Alarm` fill and nothing else. */
+    case OnAlarm = 'on-alarm';
+
+    /**
+     * The words of an action the operator takes that is not the way forward.
+     *
+     * `lemon` in the operator's theme, which is lemonfiber's colour for the
+     * operator's own actions and measures past AA on ink. In the member's
+     * theme lemon is the fill of the one primary action and nothing else, so
+     * there these words paint as `Muted` does.
+     */
+    case OwnAction = 'own-action';
 
     /** The brand's `lemon`. */
     private const string LEMON = '#F0C419';
@@ -136,6 +151,8 @@ enum ThemeToken: string
             self::Alarm => $theme === WhoseTheme::Operator ? self::INK_ALARM : self::INK_TEXT,
             self::WarnTint => $theme === WhoseTheme::Operator ? self::INK_WARN_TINT : self::INK_PITH,
             self::AlarmTint => $theme === WhoseTheme::Operator ? self::INK_ALARM_TINT : self::INK_PITH,
+            self::OnAlarm => self::INK,
+            self::OwnAction => $theme === WhoseTheme::Operator ? self::LEMON : self::INK_TEXT_MUTED,
         };
     }
 
@@ -145,14 +162,16 @@ enum ThemeToken: string
      * `lemon` is a fill rather than a foreground, and a surface or a line is a
      * ground. `on-accent` is text only on an accent fill; no rule can see the
      * fill from a class string, because it is often on the parent. A severity
-     * colours a glyph beside the words that say the state, and never the words.
+     * colours a glyph beside the words that say the state, and never the words,
+     * and `on-alarm` is a glyph on an alarm fill. `own-action` is the one role
+     * that paints lemon as words, and only in the operator's theme.
      */
     public function safeAsText(): bool
     {
         return match ($this) {
-            self::Text, self::Muted, self::Faint, self::OnAccent => true,
+            self::Text, self::Muted, self::Faint, self::OnAccent, self::OwnAction => true,
             self::Accent, self::Surface, self::Raised, self::Line,
-            self::Ok, self::Warn, self::Alarm, self::Activity, self::WarnTint, self::AlarmTint => false,
+            self::Ok, self::Warn, self::Alarm, self::Activity, self::WarnTint, self::AlarmTint, self::OnAlarm => false,
         };
     }
 }

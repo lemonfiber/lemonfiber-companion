@@ -15,10 +15,9 @@ use function view;
  * {@see Action}'s quieter twin, and the reason there has to be one: the
  * platform paints every button the same fill and honours no per-instance
  * colour, so two filled bars side by side make neither of them the way forward.
- * The override that would tell them apart by colour is refused, and
- * the accent as text measures 1.6:1, which is why there is no
- * third option. What is left is **form** — a filled bar for the one thing to
- * do, and a line of words for the way past it.
+ * The override that would tell them apart by colour is refused. What is left
+ * is **form**: a filled bar for the one thing to do, and a line of words for
+ * the way past it, set in the operator's own colour for actions.
  *
  * The first run is where that was written down and not done: the step that
  * offers *go on* and *skip* carried a comment saying the second should be

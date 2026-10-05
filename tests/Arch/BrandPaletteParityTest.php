@@ -42,6 +42,8 @@ function assertedBrandColours(): array
         ThemeToken::Activity->value => ['ink:text', 'ink:fiber'],
         ThemeToken::WarnTint->value => ['ink:pith', 'ink:warn-tint'],
         ThemeToken::AlarmTint->value => ['ink:pith', 'ink:alarm-tint'],
+        ThemeToken::OnAlarm->value => ['ink', 'ink'],
+        ThemeToken::OwnAction->value => ['ink:text-muted', 'lemon'],
     ];
 }
 

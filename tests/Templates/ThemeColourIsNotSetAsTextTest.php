@@ -9,9 +9,12 @@ use Tests\Support\Template;
 //
 // The resolver is handed a bare token name and cannot tell which prefix asked
 // it, so `bg-theme-accent` and `text-theme-accent` both resolve to the same
-// hex. One of them is the brand and the other is `lemon` on the platform's own
-// light surface, which measures 1.6:1 — legible on nothing, and legible least
-// of all to the reader this application is most careful about.
+// hex. One of them is the brand's fill, and the other is `lemon` set as words
+// wherever the accent is drawn: on the brand's paper it measures 1.6:1, and in
+// the member's theme lemon is the one primary action's fill and nothing else.
+// The operator's own quieter actions are the one place lemon is words, through
+// `own-action`, which paints lemon on the operator's ink and muted text in the
+// member's theme.
 //
 // This is the same measured finding that makes amber text-forbidden twice over
 // in the brand rules, and it needs a check here for the same reason every rule
@@ -43,11 +46,11 @@ foreach ($templates as $template) {
 
         expect(array_values(array_unique($offenders)))->toBe([], sprintf(
             "These set a colour as text that cannot be read as text:\n  %s\n\n"
-            . 'The accent is `lemon`, which measures 1.6:1 against the platform\'s light '
-            . 'surface — the same measured reason amber is never text. It is a fill, a '
-            . "bar, a selected state.\nA label sitting on an accent fill is the one text "
-            . 'use there is, and it is `text-theme-on-accent`, which is the foreground '
-            . 'the brand pairs with lemon at 10.9:1 (DES-R15, DES-R18).',
+            . 'The accent is `lemon`, which measures 1.6:1 against the brand\'s paper — the '
+            . 'same measured reason amber is never text. It is a fill, a bar, a selected '
+            . "state.\nA label sitting on an accent fill is `text-theme-on-accent`, the "
+            . 'foreground the brand pairs with lemon at 10.9:1, and the words of the '
+            . 'operator\'s own quieter action are `text-theme-own-action` (DES-R15, DES-R18, DES-R30).',
             implode("\n  ", array_values(array_unique($offenders))),
         ));
     });
