@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Presenters\HowTheRoomReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheRoomTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -58,6 +59,7 @@ final class HowFullThisMachineIs extends NativeComponent
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
+    use AsksAgain;
 
     /**
      * What came back, once the frame has asked.
@@ -78,17 +80,6 @@ final class HowFullThisMachineIs extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /**
-     * Ask the machine again.
-     *
-     * The action an obstacle must not take away, and one an operator who has
-     * just changed something at the machine wants on a screen that answered.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     public function render(): View
     {

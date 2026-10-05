@@ -15,6 +15,7 @@ reach it.
 | `Screens\FindsItsWayAroundAStack` | The trait a screen about a stack uses. It carries the list of stacks and hands NativePHP the menu. A surface wraps it in its own trait, which says whether a screen opens on top of another. |
 | `Screens\ChoosesAStack` | The list of stacks as a sheet over the screen, listening to each stack while it is open. |
 | `Screens\DrawsItsTemplate` | The `render()` of a screen that hands its template nothing. The screen names the template in its `TEMPLATE` constant. |
+| `Screens\AsksAgain` | The `again()` of a screen whose answer is its `$answered`: letting go of the answer, so the next frame asks. |
 | `TheWayAround` | What a screen reads to find its way: the stack its route names, the stacks to choose from, where choosing one leads, where the app opens, and whose menu it draws. |
 | `WhoTheMenuIsFor` | Whose session this phone holds for the stack: nobody, a member, or the operator. |
 | `TheTabs` | The operator's four tabs and the screen each opens. Which screen class draws each tab is the operator surface's own. |

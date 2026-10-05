@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
@@ -61,6 +62,7 @@ final class WhatYouCanWatch extends NativeComponent
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'household::what-you-can-watch';
 
@@ -91,18 +93,6 @@ final class WhatYouCanWatch extends NativeComponent
     public function stack(): Stack
     {
         return $this->around->stackOn($this);
-    }
-
-    /**
-     * Ask the machine again.
-     *
-     * The action an obstacle must not take away, and it earns its place twice
-     * on this screen: a library out of reach is the case most likely to have
-     * fixed itself by the time somebody reads the sentence saying so.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
     }
 
     /** What came back, asked once per frame. */

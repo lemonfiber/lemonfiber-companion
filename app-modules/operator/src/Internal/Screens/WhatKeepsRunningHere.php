@@ -27,6 +27,7 @@ use Modules\Operator\Internal\Presenters\HowHostingReads;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -82,6 +83,7 @@ final class WhatKeepsRunningHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-keeps-running-here';
 
@@ -110,19 +112,6 @@ final class WhatKeepsRunningHere extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /**
-     * Ask the machine again.
-     *
-     * The action an obstacle must not take away. A control is not hidden
-     * because the stack is unreachable — the app offers it and reports the
-     * failure — and an obstacle screen with nothing on it leaves no way back
-     * but leaving and returning.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /**
      * Ask whether to hand the command of that name to this machine.

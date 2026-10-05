@@ -18,6 +18,7 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThisCopyReads;
 use Modules\Operator\Internal\ViewModels\ThisCopyTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -48,6 +49,7 @@ final class WhatIsRunningHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-is-running-here';
 
@@ -68,17 +70,6 @@ final class WhatIsRunningHere extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /**
-     * Ask the machine again.
-     *
-     * The action an obstacle must not take away, and one an operator who has
-     * just changed something at the machine wants on a screen that answered.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): ThisCopyTurnedOutToBe

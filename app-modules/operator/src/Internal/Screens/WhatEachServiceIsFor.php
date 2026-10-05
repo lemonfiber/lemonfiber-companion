@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheCatalogueReads;
 use Modules\Operator\Internal\ViewModels\TheCatalogueTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -48,6 +49,7 @@ final class WhatEachServiceIsFor extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-each-service-is-for';
 
@@ -65,12 +67,6 @@ final class WhatEachServiceIsFor extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** Ask the machine again, which an obstacle must not take away. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): TheCatalogueTurnedOutToBe

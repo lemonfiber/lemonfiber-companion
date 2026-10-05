@@ -25,6 +25,7 @@ use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -76,6 +77,7 @@ final class WhatStoppedComingIn extends NativeComponent
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
+    use AsksAgain;
 
     /**
      * What came back, once the frame has asked.
@@ -101,24 +103,6 @@ final class WhatStoppedComingIn extends NativeComponent
     public function howMany(): int
     {
         return count($this->answer()->stalled);
-    }
-
-    /**
-     * Ask the stack again.
-     *
-     * The action an obstacle must not take away. A control is not
-     * hidden because the stack is unreachable — the app offers it and reports
-     * the failure — and an obstacle screen with nothing on it does exactly what
-     * the rule forbids: the only way back is leaving and returning, which
-     * is named separately as the thing a screen must not rely on.
-     *
-     * Forgetting what came back rather than re-reading here, so the next
-     * accessor asks. That keeps this one act and keeps the reading rule true: one
-     * asking per frame, and a frame that starts when somebody taps.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
     }
 
     public function render(): View

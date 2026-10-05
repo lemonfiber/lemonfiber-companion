@@ -17,6 +17,7 @@ use Modules\Kernel\Api\WhatRunsHere;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheVersionsRead;
 use Modules\Operator\Internal\ViewModels\TheVersionsTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -45,6 +46,7 @@ final class WhichVersionsRunHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::which-versions-run-here';
 
@@ -58,12 +60,6 @@ final class WhichVersionsRunHere extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** Ask the machine again, which an obstacle must not take away. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): TheVersionsTurnedOutToBe

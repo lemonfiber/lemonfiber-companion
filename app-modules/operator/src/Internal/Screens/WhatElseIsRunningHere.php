@@ -18,6 +18,7 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowSomethingElseReads;
 use Modules\Operator\Internal\ViewModels\WhatElseTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -57,6 +58,7 @@ final class WhatElseIsRunningHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-else-is-running-here';
 
@@ -82,17 +84,6 @@ final class WhatElseIsRunningHere extends NativeComponent
     public function howMany(): int
     {
         return count($this->answer()->running);
-    }
-
-    /**
-     * Ask the machine again.
-     *
-     * Forgetting what came back rather than re-reading here, so the next
-     * accessor asks and the frame that starts is the one somebody tapped for.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
     }
 
     /** What came back, asked once per frame. */

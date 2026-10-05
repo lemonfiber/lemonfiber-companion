@@ -36,6 +36,7 @@ use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhetherItIsHeld;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -87,6 +88,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
+    use AsksAgain;
 
     /** What is typed into the box, walked only when asked to. Public for {@see WhatThisServiceSaid::$looking}'s reason. */
     public string $looking = '';
@@ -172,12 +174,6 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         if ($chosen instanceof WhatToWalk) {
             $this->start($chosen);
         }
-    }
-
-    /** Ask the machine again. */
-    public function again(): void
-    {
-        $this->answered = null;
     }
 
     /**
