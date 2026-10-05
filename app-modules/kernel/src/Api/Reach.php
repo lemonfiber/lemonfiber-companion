@@ -24,15 +24,15 @@ use Closure;
  * the summary, meaning and remedies the server wrote. A reach that failed never
  * got an answer from a server, so there is nothing of the server's to carry —
  * and building a `Problem` here would mean writing those sentences in a module,
- * where they would be English on a Dutch phone (L1). What this carries instead
- * is the case, and the text is looked up against it where a translator exists.
- * The two types stay apart because their payloads are different facts, not
- * because the shape is: collapsing them would mean inventing a `Problem` for
- * something the server never said.
+ * where they would be English on a Dutch phone. What this carries instead is
+ * the case, and the text is looked up against it where a translator exists. The
+ * two types stay apart because their payloads are different facts, not because
+ * the shape is: collapsing them would mean inventing a `Problem` for something
+ * the server never said.
  *
  * There is deliberately no `wasBlocked()` and no `obstacle()`, for the reason
  * `Outcome` gives: a check-then-get pair puts the check where it can be
- * forgotten (C2).
+ * forgotten.
  */
 final readonly class Reach
 {
@@ -42,7 +42,7 @@ final readonly class Reach
      * The stack answered, and this is what came back.
      *
      * An object rather than a value of any type, for the reason `Outcome::done`
-     * gives: everything crossing a module boundary here is a named type (D2).
+     * gives: everything crossing a module boundary here is a named type.
      */
     public static function made(object $reached): self
     {

@@ -66,9 +66,9 @@ final readonly class Unattended
     /**
      * The same, for one installed against a program that is gone.
      *
-     * A named constructor rather than a fifth parameter, which is `C2`'s cure
-     * and {@see Daemon::thatExited()}'s shape: *the program it runs is missing*
-     * and *nothing said anything was missing* are different facts, and a caller
+     * A named constructor rather than a fifth parameter, which is
+     * {@see Daemon::thatExited()}'s shape: *the program it runs is missing* and
+     * *nothing said anything was missing* are different facts, and a caller
      * cannot reach one while meaning the other. The standing is not a parameter
      * here, so a row naming a missing program while claiming to be running is
      * unspellable.
@@ -117,10 +117,10 @@ final readonly class Unattended
     /**
      * Say the program that is gone, or say that nothing is.
      *
-     * Two arms rather than a nullable getter, for `C2`'s reason and
-     * {@see Daemon::exit()}'s: a screen handed a null would print an empty
-     * column where a path belongs, and an operator would read that as *nothing
-     * is missing* on the one row where something is.
+     * Two arms rather than a nullable getter, for {@see Daemon::exit()}'s
+     * reason: a screen handed a null would print an empty column where a path
+     * belongs, and an operator would read that as *nothing is missing* on the
+     * one row where something is.
      *
      * @template TGone of object
      * @template TNothing of object

@@ -9,12 +9,12 @@ use Closure;
 /**
  * What a command answers with: it happened, or it was refused.
  *
- * The one type a refusal crosses a module boundary as (C1) — carrying a
- * `Problem`, which is the shape the server describes one in. Every `Api`
- * command returns one, and the only way to read it is to say what happens in
- * both cases — which is the entire point. A caller that wanted to ignore the
- * refusal would have to write a branch that does nothing, and a branch that
- * does nothing is visible in review where a forgotten `try` is not.
+ * The one type a refusal crosses a module boundary as — carrying a `Problem`,
+ * which is the shape the server describes one in. Every `Api` command returns
+ * one, and the only way to read it is to say what happens in both cases — which
+ * is the entire point. A caller that wanted to ignore the refusal would have to
+ * write a branch that does nothing, and a branch that does nothing is visible
+ * in review where a forgotten `try` is not.
  *
  *     $outcome->either(
  *         done: fn (Repaired $repaired): Screen => $this->show($repaired),
@@ -22,9 +22,9 @@ use Closure;
  *     );
  *
  * There is deliberately no `wasRefused()` and no `refusal()`. A pair like that
- * is the check-then-get shape C2 exists to remove: the check is the thing that
- * gets forgotten, and a getter that throws when the other branch was taken
- * just moves the forgetting somewhere the compiler still cannot see it.
+ * is the check-then-get shape: the check is the thing that gets forgotten, and
+ * a getter that throws when the other branch was taken just moves the
+ * forgetting somewhere the compiler still cannot see it.
  *
  * `either` answers with an object because both arms do. The two arms usually
  * build the same kind of thing — a view model, a screen state — and saying so
@@ -38,8 +38,8 @@ final readonly class Outcome
      * It happened, and this is what came back.
      *
      * An object rather than a value of any type: everything that crosses a
-     * module boundary here is already a named type (D2), so `object` costs
-     * nothing and `mixed` would be refused (D3).
+     * module boundary here is already a named type, so `object` costs nothing
+     * and says more than `mixed`.
      */
     public static function done(object $result): self
     {

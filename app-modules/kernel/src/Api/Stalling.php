@@ -30,10 +30,9 @@ interface Stalling
     /**
      * Ask a stack what has stopped, or come away with a reason.
      *
-     * Answers {@see WhatIsStuck} rather than raising, which `C1` requires: a
-     * stack that is asleep, one on another network and one whose session has
-     * ended are ordinary states of the world, and an operator is
-     * told which of them they met.
+     * Answers {@see WhatIsStuck} rather than raising: a stack that is asleep,
+     * one on another network and one whose session has ended are ordinary
+     * states of the world, and an operator is told which of them they met.
      */
     public function stoppedOn(Stack $stack, Session $session): WhatIsStuck;
 }

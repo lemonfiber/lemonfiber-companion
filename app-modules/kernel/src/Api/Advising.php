@@ -12,6 +12,6 @@ namespace Modules\Kernel\Api;
  */
 interface Advising
 {
-    /** Ask a stack which app to watch on, or come away with a reason (`C1`). */
+    /** Ask a stack which app to watch on, or come away with a reason. */
     public function advisedBy(Stack $stack, Session $session): WhatWasFoundToWatchOn;
 }

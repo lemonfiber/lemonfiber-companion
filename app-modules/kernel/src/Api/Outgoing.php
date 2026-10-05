@@ -17,6 +17,6 @@ namespace Modules\Kernel\Api;
  */
 interface Outgoing
 {
-    /** Ask a stack what leaves it, or come away with a reason (`C1`). */
+    /** Ask a stack what leaves it, or come away with a reason. */
     public function leaving(Stack $stack, Session $session): WhatWasFoundLeaving;
 }

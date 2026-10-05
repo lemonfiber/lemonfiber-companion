@@ -16,16 +16,16 @@ use Traversable;
 /**
  * What a household has asked its stack for.
  *
- * A typed collection rather than an array, which is what `D1` asks for and
- * what makes the order part of the type's promise. The order here is the one
- * the stack listed, which is the order the requests were made — and that is
- * information: the person who asked remembers *theirs*, by roughly where it
- * falls, not by how urgent an app decided it was.
+ * A typed collection rather than an array, which makes the order part of the
+ * type's promise. The order here is the one the stack listed, which is the
+ * order the requests were made — and that is information: the person who asked
+ * remembers *theirs*, by roughly where it falls, not by how urgent an app
+ * decided it was.
  *
  * Empty is a legitimate value and one of the answers this screen exists to
  * give. A household that has asked for nothing is a quiet week rather than a
- * missing list, and an empty collection says so without a null anywhere (`C2`)
- * — which is what keeps it apart from a stack that could not be asked.
+ * missing list, and an empty collection says so without a null anywhere — which
+ * is what keeps it apart from a stack that could not be asked.
  *
  * @implements IteratorAggregate<int, Wanted>
  */

@@ -9,12 +9,10 @@ use Closure;
 /**
  * What came of offering a credential: a session, or the reason there is none.
  *
- * The exchange trades a credential once for a session, and this
- * is what the trade answers with. `C1`'s shape, and this is one of the places
- * it earns itself twice over: a stack that has stopped listening, one that
- * refused the password and one that could not be reached are three ordinary
- * states of the world, and a method returning a `Session` could report them
- * only by throwing.
+ * The exchange trades a credential once for a session, and this is what the
+ * trade answers with: a stack that has stopped listening, one that refused the
+ * password and one that could not be reached are three ordinary states of the
+ * world, and a method returning a `Session` could report them only by throwing.
  *
  *     $admitted->either(
  *         opened: fn (Session $session, Instant $until, Whose $whose): Screen

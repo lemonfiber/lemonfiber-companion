@@ -21,7 +21,7 @@ use function sprintf;
  * case that is missing.
  *
  * No label. What a screen shows for a category is text a person reads, so it
- * comes from the translator against a key (L1) — a name written here would be
+ * comes from the translator against a key — a name written here would be
  * English on a Dutch phone.
  */
 enum Category: string

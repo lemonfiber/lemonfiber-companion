@@ -14,9 +14,6 @@ interface Rehearsing
 {
     /**
      * What starting that form would bring up and leave out, or a reason.
-     *
-     * Answers {@see WhatTheRehearsalFound} rather than raising, which `C1`
-     * requires.
      */
     public function whatStarting(Stack $stack, Session $session, Form $form): WhatTheRehearsalFound;
 }

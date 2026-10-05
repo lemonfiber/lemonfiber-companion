@@ -16,8 +16,8 @@ use Traversable;
 /**
  * Everything a stack runs, and what the stack says that amounts to.
  *
- * A typed collection rather than an array (`D1`), and the order is the stack's
- * own — worst first, which is the order the contract lists in and the order an
+ * A typed collection rather than an array, and the order is the stack's own —
+ * worst first, which is the order the contract lists in and the order an
  * operator reads. Sorting alphabetically would put a crashed service under a
  * healthy one and the operator would scroll past the row they opened the app
  * for.

@@ -9,9 +9,10 @@ use InvalidArgumentException;
 /**
  * A sentence arrived with nothing in it for the member to read.
  *
- * Raised where a string becomes a {@see Sentence}, for {@see RemedySaysNothing}'s
- * reason: this is a value that cannot be constructed rather than a refusal
- * crossing a boundary, so there is nothing for a caller to open (C1, C3).
+ * Raised where a string becomes a {@see Sentence}, for
+ * {@see RemedySaysNothing}'s reason: this is a value that cannot be constructed
+ * rather than a refusal crossing a boundary, so there is nothing for a caller
+ * to open.
  */
 final class SentenceSaysNothing extends InvalidArgumentException
 {

@@ -13,6 +13,6 @@ namespace Modules\Kernel\Api;
  */
 interface Safekeeping
 {
-    /** Ask a stack what credentials it holds, or come away with a reason (`C1`). */
+    /** Ask a stack what credentials it holds, or come away with a reason. */
     public function heldOn(Stack $stack, Session $session): WhatWasFoundOfTheCredentials;
 }

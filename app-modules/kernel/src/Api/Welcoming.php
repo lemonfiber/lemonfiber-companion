@@ -12,6 +12,6 @@ namespace Modules\Kernel\Api;
  */
 interface Welcoming
 {
-    /** Ask a stack for its front door, or come away with a reason (`C1`). */
+    /** Ask a stack for its front door, or come away with a reason. */
     public function frontDoorOf(Stack $stack, Session $session): WhatWasFoundOfTheFrontDoor;
 }

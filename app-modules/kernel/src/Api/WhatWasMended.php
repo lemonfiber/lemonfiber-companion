@@ -16,9 +16,9 @@ use Traversable;
 /**
  * What became of every repair in a listing the operator agreed to.
  *
- * A typed collection rather than an array (`D1`), holding the order the stack
- * carried them out in — which is information: a repair that stopped may be why
- * the next one declined, and the other way round they read as two unrelated
+ * A typed collection rather than an array, holding the order the stack carried
+ * them out in — which is information: a repair that stopped may be why the next
+ * one declined, and the other way round they read as two unrelated
  * disappointments.
  *
  * Empty is a legitimate value and not a happy one. An agreement the stack

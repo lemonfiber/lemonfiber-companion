@@ -9,11 +9,11 @@ use Closure;
 /**
  * What came back from pointing the camera at something: a payload, or a reason.
  *
- * The outcome {@see Scanning} answers with, and its shape is `C1`'s: a caller
- * has to open it to get at either half, so the refusal cannot be the one nobody
- * handled. The refusing arm is not an error path — an operator closing the
- * scanner is the ordinary way out of it — which is exactly why an exception
- * would be the wrong instrument.
+ * The outcome {@see Scanning} answers with, and a caller has to open it to get
+ * at either half, so the refusal cannot be the one nobody handled. The refusing
+ * arm is not an error path — an operator closing the scanner is the ordinary
+ * way out of it — which is exactly why an exception would be the wrong
+ * instrument.
  *
  *     $saw->either(
  *         read: fn (string $payload): Screen => $this->pair($payload),
@@ -22,11 +22,11 @@ use Closure;
  *
  * **It carries the payload as a string, deliberately.** What a camera read is
  * characters until something parses them, and the thing that parses them is
- * {@see \Modules\Connection\Api\WhatTheCodeSaysSoFar}, which already does it for
- * the typed road. A `Pairing` here would mean this type parsing — and then the
- * two roads would have two parsers, of which only one would stay tested.
- * `D2`'s "a primitive crosses into a module in one place" is satisfied by that
- * one place being the named constructor both roads go through.
+ * {@see \Modules\Connection\Api\WhatTheCodeSaysSoFar}, which already does it
+ * for the typed road. A `Pairing` here would mean this type parsing — and then
+ * the two roads would have two parsers, of which only one would stay tested.
+ * The one place the string becomes a value is the named constructor both roads
+ * go through.
  */
 final readonly class WhatTheCameraSaw
 {

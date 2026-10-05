@@ -20,9 +20,9 @@ use Closure;
  * their machine and has no way to tell which one to fix. Shown with the cause
  * named, they read one broken thing and four services that noticed.
  *
- * Two arms rather than a nullable check, for `C2`'s reason and for a sharper
- * one here: a screen that forgets to ask whether there is a cause renders the
- * word "because" above nothing, which is worse than not saying it.
+ * Two arms rather than a nullable check: a screen that forgets to ask whether
+ * there is a cause renders the word "because" above nothing, which is worse
+ * than not saying it.
  */
 final readonly class Because
 {

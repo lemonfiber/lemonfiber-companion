@@ -21,14 +21,14 @@ use function sprintf;
  * which is how a household loses a service for a week because somebody was
  * debugging on a Tuesday.
  *
- * **The value is the operator's word and {@see self::asked()} is lemonfiber's.**
- * That surface offers `up`, `down`, `restart` and `pull`, and the SDK deliberately
- * keeps no copy of its list — a name it does not offer is refused by name,
- * which is an answer a caller can act on, where a stale list held there would
- * go wrong in silence. So the names live here, in one `match`, and the
- * value stays the word a catalogue key is built from: `L7` reconstructs a key
+ * **The value is the operator's word and {@see self::asked()} is
+ * lemonfiber's.** That surface offers `up`, `down`, `restart` and `pull`, and
+ * the SDK deliberately keeps no copy of its list — a name it does not offer is
+ * refused by name, which is an answer a caller can act on, where a stale list
+ * held there would go wrong in silence. So the names live here, in one `match`,
+ * and the value stays the word a catalogue key is built from: a key is rebuilt
  * from a case's value, and a value of `up` would leave every sentence on this
- * screen unreachable by the rule that finds sentences nothing reads.
+ * screen out of reach of the check that finds sentences nothing reads.
  *
  * Which means `->value` must never reach the wire, and the rule that opens the
  * writing door says so by name — see `TheAppOpensOnlyTheseDoorsTest`.

@@ -26,9 +26,6 @@ interface KeepingCurrent
 {
     /**
      * Read where the stack stands, or come away with a reason.
-     *
-     * Answers {@see WhatIsCurrent} rather than raising, which `C1` requires and
-     * an obstacle builds on.
      */
     public function standing(Stack $stack, Session $session): WhatIsCurrent;
 

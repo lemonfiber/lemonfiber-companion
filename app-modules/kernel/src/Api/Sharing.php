@@ -39,10 +39,10 @@ interface Sharing
     /**
      * Put it in front of the operator, or say why it could not be.
      *
-     * Answers {@see Handed} rather than raising, which `C1` requires: a
-     * platform with no sheet to offer is an ordinary state of the world, and a
-     * method answering with nothing could report it only by throwing, which
-     * makes it the case nothing checks.
+     * Answers {@see Handed} rather than raising: a platform with no sheet to
+     * offer is an ordinary state of the world, and a method answering with
+     * nothing could report it only by throwing, which makes it the case nothing
+     * checks.
      *
      * **Handing over is not sending, and this cannot tell whether it was
      * sent.** The share sheet belongs to the platform: an operator may pick an

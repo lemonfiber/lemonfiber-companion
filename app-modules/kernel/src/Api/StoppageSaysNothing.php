@@ -13,7 +13,7 @@ use function sprintf;
  *
  * Raised where the values become an {@see AStoppage}, for
  * {@see StuckSaysNothing}'s reason: these are values that cannot be built
- * rather than refusals crossing a boundary (`C1`, `C3`).
+ * rather than refusals crossing a boundary.
  */
 final class StoppageSaysNothing extends InvalidArgumentException
 {

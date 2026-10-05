@@ -19,9 +19,9 @@ use function trim;
 /**
  * What this machine keeps running on the stack's behalf, and what keeps it.
  *
- * A typed collection rather than an array (`D1`). The order is the stack's own,
- * which is the order it lists commands in — this app holds no opinion about
- * which of them matters more, and sorting would be inventing one.
+ * A typed collection rather than an array. The order is the stack's own, which
+ * is the order it lists commands in — this app holds no opinion about which of
+ * them matters more, and sorting would be inventing one.
  *
  * **What keeps them running comes first.** It is a fact about the machine
  * rather than about any row, so putting it before the variadic means a listing
@@ -32,8 +32,8 @@ use function trim;
  *
  * **Empty is a legitimate value**: a machine that hosts nothing still has a
  * manager, and that is a state rather than a gap. It is told apart from a stack
- * that could not be asked by the reader that builds this, not here, which is
- * `C2` applied the way {@see Stalled} applies it.
+ * that could not be asked by the reader that builds this, not here, the way
+ * {@see Stalled} is.
  *
  * @implements IteratorAggregate<int, Unattended>
  */
@@ -95,10 +95,10 @@ final readonly class WhatRunsUnattended implements IteratorAggregate
     /**
      * Say what to do instead, or say that the machine does this itself.
      *
-     * Two arms rather than a nullable getter (`C2`). The arms are also what
-     * keeps *not available here* from rendering as *off*: a screen reaching the
-     * first has a sentence to draw and no control, and one reaching the second
-     * has a machine that already does this.
+     * Two arms rather than a nullable getter, which is also what keeps *not
+     * available here* from rendering as *off*: a screen reaching the first has
+     * a sentence to draw and no control, and one reaching the second has a
+     * machine that already does this.
      *
      * @template TInstead of object
      * @template TItself of object

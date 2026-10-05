@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What the whole stack amounts to, as the machine itself judges it.
  *
- * An enum for `D4`'s reason — `status.condition` is exactly these four.
+ * An enum, because `status.condition` is exactly these four.
  *
  * **It is the stack's judgement, not a sum this app works out.** The same
  * argument {@see Overall} makes about a diagnostic run: a screen adding up the

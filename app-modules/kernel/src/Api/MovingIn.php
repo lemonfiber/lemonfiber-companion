@@ -27,7 +27,7 @@ namespace Modules\Kernel\Api;
  */
 interface MovingIn
 {
-    /** Ask a stack what it found already standing, or come away with a reason (`C1`). */
+    /** Ask a stack what it found already standing, or come away with a reason. */
     public function surveyedOn(Stack $stack, Session $session): WhatWasFoundAlreadyHere;
 
     /** Ask what moving in this way would come to, doing nothing. */

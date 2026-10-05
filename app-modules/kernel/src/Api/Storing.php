@@ -15,8 +15,6 @@ interface Storing
 {
     /**
      * Ask a stack what it keeps, or come away with a reason.
-     *
-     * Answers {@see WhatWasFoundKept} rather than raising, which `C1` requires.
      */
     public function storedOn(Stack $stack, Session $session): WhatWasFoundKept;
 }

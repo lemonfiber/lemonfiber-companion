@@ -9,9 +9,9 @@ use Closure;
 /**
  * A stack's record, or the reason there is none.
  *
- * The answer {@see History} gives, and a value rather than an exception for
- * `C1`'s reason and {@see WhatKeepsRunning}'s. The reason is an
- * {@see Obstacle}, the set every other screen reads.
+ * The answer {@see History} gives, and a value rather than an exception, for
+ * {@see WhatKeepsRunning}'s reason. The reason is an {@see Obstacle}, the set
+ * every other screen reads.
  *
  * **An empty record comes back through the first arm.** A stack that has
  * changed nothing and a stack that could not be asked both draw an empty list,

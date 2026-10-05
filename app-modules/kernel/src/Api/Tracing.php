@@ -12,6 +12,6 @@ namespace Modules\Kernel\Api;
  */
 interface Tracing
 {
-    /** Follow one item, or come away with a reason; answers rather than raising, which `C1` requires. */
+    /** Follow one item, or come away with a reason. */
     public function tracedOn(Stack $stack, Session $session, WhatToFollow $following): WhatWasFoundOfTheTrace;
 }

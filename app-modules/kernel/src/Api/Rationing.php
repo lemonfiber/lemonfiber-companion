@@ -14,6 +14,6 @@ namespace Modules\Kernel\Api;
  */
 interface Rationing
 {
-    /** Ask a stack how its line is shared, or come away with a reason (`C1`). */
+    /** Ask a stack how its line is shared, or come away with a reason. */
     public function rationedOn(Stack $stack, Session $session): WhatTheLineWasFound;
 }

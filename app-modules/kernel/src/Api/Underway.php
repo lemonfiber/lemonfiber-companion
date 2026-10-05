@@ -14,9 +14,9 @@ use Closure;
  * *done*: the stack acknowledged the work and named it, and what became of it
  * is {@see HowTheOfferIsGoing}'s question.
  *
- * A value rather than a raise, which is `C1` and every other port here: a stack
- * asleep, one on another network and a session that has ended are ordinary
- * states of the world, and an operator is told which.
+ * A value rather than a raise, as from every other port here: a stack asleep,
+ * one on another network and a session that has ended are ordinary states of
+ * the world, and an operator is told which.
  *
  * **There is no third arm for *it refused the action itself*.** A stack that
  * answered and declined is `Obstacle::of(KindOfObstacle::CredentialWasRefused)` or a refusal

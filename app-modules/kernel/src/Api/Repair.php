@@ -51,11 +51,11 @@ final readonly class Repair
     /**
      * The one place a repair the stack offered becomes one this app can offer.
      *
-     * Every clause is a parameter, so a repair missing one cannot be
-     * built rather than being built and rendered short. `$undoing` is an enum
-     * rather than the wire's boolean because a bare `true` at a call site says
-     * nothing about which way round it goes (`D5`) and, more to the point, has
-     * no word an operator can read (`L2`).
+     * Every clause is a parameter, so a repair missing one cannot be built
+     * rather than being built and rendered short. `$undoing` is an enum rather
+     * than the wire's boolean because a bare `true` at a call site says nothing
+     * about which way round it goes and, more to the point, has no word an
+     * operator can read.
      *
      * A blank `does` is refused for {@see Remedy}'s reason: it renders as a
      * button with no label, and a button with no label above a list of

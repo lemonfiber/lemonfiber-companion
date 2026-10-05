@@ -15,15 +15,15 @@ use function round;
  * number meaning nothing, and a screen holding them separately is a screen that
  * can render one of them stale.
  *
- * **One static named constructor, which is also what `D2` allows.** A primitive
- * crosses into a module in exactly one place, where it is checked and given a
- * name; {@see SizeUnit} takes no numbers at all and answers only about itself.
+ * **One static named constructor.** A primitive crosses into a module in
+ * exactly one place, where it is checked and given a name; {@see SizeUnit}
+ * takes no numbers at all and answers only about itself.
  *
- * **The unit is the smallest one whose figure stays under a thousand.** That
- * is `L5` as a rule rather than as an aspiration: a separator written into a
- * source file is wrong in one locale by construction, so no figure that leaves
- * here may need one. Walking up rather than picking a band and correcting it
- * afterwards means there is one decision and one boundary.
+ * **The unit is the smallest one whose figure stays under a thousand.** A
+ * separator written into a source file is wrong in one locale by construction,
+ * so no figure that leaves here may need one. Walking up rather than picking a
+ * band and correcting it afterwards means there is one decision and one
+ * boundary.
  *
  * **It does not overstate.** 600 MB stays `600 MB` rather than becoming `1 GB`,
  * because the walk only moves up when staying would need four figures — and an
@@ -81,10 +81,10 @@ final readonly class HowBig
      *
      * Rounded rather than floored, because flooring understates: 1.9 TB read as
      * `1 TB` is a ninety-per-cent understatement of the one number somebody is
-     * deciding from. `L5` rules out the decimal place that would settle it
-     * either way — a separator written into a source file is wrong in one
-     * locale by construction — and the precision lost is precision the number
-     * did not have, since most of these are estimates.
+     * deciding from. No decimal place settles it either way, because a
+     * separator written into a source file is wrong in one locale by
+     * construction, and the precision lost is precision the number did not
+     * have, since most of these are estimates.
      */
     private static function inside(int $bytes, SizeUnit $unit): int
     {

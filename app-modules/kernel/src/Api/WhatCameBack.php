@@ -9,11 +9,11 @@ use Closure;
 /**
  * A stack's report, or the reason there is none.
  *
- * The answer {@see Asking} gives, and a value rather than an exception for the
- * reason `C1` states and {@see Admitted} demonstrates: a stack that is asleep,
- * one on another network, and one whose session has ended are ordinary states
- * of the world. A method answering with a {@see Report} could report them only
- * by throwing, which makes the common case the one nothing checks.
+ * The answer {@see Asking} gives, and a value rather than an exception, as
+ * {@see Admitted} is: a stack that is asleep, one on another network, and one
+ * whose session has ended are ordinary states of the world. A method answering
+ * with a {@see Report} could report them only by throwing, which makes the
+ * common case the one nothing checks.
  *
  * **The reason is an {@see Obstacle}**, which is the set already drawn
  * and the set every other screen in this application reads. A second vocabulary

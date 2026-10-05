@@ -7,11 +7,10 @@ namespace Modules\Kernel\Api;
 /**
  * How much a store let go of when it was asked to forget.
  *
- * An answer rather than nothing, which `C1` asks of every method that changes
- * something: a caller that cannot see what forgetting did cannot test it. A
- * store that could not be reached has forgotten nothing and says so, which is
- * the same answer as a store that held nothing, because there is nothing
- * different for a caller to do about either.
+ * An answer rather than nothing: a caller that cannot see what forgetting did
+ * cannot test it. A store that could not be reached has forgotten nothing and
+ * says so, which is the same answer as a store that held nothing, because there
+ * is nothing different for a caller to do about either.
  */
 final readonly class Forgotten
 {

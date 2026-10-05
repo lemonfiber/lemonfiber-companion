@@ -12,7 +12,7 @@ use InvalidArgumentException;
  * Raised where the values become a `Repair`, for the reason
  * {@see RemedySaysNothing} gives: these are values that cannot be constructed
  * rather than refusals crossing a boundary, so there is nothing for a caller to
- * open (C1, C3).
+ * open.
  *
  * Named constructors rather than one taking which field was blank, because a
  * message assembled from a field name is a message nobody wrote: what is wrong

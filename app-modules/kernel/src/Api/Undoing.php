@@ -9,12 +9,12 @@ use function sprintf;
 /**
  * Whether a repair can be taken back.
  *
- * A repair offer states three things, and this is the third. It
- * is an enum rather than the contract's `reversible: bool` for two reasons that
- * both come out on a screen. A boolean crossing a signature says nothing at the
- * call site about which way round it goes (`D5`), and a boolean has no word: a
- * checkbox is not a sentence, and what an operator needs before agreeing to
- * something permanent is a sentence.
+ * A repair offer states three things, and this is the third. It is an enum
+ * rather than the contract's `reversible: bool` for two reasons that both come
+ * out on a screen. A boolean crossing a signature says nothing at the call site
+ * about which way round it goes, and a boolean has no word: a checkbox is not a
+ * sentence, and what an operator needs before agreeing to something permanent
+ * is a sentence.
  *
  * Declared permanent first, like `Conclusion` and `Overall`, so the case that
  * needs saying is the one a reader meets first.

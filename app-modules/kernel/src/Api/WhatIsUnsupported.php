@@ -16,9 +16,9 @@ use Traversable;
 /**
  * Everything one reading found that the stack cannot act on.
  *
- * A type rather than an array, which is `D1`, and unsorted: the order is the
- * stack's and any order imposed here would be an opinion about which limit
- * matters most, which is a judgement nobody sent.
+ * A type rather than an array, and unsorted: the order is the stack's and any
+ * order imposed here would be an opinion about which limit matters most, which
+ * is a judgement nobody sent.
  *
  * **Empty is the ordinary answer and has to be a value.** A reading where the
  * stack can act on everything says so by listing nothing, and that must not

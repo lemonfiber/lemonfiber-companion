@@ -27,9 +27,9 @@ interface History
     /**
      * Ask a stack for its record, or come away with a reason.
      *
-     * Answers {@see WhatWasRecorded} rather than raising, which `C1` requires:
-     * a stack that is asleep, one on another network and one whose session has
-     * ended are ordinary states of the world.
+     * Answers {@see WhatWasRecorded} rather than raising: a stack that is
+     * asleep, one on another network and one whose session has ended are
+     * ordinary states of the world.
      */
     public function recordedOn(Stack $stack, Session $session): WhatWasRecorded;
 }

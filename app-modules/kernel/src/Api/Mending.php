@@ -14,11 +14,11 @@ namespace Modules\Kernel\Api;
  * clauses and {@see Repairs} and {@see Offer} hold a listing — and the port was
  * held back, because the shape of the answer was not settled.
  *
- * **Two methods, because asking is not answering.** Every action on
- * this surface arrive as a job: the stack acknowledges and names the work, and
- * the outcome is a separate reading at a separate moment. A port with one
- * method would have to hide a wait inside itself — which is `F4`'s socket in a
- * frame and the second reading that is refused, both at once.
+ * **Two methods, because asking is not answering.** Every action on this
+ * surface arrives as a job: the stack acknowledges and names the work, and the
+ * outcome is a separate reading at a separate moment. A port with one method
+ * would have to hide a wait inside itself, which is a socket held open in a
+ * frame.
  *
  * **Asking what would be done changes nothing, and is still an action.** That
  * is the part worth knowing before reading the adapter: the unconfirmed form of
@@ -48,10 +48,10 @@ interface Mending
     /**
      * Ask what became of that asking.
      *
-     * Answers {@see HowTheOfferIsGoing} rather than raising, for `C1`'s reason:
-     * still working, finished, and a job the stack no longer has an outcome for
-     * are three ordinary states, and the third is the one an implementation is
-     * most tempted to fold into one of the others.
+     * Answers {@see HowTheOfferIsGoing} rather than raising: still working,
+     * finished, and a job the stack no longer has an outcome for are three
+     * ordinary states, and the third is the one an implementation is most
+     * tempted to fold into one of the others.
      */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing;
 

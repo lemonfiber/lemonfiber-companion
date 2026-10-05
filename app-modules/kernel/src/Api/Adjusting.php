@@ -28,9 +28,8 @@ interface Adjusting
      * what it would cost, which is what the operator is shown before being
      * asked anything.
      *
-     * Answers {@see WhatTheStackMadeOfIt} rather than raising, which `C1`
-     * requires: a stack that is asleep and a stack that declines are both
-     * ordinary states of the world.
+     * Answers {@see WhatTheStackMadeOfIt} rather than raising: a stack that is
+     * asleep and a stack that declines are both ordinary states of the world.
      */
     public function wouldBe(Stack $stack, Session $session, WhatToSet $asked): WhatTheStackMadeOfIt;
 

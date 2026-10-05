@@ -30,11 +30,10 @@ interface Asking
     /**
      * Ask a stack for its diagnostic report, or come away with a reason.
      *
-     * Answers {@see WhatCameBack} rather than raising, which `C1` requires and
-     * which is right for the same reason {@see Admitting} answers
-     * {@see Admitted}: a stack that is asleep, one on another network and one
-     * whose session has ended are ordinary states of the world rather than
-     * faults, and an operator is told which.
+     * Answers {@see WhatCameBack} rather than raising, for the reason
+     * {@see Admitting} answers {@see Admitted}: a stack that is asleep, one on
+     * another network and one whose session has ended are ordinary states of
+     * the world rather than faults, and an operator is told which.
      */
     public function about(Stack $stack, Session $session): WhatCameBack;
 }

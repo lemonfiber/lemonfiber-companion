@@ -17,11 +17,10 @@ use function sprintf;
  * difference, which is why it is carried rather than flattened into *stuck*.
  *
  * **An enum, because this set is closed by the contract** rather than by this
- * app — `stuck.items[].stage` lists exactly these ten, so `D4` gets its enum
- * and a stage this build has not heard of is a contract change rather than a
- * value to pass through. That is the opposite of {@see Ability}, where the
- * stack declares the set at runtime and an enum would be this build's guess at
- * what exists.
+ * app — `stuck.items[].stage` lists exactly these ten, and a stage this build
+ * has not heard of is a contract change rather than a value to pass through.
+ * That is the opposite of {@see Ability}, where the stack declares the set at
+ * runtime and an enum would be this build's guess at what exists.
  *
  * **Declared in the order the work happens**, which is the order an operator
  * reads them in and the order they are listed in the contract. The position is

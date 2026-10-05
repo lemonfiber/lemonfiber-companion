@@ -36,10 +36,10 @@ final readonly class Capabilities
     /**
      * A capability set as one stack declared it.
      *
-     * Variadic pairs rather than an array, which is `D1`: a map in a public
-     * signature is a shape the analyser cannot check, and these two halves are
-     * exactly the kind that get transposed — one is a string and the other is an
-     * enum whose backing value is also a string.
+     * Variadic pairs rather than an array: a map in a public signature is a
+     * shape nothing can check, and these two halves are exactly the kind that
+     * get transposed — one is a string and the other is an enum whose backing
+     * value is also a string.
      */
     public static function of(StackId $stack, Declared ...$declared): self
     {
@@ -67,11 +67,11 @@ final readonly class Capabilities
     /**
      * What this stack says about one ability, including having said nothing.
      *
-     * Answered as a type rather than a nullable, which is `C2` and is also what
-     * keeps the fourth answer from sitting beside the other three: a
-     * stack that does not have a capability does not report it as false, and
-     * absence read out of the same list as "not permitted" is how a screen ends
-     * up saying one when it means the other.
+     * Answered as a type rather than a nullable, which keeps the fourth answer
+     * from sitting beside the other three: a stack that does not have a
+     * capability does not report it as false, and absence read out of the same
+     * list as "not permitted" is how a screen ends up saying one when it means
+     * the other.
      */
     public function forAbility(Ability $ability): WhatTheStackSays
     {

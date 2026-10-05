@@ -15,10 +15,9 @@ use function sprintf;
  * expecting arrived fine, and closes the app.
  *
  * **An enum rather than the wire's boolean**, for {@see Undoing}'s reason. A
- * bare `true` at a call site says nothing about which way round it goes (`D5`)
- * — and `incomplete: false` read as *complete* is a negation an eye skips —
- * and a boolean has no word an operator can read (`L2`). These two cases have
- * one each.
+ * bare `true` at a call site says nothing about which way round it goes — and
+ * `incomplete: false` read as *complete* is a negation an eye skips — and a
+ * boolean has no word an operator can read. These two cases have one each.
  *
  * **Named for what is shown rather than for what is missing.** The contract
  * says `incomplete` because a contract describes a payload; a screen says how

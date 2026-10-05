@@ -19,11 +19,11 @@ use function trim;
  * make one name the request together with what was decided about it.
  *
  * **Two constructors, because approving and declining are different acts.** Not
- * one taking a nullable reason (`C2`): the reason is part of
- * declining rather than something beside it, so a refusal that could be built
- * without one is a refusal this app could send half of. *Declined*, with no
- * reason, is exactly the screen that sends somebody to ask their operator in
- * person — which is the thing the requirement exists to prevent.
+ * one taking a nullable reason: the reason is part of declining rather than
+ * something beside it, so a refusal that could be built without one is a
+ * refusal this app could send half of. *Declined*, with no reason, is exactly
+ * the screen that sends somebody to ask their operator in person — which is the
+ * thing the requirement exists to prevent.
  *
  * **The reason is read through a pair of closures**, the way
  * {@see Wanted::refusal()} is read: an accessor returning an empty string for

@@ -17,11 +17,11 @@ use function trim;
  * and four of those are that decision: **what it is called**, **where it
  * stands**, **how much it matters**, and **what else is leaning on it**.
  *
- * **Named `Daemon` rather than for the word the contract uses**, because `H1`
- * refuses the suffix `Service` — a name that permits anything — and because
- * this is precisely what these are: long-running processes a stack supervises.
- * The word an operator reads is the catalogue's and is *service*; this is the
- * type's name and nobody sees it.
+ * **Named `Daemon` rather than for the word the contract uses**, because the
+ * suffix `Service` is a name that permits anything, and because this is
+ * precisely what these are: long-running processes a stack supervises. The word
+ * an operator reads is the catalogue's and is *service*; this is the type's
+ * name and nobody sees it.
  *
  * **The name and the id are different things and both are kept.** The id is
  * what an action is asked for by; the name is what an operator reads. A screen
@@ -75,11 +75,11 @@ final readonly class Daemon
      * The same, for a service that ended with a code.
      *
      * A second named constructor rather than a nullable seventh parameter,
-     * which is `C2`'s cure and {@see Wanted::turnedDown()}'s shape: *it exited
-     * with a code* and *nothing said how it ended* are different facts, and a
-     * caller cannot reach one while meaning the other. It is static rather than
-     * a method on an instance because `D2` lets a primitive cross a module
-     * boundary in exactly one place, and this is that place.
+     * which is {@see Wanted::turnedDown()}'s shape: *it exited with a code* and
+     * *nothing said how it ended* are different facts, and a caller cannot
+     * reach one while meaning the other. It is static rather than a method on
+     * an instance because a named constructor is the one place a primitive
+     * crosses a module boundary.
      */
     public static function thatExited(
         string $name,
@@ -145,13 +145,13 @@ final readonly class Daemon
     /**
      * Say the code it exited on, or say that nothing did.
      *
-     * Two arms rather than a nullable getter, for `C2`'s reason: a screen handed
-     * a null would print an empty column where a number belongs, and an
-     * operator would read that as *it exited with nothing*.
+     * Two arms rather than a nullable getter: a screen handed a null would
+     * print an empty column where a number belongs, and an operator would read
+     * that as *it exited with nothing*.
      *
      * The code is machine data on the way through, shown as it arrived — a
-     * sentence composed around it here is one no translator can reach (`L1`),
-     * which is {@see Said}'s argument about a log line's timestamp.
+     * sentence composed around it here is one no translator can reach, which is
+     * {@see Said}'s argument about a log line's timestamp.
      *
      * @template TCode of object
      * @template TUnstated of object

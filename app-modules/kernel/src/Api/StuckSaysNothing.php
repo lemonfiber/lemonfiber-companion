@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * Raised where the values become a {@see Stuck}, for {@see RepairSaysNothing}'s
  * reason: these are values that cannot be constructed rather than refusals
- * crossing a boundary, so there is nothing for a caller to open (`C1`, `C3`).
+ * crossing a boundary, so there is nothing for a caller to open.
  *
  * Two named constructors rather than one taking a field name, for the same
  * reason as there: a stalled item nobody can name and a stalled item nothing

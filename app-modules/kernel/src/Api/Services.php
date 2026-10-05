@@ -16,9 +16,9 @@ use Traversable;
 /**
  * Services named together, in the order they were named.
  *
- * A type rather than an array, which is `D1`. {@see Forms} is the same shape
- * one noun over, and for the same reason: what is in a list of names has to
- * live somewhere other than in whoever last wrote a `foreach`.
+ * A type rather than an array. {@see Forms} is the same shape one noun over,
+ * and for the same reason: what is in a list of names has to live somewhere
+ * other than in whoever last wrote a `foreach`.
  *
  * @implements IteratorAggregate<int, ServiceId>
  */

@@ -10,11 +10,11 @@ use function trim;
  * What the operator calls one of their machines.
  *
  * A type rather than a string because it crosses module boundaries, and the
- * mistake a string permits is the one `D2` is written about: a stack's name, a
- * service's name and a form's name are all strings, and passing one where
- * another belongs compiles and ships. It is also the only thing on a stack an
- * operator chose, which makes it the one value here that cannot be derived
- * from anything else if it goes missing.
+ * mistake a string permits is this: a stack's name, a service's name and a
+ * form's name are all strings, and passing one where another belongs compiles
+ * and ships. It is also the only thing on a stack an operator chose, which
+ * makes it the one value here that cannot be derived from anything else if it
+ * goes missing.
  *
  * **Refused rather than filled in with an address.** That is the tempting
  * default and it is wrong twice over: a stack address stays off every

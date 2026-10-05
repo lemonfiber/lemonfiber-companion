@@ -9,12 +9,12 @@ use Closure;
 /**
  * What one stack said about one ability — including having said nothing.
  *
- * Four answers are drawn and three of them are {@see Availability}. The
- * fourth is absence: a capability the stack does not have is not reported as
- * false, it is not reported. This is where that fourth answer lives, and it is a
- * type rather than a null for the reason `C2` gives — a null is checked at the
- * honest call sites and skipped at the one written in a hurry, and the skipped
- * one shows a button for something the stack cannot do.
+ * Four answers are drawn and three of them are {@see Availability}. The fourth
+ * is absence: a capability the stack does not have is not reported as false, it
+ * is not reported. This is where that fourth answer lives, and it is a type
+ * rather than a null — a null is checked at the honest call sites and skipped
+ * at the one written in a hurry, and the skipped one shows a button for
+ * something the stack cannot do.
  *
  * The same shape as {@see Reach} and {@see Reading}, and for the same reason:
  * a caller says what happens in both cases, so there is no point at which "the

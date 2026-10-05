@@ -18,7 +18,7 @@ use function sprintf;
  * **One enum for the boundary and the screen, not two.** The word arrives on
  * the wire, is converted here once with `tryFrom`, and the same case names the
  * catalogue line a template reads. A second copy for either end would be a
- * vocabulary with two spellings, which is the drift `D4` is about.
+ * vocabulary with two spellings, which drift.
  *
  * **An enum rather than the union itself, because the two answer different
  * questions.** The union cannot be asked *what are all of you*: its arms are

@@ -37,9 +37,9 @@ final readonly class Upkeep
      * A reading where the stack did not say which release is running.
      *
      * The release is named only by {@see runningOn()}, never by a null
-     * argument, which is `C2`'s cure and {@see Daemon::thatExited()}'s shape:
-     * a screen handed a null would print an empty version where one belongs,
-     * and an operator would read that as *it is running nothing*.
+     * argument, which is {@see Daemon::thatExited()}'s shape: a screen handed a
+     * null would print an empty version where one belongs, and an operator
+     * would read that as *it is running nothing*.
      */
     public static function reported(
         AgainstThePins $pins,

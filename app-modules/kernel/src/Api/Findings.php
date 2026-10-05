@@ -16,15 +16,14 @@ use Traversable;
 /**
  * What a diagnostic run found.
  *
- * A typed collection rather than an array, which is what `D1` asks for and
- * what makes the order part of the type's promise: the order a report arrives
- * in is the order the checks ran, and that is information — two findings in
- * the same category, one of which caused the other, read differently the other
- * way round.
+ * A typed collection rather than an array, which makes the order part of the
+ * type's promise: the order a report arrives in is the order the checks ran,
+ * and that is information — two findings in the same category, one of which
+ * caused the other, read differently the other way round.
  *
  * Empty is a legitimate value. A run that found nothing is the healthy case,
  * not a missing report, and an empty collection says it without a null
- * anywhere (C2).
+ * anywhere.
  *
  * @implements IteratorAggregate<int, Finding>
  */

@@ -27,9 +27,9 @@ use Closure;
  *
  * **A finished offer can be empty, and that is an answer.** A stack with
  * nothing to put right is the healthy case, and {@see Offer} holding an empty
- * {@see Repairs} says so without a null anywhere (`C2`). It is told apart from
- * a job that ended, which is the distinction an operator acts on: *there is
- * nothing to fix* against *ask me again*.
+ * {@see Repairs} says so without a null anywhere. It is told apart from a job
+ * that ended, which is the distinction an operator acts on: *there is nothing
+ * to fix* against *ask me again*.
  */
 final readonly class HowTheOfferIsGoing
 {

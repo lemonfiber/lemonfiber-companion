@@ -187,13 +187,10 @@ final readonly class Configured implements IteratorAggregate
      *
      * Raises {@see StackIsNotConfigured} where this device holds no such stack.
      *
-     * **No `@throws`, deliberately**, which is the house rule `Problems`
-     * records and {@see Pairing} follows for the same
-     * reason: an `@throws` makes the exception *checked* to the analyser,
-     * shipmonk forbids raising a checked exception inside any closure, and
-     * every Pest test body is a closure. Annotating this would make the
-     * refusal the one behaviour no test could drive — and the refusal is the
-     * whole point of the method.
+     * **No `@throws`, deliberately**: it would make the exception checked, a
+     * checked exception may not be raised inside a closure, and every Pest test
+     * body is one — so the refusal would be the one behaviour no test could
+     * drive.
      */
     public function stack(StackId $id): Stack
     {

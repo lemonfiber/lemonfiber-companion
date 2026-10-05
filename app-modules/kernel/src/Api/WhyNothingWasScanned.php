@@ -92,12 +92,11 @@ enum WhyNothingWasScanned: string
     /**
      * What is said about it, as a key the template resolves.
      *
-     * A key rather than a sentence, because `L1` puts the words in the
-     * catalogue and `A4` keeps the translator out of a class that did not ask
-     * for one. On the enum rather than on a screen for the reason `D4` gives
-     * about closed sets: three reasons, three sentences, and a reason added
-     * here has a key by existing rather than by somebody remembering to add a
-     * `match` arm for it.
+     * A key rather than a sentence, because the words are the catalogue's and
+     * the translator stays out of a class that did not ask for one. On the enum
+     * rather than on a screen because the set is closed: three reasons, three
+     * sentences, and a reason added here has a key by existing rather than by
+     * somebody remembering to add a `match` arm for it.
      *
      * **Built from the case rather than listed against it**, which is
      * {@see Permission::reason()}'s shape. A `match` naming a key per case
@@ -106,8 +105,7 @@ enum WhyNothingWasScanned: string
      * identical, which is the drift not yet having happened rather than a
      * reason to keep two copies.
      *
-     * `L7` is what proves each of these is a line the catalogue holds. A key
-     * spelled as a literal at a call site is one nothing checks.
+     * A key spelled as a literal at a call site is one nothing checks.
      */
     public function saidOnTheScreen(): string
     {

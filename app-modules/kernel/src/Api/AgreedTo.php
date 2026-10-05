@@ -19,11 +19,10 @@ namespace Modules\Kernel\Api;
  * shown. Rendering a listing produces no `AgreedTo` and cannot be made to.
  *
  * **Two constructors, because a form and a service are different acts.** Not a
- * nullable field told apart by an `instanceof` (`C2`): an operator stopping
- * *media* and one stopping *sonarr* have agreed to different amounts of
- * disruption, and the confirmation they were shown said different things. A
- * single constructor taking either would let a screen confirm about one and act
- * on the other.
+ * nullable field told apart by an `instanceof`: an operator stopping *media*
+ * and one stopping *sonarr* have agreed to different amounts of disruption, and
+ * the confirmation they were shown said different things. A single constructor
+ * taking either would let a screen confirm about one and act on the other.
  *
  * **Every verb arrives here the same shape, including a start.** Which of them
  * owes an operator a sentence beforehand is

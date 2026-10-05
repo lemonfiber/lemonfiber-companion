@@ -32,10 +32,9 @@ interface Owing
     /**
      * What this stack says the signed-in member is owed.
      *
-     * Answers {@see WhatTheyAreOwed} rather than raising, which `C1` requires:
-     * a stack that is asleep and a stack that declines are both ordinary states
-     * of the world, and a method answering with nothing could report them only
-     * by throwing.
+     * Answers {@see WhatTheyAreOwed} rather than raising: a stack that is
+     * asleep and a stack that declines are both ordinary states of the world,
+     * and a method answering with nothing could report them only by throwing.
      */
     public function toHandOver(Stack $stack, Session $session): WhatTheyAreOwed;
 

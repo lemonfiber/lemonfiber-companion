@@ -10,7 +10,7 @@ namespace Modules\Kernel\Api;
  * The second port, and the same argument as the first: randomness is a hidden
  * input, so an idempotency key built from `rand()` cannot be asserted on and
  * the test around it asserts nothing. Behind a port, "this command was sent
- * with that key" is a statement (B2).
+ * with that key" is a statement.
  *
  * It answers a `Nonce` rather than bytes or an int, because every caller wants
  * the same thing — a value to identify one attempt by — and handing out bytes

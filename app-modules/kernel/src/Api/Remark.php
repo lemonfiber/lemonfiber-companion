@@ -10,7 +10,7 @@ use function trim;
  * One sentence the stack says about a reading, in its own words.
  *
  * A type rather than a string, so the one place a sentence enters is where it
- * is refused for being blank (`D2`) — and a blank is what reads as *nothing is
+ * is refused for being blank — and a blank is what reads as *nothing is
  * happening* on a screen that exists to say what is.
  */
 final readonly class Remark

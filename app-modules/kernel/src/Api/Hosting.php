@@ -32,10 +32,10 @@ interface Hosting
     /**
      * Ask a machine what it keeps running, or come away with a reason.
      *
-     * Answers {@see WhatKeepsRunning} rather than raising, which `C1` requires:
-     * a stack that is asleep, one on another network and one whose session has
-     * ended are ordinary states of the world, and an operator is told which of
-     * them they met.
+     * Answers {@see WhatKeepsRunning} rather than raising: a stack that is
+     * asleep, one on another network and one whose session has ended are
+     * ordinary states of the world, and an operator is told which of them they
+     * met.
      *
      * A machine with no service manager answers through the *first* arm, not
      * this one. It is a fact about the platform rather than a failure to reach

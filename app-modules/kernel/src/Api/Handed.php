@@ -9,10 +9,10 @@ use Closure;
 /**
  * Whether a report reached the operator's own hands.
  *
- * The answer {@see Sharing} gives, and a value rather than an exception for
- * `C1`'s reason: a device with nowhere to write a temporary file is an ordinary
- * state of the world, and the commonest cause is a disk somebody has filled
- * with the media this product exists to manage.
+ * The answer {@see Sharing} gives, and a value rather than an exception: a
+ * device with nowhere to write a temporary file is an ordinary state of the
+ * world, and the commonest cause is a disk somebody has filled with the media
+ * this product exists to manage.
  *
  * **It does not say whether the report was sent**, and cannot. The share sheet
  * belongs to the platform; an operator may pick an app or change their mind,

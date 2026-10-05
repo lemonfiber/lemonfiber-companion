@@ -17,7 +17,7 @@ use Traversable;
  * and then by how long, and a second ranking here would be a second opinion
  * about which thing to fix first.
  *
- * Empty is a value, and says nothing has stopped (`C2`).
+ * Empty is a value, and says nothing has stopped.
  *
  * @implements IteratorAggregate<int, AStoppage>
  */

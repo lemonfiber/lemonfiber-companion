@@ -9,10 +9,10 @@ use Closure;
 /**
  * What the household asked for, or the reason there is no list.
  *
- * The answer {@see Wanting} gives, and a value rather than an exception for
- * `C1`'s reason and {@see WhatCameBack}'s: a stack that is asleep, one on
- * another network and one whose session has ended are ordinary states of the
- * world, and a method answering with a list could report them only by throwing.
+ * The answer {@see Wanting} gives, and a value rather than an exception, for
+ * {@see WhatCameBack}'s reason: a stack that is asleep, one on another network
+ * and one whose session has ended are ordinary states of the world, and a
+ * method answering with a list could report them only by throwing.
  *
  * **The reason is an {@see Obstacle}**, the same set every other screen reads.
  * An operator meets the same six situations whether they were signing in,

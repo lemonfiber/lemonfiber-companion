@@ -121,9 +121,9 @@ final readonly class Change
     /**
      * Say where putting it back stops short, or say that nothing stops it.
      *
-     * Two arms rather than a nullable getter, for `C2`'s reason and
-     * {@see Unattended::missing()}'s: a partial reversal drawn with nothing
-     * where its limits belong reads as one nobody knows the limits of.
+     * Two arms rather than a nullable getter, for
+     * {@see Unattended::missing()}'s reason: a partial reversal drawn with
+     * nothing where its limits belong reads as one nobody knows the limits of.
      *
      * @template TThere of object
      * @template TNowhere of object

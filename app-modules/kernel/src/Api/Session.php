@@ -28,11 +28,8 @@ use function trim;
  * payload. So `__debugInfo` redacts the first and `JsonSerializable` redacts
  * the second.
  *
- * `__debugInfo` is not the magic `P1` refuses. That rule is about methods which
- * take something out of the analyser's view — `__get`, `__call` and their
- * relatives, which make a property or a call invisible. This one changes
- * nothing about what the analyser can see and only narrows what a debugger
- * prints.
+ * `__debugInfo` hides nothing from a reader of the code, the way `__get` and
+ * `__call` hide a property or a call; it only narrows what a debugger prints.
  *
  * **What this does not close, and cannot:** `var_export` reads private
  * properties directly and no method intercepts it. `var_dump` and `print_r` do

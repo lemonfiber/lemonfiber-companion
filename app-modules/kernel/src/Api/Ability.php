@@ -9,14 +9,14 @@ use function trim;
 /**
  * Something a stack can be asked to do, named the way the API names it.
  *
- * A value object over the wire's string rather than an enum, and this is the one
- * place in the kernel where that is the right way round. `D4` asks for an enum
- * wherever the set is closed — and this set is declared by the stack, at
- * runtime, by a stack that may be newer than this app. An enum would be a
- * closed list of what this build had heard of, and a capability it had not heard
- * of would arrive as a `tryFrom` returning null, which reads as "the stack does
- * not have it" and means "this app does not recognise it". Those are opposite
- * answers, and they are separated by name.
+ * A value object over the wire's string rather than an enum, and this is the
+ * one place in the kernel where that is the right way round. An enum is for a
+ * closed set, and this set is declared by the stack, at runtime, by a stack
+ * that may be newer than this app. An enum would be a closed list of what this
+ * build had heard of, and a capability it had not heard of would arrive as a
+ * `tryFrom` returning null, which reads as "the stack does not have it" and
+ * means "this app does not recognise it". Those are opposite answers, and they
+ * are separated by name.
  *
  * **What is closed is the set of actions the app offers**, because a screen
  * exists or it does not. That set lives where the screens are and is compared

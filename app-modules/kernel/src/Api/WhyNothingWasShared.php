@@ -13,9 +13,9 @@ use function sprintf;
  * can do something about and the other is not, and one sentence for both is the
  * sentence that is unhelpful for whichever they are in.
  *
- * A closed set rather than a message, which is `D4`: a string could carry a
- * platform's own words, and a platform's words about a temporary file are not
- * words an operator can act on.
+ * A closed set rather than a message: a string could carry a platform's own
+ * words, and a platform's words about a temporary file are not words an
+ * operator can act on.
  */
 enum WhyNothingWasShared: string
 {

@@ -16,10 +16,10 @@ use Traversable;
 /**
  * What a stack says has stopped coming in, and whether that is all of it.
  *
- * A typed collection rather than an array, which is `D1` and which makes the
- * order part of the type's promise. The order is the stack's own, which is the
- * order the work was queued in — and that is information: the oldest thing
- * stuck is usually the one that has been wrong longest.
+ * A typed collection rather than an array, which makes the order part of the
+ * type's promise. The order is the stack's own, which is the order the work was
+ * queued in — and that is information: the oldest thing stuck is usually the
+ * one that has been wrong longest.
  *
  * **How much is shown comes first.** `stuck.incomplete` is a fact about the
  * listing rather than about any row in it, and putting it before the variadic
@@ -31,7 +31,7 @@ use Traversable;
  * Empty is a legitimate value and the answer the operator wants most: nothing
  * has stopped. It is told apart from a stack that could not be asked by
  * {@see WhatIsStuck}, not here — an empty collection says *nothing is stuck*
- * without a null anywhere (`C2`).
+ * without a null anywhere.
  *
  * @implements IteratorAggregate<int, Stuck>
  */

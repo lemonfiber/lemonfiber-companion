@@ -41,10 +41,10 @@ interface SecureStorage extends ForgetsAStack
     /**
      * Keep a session, or refuse and say why.
      *
-     * Answers with {@see Kept} rather than raising, which `C1` requires and
-     * which is right for a second reason: a device with no secure storage is an
-     * ordinary state of the world, and a method returning nothing can only
-     * report one by throwing — making the common case the one nothing checks.
+     * Answers with {@see Kept} rather than raising: a device with no secure
+     * storage is an ordinary state of the world, and a method returning nothing
+     * can only report one by throwing — making the common case the one nothing
+     * checks.
      *
      * **Who it belongs to is kept with it rather than beside it.** A store holding the
      * session under one key and the subject under another can half-fail, and each half

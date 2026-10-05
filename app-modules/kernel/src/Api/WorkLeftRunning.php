@@ -29,9 +29,9 @@ namespace Modules\Kernel\Api;
  * **Not tied to the session.** Letting go of a refused session leaves this
  * alone: the work goes on whoever is signed in, and signing in again finds it.
  *
- * Every answer is {@see WhatAReturnFinds} and none raises, which is `C1`: a
- * device that cannot keep a handle has lost the way back to the work and not
- * the work, and a screen says that rather than failing.
+ * Every answer is {@see WhatAReturnFinds} and none raises: a device that cannot
+ * keep a handle has lost the way back to the work and not the work, and a
+ * screen says that rather than failing.
  *
  * **It is let go of with everything else kept.** A handle is a marker the
  * phone keeps about a stack, so clearing what the phone keeps clears it; the

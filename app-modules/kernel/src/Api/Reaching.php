@@ -30,10 +30,10 @@ interface Reaching
      * A client for this stack, held to the certificate it was introduced under.
      *
      * Answers the client as an object rather than a named type, because the
-     * type is the SDK's and `kernel` may not name it — that is `A7`, and it is
-     * the rule that keeps every capability testable without a network. What a
-     * caller does with the object is call the SDK's own methods on it, which
-     * only the adapter and the modules that already depend on the SDK can do.
+     * type is the SDK's and `kernel` does not name it, which keeps every
+     * capability testable without a network. What a caller does with the object
+     * is call the SDK's own methods on it, which only the adapter and the
+     * modules that already depend on the SDK can do.
      */
     public function client(Stack $stack, Session $session): object;
 }

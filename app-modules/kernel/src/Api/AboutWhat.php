@@ -21,17 +21,17 @@ use function trim;
  * whichever service fills that role and a title naming one would be wrong on
  * the next machine. An operator with nineteen services needs the name.
  *
- * Two arms rather than a nullable string, for `C2`'s reason. The blank refusal
- * lives here rather than at the call site, as {@see Check} does it: a service
- * named as whitespace is a name nobody can read and the engine producing one
- * has a fault — and it keeps its own sentence rather than deferring to
- * {@see ServiceId::called()}, because *a finding named no service* and *a
- * caller asked for the logs of nothing* are different faults.
+ * Two arms rather than a nullable string. The blank refusal lives here rather
+ * than at the call site, as {@see Check} does it: a service named as whitespace
+ * is a name nobody can read and the engine producing one has a fault — and it
+ * keeps its own sentence rather than deferring to {@see ServiceId::called()},
+ * because *a finding named no service* and *a caller asked for the logs of
+ * nothing* are different faults.
  *
  * **The arm hands over a {@see ServiceId} rather than the string.** A finding's
  * service and the service a log window is read for are the same name for the
- * same thing, and a screen that sent an operator from one to the other used to
- * do it by passing a bare string — which is exactly the mistake `D2` names.
+ * same thing, so a screen sending an operator from one to the other hands over
+ * the type rather than a bare string.
  *
  * **What the stack calls it travels beside the id.** The id is a key, not a
  * name: capitalising `qbittorrent` does not arrive at qBittorrent, and the

@@ -11,8 +11,8 @@ use function sprintf;
  * Where one of a stack's services stands right now.
  *
  * An enum, because the set is closed by the contract rather than by this app —
- * `status.services[].state` lists exactly these nine, so `D4` gets its enum and
- * a tenth would be a contract change rather than a value to pass through.
+ * `status.services[].state` lists exactly these nine, and a tenth would be a
+ * contract change rather than a value to pass through.
  *
  * **Nine, and the distinctions are the point.** `Stopped` and `Failed` are the
  * pair an operator most needs told apart: one was turned off and the other
@@ -138,10 +138,10 @@ enum HowAServiceRuns: string
     /**
      * Whether this state can take that one of the three verbs.
      *
-     * Asked one verb at a time because `D1` refuses an array crossing a module
-     * boundary and is right to: a caller handed a list has to know what is in
-     * it, and a caller asking about a verb it already holds does not. The table
-     * itself stays whole, below, where it can be read as a table.
+     * Asked one verb at a time rather than handed an array across a module
+     * boundary: a caller handed a list has to know what is in it, and a caller
+     * asking about a verb it already holds does not. The table itself stays
+     * whole, below, where it can be read as a table.
      */
     public function mayTake(WhatToDoWithIt $verb): bool
     {
@@ -168,7 +168,7 @@ enum HowAServiceRuns: string
      * **Every arm is written out.** A `default` would answer for a case added
      * to this enum tomorrow with whatever the last author happened to think,
      * and what a new state permits is exactly the question worth being asked at
-     * the moment it is added (`D4`).
+     * the moment it is added.
      *
      * @return list<WhatToDoWithIt>
      */

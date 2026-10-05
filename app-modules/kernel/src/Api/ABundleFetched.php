@@ -9,10 +9,10 @@ use Closure;
 /**
  * A written support bundle's file, fetched, or the reason it was not.
  *
- * What {@see AskingForHelp::fetch()} answers. A value rather than a raise,
- * which is `C1`: a stack that went to sleep between writing the bundle and
- * being asked for it is an ordinary state of the world, and the operator is
- * told which obstacle it was. The contents already drawn stand either way.
+ * What {@see AskingForHelp::fetch()} answers. A value rather than a raise: a
+ * stack that went to sleep between writing the bundle and being asked for it is
+ * an ordinary state of the world, and the operator is told which obstacle it
+ * was. The contents already drawn stand either way.
  */
 final readonly class ABundleFetched
 {

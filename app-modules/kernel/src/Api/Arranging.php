@@ -36,10 +36,9 @@ interface Arranging
     /**
      * What this stack says it is set to.
      *
-     * Answers {@see HowItIsSet} rather than raising, which `C1` requires: a
-     * stack that is asleep and a stack that declines are both ordinary states
-     * of the world, and a method answering with nothing could report them only
-     * by throwing.
+     * Answers {@see HowItIsSet} rather than raising: a stack that is asleep and
+     * a stack that declines are both ordinary states of the world, and a method
+     * answering with nothing could report them only by throwing.
      */
     public function asItStands(Stack $stack, Session $session): HowItIsSet;
 }

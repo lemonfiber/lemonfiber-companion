@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * Raised where a string becomes a `Check`. Without it a finding cannot be
  * matched against the same finding from yesterday, so "this is still broken"
- * and "this broke again" become the same screen (C3).
+ * and "this broke again" become the same screen.
  */
 final class CheckIsUnnamed extends InvalidArgumentException
 {

@@ -20,8 +20,7 @@ use Closure;
  * future screen marginally faster, which is not a thing to interrupt anybody
  * about.
  *
- * **It is still an outcome rather than nothing.** `C1` keeps `void` out of a
- * published signature, and the reason applies here even though no screen shows
+ * **It is still an outcome rather than nothing**, even though no screen shows
  * this: a caller that cannot see the answer cannot log it, cannot test it, and
  * cannot later decide the answer matters. {@see Kept} makes the same shape for
  * sessions, where the refusal does reach a screen.
@@ -33,9 +32,9 @@ final readonly class Noted
     /**
      * Written down; the next opening will have it.
      *
-     * Carries the moment rather than a flag, which is what keeps `D5` happy
-     * and is also the more honest value: the thing that was written is a
-     * verdict *and a time*, and the arm saying it was written can say when.
+     * Carries the moment rather than a flag, which is the more honest value:
+     * the thing that was written is a verdict *and a time*, and the arm saying
+     * it was written can say when.
      */
     public static function downAt(Instant $at): self
     {

@@ -24,7 +24,7 @@ namespace Modules\Kernel\Api;
  */
 interface Inviting
 {
-    /** Read everybody the media server holds an account for, or come away with a reason (`C1`). */
+    /** Read everybody the media server holds an account for, or come away with a reason. */
     public function whoIsIn(Stack $stack, Session $session): WhatWasFoundOfTheMembers;
 
     /** Ask what inviting them would come to, making nothing. */

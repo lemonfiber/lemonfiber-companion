@@ -13,7 +13,7 @@ use function sprintf;
  *
  * Raised where the seconds become a {@see HowLong}, for
  * {@see SummaryCountsBelowNothing}'s reason: a value that cannot be built
- * rather than a refusal crossing a boundary (`C1`, `C3`).
+ * rather than a refusal crossing a boundary.
  */
 final class HowLongIsBelowNothing extends InvalidArgumentException
 {

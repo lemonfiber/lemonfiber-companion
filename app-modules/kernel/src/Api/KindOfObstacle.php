@@ -60,10 +60,10 @@ namespace Modules\Kernel\Api;
  * here and the other is not.
  *
  * **No sentence here either.** What the operator reads is text, so it comes
- * from the translator against a key (L1); a sentence written in this file would
- * be English on a Dutch phone. The catalogue carries one summary and one
- * remedy per case under `connection.`, and `ObstacleTest` is what requires them
- * to exist and to differ — the guarantee actually asked for.
+ * from the translator against a key; a sentence written in this file would be
+ * English on a Dutch phone. The catalogue carries one summary and one remedy
+ * per case under `connection.`, and `ObstacleTest` is what requires them to
+ * exist and to differ — the guarantee actually asked for.
  */
 enum KindOfObstacle: string
 {
@@ -89,7 +89,7 @@ enum KindOfObstacle: string
      * The request went out and nothing came back.
      *
      * The machine is off, asleep, on another network, or mid-update. Normal
-     * enough that it is modelled rather than thrown (C1).
+     * enough that it is modelled rather than thrown.
      */
     case StackDidNotAnswer = 'no_answer';
 
@@ -211,9 +211,9 @@ enum KindOfObstacle: string
      *
      * The value *is* the stem, so a case added here has a sentence by existing
      * and `EveryKeyTheAppNamesResolvesTest` is what catches one with no line.
-     * Derived rather than spelled for the reason `L1` gives: a key written out
-     * at a call site is a key that survives its case being renamed, and it goes
-     * on resolving to a line about something else.
+     * Derived rather than spelled: a key written out at a call site is a key
+     * that survives its case being renamed, and it goes on resolving to a line
+     * about something else.
      *
      * Here rather than in the folds that render it, because two of them were
      * spelling this themselves and a third would have spelled it again. An
