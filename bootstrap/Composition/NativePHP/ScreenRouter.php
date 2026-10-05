@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Bootstrap\Composition\NativePHP;
 
 use Closure;
+
+use function end;
+
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Native\Mobile\Events\Screen\ScreenResumed;
 
 /**
  * The navigation stack, building each screen through the container.
@@ -17,10 +21,15 @@ use Native\Mobile\Edge\NativeRouter;
  * screen that reaches the container itself, and a class that reaches the
  * container stops telling the truth about what it needs.
  *
- * One method is overridden and the other three lines are the parent's, in the
- * parent's order. That is deliberate: a screen still gets its router, its route
+ * The other three lines of the building are the parent's, in the parent's
+ * order. That is deliberate: a screen still gets its router, its route
  * parameters and its navigation data exactly as NativePHP hands them over, and
  * the only difference is where the object came from.
+ *
+ * It also hands each screen that comes to the front to `$atTheFront`: one just
+ * built, before its placeholder is drawn, and one uncovered again, before it
+ * runs. That is where the theme a screen is drawn in is chosen, and the loop
+ * itself is the parent's.
  *
  * **In the composition root because that is what this is.** Deciding how a
  * screen meets the ports it needs is the one thing this directory exists for.
@@ -37,9 +46,13 @@ use Native\Mobile\Edge\NativeRouter;
 final class ScreenRouter extends NativeRouter
 {
     /**
-     * @param Closure(string): mixed $build how a screen is made, given its name
+     * @param Closure(string): mixed          $build      how a screen is made, given its name
+     * @param Closure(NativeComponent): void $atTheFront what a screen coming to the front is handed to
      */
-    public function __construct(private readonly Closure $build) {}
+    public function __construct(
+        private readonly Closure $build,
+        private readonly Closure $atTheFront,
+    ) {}
 
     /**
      * A screen, with whatever it declared in its constructor.
@@ -63,6 +76,26 @@ final class ScreenRouter extends NativeRouter
         $component->setParams($params);
         $component->setData($data);
 
+        ($this->atTheFront)($component);
+
         return $component;
+    }
+
+    /**
+     * The parent's announcement, with the screen uncovered again handed on first.
+     *
+     * A screen comes back to the front when the one over it is left, and the
+     * parent announces that before the screen runs again: the one moment
+     * between the two where nothing has been drawn yet.
+     */
+    protected function announce(object $event): void
+    {
+        $top = end($this->stack);
+
+        if ($event instanceof ScreenResumed && $top !== false) {
+            ($this->atTheFront)($top['component']);
+        }
+
+        parent::announce($event);
     }
 }

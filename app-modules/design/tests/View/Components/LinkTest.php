@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -16,8 +17,8 @@ it('draws a link as its words and a chevron on a target a thumb can find', funct
     expect(WhatMarkupDraws::outline($markup))
         ->toBe('pressable{"width":"fill","min_height":48,"flex_direction":1,"padding":[8,0,8,0],"gap":8,"align_items":1,"justify_content":3}[Read the log, icon[][]]')
         ->and(data_get($link, 'props.a11y_label'))->toBe('Read the log')
-        ->and(data_get($link, 'children.1.props.color'))->toBe(ThemeToken::Muted->light())
-        ->and(data_get($link, 'children.1.props.dark_color'))->toBe(ThemeToken::Muted->dark())
+        ->and(data_get($link, 'children.1.props.color'))->toBe(ThemeToken::Muted->in(WhoseTheme::Member))
+        ->and(data_get($link, 'children.1.props.dark_color'))->toBeNull()
         ->and(data_get($link, 'on_press'))->toBeInt();
 })->with([
     'going somewhere' => ['<x-design::link label="Read the log" goes="\'/logs\'" />'],

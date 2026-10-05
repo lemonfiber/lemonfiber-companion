@@ -39,7 +39,7 @@ requirement is right and this page is a defect.
 | `N4-R21` | Every control that can be operated carries a label the screen reader announces, and an icon is never the only thing carrying a control's purpose | `tests/Templates/ScreensSpeakToTheOperatorTest.php`, a table over every component rather than a list of the ones that matter |
 | `N4-R24` | While the app is locked, no application content is drawn behind the lock — including a first-run surface, an empty state and any frame drawn before | `tests/Feature/NothingIsDrawnBehindTheLockTest.php`, asking the rendered tree rather than the template text |
 | `DES-R18` | `fiber` and `fiber-light` are not used as text | `ThemeToken`, and `tests/Feature/TheAccentIsTheBrandsTest.php` |
-| `DES-R26` | The platform's spacing, radii, elevation and motion are not overridden with brand values | `ThemeToken` maps the accent role and nothing else |
+| `DES-R28` | Every screen is drawn in one of two themes, the operator's for the operator's session and the member's for a member's or none, and no setting chooses between them | `tests/Feature/EachScreenIsDrawnInWhoseThemeItIsTest.php`, `tests/Contract/TakesTheThemeItOpensOverContractTest.php` for App settings and What's new, which keep the theme they open over, and `tests/Arch/NoSettingChoosesTheThemeTest.php`, which refuses any class outside where it is decided that names the choice |
 
 ## What an error owes
 

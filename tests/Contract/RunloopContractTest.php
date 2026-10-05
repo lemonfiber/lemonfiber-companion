@@ -123,15 +123,15 @@ it('answers the route with something rather than nothing', function (): void {
     }
 });
 
-it('holds the one implementation it cannot enter to a single method', function (): void {
+it('holds the one implementation it cannot enter to a constructor and a single method', function (): void {
     // `TheRunloop` is the one file in this repository excluded from the
     // coverage floor, and the argument for excluding it is that everything
     // which decides anything sits on this side of the seam. That argument is
     // only as good as the file staying small: a second method there is a
     // second thing no test reaches, arriving without anybody deciding it
-    // should.
+    // should. Its constructor only keeps what it hands the router.
     //
     // Asserted rather than trusted, because it is the one implementation of
     // this port the assertions above cannot be run against.
-    expect(get_class_methods(TheRunloop::class))->toBe(['enter']);
+    expect(get_class_methods(TheRunloop::class))->toBe(['__construct', 'enter']);
 });

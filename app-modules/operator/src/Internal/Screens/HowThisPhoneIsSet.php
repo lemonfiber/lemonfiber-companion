@@ -10,6 +10,7 @@ use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
+use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Kernel\Api\DaysAsked;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\ItsContent;
@@ -37,7 +38,7 @@ use function view;
  */
 #[Lazy]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
-final class HowThisPhoneIsSet extends NativeComponent
+final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeItOpensOver
 {
     use HasAWayBack;
     /** How long the app may be away before the lock asks again, once read. */

@@ -91,10 +91,10 @@ foreach ($templates as $template) {
 
         expect(array_values(array_unique($literals)))->toBe([], sprintf(
             "These write a colour instead of naming one:\n  %s\n\n"
-            . 'A literal ignores the reader\'s light, dark and contrast setting, so it is '
-            . 'correct on the device it was written on and wrong on somebody else\'s. The '
-            . 'theme tokens carry a light value and a dark companion, and the parser picks '
-            . "between them at render.\nUse `bg-theme-*` and `text-theme-*` (DES-R24).",
+            . 'A literal paints the same in the member\'s theme and the operator\'s, and '
+            . 'nothing checks it against the brand\'s tokens. A theme token carries a value '
+            . 'for each theme, and the resolver for the screen on view picks it at render.'
+            . "\nUse `bg-theme-*` and `text-theme-*` (DES-R33).",
             implode("\n  ", array_values(array_unique($literals))),
         ));
     });

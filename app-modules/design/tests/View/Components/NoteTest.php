@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -10,11 +11,11 @@ use Tests\TestCase;
 // so the application is booted.
 uses(TestCase::class);
 
-it('paints every text role with its light colour and its dark one', function (): void {
+it('paints a note in the muted role of the theme on view, the same whatever the phone is set to', function (): void {
     $note = WhatMarkupDraws::drawn('<x-design::note>Quiet</x-design::note>');
 
-    expect(data_get($note, 'props.color'))->toBe(ThemeToken::Muted->light())
-        ->and(data_get($note, 'props.dark_color'))->toBe(ThemeToken::Muted->dark());
+    expect(data_get($note, 'props.color'))->toBe(ThemeToken::Muted->in(WhoseTheme::Member))
+        ->and(data_get($note, 'props.dark_color'))->toBeNull();
 });
 
 it('is read aloud as what it shows where it is given nothing else', function (): void {

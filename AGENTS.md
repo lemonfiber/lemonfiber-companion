@@ -105,7 +105,7 @@ one other, `modules/dx`, is a stand-in: the root installs it under
 |---|---|
 | Add a web view | `<native:webview>` is forbidden. ADR-0017's central decision; an arch test enforces it. An exception has to arrive as a spec change, not a pull request. |
 | Put logic in a view | A Blade view reads from its component and nothing else. No HTTP, no queries, no decisions. |
-| Assert a literal colour | Colour comes from `bg-theme-*` / `text-theme-*` tokens. A literal is a dark-mode bug that ships (`DES-R24`). |
+| Assert a literal colour | Colour comes from `bg-theme-*` / `text-theme-*` tokens. A literal paints the same in both themes and is checked against no brand token (`DES-R33`). |
 | Ship analytics | No telemetry, no third-party crash reporting, ever (`N4-R12`). A dependency test denies the known SDKs so one cannot arrive transitively. |
 | Store a session anywhere but the platform's secure storage | Keychain or Android Keystore. Never preferences, never a file, never an unencrypted backup (`N4-R5`). |
 | Request a permission on launch | Every permission is asked for at the point of first use, with a reason, and the app works without it (`N4-R1`, `N4-R3`). |

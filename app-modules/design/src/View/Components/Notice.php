@@ -7,6 +7,7 @@ namespace Modules\Design\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\View\HoldsItsSlot;
 use Modules\Design\View\Tone;
 use Override;
@@ -26,7 +27,7 @@ final class Notice extends Component
 
     public readonly Tone $says;
 
-    public function __construct(string $tone = 'attention')
+    public function __construct(private readonly WhichThemeIsOnTheGlass $glass, string $tone = 'attention')
     {
         $this->says = Tone::from($tone);
     }
@@ -41,8 +42,7 @@ final class Notice extends Component
     {
         return view('design::components.notice', [
             'says' => $this->says,
-            'ink' => ThemeToken::Text->light(),
-            'paper' => ThemeToken::Text->dark(),
+            'colour' => ThemeToken::Text->in($this->glass->whose()),
         ]);
     }
 }

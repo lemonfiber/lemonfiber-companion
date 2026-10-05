@@ -15,8 +15,8 @@ use function view;
 /**
  * A code another device scans off this screen.
  *
- * Dark squares on the accent, the two roles that hold in light and dark alike,
- * so the code reads the same whichever the phone is set to, inside a border of
+ * Dark squares on the accent, the two roles that hold in both themes, so the
+ * code reads the same on every screen it is drawn on, inside a border of
  * the accent four squares wide, which is the margin a reader finds the code
  * by. Where there is no code it draws the words it is given instead, because an
  * empty square is one somebody would try to scan.

@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -61,7 +62,7 @@ use function view;
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
-final class WhatIsNewOnEveryStack extends NativeComponent
+final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThemeItOpensOver
 {
     use HasAWayBack;
     use LetsGoOfARefusedSession;

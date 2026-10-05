@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Modules\Design\View\Tone;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
@@ -17,11 +18,11 @@ it('draws a notice raised off the ground, its tone\'s glyph beside what it holds
 
     expect(WhatMarkupDraws::outline($markup))
         ->toBe('row{"width":"fill","padding":16,"gap":12}[icon[][], column{"gap":4,"flex_grow":1,"flex_shrink":1}[Unreachable]]')
-        ->and(data_get($drawn, 'style.bg_color'))->toBe(ThemeToken::Raised->light())
-        ->and(data_get($drawn, 'props.dark_bg_color'))->toBe(ThemeToken::Raised->dark())
+        ->and(data_get($drawn, 'style.bg_color'))->toBe(ThemeToken::Raised->in(WhoseTheme::Member))
+        ->and(data_get($drawn, 'props.dark_bg_color'))->toBeNull()
         ->and(data_get($drawn, 'children.0.props.name'))->toBe(Tone::Trouble->glyph())
-        ->and(data_get($drawn, 'children.0.props.color'))->toBe(ThemeToken::Text->light())
-        ->and(data_get($drawn, 'children.0.props.dark_color'))->toBe(ThemeToken::Text->dark());
+        ->and(data_get($drawn, 'children.0.props.color'))->toBe(ThemeToken::Text->in(WhoseTheme::Member))
+        ->and(data_get($drawn, 'children.0.props.dark_color'))->toBeNull();
 });
 
 it('draws a notice as needing attention unless told otherwise', function (): void {

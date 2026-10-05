@@ -290,14 +290,14 @@ final readonly class WhatASurfaceIsNeverShown
             Fixture::edit(
                 'E5',
                 'bootstrap/Composition/CompositionRoot.php',
-                '        $this->app->booted(TheTheme::paint(...));',
+                '        $this->app->booted($this->paintTheMembersTheme(...));',
                 <<<'PHP'
                             \Illuminate\Support\Facades\Event::listen(
                                 'Modules\Backups\Api\Events\ArchiveWritten',
                                 'Modules\Health\Internal\ListensAcrossAKind@handle',
                             );
 
-                            $this->app->booted(TheTheme::paint(...));
+                            $this->app->booted($this->paintTheMembersTheme(...));
                     PHP,
                 'no listener reacts to an event its module may not name',
                 'ListensAcrossAKind',
