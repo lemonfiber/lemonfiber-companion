@@ -9,7 +9,11 @@
          in the stack's words and order. Read only; a contest is drawn with
          every claimant and nothing picked. --}}
     <x-design::heading>{{ __('stacks.wiring.fills.label') }}</x-design::heading>
-    @if (! $this->whatAnswersWhat()->went->cameBack())
+    @if ($this->whatAnswersWhat() === null)
+        {{-- This frame read the services, so what answers what is read on
+             the next one. --}}
+        <x-operator::the-next-frame />
+    @elseif (! $this->whatAnswersWhat()->went->cameBack())
         <x-design::body>{{ __('stacks.wiring.fills.unreadable') }}</x-design::body>
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
