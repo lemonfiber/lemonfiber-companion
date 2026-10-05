@@ -6,6 +6,7 @@ namespace Modules\Design\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\View\Tone;
 
 use function view;
@@ -19,8 +20,9 @@ use function view;
  * and is 56 wide-pixels tall. A row that does neither shows its trailing
  * value instead. `answersTo` is the name a reader hears where the headline
  * alone would be ambiguous, as in a list of rows that each say "Open".
- * `tone` puts that tone's glyph at its start, for a row that stands for
- * something with a state, such as a service. `icon` and `iosIcon` put a glyph
+ * `tone` puts that tone's glyph at its start, painted in the tone's colour,
+ * for a row that stands for something with a state, such as a service.
+ * `icon` and `iosIcon` put a glyph
  * of the row's own there instead, beside the headline and never in its place,
  * for a row that names somewhere to go, such as a menu item. A row with
  * neither starts with its headline. `badge` is a count a row that goes
@@ -35,7 +37,11 @@ final class Row extends Component
 
     public readonly ?string $iosGlyph;
 
+    /** The tone's colour for its glyph, and the platform's own where the glyph is the row's. */
+    public readonly ?string $colour;
+
     public function __construct(
+        WhichThemeIsOnTheGlass $glass,
         public readonly string $headline,
         public readonly string $supporting = '',
         public readonly string $trailing = '',
@@ -51,6 +57,7 @@ final class Row extends Component
         $says = $tone === '' ? null : Tone::from($tone);
         $this->glyph = $icon === '' ? $says?->glyph() : $icon;
         $this->iosGlyph = $iosIcon === '' ? $says?->iosGlyph() : $iosIcon;
+        $this->colour = $icon === '' ? $says?->colour()->in($glass->whose()) : null;
     }
 
     public function render(): View

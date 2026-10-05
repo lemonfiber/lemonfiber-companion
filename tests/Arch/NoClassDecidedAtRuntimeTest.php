@@ -37,14 +37,16 @@ use Tests\Support\Template;
 // expression to match. A class name hidden in either is hidden the same way and
 // costs the same thing.
 //
-// **It holds the colour rule as well, by being stricter than it.** No state may be
+// **It holds the colour rule up, without being all of it.** No state may be
 // conveyed by colour alone; a symbol or text must also carry it. A class list
 // that cannot be decided at runtime is a colour that cannot change with a
-// state, so on this surface colour carries no state at all — which is more than
-// the requirement asks and therefore satisfies it. The one place a state is
-// drawn rather than written is the open family in `how-this-stack-is`, and what
-// says it is open is its contents being on the screen; the accent bar is beside
-// that rather than instead of it.
+// state, so a state's colour reaches the glass only as a value a component
+// hands a glyph, or as a notice's ground chosen under an `@if` with a static
+// class — and every one of those components draws the state's own glyph
+// beside it, with the words that say the rest (`Tone`). The one place a state
+// is drawn rather than written is the open family in `how-this-stack-is`, and
+// what says it is open is its contents being on the screen; the accent bar is
+// beside that rather than instead of it.
 //
 // **Log severity comes with it**, for the surface this app is. Severity in log
 // output must be present as text and not only as colour. The scrollback names

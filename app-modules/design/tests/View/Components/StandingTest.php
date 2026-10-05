@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Modules\Design\View\Tone;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
@@ -33,4 +35,11 @@ it('says where something stands in a word under its words, and to a reader of it
 
 it('gives the glyph no reader label where there is no word', function (): void {
     expect(data_get(WhatMarkupDraws::drawn('<x-design::standing said="Running" tone="fine" />'), 'children.0.props.a11y_label'))->toBeNull();
+});
+
+it('paints the glyph in the tone\'s severity in the operator\'s theme, and in text in the member\'s', function (): void {
+    $markup = '<x-design::standing said="Sonarr" tone="fine" word="Running" />';
+
+    expect(data_get(WhatMarkupDraws::drawnIn(WhoseTheme::Operator, $markup), 'children.0.props.color'))->toBe(ThemeToken::Ok->in(WhoseTheme::Operator))
+        ->and(data_get(WhatMarkupDraws::drawnIn(WhoseTheme::Member, $markup), 'children.0.props.color'))->toBe(ThemeToken::Text->in(WhoseTheme::Member));
 });

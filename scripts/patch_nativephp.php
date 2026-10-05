@@ -1511,7 +1511,7 @@ BECOMES,
                     .foregroundColor(.secondary)
             }
 SHIPS,
-        'becomes' => <<<'BECOMES'
+        'was' => <<<'WAS'
                     Image(systemName: getIconForName(value))
                         .nuiScaledFont(size: 18, weight: .medium)
                         .foregroundColor(.white)
@@ -1524,6 +1524,57 @@ SHIPS,
                     .foregroundColor(.secondary)
                     .accessibilityHidden(true)
             }
+WAS,
+        'becomes' => <<<'BECOMES'
+                    Image(systemName: getIconForName(value))
+                        .nuiScaledFont(size: 18, weight: .medium)
+                        .foregroundColor(.white)
+                }
+                .frame(width: 40, height: 40)
+                .accessibilityHidden(true)
+            } else {
+                Image(systemName: getIconForName(value))
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
+                    .accessibilityHidden(true)
+            }
+BECOMES,
+    ],
+    [
+        // A list row's leading glyph in the colour the row hands it. Android's
+        // row reads `leading_icon_color`; iOS's reads it nowhere and draws the
+        // glyph in the system's secondary grey, so without this a service's
+        // state is drawn in its severity on Android and in grey on iOS. The
+        // colour is read here, handed to the leading content, and painted
+        // above where one was given; a row handed none keeps the grey.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+        let leadingIconBgColor = p.getColor("leading_icon_bg_color", default: 0)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        let leadingIconBgColor = p.getColor("leading_icon_bg_color", default: 0)
+        let leadingIconColor = p.getColor("leading_icon_color", default: 0)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+                iconBgColor: leadingIconBgColor,
+                checked: leadingChecked,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                iconBgColor: leadingIconBgColor,
+                iconColor: leadingIconColor,
+                checked: leadingChecked,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, iconColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
 BECOMES,
     ],
     [

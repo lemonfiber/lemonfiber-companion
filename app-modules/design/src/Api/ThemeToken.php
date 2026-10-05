@@ -19,6 +19,14 @@ namespace Modules\Design\Api;
  * only the operator's theme sets text in `text-faint`. There is one value per
  * theme rather than a light and a dark one, because neither theme follows the
  * phone's setting.
+ *
+ * How a thing stands is painted from the brand's severity colours in the
+ * operator's theme alone: `ok`, `alarm`, `fiber` as warning and as activity,
+ * and the tints `warn-tint` and `alarm-tint` behind a notice. The member's
+ * theme draws no severity colour, so there those roles paint as text and as a
+ * raised surface do. Every severity also has a glyph of its own
+ * ({@see \Modules\Design\View\Tone}), so colour is never the only thing
+ * that says it.
  */
 enum ThemeToken: string
 {
@@ -51,6 +59,24 @@ enum ThemeToken: string
     /** A hairline between rows, and the edge of a raised surface. */
     case Line = 'line';
 
+    /** The glyph of something that is as it should be: the brand's `ok`. */
+    case Ok = 'ok';
+
+    /** The glyph of something that wants looking at: the brand's `fiber`, serving as warning. */
+    case Warn = 'warn';
+
+    /** The glyph of something broken: the brand's `alarm`. */
+    case Alarm = 'alarm';
+
+    /** The glyph of something under way: the brand's `fiber`, as activity. */
+    case Activity = 'activity';
+
+    /** The ground of a notice about something that wants looking at: the brand's `warn-tint`. */
+    case WarnTint = 'warn-tint';
+
+    /** The ground of a notice about something broken: the brand's `alarm-tint`. */
+    case AlarmTint = 'alarm-tint';
+
     /** The brand's `lemon`. */
     private const string LEMON = '#F0C419';
 
@@ -78,6 +104,21 @@ enum ThemeToken: string
     /** The ink theme's `line`. */
     private const string INK_LINE = '#34322A';
 
+    /** The ink theme's `ok`. */
+    private const string INK_OK = '#9DB856';
+
+    /** The ink theme's `alarm`. */
+    private const string INK_ALARM = '#E8705C';
+
+    /** The ink theme's `fiber`. */
+    private const string INK_FIBER = '#F09A3C';
+
+    /** The ink theme's `warn-tint`. */
+    private const string INK_WARN_TINT = '#35240F';
+
+    /** The ink theme's `alarm-tint`. */
+    private const string INK_ALARM_TINT = '#3A1C16';
+
     /** The hex this role paints in one theme, copied from the brand's ink theme. */
     public function in(WhoseTheme $theme): string
     {
@@ -90,6 +131,11 @@ enum ThemeToken: string
             self::Muted => self::INK_TEXT_MUTED,
             self::Faint => $theme === WhoseTheme::Operator ? self::INK_TEXT_FAINT : self::INK_TEXT_MUTED,
             self::Line => self::INK_LINE,
+            self::Ok => $theme === WhoseTheme::Operator ? self::INK_OK : self::INK_TEXT,
+            self::Warn, self::Activity => $theme === WhoseTheme::Operator ? self::INK_FIBER : self::INK_TEXT,
+            self::Alarm => $theme === WhoseTheme::Operator ? self::INK_ALARM : self::INK_TEXT,
+            self::WarnTint => $theme === WhoseTheme::Operator ? self::INK_WARN_TINT : self::INK_PITH,
+            self::AlarmTint => $theme === WhoseTheme::Operator ? self::INK_ALARM_TINT : self::INK_PITH,
         };
     }
 
@@ -98,13 +144,15 @@ enum ThemeToken: string
      *
      * `lemon` is a fill rather than a foreground, and a surface or a line is a
      * ground. `on-accent` is text only on an accent fill; no rule can see the
-     * fill from a class string, because it is often on the parent.
+     * fill from a class string, because it is often on the parent. A severity
+     * colours a glyph beside the words that say the state, and never the words.
      */
     public function safeAsText(): bool
     {
         return match ($this) {
             self::Text, self::Muted, self::Faint, self::OnAccent => true,
-            self::Accent, self::Surface, self::Raised, self::Line => false,
+            self::Accent, self::Surface, self::Raised, self::Line,
+            self::Ok, self::Warn, self::Alarm, self::Activity, self::WarnTint, self::AlarmTint => false,
         };
     }
 }

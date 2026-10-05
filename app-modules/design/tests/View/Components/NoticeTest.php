@@ -29,3 +29,21 @@ it('draws a notice as needing attention unless told otherwise', function (): voi
     expect(data_get(WhatMarkupDraws::drawn('<x-design::notice><x-design::body>A</x-design::body></x-design::notice>'), 'children.0.props.name'))
         ->toBe(Tone::Attention->glyph());
 });
+
+it('raises a notice in the operator\'s theme on its tone\'s tint, its glyph in its severity', function (string $tone, ThemeToken $ground, ThemeToken $glyph): void {
+    $drawn = WhatMarkupDraws::drawnIn(WhoseTheme::Operator, sprintf('<x-design::notice tone="%s"><x-design::body>A</x-design::body></x-design::notice>', $tone));
+
+    expect(data_get($drawn, 'style.bg_color'))->toBe($ground->in(WhoseTheme::Operator))
+        ->and(data_get($drawn, 'children.0.props.color'))->toBe($glyph->in(WhoseTheme::Operator));
+})->with([
+    'something that wants looking at' => ['attention', ThemeToken::WarnTint, ThemeToken::Warn],
+    'something broken' => ['trouble', ThemeToken::AlarmTint, ThemeToken::Alarm],
+    'nobody can say' => ['unknown', ThemeToken::Raised, ThemeToken::Muted],
+]);
+
+it('raises every notice in the member\'s theme on the raised surface, its glyph in text', function (string $tone): void {
+    $drawn = WhatMarkupDraws::drawnIn(WhoseTheme::Member, sprintf('<x-design::notice tone="%s"><x-design::body>A</x-design::body></x-design::notice>', $tone));
+
+    expect(data_get($drawn, 'style.bg_color'))->toBe(ThemeToken::Raised->in(WhoseTheme::Member))
+        ->and(data_get($drawn, 'children.0.props.color'))->toBe(ThemeToken::Text->in(WhoseTheme::Member));
+})->with(['attention', 'trouble']);

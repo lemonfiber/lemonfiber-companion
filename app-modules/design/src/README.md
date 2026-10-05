@@ -5,8 +5,11 @@ The colour roles and the elements every surface renders through.
 ## Colour roles
 
 `Api\ThemeToken` names the roles (accent, on-accent, surface, raised, text,
-muted, faint, line) and the hex each paints in the member's theme and in the
-operator's, both from the brand's ink theme. `Api\WhoseTheme` names the two
+muted, faint, line, and the severities ok, warn, alarm, activity, warn-tint and
+alarm-tint) and the hex each paints in the member's theme and in the
+operator's, both from the brand's ink theme. Only the operator's theme paints
+a severity as one; the member's paints those roles as text and as the raised
+surface. `Api\WhoseTheme` names the two
 themes, and whose session a screen is drawn for chooses between them.
 `Api\Theme::resolver()` is what the composition root gives EDGE's
 `TailwindParser` for the screen on view, as its light and its dark resolver
@@ -35,8 +38,8 @@ elements and painted only through the roles.
 | Element | What it is |
 |---|---|
 | `title`, `heading`, `body`, `note`, `strong`, `verbatim` | Text in its role and face: a screen's lead line, a heading, running text, a quieter line, a weighted line, and what a machine wrote, in DM Mono |
-| `standing` | Where something stands: a `View\Tone` glyph beside its words and an optional note |
-| `notice` | Something told before anything else, raised off the ground with its tone's glyph |
+| `standing` | Where something stands: a `View\Tone` glyph in the tone's colour beside its words and an optional note |
+| `notice` | Something told before anything else, raised on its tone's ground with its tone's glyph |
 | `card` | Lines that belong together, on a padded card |
 | `section` and `row` | A labelled card of the platform's list rows; a row that goes somewhere or does something carries a chevron |
 | `action` | A tall filled button, `primary` or `tonal` (`View\Prominence`) |

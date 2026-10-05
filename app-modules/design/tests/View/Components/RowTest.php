@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\View\ViewException;
+use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -62,3 +64,13 @@ it('starts a row that names somewhere to go with its own glyph, beside its headl
 it('refuses a tone it has no glyph for', function (): void {
     WhatMarkupDraws::drawn('<x-design::row headline="Sonarr" tone="grand" />');
 })->throws(ViewException::class);
+
+it('paints a toned row\'s glyph in the tone\'s colour, and leaves a glyph of the row\'s own to the platform', function (): void {
+    $toned = WhatMarkupDraws::drawnIn(WhoseTheme::Operator, '<x-design::row headline="Sonarr" tone="working" />');
+    $own = WhatMarkupDraws::drawnIn(WhoseTheme::Operator, '<x-design::row headline="Health" icon="favorite" ios-icon="heart" tone="trouble" />');
+    $plain = WhatMarkupDraws::drawnIn(WhoseTheme::Operator, '<x-design::row headline="Fingerprint" />');
+
+    expect(data_get($toned, 'props.leading_icon_color'))->toBe(ThemeToken::Activity->in(WhoseTheme::Operator))
+        ->and(data_get($own, 'props'))->not->toHaveKey('leading_icon_color')
+        ->and(data_get($plain, 'props'))->not->toHaveKey('leading_icon_color');
+});

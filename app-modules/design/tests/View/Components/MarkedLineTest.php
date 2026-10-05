@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Modules\Design\View\Tone;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
@@ -16,4 +18,10 @@ it('draws the line beside its tone\'s glyph, the glyph read aloud as its word', 
     expect(data_get($row, 'children.0.props.name'))->toBe(Tone::Trouble->glyph())
         ->and(data_get($row, 'children.0.props.a11y_label'))->toBe('Error')
         ->and(data_get($row, 'children.1.props.text'))->toBe('VPN provider name is not valid');
+});
+
+it('paints the glyph of an error in alarm in the operator\'s theme', function (): void {
+    $row = WhatMarkupDraws::drawnIn(WhoseTheme::Operator, '<x-design::marked-line line="VPN provider name is not valid" tone="trouble" word="Error" />');
+
+    expect(data_get($row, 'children.0.props.color'))->toBe(ThemeToken::Alarm->in(WhoseTheme::Operator));
 });

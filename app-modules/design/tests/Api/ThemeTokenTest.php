@@ -65,7 +65,29 @@ function pairingsSetAsText(): array
         [ThemeToken::Faint, ThemeToken::Raised],
         [ThemeToken::Text, ThemeToken::Line],
         [ThemeToken::OnAccent, ThemeToken::Accent],
+        [ThemeToken::Text, ThemeToken::WarnTint],
+        [ThemeToken::Text, ThemeToken::AlarmTint],
+        [ThemeToken::Muted, ThemeToken::WarnTint],
+        [ThemeToken::Muted, ThemeToken::AlarmTint],
     ];
+}
+
+/**
+ * Every severity glyph and every ground it is drawn on.
+ *
+ * @return list<array{ThemeToken, ThemeToken}>
+ */
+function glyphsOnTheirGrounds(): array
+{
+    $pairs = [];
+
+    foreach ([ThemeToken::Ok, ThemeToken::Warn, ThemeToken::Alarm, ThemeToken::Activity] as $glyph) {
+        foreach ([ThemeToken::Surface, ThemeToken::Raised, ThemeToken::WarnTint, ThemeToken::AlarmTint] as $ground) {
+            $pairs[] = [$glyph, $ground];
+        }
+    }
+
+    return $pairs;
 }
 
 it('measures contrast as WCAG does', function (): void {
@@ -114,7 +136,50 @@ it('sets as text only the roles that are foregrounds', function (): void {
         ->and(ThemeToken::Accent->safeAsText())->toBeFalse()
         ->and(ThemeToken::Surface->safeAsText())->toBeFalse()
         ->and(ThemeToken::Raised->safeAsText())->toBeFalse()
-        ->and(ThemeToken::Line->safeAsText())->toBeFalse();
+        ->and(ThemeToken::Line->safeAsText())->toBeFalse()
+        ->and(ThemeToken::Ok->safeAsText())->toBeFalse()
+        ->and(ThemeToken::Warn->safeAsText())->toBeFalse()
+        ->and(ThemeToken::Alarm->safeAsText())->toBeFalse()
+        ->and(ThemeToken::Activity->safeAsText())->toBeFalse()
+        ->and(ThemeToken::WarnTint->safeAsText())->toBeFalse()
+        ->and(ThemeToken::AlarmTint->safeAsText())->toBeFalse();
+});
+
+it('draws every severity glyph at 3:1 or better on every ground it sits on, in both themes', function (WhoseTheme $theme): void {
+    $short = [];
+
+    foreach (glyphsOnTheirGrounds() as [$glyph, $ground]) {
+        $ratio = contrast($glyph->in($theme), $ground->in($theme));
+
+        if ($ratio < 3.0) {
+            $short[] = sprintf('%s on %s: %.2f', $glyph->value, $ground->value, $ratio);
+        }
+    }
+
+    expect($short)->toBe([], sprintf(
+        "These glyphs fall below the 3:1 a graphic needs:\n  %s",
+        implode("\n  ", $short),
+    ));
+})->with(WhoseTheme::cases());
+
+it('paints how a thing stands in the operator\'s theme from the ink theme\'s severity colours, with fiber as warning and as activity', function (): void {
+    expect(ThemeToken::Ok->in(WhoseTheme::Operator))->toBe('#9DB856')
+        ->and(ThemeToken::Warn->in(WhoseTheme::Operator))->toBe('#F09A3C')
+        ->and(ThemeToken::Alarm->in(WhoseTheme::Operator))->toBe('#E8705C')
+        ->and(ThemeToken::Activity->in(WhoseTheme::Operator))->toBe('#F09A3C')
+        ->and(ThemeToken::WarnTint->in(WhoseTheme::Operator))->toBe('#35240F')
+        ->and(ThemeToken::AlarmTint->in(WhoseTheme::Operator))->toBe('#3A1C16');
+});
+
+it('draws no severity colour in the member\'s theme', function (): void {
+    $member = WhoseTheme::Member;
+
+    expect(ThemeToken::Ok->in($member))->toBe(ThemeToken::Text->in($member))
+        ->and(ThemeToken::Warn->in($member))->toBe(ThemeToken::Text->in($member))
+        ->and(ThemeToken::Alarm->in($member))->toBe(ThemeToken::Text->in($member))
+        ->and(ThemeToken::Activity->in($member))->toBe(ThemeToken::Text->in($member))
+        ->and(ThemeToken::WarnTint->in($member))->toBe(ThemeToken::Raised->in($member))
+        ->and(ThemeToken::AlarmTint->in($member))->toBe(ThemeToken::Raised->in($member));
 });
 
 it('paints the member on the ink theme\'s canvas and the operator on its ink', function (): void {
@@ -127,7 +192,7 @@ it('sets the member\'s text in paper and text-muted alone, and only the operator
         ->and(ThemeToken::Faint->in(WhoseTheme::Operator))->toBe('#8D8972');
 });
 
-it('tells the two themes apart by the ground and the faintest text alone', function (): void {
+it('tells the two themes apart by the ground, the faintest text and how a thing stands alone', function (): void {
     $differ = [];
 
     foreach (ThemeToken::cases() as $role) {
@@ -136,7 +201,16 @@ it('tells the two themes apart by the ground and the faintest text alone', funct
         }
     }
 
-    expect($differ)->toBe([ThemeToken::Surface, ThemeToken::Faint]);
+    expect($differ)->toBe([
+        ThemeToken::Surface,
+        ThemeToken::Faint,
+        ThemeToken::Ok,
+        ThemeToken::Warn,
+        ThemeToken::Alarm,
+        ThemeToken::Activity,
+        ThemeToken::WarnTint,
+        ThemeToken::AlarmTint,
+    ]);
 });
 
 it('keeps lemon as the accent with ink on it, in both themes', function (WhoseTheme $theme): void {
