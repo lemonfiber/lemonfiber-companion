@@ -56,7 +56,7 @@ it('every text element takes its colour from a theme role', function (): void {
     expect(textWithoutAThemeColour())->toBe([], sprintf(
         "These draw text in the platform's default colour, which is black on a dark screen:\n  %s\n\n"
         . 'Draw it through a design element (`x-design::body`, `x-design::note` and the rest), '
-        . 'each of which carries a theme role with a light and a dark value (DES-R24, N4-R14).',
+        . 'each of which carries a theme role with a value in each theme (DES-R33, N4-R14).',
         implode("\n  ", textWithoutAThemeColour()),
     ));
 });

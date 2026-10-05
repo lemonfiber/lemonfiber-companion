@@ -5,7 +5,7 @@
      No colour here. A filled button takes `primary` from the widget theme and
      honours no per-instance colour — the renderer says so in as many words —
      so a class on a button is parsed, dropped, and looks like a design that
-     did not take. `DES-R24`'s accent is asserted once, on the theme itself, in
+     did not take. The accent is asserted once, on the theme itself, in
      `TheTheme::paint()`. --}}
 @if ($goes !== '')
     <native:button native:key="{{ $named }}" class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @navigate="$goes" />

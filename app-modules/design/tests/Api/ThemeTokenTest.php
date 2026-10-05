@@ -12,6 +12,7 @@ use function max;
 use function min;
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 
 use function preg_match;
 use function round;
@@ -60,6 +61,8 @@ function pairingsSetAsText(): array
         [ThemeToken::Text, ThemeToken::Raised],
         [ThemeToken::Muted, ThemeToken::Surface],
         [ThemeToken::Muted, ThemeToken::Raised],
+        [ThemeToken::Faint, ThemeToken::Surface],
+        [ThemeToken::Faint, ThemeToken::Raised],
         [ThemeToken::Text, ThemeToken::Line],
         [ThemeToken::OnAccent, ThemeToken::Accent],
     ];
@@ -71,42 +74,42 @@ it('measures contrast as WCAG does', function (): void {
         ->and(round(contrast('#777777', '#FFFFFF'), 2))->toBe(4.48);
 });
 
-it('answers every role with a hex the parser can paint, in both modes', function (): void {
+it('answers every role with a hex the parser can paint, in both themes', function (WhoseTheme $theme): void {
     $malformed = [];
 
     foreach (ThemeToken::cases() as $token) {
-        foreach (['light' => $token->light(), 'dark' => $token->dark()] as $mode => $hex) {
-            if (preg_match('/^#[0-9A-F]{6}$/', $hex) !== 1) {
-                $malformed[] = sprintf('%s answers %s in %s mode', $token->value, $hex, $mode);
-            }
+        $hex = $token->in($theme);
+
+        if (preg_match('/^#[0-9A-F]{6}$/', $hex) !== 1) {
+            $malformed[] = sprintf('%s answers %s', $token->value, $hex);
         }
     }
 
     expect($malformed)->toBe([], implode("\n", $malformed));
-});
+})->with(WhoseTheme::cases());
 
-it('sets every text pairing at AA or better, in light and in dark', function (): void {
+it('sets every text pairing at AA or better, in both themes', function (WhoseTheme $theme): void {
     $short = [];
 
     foreach (pairingsSetAsText() as [$text, $ground]) {
-        $light = contrast($text->light(), $ground->light());
-        $dark = contrast($text->dark(), $ground->dark());
+        $ratio = contrast($text->in($theme), $ground->in($theme));
 
-        if ($light < 4.5 || $dark < 4.5) {
-            $short[] = sprintf('%s on %s: %.2f light, %.2f dark', $text->value, $ground->value, $light, $dark);
+        if ($ratio < 4.5) {
+            $short[] = sprintf('%s on %s: %.2f', $text->value, $ground->value, $ratio);
         }
     }
 
     expect($short)->toBe([], sprintf(
         "These pairings fall below WCAG AA (4.5:1):\n  %s\n\nEvery text-on-surface pairing "
-        . 'this surface uses must meet AA in both modes.',
+        . 'this surface uses must meet AA in both themes.',
         implode("\n  ", $short),
     ));
-});
+})->with(WhoseTheme::cases());
 
 it('sets as text only the roles that are foregrounds', function (): void {
     expect(ThemeToken::Text->safeAsText())->toBeTrue()
         ->and(ThemeToken::Muted->safeAsText())->toBeTrue()
+        ->and(ThemeToken::Faint->safeAsText())->toBeTrue()
         ->and(ThemeToken::OnAccent->safeAsText())->toBeTrue()
         ->and(ThemeToken::Accent->safeAsText())->toBeFalse()
         ->and(ThemeToken::Surface->safeAsText())->toBeFalse()
@@ -114,22 +117,32 @@ it('sets as text only the roles that are foregrounds', function (): void {
         ->and(ThemeToken::Line->safeAsText())->toBeFalse();
 });
 
-it('keeps the accent pair the same in both modes', function (): void {
-    expect(ThemeToken::Accent->dark())->toBe(ThemeToken::Accent->light())
-        ->and(ThemeToken::OnAccent->dark())->toBe(ThemeToken::OnAccent->light());
+it('paints the member on the ink theme\'s canvas and the operator on its ink', function (): void {
+    expect(ThemeToken::Surface->in(WhoseTheme::Member))->toBe('#100F0A')
+        ->and(ThemeToken::Surface->in(WhoseTheme::Operator))->toBe('#17160F');
 });
 
-it('gives every neutral role a dark value of its own', function (): void {
-    $unchanged = [];
+it('sets the member\'s text in paper and text-muted alone, and only the operator\'s in text-faint', function (): void {
+    expect(ThemeToken::Faint->in(WhoseTheme::Member))->toBe(ThemeToken::Muted->in(WhoseTheme::Member))
+        ->and(ThemeToken::Faint->in(WhoseTheme::Operator))->toBe('#8D8972');
+});
 
-    foreach ([ThemeToken::Surface, ThemeToken::Raised, ThemeToken::Text, ThemeToken::Muted, ThemeToken::Line] as $role) {
-        if ($role->dark() === $role->light()) {
-            $unchanged[] = $role->value;
+it('tells the two themes apart by the ground and the faintest text alone', function (): void {
+    $differ = [];
+
+    foreach (ThemeToken::cases() as $role) {
+        if ($role->in(WhoseTheme::Member) !== $role->in(WhoseTheme::Operator)) {
+            $differ[] = $role;
         }
     }
 
-    expect($unchanged)->toBe([]);
+    expect($differ)->toBe([ThemeToken::Surface, ThemeToken::Faint]);
 });
+
+it('keeps lemon as the accent with ink on it, in both themes', function (WhoseTheme $theme): void {
+    expect(ThemeToken::Accent->in($theme))->toBe('#F0C419')
+        ->and(ThemeToken::OnAccent->in($theme))->toBe('#17160F');
+})->with(WhoseTheme::cases());
 
 it('resolves no name it was not given', function (): void {
     expect(ThemeToken::tryFrom('background'))->toBeNull()

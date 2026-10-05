@@ -7,6 +7,7 @@ namespace Modules\Design\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
 
 use function view;
 
@@ -22,14 +23,13 @@ final class Link extends Component
 {
     public readonly string $named;
 
-    public readonly string $ink;
-
-    public readonly string $paper;
+    public readonly string $colour;
 
     /**
      * @param array<string, string> $carries what the road hands the screen it opens, besides the route
      */
     public function __construct(
+        WhichThemeIsOnTheGlass $glass,
         public readonly string $label,
         public readonly string $tap = '',
         public readonly string $goes = '',
@@ -37,8 +37,7 @@ final class Link extends Component
         public readonly array $carries = [],
     ) {
         $this->named = $answersTo === '' ? $label : $answersTo;
-        $this->ink = ThemeToken::Muted->light();
-        $this->paper = ThemeToken::Muted->dark();
+        $this->colour = ThemeToken::Muted->in($glass->whose());
     }
 
     public function render(): View

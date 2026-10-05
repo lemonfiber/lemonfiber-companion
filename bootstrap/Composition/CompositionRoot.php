@@ -31,6 +31,8 @@ use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
+use Modules\Design\Api\WhoseTheme;
 use Modules\Device\Api\PlatformAppsSettings;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformLocalNetwork;
@@ -225,6 +227,12 @@ final class CompositionRoot extends ServiceProvider
     /** Where the platform reads what to install this application as. */
     private const string WHAT_THE_PLATFORM_INSTALLS_US_AS = 'nativephp.app_id';
 
+    /** The setting that pins how iOS draws its own sheets, alerts and keyboard. */
+    private const string HOW_THE_PLATFORM_DRAWS_ITS_OWN = 'nativephp.appearance';
+
+    /** The setting that picks the colour of Android's status bar and navigation bar icons. */
+    private const string THE_ICONS_ON_THE_SYSTEM_BARS = 'nativephp.android.status_bar_style';
+
     /** The tag every store of what the phone keeps is registered under. */
     private const string WHAT_THE_PHONE_KEEPS = 'what-the-phone-keeps';
 
@@ -233,6 +241,16 @@ final class CompositionRoot extends ServiceProvider
 
     /** The tag every store of readings is registered under. */
     private const string EVERY_STORE_OF_READINGS = 'every-store-of-readings';
+
+    /**
+     * Which theme is on the glass, one for the life of the process, made when first asked for.
+     *
+     * Held here rather than bound as itself, because the composition root is
+     * all that paints it: the boot paints the member's theme and the
+     * navigation stack each screen's. What the design module reads is the port
+     * it implements, bound to this one instance.
+     */
+    private ?TheTheme $theme = null;
 
     public function register(): void
     {
@@ -251,6 +269,14 @@ final class CompositionRoot extends ServiceProvider
             WhatThisBuildInstallsAs::orRefuse(config(self::WHAT_THE_PLATFORM_INSTALLS_US_AS)),
         );
 
+        // Both themes are dark whatever the phone is set to, so what the
+        // platform draws itself is dark as well: iOS draws its sheets, alerts
+        // and keyboard dark, and Android draws light icons on its system bars.
+        // Applied over `config/nativephp.php` for the reason the identity is,
+        // and read by the build commands after this has run.
+        config()->set(self::HOW_THE_PLATFORM_DRAWS_ITS_OWN, 'dark');
+        config()->set(self::THE_ICONS_ON_THE_SYSTEM_BARS, 'light');
+
         $this->bindThePlatform();
         $this->bindWhatThePhoneKeeps();
         $this->bindTheWayToEveryStack();
@@ -258,16 +284,14 @@ final class CompositionRoot extends ServiceProvider
 
     public function boot(): void
     {
-        // Whose palette `bg-theme-*` resolves against, and — the half that was
-        // decided by luck until `nativephp/mobile-ui` arrived — that it is
-        // still ours after every other provider has had its turn.
-        // {@see TheTheme} carries the reasoning; it is a class rather than four
-        // lines here so that a test can plant a rival resolver and call it.
+        // The member's theme, which every screen opens in until one is drawn
+        // for an operator, painted after `nativephp/mobile-ui` has set its own
+        // resolver. {@see TheTheme} carries the reasoning.
         //
         // `$this->app->booted()` rather than `$this->booted()`, which fires at
         // the end of *this* provider's boot rather than everybody's, and differs
         // only in the case that matters.
-        $this->app->booted(TheTheme::paint(...));
+        $this->app->booted($this->paintTheMembersTheme(...));
 
         // `Route::native()`, replaced so that a screen is built through the
         // container rather than with `new`. NativePHP's own router cannot give
@@ -288,7 +312,7 @@ final class CompositionRoot extends ServiceProvider
         // fact about this composition rather than about routing. A suite must
         // never enter the real one: it blocks against the bridge, so a test
         // that reached it would hang rather than fail.
-        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
+        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop($this->theTheme()->forTheScreen(...));
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
 
@@ -430,6 +454,14 @@ final class CompositionRoot extends ServiceProvider
             // By class, for the reason given above the `Notifier` binding.
             PlatformAuth::class,
         );
+
+        // Which theme is on the glass, for an element handed a colour as a
+        // value. The one instance the composition root paints, for the reason
+        // `WhatEachStackLastNamed` is a singleton: it holds what one screen
+        // painted and the next one reads, across the one process this runtime
+        // keeps. It reaches the keychain afresh for each screen, for the
+        // keychain's reason above.
+        $this->app->singleton(WhichThemeIsOnTheGlass::class, $this->theTheme(...));
     }
 
     /** What the phone keeps between launches, the seal over it, and every set of keepers asked as one. */
@@ -840,6 +872,24 @@ final class CompositionRoot extends ServiceProvider
     private function noteWhereTheOperatorIs(): void
     {
         TreeObservers::register(new TheOperatorIsHere($this->app->make(NotingWhereTheOperatorIs::class)));
+    }
+
+    /** The member's theme, painted once every provider has booted. */
+    private function paintTheMembersTheme(): void
+    {
+        $this->theTheme()->paint(WhoseTheme::Member);
+    }
+
+    /** The one theme on the glass, made the first time anything asks for it. */
+    private function theTheme(): TheTheme
+    {
+        return $this->theme ??= new TheTheme($this->theKeychain(...));
+    }
+
+    /** The keychain, made afresh each time it is asked for, as its binding says. */
+    private function theKeychain(): SecureStorage
+    {
+        return $this->app->make(SecureStorage::class);
     }
 
     /**

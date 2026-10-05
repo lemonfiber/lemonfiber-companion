@@ -164,7 +164,7 @@ it('is asked by itself as the device is told, with the prompt either way', funct
 function aStackOfLocks(ADeviceThatKnowsYou $device, array $paths): Locked
 {
     $top = ALockScreen::over($device);
-    $router = new ScreenRouter(static fn(): Locked => $top);
+    $router = new ScreenRouter(static fn(): Locked => $top, static function (): void {});
 
     $entries = [];
 

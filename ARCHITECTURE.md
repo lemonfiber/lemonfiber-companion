@@ -389,7 +389,7 @@ automatic and the operator never sees the question.
 | F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
 | F17 | Every screen about a stack, in either surface, carries the side menu and the list of stacks, and one that goes without the menu is named with why | arch: every operator and household screen answering which stack it is about uses the wayfinding trait, directly or through its surface's own, against a register that may shrink and may not grow, and carries the list of stacks |
 | F18 | Every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, the tabs and a register that may shrink and may not grow |
-| F19 | Every text element takes its colour from a theme role, so it reads in a light and a dark setting alike | arch: over every element of every template |
+| F19 | Every text element takes its colour from a theme role, so it reads in the member's theme and the operator's alike | arch: over every element of every template |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each
@@ -417,7 +417,7 @@ what gets dropped from `class="{{ $open ? 'bg-theme-accent' : '' }}"` is the
 whole attribute, and the class names inside it are then read by nothing at all.
 
 Three rules go quiet together, because all three read that one answer. F3 stops
-seeing an unknown utility, DES-R24 stops seeing a literal colour, and DES-R15
+seeing an unknown utility, DES-R33 stops seeing a literal colour, and DES-R15
 stops seeing the accent set as text. A template whose ternaries hold
 `bg-theme-accnt`, `bg-red-500` and `text-theme-accent` passes every rule in
 `tests/Templates` — and EDGE agrees, because it parses each of those in turn,
@@ -460,22 +460,23 @@ supported vocabulary that would silently drift from the installed package.
 variant aimed at the other platform is a deliberate no-op rather than a mistake.
 Literal colours come from `TailwindParser::resolveColorValue`, which answers for
 `red-500` and `#B91C1C` and stays silent for `theme-background` and `2xl` —
-which is exactly the distinction DES-R24 turns on. Tag names come from the
+which is exactly the distinction DES-R33 turns on. Tag names come from the
 element registry, the component registry, and the types the collector renders
 itself. A transcribed list would keep passing through a NativePHP release that
 changed any of them, which is how a rule dies without anyone noticing.
 
 **A `bg-theme-*` token reported as unknown is a true answer, not a false
 positive.** The theme resolver is provided by the application rather than by the
-package. `Modules\Design\Api\Theme` is that resolver and the composition root
-registers it at boot, so the two tokens this surface asserts resolve and every
-other one is still reported — which is the answer rather than a gap. The
-companion maps `lemon` to the accent role and `ink` to the foreground that sits
-on it, and leaves the rest to the platform's own theme roles, so that the
-reader's light, dark and contrast settings decide them rather than this
-repository (DES-R24, DES-R26).
+package. `Modules\Design\Api\Theme` builds that resolver for one of the two
+themes, and the composition root hands it over for each screen, so the roles
+this surface asserts resolve and every other token is still reported — which
+is the answer rather than a gap. A screen drawn for the operator's session is
+painted in the operator's theme and every other screen in the member's, both
+on the brand's ink theme whatever the phone is set to, and no setting chooses
+between them (DES-R28, DES-R29, DES-R30). App settings and What's new, which
+belong to nobody's session, keep the theme of the screen they open over.
 
-**Nothing about the palette is typed twice without being checked.** The two
+**Nothing about the palette is typed twice without being checked.** The
 hexes live in the `ThemeToken` enum because a module may not read a file (B3)
 and a provider may not read one at boot (A9); `tests/Arch/BrandPaletteParityTest`
 checks them against `app-modules/design/resources/tokens.json`, which the

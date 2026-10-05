@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Tests\Support\Tree;
 
 // The palette is copied, so the copy is checked.
@@ -15,25 +16,26 @@ use Tests\Support\Tree;
 // `brand:tokens/tokens.json`.
 
 /**
- * Which brand colour each role asserts, in light mode and in dark.
+ * Which brand colour each role asserts, in the member's theme and in the operator's.
  *
  * The brand decision itself, from `60-brand/surface-mapping.md`, written here
  * rather than derived from the enum so the test has something of its own to
- * compare against. A dark name prefixed `ink:` is read from the ink theme;
- * an unprefixed one from the brand's core colours.
+ * compare against. A name prefixed `ink:` is read from the ink theme; an
+ * unprefixed one from the brand's core colours.
  *
- * @return array<string, array{string, string}> role => [light, dark]
+ * @return array<string, array{string, string}> role => [member, operator]
  */
 function assertedBrandColours(): array
 {
     return [
         ThemeToken::Accent->value => ['lemon', 'lemon'],
         ThemeToken::OnAccent->value => ['ink', 'ink'],
-        ThemeToken::Surface->value => ['paper', 'ink:paper'],
-        ThemeToken::Raised->value => ['pith', 'ink:pith'],
-        ThemeToken::Text->value => ['ink', 'ink:text'],
-        ThemeToken::Muted->value => ['text-muted', 'ink:text-muted'],
-        ThemeToken::Line->value => ['line', 'ink:line'],
+        ThemeToken::Surface->value => ['ink:canvas', 'ink:paper'],
+        ThemeToken::Raised->value => ['ink:pith', 'ink:pith'],
+        ThemeToken::Text->value => ['ink:text', 'ink:text'],
+        ThemeToken::Muted->value => ['ink:text-muted', 'ink:text-muted'],
+        ThemeToken::Faint->value => ['ink:text-muted', 'ink:text-faint'],
+        ThemeToken::Line->value => ['ink:line', 'ink:line'],
     ];
 }
 
@@ -89,7 +91,7 @@ function namedHexes(array $block, string $prefix): array
     return $found;
 }
 
-it('paints every role with the brand colour it claims, in both modes', function (): void {
+it('paints every role with the brand colour it claims, in both themes', function (): void {
     $brand = brandColours();
     $stated = assertedBrandColours();
     $drifted = [];
@@ -99,17 +101,19 @@ it('paints every role with the brand colour it claims, in both modes', function 
             continue;
         }
 
-        [$lightName, $darkName] = $stated[$case->value];
+        [$memberName, $operatorName] = $stated[$case->value];
 
-        foreach ([[$lightName, $case->light(), 'light'], [$darkName, $case->dark(), 'dark']] as [$name, $hex, $mode]) {
+        foreach ([[$memberName, WhoseTheme::Member], [$operatorName, WhoseTheme::Operator]] as [$name, $theme]) {
+            $hex = $case->in($theme);
+
             if (! array_key_exists($name, $brand)) {
-                $drifted[] = sprintf('%s claims brand `%s` in %s mode, which the token file does not have', $case->value, $name, $mode);
+                $drifted[] = sprintf('%s claims brand `%s` in the %s theme, which the token file does not have', $case->value, $name, $theme->value);
 
                 continue;
             }
 
             if (strtoupper($hex) !== strtoupper($brand[$name])) {
-                $drifted[] = sprintf('%s answers %s in %s mode, but brand `%s` is %s', $case->value, $hex, $mode, $name, $brand[$name]);
+                $drifted[] = sprintf('%s answers %s in the %s theme, but brand `%s` is %s', $case->value, $hex, $theme->value, $name, $brand[$name]);
             }
         }
     }
@@ -132,7 +136,7 @@ it('asserts no colour the brand table does not name', function (): void {
 
     expect($unstated)->toBe([], sprintf(
         "These roles paint a hex nothing checks:\n  %s\n\nName the brand colour each "
-        . 'asserts in assertedBrandColours(), in both modes.',
+        . 'asserts in assertedBrandColours(), in both themes.',
         implode("\n  ", $unstated),
     ));
 });

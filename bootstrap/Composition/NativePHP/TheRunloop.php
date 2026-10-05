@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bootstrap\Composition\NativePHP;
 
 use Closure;
+use Native\Mobile\Edge\NativeComponent;
 
 /**
  * NativePHP's navigation runloop, which only a device can enter.
@@ -28,12 +29,15 @@ use Closure;
  */
 final readonly class TheRunloop implements Runloop
 {
+    /** @param Closure(NativeComponent): void $atTheFront what a screen coming to the front is handed to */
+    public function __construct(private Closure $atTheFront) {}
+
     /**
      * @param Closure(string): mixed $build
      * @param array<mixed>           $params
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {
-        return WhereAScreenLeavesYou::after(new ScreenRouter($build)->start($screen, $params, $path));
+        return WhereAScreenLeavesYou::after(new ScreenRouter($build, $this->atTheFront)->start($screen, $params, $path));
     }
 }

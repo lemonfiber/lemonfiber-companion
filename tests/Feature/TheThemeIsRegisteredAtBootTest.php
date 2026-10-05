@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use Bootstrap\Composition\NativePHP\TheTheme;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
+use Modules\Design\Api\WhoseTheme;
 use Native\Mobile\Edge\TailwindParser;
 use Tests\Support\Edge;
 
@@ -37,7 +38,7 @@ it('resolves every role once the application has booted', function (): void {
         . 'A dropped class is not an error anywhere — it is parsed, found to mean '
         . 'nothing, and discarded, so the screen renders without its accent and says '
         . 'nothing. It means no theme resolver reached the parser: check that '
-        . "CompositionRoot::boot() still registers TheTheme::paint() (G8, F3).",
+        . "CompositionRoot::boot() still paints the member's theme (G8, F3).",
         implode("\n  ", $dropped),
     ));
 });
@@ -57,14 +58,17 @@ it('still drops, and reports, a token this surface does not assert', function ()
     ));
 });
 
-it('paints each role with its light hex and gives a neutral its dark one', function (): void {
+it('paints each role in the member\'s theme once booted, with no dark variant of its own', function (): void {
     $accent = TailwindParser::parse(sprintf('bg-theme-%s', ThemeToken::Accent->value));
     $text = TailwindParser::parse(sprintf('text-theme-%s', ThemeToken::Text->value));
+    $surface = TailwindParser::parse(sprintf('bg-theme-%s', ThemeToken::Surface->value));
 
-    expect($accent['bg'] ?? null)->toBe(ThemeToken::Accent->light())
+    expect($accent['bg'] ?? null)->toBe(ThemeToken::Accent->in(WhoseTheme::Member))
+        ->and($text['color'] ?? null)->toBe(ThemeToken::Text->in(WhoseTheme::Member))
+        ->and($surface['bg'] ?? null)->toBe(ThemeToken::Surface->in(WhoseTheme::Member))
         ->and($accent['dark'] ?? null)->toBeNull()
-        ->and($text['color'] ?? null)->toBe(ThemeToken::Text->light())
-        ->and(data_get($text, 'dark.color'))->toBe(ThemeToken::Text->dark());
+        ->and($text['dark'] ?? null)->toBeNull()
+        ->and($surface['dark'] ?? null)->toBeNull();
 });
 
 it('keeps the palette its own after another package sets one', function (): void {
@@ -75,11 +79,12 @@ it('keeps the palette its own after another package sets one', function (): void
     TailwindParser::setThemeDarkResolver(static fn(): string => '#00ff00');
     TailwindParser::clearCache();
 
-    TheTheme::paint();
+    $theme = app(WhichThemeIsOnTheGlass::class);
+    $theme->paint(WhoseTheme::Operator);
     TailwindParser::clearCache();
 
     $parsed = TailwindParser::parse(sprintf('bg-theme-%s', ThemeToken::Surface->value));
 
-    expect($parsed['bg'] ?? null)->toBe(ThemeToken::Surface->light())
-        ->and(data_get($parsed, 'dark.bg'))->toBe(ThemeToken::Surface->dark());
+    expect($parsed['bg'] ?? null)->toBe(ThemeToken::Surface->in(WhoseTheme::Operator))
+        ->and($parsed['dark'] ?? null)->toBeNull();
 });

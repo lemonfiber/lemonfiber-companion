@@ -969,6 +969,20 @@ private fun Modifier.saidAs(label: String?): Modifier =
 BECOMES,
     ],
     [
+        // Both themes are dark whatever the phone is set to, so the colour
+        // scheme behind the first frame is the dark one too. Before the app
+        // has painted its theme, the package's own palette is what the splash
+        // and the frame around it are drawn in, and on a phone set to light it
+        // would be the light one, a white flash before every launch.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt',
+        'ships' => <<<'SHIPS'
+            val isDark = isSystemInDarkTheme()
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            val isDark = true
+BECOMES,
+    ],
+    [
         // The count in a tab's badge is said by the tab, in the mark's own
         // sentence, so the digits drawn in the badge say nothing of their own:
         // read as well, the count would be heard twice.

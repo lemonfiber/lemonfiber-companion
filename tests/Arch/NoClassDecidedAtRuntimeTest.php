@@ -95,7 +95,7 @@ it('no class list in a template is decided at runtime', function (): void {
         . 'A class token holding a runtime expression is dropped unread — it has to be, '
         . 'because the expression deleted leaves `bg-` and nobody wrote that. What goes '
         . 'with it is every class name inside, so F3 stops seeing an unknown utility, '
-        . 'DES-R24 stops seeing a literal colour and DES-R15 stops seeing the accent set '
+        . 'DES-R33 stops seeing a literal colour and DES-R15 stops seeing the accent set '
         . "as text, all at once and all silently.\n"
         . 'EDGE does not object either: it parses the class, finds it means nothing and '
         . 'discards it. There is no error, no warning and no failed build — a typo in '

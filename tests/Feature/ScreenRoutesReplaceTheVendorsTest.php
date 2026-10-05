@@ -260,7 +260,10 @@ it('refuses a route that names something which is not a screen', function (): vo
     // this the router calls `setRouter()` on it and a reader meets a fatal
     // about an undefined method, three frames inside the vendor package, at the
     // moment the app launches.
-    $router = new ScreenRouter(static fn(string $class): string => sprintf('%s is not a screen at all', $class));
+    $router = new ScreenRouter(
+        static fn(string $class): string => sprintf('%s is not a screen at all', $class),
+        static function (): void {},
+    );
 
     $refused = null;
 
@@ -392,7 +395,7 @@ function screensBuiltNormally(): ScreenRouter
     // Answered from a map, so the name the router asks for is a name this has
     // to have been given — a closure that ignored it would pass whether or not
     // the router ever consulted it.
-    return new ScreenRouter(aBuildThatKnows());
+    return new ScreenRouter(aBuildThatKnows(), static function (): void {});
 }
 
 /** The one screen this application has, built as the router would build it. */

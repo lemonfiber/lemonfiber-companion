@@ -4,22 +4,46 @@ declare(strict_types=1);
 
 namespace Bootstrap\Composition\NativePHP;
 
+use function array_map;
+
+use Closure;
+
+use function is_string;
+
+use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\Theme;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
+use Modules\Design\Api\WhoseTheme;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
+use Modules\Wayfinding\Api\WhoTheMenuIsFor;
+use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\TailwindParser;
 use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 /**
- * Whose palette the classes and the widgets paint with.
+ * Which of the two themes the classes and the widgets paint with, for the screen on view.
+ *
+ * Whose session a screen is drawn for decides it, as it decides the
+ * application: a screen about a stack is drawn in the operator's theme where
+ * this phone holds the operator's session for that stack, and in the member's
+ * otherwise. A screen about no stack is drawn in the member's, unless it
+ * {@see TakesTheThemeItOpensOver}. No setting chooses between them.
  *
  * `TailwindParser` holds one light and one dark resolver and keeps whichever
- * was set last, and `nativephp/mobile-ui` sets its own in its boot. Provider
- * discovery order would decide the palette, and it differs between a fresh
- * `composer install` and an incremental one. So this is a method the
- * composition root calls from `$this->app->booted()`, after every provider,
- * and a test can plant a foreign resolver and call it.
+ * was set last, and `nativephp/mobile-ui` sets its own in its boot. So the
+ * composition root paints the member's theme from `$this->app->booted()`,
+ * after every provider, and the navigation stack hands each screen that comes
+ * to the front to {@see self::forTheScreen()}.
+ *
+ * One instance for the application, holding the theme last painted: the
+ * runtime is persistent, and pushing the widgets' colours across the bridge
+ * for a screen in the theme already on the glass would be a round trip that
+ * changes nothing.
  */
-final readonly class TheTheme
+final class TheTheme implements WhichThemeIsOnTheGlass
 {
     /**
      * What each key of mobile-ui's theme store is painted with.
@@ -50,26 +74,63 @@ final readonly class TheTheme
         'outline-variant' => ThemeToken::Line,
     ];
 
+    private ?WhoseTheme $painted = null;
+
+    /** @param Closure(): SecureStorage $keychain the keychain, reached afresh for each screen */
+    public function __construct(private readonly Closure $keychain) {}
+
+    /** Paint the theme the screen coming to the front is drawn in, where it is not the one on the glass. */
+    public function forTheScreen(NativeComponent $screen): void
+    {
+        $theme = $this->whoseThemeIs($screen);
+
+        if ($theme !== $this->painted) {
+            $this->paint($theme);
+        }
+    }
+
     /**
-     * Make this application's roles the ones classes and widgets resolve against.
+     * Make one theme's roles the ones classes and widgets resolve against.
      *
-     * Setting a resolver replaces the one before it, which is what makes this
+     * The one resolver is handed to the parser as its light and its dark,
+     * because a theme paints the same whatever the phone is set to. Setting a
+     * resolver replaces the one before it, which is what makes this
      * idempotent. The widget theme is merged rather than loaded: the keys the
      * design module maps are replaced, and the ones it does not assert stay.
      */
-    public static function paint(): void
+    public function paint(WhoseTheme $theme): void
     {
-        TailwindParser::setThemeResolver(Theme::resolver());
-        TailwindParser::setThemeDarkResolver(Theme::darkResolver());
+        $resolve = Theme::resolver($theme);
 
-        $light = [];
-        $dark = [];
+        TailwindParser::setThemeResolver($resolve);
+        TailwindParser::setThemeDarkResolver($resolve);
 
-        foreach (self::WIDGET_ROLES as $key => $role) {
-            $light[$key] = $role->light();
-            $dark[$key] = $role->dark();
+        $colours = array_map(static fn(ThemeToken $role): string => $role->in($theme), self::WIDGET_ROLES);
+
+        WhatTheWidgetsPaintWith::merge(['light' => $colours, 'dark' => $colours]);
+
+        $this->painted = $theme;
+    }
+
+    /** The theme last painted, which is the member's until the first screen is drawn. */
+    public function whose(): WhoseTheme
+    {
+        return $this->painted ?? WhoseTheme::Member;
+    }
+
+    /** A route naming a stack it cannot identify names nobody's session, so its screen is drawn as one for no session is. */
+    private function whoseThemeIs(NativeComponent $screen): WhoseTheme
+    {
+        $stack = $screen->param('stack');
+
+        if (is_string($stack)) {
+            try {
+                return WhoTheMenuIsFor::for(($this->keychain)(), StackId::rememberedAs($stack))->theme();
+            } catch (StackIsUnidentified) {
+                return WhoseTheme::Member;
+            }
         }
 
-        WhatTheWidgetsPaintWith::merge(['light' => $light, 'dark' => $dark]);
+        return $screen instanceof TakesTheThemeItOpensOver ? $this->whose() : WhoseTheme::Member;
     }
 }

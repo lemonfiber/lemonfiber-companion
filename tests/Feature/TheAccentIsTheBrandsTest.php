@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\NativePHP\TheTheme;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 
 // Runs the composition root rather than reading it, so its mutants are judged
 // here: see `scripts/mutation.php`.
@@ -13,17 +14,17 @@ pest()->group('holds:bootstrap/Composition');
 // their colours from mobile-ui's theme store and honour no per-instance colour.
 // So what a booted application holds in that store is what they paint with.
 
-it('fills a primary control with the accent pair in both modes', function (): void {
-    expect(config('native-ui.theme.light.primary'))->toBe(ThemeToken::Accent->light())
-        ->and(config('native-ui.theme.light.on-primary'))->toBe(ThemeToken::OnAccent->light())
-        ->and(config('native-ui.theme.dark.primary'))->toBe(ThemeToken::Accent->dark())
-        ->and(config('native-ui.theme.dark.on-primary'))->toBe(ThemeToken::OnAccent->dark());
+it('fills a primary control with the accent pair, whatever the phone is set to', function (): void {
+    expect(config('native-ui.theme.light.primary'))->toBe(ThemeToken::Accent->in(WhoseTheme::Member))
+        ->and(config('native-ui.theme.light.on-primary'))->toBe(ThemeToken::OnAccent->in(WhoseTheme::Member))
+        ->and(config('native-ui.theme.dark.primary'))->toBe(ThemeToken::Accent->in(WhoseTheme::Member))
+        ->and(config('native-ui.theme.dark.on-primary'))->toBe(ThemeToken::OnAccent->in(WhoseTheme::Member));
 });
 
-it('paints the widgets\' grounds and text with paper and ink, and the ink theme in the dark', function (): void {
+it('paints the widgets in the member\'s theme once booted, the same in light and in dark', function (): void {
     foreach (TheTheme::WIDGET_ROLES as $key => $role) {
-        expect(config(sprintf('native-ui.theme.light.%s', $key)))->toBe($role->light(), $key)
-            ->and(config(sprintf('native-ui.theme.dark.%s', $key)))->toBe($role->dark(), $key);
+        expect(config(sprintf('native-ui.theme.light.%s', $key)))->toBe($role->in(WhoseTheme::Member), $key)
+            ->and(config(sprintf('native-ui.theme.dark.%s', $key)))->toBe($role->in(WhoseTheme::Member), $key);
     }
 
     expect(TheTheme::WIDGET_ROLES['background'])->toBe(ThemeToken::Surface)

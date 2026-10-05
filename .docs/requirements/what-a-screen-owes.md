@@ -53,8 +53,10 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `G3-R16` | On a surface operated by touch, every control presents a target at least as large as the platform's own stated minimum | `EveryTargetIsBigEnoughToHitTest`, which reads the templates rather than trusting a component to have been used |
 | `DES-R15` | The accent is not set as text — measured at 1.6:1, it fails | `tests/Templates/ThemeColourIsNotSetAsTextTest.php` |
-| `DES-R24` | One platform mapping, decided once rather than at each call site | the class lists are literal; `tests/Arch/NoClassDecidedAtRuntimeTest.php`, `tests/Templates/BladeHoldsNoLogicTest.php` |
-| `DES-R25` | Two things are not told apart by colour alone | the same rule, which also keeps `G3-R1` |
+| `DES-R29` | The member theme draws on the ink theme's `canvas`, raises on `ink-soft` and sets text in `paper` and `text-muted`, with `lemon` and `ink` on it as the accent, whatever the phone is set to | `ThemeToken::in()`; `app-modules/design/tests/Api/ThemeTokenTest.php`, `tests/Arch/BrandPaletteParityTest.php` |
+| `DES-R30` | The operator theme draws on `ink` with `line` hairlines, raises on `ink-soft` and sets text in `paper`, `text-muted` and `text-faint`, whatever the phone is set to | `ThemeToken::in()`; `app-modules/design/tests/Api/ThemeTokenTest.php`, `tests/Arch/BrandPaletteParityTest.php`. How a thing stands is drawn as a glyph in the text role, not in the severity tokens |
+| `DES-R33` | Every colour comes from the brand's tokens and none is hardcoded | the class lists are literal, and every role is checked against `tokens.json`; `tests/Arch/NoClassDecidedAtRuntimeTest.php`, `tests/Templates/BladeHoldsNoLogicTest.php`, `tests/Arch/BrandPaletteParityTest.php`. Spacing, radii and type are the platform's own |
+| `G3-R1` | Two things are not told apart by colour alone | the same rule |
 | `Q-R64` | A screen publishes at most twenty methods | `tests/Arch/ModuleApiTest.php`; three screens arrived at twenty-one the day this was written |
 
 ## What a screen says

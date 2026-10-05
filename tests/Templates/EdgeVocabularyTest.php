@@ -38,9 +38,8 @@ foreach ($templates as $template) {
             . 'mean nothing, and discarded, so the screen renders without the style and '
             . 'nothing reports it. Check the spelling against the utilities the installed '
             . "package supports.\nA `bg-theme-*` token reported here is a token this "
-            . 'surface deliberately does not assert: the design module maps the accent '
-            . 'and its foreground, and leaves every other colour to the platform\'s own '
-            . 'theme roles (F3, DES-R24).',
+            . 'surface deliberately does not assert: the design module maps the roles '
+            . '`ThemeToken` names and no other (F3, DES-R33).',
             implode("\n  ", $dropped),
         ));
     });

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\WhoseTheme;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -15,10 +16,10 @@ it('draws the dark runs of each row on the accent, each moved from the middle to
     $data = ['rows' => [[true, true, false], [false, true, true], [false, false, false]]];
     $drawn = WhatMarkupDraws::drawn($markup, $data);
 
-    expect(data_get($drawn, 'style.bg_color'))->toBe(ThemeToken::Accent->light())
+    expect(data_get($drawn, 'style.bg_color'))->toBe(ThemeToken::Accent->in(WhoseTheme::Member))
         ->and(data_get($drawn, 'layout.width'))->toEqual((3 + 8) * 4)
         ->and(data_get($drawn, 'children'))->toHaveCount(2)
-        ->and(data_get($drawn, 'children.0.style.bg_color'))->toBe(ThemeToken::OnAccent->light())
+        ->and(data_get($drawn, 'children.0.style.bg_color'))->toBe(ThemeToken::OnAccent->in(WhoseTheme::Member))
         ->and(data_get($drawn, 'children.0.layout.width'))->toEqual(8)
         ->and(data_get($drawn, 'children.0.layout.height'))->toEqual(4)
         ->and(data_get($drawn, 'children.0.props.translate-x'))->toEqual(16 - (44 - 8) / 2)

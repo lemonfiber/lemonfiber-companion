@@ -5,11 +5,16 @@ The colour roles and the elements every surface renders through.
 ## Colour roles
 
 `Api\ThemeToken` names the roles (accent, on-accent, surface, raised, text,
-muted, line) and the hex each paints in light mode and in dark, from the brand's
-paper and ink themes. `Api\Theme::resolver()` and `Theme::darkResolver()` are
-what the composition root gives EDGE's `TailwindParser`, so every `bg-`, `text-`
-and `border-theme-*` class carries its dark companion. `resources/tokens.json` is
-a copy of the brand's token file, and `tests/Arch/BrandPaletteParityTest.php`
+muted, faint, line) and the hex each paints in the member's theme and in the
+operator's, both from the brand's ink theme. `Api\WhoseTheme` names the two
+themes, and whose session a screen is drawn for chooses between them.
+`Api\Theme::resolver()` is what the composition root gives EDGE's
+`TailwindParser` for the screen on view, as its light and its dark resolver
+alike, so a theme paints the same whatever the phone is set to. An element
+handed a colour as a value reads whose theme is on view from
+`Api\WhichThemeIsOnTheGlass`, and a screen that keeps the theme of the one it
+opens over is marked `Api\TakesTheThemeItOpensOver`. `resources/tokens.json`
+is a copy of the brand's token file, and `tests/Arch/BrandPaletteParityTest.php`
 checks every role against it.
 
 ## Elements
