@@ -30,10 +30,8 @@ use Tests\Support\Template;
 function theWeightEachFaceIs(): array
 {
     return [
-        Typeface::Interface->value => '',
-        Typeface::InterfaceMedium->value => 'font-medium',
-        Typeface::InterfaceSemiBold->value => 'font-semibold',
-        Typeface::InterfaceBold->value => 'font-bold',
+        Typeface::Interface->value => 'font-medium',
+        Typeface::InterfaceDisplay->value => 'font-extrabold',
         Typeface::Figures->value => '',
         Typeface::FiguresMedium->value => 'font-medium',
     ];
@@ -160,7 +158,7 @@ it('picks no platform face over a bundled one', function (): void {
 it('refuses a face it does not bundle and a weight its face is not', function (): void {
     expect(whatIsWrongWithItsFace('class="text-theme-text"'))->toBe('names no face')
         ->and(whatIsWrongWithItsFace('class="text-theme-text" font="Inter-Regular"'))->toContain('not a bundled face')
-        ->and(whatIsWrongWithItsFace('class="font-bold text-theme-text" font="GolosText-Regular"'))->toContain('drawn with []')
-        ->and(whatIsWrongWithItsFace('class="text-theme-text" font="GolosText-Bold"'))->toContain('drawn with [font-bold]')
+        ->and(whatIsWrongWithItsFace('class="font-bold text-theme-text" font="DMMono-Regular"'))->toContain('drawn with []')
+        ->and(whatIsWrongWithItsFace('class="text-theme-text" font="GolosText-ExtraBold"'))->toContain('drawn with [font-extrabold]')
         ->and(whatIsWrongWithItsFace('class="font-medium text-theme-text" font="DMMono-Medium"'))->toBeNull();
 });

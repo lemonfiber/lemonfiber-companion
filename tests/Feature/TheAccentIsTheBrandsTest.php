@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\NativePHP\TheTheme;
+use Modules\Design\Api\Radius;
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\Typeface;
+use Modules\Design\Api\TypeSize;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
 use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
@@ -56,3 +58,29 @@ it('draws every widget, and any text naming no face, in the interface face, in e
     expect(WhatTheWidgetsPaintWith::get('fonts'))->toBe(['default' => Typeface::Interface->value])
         ->and(WhatTheWidgetsPaintWith::get('font-family'))->toBe(Typeface::Interface->value);
 })->with(WhoseTheme::cases());
+
+it('rounds the widgets by the brand\'s radii, the pill kept for the full radius', function (): void {
+    foreach (TheTheme::WIDGET_RADII as $key => $radius) {
+        expect(WhatTheWidgetsPaintWith::get($key))->toBe($radius->points(), $key);
+    }
+
+    expect(TheTheme::WIDGET_RADII)->toBe([
+        'radius-sm' => Radius::Small,
+        'radius-md' => Radius::Medium,
+        'radius-lg' => Radius::Medium,
+        'radius-full' => Radius::Pill,
+    ]);
+});
+
+it('sets the widgets\' text at the brand\'s sizes', function (): void {
+    foreach (TheTheme::WIDGET_SIZES as $key => $size) {
+        expect(WhatTheWidgetsPaintWith::get($key))->toBe($size->points(), $key);
+    }
+
+    expect(TheTheme::WIDGET_SIZES)->toBe([
+        'font-sm' => TypeSize::Caption,
+        'font-md' => TypeSize::Body,
+        'font-lg' => TypeSize::Body,
+        'font-xl' => TypeSize::DisplayM,
+    ]);
+});

@@ -20,23 +20,78 @@ use Tests\Support\Tree;
 const WHERE_THE_FACES_ARE = 'resources/fonts';
 
 /**
- * Which of the brand's type tokens each face is, and the file its family's licence is in.
+ * Which of the brand's type tokens each face is, the file its family's licence is in, and the weight token it is drawn at.
  *
  * Written here rather than derived from the enum, so the test has something of
- * its own to compare against.
+ * its own to compare against. The brand names no weight for its mono family,
+ * so a DM Mono face is held to no weight token.
  *
- * @return array<string, array{string, string}> face => [brand font token, licence file]
+ * @return array<string, array{string, string, ?string}> face => [brand font token, licence file, brand weight token]
  */
 function whatEachBundledFaceIs(): array
 {
     return [
-        Typeface::Interface->value => ['body', 'GolosText-OFL.txt'],
-        Typeface::InterfaceMedium->value => ['body', 'GolosText-OFL.txt'],
-        Typeface::InterfaceSemiBold->value => ['body', 'GolosText-OFL.txt'],
-        Typeface::InterfaceBold->value => ['body', 'GolosText-OFL.txt'],
-        Typeface::Figures->value => ['mono', 'DMMono-OFL.txt'],
-        Typeface::FiguresMedium->value => ['mono', 'DMMono-OFL.txt'],
+        Typeface::Interface->value => ['body', 'GolosText-OFL.txt', 'weightBody'],
+        Typeface::InterfaceDisplay->value => ['body', 'GolosText-OFL.txt', 'weightDisplay'],
+        Typeface::Figures->value => ['mono', 'DMMono-OFL.txt', null],
+        Typeface::FiguresMedium->value => ['mono', 'DMMono-OFL.txt', null],
     ];
+}
+
+/**
+ * The weight a font file declares, from its `OS/2` table's `usWeightClass`, or null where it has none.
+ *
+ * The table directory follows the twelve-byte header, sixteen bytes a table:
+ * its tag, checksum, offset and length. The weight is the second field of
+ * `OS/2`, four bytes in.
+ */
+function theWeightTheFaceDeclares(string $file): ?int
+{
+    $bytes = (string) file_get_contents($file);
+    $tables = theShortAt($bytes, 4);
+
+    for ($table = 0; $table < $tables; $table++) {
+        $at = 12 + 16 * $table;
+
+        if (substr($bytes, $at, 4) === 'OS/2') {
+            $offset = unpack('N', $bytes, $at + 8);
+
+            return is_array($offset) && is_int($offset[1] ?? null) ? theShortAt($bytes, $offset[1] + 4) : null;
+        }
+    }
+
+    return null;
+}
+
+/** The unsigned big-endian sixteen-bit number at one offset of a font file. */
+function theShortAt(string $bytes, int $offset): int
+{
+    $read = unpack('n', $bytes, $offset);
+
+    return is_array($read) && is_int($read[1] ?? null) ? $read[1] : 0;
+}
+
+/**
+ * The brand's type weights by token: `weightBody` and `weightDisplay`.
+ *
+ * @return array<string, int>
+ */
+function theBrandsWeights(): array
+{
+    $raw = file_get_contents(Tree::at('app-modules/design/resources/tokens.json'));
+
+    /** @var mixed $decoded */
+    $decoded = json_decode(is_string($raw) ? $raw : '', associative: true, depth: 512, flags: JSON_THROW_ON_ERROR);
+    $font = data_get($decoded, 'font');
+    $weights = [];
+
+    foreach (is_array($font) ? $font : [] as $token => $weight) {
+        if (is_string($token) && is_int($weight)) {
+            $weights[$token] = $weight;
+        }
+    }
+
+    return $weights;
 }
 
 /**
@@ -114,6 +169,17 @@ it('sets each face in the family the brand names for it', function (Typeface $fa
     expect($family)->not->toBe('')
         ->and(theFaceIsOf(Tree::at(sprintf('%s/%s.ttf', WHERE_THE_FACES_ARE, $face->value)), $family))->toBeTrue();
 })->with(Typeface::cases());
+
+it('draws each interface face at the brand\'s weight for it', function (Typeface $face): void {
+    [, , $token] = whatEachBundledFaceIs()[$face->value];
+
+    expect($token === null || theWeightTheFaceDeclares(Tree::at(sprintf('%s/%s.ttf', WHERE_THE_FACES_ARE, $face->value))) === (theBrandsWeights()[$token] ?? 0))->toBeTrue();
+})->with(Typeface::cases());
+
+it('reads a face\'s weight from the file', function (): void {
+    expect(theWeightTheFaceDeclares(Tree::at(sprintf('%s/%s.ttf', WHERE_THE_FACES_ARE, Typeface::Figures->value))))->toBe(400)
+        ->and(theWeightTheFaceDeclares(Tree::at(sprintf('%s/%s.ttf', WHERE_THE_FACES_ARE, Typeface::InterfaceDisplay->value))))->toBe(800);
+});
 
 it('bundles no face of the brand\'s display family, which only the outlined wordmark carries', function (): void {
     $display = theBrandsFamilies()['display'] ?? '';

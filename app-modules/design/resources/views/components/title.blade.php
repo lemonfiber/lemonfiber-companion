@@ -1,1 +1,1 @@
-<native:text class="text-2xl font-bold text-theme-text" font="GolosText-Bold">{{ $slot }}</native:text>
+<native:text class="text-[27] font-extrabold text-theme-text" font="GolosText-ExtraBold">{{ $slot }}</native:text>

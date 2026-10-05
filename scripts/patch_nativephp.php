@@ -1891,6 +1891,68 @@ SHIPS,
     protected array $fontExtensions = ['ttf', 'otf', 'ttc', 'txt'];
 BECOMES,
     ],
+    [
+        // A chip is drawn as the pill on iOS, which the brand allows on a chip
+        // and a button alone, and as Material's default eight-point corner on
+        // Android, which is no radius of the brand's. So Android's chip takes
+        // the pill from the widget theme, which carries the brand's.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
+        'ships' => <<<'SHIPS'
+            colors = colors,
+            border = border,
+        )
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            colors = colors,
+            border = border,
+            shape = RoundedCornerShape(theme.radiusFull),
+        )
+BECOMES,
+    ],
+    [
+        // A sheet's top corners are the brand's `md`, from the widget theme,
+        // rather than each platform's own large sheet corner.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.foundation.layout.fillMaxHeight
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt',
+        'ships' => <<<'SHIPS'
+            scrimColor = BottomSheetDefaults.ScrimColor,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            scrimColor = BottomSheetDefaults.ScrimColor,
+            shape = RoundedCornerShape(topStart = theme.radiusMd, topEnd = theme.radiusMd),
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIBottomSheetRenderer.swift',
+        'ships' => <<<'SHIPS'
+                .presentationDragIndicator(.visible)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(theme.radiusMd)
+BECOMES,
+    ],
 ];
 
 /**

@@ -117,7 +117,7 @@ Markup looks like this:
 
 ```blade
 <native:column class="w-full h-full p-4 gap-4 bg-theme-background">
-    <native:text class="text-2xl font-bold text-theme-text" font="GolosText-Bold">Stack health</native:text>
+    <native:text class="text-[27] font-extrabold text-theme-text" font="GolosText-ExtraBold">Stack health</native:text>
     <native:button label="Run checks" @press="check" />
 </native:column>
 ```
