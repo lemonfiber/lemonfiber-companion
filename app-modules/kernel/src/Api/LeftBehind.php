@@ -11,10 +11,10 @@ use function trim;
 /**
  * What a repair that stopped part-way left on the machine.
  *
- * A type rather than a nullable string, which is `C2`: absence gets a name, and
- * *nothing was left* is a real answer rather than a missing one. It is also the
- * answer an operator most wants — a repair that stopped and left nothing can be
- * agreed to again without a thought, and one that left something cannot.
+ * A type rather than a nullable string: absence gets a name, and *nothing was
+ * left* is a real answer rather than a missing one. It is also the answer an
+ * operator most wants — a repair that stopped and left nothing can be agreed to
+ * again without a thought, and one that left something cannot.
  *
  * **Only {@see WhatBecameOfIt::Stopped} carries one**, because it is the only
  * outcome where the machine got part-way. That is why this is read through a

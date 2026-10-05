@@ -9,10 +9,10 @@ use function sprintf;
 /**
  * What it costs when this service fails, as the stack's catalogue rates it.
  *
- * An enum for `D4`'s reason — `status.services[].criticality` is exactly these
- * five — and carried rather than dropped because it is the whole of what makes
- * a list of twenty services readable. Without it every row is equally loud,
- * and the operator scanning for the one that matters reads all twenty.
+ * An enum, because `status.services[].criticality` is exactly these five, and
+ * carried rather than dropped because it is the whole of what makes a list of
+ * twenty services readable. Without it every row is equally loud, and the
+ * operator scanning for the one that matters reads all twenty.
  *
  * **It is not a severity and not a state.** {@see Severity} says how much a
  * *finding* costs and comes from a check that decided something;

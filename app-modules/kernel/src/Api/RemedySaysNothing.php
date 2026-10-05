@@ -10,8 +10,8 @@ use InvalidArgumentException;
  * A remedy arrived with nothing in it for the operator to do.
  *
  * Raised where a string becomes a `Remedy`, for the same reason `CodeIsBlank`
- * is: this is a value that cannot be constructed rather than a refusal
- * crossing a boundary, so there is nothing for a caller to open (C1, C3).
+ * is: this is a value that cannot be constructed rather than a refusal crossing
+ * a boundary, so there is nothing for a caller to open.
  */
 final class RemedySaysNothing extends InvalidArgumentException
 {

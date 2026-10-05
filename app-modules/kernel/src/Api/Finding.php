@@ -52,10 +52,9 @@ final readonly class Finding
     /**
      * The one place a report's row becomes a finding.
      *
-     * A named constructor is where a primitive is permitted to cross into a
-     * module (D2), and it is where the title is checked: a row with a blank
-     * title renders as an empty line in a list the operator is scanning for
-     * the thing that is wrong.
+     * A named constructor is where a primitive crosses into a module, and it is
+     * where the title is checked: a row with a blank title renders as an empty
+     * line in a list the operator is scanning for the thing that is wrong.
      */
     public static function of(
         Check $check,
@@ -91,10 +90,10 @@ final readonly class Finding
      * once the run knows which service a check turned out to be about, not
      * something the check itself established.
      *
-     * Takes the value rather than the name, because `D2` keeps a primitive out
-     * of a published signature that is not a named constructor — and because
-     * the two arms are then visible where the finding is built, rather than
-     * hidden behind a string that might be empty.
+     * Takes the value rather than the name, because a primitive crosses into a
+     * module only at a named constructor — and because the two arms are then
+     * visible where the finding is built, rather than hidden behind a string
+     * that might be empty.
      */
     public function about(AboutWhat $about): self
     {

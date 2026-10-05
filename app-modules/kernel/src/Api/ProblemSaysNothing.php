@@ -16,7 +16,7 @@ use function sprintf;
  * and a report saying only "a refusal was empty" cannot be followed up.
  *
  * Thrown rather than returned for the same reason `CodeIsBlank` is — this is a
- * value that cannot be constructed, not a refusal crossing a boundary (C1, C3).
+ * value that cannot be constructed, not a refusal crossing a boundary.
  */
 final class ProblemSaysNothing extends InvalidArgumentException
 {

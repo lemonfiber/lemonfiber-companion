@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * Raised where a string becomes an `IdempotencyKey`. A blank key does not fail
  * the send — it fails the *second* send, by letting it through as a new one,
- * which is the failure the type exists to prevent arriving quietly (C3).
+ * which is the failure the type exists to prevent arriving quietly.
  */
 final class KeyIsBlank extends InvalidArgumentException
 {

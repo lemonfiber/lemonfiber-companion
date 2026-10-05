@@ -13,11 +13,11 @@ use Traversable;
 /**
  * What a member is told, in the order the core said it.
  *
- * A typed collection rather than an array, which is what `D1` asks for and what
- * makes the order part of the promise: the core writes these as a reading and
- * the sequence is part of the reading — what happens to what you ask for, then
- * what your period has left, then when it makes room. A surface that re-ordered
- * them would be editing an answer it did not write.
+ * A typed collection rather than an array, which makes the order part of the
+ * promise: the core writes these as a reading and the sequence is part of the
+ * reading — what happens to what you ask for, then what your period has left,
+ * then when it makes room. A surface that re-ordered them would be editing an
+ * answer it did not write.
  *
  * Empty is a legitimate value and not an error, which is {@see Remedies}'
  * argument and carries more weight here: a member with nothing to be told is an

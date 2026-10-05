@@ -13,7 +13,7 @@ use function sprintf;
  *
  * Refused where the value is built rather than carried to a caller, for
  * {@see RequestWasRefusedForNothing}'s reason: this is a value that cannot be
- * constructed, so there is nothing for a caller to open (`C1`, `C3`).
+ * constructed, so there is nothing for a caller to open.
  *
  * A stack numbers what it holds from one. Zero is what a missing field reads as
  * and what an empty form field sends, and the decision is one where

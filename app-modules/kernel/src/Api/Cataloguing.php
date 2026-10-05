@@ -18,9 +18,6 @@ interface Cataloguing
 {
     /**
      * Ask a stack what its services are for, or come away with a reason.
-     *
-     * Answers {@see WhatTheCatalogueSaid} rather than raising, which `C1`
-     * requires.
      */
     public function describedOn(Stack $stack, Session $session): WhatTheCatalogueSaid;
 }

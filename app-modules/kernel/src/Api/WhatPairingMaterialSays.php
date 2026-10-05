@@ -7,9 +7,9 @@ namespace Modules\Kernel\Api;
 /**
  * Everything pairing material is allowed to say, and its only spelling.
  *
- * A closed set, so an enum — `D4`. It was a `private const array` of three
- * string literals, and the literals then appeared a second time at each place
- * that read one: the list said `'expires'` and the reader asked for `'expires'`
+ * A closed set, so an enum. It was a `private const array` of three string
+ * literals, and the literals then appeared a second time at each place that
+ * read one: the list said `'expires'` and the reader asked for `'expires'`
  * independently. Rename a key in the list and the reader still asks for the old
  * one, so every payload is refused for carrying a field the format defines.
  * Nothing names the line that moved.

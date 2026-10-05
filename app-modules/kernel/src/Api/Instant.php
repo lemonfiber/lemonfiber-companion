@@ -7,13 +7,12 @@ namespace Modules\Kernel\Api;
 /**
  * A moment, as a count of seconds since the epoch.
  *
- * Seconds rather than a `DateTimeImmutable` because `B1` keeps every date
- * library out of the kernel, and for a better reason than the rule: a date
- * object carries a timezone, and a timezone is a rendering decision. Nothing
- * the domain decides — whether a session has expired, whether a backup is
- * three days old — changes with where the reader is standing. The one place
- * that does change is the screen, and a screen is given the formatting it
- * needs rather than an object that has already made the choice.
+ * Seconds rather than a `DateTimeImmutable`, because a date object carries a
+ * timezone, and a timezone is a rendering decision. Nothing the domain decides
+ * — whether a session has expired, whether a backup is three days old — changes
+ * with where the reader is standing. The one place that does change is the
+ * screen, and a screen is given the formatting it needs rather than an object
+ * that has already made the choice.
  *
  * Second resolution, deliberately. The distinctions this application draws are
  * "expired", "stale" and "three days old"; a millisecond in the type would be

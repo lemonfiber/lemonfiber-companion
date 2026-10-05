@@ -21,9 +21,6 @@ interface ChoosingQuality
 {
     /**
      * The quality in force, and whether the configuration was edited by hand.
-     *
-     * Answers {@see WhatWasFoundOfTheQuality} rather than raising, which `C1`
-     * requires.
      */
     public function inForceOn(Stack $stack, Session $session): WhatWasFoundOfTheQuality;
 

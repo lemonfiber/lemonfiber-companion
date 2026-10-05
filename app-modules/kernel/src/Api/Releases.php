@@ -16,9 +16,9 @@ use Traversable;
 /**
  * The releases a stack named, in the order it named them.
  *
- * A type rather than an array, which is `D1`: an array has no name, no
- * invariants and nowhere to put the rules, so what is in it ends up living in
- * whoever last wrote a `foreach`.
+ * A type rather than an array: an array has no name, no invariants and nowhere
+ * to put the rules, so what is in it ends up living in whoever last wrote a
+ * `foreach`.
  *
  * @implements IteratorAggregate<int, Release>
  */

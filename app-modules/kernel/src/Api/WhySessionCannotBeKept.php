@@ -22,9 +22,9 @@ namespace Modules\Kernel\Api;
  *
  * **A `Problem` is not the right carrier**, for the reason `Reach` gives about
  * `Outcome`: a `Problem` carries the summary, meaning and remedies the *server*
- * wrote, and no server was involved in a keychain refusing to open. This carries
- * the case, and the words are looked up against it where a translator exists
- * (`L1`).
+ * wrote, and no server was involved in a keychain refusing to open. This
+ * carries the case, and the words are looked up against it where a translator
+ * exists.
  */
 enum WhySessionCannotBeKept: string
 {

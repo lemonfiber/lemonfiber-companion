@@ -27,11 +27,11 @@ namespace Modules\Kernel\Api;
  * renames itself the day the next one arrives — and every stored value that said
  * `current` then means the wrong shape.
  *
- * **There is deliberately no `isCurrent()` and no comparison here yet.** With one
- * case every such method is a branch nothing can reach and no test can kill, and
- * the analyser says so. They arrive with the second case, which is also the
- * first commit that has a real migration to run and something to test it
- * against — see the note in `ShapeTest` on what that commit has to add.
+ * **There is deliberately no `isCurrent()` and no comparison here yet.** With
+ * one case every such method is a branch nothing can reach and no test can
+ * kill. They arrive with the second case, which is also the first commit that
+ * has a real migration to run and something to test it against — see the note
+ * in `ShapeTest` on what that commit has to add.
  */
 enum Shape: int
 {

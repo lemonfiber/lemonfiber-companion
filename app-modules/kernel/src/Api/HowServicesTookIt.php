@@ -18,12 +18,12 @@ use Traversable;
 /**
  * What became of every service an applied update touched.
  *
- * A type rather than an array, which is `D1`, and the place the counting
- * lives. The requirement refuses a single *failed*, and the pressure to flatten
- * comes from the summary line rather than from the rows: a screen needs to open
- * with one sentence, and the cheapest one to write is *it failed*. Answering
- * *did everything arrive* here means the rows keep all four endings and the
- * headline is a separate question rather than a lossy version of them.
+ * A type rather than an array, and the place the counting lives. The
+ * requirement refuses a single *failed*, and the pressure to flatten comes from
+ * the summary line rather than from the rows: a screen needs to open with one
+ * sentence, and the cheapest one to write is *it failed*. Answering *did
+ * everything arrive* here means the rows keep all four endings and the headline
+ * is a separate question rather than a lossy version of them.
  *
  * @implements IteratorAggregate<int, HowAServiceTookIt>
  */

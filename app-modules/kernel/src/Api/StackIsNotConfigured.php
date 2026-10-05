@@ -26,13 +26,13 @@ use function sprintf;
  * both would be a catch block in front of two unrelated bugs.
  *
  * A `RuntimeException` rather than the `InvalidArgumentException` that type
- * extends, and the difference is the point: the argument here is not invalid.
- * A well-formed identifier for a stack this device was introduced to yesterday
+ * extends, and the difference is the point: the argument here is not invalid. A
+ * well-formed identifier for a stack this device was introduced to yesterday
  * and has since forgotten is the same argument it was, and what changed is the
  * state it is being asked about. `OutOfBoundsException` says exactly that and
- * is not on the analyser's list of parents this codebase extends; its own
- * parent is, and widening that list to fit one class would be weakening a rule
- * to accommodate the code rather than the other way round.
+ * is not among the parents this codebase extends; its own parent is, and
+ * widening that list to fit one class would be weakening a rule to accommodate
+ * the code rather than the other way round.
  */
 final class StackIsNotConfigured extends RuntimeException
 {

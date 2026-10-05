@@ -14,11 +14,11 @@ use Closure;
  * Four requirements meet in this one type, and they belong together because
  * each of them is about what a notification may **not** carry.
  *
- * **The app raises no alerts of its own.** Every notification
- * originates in the core's notification decisions, so this carries an
- * identifier the core declared and no text at all. There is nowhere to put a
- * sentence the app wrote. That is the difference between a rule and a habit:
- * the words come from the translator, keyed by the identifier (`L1`).
+ * **The app raises no alerts of its own.** Every notification originates in the
+ * core's notification decisions, so this carries an identifier the core
+ * declared and no text at all. There is nowhere to put a sentence the app
+ * wrote. That is the difference between a rule and a habit: the words come from
+ * the translator, keyed by the identifier.
  *
  * The identifier is a {@see WhatTheCoreDecided} and not a {@see Code}, and that
  * is the other half of the same requirement. Inventing a code the core never
@@ -70,11 +70,10 @@ final readonly class Notification
      * deciding whether somebody is told about a machine they removed exists in
      * one place instead of once per notification surface.
      *
-     * Variadic rather than an array, because `D1` refuses an array across a
-     * module boundary and is right to: `array` says nothing about what is in
-     * it, so a caller passing a list of `Stack` — or of strings — would be
-     * caught by nothing until the loop compared a `StackId` against something
-     * that is not one. The signature says `StackId` and the engine checks it.
+     * Variadic rather than an array: `array` says nothing about what is in it,
+     * so a caller passing a list of `Stack` — or of strings — would be caught
+     * by nothing until the loop compared a `StackId` against something that is
+     * not one. The signature says `StackId` and the engine checks it.
      */
     public function concernsOneOf(StackId ...$configured): bool
     {

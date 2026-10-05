@@ -14,9 +14,6 @@ interface ReadingVersions
 {
     /**
      * Ask a stack which versions it runs, or come away with a reason.
-     *
-     * Answers {@see WhatWasFoundOfTheVersions} rather than raising, which `C1`
-     * requires.
      */
     public function versionsOn(Stack $stack, Session $session): WhatWasFoundOfTheVersions;
 }

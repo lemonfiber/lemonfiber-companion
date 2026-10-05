@@ -16,6 +16,6 @@ namespace Modules\Kernel\Api;
  */
 interface Telling
 {
-    /** Ask a stack what its operator is told about, or come away with a reason (`C1`). */
+    /** Ask a stack what its operator is told about, or come away with a reason. */
     public function toldAbout(Stack $stack, Session $session): WhatTheAlertsWere;
 }

@@ -14,7 +14,7 @@ use function sprintf;
  * Raised where a number becomes an `Instant`. A clock and a stack both answer
  * with a moment after the epoch, so a negative one is a subtraction that went
  * wrong upstream — and carried rather than refused it turns "expired" into
- * "expired fifty years ago" on a screen somebody is reading (C3).
+ * "expired fifty years ago" on a screen somebody is reading.
  */
 final class InstantIsBeforeTheEpoch extends InvalidArgumentException
 {

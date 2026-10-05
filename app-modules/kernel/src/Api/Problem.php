@@ -15,12 +15,12 @@ use function trim;
  * has one `Problem` definition and two payload kinds that hold it, and this
  * side will hold it in the same two places.
  *
- * It is what crosses a module boundary when something did not happen (C1).
- * It is deliberately not an exception: this application spends its life
- * talking to a machine that may be off, asleep, on another network or
- * mid-update, so unreachable is a normal Tuesday rather than an exceptional
- * one, and modelling it as a throw makes the common case the one the compiler
- * cannot see you forgot.
+ * It is what crosses a module boundary when something did not happen. It is
+ * deliberately not an exception: this application spends its life talking to a
+ * machine that may be off, asleep, on another network or mid-update, so
+ * unreachable is a normal Tuesday rather than an exceptional one, and modelling
+ * it as a throw makes the common case the one the compiler cannot see you
+ * forgot.
  *
  * The shape is the server's own, from
  * `lemonfiber:contract/web-api.contract.json`, minus the parts noted below. It
@@ -32,11 +32,11 @@ use function trim;
  *
  * **Two wire fields are deliberately absent.** `detail` — the technical text,
  * available but never leading — and `cause`, the problem that produced this
- * one, are both optional on the wire, and C2 refuses a nullable return on
- * anything a module publishes. Carrying them honestly needs an absence type,
- * and which absence type is a design decision worth making when a screen
- * actually needs one rather than guessed at now. Until then this carries what
- * is always present, and the omission is named rather than silent.
+ * one, are both optional on the wire, and a module publishes no nullable
+ * return. Carrying them honestly needs an absence type, and which absence type
+ * is a design decision worth making when a screen actually needs one rather
+ * than guessed at now. Until then this carries what is always present, and the
+ * omission is named rather than silent.
  */
 final readonly class Problem
 {
@@ -52,11 +52,11 @@ final readonly class Problem
     /**
      * The one place the strings a server sent become a refusal.
      *
-     * A named constructor is where a primitive is permitted to cross into a
-     * module (D2), and it is where they are checked: a summary or a meaning
-     * that is blank renders as a screen with a heading and no sentence under
-     * it, which reads to the operator as the application having broken rather
-     * than as the server having said nothing.
+     * A named constructor is where a primitive crosses into a module, and it is
+     * where they are checked: a summary or a meaning that is blank renders as a
+     * screen with a heading and no sentence under it, which reads to the
+     * operator as the application having broken rather than as the server
+     * having said nothing.
      */
     public static function of(
         Code $code,

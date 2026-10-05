@@ -17,9 +17,9 @@ use function trim;
 /**
  * Every file one install wrote, or one removal took back, in the stack's order.
  *
- * A typed collection rather than an array (`D1`). A blank file is refused here
- * rather than drawn: a line saying something was written without saying what
- * is a line an operator cannot check.
+ * A typed collection rather than an array. A blank file is refused here rather
+ * than drawn: a line saying something was written without saying what is a line
+ * an operator cannot check.
  *
  * **Empty is an answer.** Removing what was never hosted takes nothing back,
  * and that is said on a screen rather than read as a failure.

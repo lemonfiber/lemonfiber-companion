@@ -16,9 +16,6 @@ interface ReadingNews
 {
     /**
      * Ask a stack what it lists, or come away with a reason.
-     *
-     * Answers {@see WhatWasFoundOfTheNews} rather than raising, which `C1`
-     * requires.
      */
     public function newsOn(Stack $stack, Session $session): WhatWasFoundOfTheNews;
 }

@@ -15,13 +15,12 @@ use function trim;
  * ask the operator, which is the worst screen in the app; with one, retrying
  * is free, because the server recognises the second send as the first.
  *
- * Every command carries one in its constructor, which `M3` checks by
- * reflection rather than by review.
+ * Every command carries one in its constructor.
  *
  * The key is given rather than generated here. Randomness is an input and
- * arrives through the `Entropy` port (B2), and a key generated inside the
- * command would be a new one on every retry — which is precisely the thing it
- * exists to prevent.
+ * arrives through the `Entropy` port, and a key generated inside the command
+ * would be a new one on every retry — which is precisely the thing it exists to
+ * prevent.
  */
 final readonly class IdempotencyKey
 {
@@ -86,7 +85,7 @@ final readonly class IdempotencyKey
      * `of()` exists for a key the caller already holds — one read back from a
      * request that was interrupted, so the retry carries the same one. A key
      * being *made* comes from the `Entropy` port and through here, so that no
-     * command has to decide for itself how long unguessable is (B2).
+     * command has to decide for itself how long unguessable is.
      */
     public static function from(Nonce $nonce): self
     {

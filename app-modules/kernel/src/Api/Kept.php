@@ -9,15 +9,14 @@ use Closure;
 /**
  * What came of trying to keep a session: it was kept, or there was nowhere safe.
  *
- * The app refuses **and says why**, and this is both in one
- * value. It started as an exception and `C1` was right to refuse that: a method
- * that answers with nothing can only report a refusal by throwing, which makes
- * the common case the one nothing checks. A device with no secure storage is an
- * ordinary state of the world, not an exceptional one.
+ * The app refuses **and says why**, and this is both in one value. Not an
+ * exception: a method that answers with nothing can only report a refusal by
+ * throwing, which makes the common case the one nothing checks. A device with
+ * no secure storage is an ordinary state of the world, not an exceptional one.
  *
- * Removing the exception settled a second thing too. `shipmonk` forbids throwing
- * a checked exception inside a closure, and every Pest test body is a closure —
- * so an `@throws` on the port made the refusal the one case no test could
+ * A value settles a second thing too. `shipmonk` forbids throwing a checked
+ * exception inside a closure, and every Pest test body is a closure — so an
+ * `@throws` on the port would make the refusal the one case no test could
  * exercise. A type has no such problem: the refusal is a value, and a value can
  * be asserted anywhere.
  *

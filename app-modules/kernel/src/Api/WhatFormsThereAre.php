@@ -14,8 +14,7 @@ use Closure;
  * `library` form is wholly stopped has a form an operator wants to start, which
  * a list derived from what runs would lose.
  *
- * A value rather than an exception for `C1`'s reason, which
- * {@see WhatIsRunning} gives.
+ * A value rather than an exception, for the reason {@see WhatIsRunning} gives.
  */
 final readonly class WhatFormsThereAre
 {

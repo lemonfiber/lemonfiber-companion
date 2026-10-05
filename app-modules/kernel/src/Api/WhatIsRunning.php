@@ -9,11 +9,10 @@ use Closure;
 /**
  * What a stack is running, or the reason there is no listing.
  *
- * The answer {@see Supervising} gives, and a value rather than an exception for
- * `C1`'s reason and {@see WhatIsStuck}'s: a stack that is asleep, one on
- * another network and one whose session has ended are ordinary states of the
- * world, and a method answering with a listing could report them only by
- * throwing.
+ * The answer {@see Supervising} gives, and a value rather than an exception,
+ * for {@see WhatIsStuck}'s reason: a stack that is asleep, one on another
+ * network and one whose session has ended are ordinary states of the world, and
+ * a method answering with a listing could report them only by throwing.
  *
  * **The reason is an {@see Obstacle}**, the same set every other screen reads,
  * so the six situations have one vocabulary across the app.

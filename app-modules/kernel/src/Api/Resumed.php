@@ -58,7 +58,7 @@ final readonly class Resumed
      * Generic in both arms, which is {@see Kept::either()}'s shape and carries
      * its weight rather than its style: a caller builds its own type in each
      * arm and gets that type back, so reading the answer needs no narrowing and
-     * no cast at a call site the analyser would otherwise have to be told about.
+     * no cast at a call site.
      *
      * @template THeld of object
      * @template TNotHeld of object

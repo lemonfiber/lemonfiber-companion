@@ -13,8 +13,7 @@ use Closure;
  * cannot write down is a pairing that did not happen — the operator scanned a
  * code, watched something succeed, and will find nothing there next launch. So
  * the refusal is a value a caller has to look at rather than an exception it
- * can forget, which is the argument {@see Kept} makes about a session and `C1`
- * makes generally.
+ * can forget, which is the argument {@see Kept} makes about a session.
  *
  *     $remembered->either(
  *         remembered: fn (): Screen => $this->showTheStack(),

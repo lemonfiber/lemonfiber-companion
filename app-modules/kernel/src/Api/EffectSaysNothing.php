@@ -12,7 +12,7 @@ use InvalidArgumentException;
  * Raised where a string becomes one of a repair's effects, for the reason
  * {@see RemedySaysNothing} gives: this is a value that cannot be constructed
  * rather than a refusal crossing a boundary, so there is nothing for a caller
- * to open (C1, C3).
+ * to open.
  *
  * A blank effect is worse than a missing one. The app states
  * what else a repair affects, and a list with an empty row in it renders as a

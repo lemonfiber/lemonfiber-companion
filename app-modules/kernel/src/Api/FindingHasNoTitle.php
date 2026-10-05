@@ -13,7 +13,7 @@ use function sprintf;
  *
  * Raised where a report's row becomes a `Finding`, and it names the check
  * because that is what a report can be searched by: "one of the findings was
- * blank" cannot be followed up, and `vpn.egress-match` can (C3).
+ * blank" cannot be followed up, and `vpn.egress-match` can.
  */
 final class FindingHasNoTitle extends InvalidArgumentException
 {

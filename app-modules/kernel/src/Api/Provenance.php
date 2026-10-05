@@ -23,9 +23,6 @@ interface Provenance
 {
     /**
      * Ask a stack where its services come from, or come away with a reason.
-     *
-     * Answers {@see WhatTheOriginsWere} rather than raising, which `C1`
-     * requires.
      */
     public function declaredOn(Stack $stack, Session $session): WhatTheOriginsWere;
 }

@@ -16,11 +16,11 @@ use Traversable;
 /**
  * Everything running on the machine that this stack did not put there.
  *
- * A typed collection rather than an array (`D1`), and separate from
- * {@see Daemons} rather than a corner of it. These have to be
- * reachable and named and for none of them to be presented as part of the
- * stack; keeping them in a different collection of a different type is what
- * makes the second half true without a screen having to remember it.
+ * A typed collection rather than an array, and separate from {@see Daemons}
+ * rather than a corner of it. These have to be reachable and named and for none
+ * of them to be presented as part of the stack; keeping them in a different
+ * collection of a different type is what makes the second half true without a
+ * screen having to remember it.
  *
  * Empty is the ordinary answer and is not an absence. A machine running only
  * what the stack declares is the expected shape, and a screen that read empty

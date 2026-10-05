@@ -39,8 +39,8 @@ final readonly class WhenItWasMade
     /**
      * Say what happens for a known moment and for an unreadable clock.
      *
-     * Both arms required, which is `C2`'s reason: a nullable instant printed
-     * as a date is the 1970 this type exists to keep off a screen.
+     * Both arms required: a nullable instant printed as a date is the 1970 this
+     * type exists to keep off a screen.
      *
      * @template TAt of object
      * @template TUnreadable of object

@@ -17,14 +17,13 @@ use Traversable;
 /**
  * What to do about a problem, most likely first.
  *
- * A typed collection rather than an array, which is what D1 asks for and what
- * makes the order part of the type's promise: the server sorts these by
- * likelihood, and a screen that re-sorts them is discarding the one thing it
- * cannot work out for itself.
+ * A typed collection rather than an array, which makes the order part of the
+ * type's promise: the server sorts these by likelihood, and a screen that
+ * re-sorts them is discarding the one thing it cannot work out for itself.
  *
  * Empty is a legitimate value and not an error. A problem with no known remedy
- * is what `Standing::Unknown` is for, and an empty collection says it without
- * a null anywhere (C2).
+ * is what `Standing::Unknown` is for, and an empty collection says it without a
+ * null anywhere.
  *
  * @implements IteratorAggregate<int, Remedy>
  */
@@ -50,8 +49,8 @@ final readonly class Remedies implements IteratorAggregate
      * The first thing to try, or nothing where there is none.
      *
      * A collection rather than a nullable `Remedy`: "the most likely one" and
-     * "there are none" are both answers a screen acts on, and a null would
-     * make the second one indistinguishable from a list nobody read (C2).
+     * "there are none" are both answers a screen acts on, and a null would make
+     * the second one indistinguishable from a list nobody read.
      */
     public function likeliest(): self
     {

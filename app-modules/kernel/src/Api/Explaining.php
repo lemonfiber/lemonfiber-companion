@@ -14,9 +14,6 @@ interface Explaining
 {
     /**
      * Ask a stack for its glossary, or come away with a reason.
-     *
-     * Answers {@see WhatWasFoundOfTheWords} rather than raising, which `C1`
-     * requires.
      */
     public function glossaryOn(Stack $stack, Session $session): WhatWasFoundOfTheWords;
 

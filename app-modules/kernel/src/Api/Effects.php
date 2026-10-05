@@ -21,9 +21,9 @@ use function trim;
  * a layer that rephrases a consequence is a place for it to become subtly
  * wrong, and this is the sentence somebody agrees to something on.
  *
- * A typed collection rather than an array, which is what `D1` asks for, and the
- * order is part of the promise: the stack lists the largest consequence first
- * and a screen that re-sorted would bury it.
+ * A typed collection rather than an array, and the order is part of the
+ * promise: the stack lists the largest consequence first and a screen that
+ * re-sorted would bury it.
  *
  * **Empty is a legitimate value and is not the same as absent.** A repair that
  * affects nothing else is a real answer and {@see self::nothingElse()} is how

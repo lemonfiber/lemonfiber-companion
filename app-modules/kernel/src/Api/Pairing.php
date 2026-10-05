@@ -76,13 +76,8 @@ final readonly class Pairing
      * to carry on with, so there is nothing for a caller to do with a value
      * except stop.
      *
-     * **No `@throws`, deliberately.** The house rule is written in `Problems`:
-     * an `@throws` makes an exception *checked* to the analyser, shipmonk
-     * forbids raising a checked exception inside any closure, and every Pest
-     * test body is a closure — so annotating this would make the refusal the one
-     * behaviour no test could exercise. The refusal is named in the prose above,
-     * where a reader finds it, rather than in a tag that would take the test
-     * away.
+     * **No `@throws`, deliberately**, for the reason {@see Configured::stack()}
+     * gives. The refusal is named in the prose above instead.
      */
     public static function read(string $said, HowItWasRead $how, Clock $clock): self
     {
@@ -244,12 +239,11 @@ final readonly class Pairing
     /**
      * One half of the material, or a refusal naming which half was missing.
      *
-     * Written out rather than `$found['address'] ?? null`, which the analyser
-     * refuses by name: a coalesce on an array turns three different situations —
-     * absent, present and null, present and the wrong type — into one, and the
-     * one it picks is the one that reads as "carry on". Here each of the three
-     * means the same thing and the refusal says so explicitly, which is the
-     * difference between a rule followed and a rule satisfied.
+     * Written out rather than `$found['address'] ?? null`: a coalesce on an
+     * array turns three different situations — absent, present and null,
+     * present and the wrong type — into one, and the one it picks is the one
+     * that reads as "carry on". Here each of the three means the same thing and
+     * the refusal says so explicitly.
      *
      * @param array<array-key, mixed> $found
      */

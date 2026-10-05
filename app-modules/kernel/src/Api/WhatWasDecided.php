@@ -7,10 +7,10 @@ namespace Modules\Kernel\Api;
 /**
  * The two things an operator can decide about a waiting request.
  *
- * A closed set, so an enum — `D4`. It is `WhatToDoWithIt`'s shape one screen
- * over, and for the same reason: the name this app shows and the name a stack
- * is asked by are two different words, and a screen sending its own would be
- * refused by a machine in front of somebody holding a phone.
+ * A closed set, so an enum. It is `WhatToDoWithIt`'s shape one screen over, and
+ * for the same reason: the name this app shows and the name a stack is asked by
+ * are two different words, and a screen sending its own would be refused by a
+ * machine in front of somebody holding a phone.
  *
  * **Two and not three.** Leaving a request alone is not a decision — it is what
  * happens when nobody makes one — so there is no case for it. A third here

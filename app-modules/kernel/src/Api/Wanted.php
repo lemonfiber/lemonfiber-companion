@@ -60,12 +60,11 @@ final readonly class Wanted
      * the same reason one step along — *somebody* asked for this is not enough
      * to decide on, and a decline reaches them by name.
      *
-     * **A refused request is built by {@see self::turnedDown()} instead.** Not a
-     * sixth parameter that is usually null: `C2` refuses that shape, and it is
-     * right for a reason worth stating here. A nullable refusal makes *refused*
-     * and *not refused* the same call, told apart by an `instanceof` no caller
-     * can see — and the standing would then be free to say `declined` while the
-     * reason said nothing, which is exactly what is forbidden.
+     * **A refused request is built by {@see self::turnedDown()} instead.** Not
+     * a sixth parameter that is usually null: a nullable refusal makes
+     * *refused* and *not refused* the same call, told apart by an `instanceof`
+     * no caller can see — and the standing would then be free to say `declined`
+     * while the reason said nothing, which is exactly what is forbidden.
      */
     public static function of(
         int $number,
@@ -120,9 +119,9 @@ final readonly class Wanted
     /**
      * The one place a refused request becomes one this app can show.
      *
-     * Its own constructor rather than a nullable parameter, which is `C2`'s
-     * cure spelled out: *refused* and *not refused* are different calls, so a
-     * caller cannot reach one while meaning the other.
+     * Its own constructor rather than a nullable parameter: *refused* and *not
+     * refused* are different calls, so a caller cannot reach one while meaning
+     * the other.
      *
      * **The standing is not a parameter.** A request built here is `Declined`
      * by construction, which makes two mistakes unspellable at once: a decline
@@ -145,10 +144,10 @@ final readonly class Wanted
     /**
      * Say why it was refused, or say that it was not.
      *
-     * Two arms rather than a nullable getter, for `C2`'s reason and for a
-     * sharper one here: a screen handed a null would render an empty line where
-     * the reason belongs, and an empty reason is exactly what is forbidden.
-     * The shape that cannot be built is the shape that cannot be shown.
+     * Two arms rather than a nullable getter: a screen handed a null would
+     * render an empty line where the reason belongs, and an empty reason is
+     * exactly what is forbidden. The shape that cannot be built is the shape
+     * that cannot be shown.
      *
      * @template TWas of object
      * @template TWasNot of object

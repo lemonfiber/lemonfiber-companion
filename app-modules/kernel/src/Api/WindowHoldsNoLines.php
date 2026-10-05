@@ -13,13 +13,13 @@ use function sprintf;
  *
  * Refused where the number becomes a {@see HowManyLines}, for
  * {@see RepairSaysNothing}'s reason: this is a value that cannot be constructed
- * rather than a refusal crossing a boundary, so there is nothing for a caller to
- * open (`C1`, `C3`).
+ * rather than a refusal crossing a boundary, so there is nothing for a caller
+ * to open.
  *
  * The figure is in the message because a bound that arrived as nought and one
  * that arrived as minus four came from different mistakes, and a developer
  * reading the log is the only audience — so it is `sprintf` and never
- * translated (`L1`).
+ * translated.
  */
 final class WindowHoldsNoLines extends InvalidArgumentException
 {

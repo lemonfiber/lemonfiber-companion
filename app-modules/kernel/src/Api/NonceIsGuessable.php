@@ -13,8 +13,8 @@ use function sprintf;
  *
  * Raised where a string becomes a `Nonce`. It is not a smaller nonce — an
  * attacker replaying a command needs only to land on a key the server has
- * already seen, and the search is over whatever length the type permits, so
- * the floor is the promise rather than a preference (C3, B2).
+ * already seen, and the search is over whatever length the type permits, so the
+ * floor is the promise rather than a preference.
  */
 final class NonceIsGuessable extends InvalidArgumentException
 {

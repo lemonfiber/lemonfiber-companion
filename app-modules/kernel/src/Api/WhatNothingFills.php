@@ -16,10 +16,10 @@ use Traversable;
 /**
  * The capabilities nothing answers, each with the service still asking.
  *
- * A type rather than an array, which is `D1`. {@see Services} is the same shape
- * one noun over, and the order is the core's: nothing is sorted here, because
- * any order this imposed would be an opinion about which unfilled capability
- * matters most, and the core did not send one.
+ * A type rather than an array. {@see Services} is the same shape one noun over,
+ * and the order is the core's: nothing is sorted here, because any order this
+ * imposed would be an opinion about which unfilled capability matters most, and
+ * the core did not send one.
  *
  * **Empty is an answer.** A stack where everything is answered says so by
  * sending an empty list, and {@see self::none()} is how that is held — the

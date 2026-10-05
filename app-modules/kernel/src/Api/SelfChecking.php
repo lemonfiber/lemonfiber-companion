@@ -14,9 +14,6 @@ interface SelfChecking
 {
     /**
      * Ask a stack about its running copy, or come away with a reason.
-     *
-     * Answers {@see WhatWasFoundOfItself} rather than raising, which `C1`
-     * requires.
      */
     public function checkedOn(Stack $stack, Session $session): WhatWasFoundOfItself;
 }

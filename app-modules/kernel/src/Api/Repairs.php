@@ -17,10 +17,10 @@ use Traversable;
 /**
  * The repairs a stack offered, in the order it offered them.
  *
- * A typed collection rather than an array, which is `D1`, and the order is part
- * of the promise for {@see Remedies}' reason: the engine decided which to put
- * first and a screen re-sorting them is discarding the one thing it cannot work
- * out for itself.
+ * A typed collection rather than an array, and the order is part of the promise
+ * for {@see Remedies}' reason: the engine decided which to put first and a
+ * screen re-sorting them is discarding the one thing it cannot work out for
+ * itself.
  *
  * **Empty is the ordinary answer, not a failure.** Most runs offer nothing,
  * because most findings are things the operator has to go and do. The rule is

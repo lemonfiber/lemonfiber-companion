@@ -16,13 +16,12 @@ use Traversable;
 /**
  * The groupings a stack arranges its services into.
  *
- * A typed collection rather than an array, which is `D1` — and the rule is
- * right here in a way that is easy to argue against. A form is a name and
- * nothing else, so a collection around it looks like a class whose only method
- * returns what it was given. What it actually buys is that the list carries its
- * own meaning across a module boundary: `list<string>` in a signature could be
- * ids, names, or anything, and the knowledge of which lives in whoever last
- * wrote a foreach.
+ * A typed collection rather than an array, which is easy to argue against here.
+ * A form is a name and nothing else, so a collection around it looks like a
+ * class whose only method returns what it was given. What it actually buys is
+ * that the list carries its own meaning across a module boundary:
+ * `list<string>` in a signature could be ids, names, or anything, and the
+ * knowledge of which lives in whoever last wrote a foreach.
  *
  * **Carried beside the services rather than derived from them.** A form with
  * nothing running in it still exists, and it is the one an operator most wants:

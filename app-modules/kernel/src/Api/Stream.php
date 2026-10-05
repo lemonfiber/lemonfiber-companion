@@ -10,8 +10,8 @@ use function sprintf;
  * Which of a service's two mouths a line came out of.
  *
  * An enum, because the set is closed by the contract rather than by this app —
- * `log.stream` is exactly these two, so `D4` gets its enum and a third would be
- * a contract change rather than a value to pass through.
+ * `log.stream` is exactly these two, and a third would be a contract change
+ * rather than a value to pass through.
  *
  * **Worth carrying rather than flattening.** A service writes its ordinary
  * running commentary to one and its complaints to the other, and an operator

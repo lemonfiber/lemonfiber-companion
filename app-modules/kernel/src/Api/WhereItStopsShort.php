@@ -34,9 +34,9 @@ final readonly class WhereItStopsShort
     /**
      * It stops short for this reason, and this is what to do instead.
      *
-     * Its own constructor rather than a nullable second parameter, which is
-     * `C2`'s cure: *there is a suggestion* and *there is not* are different
-     * facts, and a caller reaches one or the other.
+     * Its own constructor rather than a nullable second parameter: *there is a
+     * suggestion* and *there is not* are different facts, and a caller reaches
+     * one or the other.
      */
     public static function suggesting(string $why, string $instead): self
     {

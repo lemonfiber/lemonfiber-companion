@@ -17,12 +17,12 @@ use function trim;
  * an operator who knows what a socket is gets the same paragraph as everybody
  * else and no way through to the line that would have told them.
  *
- * **A value rather than a nullable string, which is `C2`'s cure.** The detail is
- * absent on most findings, and a screen handed `null` prints an empty line
- * where a heading is — or worse, a heading with nothing under it, which reads
- * as *we know something and are not telling you*. Two constructors and a
- * two-arm reader mean a caller cannot render one without saying what happens
- * when there is none.
+ * **A value rather than a nullable string.** The detail is absent on most
+ * findings, and a screen handed `null` prints an empty line where a heading is
+ * — or worse, a heading with nothing under it, which reads as *we know
+ * something and are not telling you*. Two constructors and a two-arm reader
+ * mean a caller cannot render one without saying what happens when there is
+ * none.
  *
  * **Blank is absent.** A core that sends an empty string has said nothing, and
  * a screen that told them apart would be drawing a distinction the operator

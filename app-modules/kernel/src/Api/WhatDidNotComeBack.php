@@ -16,10 +16,10 @@ use Traversable;
 /**
  * The commands a machine was told to keep running and is not running.
  *
- * A type of its own rather than a filtered array, which is `D1`: an array has
- * nowhere to put the rule that decides what belongs in it, so the knowledge
- * ends up in whoever last wrote the loop — and two screens looping differently
- * is how an operator learns that one of them is lying.
+ * A type of its own rather than a filtered array: an array has nowhere to put
+ * the rule that decides what belongs in it, so the knowledge ends up in whoever
+ * last wrote the loop — and two screens looping differently is how an operator
+ * learns that one of them is lying.
  *
  * **It is the subset a screen draws under a heading**, which is what makes it
  * worth naming. *Everything this machine hosts* and *everything that did not
@@ -28,7 +28,7 @@ use Traversable;
  * read the morning after one.
  *
  * Empty is the answer wanted most — everything came back — and it says so
- * without a null anywhere (`C2`), the way {@see Stalled} says it.
+ * without a null anywhere, the way {@see Stalled} says it.
  *
  * @implements IteratorAggregate<int, Unattended>
  */

@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * came to arrives through {@see self::whatBecameOf()}.
  *
  * It takes a stack and a session rather than a client, for the reason
- * {@see Asking} gives, and answers a value rather than raising (`C1`).
+ * {@see Asking} gives, and answers a value rather than raising.
  */
 interface WiringTheServices
 {

@@ -48,7 +48,7 @@ final readonly class Reading
      * Read in this session, from the stack, just now.
      *
      * An object rather than a value of any type, for the reason `Outcome::done`
-     * gives: everything crossing a module boundary here is a named type (D2).
+     * gives: everything crossing a module boundary here is a named type.
      */
     public static function live(object $value): self
     {

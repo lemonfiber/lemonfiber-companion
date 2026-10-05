@@ -14,8 +14,6 @@ interface Measuring
 {
     /**
      * Ask a stack how full it is, or come away with a reason.
-     *
-     * Answers {@see WhatWasMeasured} rather than raising, which `C1` requires.
      */
     public function measuredOn(Stack $stack, Session $session): WhatWasMeasured;
 }

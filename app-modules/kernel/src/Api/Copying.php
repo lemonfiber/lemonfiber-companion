@@ -15,9 +15,6 @@ interface Copying
 {
     /**
      * Ask a stack which copies it holds, or come away with a reason.
-     *
-     * Answers {@see WhatCopiesWereFound} rather than raising, which `C1`
-     * requires.
      */
     public function copiesOn(Stack $stack, Session $session): WhatCopiesWereFound;
 }

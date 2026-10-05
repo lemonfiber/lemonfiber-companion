@@ -9,10 +9,10 @@ use Closure;
 /**
  * The camera, asked to read a pairing code.
  *
- * The first road. A port because there is no camera on a laptop and
- * because the alternative — a screen reaching for the platform's scanner
- * directly — is the one shape a suite cannot drive: `A3` refuses it, and the
- * practical cost is that the whole of the scanned road would be untestable.
+ * The first road. A port because there is no camera on a laptop and because the
+ * alternative — a screen reaching for the platform's scanner directly — is the
+ * one shape a suite cannot drive, and the whole of the scanned road would be
+ * untestable.
  *
  * **It is one method and it hands the answer back, rather than returning it.**
  * The platform's scanner is a screen of its own: it takes the display, and the

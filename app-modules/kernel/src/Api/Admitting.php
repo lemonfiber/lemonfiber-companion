@@ -31,11 +31,10 @@ interface Admitting
     /**
      * Offer a credential, and come away with a session or with a reason.
      *
-     * Answers {@see Admitted} rather than raising, which `C1` requires and
-     * which is right for a second reason here: a stack that refused the
+     * Answers {@see Admitted} rather than raising: a stack that refused the
      * password, one that has stopped listening and one that could not be
-     * reached are three ordinary states of the world, and are told apart.
-     * A method returning a `Session` could report them only by throwing, which
+     * reached are three ordinary states of the world, and are told apart. A
+     * method returning a `Session` could report them only by throwing, which
      * makes the common case the one nothing checks.
      *
      * The credential is spent by being offered — that is {@see Credential}'s

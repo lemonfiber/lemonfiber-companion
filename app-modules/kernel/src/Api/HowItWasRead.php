@@ -58,10 +58,9 @@ enum HowItWasRead: string
      *
      * On the road rather than on the screen, and that is the whole point: a
      * screen spelling `connection.scan_the_code` is a literal, and a literal is
-     * the shape `L7` names as the thing to cure. The road is a closed set with
-     * two members and each has one opening sentence, so the key is built from
-     * the case the way {@see Permission::reason()} builds
-     * its own.
+     * a key nothing can check. The road is a closed set with two members and
+     * each has one opening sentence, so the key is built from the case the way
+     * {@see Permission::reason()} builds its own.
      *
      * **Why the road answers and the outcome does not.** What a screen says
      * once something has happened is the outcome's to name — a pairing that was

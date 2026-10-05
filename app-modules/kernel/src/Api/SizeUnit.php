@@ -31,17 +31,16 @@ use function sprintf;
  * drifts. It drifted here first: this replaces two parallel ladders whose
  * thresholds had to agree and whose agreement nothing enforced.
  *
- * **Nothing here takes a number.** `D2` puts a primitive across a module
- * boundary in one place only, a static named constructor answering its own
- * type, and that is {@see HowBig::of()}. What is left here answers about
- * itself: how big one of these is, which one is above it, and what it is
- * called.
+ * **Nothing here takes a number.** A primitive crosses a module boundary at a
+ * static named constructor answering its own type, and that is
+ * {@see HowBig::of()}. What is left here answers about itself: how big one of
+ * these is, which one is above it, and what it is called.
  *
- * **Whole numbers under a thousand, which is `L5` deciding the shape.** Dutch
- * writes 1.234,5 where English writes 1,234.5, so a separator written into a
- * source file is wrong in one locale by construction. Three units and a ceiling
- * of a thousand mean every figure that leaves here is an integer between nought
- * and 999, which has no separator to get wrong in any language.
+ * **Whole numbers under a thousand.** Dutch writes 1.234,5 where English writes
+ * 1,234.5, so a separator written into a source file is wrong in one locale by
+ * construction. Three units and a ceiling of a thousand mean every figure that
+ * leaves here is an integer between nought and 999, which has no separator to
+ * get wrong in any language.
  *
  * The precision lost is precision the number did not have. The label exists
  * because most of these are estimates, and *is it 4 or 400* is the whole of
@@ -88,8 +87,8 @@ enum SizeUnit: string
      * What this is called on a screen, as a key.
      *
      * Built from the case, which is the shape every word in this app reaches
-     * the catalogue by. A key rather than `'GB'`, because `L1` has every word
-     * an operator reads come from the translator — and these are words in some
+     * the catalogue by. A key rather than `'GB'`, because every word an
+     * operator reads comes from the translator — and these are words in some
      * languages even where they are letters in ours.
      */
     public function saidOnTheScreen(): string

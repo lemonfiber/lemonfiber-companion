@@ -15,7 +15,7 @@ namespace Modules\Kernel\Api;
  *
  * **Empty findings with `Healthy` is the ordinary case**, not an absent report.
  * A run where nothing had anything to say is the outcome the product is for,
- * and `Findings::none()` says it without a null (C2).
+ * and `Findings::none()` says it without a null.
  *
  * **The pairing is not checked here.** A `Broken` report with no findings, or a
  * `Healthy` one with a failure in it, would be the engine contradicting itself —

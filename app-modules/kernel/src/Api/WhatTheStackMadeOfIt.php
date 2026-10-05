@@ -25,9 +25,9 @@ final readonly class WhatTheStackMadeOfIt
      * One field holding one of two things, rather than two nullable fields.
      *
      * Two nullables can express three states this type does not have — both
-     * set, and neither — and the analyser is right to ask what happens in
-     * them. A union holds exactly the invariant: there is one answer, and it
-     * is one of these. The folds elsewhere here keep a non-null default on the
+     * set, and neither — and every reader would have to say what happens in
+     * them. A union holds exactly the invariant: there is one answer, and it is
+     * one of these. The folds elsewhere here keep a non-null default on the
      * quiet side instead, which works where the quiet side has an empty value
      * worth the name; a change that did not happen has no empty version of
      * itself.

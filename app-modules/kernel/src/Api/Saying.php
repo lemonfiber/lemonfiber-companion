@@ -36,10 +36,9 @@ interface Saying
     /**
      * Read the tail of one service, or come away with a reason.
      *
-     * Answers {@see WhatWasSaid} rather than raising, which `C1` requires: a
-     * stack that is asleep, one on another network and one whose session has
-     * ended are ordinary states of the world, and an operator is
-     * told which of them they met.
+     * Answers {@see WhatWasSaid} rather than raising: a stack that is asleep,
+     * one on another network and one whose session has ended are ordinary
+     * states of the world, and an operator is told which of them they met.
      */
     public function saidBy(Stack $stack, Session $session, ServiceId $service, HowManyLines $lines): WhatWasSaid;
 }

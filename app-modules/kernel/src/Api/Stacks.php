@@ -65,8 +65,7 @@ interface Stacks extends ForgetsAStack
     /**
      * Write a stack down, or refuse and say why.
      *
-     * Answers {@see Remembered} rather than raising, for the reason `C1` gives
-     * and for a second one that is specific to this: a pairing this device
+     * Answers {@see Remembered} rather than raising: a pairing this device
      * cannot write down is a pairing that did not happen, and the operator has
      * just watched it appear to succeed. That has to reach a screen, so the
      * refusal is a value rather than an exception somebody forgets to catch.

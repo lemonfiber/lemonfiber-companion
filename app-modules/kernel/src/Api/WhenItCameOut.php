@@ -9,10 +9,9 @@ use Closure;
 /**
  * The year a holding came out, where the core knew one.
  *
- * {@see Size}'s shape for a smaller question, and here for `C2`'s reason: a
- * plain `?int` cannot say which of *nobody dated this* and *this is the year*
- * it means, so whoever receives one guesses — and the guess that gets made is
- * a zero printed beside a title.
+ * {@see Size}'s shape for a smaller question: a plain `?int` cannot say which
+ * of *nobody dated this* and *this is the year* it means, so whoever receives
+ * one guesses — and the guess that gets made is a zero printed beside a title.
  *
  * **Undated is ordinary rather than missing.** A household holds things whose
  * year nobody ever recorded, and a screen leaving the year off is the honest

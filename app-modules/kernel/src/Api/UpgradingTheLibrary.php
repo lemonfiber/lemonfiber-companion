@@ -17,9 +17,6 @@ interface UpgradingTheLibrary
 {
     /**
      * What upgrading would come to, kind by kind, with nothing fetched.
-     *
-     * Answers {@see WhatTheUpgradeCameTo} rather than raising, which `C1`
-     * requires.
      */
     public function whatItWouldComeTo(Stack $stack, Session $session): WhatTheUpgradeCameTo;
 

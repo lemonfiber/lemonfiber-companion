@@ -20,9 +20,8 @@ use function preg_match;
  * **The moment is optional and stays that way.** `log.at` may be absent, which
  * is ordinary: plenty of services write lines with no timestamp of their own,
  * and a window of two hundred is mostly readable without one. {@see when()} is
- * two arms rather than a nullable getter, for `C2`'s reason — a screen handed a
- * null would print an empty column and an operator would read it as *this
- * happened at no time*.
+ * two arms rather than a nullable getter — a screen handed a null would print
+ * an empty column and an operator would read it as *this happened at no time*.
  *
  * **It is carried as the service stated it, not as an {@see Instant}.** A
  * moment turned into a count of seconds and rendered back in the phone's

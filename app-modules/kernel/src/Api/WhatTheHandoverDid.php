@@ -64,9 +64,9 @@ final readonly class WhatTheHandoverDid
     /**
      * An install whose stack did not say where the command's words are written.
      *
-     * A constructor of its own rather than a nullable path on the one above
-     * (`C2`): *the stack did not say* is a sentence on a screen, and a blank path
-     * would read as an answer.
+     * A constructor of its own rather than a nullable path on the one above:
+     * *the stack did not say* is a sentence on a screen, and a blank path would
+     * read as an answer.
      */
     public static function installingWithNowhereSaid(
         string $name,

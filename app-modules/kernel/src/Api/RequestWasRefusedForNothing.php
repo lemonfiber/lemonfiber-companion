@@ -11,8 +11,8 @@ use InvalidArgumentException;
  *
  * Refused where the values become a {@see TurnedDown}, for
  * {@see RepairSaysNothing}'s reason: this is a value that cannot be constructed
- * rather than a refusal crossing a boundary, so there is nothing for a caller to
- * open (`C1`, `C3`).
+ * rather than a refusal crossing a boundary, so there is nothing for a caller
+ * to open.
  *
  * The reason is part of declining rather than something beside it, so
  * this is a stack that broke the rule rather than a row to render short — and

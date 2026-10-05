@@ -9,10 +9,10 @@ namespace Modules\Kernel\Api;
  *
  * The first of this application's ports, and the smallest one worth having.
  * Time is a hidden input: `time()` returns a different answer tomorrow without
- * its arguments changing, so a test cannot pin it and the code around it
- * either goes untested or becomes slow and flaky. Behind a port, "the session
- * expired", "the backup is three days old" and "retry after thirty seconds"
- * are things a test simply states (B1).
+ * its arguments changing, so a test cannot pin it and the code around it either
+ * goes untested or becomes slow and flaky. Behind a port, "the session
+ * expired", "the backup is three days old" and "retry after thirty seconds" are
+ * things a test simply states.
  *
  * Named for what it does rather than for being an interface, and it says
  * nothing about where the time comes from: the device adapter reads the

@@ -15,10 +15,10 @@ use InvalidArgumentException;
  * for: it may not replay the action, because the stack received it, and it may
  * not present it as pending either.
  *
- * Refused rather than carried as an empty string for `C3`'s reason and
- * {@see CheckIsUnnamed}'s: a nameless handle spends its whole life looking like
- * a handle, and the screen that asks after it gets a refusal from the far end
- * rather than a fault from here.
+ * Refused rather than carried as an empty string, for {@see CheckIsUnnamed}'s
+ * reason: a nameless handle spends its whole life looking like a handle, and
+ * the screen that asks after it gets a refusal from the far end rather than a
+ * fault from here.
  */
 final class JobHasNoName extends InvalidArgumentException
 {
