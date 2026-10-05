@@ -1,1 +1,1 @@
-<native:text class="font-mono text-sm text-theme-text">{{ $slot }}</native:text>
+<native:text class="text-sm text-theme-text" font="DMMono-Regular">{{ $slot }}</native:text>

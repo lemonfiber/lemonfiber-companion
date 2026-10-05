@@ -13,6 +13,7 @@ use function is_string;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\Theme;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\Typeface;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Kernel\Api\SecureStorage;
@@ -74,6 +75,14 @@ final class TheTheme implements WhichThemeIsOnTheGlass
         'outline-variant' => ThemeToken::Line,
     ];
 
+    /**
+     * The alias mobile-ui draws a widget in, and a text element that names no face.
+     *
+     * Set before the colours are merged, because the merge is what carries
+     * both across the bridge.
+     */
+    private const string THE_FACE_WHERE_NONE_IS_NAMED = 'default';
+
     private ?WhoseTheme $painted = null;
 
     /** @param Closure(): SecureStorage $keychain the keychain, reached afresh for each screen */
@@ -97,6 +106,8 @@ final class TheTheme implements WhichThemeIsOnTheGlass
      * resolver replaces the one before it, which is what makes this
      * idempotent. The widget theme is merged rather than loaded: the keys the
      * design module maps are replaced, and the ones it does not assert stay.
+     * The interface face is set with it, the same in both themes, so a widget
+     * is drawn in it from the first frame.
      */
     public function paint(WhoseTheme $theme): void
     {
@@ -107,6 +118,7 @@ final class TheTheme implements WhichThemeIsOnTheGlass
 
         $colours = array_map(static fn(ThemeToken $role): string => $role->in($theme), self::WIDGET_ROLES);
 
+        WhatTheWidgetsPaintWith::fonts([self::THE_FACE_WHERE_NONE_IS_NAMED => Typeface::Interface->value]);
         WhatTheWidgetsPaintWith::merge(['light' => $colours, 'dark' => $colours]);
 
         $this->painted = $theme;

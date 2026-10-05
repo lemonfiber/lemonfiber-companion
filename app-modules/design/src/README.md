@@ -17,6 +17,16 @@ opens over is marked `Api\TakesTheThemeItOpensOver`. `resources/tokens.json`
 is a copy of the brand's token file, and `tests/Arch/BrandPaletteParityTest.php`
 checks every role against it.
 
+## Faces
+
+`Api\Typeface` names every face the app bundles: Golos Text at four weights
+for interface text, and DM Mono at two for figures, identifiers, timestamps and
+log text. Each is a file in the application's `resources/fonts`, beside its
+family's licence, and the build copies both into each platform's bundle. A text
+element names its face in a `font` attribute, with the weight class that face
+is; a widget is drawn in `Typeface::Interface`, which the composition root sets
+as the face for anything that names none.
+
 ## Elements
 
 Blade components under `x-design::`, each drawn from the platform's own
@@ -24,7 +34,7 @@ elements and painted only through the roles.
 
 | Element | What it is |
 |---|---|
-| `title`, `heading`, `body`, `note`, `strong`, `verbatim` | Text in its role: a screen's lead line, a heading, running text, a quieter line, a weighted line, and what a machine wrote |
+| `title`, `heading`, `body`, `note`, `strong`, `verbatim` | Text in its role and face: a screen's lead line, a heading, running text, a quieter line, a weighted line, and what a machine wrote, in DM Mono |
 | `standing` | Where something stands: a `View\Tone` glyph beside its words and an optional note |
 | `notice` | Something told before anything else, raised off the ground with its tone's glyph |
 | `card` | Lines that belong together, on a padded card |

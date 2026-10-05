@@ -135,6 +135,14 @@ final readonly class Templates
                 </native:column>
                 BLADE, 'every text element takes its colour from a theme role', 'text-in-no-colour'),
 
+            // A sentence in a face the app does not bundle, which the glass
+            // draws in the platform's own.
+            Fixture::suite('F20', sprintf('%s/text-in-a-face-not-bundled.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:text class="text-theme-text" font="Inter-Regular">{{ __('health.standing.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'every text element names a bundled face, with the weight class that face is', 'text-in-a-face-not-bundled'),
+
             Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
                     <native:text>This stack cannot be reached from here.</native:text>
