@@ -17,6 +17,7 @@ use Modules\Kernel\Api\WhatToWatchOn;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAdviceReads;
 use Modules\Operator\Internal\ViewModels\TheAdviceTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -43,6 +44,7 @@ final class WhichAppToWatchOn extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::which-app-to-watch-on';
 
@@ -60,12 +62,6 @@ final class WhichAppToWatchOn extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** Ask the machine again, which an obstacle must not take away. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): TheAdviceTurnedOutToBe

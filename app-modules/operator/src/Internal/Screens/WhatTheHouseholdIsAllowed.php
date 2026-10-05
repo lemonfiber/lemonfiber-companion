@@ -19,6 +19,7 @@ use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceReads;
 use Modules\Operator\Internal\ViewModels\TheAllowanceTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -42,6 +43,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-the-household-is-allowed';
 
@@ -55,12 +57,6 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** Ask the stack again. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What the stack said, asked once per frame. */
     public function answer(): TheAllowanceTurnedOutToBe

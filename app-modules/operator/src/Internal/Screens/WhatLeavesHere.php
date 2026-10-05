@@ -18,6 +18,7 @@ use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -53,6 +54,7 @@ final class WhatLeavesHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::what-leaves-here';
 
@@ -70,12 +72,6 @@ final class WhatLeavesHere extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** Ask the machine again, which an obstacle must not take away. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): WhatLeavesTurnedOutToBe

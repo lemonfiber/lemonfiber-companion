@@ -32,6 +32,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -92,6 +93,7 @@ final class HowThisStackIs extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use AsksAgain;
 
     public const string TEMPLATE = 'operator::how-this-stack-is';
 
@@ -235,24 +237,6 @@ final class HowThisStackIs extends NativeComponent
     public function read(string $family): void
     {
         $this->reading = $this->reading === $family ? null : $family;
-    }
-
-    /**
-     * Ask the stack again, because the operator has just done something.
-     *
-     * Forgetting what was held rather than asking and comparing: the next read
-     * of any accessor rebuilds it, so there is one path to an answer and it is
-     * the one every other frame takes. A second path that filled the same field
-     * would be the place the two come to disagree.
-     *
-     * The session is resumed again with it, deliberately. An operator who has
-     * been on this screen a while may have had their session end underneath
-     * them, and a refresh that reused a session it never re-checked would show
-     * them a stale report under a stack they are no longer signed into.
-     */
-    public function again(): void
-    {
-        $this->answered = null;
     }
 
     /**

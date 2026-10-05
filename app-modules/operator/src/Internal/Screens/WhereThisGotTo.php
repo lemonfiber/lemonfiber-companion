@@ -27,6 +27,7 @@ use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -60,6 +61,7 @@ final class WhereThisGotTo extends NativeComponent
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
+    use AsksAgain;
 
     /** What was typed and followed instead of what the route names, or empty. */
     public string $following = '';
@@ -79,7 +81,6 @@ final class WhereThisGotTo extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Follow what was typed instead; nothing typed follows nothing new. */
     public function follow(): void
     {
@@ -91,13 +92,6 @@ final class WhereThisGotTo extends NativeComponent
         $this->looking = '';
         $this->answered = null;
     }
-
-    /** Ask the machine again. */
-    public function again(): void
-    {
-        $this->answered = null;
-    }
-
 
     public function render(): View
     {
