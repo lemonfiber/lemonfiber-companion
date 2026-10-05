@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "7c5d1df7185f0234ff6fd885fc62b04d2b28dcbb"
+                "reference": "cbca96dc4a1f9847705a6695e5d64dab803b57fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/7c5d1df7185f0234ff6fd885fc62b04d2b28dcbb",
-                "reference": "7c5d1df7185f0234ff6fd885fc62b04d2b28dcbb",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/cbca96dc4a1f9847705a6695e5d64dab803b57fd",
+                "reference": "cbca96dc4a1f9847705a6695e5d64dab803b57fd",
                 "shasum": ""
             },
             "require": {
@@ -3251,7 +3251,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-05T03:27:34+00:00"
+            "time": "2026-10-05T05:17:57+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3445,7 +3445,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "fe60e1aa02a41c1353cb9e66579f933bde5058b7"
+                "reference": "b1ee4b189c39c9c60a2c66f65d7b664ba2501fbe"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3458,7 +3458,7 @@
                     "floors": {
                         "coverage": 100,
                         "mutation": 0,
-                        "mutation-is-zero-because": "An enum and two resolvers. `ThemeToken::light()`, `dark()` and `safeAsText()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` against the brand's own token file in both modes, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a colour spelled differently, and those four refuse one by name."
+                        "mutation-is-zero-because": "Two enums and a resolver. `ThemeToken::in()` and `safeAsText()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` against the brand's own token file in both themes, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a colour spelled differently, and those four refuse one by name."
                     },
                     "kind": "design"
                 }
