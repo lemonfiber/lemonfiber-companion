@@ -75,6 +75,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\KeepsReadingsFor;
+use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\MakingPairingCodes;
 use Modules\Kernel\Api\Measuring;
@@ -155,6 +156,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -705,6 +707,11 @@ final class CompositionRoot extends ServiceProvider
         // What each service is for, read out of the same stack description as
         // where it comes from, and bound beside it for the same reason.
         $this->app->bind(Cataloguing::class, Cataloguers::class);
+
+        // What the stack wires to what, bound beside what each service is for
+        // for the same reason: one place decides whether a certificate is
+        // checked.
+        $this->app->bind(Linking::class, Linkers::class);
 
         // What leaves a stack, bound beside what it keeps about itself for the
         // same reason: one place decides whether a certificate is checked.

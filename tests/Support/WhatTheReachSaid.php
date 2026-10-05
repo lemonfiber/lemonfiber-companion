@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\WhatSettledIt;
 
 /**
@@ -22,5 +23,6 @@ final readonly class WhatTheReachSaid
         public Services $services,
         public ?WhatSettledIt $settled,
         public string $why,
+        public TheClaimants $claimants,
     ) {}
 }

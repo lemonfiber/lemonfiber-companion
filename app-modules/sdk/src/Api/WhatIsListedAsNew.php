@@ -20,7 +20,6 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
-use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
 
@@ -113,7 +112,7 @@ final readonly class WhatIsListedAsNew
             $read[] = new ARequestListed(
                 RequestId::numbered($number),
                 self::optional($item, WireField::Title),
-                WhatANewsListHolds::text($item, WireField::Requests, NewsItemsField::By, $position),
+                WhatANewsListHolds::text($item, WireField::Requests, WireField::By, $position),
             );
         }
 

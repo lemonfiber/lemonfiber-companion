@@ -733,6 +733,21 @@ return [
         'no_connections' => 'This run attempted no connection',
         'cannot_wire' => 'What this run cannot wire',
         'nothing_unsupported' => 'Every service here is one this run can speak to',
+        'fills' => [
+            'label' => 'What answers what',
+            'asks' => ':by asks for :capability',
+            'outright' => 'Answered by :service',
+            'each' => 'Answered by each of :services',
+            'contested' => 'More than one service claims this, and nothing answers until you choose',
+            'claimed_by' => 'Claimed by',
+            'chosen_operator' => 'You chose :service over :over',
+            'chosen_stack' => 'The stack chose :service over :over',
+            'why' => 'Why: :why',
+            'unfilled' => 'Nothing answers this',
+            'by_name' => 'Wired to :service by name, not by what it does',
+            'none' => 'The stack asks nothing of its services',
+            'unreadable' => 'What answers what could not be read',
+        ],
     ],
 
     // How full the machine is, and where the room went.

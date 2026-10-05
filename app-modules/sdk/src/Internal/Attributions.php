@@ -53,6 +53,19 @@ final readonly class Attributions
     }
 
     /**
+     * An origin table on its own, where nothing holds it under an `origin` field.
+     *
+     * The `wiring` envelope keys each claimant's table by the service's name,
+     * so the table arrives bare rather than as a field of a row.
+     *
+     * @param array<mixed> $attributed
+     */
+    public static function table(array $attributed): WhoPutItThere
+    {
+        return self::attributed($attributed);
+    }
+
+    /**
      * One origin table, on the arm its word names.
      *
      * Its own method because an origin can hold another: what an override

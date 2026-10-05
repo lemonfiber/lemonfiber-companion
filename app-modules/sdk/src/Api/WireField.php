@@ -750,4 +750,7 @@ enum WireField: string implements NamesAWireField
 
     /** When a check went wrong, in whole seconds since the epoch. */
     case Onset = 'onset';
+
+    /** Who asked: the member behind a request, and the service a link runs from. */
+    case By = 'by';
 }
