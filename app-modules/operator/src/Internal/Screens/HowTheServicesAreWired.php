@@ -60,7 +60,8 @@ use function view;
  *
  * **What answers what comes first.** Every capability a service asks for,
  * which service answers it and how that was settled, read fresh each time the
- * screen opens and each time it is asked again, and kept nowhere on the phone.
+ * screen opens and each time it is asked again, drawn again whenever the
+ * stack's stream says it changed, and kept nowhere on the phone.
  * A contest is drawn as one, with every claimant and nothing picked.
  *
  * **Choosing who answers is two steps with the operator between them.**
@@ -153,10 +154,19 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
      * What the stack wires to what, or nothing while it waits for a frame of its own.
      *
      * Asked only on a frame that has not read the stack already, so it follows
-     * the services by a frame.
+     * the services by a frame, and drawn from the stack's stream instead once
+     * the stream says it.
      */
     public function whatAnswersWhat(): ?TheLinksTurnedOutToBe
     {
+        // What the stack's stream said since replaces what was last read.
+        $heard = $this->whatAnswersWhatHeard;
+
+        if ($heard instanceof TheLinks) {
+            $this->whatAnswersWhatHeard = null;
+            $this->linked = new HowTheLinksRead()->these($heard);
+        }
+
         if ($this->linked instanceof TheLinksTurnedOutToBe || ! $this->mayReadItsStack()) {
             return $this->linked;
         }

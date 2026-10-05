@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\News\Api\HowMuchIsNew;
@@ -49,6 +50,11 @@ use Native\Mobile\Edge\NativeComponent;
  * about the stack draws the last that any of them heard. A wake that names
  * nothing leaves it as it was.
  *
+ * **What answers what is handed to the screen that draws it.** The stream says
+ * it when a listener arrives and whenever it changes, and the last of it waits
+ * in {@see $whatAnswersWhatHeard} for a screen that draws it to take; every
+ * other screen leaves it there. It is kept nowhere on the phone.
+ *
  * **It reads the screen's own `$listening` and `$storage`.** That is the
  * coupling, stated here because a trait cannot declare it: the ports the
  * stream is heard with, and the store the session is resumed from. A screen
@@ -68,6 +74,9 @@ trait HoldsItsStacksStream
      * what the view reads.
      */
     public ?WhatWasHeardSoFar $heard = null;
+
+    /** What answers what as the stream last said it, until a screen that draws it takes it. */
+    protected ?TheLinks $whatAnswersWhatHeard = null;
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -94,6 +103,7 @@ trait HoldsItsStacksStream
         $stack = $this->stack();
         $thisWake = $this->heardFrom($stack, $now);
         $this->noticeTheNewest($thisWake, $stack);
+        $this->handOnWhatAnswersWhat($thisWake);
         $held = $held->after($thisWake, $now);
 
         if ($held->hasGoneQuiet($now)) {
@@ -189,6 +199,19 @@ trait HoldsItsStacksStream
         $heard->theNewest(
             named: fn(TheNewestNamed $newest): HowMuchIsNew => $this->listening->noticing->howMuchIsNew($stack->id(), $newest),
             nothing: static fn(): HowMuchIsNew => HowMuchIsNew::none(),
+        );
+    }
+
+    /** Hold what answers what, where this wake said it, for a screen that draws it. */
+    private function handOnWhatAnswersWhat(WhatWasHeard $heard): void
+    {
+        $heard->whatAnswersWhat(
+            said: function (TheLinks $links) use ($heard): WhatWasHeard {
+                $this->whatAnswersWhatHeard = $links;
+
+                return $heard;
+            },
+            nothing: static fn(): WhatWasHeard => $heard,
         );
     }
 

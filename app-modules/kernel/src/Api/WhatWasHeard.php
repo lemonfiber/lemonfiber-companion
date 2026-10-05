@@ -15,10 +15,11 @@ use Closure;
  * subscription is closed, by the stack or by the app. Or it could not be opened
  * or read, and the obstacle says why.
  *
- * **What the stack named as newest rides beside any of them.** It arrives on
- * the same stream, when a listener arrives and whenever it changes, so it is
- * carried apart from the five rather than as a sixth: a summary and the
- * newest of each kind can arrive in one wake, and neither is lost.
+ * **What the stack named as newest rides beside any of them, and so does what
+ * answers what.** Each arrives on the same stream, when a listener arrives and
+ * whenever it changes, so each is carried apart from the five rather than as a
+ * sixth: a summary, the newest of each kind and the wiring can arrive in one
+ * wake, and none of them is lost.
  */
 final readonly class WhatWasHeard
 {
@@ -27,6 +28,7 @@ final readonly class WhatWasHeard
         private ?TheHealthSummary $summary,
         private ?Obstacle $why,
         private ?TheNewestNamed $newest = null,
+        private ?TheLinks $links = null,
     ) {}
 
     public static function nothing(): self
@@ -57,7 +59,28 @@ final readonly class WhatWasHeard
     /** The same, with the newest of each kind the stack named in this wake. */
     public function naming(TheNewestNamed $newest): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $newest);
+        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links);
+    }
+
+    /** The same, with what answers what as the stack said it in this wake. */
+    public function wiredAs(TheLinks $links): self
+    {
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links);
+    }
+
+    /**
+     * What answers what as the stack said it in this wake, where it said it.
+     *
+     * @template T of object
+     *
+     * @param Closure(TheLinks): T $said
+     * @param Closure(): T $nothing
+     *
+     * @return T
+     */
+    public function whatAnswersWhat(Closure $said, Closure $nothing): object
+    {
+        return $this->links instanceof TheLinks ? $said($this->links) : $nothing();
     }
 
     /**

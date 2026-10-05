@@ -14,7 +14,12 @@ requirement is right and this page is a defect.
 The Connections screen (`HowTheServicesAreWired`) opens on what answers what,
 above the services and the run. `Linkers` reads `GET /api/wiring` through the
 SDK into `TheLinks`, read fresh each time the screen opens and each time it is
-asked again and kept nowhere on the phone, and `HowTheLinksRead` draws each
+asked again. The stack's event stream, which the screen holds through
+`HoldsItsStacksStream`, carries the same envelope as a `wiring` event when the
+screen starts listening and whenever the wiring changes; `Listeners` reads it
+beside the health summary and the newest, and the screen draws it in place of
+what it last read (`HearingContractTest`, `WiringTheServicesTest`). Neither is
+kept on the phone, and `HowTheLinksRead` draws each
 link as the service that asked and the capability, how it settled, and every
 claimant with where it came from in the line every service's origin is drawn
 in (`WiringTheServicesTest`, `LinkingContractTest`).
