@@ -17,7 +17,6 @@ use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -250,7 +249,7 @@ final class GuardingWhileYouWatch extends NativeComponent
 
                     return new HowAGuardReads()->guarding($asked->forms());
                 },
-                met: fn(Obstacle $why): HowTheGuardWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAGuardReads()->met(...)),
             ),
             notHeld: static fn(): HowTheGuardWent => new HowAGuardReads()->signedOut(),
         );
@@ -287,7 +286,7 @@ final class GuardingWhileYouWatch extends NativeComponent
             refused: static fn(string $said): HowTheGuardWent => new HowAGuardReads()->refused($said),
             ended: static fn(): HowTheGuardWent => new HowAGuardReads()->ended(),
             unknown: static fn(): HowTheGuardWent => new HowAGuardReads()->unknown(),
-            met: fn(Obstacle $why): HowTheGuardWent => $this->refused($why, $stack),
+            met: $this->lettingGoIfRefused($stack, new HowAGuardReads()->met(...)),
         );
     }
 
@@ -315,11 +314,4 @@ final class GuardingWhileYouWatch extends NativeComponent
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowTheGuardWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowAGuardReads()->met($why);
-    }
 }

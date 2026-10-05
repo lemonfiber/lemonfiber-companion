@@ -22,7 +22,6 @@ use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Linking;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
@@ -168,11 +167,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             held: fn(Session $session): TheLinksTurnedOutToBe => $this->linking->linkedOn($stack, $session)->either(
                 links: static fn(TheLinks $links): TheLinksTurnedOutToBe => new HowTheLinksRead()->these($links),
                 refused: static fn(ARefusalInItsWords $why): TheLinksTurnedOutToBe => new HowTheLinksRead()->refused($why),
-                met: function (Obstacle $why) use ($stack): TheLinksTurnedOutToBe {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowTheLinksRead()->met($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowTheLinksRead()->met(...)),
             ),
             notHeld: static fn(): TheLinksTurnedOutToBe => new HowTheLinksRead()->signedOut(),
         );
@@ -343,11 +338,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
 
                 return new HowTheWiringReads()->refused($because);
             },
-            met: function (Obstacle $why) use ($stack): TheWiringTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheWiringReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheWiringReads()->met(...)),
         );
     }
 
@@ -405,11 +396,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             },
             turnedDown: fn(AFillTurnedDown $down): TheChoiceTurnedOutToBe => $this->turnedDown($down, $shown, $stack, $session),
             refused: static fn(ARefusalInItsWords $why): TheChoiceTurnedOutToBe => new HowTheChoiceReads()->refused($why),
-            met: function (Obstacle $why) use ($stack): TheChoiceTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheChoiceReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheChoiceReads()->met(...)),
         );
     }
 

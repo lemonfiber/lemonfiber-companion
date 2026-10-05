@@ -13,7 +13,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -162,7 +161,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
 
                     return new HowLettingItGoReads()->running();
                 },
-                met: fn(Obstacle $why): HowLettingItGoWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
             ),
             notHeld: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->signedOut(),
         );
@@ -261,7 +260,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
 
                 return $this->offer($stack, $session, $job);
             },
-            met: fn(Obstacle $why): WhatLettingItGoWouldShow => $this->notOffered($why, $stack),
+            met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->notOffered(...)),
         );
     }
 
@@ -276,7 +275,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
                 return new HowLettingItGoReads()->offering($offer);
             },
             ended: static fn(): WhatLettingItGoWouldShow => new HowLettingItGoReads()->offerEnded(),
-            met: fn(Obstacle $why): WhatLettingItGoWouldShow => $this->notOffered($why, $stack),
+            met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->notOffered(...)),
         );
     }
 
@@ -296,25 +295,10 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
                 stillRunning: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->running(),
                 done: static fn(ADownloadLetGo $report): HowLettingItGoWent => new HowLettingItGoReads()->done($report),
                 ended: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->ended(),
-                met: fn(Obstacle $why): HowLettingItGoWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
             ),
             notHeld: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->signedOut(),
         );
     }
 
-    /** What the operator met asking for the offer, letting go of a session the stack refused. */
-    private function notOffered(Obstacle $why, Stack $stack): WhatLettingItGoWouldShow
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowLettingItGoReads()->notOffered($why);
-    }
-
-    /** What the operator met after the yes, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowLettingItGoWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowLettingItGoReads()->met($why);
-    }
 }

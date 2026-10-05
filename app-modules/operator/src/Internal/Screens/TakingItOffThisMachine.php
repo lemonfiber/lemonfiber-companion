@@ -267,11 +267,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
 
                     return new HowTakingItOffReads()->answered($uninstall, agreed: false);
                 },
-                met: function (Obstacle $why) use ($stack): TakingItOffTurnedOutToBe {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowTakingItOffReads()->met($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowTakingItOffReads()->met(...)),
             ),
             notHeld: static fn(): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->signedOut(),
         );

@@ -425,11 +425,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                     done: static fn(WhatWasMended $mended): WhatThisStackPutRight
                         => new HowAMendingReads()->these($mended),
                     ended: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
-                    met: function (Obstacle $why) use ($stack): WhatThisStackPutRight {
-                        $this->letGoOfTheSession($why, $stack);
-
-                        return new HowAMendingReads()->met($why);
-                    },
+                    met: $this->lettingGoIfRefused($stack, new HowAMendingReads()->met(...)),
                     // Refused and re-offered: the yes was given for an offer
                     // that has moved, so everything held for it is let go and
                     // the offer is asked for again, under what the stack said.
@@ -487,11 +483,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
 
                 return $this->became($stack, $session, $job);
             },
-            met: function (Obstacle $why) use ($stack): WhatTheStackWouldPutRight {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowAnOfferOfRepairsReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowAnOfferOfRepairsReads()->met(...)),
         );
     }
 

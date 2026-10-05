@@ -8,7 +8,6 @@ use function count;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -137,11 +136,7 @@ final class WhatElseIsRunningHere extends NativeComponent
             // the two answers came back.
             these: static fn(): WhatElseTurnedOutToBe
                 => new HowSomethingElseReads()->these($answer->whatElseIsRunning()),
-            met: function (Obstacle $why) use ($stack): WhatElseTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowSomethingElseReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowSomethingElseReads()->met(...)),
         );
     }
 }

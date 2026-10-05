@@ -14,7 +14,6 @@ use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -102,7 +101,6 @@ final class ChoosingHowGood extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /**
      * Ask the machine again, and forget every answer and every yes on offer.
      *
@@ -180,7 +178,6 @@ final class ChoosingHowGood extends NativeComponent
         return $this->described instanceof AnUpgradeDescribed;
     }
 
-
     public function render(): View
     {
         return view('operator::choosing-how-good', ['preset' => $this->preset, 'kind' => $this->kind]);
@@ -210,7 +207,7 @@ final class ChoosingHowGood extends NativeComponent
             held: fn(Session $session): TheQualityTurnedOutToBe => $asking($this->choosing, $stack, $session)->either(
                 inForce: fn(TheQualityChosen $chosen): TheQualityTurnedOutToBe => $this->inForce($asked, $chosen),
                 forMusic: fn(AFormatChoiceMade $made): TheQualityTurnedOutToBe => $this->forMusic($made),
-                met: fn(Obstacle $why): TheQualityTurnedOutToBe => $this->stoppedBy($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowTheQualityReads()->met(...)),
             ),
             notHeld: static fn(): TheQualityTurnedOutToBe => new HowTheQualityReads()->signedOut(),
         );
@@ -239,14 +236,6 @@ final class ChoosingHowGood extends NativeComponent
         return $this->ask();
     }
 
-    /** A choice that met something, having let go of a session the stack refused. */
-    private function stoppedBy(Obstacle $why, Stack $stack): TheQualityTurnedOutToBe
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowTheQualityReads()->met($why);
-    }
-
     /**
      * The one path to the stack that describing and upgrading take.
      *
@@ -266,11 +255,7 @@ final class ChoosingHowGood extends NativeComponent
 
                     return new HowAnUpgradeReads()->this($upgrade);
                 },
-                met: function (Obstacle $why) use ($stack): TheUpgradeTurnedOutToBe {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowAnUpgradeReads()->met($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowAnUpgradeReads()->met(...)),
             ),
             notHeld: static fn(): TheUpgradeTurnedOutToBe => new HowAnUpgradeReads()->signedOut(),
         );
@@ -284,7 +269,7 @@ final class ChoosingHowGood extends NativeComponent
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheQualityTurnedOutToBe => $this->choosing->inForceOn($stack, $session)->either(
                 found: static fn(TheQualityChosen $chosen): TheQualityTurnedOutToBe => new HowTheQualityReads()->this($chosen),
-                met: fn(Obstacle $why): TheQualityTurnedOutToBe => $this->stoppedBy($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowTheQualityReads()->met(...)),
             ),
             notHeld: static fn(): TheQualityTurnedOutToBe => new HowTheQualityReads()->signedOut(),
         );

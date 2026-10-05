@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
@@ -113,7 +112,7 @@ trait FollowsWhatTheVerbCameTo
 
                     return new HowAVerbEndedReads()->running();
                 },
-                met: fn(Obstacle $why): HowTheVerbWent => $this->refusedWhileFollowing($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAVerbEndedReads()->met(...)),
             ),
             notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
         );
@@ -136,17 +135,10 @@ trait FollowsWhatTheVerbCameTo
                 stillRunning: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->running(),
                 done: static fn(WhatTheVerbCameTo $report): HowTheVerbWent => new HowAVerbEndedReads()->done($report, $sent->doing()),
                 ended: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->ended(),
-                met: fn(Obstacle $why): HowTheVerbWent => $this->refusedWhileFollowing($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAVerbEndedReads()->met(...)),
             ),
             notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refusedWhileFollowing(Obstacle $why, Stack $stack): HowTheVerbWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowAVerbEndedReads()->met($why);
-    }
 }

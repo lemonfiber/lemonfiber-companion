@@ -8,7 +8,6 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -90,11 +89,7 @@ final class WhichAppToWatchOn extends NativeComponent
     {
         return $this->advising->advisedBy($stack, $session)->either(
             found: static fn(WhatToWatchOn $advice): TheAdviceTurnedOutToBe => new HowTheAdviceReads()->this($advice),
-            met: function (Obstacle $why) use ($stack): TheAdviceTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheAdviceReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheAdviceReads()->met(...)),
         );
     }
 }

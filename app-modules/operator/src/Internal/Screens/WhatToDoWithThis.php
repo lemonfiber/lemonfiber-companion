@@ -15,7 +15,6 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HearingTheStart;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
@@ -150,7 +149,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     {
         return $this->listingOf($this->stack(), $this->storage, $this->supervising, $this->kept);
     }
-
 
     /**
      * What the route names, and what may be done with it.
@@ -352,7 +350,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->formsAgain();
     }
 
-
     public function render(): View
     {
         $this->aFrameBegins();
@@ -399,11 +396,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatStartingItWouldShow => $this->rehearsing->whatStarting($stack, $session, $form)->either(
                 found: static fn(WhatStartingItWouldComeTo $rehearsal): WhatStartingItWouldShow => new HowARehearsalReads()->of($rehearsal),
-                met: function (Obstacle $why) use ($stack): WhatStartingItWouldShow {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowARehearsalReads()->met($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowARehearsalReads()->met(...)),
             ),
             notHeld: static fn(): WhatStartingItWouldShow => new HowARehearsalReads()->signedOut(),
         );

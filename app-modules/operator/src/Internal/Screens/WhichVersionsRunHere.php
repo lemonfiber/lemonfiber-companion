@@ -7,7 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -88,11 +87,7 @@ final class WhichVersionsRunHere extends NativeComponent
     {
         return $this->reading->versionsOn($stack, $session)->either(
             found: static fn(WhatRunsHere $runs): TheVersionsTurnedOutToBe => new HowTheVersionsRead()->these($runs),
-            met: function (Obstacle $why) use ($stack): TheVersionsTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheVersionsRead()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheVersionsRead()->met(...)),
         );
     }
 }

@@ -10,11 +10,9 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TheAppsSettings;
@@ -205,7 +203,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
 
                     return new HowACopyReads()->running($asked->scope());
                 },
-                met: fn(Obstacle $why): HowTheCopyWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
             ),
             notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),
         );
@@ -228,17 +226,10 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
                 stillRunning: static fn(): HowTheCopyWent => new HowACopyReads()->running($asked->scope()),
                 done: static fn(ACopyTaken $report): HowTheCopyWent => new HowACopyReads()->done($report),
                 ended: static fn(): HowTheCopyWent => new HowACopyReads()->ended($asked->scope()),
-                met: fn(Obstacle $why): HowTheCopyWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
             ),
             notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowTheCopyWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowACopyReads()->met($why);
-    }
 }

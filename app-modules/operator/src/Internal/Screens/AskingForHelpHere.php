@@ -19,7 +19,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -255,7 +254,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
 
                     return new HowABundleReads()->running();
                 },
-                met: fn(Obstacle $why): HowTheBundleWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
             ),
             notHeld: static fn(): HowTheBundleWent => new HowABundleReads()->signedOut(),
         );
@@ -289,17 +288,10 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
                 done: static fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle),
                 refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
                 ended: static fn(): HowTheBundleWent => new HowABundleReads()->ended(),
-                met: fn(Obstacle $why): HowTheBundleWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
             ),
             notHeld: static fn(): HowTheBundleWent => new HowABundleReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowTheBundleWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowABundleReads()->met($why);
-    }
 }

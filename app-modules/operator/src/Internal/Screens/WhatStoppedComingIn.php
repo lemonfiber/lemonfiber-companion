@@ -11,7 +11,6 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -98,7 +97,6 @@ final class WhatStoppedComingIn extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** How many are shown, which is what the empty state asks. */
     public function howMany(): int
     {
@@ -122,7 +120,6 @@ final class WhatStoppedComingIn extends NativeComponent
     {
         $this->answered = null;
     }
-
 
     public function render(): View
     {
@@ -186,11 +183,7 @@ final class WhatStoppedComingIn extends NativeComponent
         return $this->stalling->stoppedOn($stack, $session)->either(
             these: static fn(Stalled $stalled): WhatStoppedTurnedOutToBe
                 => new HowAStallReads()->these($stalled),
-            met: function (Obstacle $why) use ($stack): WhatStoppedTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowAStallReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowAStallReads()->met(...)),
         );
     }
 }

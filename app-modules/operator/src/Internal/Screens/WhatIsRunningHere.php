@@ -7,7 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Session;
@@ -103,11 +102,7 @@ final class WhatIsRunningHere extends NativeComponent
     {
         return $this->checking->checkedOn($stack, $session)->either(
             found: static fn(ThisCopyOfLemonfiber $copy): ThisCopyTurnedOutToBe => new HowThisCopyReads()->this($copy),
-            met: function (Obstacle $why) use ($stack): ThisCopyTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowThisCopyReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowThisCopyReads()->met(...)),
         );
     }
 }
