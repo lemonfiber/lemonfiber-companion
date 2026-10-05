@@ -18,7 +18,6 @@ use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -165,7 +164,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
 
                     return new HowARunBackReads()->running();
                 },
-                met: fn(Obstacle $why): HowPuttingARunBackWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->signedOut(),
         );
@@ -238,11 +237,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
 
                 return new HowARunBackReads()->shown($this->shown, $this->clock->now());
             },
-            met: function (Obstacle $why) use ($stack): WhatPuttingARunBackWouldShow {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowARunBackReads()->notShown($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->notShown(...)),
         );
     }
 
@@ -263,17 +258,10 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
                 done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
                 refused: static fn(ARefusalInItsWords $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
                 ended: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->ended(),
-                met: fn(Obstacle $why): HowPuttingARunBackWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowPuttingARunBackWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowARunBackReads()->met($why);
-    }
 }

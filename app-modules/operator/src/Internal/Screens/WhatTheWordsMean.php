@@ -102,7 +102,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->open = $service;
     }
 
-
     /**
      * Open or close the longer gloss of the word at a place in the list as drawn.
      *
@@ -155,7 +154,6 @@ final class WhatTheWordsMean extends NativeComponent
         $this->asked = null;
     }
 
-
     public function render(): View
     {
         return view('operator::what-the-words-mean', ['looking' => $this->looking]);
@@ -193,11 +191,7 @@ final class WhatTheWordsMean extends NativeComponent
 
                 return new HowTheWordsRead()->this($words, LookingFor::text($this->looking), $this->open);
             },
-            met: function (Obstacle $why) use ($stack): TheWordsTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheWordsRead()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheWordsRead()->met(...)),
         );
     }
 

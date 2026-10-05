@@ -9,7 +9,6 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -83,14 +82,12 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /** Ask the machine again, both readings. */
     public function again(): void
     {
         $this->answered = null;
         $this->copiesFound = null;
     }
-
 
     public function render(): View
     {
@@ -153,11 +150,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         return $this->storing->storedOn($stack, $session)->either(
             kept: static fn(WhatThisMachineKeeps $keeps): WhatIsKeptTurnedOutToBe
                 => new HowWhatIsKeptReads()->this($keeps),
-            met: function (Obstacle $why) use ($stack): WhatIsKeptTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowWhatIsKeptReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowWhatIsKeptReads()->met(...)),
         );
     }
 
@@ -166,11 +159,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     {
         return $this->copying->copiesOn($stack, $session)->either(
             copies: static fn(TheCopies $copies): TheCopiesAsFound => new HowWhatIsKeptReads()->copies($copies),
-            met: function (Obstacle $why) use ($stack): TheCopiesAsFound {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowWhatIsKeptReads()->copiesMet($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowWhatIsKeptReads()->copiesMet(...)),
         );
     }
 }

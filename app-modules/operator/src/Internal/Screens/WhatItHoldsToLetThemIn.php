@@ -7,7 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -93,11 +92,7 @@ final class WhatItHoldsToLetThemIn extends NativeComponent
     {
         return $this->safekeeping->heldOn($stack, $session)->either(
             found: static fn(TheCredentialsHeld $held): TheCredentialsTurnedOutToBe => new HowTheCredentialsRead()->these($held),
-            met: function (Obstacle $why) use ($stack): TheCredentialsTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheCredentialsRead()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheCredentialsRead()->met(...)),
         );
     }
 }

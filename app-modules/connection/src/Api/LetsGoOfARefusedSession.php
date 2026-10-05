@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use Closure;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
 
@@ -57,5 +58,28 @@ trait LetsGoOfARefusedSession
         }
 
         $this->storage->forget($stack->id());
+    }
+
+    /**
+     * The `met` arm of an answer read with a held session, letting go of the
+     * session first where the refusal means it.
+     *
+     * What `then` answers is what the arm answered before: the fold's own
+     * reading of the obstacle. Handed it rather than written around it, so the
+     * effect is spelled once and every arm that needs it says so in one line.
+     *
+     * @template T of object
+     *
+     * @param Closure(Obstacle): T $then
+     *
+     * @return Closure(Obstacle): T
+     */
+    private function lettingGoIfRefused(Stack $stack, Closure $then): Closure
+    {
+        return function (Obstacle $why) use ($stack, $then): object {
+            $this->letGoOfTheSession($why, $stack);
+
+            return $then($why);
+        };
     }
 }

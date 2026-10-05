@@ -315,11 +315,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         return $this->answered ??= $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhoIsInTurnedOutToBe => $this->inviting->whoIsIn($stack, $session)->either(
                 found: static fn(TheMembers $members): WhoIsInTurnedOutToBe => new HowWhoIsInReads()->these($members),
-                met: function (Obstacle $why) use ($stack): WhoIsInTurnedOutToBe {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowWhoIsInReads()->met($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowWhoIsInReads()->met(...)),
             ),
             notHeld: static fn(): WhoIsInTurnedOutToBe => new HowWhoIsInReads()->signedOut(),
         );

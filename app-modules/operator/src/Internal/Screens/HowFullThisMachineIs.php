@@ -11,7 +11,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Measuring;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -80,7 +79,6 @@ final class HowFullThisMachineIs extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-
     /**
      * Ask the machine again.
      *
@@ -91,7 +89,6 @@ final class HowFullThisMachineIs extends NativeComponent
     {
         $this->answered = null;
     }
-
 
     public function render(): View
     {
@@ -134,11 +131,7 @@ final class HowFullThisMachineIs extends NativeComponent
         return $this->measuring->measuredOn($stack, $session)->either(
             measured: fn(WhereTheRoomWent $room): TheRoomTurnedOutToBe
                 => new HowTheRoomReads()->this($room, $this->clock->now()),
-            met: function (Obstacle $why) use ($stack): TheRoomTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheRoomReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheRoomReads()->met(...)),
         );
     }
 }

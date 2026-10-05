@@ -16,7 +16,6 @@ use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -140,7 +139,6 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         $this->took = $left === '' ? null : $left;
     }
 
-
     /** Walk through what was typed, or, with nothing typed, something the stack picks. */
     public function walk(): void
     {
@@ -203,7 +201,6 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         $this->answered = null;
         $this->listenToTheWalk();
     }
-
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
@@ -271,7 +268,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 
                     return new HowAWalkthroughReads()->running();
                 },
-                met: fn(Obstacle $why): WhatTheWalkthroughTurnedOutToBe => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
         );
@@ -293,7 +290,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
                 stillRunning: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->running(),
                 done: static fn(AWalkthrough $report): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->done($report),
                 ended: fn(): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack),
-                met: fn(Obstacle $why): WhatTheWalkthroughTurnedOutToBe => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
         );
@@ -331,17 +328,10 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 
                     return new HowAWalkthroughReads()->notStarted();
                 },
-                met: fn(Obstacle $why): WhatTheWalkthroughTurnedOutToBe => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): WhatTheWalkthroughTurnedOutToBe
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowAWalkthroughReads()->met($why);
-    }
 }

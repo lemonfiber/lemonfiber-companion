@@ -55,8 +55,11 @@ use Tests\Support\Tree;
  */
 const THE_DECISION = 'HowTheReadingWent::somethingStopped($why)';
 
-/** What a screen must do about one. */
-const THE_EFFECT = '$this->letGoOfTheSession(';
+/**
+ * What a screen must do about one: let go of the session itself, or hand an
+ * answer's `met` arm to the helper that does.
+ */
+const THE_EFFECT = ['$this->letGoOfTheSession(', '$this->lettingGoIfRefused('];
 
 /**
  * Every source file in the app holding one of these, by what it holds.
@@ -125,7 +128,9 @@ it('every screen that resumes a session lets go of a refused one', function (): 
     $keeping = [];
 
     foreach ($found['screens'] as $path) {
-        if (! str_contains((string) file_get_contents($path), THE_EFFECT)) {
+        $source = (string) file_get_contents($path);
+
+        if (! array_any(THE_EFFECT, static fn(string $effect): bool => str_contains($source, $effect))) {
             $keeping[] = basename($path);
         }
     }

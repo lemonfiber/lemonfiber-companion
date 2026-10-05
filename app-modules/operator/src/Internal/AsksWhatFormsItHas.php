@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Forms;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -49,11 +48,7 @@ trait AsksWhatFormsItHas
         return $storage->resume($stack->id())->either(
             held: fn(Session $session): TheFormsAsFound => $supervising->formsOn($stack, $session)->either(
                 these: static fn(Forms $forms): TheFormsAsFound => new HowAListingReads()->forms($forms),
-                met: function (Obstacle $why) use ($stack): TheFormsAsFound {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowAListingReads()->formsMet($why);
-                },
+                met: $this->lettingGoIfRefused($stack, new HowAListingReads()->formsMet(...)),
             ),
             notHeld: static fn(): TheFormsAsFound => new HowAListingReads()->formsSignedOut(),
         );

@@ -257,11 +257,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     {
         return $this->movingIn->surveyedOn($stack, $session)->either(
             found: static fn(TheSurvey $survey): TheSurveyTurnedOutToBe => new HowTheSurveyReads()->this($survey),
-            met: function (Obstacle $why) use ($stack): TheSurveyTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheSurveyReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheSurveyReads()->met(...)),
         );
     }
 

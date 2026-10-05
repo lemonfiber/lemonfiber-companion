@@ -7,7 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -101,11 +100,7 @@ final class WhereThisComesFrom extends NativeComponent
         return $this->provenance->declaredOn($stack, $session)->either(
             origins: static fn(WhereTheServicesComeFrom $origins): TheOriginsTurnedOutToBe
                 => new HowTheOriginsRead()->this($origins),
-            met: function (Obstacle $why) use ($stack): TheOriginsTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheOriginsRead()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheOriginsRead()->met(...)),
         );
     }
 }

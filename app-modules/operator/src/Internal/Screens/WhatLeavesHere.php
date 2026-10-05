@@ -7,7 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -101,11 +100,7 @@ final class WhatLeavesHere extends NativeComponent
         return $this->outgoing->leaving($stack, $session)->either(
             leaving: static fn(WhatLeavesThisMachine $leaving): WhatLeavesTurnedOutToBe
                 => new HowWhatLeavesReads()->this($leaving),
-            met: function (Obstacle $why) use ($stack): WhatLeavesTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowWhatLeavesReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowWhatLeavesReads()->met(...)),
         );
     }
 }

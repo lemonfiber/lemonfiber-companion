@@ -9,7 +9,6 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -115,11 +114,7 @@ final class WhatWasChangedHere extends NativeComponent
         return $this->history->recordedOn($stack, $session)->either(
             record: fn(TheRecord $record): TheRecordTurnedOutToBe
                 => new HowTheRecordReads()->this($record, $this->clock->now()),
-            met: function (Obstacle $why) use ($stack): TheRecordTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheRecordReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheRecordReads()->met(...)),
         );
     }
 }

@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -107,7 +106,7 @@ trait FollowsTheUpdateItTook
 
                     return new HowTheLastUpdateReads()->running();
                 },
-                met: fn(Obstacle $why): HowTheLastUpdateWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
             ),
             notHeld: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->signedOut(),
         );
@@ -129,17 +128,10 @@ trait FollowsTheUpdateItTook
                 stillRunning: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->running(),
                 done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
                 ended: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended(),
-                met: fn(Obstacle $why): HowTheLastUpdateWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
             ),
             notHeld: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowTheLastUpdateWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowTheLastUpdateReads()->met($why);
-    }
 }

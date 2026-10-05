@@ -9,7 +9,6 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -98,11 +97,7 @@ final class WhatEachServiceIsFor extends NativeComponent
                 => new HowTheCatalogueReads()->this($catalogue),
             refused: static fn(ARefusalInItsWords $why): TheCatalogueTurnedOutToBe
                 => new HowTheCatalogueReads()->refused($why),
-            met: function (Obstacle $why) use ($stack): TheCatalogueTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheCatalogueReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheCatalogueReads()->met(...)),
         );
     }
 }

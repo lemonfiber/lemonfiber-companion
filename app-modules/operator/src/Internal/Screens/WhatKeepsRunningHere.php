@@ -253,11 +253,7 @@ final class WhatKeepsRunningHere extends NativeComponent
         return $this->hosting->keptRunningOn($stack, $session)->either(
             keeps: static fn(WhatRunsUnattended $running): WhatKeepsRunningTurnedOutToBe
                 => new HowHostingReads()->this($running),
-            met: function (Obstacle $why) use ($stack): WhatKeepsRunningTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowHostingReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowHostingReads()->met(...)),
         );
     }
 }

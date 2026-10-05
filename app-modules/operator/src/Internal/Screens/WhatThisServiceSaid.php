@@ -17,7 +17,6 @@ use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\LookingFor;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\SecureStorage;
@@ -125,7 +124,6 @@ final class WhatThisServiceSaid extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
 
     /**
      * The service this screen is about.
@@ -243,7 +241,6 @@ final class WhatThisServiceSaid extends NativeComponent
         $this->unfolded = in_array($fold, $this->unfolded, strict: true) ? $open : [...$open, $fold];
     }
 
-
     public function render(): View
     {
         return view('operator::what-this-service-said', ['looking' => $this->looking]);
@@ -323,11 +320,7 @@ final class WhatThisServiceSaid extends NativeComponent
 
                 return new HowAScrollbackReads()->this($scrollback, $looking, $zone, $unfolded, fromTheFirstError: $fromTheFirstError);
             },
-            met: function (Obstacle $why) use ($stack): WhatTheServiceTurnedOutToSay {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowAScrollbackReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowAScrollbackReads()->met(...)),
         );
     }
 

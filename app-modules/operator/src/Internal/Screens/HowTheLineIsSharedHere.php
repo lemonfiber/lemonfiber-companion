@@ -9,7 +9,6 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -108,11 +107,7 @@ final class HowTheLineIsSharedHere extends NativeComponent
         return $this->rationing->rationedOn($stack, $session)->either(
             shared: fn(HowTheLineIsShared $line): HowTheLineTurnedOutToBe
                 => new HowTheLineReads()->this($line, $this->clock->now()),
-            met: function (Obstacle $why) use ($stack): HowTheLineTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheLineReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowTheLineReads()->met(...)),
         );
     }
 }

@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -80,11 +79,7 @@ trait AsksWhatTheStackIsRunning
         return $supervising->running($stack, $session)->either(
             these: static fn(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
                 => new HowAListingReads()->these($daemons),
-            met: function (Obstacle $why) use ($stack): WhatThisStackRunsTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowAListingReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowAListingReads()->met(...)),
         );
     }
 }

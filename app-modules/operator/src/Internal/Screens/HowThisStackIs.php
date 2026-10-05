@@ -15,7 +15,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
@@ -405,11 +404,7 @@ final class HowThisStackIs extends NativeComponent
     {
         return $this->asking->about($stack, $session)->either(
             said: static fn(Report $report): WhatTheStackTurnedOutToBe => new HowAStackReads()->said($report),
-            met: function (Obstacle $why) use ($stack): WhatTheStackTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowAStackReads()->met($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowAStackReads()->met(...)),
         );
     }
 }

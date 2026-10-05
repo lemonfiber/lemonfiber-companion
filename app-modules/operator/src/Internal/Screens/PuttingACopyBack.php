@@ -14,7 +14,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -164,7 +163,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
 
                     return new HowPuttingItBackReads()->running();
                 },
-                met: fn(Obstacle $why): HowPuttingItBackWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->signedOut(),
         );
@@ -255,11 +254,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
                 return new HowPuttingItBackReads()->listing($listing);
             },
             refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackWouldShow => new HowPuttingItBackReads()->refusedToList($why),
-            met: function (Obstacle $why) use ($stack): WhatPuttingItBackWouldShow {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowPuttingItBackReads()->notListed($why);
-            },
+            met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->notListed(...)),
         );
     }
 
@@ -280,17 +275,10 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
                 done: static fn(ACopyPutBack $report): HowPuttingItBackWent => new HowPuttingItBackReads()->done($report),
                 refused: static fn(ARefusalInItsWords $why): HowPuttingItBackWent => new HowPuttingItBackReads()->refused($why),
                 ended: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->ended(),
-                met: fn(Obstacle $why): HowPuttingItBackWent => $this->refused($why, $stack),
+                met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->signedOut(),
         );
     }
 
-    /** What the operator met, letting go of a session the stack refused. */
-    private function refused(Obstacle $why, Stack $stack): HowPuttingItBackWent
-    {
-        $this->letGoOfTheSession($why, $stack);
-
-        return new HowPuttingItBackReads()->met($why);
-    }
 }
