@@ -16,8 +16,8 @@ use function view;
 
 /**
  * Something the reader is told before anything else on the screen: what
- * stopped a reading, what a stack refused. Raised off the ground, with its
- * tone's glyph beside the lines it holds.
+ * stopped a reading, what a stack refused. Raised off the ground on its tone's
+ * ground, with its tone's glyph beside the lines it holds.
  *
  * Opened by `notice` and closed by `notice-closes` ({@see HoldsItsSlot}).
  */
@@ -42,7 +42,9 @@ final class Notice extends Component
     {
         return view('design::components.notice', [
             'says' => $this->says,
-            'colour' => ThemeToken::Text->in($this->glass->whose()),
+            'colour' => $this->says->colour()->in($this->glass->whose()),
+            'warns' => $this->says->ground() === ThemeToken::WarnTint,
+            'alarms' => $this->says->ground() === ThemeToken::AlarmTint,
         ]);
     }
 }

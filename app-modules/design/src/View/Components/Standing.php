@@ -6,7 +6,6 @@ namespace Modules\Design\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\View\Tone;
 
@@ -34,7 +33,7 @@ final class Standing extends Component
         public readonly string $word = '',
     ) {
         $this->says = Tone::from($tone);
-        $this->colour = ThemeToken::Text->in($glass->whose());
+        $this->colour = $this->says->colour()->in($glass->whose());
     }
 
     public function render(): View

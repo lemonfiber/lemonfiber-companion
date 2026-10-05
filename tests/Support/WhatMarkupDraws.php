@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function __;
+use function app;
 use function array_map;
 use function array_values;
 
@@ -15,11 +16,17 @@ use function is_array;
 use function is_string;
 use function json_encode;
 
+use Modules\Design\Api\Theme;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
+use Modules\Design\Api\WhoseTheme;
 use Native\Mobile\Edge\CallbackRegistry;
 use Native\Mobile\Edge\NativeElementCollector;
 use Native\Mobile\Edge\NativeTagPrecompiler;
+use Native\Mobile\Edge\TailwindParser;
 
 use function sprintf;
+
+use Tests\Support\Fakes\AThemeOnTheGlass;
 
 /**
  * The tree the device would draw for a piece of markup, as one line: a
@@ -67,6 +74,26 @@ final readonly class WhatMarkupDraws
         $hashes = [];
 
         return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+    }
+
+    /**
+     * The tree the device would draw for a piece of markup in one theme: its
+     * classes resolved through that theme, and a colour handed as a value read
+     * from it. The theme on the glass before is put back after.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function drawnIn(WhoseTheme $theme, string $markup): array
+    {
+        $before = app(WhichThemeIsOnTheGlass::class);
+
+        try {
+            self::paint(AThemeOnTheGlass::showing($theme));
+
+            return self::drawn($markup);
+        } finally {
+            self::paint($before);
+        }
     }
 
     /**
@@ -127,5 +154,14 @@ final readonly class WhatMarkupDraws
             json_encode($node['layout'] ?? [], JSON_THROW_ON_ERROR),
             implode(', ', array_map(self::outlineOf(...), $children)),
         );
+    }
+
+    /** Put a theme on the glass, for the parser and for an element handed a colour as a value. */
+    private static function paint(WhichThemeIsOnTheGlass $glass): void
+    {
+        app()->instance(WhichThemeIsOnTheGlass::class, $glass);
+        TailwindParser::setThemeResolver(Theme::resolver($glass->whose()));
+        TailwindParser::setThemeDarkResolver(Theme::resolver($glass->whose()));
+        TailwindParser::clearCache();
     }
 }

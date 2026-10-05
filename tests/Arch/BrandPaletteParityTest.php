@@ -36,6 +36,12 @@ function assertedBrandColours(): array
         ThemeToken::Muted->value => ['ink:text-muted', 'ink:text-muted'],
         ThemeToken::Faint->value => ['ink:text-muted', 'ink:text-faint'],
         ThemeToken::Line->value => ['ink:line', 'ink:line'],
+        ThemeToken::Ok->value => ['ink:text', 'ink:ok'],
+        ThemeToken::Warn->value => ['ink:text', 'ink:fiber'],
+        ThemeToken::Alarm->value => ['ink:text', 'ink:alarm'],
+        ThemeToken::Activity->value => ['ink:text', 'ink:fiber'],
+        ThemeToken::WarnTint->value => ['ink:pith', 'ink:warn-tint'],
+        ThemeToken::AlarmTint->value => ['ink:pith', 'ink:alarm-tint'],
     ];
 }
 
