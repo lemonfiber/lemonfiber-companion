@@ -1825,6 +1825,21 @@ SHIPS,
             // Trailing — multi-badge stack wins over single trailingIcon.
 BECOMES,
     ],
+    [
+        // The bundled faces are licensed under the SIL Open Font License, which
+        // lets them ship inside the app on condition that each copy carries the
+        // licence. So the licence beside each family in `resources/fonts` is
+        // copied into each platform's bundle with the faces. The renderers look
+        // a face up by the extensions they know, so a licence is never taken
+        // for one.
+        'in' => '/../vendor/nativephp/mobile-ui/src/Console/CopyFontsCommand.php',
+        'ships' => <<<'SHIPS'
+    protected array $fontExtensions = ['ttf', 'otf', 'ttc'];
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    protected array $fontExtensions = ['ttf', 'otf', 'ttc', 'txt'];
+BECOMES,
+    ],
 ];
 
 /**

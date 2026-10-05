@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\NativePHP\TheTheme;
 use Modules\Design\Api\ThemeToken;
+use Modules\Design\Api\Typeface;
+use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
+use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 // Runs the composition root rather than reading it, so its mutants are judged
 // here: see `scripts/mutation.php`.
@@ -43,3 +46,13 @@ it('leaves the widget colours it does not assert as the package set them', funct
     expect(config('native-ui.theme.light.destructive'))->not->toBeNull()
         ->and(config('native-ui.theme.light.success'))->not->toBeNull();
 });
+
+it('draws every widget, and any text naming no face, in the interface face, in either theme', function (WhoseTheme $theme): void {
+    // The face rides the same payload as the colours: `default` is the alias
+    // the renderers fall back to, and `font-family` what the platform chrome
+    // takes it as.
+    app(WhichThemeIsOnTheGlass::class)->paint($theme);
+
+    expect(WhatTheWidgetsPaintWith::get('fonts'))->toBe(['default' => Typeface::Interface->value])
+        ->and(WhatTheWidgetsPaintWith::get('font-family'))->toBe(Typeface::Interface->value);
+})->with(WhoseTheme::cases());
