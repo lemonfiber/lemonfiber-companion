@@ -41,7 +41,7 @@ use Tests\Support\Manifests;
 // stack trace with local variables in it, and the local variables in this
 // application are session tokens and stack addresses.
 
-it('N4-R12 — no package that reports to a third party is installed', function (): void {
+it('no package that reports to a third party is installed', function (): void {
     $found = Manifests::reportingToAThirdParty();
 
     sort($found);

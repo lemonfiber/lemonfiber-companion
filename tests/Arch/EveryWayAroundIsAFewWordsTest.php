@@ -14,7 +14,8 @@ use Tests\Support\Catalogue;
 
 const AT_MOST_THIS_MANY_WORDS = 3;
 
-it('L8 — every navigation label is at most three words and no sentence, in every language', function (): void {
+// L8 — a tab, a menu item and a menu group name what they open in at most three words, and never as a sentence
+it('every navigation label is at most three words and no sentence, in every language', function (): void {
     $long = [];
     $read = 0;
 

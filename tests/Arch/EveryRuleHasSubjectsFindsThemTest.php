@@ -32,7 +32,7 @@ use Tests\Support\Tree;
 // enough to mean something. A floor rather than an exact count: an exact count
 // is a number somebody edits to make a red run green.
 
-it('Q-R66 — the modules a rule judges are found', function (): void {
+it('the modules a rule judges are found', function (): void {
     // `Module::all()` is under `ModuleApiTest`, `ModuleBoundariesTest`,
     // `WhereThingsGoTest`, `TestsMirrorSourceTest` and the composition-root
     // rules. Empty, every one of them passes.
@@ -41,7 +41,7 @@ it('Q-R66 — the modules a rule judges are found', function (): void {
     expect(Module::namespaces())->not->toBe([]);
 });
 
-it('Q-R66 — the trees held to a floor are found, and the two that are not modules are among them', function (): void {
+it('the trees held to a floor are found, and the two that are not modules are among them', function (): void {
     // `MeasuredTree::all()` is what `G7` holds to a bar, what the `Floors`
     // suite measures against the clover report and what `scripts/mutation.php`
     // mutates. Empty, all three pass having judged nothing.
@@ -63,7 +63,7 @@ it('Q-R66 — the trees held to a floor are found, and the two that are not modu
         ->toContain('bootstrap/Composition');
 });
 
-it('Q-R66 — a populated module answers with the classes it declares', function (): void {
+it('a populated module answers with the classes it declares', function (): void {
     // The second half, and the one a stale autoloader breaks: modules are found
     // and each reports no classes, so every rule about published surfaces holds
     // vacuously.
@@ -75,11 +75,11 @@ it('Q-R66 — a populated module answers with the classes it declares', function
     expect($declaring)->not->toBe([]);
 });
 
-it('Q-R66 — the published surface the API rules judge is found', function (): void {
+it('the published surface the API rules judge is found', function (): void {
     expect(ApiSurface::classesIn())->not->toBe([]);
 });
 
-it('Q-R66 — the trees the file rules read are found', function (): void {
+it('the trees the file rules read are found', function (): void {
     // `Tree::root()` resolving wrong takes every one of these at once, which is
     // why they are asserted together rather than beside the rules that use them.
     expect(Tree::filesUnder(Tree::at('app-modules'), '.php'))->not->toBe([]);
@@ -89,7 +89,7 @@ it('Q-R66 — the trees the file rules read are found', function (): void {
     expect(Tree::testFiles())->not->toBe([]);
 });
 
-it('Q-R66 — the root is this repository rather than wherever the run started', function (): void {
+it('the root is this repository rather than wherever the run started', function (): void {
     // The one that makes the rest of this file meaningful. Every path above is
     // built from `Tree::root()`, so a root pointing somewhere plausible-but-wrong
     // — a parent directory, a sibling worktree — produces file lists that are
@@ -105,7 +105,7 @@ it('Q-R66 — the root is this repository rather than wherever the run started',
     expect(Tree::isTheRepository(sys_get_temp_dir()))->toBeFalse();
 });
 
-it('Q-R66 — the templates the Blade rules read are found', function (): void {
+it('the templates the Blade rules read are found', function (): void {
     // Five rules in `tests/Templates` read `Template::all()` and one of them
     // asserts it found anything. There is one Blade template in this
     // repository, so the distance between "checks every screen's markup" and

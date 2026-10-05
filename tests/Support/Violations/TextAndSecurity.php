@@ -113,7 +113,7 @@ final readonly class TextAndSecurity
                         return view('operator::your-stacks');
                     }
                 }
-                PHP, 'N1-R39 —', 'ShowsSomebodysStack'),
+                PHP, 'a screen that shows a stack\'s data is told which stack', 'ShowsSomebodysStack'),
 
             Fixture::suite('N4-R18', 'app-modules/operator/src/Internal/Screens/ShowsASessionOpenly.php', <<<'PHP'
                 <?php
@@ -135,7 +135,7 @@ final readonly class TextAndSecurity
                         return view('operator::your-stacks');
                     }
                 }
-                PHP, 'N4-R18 —', 'ShowsASessionOpenly'),
+                PHP, 'a screen holding a secret is excluded from capture', 'ShowsASessionOpenly'),
 
             Fixture::analyser('N4-R11', 'Plain/RaisesItsOwnAlert.php', <<<'PHP'
                 <?php
@@ -195,7 +195,7 @@ final readonly class TextAndSecurity
 
             Fixture::suite('N1-R21', '.env.fixtureplanted', <<<'ENV'
                 LEMONFIBER_VERIFY_TLS=true
-                ENV, 'N1-R21 —', 'lemonfiber_verify_tls'),
+                ENV, 'no setting exists that could turn certificate verification off', 'lemonfiber_verify_tls'),
 
             Fixture::analyser('S3', 'Plain/WeakensTls.php', <<<'PHP'
                 <?php
@@ -277,7 +277,7 @@ final readonly class TextAndSecurity
                         return new Encrypter($key, 'aes-256-gcm')->encryptString($value);
                     }
                 }
-                PHP, 'S4 — the encrypter is named in the seal module'),
+                PHP, 'the encrypter is named in the seal module'),
 
             Fixture::suite('S5', 'app-modules/codes/src/Fixtures/SealsUnderTheFrameworksKey.php', <<<'PHP'
                 <?php
@@ -295,7 +295,7 @@ final readonly class TextAndSecurity
                         return Crypt::encryptString($value);
                     }
                 }
-                PHP, 'S5 — the Crypt facade is named in the seal module'),
+                PHP, 'the Crypt facade is named in the seal module'),
 
             Fixture::suite('S6', 'app-modules/codes/src/Fixtures/HashesAStackBesideTheSeal.php', <<<'PHP'
                 <?php
@@ -311,7 +311,7 @@ final readonly class TextAndSecurity
                         return hash_hmac('sha256', $stack, $key);
                     }
                 }
-                PHP, 'S6 — a keyed hash is taken in the seal module'),
+                PHP, 'a keyed hash is taken in the seal module'),
         ];
     }
 }

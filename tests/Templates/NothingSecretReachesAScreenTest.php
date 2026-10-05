@@ -46,7 +46,8 @@ it('has templates to check', function () use ($templates): void {
 })->skip($templates === [], 'No Blade template exists yet. This rule applies as soon as one does.');
 
 foreach ($templates as $template) {
-    it(sprintf('F7 — %s reads nothing that has one destination', $template->path), function () use ($template): void {
+    // F7 — no template reads a value that has one destination
+    it(sprintf('%s reads nothing that has one destination', $template->path), function () use ($template): void {
         $reached = [];
 
         foreach (OneDestination::all() as [$type, $accessor, $rule, $why]) {

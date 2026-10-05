@@ -21,7 +21,8 @@ use Tests\Support\Template;
 $templates = Template::all();
 
 foreach ($templates as $template) {
-    it(sprintf('F3 — %s holds no logic', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('%s holds no logic', $template->path), function () use ($template): void {
         // `<?php` is matched without its opening angle bracket so that this
         // file does not contain the token it refuses.
         $refused = [
@@ -52,7 +53,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F3 — %s opens no web view (ADR-0017)', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('%s opens no web view (ADR-0017)', $template->path), function () use ($template): void {
         $found = array_values(array_filter(
             $template->nativeTags(),
             static fn(string $tag): bool => $tag === 'webview',
@@ -69,7 +71,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F3 — %s names no literal colour (DES-R24)', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('%s names no literal colour', $template->path), function () use ($template): void {
         $literals = [];
 
         foreach ($template->classStrings() as $classString) {

@@ -33,7 +33,7 @@ use Tests\Support\Module;
 // server publishes. Adding them would make the rule fire on screens it has no
 // business firing on, and a rule that cries wolf is turned off.
 
-it('N4-R18 — a screen holding a secret is excluded from capture', function (): void {
+it('a screen holding a secret is excluded from capture', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {

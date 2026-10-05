@@ -16,8 +16,9 @@ use function substr_count;
  * The title every PHP test in this repository is written under, and where it is.
  *
  * A title is the string an `it`, `test`, `arch` or `describe` call opens with,
- * a `sprintf` format included, which is the sentence a reader of the run reads.
- * Read over every test file {@see Tree::testFiles()} finds.
+ * in either quote and a `sprintf` format included, which is the sentence a
+ * reader of the run reads. Read over every test file {@see Tree::testFiles()}
+ * finds.
  *
  * The fixture families hold planted tests as text inside PHP that is not a
  * test file, so they are not among what is read.
@@ -25,7 +26,9 @@ use function substr_count;
 final readonly class TestTitles
 {
     /** How a title is opened, read over the source rather than parsed. */
-    private const string A_TITLE = "/^\\s*(?:it|test|arch|describe)\\(\\s*(?:sprintf\\(\\s*)?'((?:[^'\\\\]|\\\\.)*)'/m";
+    private const string A_TITLE = <<<'REGEX'
+        /^\s*(?:it|test|arch|describe)\(\s*(?:sprintf\(\s*)?(?:'(?<single>(?:[^'\\]|\\.)*)'|"(?<double>(?:[^"\\]|\\.)*)")/m
+        REGEX;
 
     /**
      * Every title, against the file and line it is written on.
@@ -58,8 +61,9 @@ final readonly class TestTitles
             return $found;
         }
 
-        foreach ($titles[1] as [$title, $offset]) {
+        foreach ($titles[0] as $index => [, $offset]) {
             $line = substr_count($source, "\n", 0, $offset) + 1;
+            $title = sprintf('%s%s', $titles['single'][$index][0], $titles['double'][$index][0]);
             $found[sprintf('%s:%d', str_replace(sprintf('%s/', Tree::root()), '', $path), $line)] = stripslashes($title);
         }
 

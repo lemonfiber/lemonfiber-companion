@@ -28,7 +28,8 @@ it('has templates to check', function () use ($templates): void {
 })->skip($templates === [], 'No Blade template exists yet. These rules apply as soon as one does.');
 
 foreach ($templates as $template) {
-    it(sprintf('F3 — every class in %s is one EDGE knows', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('every class in %s is one EDGE knows', $template->path), function () use ($template): void {
         $dropped = Edge::unsupportedClasses($template->path, $template->classStrings());
 
         expect($dropped)->toBe([], sprintf(
@@ -44,7 +45,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F3 — every tag in %s resolves to an element', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('every tag in %s resolves to an element', $template->path), function () use ($template): void {
         $known = Edge::knownTags();
 
         $unresolvable = array_values(array_filter(
@@ -62,7 +64,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F3 — every element in %s is written with its prefix', $template->path), function () use ($template): void {
+    // F3 — Blade holds no logic
+    it(sprintf('every element in %s is written with its prefix', $template->path), function () use ($template): void {
         $known = Edge::knownTags();
 
         $bare = array_values(array_filter(

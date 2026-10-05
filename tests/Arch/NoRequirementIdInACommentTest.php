@@ -112,7 +112,7 @@ function whatStillNamesARequirement(): array
     return $found;
 }
 
-it('GOV-R6 — no comment names a requirement', function (): void {
+it('no comment names a requirement', function (): void {
     $found = whatStillNamesARequirement();
 
     sort($found);
@@ -257,7 +257,7 @@ function whereANativeSourceNamesOne(string $path, string $source): array
     return $found;
 }
 
-it('GOV-R6 — no Kotlin or Swift source names a requirement', function (): void {
+it('no Kotlin or Swift source names a requirement', function (): void {
     // Assert the reading before what it says, and per tree: a rule whose
     // subjects are discovered has a state in which it examines nothing, and that
     // state looks exactly like every subject passing.
@@ -285,7 +285,7 @@ it('GOV-R6 — no Kotlin or Swift source names a requirement', function (): void
     ));
 });
 
-it('GOV-R6 — that reader would recognise one in either language', function (): void {
+it('the reader recognises a requirement identifier in Kotlin and in Swift', function (): void {
     // Driven directly rather than by planting a file under `bridge/resources`,
     // which would leave a real source wrong for the length of a run — and a run
     // that is killed leaves what it planted behind.

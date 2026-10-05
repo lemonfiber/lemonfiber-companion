@@ -24,7 +24,7 @@ final readonly class ErrorsAndBoundaries
                 {
                     public function repair(): void {}
                 }
-                PHP, 'C1 —'),
+                PHP, 'no Api method changes something and says nothing'),
 
             Fixture::suite('C2', 'app-modules/health/src/Api/Fixtures/AnswersWithNull.php', <<<'PHP'
                 <?php
@@ -40,7 +40,7 @@ final readonly class ErrorsAndBoundaries
                         return null;
                     }
                 }
-                PHP, 'C2 —'),
+                PHP, 'no Api method answers with null'),
 
             Fixture::analyser('C3', 'Plain/ThrowsBare.php', <<<'PHP'
                 <?php
@@ -130,7 +130,7 @@ final readonly class ErrorsAndBoundaries
                         return $this;
                     }
                 }
-                PHP, 'D1 —'),
+                PHP, 'no Api signature is an untyped bag'),
 
             Fixture::suite('D2', 'app-modules/health/src/Api/Fixtures/TakesPrimitive.php', <<<'PHP'
                 <?php
@@ -146,7 +146,7 @@ final readonly class ErrorsAndBoundaries
                         return $this;
                     }
                 }
-                PHP, 'D2 —'),
+                PHP, 'no Api parameter is a bare primitive'),
 
             Fixture::analyser('D3', 'Plain/Untyped.php', <<<'PHP'
                 <?php
@@ -185,7 +185,7 @@ final readonly class ErrorsAndBoundaries
                         return $said;
                     }
                 }
-                PHP, 'D3 —', 'SaysMixed'),
+                PHP, 'no Api signature says mixed', 'SaysMixed'),
 
             Fixture::suite('D4', 'app-modules/health/src/Fixtures/SchemeIsALiteral.php', <<<'PHP'
                 <?php
@@ -208,7 +208,7 @@ final readonly class ErrorsAndBoundaries
                         return $said === '';
                     }
                 }
-                PHP, 'D4 — a closed set'),
+                PHP, 'a closed set is an enum'),
 
             Fixture::suite('D4', 'app-modules/health/src/Fixtures/RepairStatus.php', <<<'PHP'
                 <?php
@@ -218,7 +218,7 @@ final readonly class ErrorsAndBoundaries
                 namespace Modules\Health\Fixtures;
 
                 final readonly class RepairStatus {}
-                PHP, 'D4 — a closed set'),
+                PHP, 'a closed set is an enum'),
 
             Fixture::suite('D4', 'app-modules/health/src/Fixtures/StandingIsAMatch.php', <<<'PHP'
                 <?php
@@ -254,7 +254,7 @@ final readonly class ErrorsAndBoundaries
                         };
                     }
                 }
-                PHP, 'D4 — a closed set', 'StandingIsAMatch'),
+                PHP, 'a closed set is an enum', 'StandingIsAMatch'),
 
             Fixture::analyser('D4', 'Plain/MatchesDefault.php', <<<'PHP'
                 <?php
@@ -384,7 +384,7 @@ final readonly class ErrorsAndBoundaries
                         return new Reachable();
                     }
                 }
-                PHP, 'E1 — health', 'Modules\\Operator'),
+                PHP, 'health respects the other modules', 'Modules\\Operator'),
 
             Fixture::suite('E2', 'app-modules/operator/src/Fixtures/ReachesInternals.php', <<<'PHP'
                 <?php
@@ -402,7 +402,7 @@ final readonly class ErrorsAndBoundaries
                         return new Hidden();
                     }
                 }
-                PHP, 'E2 — health publishes', 'ReachesInternals'),
+                PHP, 'health publishes an Api', 'ReachesInternals'),
 
             Fixture::suite('E3', 'app-modules/stacks/src/Fixtures/NamesTheSdk.php', <<<'PHP'
                 <?php
@@ -420,7 +420,7 @@ final readonly class ErrorsAndBoundaries
                         return new Client();
                     }
                 }
-                PHP, 'E3 — the SDK is named in exactly one module', 'Lemonfiber\\Sdk'),
+                PHP, 'the SDK is named in exactly one module', 'Lemonfiber\\Sdk'),
 
             Fixture::suite('E4', 'app-modules/backups/src/Fixtures/NamesThePlatform.php', <<<'PHP'
                 <?php
@@ -438,7 +438,7 @@ final readonly class ErrorsAndBoundaries
                         return null;
                     }
                 }
-                PHP, 'A7/E4 — backups', 'Native'),
+                PHP, 'backups stays inside what a', 'Native'),
         ];
     }
 }

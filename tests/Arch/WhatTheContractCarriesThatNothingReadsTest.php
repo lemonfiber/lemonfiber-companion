@@ -1190,7 +1190,7 @@ function theEnvelopeIn(string $path): string
     return $at === false ? $path : substr($path, 0, $at);
 }
 
-it('N1-R17 — every path on an envelope this app reads has been decided about', function (): void {
+it('every path on an envelope this app reads has been decided about', function (): void {
     // The half that matters. A field lemonfiber adds is a field somebody has to
     // weigh, and this is what makes that happen on the day it arrives rather
     // than on the day a screen turns out to be missing something.
@@ -1238,7 +1238,7 @@ it('N1-R17 — every path on an envelope this app reads has been decided about',
     ));
 });
 
-it('N1-R17 — the reading follows a reader rather than recognising a name', function (): void {
+it('the reading follows a reader rather than recognising a name', function (): void {
     // What the rule above rests on, asserted on a pair that proves it. Both of
     // these are called `detail`, one is read and one is not, and a reading that
     // answered from `WireField` would call both of them read. The verdict's own
@@ -1257,7 +1257,7 @@ it('N1-R17 — the reading follows a reader rather than recognising a name', fun
         ->and($read)->not->toContain('StatusEnvelope.disturbs.switching.bound');
 });
 
-it('N1-R17 — every reach into a payload is one the reading placed', function (): void {
+it('every reach into a payload is one the reading placed', function (): void {
     // The failure this rule cannot survive quietly. A subscript the following
     // cannot seat reads a field the register is then told nothing reads, and
     // the answer to that is a row explaining why a field that *is* read is not
@@ -1277,7 +1277,7 @@ it('N1-R17 — every reach into a payload is one the reading placed', function (
     ));
 });
 
-it('N1-R17 — every envelope a reader opens is one the reading was seated on', function (): void {
+it('every envelope a reader opens is one the reading was seated on', function (): void {
     // The other half of the same guarantee, and the one that catches a whole
     // reader dropping out rather than one line of it. An envelope opened by
     // `XEnvelope::in` and missing from the following is an envelope whose every
@@ -1308,7 +1308,7 @@ it('N1-R17 — every envelope a reader opens is one the reading was seated on', 
     ));
 });
 
-it('N1-R17 — every row still names a path the contract has', function (): void {
+it('every row still names a path the contract has', function (): void {
     // The half that keeps the register honest about the present. A field
     // renamed or removed leaves a row explaining a decision about something
     // that is not there, and the rule above would then be excusing a field
@@ -1329,7 +1329,7 @@ it('N1-R17 — every row still names a path the contract has', function (): void
     ));
 });
 
-it('N1-R17 — every row names a path nothing reads', function (): void {
+it('every row names a path nothing reads', function (): void {
     // The direction a name-based reading could not ask about at all, and the
     // one that had two rows wrong: a row saying nothing under `members` is read
     // while the app reads a member's name and every request under them, and a
@@ -1356,7 +1356,7 @@ it('N1-R17 — every row names a path nothing reads', function (): void {
     ));
 });
 
-it('N1-R17 — every row says why, and says how much it covers', function (): void {
+it('every row says why, and says how much it covers', function (): void {
     // The reason is the only part that survives the person who wrote it, and a
     // row without one is a row the next reader has to re-decide from scratch.
     //

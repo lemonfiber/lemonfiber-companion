@@ -126,7 +126,8 @@ function aRowsControlNamesItsRow(string $tag): bool
     return str_contains(str_replace('$this', '', implode(' ', $named[1])), '$');
 }
 
-it('F5 — a control drawn once per row says which row it is on', function (): void {
+// F5 — every interactive element announces itself to a screen reader
+it('a control drawn once per row says which row it is on', function (): void {
     $unnamed = [];
     $looked = 0;
 

@@ -41,7 +41,7 @@ const NEVER_IN_A_REPORT = [
     ABundleFile::class,
 ];
 
-it('N4-R13 — the assembler will not accept anything private', function (): void {
+it('the assembler will not accept anything private', function (): void {
     $accepted = [];
 
     foreach (new ReflectionClass(Diagnostics::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
@@ -72,7 +72,7 @@ it('N4-R13 — the assembler will not accept anything private', function (): voi
     ));
 });
 
-it('N4-R13 — nothing about a report can send it', function (): void {
+it('nothing about a report can send it', function (): void {
     // The absence that keeps the second clause. Asserted rather than trusted:
     // a `send()` here would be a reasonable-looking convenience, and it is the
     // line that turns an operator-sent report into telemetry.
@@ -80,7 +80,7 @@ it('N4-R13 — nothing about a report can send it', function (): void {
         ->and(get_class_methods(Assembled::class))->toBe(['as', 'named', 'text']);
 });
 
-it('N4-R13 — an assembled report holds no constructor a caller could fill', function (): void {
+it('an assembled report holds no constructor a caller could fill', function (): void {
     // `Assembled::as()` is the only maker, and `Diagnostics` is the only thing
     // that knows what belongs in a report. PHP has no package visibility, so
     // this is convention — but a private constructor is what stops a caller

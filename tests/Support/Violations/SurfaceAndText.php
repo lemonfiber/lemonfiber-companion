@@ -45,7 +45,7 @@ final readonly class SurfaceAndText
                         return $this->asked->answer();
                     }
                 }
-                PHP, 'F2 —'),
+                PHP, 'a presenter is handed data'),
 
             Fixture::suite('F4', 'app-modules/operator/src/Fixtures/EagerScreen.php', <<<'PHP'
                 <?php
@@ -61,7 +61,7 @@ final readonly class SurfaceAndText
                 {
                     public function __construct(private readonly Asked $asked) {}
                 }
-                PHP, 'F4 —'),
+                PHP, 'a screen that waits on a port paints something first'),
 
             // A screen that walks a run without naming `WorstFirst`, which is
             // the whole of the violation: the type is imported, the rows come
@@ -89,7 +89,7 @@ final readonly class SurfaceAndText
                         return $rows;
                     }
                 }
-                PHP, 'F8 —', 'ShowsWhateverArrived'),
+                PHP, 'nothing shows findings it did not take from WorstFirst', 'ShowsWhateverArrived'),
 
             // A screen that names a template nobody wrote. `F10` makes the join
             // between markup and class from `render()`, so a screen whose view
@@ -120,7 +120,7 @@ final readonly class SurfaceAndText
                         return view('operator::a-template-nobody-wrote');
                     }
                 }
-                PHP, 'F10 —', 'RendersATemplateNobodyWrote'),
+                PHP, 'every screen that renders is one this rule pairs', 'RendersATemplateNobodyWrote'),
 
             Fixture::analyser('H5', 'Plain/Concatenates.php', <<<'PHP'
                 <?php
@@ -195,7 +195,7 @@ final readonly class SurfaceAndText
                 return [
                     'only_in_english' => 'A key with no Dutch counterpart',
                 ];
-                PHP, 'L2 — the locales carry the same keys'),
+                PHP, 'the locales carry the same keys'),
         ];
     }
 

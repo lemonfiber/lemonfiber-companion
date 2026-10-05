@@ -35,7 +35,8 @@ it('the two managers this product sets up are both configured', function (): voi
     expect($configures)->toBe(['launchd', 'systemd']);
 });
 
-it('L7 — every manager names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every manager names a line, built from the case', function (): void {
     foreach (WhatKeepsItRunning::cases() as $manager) {
         expect($manager->saidOnTheScreen())
             ->toBe(sprintf('stacks.keeps-running.%s', $manager->value), $manager->name);

@@ -91,7 +91,9 @@ function wordsFor(string $locale, string $group, array $values): array
     return $found;
 }
 
-it('L1/L2 — every case a screen branches on has a word in every language', function (): void {
+// L1 — text a person reads comes from the translator
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('every case a screen branches on has a word in every language', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {
@@ -119,7 +121,8 @@ it('L1/L2 — every case a screen branches on has a word in every language', fun
     ));
 });
 
-it('L2 — no two cases in a group read the same', function (): void {
+// L2 — every locale carries the same keys, none empty and none equal to its key
+it('no two cases in a group read the same', function (): void {
     // `Unverified` against `Passed` is the pair this exists for. A check that
     // could not run must never be readable as one that passed — that is the
     // distinction the whole subsystem turns on, and it survives the type system

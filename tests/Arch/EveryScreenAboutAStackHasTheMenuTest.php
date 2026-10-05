@@ -50,7 +50,8 @@ function theScreensAboutAStack(): array
     return $found;
 }
 
-it('F17 — every screen about a stack in either surface carries the menu, or is named with why it does not', function (): void {
+// F17 — every screen about a stack, in either surface, carries the side menu and the list of stacks, and one that goes without the menu is named with why
+it('every screen about a stack in either surface carries the menu, or is named with why it does not', function (): void {
     $wrong = [];
 
     foreach (theScreensAboutAStack() as $surface => $screens) {
@@ -77,7 +78,8 @@ it('does not let the screens without the menu grow', function (): void {
     expect(WITHOUT_THE_MENU)->toBe([]);
 });
 
-it('F17 — every screen about a stack in either surface carries the list of stacks', function (): void {
+// F17 — every screen about a stack, in either surface, carries the side menu and the list of stacks, and one that goes without the menu is named with why
+it('every screen about a stack in either surface carries the list of stacks', function (): void {
     $without = [];
 
     foreach (theScreensAboutAStack() as $screens) {

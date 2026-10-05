@@ -182,7 +182,7 @@ function whatThePagesPromise(): array
     return $found;
 }
 
-it('GOV-R6 — every page names something this repository has', function (): void {
+it('every page names something this repository has', function (): void {
     $missing = array_map(
         static fn(array $row): string => sprintf('%s says `%s`', $row[0], $row[1]),
         array_values(array_filter(whatThePagesPromise(), static fn(array $row): bool => ! $row[2])),

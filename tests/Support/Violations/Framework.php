@@ -23,7 +23,7 @@ final readonly class Framework
                 use Illuminate\Database\Eloquent\Model;
 
                 final class UsesEloquent extends Model {}
-                PHP, 'A1 — no Illuminate\\Database\\Eloquent', 'Modules\\Health'),
+                PHP, 'no Illuminate\\Database\\Eloquent', 'Modules\\Health'),
 
             Fixture::analyser('A2', 'Plain/UsesFacade.php', <<<'PHP'
                 <?php
@@ -89,7 +89,7 @@ final readonly class Framework
                         return env('APP_DEBUG');
                     }
                 }
-                PHP, 'A5 — configuration is read from config'),
+                PHP, 'configuration is read from config'),
 
             Fixture::suite('A6', 'app-modules/health/src/Fixtures/HoldsStatic.php', <<<'PHP'
                 <?php
@@ -102,7 +102,7 @@ final readonly class Framework
                 {
                     public static string $cached = 'survives a dispatch';
                 }
-                PHP, 'A6/I1'),
+                PHP, 'declares no static property anywhere in a module'),
 
             Fixture::suite('I1', 'app-modules/health/src/Fixtures/HoldsAnotherStatic.php', <<<'PHP'
                 <?php
@@ -115,7 +115,7 @@ final readonly class Framework
                 {
                     public static int $count = 0;
                 }
-                PHP, 'A6/I1'),
+                PHP, 'declares no static property anywhere in a module'),
 
             // The other declaration, and its own fixture rather than a second
             // assertion on the two above: a static inside a method body has no
@@ -138,7 +138,7 @@ final readonly class Framework
                         return ++$seen;
                     }
                 }
-                PHP, 'A6/I1'),
+                PHP, 'no method holds a static variable'),
 
             Fixture::suite('A7', 'app-modules/health/src/Fixtures/UsesIlluminate.php', <<<'PHP'
                 <?php
@@ -156,7 +156,7 @@ final readonly class Framework
                         return new Collection();
                     }
                 }
-                PHP, 'A7/E4 — health', 'Illuminate'),
+                PHP, 'health stays inside what a', 'Illuminate'),
 
             // Beside the store and not in it: a directory whose name starts
             // with the store's, so a wall read as a string prefix rather than
@@ -177,7 +177,7 @@ final readonly class Framework
                         return new Collection();
                     }
                 }
-                PHP, 'A7/E4 — health'),
+                PHP, 'health stays inside what a'),
 
             // A capability reaching the database from outside its store: the
             // rest of the module is as free of the framework as it ever was.
@@ -199,7 +199,7 @@ final readonly class Framework
                         return $this->database->table('health_readings')->count();
                     }
                 }
-                PHP, 'A1 — Illuminate\\Database is named only in a capability\'s store'),
+                PHP, 'Illuminate\\Database is named only in a capability\'s store'),
 
             // Planted in an adapter, which may name the framework, so that what
             // this breaks is which module may reach the database rather than
@@ -223,7 +223,7 @@ final readonly class Framework
                         return $this->database->table('codes_drawn')->count();
                     }
                 }
-                PHP, 'A1 — Illuminate\\Database is named only in a capability\'s store'),
+                PHP, 'Illuminate\\Database is named only in a capability\'s store'),
 
             // A table created in the right place under the wrong name: a
             // capability's own migration, making a table that does not say
@@ -245,7 +245,7 @@ final readonly class Framework
                         });
                     }
                 };
-                PHP, 'A10 — a table carries its owner'),
+                PHP, 'a table carries its owner'),
 
             // A module reading a table another store owns, which is the store
             // growing by the back door.
@@ -263,7 +263,7 @@ final readonly class Framework
                         return 'health_readings';
                     }
                 }
-                PHP, 'A10 — no module names a table another module owns'),
+                PHP, 'no module names a table another module owns'),
 
             // The store reached from beside it rather than through its port,
             // by a relative name that imports nothing, which is how a class in
@@ -286,7 +286,7 @@ final readonly class Framework
                         return $this->store->forget($stack)->howMany();
                     }
                 }
-                PHP, 'A11 — nothing outside a store names a class in it'),
+                PHP, 'nothing outside a store names a class in it'),
 
             // The rest of a capability reaching the store kit beside its store,
             // which is a second way into its table that no port stands before.
@@ -309,7 +309,7 @@ final readonly class Framework
                         return $this->table->forgetEverything();
                     }
                 }
-                PHP, 'A14 — a store kit is named only in a capability\'s store'),
+                PHP, 'a store kit is named only in a capability\'s store'),
 
             // The store kit reaching past the database for the rest of the
             // framework, which a store kit may not.
@@ -329,7 +329,7 @@ final readonly class Framework
                         return new Collection();
                     }
                 }
-                PHP, 'A7/E4 — store-kit', 'Illuminate'),
+                PHP, 'store-kit stays inside what a', 'Illuminate'),
 
             // A store that can be handed a summary it could read, and so one
             // day writes it to disk in the clear.
@@ -350,7 +350,7 @@ final readonly class Framework
                         return Noted::notKept();
                     }
                 }
-                PHP, 'A12 — a store class takes and gives only sealed payloads'),
+                PHP, 'a store class takes and gives only sealed payloads'),
 
             // A class that is no owner's writer making a value to seal, and so a
             // second way into the phone's storage nothing lists.
@@ -370,7 +370,7 @@ final readonly class Framework
                         return Unsealed::of($said);
                     }
                 }
-                PHP, 'A13 — only a declared writer puts a value in the clear'),
+                PHP, 'only a declared writer puts a value in the clear'),
 
             // A writer handed a session, one line from writing it down beside
             // the settings it keeps.
@@ -379,7 +379,7 @@ final readonly class Framework
                 'app-modules/connection/src/Internal/TheSettingsAsKept.php',
                 'public static function written(ThePhonesSettings $settings): Unsealed',
                 'public static function written(ThePhonesSettings $settings, \\Modules\\Kernel\\Api\\Session $session): Unsealed',
-                'A13 — no writer is handed',
+                'no writer is handed',
                 'Session',
             ),
 

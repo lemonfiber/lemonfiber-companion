@@ -369,7 +369,8 @@ it('names every agreement the kernel declares as something the phone may not kee
     expect($unnamed)->toBe([], 'These are agreements the phone may not keep, and nothing here says so.');
 });
 
-it('A13 — only a declared writer puts a value in the clear to be kept', function (): void {
+// A13 — what the phone keeps is put in the clear to be sealed only by its owner's writer, and no writer is handed an offer, an agreement, a command's idempotency key, a credential, a session or pairing material
+it('only a declared writer puts a value in the clear to be kept', function (): void {
     $offenders = array_values(array_diff(everyClassThatPutsAValueInTheClear(), [...THE_WRITERS_OF_WHAT_IS_KEPT, THE_SEAL_THAT_OPENS]));
 
     expect($offenders)->toBe([], sprintf(
@@ -381,7 +382,8 @@ it('A13 — only a declared writer puts a value in the clear to be kept', functi
     ));
 });
 
-it('A13 — no writer is handed an offer, an agreement, a command\'s key, a credential, a session or pairing material', function (): void {
+// A13 — what the phone keeps is put in the clear to be sealed only by its owner's writer, and no writer is handed an offer, an agreement, a command's idempotency key, a credential, a session or pairing material
+it('no writer is handed an offer, an agreement, a command\'s key, a credential, a session or pairing material', function (): void {
     $offenders = [];
 
     foreach (THE_WRITERS_OF_WHAT_IS_KEPT as $writer) {

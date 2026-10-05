@@ -28,7 +28,7 @@ use Tests\Support\Tree;
 /** Where the declared identity is applied over whatever the config says. */
 const WHERE_THE_IDENTITY_IS_SET = 'bootstrap/Composition/CompositionRoot.php';
 
-it('N1-R53 — the identity is not taken from whoever ran the build', function (): void {
+it('the identity is not taken from whoever ran the build', function (): void {
     // Read here rather than at the config, which is the point of the whole
     // change: `config/nativephp.php` is written by `native:install` and is not
     // in this repository, so a rule reading it would be a rule reading a file a

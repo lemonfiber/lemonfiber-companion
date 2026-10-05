@@ -39,7 +39,8 @@ it('says cannot be put back in a word of its own, not by leaving one out', funct
     expect(array_unique($keys))->toHaveCount(3);
 });
 
-it('L7 — every reversal names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every reversal names a line, built from the case', function (): void {
     foreach (HowFarItGoesBack::cases() as $reversal) {
         expect($reversal->saidOnTheScreen())
             ->toBe(sprintf('stacks.reversal.%s', $reversal->value), $reversal->name);

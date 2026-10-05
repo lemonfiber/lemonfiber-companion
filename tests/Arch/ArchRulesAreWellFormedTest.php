@@ -160,7 +160,8 @@ function stringsIn(?Node $node): array
     return $found;
 }
 
-it('R3 — no expectation is narrowed by holding more than one symbol', function (): void {
+// R3 — an architecture expectation names one symbol per rule, and every namespace it names resolves
+it('no expectation is narrowed by holding more than one symbol', function (): void {
     $expectations = archExpectations();
     $offenders = [];
 
@@ -184,7 +185,8 @@ it('R3 — no expectation is narrowed by holding more than one symbol', function
     ));
 });
 
-it('R3 — no expectation mixes a function name with a namespace', function (): void {
+// R3 — an architecture expectation names one symbol per rule, and every namespace it names resolves
+it('no expectation mixes a function name with a namespace', function (): void {
     $expectations = archExpectations();
     $offenders = [];
 
@@ -208,7 +210,8 @@ it('R3 — no expectation mixes a function name with a namespace', function (): 
     ));
 });
 
-it('R3 — every namespace an expectation names resolves to something', function (): void {
+// R3 — an architecture expectation names one symbol per rule, and every namespace it names resolves
+it('every namespace an expectation names resolves to something', function (): void {
     /** @var array<string, array<int, string>> $registered */
     $registered = require Tree::at('vendor/composer/autoload_psr4.php');
     $prefixes = array_keys($registered);

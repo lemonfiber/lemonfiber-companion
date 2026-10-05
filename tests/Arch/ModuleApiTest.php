@@ -42,7 +42,8 @@ const THE_ANSWER_ARRIVES_LATER = [
     'Modules\Device\Api\PlatformScanner::forAPairingCode()',
 ];
 
-it('C1 — no Api method changes something and says nothing', function (): void {
+// C1 — Outcome crosses module boundaries
+it('no Api method changes something and says nothing', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn() as $class) {
@@ -99,7 +100,8 @@ function whereAForeignNullArrives(): array
     return [];
 }
 
-it('C2 — no Api method answers with null, and none takes it either', function (): void {
+// C2 — no null for absence
+it('no Api method answers with null, and none takes it either', function (): void {
     // Both halves, and the parameter half was missing.
     //
     // The rule is "no `null` for absence", and a nullable *parameter* is the
@@ -148,7 +150,8 @@ it('C2 — no Api method answers with null, and none takes it either', function 
     ));
 });
 
-it('D3 — no Api signature says mixed', function (): void {
+// D3 — no mixed in public signatures
+it('no Api signature says mixed', function (): void {
     // The rule is "No `mixed` in public signatures" and its stated mechanism —
     // level max plus 100% type coverage — cannot see it. Type coverage counts
     // whether a type is *declared*, and `mixed` is a declared type; `mixed
@@ -189,7 +192,8 @@ it('D3 — no Api signature says mixed', function (): void {
     ));
 });
 
-it('D1 — no Api signature is an untyped bag', function (): void {
+// D1 — no array in a public Api signature
+it('no Api signature is an untyped bag', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn() as $class) {
@@ -215,7 +219,8 @@ it('D1 — no Api signature is an untyped bag', function (): void {
     ));
 });
 
-it('D2 — no Api parameter is a bare primitive', function (): void {
+// D2 — no primitive obsession
+it('no Api parameter is a bare primitive', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn() as $class) {
@@ -246,7 +251,8 @@ it('D2 — no Api parameter is a bare primitive', function (): void {
     ));
 });
 
-it('M1 — a query asks and a command decides', function (): void {
+// M1 — a query never answers with Outcome
+it('a query asks and a command decides', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn('Queries') as $class) {
@@ -277,7 +283,8 @@ it('M1 — a query asks and a command decides', function (): void {
     ));
 });
 
-it('M2 — a command or a query does one thing', function (): void {
+// M2 — a class under Api\Commands or Api\Queries has exactly one public method
+it('a command or a query does one thing', function (): void {
     $offenders = [];
 
     foreach ([...ApiSurface::classesIn('Commands'), ...ApiSurface::classesIn('Queries')] as $class) {
@@ -306,7 +313,8 @@ it('M2 — a command or a query does one thing', function (): void {
     ));
 });
 
-it('M3 — a command can be sent twice', function (): void {
+// M3 — every Api\Commands\* constructor takes an IdempotencyKey
+it('a command can be sent twice', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn('Commands') as $class) {

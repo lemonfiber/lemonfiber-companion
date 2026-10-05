@@ -67,7 +67,7 @@ function aLineNaming(string $line, string $name): bool
     return preg_match(sprintf('/\b%ss?\b/iu', preg_quote($name, '/')), $line) === 1;
 }
 
-it('G2-R14 — every locale keeps the names this product gives its own things', function (): void {
+it('every locale keeps the names this product gives its own things', function (): void {
     $locales = Catalogue::locales();
     $first = $locales[0];
     $source = Catalogue::all($first);

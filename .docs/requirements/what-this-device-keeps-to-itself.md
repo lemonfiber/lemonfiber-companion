@@ -91,7 +91,7 @@ holds a row for each, and `N1-R17` is why none is worked out here.
 |---|---|---|
 | `N4-R5` | Retained state is discardable, and what is discarded is stated | `Configured` |
 | `N4-R6` | Where there is nowhere to keep a session, the app refuses **and says why** | `Kept` — both in one value |
-| `N4-R12` | Nothing is sent off the device on the app's initiative | `Assembled` — a type that could send itself would put the two one line apart |
+| `N4-R12` | Nothing is sent off the device on the app's initiative | `Assembled` — a type that could send itself would put the two one line apart (`NothingLeavesThisDeviceTest`) |
 | `N4-R13` | A report is assembled *for the operator to send*, not sent | `Assembled` |
 | `N4-R18` | Credentials and pairing material stay out of a capture | `Capture`, and the `concealed` half of `CaptureRule` on both platforms |
 | `N4-R17` | A refused local-network permission is its own condition, not an unreachable stack | `Obstacle` |

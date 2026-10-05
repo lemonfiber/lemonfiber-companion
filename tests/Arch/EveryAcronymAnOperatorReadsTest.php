@@ -90,7 +90,7 @@ function theAcronymsIn(string $said): array
     return array_values(array_unique($found[0]));
 }
 
-it('G2-R13 — every acronym in a sentence is explained or declared ordinary', function (): void {
+it('every acronym in a sentence is explained or declared ordinary', function (): void {
     $unexplained = [];
 
     foreach (Catalogue::locales() as $locale) {

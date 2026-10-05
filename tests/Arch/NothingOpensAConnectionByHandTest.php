@@ -39,7 +39,7 @@ const BY_HAND = [
     'socket_create', 'socket_connect',
 ];
 
-it('N1-R16 — every way to open a connection is held by a gate', function (): void {
+it('every way to open a connection is held by a gate', function (): void {
     $analyser = (string) file_get_contents(Tree::at('phpstan.neon'));
     $arch = (string) file_get_contents(Tree::at('tests/Arch/ModuleBoundariesTest.php'));
 

@@ -210,7 +210,8 @@ function whereThisChainStopsBeingTrue(?ReflectionClass $holding, array $chain, s
     return ['said' => null, 'followed' => $followed];
 }
 
-it('F14 — every step a template takes after its screen answered is one that value has', function (): void {
+// F14 — every step a template takes after its screen answered, and every step a component takes off what it was handed
+it('every step a template takes after its screen answered is one that value has', function (): void {
     $screens = Screens::byTheViewTheyRender();
 
     expect($screens)->not->toBe([], 'no screen was paired with a view, so this rule read nothing');
@@ -320,7 +321,8 @@ function whatThatComponentWasHanded(ReflectionClass $component, string $held): ?
     return whateverThatTypeIs($component->getProperty($held)->getType());
 }
 
-it('F14 — every step a component takes is one the value it was handed has', function (): void {
+// F14 — every step a template takes after its screen answered, and every step a component takes off what it was handed
+it('every step a component takes is one the value it was handed has', function (): void {
     $components = Components::byTheViewTheyRender();
 
     expect($components)->not->toBe([], 'no component was paired with a view, so this rule read nothing');

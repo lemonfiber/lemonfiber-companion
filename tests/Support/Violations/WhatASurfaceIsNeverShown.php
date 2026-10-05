@@ -92,7 +92,7 @@ final readonly class WhatASurfaceIsNeverShown
                         return new ArrayIterator($this->waiting);
                     }
                 }
-                PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
+                PHP, 'nothing holds a collection of actions', 'HoldsUndelivered'),
 
             // What the rule reads for is every player, which is stronger than
             // the row it is filed under asks, and is held while nothing on the
@@ -105,7 +105,7 @@ final readonly class WhatASurfaceIsNeverShown
                         val player = ExoPlayer.Builder(context).build()
                     }
                 }
-                KOTLIN, 'N3-R14 — no platform source reaches for a media player'),
+                KOTLIN, 'no platform source reaches for a media player'),
 
             // A test's own title, in the Kotlin harness, which is the half of
             // that rule the ratchet over the PHP deliberately does not hold: a
@@ -123,7 +123,7 @@ final readonly class WhatASurfaceIsNeverShown
                     fun `N4-R9 - a backgrounded app is protected`() {
                     }
                 }
-                KOTLIN, 'GOV-R6 — no Kotlin or Swift source names a requirement'),
+                KOTLIN, 'no Kotlin or Swift source names a requirement'),
 
             // The violation is a method added to a type this repository already
             // has, so there is no file to drop in beside it — which is why this
@@ -220,7 +220,7 @@ final readonly class WhatASurfaceIsNeverShown
                 'app-modules/operator/resources/views/your-stacks.blade.php',
                 ':headline="$stack->name()->shown()"',
                 ':headline="$stack->at()->forTheClient()"',
-                'F7 —',
+                'reads nothing that has one destination',
                 'forTheClient',
             ),
 
@@ -269,7 +269,7 @@ final readonly class WhatASurfaceIsNeverShown
                         }
                     }
                     PHP,
-                'L7 —',
+                'every enum that builds a catalogue key is asked above',
                 'Modules\Health\Api\Fixtures\Unlisted',
             ),
 
@@ -278,7 +278,7 @@ final readonly class WhatASurfaceIsNeverShown
                 'app-modules/operator/resources/views/your-stacks.blade.php',
                 "{{ __('connection.pair') }}",
                 "{{ __('connection.pair_up') }}",
-                'L7 —',
+                'every key the application names is in the catalogue',
                 'connection.pair_up',
             ),
 
@@ -299,7 +299,7 @@ final readonly class WhatASurfaceIsNeverShown
 
                             $this->app->booted(TheTheme::paint(...));
                     PHP,
-                'E5 — no listener reacts to an event its module may not name',
+                'no listener reacts to an event its module may not name',
                 'ListensAcrossAKind',
             ),
 

@@ -25,7 +25,7 @@ use Tests\Support\Settings;
 // setting that defaults to secure is still a setting somebody can change in
 // a `.env` nobody reviews.
 
-it('N1-R21 — no setting exists that could turn certificate verification off', function (): void {
+it('no setting exists that could turn certificate verification off', function (): void {
     $found = Settings::namingVerification();
 
     sort($found);

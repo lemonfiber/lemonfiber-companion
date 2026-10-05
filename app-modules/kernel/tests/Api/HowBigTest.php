@@ -60,7 +60,8 @@ it('rounds rather than floors, because flooring understates', function (): void 
         ->and(asShown(1_400_000_000))->toBe('1 household.gigabytes');
 });
 
-it('L5 — no figure reaches a thousand, in any band that has one above it', function (): void {
+// L5 — no number formatted with separators written into the call
+it('no figure reaches a thousand, in any band that has one above it', function (): void {
     // The defect this escape exists for. A size of 999.6 GB is below a
     // terabyte, so the band is gigabytes — and rounds to 1000, a four-figure
     // number in a band that was supposed to make one impossible. Every band
@@ -76,7 +77,8 @@ it('L5 — no figure reaches a thousand, in any band that has one above it', fun
     }
 });
 
-it('L5 — the figure below that window stays in its own band', function (): void {
+// L5 — no number formatted with separators written into the call
+it('the figure below that window stays in its own band', function (): void {
     // The other side of the same edge, so the escape cannot be a rule that
     // fires everywhere: 999.4 of a unit is still 999 of it.
     foreach (everyBandWithOneAbove() as $unit) {
@@ -95,7 +97,8 @@ it('says a size smaller than any unit in the smallest one', function (): void {
         ->and(asShown(1))->toBe('0 household.megabytes');
 });
 
-it('L7 — every unit names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every unit names a line, built from the case', function (): void {
     foreach (SizeUnit::cases() as $unit) {
         expect($unit->saidOnTheScreen())
             ->toBe(sprintf('household.%s', $unit->value), $unit->name);

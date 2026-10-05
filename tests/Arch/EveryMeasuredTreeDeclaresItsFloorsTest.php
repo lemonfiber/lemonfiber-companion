@@ -29,7 +29,8 @@ use Tests\Support\MeasuredTree;
 // is a derivation rather than a list: `MeasuredTree` reads the trees out of
 // `phpunit.xml` and the floors out of whichever manifest is nearest each.
 
-it('G7 — every measured tree is held to a floor its nearest manifest declares', function (): void {
+// G7 — every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two
+it('every measured tree is held to a floor its nearest manifest declares', function (): void {
     $undeclared = [];
 
     foreach (MeasuredTree::all() as $tree) {
@@ -90,7 +91,8 @@ function whatIsWrongWithAFloor(string $manifest, string $which, ?int $floor, ?st
     return [];
 }
 
-it('G7 — a floor of zero says what holds the tree instead', function (): void {
+// G7 — every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two
+it('a floor of zero says what holds the tree instead', function (): void {
     // The number without the argument is the shape this rule is really about.
     // A floor of zero is a position — a component holds state, an adapter
     // forwards a call, a stand-in is a fake by construction — and that position
@@ -125,7 +127,8 @@ it('G7 — a floor of zero says what holds the tree instead', function (): void 
     ));
 });
 
-it('G7 — no manifest is nearest to two measured trees', function (): void {
+// G7 — every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two
+it('no manifest is nearest to two measured trees', function (): void {
     // What keeps nearest-above a rule rather than a coincidence.
     //
     // One manifest declares one pair of numbers. Two trees reaching the same
@@ -167,7 +170,8 @@ it('G7 — no manifest is nearest to two measured trees', function (): void {
     expect($held)->not->toBe([], 'no tree is measured, so no manifest was asked to hold one');
 });
 
-it('G7 — the floors may be raised and may not quietly net out', function (): void {
+// G7 — every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two
+it('the floors may be raised and may not quietly net out', function (): void {
     // A ratchet on the declared numbers rather than on the measured ones.
     //
     // The obvious rule — the floor tracks actual coverage and may only rise —

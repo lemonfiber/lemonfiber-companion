@@ -109,7 +109,8 @@ const WHAT_A_COMPONENT_IS = [
 const OPERATED_BY = ['@tap', '@press', '@navigate', 'native:model'];
 
 foreach ($templates as $template) {
-    it(sprintf('F5 — every control in %s announces itself', $template->path), function () use ($template): void {
+    // F5 — every interactive element announces itself to a screen reader
+    it(sprintf('every control in %s announces itself', $template->path), function () use ($template): void {
         $silent = [];
         $controls = 0;
 
@@ -158,7 +159,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F11 — every component in %s has been decided about', $template->path), function () use ($template): void {
+    // F11 — every component a screen uses is classified as a control or as furniture
+    it(sprintf('every component in %s has been decided about', $template->path), function () use ($template): void {
         $unclassified = [];
 
         foreach ($template->elements() as $element) {
@@ -180,7 +182,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('F6 — every list in %s has an empty state', $template->path), function () use ($template): void {
+    // F6 — every list has an empty state
+    it(sprintf('every list in %s has an empty state', $template->path), function () use ($template): void {
         $unguarded = [];
 
         preg_match_all('/@foreach\b/', $template->source, $found, PREG_OFFSET_CAPTURE);
@@ -201,7 +204,8 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('L1 — %s reads its text from the translator', $template->path), function () use ($template): void {
+    // L1 — text a person reads comes from the translator
+    it(sprintf('%s reads its text from the translator', $template->path), function () use ($template): void {
         $literals = array_values(array_filter($template->proseNodes(), readsAsProse(...)));
 
         expect($literals)->toBe([], sprintf(

@@ -16,7 +16,7 @@ requirement is right and this page is a defect.
 | `N1-R22` | Trust is pinned to the stack rather than to where it answers | `Configured` — a machine on a new address is the same machine |
 | `N1-R29` | Whether an action is supported is asked before it is offered | `Capabilities`, answered in one place so no screen works it out (`CapabilitiesTest`) |
 | `N1-R31` | Where two configured stacks differ in what they support, the difference is per stack | `Capabilities` carries the `StackId` |
-| `N1-R39` | Which stack a screen is showing is carried, never read from somewhere shared | `Configured` (`ConfirmedTest`) |
+| `N1-R39` | Which stack a screen is showing is carried, never read from somewhere shared | `Configured` (`ConfirmedTest`, `ScreensDeclarePaintingTest`) |
 | `N1-R35` | A launch with no stack configured is a whole screen rather than an absence something remembers | `Configured` |
 
 ## Reaching one
@@ -27,7 +27,7 @@ requirement is right and this page is a defect.
 | `N1-R12` | An unencrypted address is stated, and protection it does not have is not implied | `Address` (`AddressTest`, `SchemeTest`) |
 | `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`, `PlatformStacksTest`) |
 | `N1-R16` | Every call goes through the SDK | `KeepingCurrent` and the ports beside it |
-| `N1-R17` | Where the contract does not carry something, the work stops rather than approximating it from a neighbour | `WhatTheCoreDecided` (`TypesThatMustNotMeetTest`) |
+| `N1-R17` | Where the contract does not carry something, the work stops rather than approximating it from a neighbour | `WhatTheCoreDecided` (`TypesThatMustNotMeetTest`, `WhatTheContractCarriesThatNothingReadsTest`) |
 | `N1-R13` | A refused wire version carries both halves: what arrived, and what is supported | `EnvelopeIsNotRead` |
 | `N1-R14` | The wire version lives in the kernel rather than in an adapter, because the transport may change | `WireVersion` |
 | `N1-R26` | A reach that waits too long is refused by name | `ReachWaitsTooLong` |
@@ -73,7 +73,7 @@ requirement is right and this page is a defect.
 | `N1-R36`, `N1-R37` | No network, unreachable, locked, no stack yet, and ready — told apart | `Launch` |
 | `N1-R3` | A control is not hidden because something is unreachable | `Availability` (`DecidingWhatToDoWithOneThingTest`, `EveryScreenIsWalkableWithNoStackRunningTest`, `ReadingWhatAServiceSaidTest`, `SeeingHowCurrentAStackIsTest`, `SeeingHowFullThisMachineIsTest`, `SeeingHowTheLineIsSharedTest`, `SeeingWhatElseIsRunningTest`, `SeeingWhatKeepsRunningTest`, `SeeingWhatLeavesTest`, `SeeingWhatStoppedComingInTest`, `SeeingWhatTheHouseholdAskedForTest`, `SeeingWhatThisMachineKeepsTest`, `SeeingWhatThisStackRunsTest`, `SeeingWhatWasChangedTest`, `SeeingWhatYouAreToldTest`, `SeeingWhatYouCanWatchTest`, `SeeingWhereItComesFromTest`, `AnObstacleNeverTakesTheActionAwayTest`) |
 | `N1-R30` | Unsupported and unavailable are reported as themselves | `Availability` (`AvailabilityTest`, `CapabilitiesTest`) |
-| `N1-R4` | The app cannot name an action the stack did not offer | `TakingAnUpdate`, spelled once in the kernel and never at a call site |
+| `N1-R4` | The app cannot name an action the stack did not offer | `TakingAnUpdate`, spelled once in the kernel and never at a call site (`TheAppOpensOnlyTheseDoorsTest`) |
 | `N1-R28` | An indeterminate progress indicator only where the app holds nothing to show | `Showing` (`ShowingTest`) |
 
 ## What an action may be

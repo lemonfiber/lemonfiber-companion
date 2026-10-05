@@ -59,7 +59,8 @@ function whereTheContentColumnIsWritten(Template $template): array
     return $lines;
 }
 
-it('F16 — finds the content column where it is written', function (): void {
+// F16 — the column a screen's content sits in is written once, in the content component, whose slot is drawn inside it
+it('finds the content column where it is written', function (): void {
     // The floor. A reading that found the column nowhere, including in the
     // component, would pass the rule below having read nothing.
     $holding = array_filter(
@@ -71,7 +72,8 @@ it('F16 — finds the content column where it is written', function (): void {
     expect($holding)->not->toBe([]);
 });
 
-it('F16 — no template but the component writes the content column out', function (): void {
+// F16 — the column a screen's content sits in is written once, in the content component, whose slot is drawn inside it
+it('no template but the component writes the content column out', function (): void {
     $offenders = [];
 
     foreach (Template::all() as $template) {

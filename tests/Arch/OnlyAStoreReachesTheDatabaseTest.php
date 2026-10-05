@@ -103,7 +103,8 @@ it('finds the stores and the tables they own', function (): void {
         ->and(everyTableAndItsOwner())->not->toBe([]);
 });
 
-it('A1 — Illuminate\Database is named only in a capability\'s store and its migrations, and in a store kit', function (): void {
+// A1 — no Eloquent, no Active Record
+it('Illuminate\Database is named only in a capability\'s store and its migrations, and in a store kit', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
@@ -134,7 +135,8 @@ it('A1 — Illuminate\Database is named only in a capability\'s store and its mi
     ));
 });
 
-it('A10 — a table carries its owner\'s prefix and is created only in its owner\'s migrations', function (): void {
+// A10 — a table belongs to one owner
+it('a table carries its owner\'s prefix and is created only in its owner\'s migrations', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
@@ -162,7 +164,8 @@ it('A10 — a table carries its owner\'s prefix and is created only in its owner
     ));
 });
 
-it('A10 — no module names a table another module owns', function (): void {
+// A10 — a table belongs to one owner
+it('no module names a table another module owns', function (): void {
     $tables = everyTableAndItsOwner();
     $offenders = [];
 
@@ -219,7 +222,8 @@ function theStoreKitsNamedIn(string $file, array $kits): array
     ));
 }
 
-it('A14 — a store kit is named only in a capability\'s store', function (): void {
+// A14 — a store kit is reached from a store
+it('a store kit is named only in a capability\'s store', function (): void {
     $kits = everyStoreKit();
     $offenders = [];
 

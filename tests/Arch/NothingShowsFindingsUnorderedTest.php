@@ -35,7 +35,8 @@ use Tests\Support\Tree;
 // above happening to the rule rather than to a screen. So it says whether it
 // found a screen at all before it says none of them is at fault.
 
-it('F8 — nothing shows findings it did not take from WorstFirst', function (): void {
+// F8 — a screen shows findings in the order a capability decided, never the order they arrived
+it('nothing shows findings it did not take from WorstFirst', function (): void {
     $showing = [];
     $offenders = [];
 

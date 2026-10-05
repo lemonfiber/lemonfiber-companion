@@ -19,7 +19,8 @@ use Tests\Support\Vocabulary;
 // wider than its mechanism is worse than a narrower rule honestly described,
 // because the gap is exactly where nobody looks.
 
-it('D4 — a closed set is an enum, and not a literal compared against', function (): void {
+// D4 — enums for every closed set, never string constants and never a literal compared against
+it('a closed set is an enum, and not a literal compared against', function (): void {
     $offenders = Vocabulary::comparedAgainst();
 
     sort($offenders);

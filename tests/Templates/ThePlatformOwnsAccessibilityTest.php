@@ -67,7 +67,7 @@ it('there is a template to read, with elements in it', function () use ($templat
 });
 
 foreach ($templates as $template) {
-    it(sprintf('N4-R14 — nothing in %s pins a size the platform should choose', $template->path), function () use ($template): void {
+    it(sprintf('nothing in %s pins a size the platform should choose', $template->path), function () use ($template): void {
         $pinned = [];
 
         foreach (explode("\n", $template->source) as $at => $line) {
@@ -89,7 +89,7 @@ foreach ($templates as $template) {
         ));
     });
 
-    it(sprintf('N4-R14 — nothing in %s animates against the operator\'s wishes', $template->path), function () use ($template): void {
+    it(sprintf('nothing in %s animates against the operator\'s wishes', $template->path), function () use ($template): void {
         $moving = [];
 
         foreach ($template->elements() as $element) {

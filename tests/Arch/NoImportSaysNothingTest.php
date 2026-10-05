@@ -34,7 +34,8 @@ use Tests\Support\Tree;
 // red with no message. A rule that names a failure and catches one spelling of
 // it is a rule that stops anybody looking for the other two.
 
-it('W5 — no import in a global-namespace file says nothing', function (): void {
+// W5 — a file with no namespace imports no global name
+it('no import in a global-namespace file says nothing', function (): void {
     $offenders = [];
 
     // Every PHP file this repository owns rather than four directories. The

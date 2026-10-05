@@ -48,7 +48,7 @@ const MEANS_VERIFICATION = [
     'withoutVerifying',
 ];
 
-it('N1-R21 — every spelling of verification is held by a gate', function (): void {
+it('every spelling of verification is held by a gate', function (): void {
     $analyser = (string) file_get_contents(Tree::at('phpstan/Rules/NoWeakenedTlsRule.php'));
     $settings = (string) file_get_contents(Tree::at('tests/Support/Settings.php'));
     $disallowed = (string) file_get_contents(Tree::at('phpstan.neon'));
@@ -111,7 +111,7 @@ function polarityOf(string $spelling): string
     return str_contains($spelling, 'verify') ? 'off when false' : 'unreadable';
 }
 
-it('N1-R21 — a spelling the analyser knows is in the list its name says', function (): void {
+it('a spelling the analyser knows is in the list its name says', function (): void {
     // A spelling in the wrong list makes the analyser refuse the safe way of
     // writing it and pass the dangerous one — which is worse than not knowing
     // the spelling at all, because the refusal reads as the rule working.
@@ -149,7 +149,7 @@ it('N1-R21 — a spelling the analyser knows is in the list its name says', func
     ));
 });
 
-it('N1-R21 — no spelling is in both polarity lists', function (): void {
+it('no spelling is in both polarity lists', function (): void {
     // Both lists is the same fault wearing the safe half as cover: the value
     // would be refused whichever way it was written, so the rule would look
     // stricter than it is and the wrong-polarity half would never be found.

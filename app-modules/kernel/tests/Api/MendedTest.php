@@ -95,7 +95,8 @@ it('only the two that might work next time are worth another go', function (): v
     expect($again)->toBe([WhatBecameOfIt::FixFailed->value, WhatBecameOfIt::Stopped->value]);
 });
 
-it('L7 — every outcome names a line, built from the case', function (): void {
+// L7 — every catalogue key the application names is a key the catalogue holds
+it('every outcome names a line, built from the case', function (): void {
     foreach (WhatBecameOfIt::cases() as $became) {
         expect($became->saidOnTheScreen())
             ->toBe(sprintf('health.mended.%s', $became->value), $became->name);

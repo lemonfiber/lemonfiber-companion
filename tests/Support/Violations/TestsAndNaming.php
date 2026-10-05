@@ -23,7 +23,7 @@ final readonly class TestsAndNaming
 
                     expect($stack)->toBeObject();
                 });
-                PHP, 'G1 — nothing mocks a type we do not own', 'MocksTest'),
+                PHP, 'nothing mocks a type we do not own', 'MocksTest'),
 
             Fixture::suite('G3', 'tests/Feature/Fixtures/G3Test.php', <<<'PHP'
                 <?php
@@ -32,10 +32,10 @@ final readonly class TestsAndNaming
 
                 use Illuminate\Support\Facades\Http;
 
-                it('G3 — a test that reaches the network is stopped', function (): void {
+                it('a test that reaches the network is stopped', function (): void {
                     Http::get('https://example.test/');
                 });
-                PHP, 'G3 —'),
+                PHP, 'a test that reaches the network is stopped'),
 
             // The same rule in the tree it did not reach. The guard was bound
             // to four of the eight suites and `app-modules/*\/tests` was not
@@ -59,7 +59,7 @@ final readonly class TestsAndNaming
                 use Modules\Kernel\Api\StackName;
                 use Modules\Sdk\Api\PinnedClients;
 
-                it('G3 — a module test that reaches a stack is stopped', function (): void {
+                it('a module test that reaches a stack is stopped', function (): void {
                     new PinnedClients()
                         ->client(
                             Stack::of(
@@ -72,7 +72,7 @@ final readonly class TestsAndNaming
                         )
                         ->read('/api/status');
                 });
-                PHP, 'G3 —'),
+                PHP, 'a module test that reaches a stack is stopped'),
 
             // Planted under `tests/Support`, which `Tree::testFiles()` reads and no
             // testsuite loads. That is the whole trick and it is not incidental: a
@@ -91,7 +91,7 @@ final readonly class TestsAndNaming
                 {
                     return [];
                 }
-                PHP, 'G10 —'),
+                PHP, 'no two test files share a helper or constant name'),
 
             // Planted under `tests/Support` for G10's reason: the file is read
             // as text and loaded by no suite, so the title is judged without a
@@ -155,7 +155,7 @@ final readonly class TestsAndNaming
                 it('uses the other idiom', function (): void {
                     $this->assertTrue(true);
                 });
-                PHP, 'G5 —'),
+                PHP, 'a test asserts one way'),
 
             // Planted under `tests/Support`, which `Tree::testFiles()` reads and
             // no testsuite loads — `G10`'s trick, for a different reason. A real
@@ -173,7 +173,7 @@ final readonly class TestsAndNaming
 
                     expect($body['kind'])->toBe('doctor');
                 });
-                PHP, 'G12 —'),
+                PHP, 'every payload stood in for a stack is read against the contract'),
 
             // The other way a body is written, and the half the rule could not
             // see for as long as it read one mark. This one spells no field of
@@ -191,7 +191,7 @@ final readonly class TestsAndNaming
                 it('hands an envelope a payload nothing read against the contract', function (): void {
                     expect(new Envelope(1, 'doctor', ['overall' => 'healthy'])->kind)->toBe('doctor');
                 });
-                PHP, 'G12 —'),
+                PHP, 'every payload stood in for a stack is read against the contract'),
 
             // The envelope type standing in as a carrier for a value a test
             // wants out of a closure. There is no contract kind here at all, so
@@ -208,7 +208,7 @@ final readonly class TestsAndNaming
                 it('carries a value out of a closure in an envelope', function (): void {
                     expect(new Envelope(1, 'x', 'what one arm said')->data)->toBe('what one arm said');
                 });
-                PHP, 'G12 —'),
+                PHP, 'every payload stood in for a stack is read against the contract'),
 
             Fixture::suite('H1', 'app-modules/health/src/Fixtures/RepairManager.php', <<<'PHP'
                 <?php
@@ -218,7 +218,7 @@ final readonly class TestsAndNaming
                 namespace Modules\Health\Fixtures;
 
                 final readonly class RepairManager {}
-                PHP, 'H1 — no class is named Manager'),
+                PHP, 'no class is named Manager'),
 
             Fixture::suite('H2', 'app-modules/health/src/Fixtures/RepairInterface.php', <<<'PHP'
                 <?php
@@ -231,7 +231,7 @@ final readonly class TestsAndNaming
                 {
                     public function run(): void;
                 }
-                PHP, 'H2 — an interface is named'),
+                PHP, 'an interface is named'),
 
             Fixture::suite('H4', 'app-modules/health/tests/Fixtures/GhostTest.php', <<<'PHP'
                 <?php
@@ -241,7 +241,7 @@ final readonly class TestsAndNaming
                 it('describes something that is not there', function (): void {
                     expect(true)->toBeTrue();
                 });
-                PHP, 'H4 —'),
+                PHP, 'every test sits beside the thing it tests'),
 
             Fixture::suite('H6', 'app-modules/health/src/Fixtures/StackUnreachableException.php', <<<'PHP'
                 <?php
@@ -251,7 +251,7 @@ final readonly class TestsAndNaming
                 namespace Modules\Health\Fixtures;
 
                 final readonly class StackUnreachableException {}
-                PHP, 'H6 —'),
+                PHP, 'an exception is named for what happened'),
 
             Fixture::suite('K1', 'app-modules/health/src/Fixtures/Narrates.php', <<<'PHP'
                 <?php
@@ -268,7 +268,7 @@ final readonly class TestsAndNaming
                         return 'x';
                     }
                 }
-                PHP, 'K1 —'),
+                PHP, 'a comment says what is true'),
 
             // The same marker, at the end of a line of code. Its own fixture
             // because it is its own reading: a scan anchored at the start of a
@@ -288,7 +288,7 @@ final readonly class TestsAndNaming
                         return 'x';  // Previously this read the file directly.
                     }
                 }
-                PHP, 'K1 —'),
+                PHP, 'a comment says what is true'),
 
             Fixture::suite('K2', 'app-modules/health/src/Fixtures/Restates.php', <<<'PHP'
                 <?php
@@ -307,7 +307,7 @@ final readonly class TestsAndNaming
                         return 'x';
                     }
                 }
-                PHP, 'K2 —'),
+                PHP, 'a docblock says what a type cannot'),
 
             Fixture::suite('K3', 'app-modules/health/src/Fixtures/Repeats.php', <<<'PHP'
                 <?php
@@ -337,7 +337,7 @@ final readonly class TestsAndNaming
                         return 'x';
                     }
                 }
-                PHP, 'K3 —'),
+                PHP, 'a docblock does not say the same thing twice'),
 
             Fixture::suite('K4', 'app-modules/health/src/Fixtures/Orphans.php', <<<'PHP'
                 <?php
@@ -359,7 +359,7 @@ final readonly class TestsAndNaming
                         return 1;
                     }
                 }
-                PHP, 'K4 —'),
+                PHP, 'a docblock has something to describe'),
 
             Fixture::suite('M1', 'app-modules/health/src/Api/Commands/Fixtures/AnswersPlainly.php', <<<'PHP'
                 <?php
@@ -375,7 +375,7 @@ final readonly class TestsAndNaming
                         return 'done';
                     }
                 }
-                PHP, 'M1 —'),
+                PHP, 'a query asks and a command decides'),
 
             // M1's other clause. The fixture above is a command answering with
             // something that is not an `Outcome`; this is a query answering
@@ -398,7 +398,7 @@ final readonly class TestsAndNaming
                         return Outcome::of(IdempotencyKey::of('a-key'));
                     }
                 }
-                PHP, 'M1 —', 'AnswersWithOutcome'),
+                PHP, 'a query asks and a command decides', 'AnswersWithOutcome'),
 
             Fixture::suite('M2', 'app-modules/health/src/Api/Commands/Fixtures/DoesTwoThings.php', <<<'PHP'
                 <?php
@@ -419,7 +419,7 @@ final readonly class TestsAndNaming
                         return $this;
                     }
                 }
-                PHP, 'M2 —'),
+                PHP, 'a command or a query does one thing'),
 
             Fixture::suite('M3', 'app-modules/health/src/Api/Commands/Fixtures/CannotBeRetried.php', <<<'PHP'
                 <?php
@@ -437,7 +437,7 @@ final readonly class TestsAndNaming
                         return $this;
                     }
                 }
-                PHP, 'M3 —'),
+                PHP, 'a command can be sent twice'),
         ];
     }
 }

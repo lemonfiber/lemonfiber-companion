@@ -15,7 +15,8 @@ use Tests\Support\Tree;
 //
 // Lower the ceiling in the change that empties an entry.
 
-it('lets the constants D9 leaves alone only shrink', function (): void {
+// D9 — one value has one home
+it('lets the list of constants allowed a second home only shrink', function (): void {
     $ceiling = 28;
 
     expect(count(Coincidences::named()))->toBeLessThanOrEqual($ceiling, sprintf(
@@ -27,7 +28,8 @@ it('lets the constants D9 leaves alone only shrink', function (): void {
     ));
 });
 
-it('lets the files D8 leaves alone only shrink', function (): void {
+// D8 — a closed set of strings is an enum
+it('lets the list of files allowed a set of strings instead of an enum only shrink', function (): void {
     $ceiling = 1;
 
     expect(count(OutsideVocabularies::IN))->toBeLessThanOrEqual($ceiling, sprintf(

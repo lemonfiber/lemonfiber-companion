@@ -92,7 +92,7 @@ function whatHandlesARefusal(): array
     return ['folds' => $folds, 'screens' => $screens];
 }
 
-it('N3-R13 — every fold that renders an obstacle goes through the one place that decides', function (): void {
+it('every fold that renders an obstacle goes through the one place that decides', function (): void {
     $found = whatHandlesARefusal();
 
     expect($found['folds'])->not->toBe([], 'no fold takes an obstacle, so this rule read nothing');
@@ -117,7 +117,7 @@ it('N3-R13 — every fold that renders an obstacle goes through the one place th
     ));
 });
 
-it('N3-R13 — every screen that resumes a session lets go of a refused one', function (): void {
+it('every screen that resumes a session lets go of a refused one', function (): void {
     $found = whatHandlesARefusal();
 
     expect($found['screens'])->not->toBe([], 'no screen resumes a session, so this rule read nothing');
@@ -156,7 +156,7 @@ const THE_BRANCH = '@else';
 /** @see THE_BRANCH */
 const THE_QUESTION = '$this->answer()->went->cameBack()';
 
-it('N3-R13 — a screen draws the obstacle instead of its content, never beside it', function (): void {
+it('a screen draws the obstacle instead of its content, never beside it', function (): void {
     $drawing = [];
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $path) {

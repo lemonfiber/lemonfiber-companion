@@ -21,7 +21,8 @@ use Tests\Support\Module;
 // constructed` for a value object, written to satisfy a counter, that asserts
 // nothing anyone cares about and has to be maintained forever.
 
-it('H4 — every test sits beside the thing it tests', function (): void {
+// H4 — a test file mirrors its source file's location
+it('every test sits beside the thing it tests', function (): void {
     $orphans = [];
 
     foreach (Module::all() as $module) {

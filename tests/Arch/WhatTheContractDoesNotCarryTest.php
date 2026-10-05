@@ -555,7 +555,7 @@ function thePayloadShapeOf(string $said): string
     return $shape[1] ?? '';
 }
 
-it('N2-R14 — every gap names an envelope the contract still has', function (): void {
+it('every gap names an envelope the contract still has', function (): void {
     // The half that keeps the register honest about the present. An envelope
     // renamed in the contract would leave a row describing a type nobody
     // speaks, and the row below would then be checking nothing at all.
@@ -589,7 +589,7 @@ it('N2-R14 — every gap names an envelope the contract still has', function ():
     ));
 });
 
-it('N2-R14 — every gap is still a gap', function (): void {
+it('every gap is still a gap', function (): void {
     // The half that matters. This rule exists to stop being true: the day
     // lemonfiber carries one of these, the row here is what says so, and it
     // says so by failing rather than by being read.
@@ -648,7 +648,7 @@ it('N2-R14 — every gap is still a gap', function (): void {
     ));
 });
 
-it('N2-R14 — every gap says what it asks for and where it was raised', function (): void {
+it('every gap says what it asks for and where it was raised', function (): void {
     // A row with an empty reason is a row nobody can act on, and the reason is
     // the only part that survives the person who wrote it. The requirement's
     // own name is not checked here: it is what every message above is written

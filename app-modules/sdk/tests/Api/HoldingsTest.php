@@ -237,7 +237,8 @@ it('refuses a medium this build does not know, by name', function (): void {
     ])))->toThrow(ShelfIsUnreadable::class, 'hologram');
 });
 
-it('G12 — the payload this suite reads a shelf from is one a stack would send', function (): void {
+// G12 — a suite standing a payload in for a stack reads it against the contract
+it('the payload this suite reads a shelf from is one a stack would send', function (): void {
     // The well-formed ones only. Every other fixture here is deliberately
     // short of a field or wrong about one, which is the point of it — a
     // reader is worth no more than what it refuses.

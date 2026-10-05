@@ -105,7 +105,8 @@ it('finds templates that draw a slot', function (): void {
     expect($drawing)->not->toBe([]);
 });
 
-it('F13 — a component draws its slot on every branch it has', function (): void {
+// F13 — a component draws its slot on every branch it has
+it('a component draws its slot on every branch it has', function (): void {
     $behindABranch = [];
 
     foreach (Template::all() as $template) {

@@ -79,7 +79,7 @@ function playersIn(string $source): array
     ));
 }
 
-it('N3-R14 — no platform source reaches for a media player', function (): void {
+it('no platform source reaches for a media player', function (): void {
     // Assert the reading before what it says: a rule whose subjects are
     // discovered has a state in which it examines nothing, and that state looks
     // exactly like every subject passing.
@@ -110,7 +110,7 @@ it('N3-R14 — no platform source reaches for a media player', function (): void
     ));
 });
 
-it('N3-R14 — each player is one this rule would recognise', function (): void {
+it('each player is one this rule would recognise', function (): void {
     // The floor against the matcher rather than against the tree. Planting a player
     // in `bridge/resources` would leave a real source file wrong for the length
     // of a run, and this repository has been bitten by a killed run leaving its

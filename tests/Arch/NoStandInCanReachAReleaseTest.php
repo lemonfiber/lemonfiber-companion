@@ -89,7 +89,7 @@ it('finds a stand-in to check', function (): void {
     expect(theStandInModules())->not->toBeEmpty();
 });
 
-it('Q-R72, N1-R61 — no stand-in is a dependency of a release', function (): void {
+it('no stand-in is a dependency of a release', function (): void {
     $required = whatTheRootRequires();
     $shipping = array_values(array_intersect(theStandInModules(), $required['require']));
 
@@ -106,7 +106,7 @@ it('Q-R72, N1-R61 — no stand-in is a dependency of a release', function (): vo
     ));
 });
 
-it('Q-R72 — every stand-in is installed for development', function (): void {
+it('every stand-in is installed for development', function (): void {
     // The other half, and not the same assertion inverted: a module absent from
     // both sections is absent from the build entirely, so its tests do not run
     // and this file's own floor above is the only thing that would notice. That
@@ -125,7 +125,7 @@ it('Q-R72 — every stand-in is installed for development', function (): void {
     ));
 });
 
-it('N1-R61 — no composition names a stand-in', function (): void {
+it('no composition names a stand-in', function (): void {
     // The failure this catches is a boot crash rather than a leak, and that is
     // worth stating: a release that names a class it did not install does not
     // quietly run against a stand-in, it fails to start. `bootstrap/` is where
