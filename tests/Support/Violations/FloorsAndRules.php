@@ -195,8 +195,8 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F14',
                 'app-modules/operator/resources/views/how-this-stack-is.blade.php',
-                ':word="__($this->summary()->word)"',
-                ':word="__($this->summary()->wordish)"',
+                ':label="__($this->summary()->word)"',
+                ':label="__($this->summary()->wordish)"',
                 'every step a template takes',
                 'wordish',
             ),
