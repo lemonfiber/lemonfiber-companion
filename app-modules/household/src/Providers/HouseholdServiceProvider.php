@@ -8,6 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Household\Internal\Screens\LookingForATitle;
 use Modules\Household\Internal\Screens\WhatAMemberWouldSee;
+use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Household\Internal\Screens\YourCornerOfTheHouse;
@@ -50,6 +51,7 @@ final class HouseholdServiceProvider extends ServiceProvider
         // than at the end of everybody's.
         $this->app->booted(static function (): void {
             Router::native(AStacksScreen::Shelf->value, WhatYouCanWatch::class);
+            Router::native(AStacksScreen::Title->value, WhatThisTitleIs::class);
             Router::native(AStacksScreen::Search->value, LookingForATitle::class);
             Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
             Router::native(AStacksScreen::Profile->value, YourCornerOfTheHouse::class);

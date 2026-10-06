@@ -72,6 +72,7 @@ return [
     'nothing_owed' => 'Er is hier niets om je te vertellen.',
     'nothing_owed_action' => 'Het huis zegt niets over wat je kunt aanvragen.',
     'ask_again' => 'Opnieuw vragen',
+    'ask_again_for_yours' => 'Opnieuw vragen naar wat je hebt aangevraagd',
 
     'search_is_coming' => 'Zoeken vanaf je telefoon komt eraan.',
     'search_is_coming_action' => 'Tot die tijd staat wat je kunt kijken op Thuis, en wat je hebt aangevraagd onder Aanvragen.',
@@ -103,6 +104,8 @@ return [
 
     'shelf' => [
         'new' => 'Nieuw in huis',
+        'ready_for_you' => 'Klaar voor jou',
+        'on_its_way' => 'Onderweg',
         'film' => 'Films',
         'series' => 'Series',
         'other' => 'Overig',
@@ -113,6 +116,21 @@ return [
         'above_undated' => ':kind',
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
+        'reads_standing' => ':title, :standing',
+    ],
+
+    'hero' => [
+        'above' => 'Nieuw in huis · :line',
+        'reads' => 'Nieuw in huis: :reads',
+        'more' => 'Meer',
+        'more_named' => 'Meer over :title',
+    ],
+
+    'title' => [
+        'play' => 'Afspelen',
+        'play_named' => ':title afspelen',
+        'cannot_play' => 'Afspelen kan niet in deze app. Kijk het op je tv of op een ander scherm in huis.',
+        'not_handed_over' => 'Deze titel kan hier niet worden getoond. Open hem opnieuw vanuit Thuis.',
     ],
 
     'preview' => [

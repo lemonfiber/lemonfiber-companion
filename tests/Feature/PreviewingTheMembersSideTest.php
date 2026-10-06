@@ -123,6 +123,21 @@ it('draws the shelf the household\'s defaults hold in a member\'s rows, asked fo
         ->and($watching->askingsForTheDefaults())->toBe(1);
 });
 
+it('draws the newest title across a member\'s Home, opening nothing and asking for nobody\'s requests', function (): void {
+    $owing = AMemberWhoIsOwed::owed(whatTheDefaultsAreTold());
+    $screen = thePreview(owing: $owing);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->shelf()->hero?->titled)->toBe('A film')
+        ->and($screen->shelf()->hero?->goes)->toBe('')
+        ->and($drawn->said())->toContain(__('household.hero.reads', ['reads' => 'A film, Film, 1999']))
+        ->and($drawn->offersThatWait())->toContain(__('household.title.play'))
+        ->and($drawn->offersThatWait())->toContain(__('household.hero.more'))
+        ->and($drawn->offers())->not->toContain('A film, Film, 1999')
+        ->and($drawn->said())->not->toContain(__('household.shelf.ready_for_you'))
+        ->and($owing->askings())->toBe(0);
+});
+
 it('draws what the household\'s defaults are told, asked for as the defaults and never as anybody', function (): void {
     $owing = AMemberWhoIsOwed::owed(whatTheDefaultsAreTold());
     $screen = thePreview(owing: $owing);

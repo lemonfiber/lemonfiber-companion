@@ -167,3 +167,30 @@ it('a refused request is still refused for the reasons every request is', functi
     expect(fn(): Wanted => Wanted::turnedDown(41, '  ', 'A film', Size::unknown(), TurnedDown::because('No')))
         ->toThrow(RequestHasNobodyBehindIt::class);
 });
+
+it('says which standings are here for the person who asked, and which are still coming', function (): void {
+    $ready = [];
+    $coming = [];
+
+    foreach (Waiting::cases() as $standing) {
+        if ($standing->isReadyForYou()) {
+            $ready[] = $standing;
+        }
+
+        if ($standing->isOnItsWay()) {
+            $coming[] = $standing;
+        }
+    }
+
+    expect($ready)->toBe([Waiting::PartlyHere, Waiting::Here])
+        ->and($coming)->toBe([Waiting::ForApproval, Waiting::Getting, Waiting::PartlyHere]);
+});
+
+it('says a standing nobody named is neither here for them nor on its way', function (): void {
+    expect(HowARequestStands::unnamed()->isReadyForYou())->toBeFalse()
+        ->and(HowARequestStands::unnamed()->isOnItsWay())->toBeFalse()
+        ->and(HowARequestStands::said(Waiting::Here)->isReadyForYou())->toBeTrue()
+        ->and(HowARequestStands::said(Waiting::Here)->isOnItsWay())->toBeFalse()
+        ->and(HowARequestStands::said(Waiting::Getting)->isOnItsWay())->toBeTrue()
+        ->and(HowARequestStands::said(Waiting::Getting)->isReadyForYou())->toBeFalse();
+});

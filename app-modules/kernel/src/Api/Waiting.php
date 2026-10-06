@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function in_array;
 use function sprintf;
 
 /**
@@ -52,6 +53,30 @@ enum Waiting: string
     public function wantsADecision(): bool
     {
         return $this === self::ForApproval;
+    }
+
+    /**
+     * Whether what was asked for is here for the person who asked, in whole
+     * or in part.
+     *
+     * Drawn once, here, for {@see wantsADecision()}'s reason. Some of it here
+     * is something a member can start on, so a season partly here counts.
+     */
+    public function isReadyForYou(): bool
+    {
+        return $this === self::Here || $this === self::PartlyHere;
+    }
+
+    /**
+     * Whether what was asked for is still coming, as the person who asked
+     * would put it: waiting for a yes, being fetched, or partly here.
+     *
+     * A season partly here is both: some of it is ready and the rest is on
+     * its way.
+     */
+    public function isOnItsWay(): bool
+    {
+        return in_array($this, [self::ForApproval, self::Getting, self::PartlyHere], strict: true);
     }
 
     /**

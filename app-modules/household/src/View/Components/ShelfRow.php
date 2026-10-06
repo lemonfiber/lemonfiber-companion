@@ -25,7 +25,7 @@ final class ShelfRow extends Component
 
     public function shouldRender(): bool
     {
-        return $this->row->holdings !== [];
+        return $this->row->posters !== [];
     }
 
     public function render(): View

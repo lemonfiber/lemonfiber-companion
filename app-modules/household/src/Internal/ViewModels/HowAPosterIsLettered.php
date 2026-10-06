@@ -53,6 +53,9 @@ enum HowAPosterIsLettered: string
     /** How many lines a title at each step may take, the most a 2:3 tile has room for at that size. */
     private const array LINES_AT_MOST = ['large' => 4, 'middle' => 7, 'small' => 8];
 
+    /** How many lines a title at each step may take on Home's hero, the most its 16:9 tile has room for. */
+    private const array LINES_ON_THE_HERO = ['large' => 2, 'middle' => 4, 'small' => 6];
+
     /** The step a title is lettered at. */
     public static function for(string $titled): self
     {
@@ -74,6 +77,25 @@ enum HowAPosterIsLettered: string
             self::Middle => TypeSize::Body,
             self::Small => TypeSize::Caption,
         };
+    }
+
+    /**
+     * The brand's size a title at this step is set at on Home's hero, a step
+     * up from its poster: the hero is as wide as the screen.
+     */
+    public function setOnTheHero(): TypeSize
+    {
+        return match ($this) {
+            self::Large => TypeSize::DisplayL,
+            self::Middle => TypeSize::DisplayM,
+            self::Small => TypeSize::Body,
+        };
+    }
+
+    /** How many lines a title at this step may take on Home's hero before the rest is cut. */
+    public function linesOnTheHero(): int
+    {
+        return self::LINES_ON_THE_HERO[$this->value];
     }
 
     /** How many lines a title at this step may take on the tile before the rest is cut. */

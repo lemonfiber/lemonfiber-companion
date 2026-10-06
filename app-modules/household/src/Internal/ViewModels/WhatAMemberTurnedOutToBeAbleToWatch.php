@@ -33,26 +33,29 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
         public string $met,
         public string $remedy,
         public bool $isOutOfReach,
+        public ?WhatOnePosterSays $hero,
         public array $rows,
         public array $reasons,
         private ?Obstacle $why = null,
     ) {}
 
     /**
-     * The core answered, and this is the shelf, in its rows.
+     * The core answered, and this is the shelf: the title the hero draws, and
+     * the rows.
      *
-     * No rows is an ordinary answer: a member with nothing on their shelf is
-     * told so in as many words.
+     * No rows and no hero is an ordinary answer: a member with nothing on
+     * their shelf is told so in as many words.
      *
      * @param list<WhatAShelfRowSays> $rows
      */
-    public static function these(array $rows): self
+    public static function these(?WhatOnePosterSays $hero, array $rows): self
     {
         return new self(
             isSignedIn: true,
             met: '',
             remedy: '',
             isOutOfReach: false,
+            hero: $hero,
             rows: $rows,
             reasons: [],
         );
@@ -74,6 +77,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             met: '',
             remedy: '',
             isOutOfReach: true,
+            hero: null,
             rows: [],
             reasons: $reasons,
         );
@@ -87,6 +91,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             met: '',
             remedy: '',
             isOutOfReach: false,
+            hero: null,
             rows: [],
             reasons: [],
         );
@@ -102,6 +107,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
                 met: $why->said(),
                 remedy: $why->remedy(),
                 isOutOfReach: false,
+                hero: null,
                 rows: [],
                 reasons: [],
                 why: $why,
@@ -122,6 +128,12 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     public function filling(): array
     {
         return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
+    }
+
+    /** Whether there is a title to draw across the screen: an empty shelf has none. */
+    public function hasAHero(): bool
+    {
+        return $this->hero instanceof WhatOnePosterSays;
     }
 
     /**

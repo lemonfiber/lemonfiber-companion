@@ -99,15 +99,17 @@ final readonly class WhatMarkupDraws
     /**
      * Every road a piece of markup offers, as the navigations its presses resolve to.
      *
+     * @param array<string, mixed> $data what the markup is rendered with
+     *
      * @return list<array<array-key, mixed>>
      */
-    public static function roads(string $markup): array
+    public static function roads(string $markup, array $data = []): array
     {
         $was = NativeTagPrecompiler::setActive(active: true);
 
         try {
             NativeElementCollector::reset();
-            Blade::render($markup);
+            Blade::render($markup, $data);
             $tree = NativeElementCollector::collect();
         } finally {
             NativeTagPrecompiler::setActive(active: $was);

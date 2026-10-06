@@ -77,6 +77,7 @@ return [
     'nothing_owed' => 'There is nothing to tell you here.',
     'nothing_owed_action' => 'The house has nothing to say about what you can ask for.',
     'ask_again' => 'Ask again',
+    'ask_again_for_yours' => 'Ask again for what you asked for',
 
     // Searching, which this version of the app does not have yet.
     'search_is_coming' => 'Searching from your phone is coming.',
@@ -115,6 +116,8 @@ return [
     // then one row for each kind it holds.
     'shelf' => [
         'new' => 'New in the house',
+        'ready_for_you' => 'Ready for you',
+        'on_its_way' => 'On its way',
         'film' => 'Films',
         'series' => 'Series',
         'other' => 'Other',
@@ -127,6 +130,24 @@ return [
         'above_undated' => ':kind',
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
+        'reads_standing' => ':title, :standing',
+    ],
+
+    // The newest title in the house, drawn across Home with Play and More.
+    'hero' => [
+        'above' => 'New in the house · :line',
+        'reads' => 'New in the house: :reads',
+        'more' => 'More',
+        'more_named' => 'More about :title',
+    ],
+
+    // One title's screen, and the one action it carries. The reason Play
+    // cannot be used is the app's own sentence, not the house's.
+    'title' => [
+        'play' => 'Play',
+        'play_named' => 'Play :title',
+        'cannot_play' => 'Playing isn\'t possible in this app. Watch it on your television or another screen in the house.',
+        'not_handed_over' => 'This title can\'t be shown here. Open it again from Home.',
     ],
 
     // The operator's preview of the member's side. The mark says what it is,

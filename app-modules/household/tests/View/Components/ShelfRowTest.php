@@ -9,9 +9,8 @@ use function data_get;
 use function expect;
 use function it;
 
-use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
-use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -22,9 +21,9 @@ use function uses;
 uses(TestCase::class);
 
 /** One poster, as the presenter hands it over. */
-function aPosterOnARow(string $titled): WhatOneHoldingSays
+function aPosterOnARow(string $titled): WhatOnePosterSays
 {
-    return new WhatOneHoldingSays(titled: $titled, medium: 'household.medium.film', year: '1999', lettered: HowAPosterIsLettered::for($titled));
+    return WhatOnePosterSays::ofATitle($titled, 'household.medium.film', '1999');
 }
 
 it('draws its heading, then every poster it holds side by side, scrolled sideways', function (): void {

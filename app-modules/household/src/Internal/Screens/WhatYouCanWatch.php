@@ -7,10 +7,14 @@ namespace Modules\Household\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
+use Modules\Household\Internal\Presenters\HowTheirOwnTitlesRead;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
+use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -21,19 +25,21 @@ use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
-use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * What this machine says the person holding the session may watch.
+ * What this machine says the person holding the session may watch, led by
+ * what is theirs.
  *
- * The member's Home tab, where a member lands, and the whole of what it does
- * is render their shelf. Which libraries they reach, what their age limit
- * allows and what they are entitled to were decided by the core before the
- * list arrived, so nothing here filters a row, sorts one or hides one.
+ * The member's Home tab, where a member lands. It leads with their own
+ * titles, what they asked for that has arrived and what is on its way, and
+ * then draws their shelf: the newest title in the house across the screen,
+ * and the rows. Which libraries they reach, what their age limit allows and
+ * what they are entitled to were decided by the core before the list
+ * arrived, so nothing here filters a row, sorts one or hides one.
  *
  * **There is no asking for anything on this screen.** Requesting something,
  * approving it and spending an allowance are the household surface's and are
@@ -62,7 +68,6 @@ final class WhatYouCanWatch extends NativeComponent
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
     use DrawsItsTemplate;
-    use AsksAgain;
 
     public const string TEMPLATE = 'household::what-you-can-watch';
 
@@ -77,8 +82,12 @@ final class WhatYouCanWatch extends NativeComponent
      */
     public ?WhatAMemberTurnedOutToBeAbleToWatch $answered = null;
 
+    /** What came back when their own requests were asked for, once the frame has asked. */
+    public ?WhatTheirOwnTitlesTurnedOutToBe $theirs = null;
+
     public function __construct(
         private readonly Watching $watching,
+        private readonly Owing $owing,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -88,6 +97,37 @@ final class WhatYouCanWatch extends NativeComponent
     public function answer(): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** What came back for their own requests, asked once per frame. */
+    public function theirOwn(): WhatTheirOwnTitlesTurnedOutToBe
+    {
+        return $this->theirs ??= $this->askForTheirOwn();
+    }
+
+    /**
+     * Whether their own requests could not be asked for while the shelf
+     * answered, which Home says where those rows would be.
+     *
+     * Only then: where the shelf met something too, the shelf says so, and the
+     * same obstacle said twice is a screen repeating itself.
+     */
+    public function theirOwnWereStopped(): bool
+    {
+        return $this->answer()->cameBack() && $this->theirOwn()->wasStopped();
+    }
+
+    /**
+     * Ask the house again, for both readings.
+     *
+     * The action an obstacle must not take away. Forgetting what came back
+     * rather than asking here, so the next accessor asks and one frame stays
+     * one asking.
+     */
+    public function again(): void
+    {
+        $this->answered = null;
+        $this->theirs = null;
     }
 
     /** Where a session that has ended is renewed. */
@@ -119,12 +159,34 @@ final class WhatYouCanWatch extends NativeComponent
         );
     }
 
+    /** Resume the session and ask for their own requests, or say the session has ended. */
+    private function askForTheirOwn(): WhatTheirOwnTitlesTurnedOutToBe
+    {
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatTheirOwnTitlesTurnedOutToBe => $this->owing->theirRequests($stack, $session)->asked()->either(
+                told: static fn(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
+                    => new HowTheirOwnTitlesRead()->these($wanted),
+                refused: function (Obstacle $why) use ($stack): WhatTheirOwnTitlesTurnedOutToBe {
+                    // Told here as well as on the shelf's read: whichever read
+                    // met the refusal is the one holding the obstacle when the
+                    // store has to hear about it. Letting go twice is letting go.
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return new HowTheirOwnTitlesRead()->met($why);
+                },
+            ),
+            notHeld: static fn(): WhatTheirOwnTitlesTurnedOutToBe => new HowTheirOwnTitlesRead()->signedOut(),
+        );
+    }
+
     /** What the stack said, or what the member met instead. */
     private function asked(Stack $stack, Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $this->watching->theShelfOf($stack, $session, $whose)->either(
             told: static fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->these($shelf),
+                => new HowAShelfReads()->these($shelf, $stack->id()),
             outOfReach: static fn(Sentences $said): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->outOfReach($said),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {

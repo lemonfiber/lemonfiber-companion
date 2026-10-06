@@ -14,8 +14,12 @@
 
 @if ($this->tab() === TheHouseholdsTabs::Home)
     @if ($this->shelf()->cameBack())
-        {{-- The rows a member's Home draws, from the core's answer for the
-             household's defaults: nobody's library, so no name and no history. --}}
+        {{-- The Home a member draws, from the core's answer for the
+             household's defaults: nobody's library, so no name, no history
+             and none of their own requests. --}}
+        @if ($this->shelf()->hasAHero())
+            <x-household::hero :poster="$this->shelf()->hero" />
+        @endif
         @forelse ($this->shelf()->rows as $row)
             <x-household::shelf-row :row="$row" />
         @empty

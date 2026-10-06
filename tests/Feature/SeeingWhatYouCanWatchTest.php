@@ -4,23 +4,29 @@ declare(strict_types=1);
 
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
-use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
+use Modules\Household\Internal\WhatATitleIsOpenedWith;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
+use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
@@ -28,9 +34,11 @@ use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
@@ -74,6 +82,7 @@ function theShelfScreen(
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
     ?AppsSettingsThatOpen $settings = null,
+    ?AMemberWhoIsOwed $owing = null,
 ): WhatYouCanWatch {
     $stack = theStackAShelfIsReadFrom();
     $keychain ??= AKeychainInMemory::working();
@@ -86,7 +95,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatYouCanWatch($watching, $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -95,19 +104,19 @@ function theShelfScreen(
 /**
  * What one row of the shelf screen carries, as one thing read off each poster.
  *
- * @param Closure(WhatOneHoldingSays): string $read
+ * @param Closure(WhatOnePosterSays): string $read
  *
  * @return list<string>
  */
 function eachPosterIn(WhatYouCanWatch $screen, int $row, Closure $read): array
 {
-    return array_map($read, $screen->answer()->rows[$row]->holdings);
+    return array_map($read, $screen->answer()->rows[$row]->posters);
 }
 
 /** A poster's title. */
 function itsTitle(): Closure
 {
-    return static fn(WhatOneHoldingSays $poster): string => $poster->titled;
+    return static fn(WhatOnePosterSays $poster): string => $poster->titled;
 }
 
 it('draws the shelf the core listed, in its order and unfiltered, first as what is new', function (): void {
@@ -147,15 +156,207 @@ it('cuts the first row at the newest few and leaves every holding of a kind in i
         ->and($screen->answer()->rows)->toHaveCount(2);
 });
 
-it('offers no poster as a control while there is nothing to press on one', function (): void {
+it('offers each title as a control that opens it, and Play as one that waits', function (): void {
     $screen = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())));
 
-    expect($screen->said())->toContain('A film, Film, 1999')
-        ->and($screen->offers())->toBe([__('household.ask_again')]);
+    expect($screen->offers())->toBe([
+        __('household.title.play'),
+        __('household.hero.more'),
+        'A film, Film, 1999', 'A series, Series', 'Something else, Other, 2012',
+        'A film, Film, 1999', 'A series, Series', 'Something else, Other, 2012',
+        __('household.ask_again'),
+    ])
+        ->and($screen->offersThatWait())->toBe([__('household.title.play')]);
+});
+
+it('opens each title on its own screen on this machine, handed what the shelf said of it', function (): void {
+    $poster = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()))->answer()->rows[0]->posters[1];
+
+    expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacksTitle(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')))
+        ->and($poster->carries)->toBe([
+            WhatATitleIsOpenedWith::Titled->value => 'A series',
+            WhatATitleIsOpenedWith::Medium->value => Medium::Series->value,
+            WhatATitleIsOpenedWith::Year->value => '',
+        ]);
+});
+
+it('draws the newest title in the house across the screen, with Play that waits and its reason, and More', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $hero = array_search(__('household.hero.reads', ['reads' => 'A film, Film, 1999']), $drawn, strict: true);
+
+    expect($screen->answer()->hero)->toBe($screen->answer()->rows[0]->posters[0])
+        ->and($hero)->toBeInt()
+        ->and(array_slice($drawn, (int) $hero, 6))->toBe([
+            __('household.hero.reads', ['reads' => 'A film, Film, 1999']),
+            __('household.hero.above', ['line' => '1999 · Film']),
+            'A film',
+            __('household.title.play'),
+            __('household.title.cannot_play'),
+            __('household.hero.more'),
+        ]);
+});
+
+it('draws no hero over an empty shelf', function (): void {
+    $empty = theShelfScreen(AShelfThatWasRead::holdingNothing());
+
+    expect($empty->answer()->hero)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($empty)->said())->not->toContain(__('household.title.play'));
+});
+
+/**
+ * Where on Home a line is said, refusing a line that is not said at all.
+ *
+ * @param list<string> $said
+ */
+function whereHomeSays(array $said, string $line): int
+{
+    $at = array_search($line, $said, strict: true);
+
+    return is_int($at) ? $at : throw new RuntimeException(sprintf('Home does not say "%s".', $line));
+}
+
+/** What a screen reader hears for the hero over the shelf of three. */
+function theHerosLabel(): string
+{
+    $said = __('household.hero.reads', ['reads' => 'A film, Film, 1999']);
+
+    return is_string($said) ? $said : '';
+}
+
+/** What a member asked for, one of each standing, in the order the core listed them. */
+function whatTheyAskedFor(): Requested
+{
+    $asked = static fn(int $number, string $title, Waiting $standing): Wanted
+        => Wanted::of($number, 'ada', $title, Size::unknown(), HowARequestStands::said($standing));
+
+    return Requested::of(
+        $asked(1, 'Dune', Waiting::Here),
+        $asked(2, 'Heat', Waiting::Getting),
+        $asked(3, 'Severance', Waiting::PartlyHere),
+        $asked(4, 'Alien', Waiting::ForApproval),
+        $asked(5, 'Gone Girl', Waiting::Gone),
+        $asked(6, 'Nobody Knows', Waiting::Failed),
+        Wanted::of(7, 'ada', 'Unsaid', Size::unknown(), HowARequestStands::unnamed()),
+    );
+}
+
+it('leads with what is theirs: what arrived for them, then what is on its way, in the order the core listed them', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(whatTheyAskedFor()));
+    $rows = $screen->theirOwn()->rows;
+
+    expect(array_map(static fn(object $row): string => $row->heading, $rows))->toBe(['household.shelf.ready_for_you', 'household.shelf.on_its_way'])
+        ->and(array_map(static fn(WhatOnePosterSays $poster): string => $poster->titled, $rows[0]->posters))->toBe(['Dune', 'Severance'])
+        ->and(array_map(static fn(WhatOnePosterSays $poster): string => $poster->titled, $rows[1]->posters))->toBe(['Heat', 'Severance', 'Alien']);
+});
+
+it('draws each request as a poster saying where it stands, opening nothing, ahead of the house\'s own', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(whatTheyAskedFor())));
+    $said = $drawn->said();
+    $ready = array_search(__('household.shelf.ready_for_you'), $said, strict: true);
+
+    expect($ready)->toBeInt()
+        ->and(array_slice($said, (int) $ready, 4))->toBe([
+            __('household.shelf.ready_for_you'),
+            sprintf('Dune, %s', WhatMarkupDraws::words(Waiting::Here->saidToTheMember())),
+            __(Waiting::Here->saidToTheMember()),
+            'Dune',
+        ])
+        ->and($ready)->toBeLessThan(whereHomeSays($said, WhatMarkupDraws::words('household.title.play')))
+        ->and($drawn->offers())->not->toContain(sprintf('Dune, %s', WhatMarkupDraws::words(Waiting::Here->saidToTheMember())));
+});
+
+it('draws the hero after their own rows, at the head of the house\'s, where they have titles of their own', function (): void {
+    $said = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(whatTheyAskedFor())))->said();
+    $hero = whereHomeSays($said, theHerosLabel());
+
+    expect(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.ready_for_you')))->toBeLessThan(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.on_its_way')))
+        ->and(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.on_its_way')))->toBeLessThan($hero)
+        ->and($hero)->toBeLessThan(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.new')))
+        ->and(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.new')))->toBeLessThan(whereHomeSays($said, WhatMarkupDraws::words(Medium::Film->shelvedUnder())));
+});
+
+it('draws the hero first on Home where they have no titles of their own', function (): void {
+    $said = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())))->said();
+    // Only the bar's four tabs are said before it: nothing on the screen
+    // comes ahead of the hero.
+    expect(array_slice($said, 0, whereHomeSays($said, theHerosLabel())))->toBe(array_map(
+        static fn(TheHouseholdsTabs $tab): string => WhatMarkupDraws::words($tab->said()),
+        TheHouseholdsTabs::cases(),
+    ));
+});
+
+it('draws nothing of theirs where they asked for nothing', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
+
+    expect($screen->theirOwn()->cameBack)->toBeTrue()
+        ->and($screen->theirOwn()->rows)->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('household.shelf.ready_for_you'));
+});
+
+it('says where their own could not be asked for, while the shelf answered', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->theirOwnWereStopped())->toBeTrue()
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()))
+        ->and($drawn->said())->toContain('A film')
+        ->and(array_count_values($drawn->offers())[WhatMarkupDraws::words('household.ask_again')])->toBe(2)
+        ->and((string) json_encode(WhatTheDeviceWouldDraw::tree($screen)))->toContain(__('household.ask_again_for_yours'));
+});
+
+it('says an obstacle once where both readings met it', function (): void {
+    $stopped = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
+    $screen = theShelfScreen(AShelfThatWasRead::met($stopped), owing: AMemberWhoIsOwed::met($stopped));
+
+    expect($screen->theirOwnWereStopped())->toBeFalse()
+        ->and(array_count_values(WhatTheDeviceWouldDraw::by($screen)->said())[WhatMarkupDraws::words(KindOfObstacle::StackDidNotAnswer->said())])->toBe(1);
+});
+
+it('asks for both again when asked to, and once a frame otherwise', function (): void {
+    $watching = AShelfThatWasRead::holding(aShelfOfThree());
+    $owing = AMemberWhoIsOwed::asking(whatTheyAskedFor());
+    $screen = theShelfScreen($watching, owing: $owing);
+
+    $screen->answer();
+    $screen->theirOwn();
+    $screen->theirOwn();
+
+    expect($watching->askings())->toBe(1)
+        ->and($owing->askings())->toBe(1);
+
+    $screen->again();
+    $screen->answer();
+    $screen->theirOwn();
+
+    expect($watching->askings())->toBe(2)
+        ->and($owing->askings())->toBe(2);
+});
+
+it('lets go of a session their own requests were refused on', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theShelfScreen(
+        AShelfThatWasRead::holding(aShelfOfThree()),
+        keychain: $keychain,
+        owing: AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
+    );
+
+    expect($screen->theirOwn()->cameBack)->toBeFalse()
+        ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)->toBeFalse();
+});
+
+it('asks nothing of theirs where this device holds no session', function (): void {
+    $owing = AMemberWhoIsOwed::asking(whatTheyAskedFor());
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), signedIn: false, owing: $owing);
+
+    expect($screen->theirOwn()->cameBack)->toBeFalse()
+        ->and($screen->theirOwn()->wasStopped())->toBeFalse()
+        ->and($owing->askings())->toBe(0);
 });
 
 it('names each kind against a key rather than in English', function (): void {
-    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOneHoldingSays $poster): string => $poster->medium))->toBe([
+    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOnePosterSays $poster): string => $poster->keyed['kind']))->toBe([
         'household.medium.film',
         'household.medium.series',
         'household.medium.other',
@@ -165,7 +366,7 @@ it('names each kind against a key rather than in English', function (): void {
 it('leaves the year off a holding the core could not date', function (): void {
     // Empty rather than a placeholder: a year invented here would be a fact
     // about somebody's library that nobody claimed.
-    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOneHoldingSays $poster): string => $poster->year))->toBe(['1999', '', '2012']);
+    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOnePosterSays $poster): string => $poster->filling['year']))->toBe(['1999', '', '2012']);
 });
 
 it('draws each row under its heading, each poster labelled with its title, kind and year and drawn as its year and kind above its title', function (): void {
@@ -279,6 +480,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
     // stack up under whatever casting produced rather than under nothing.
     $screen = new WhatYouCanWatch(
         AShelfThatWasRead::holding(aShelfOfThree()),
+        AMemberWhoIsOwed::owedNothing(),
         AKeychainInMemory::working(),
         AroundThePhone::holding(StacksInMemory::holding(theStackAShelfIsReadFrom())),
         new AppsSettingsThatOpen(),
