@@ -44,8 +44,8 @@
         "modules/vault": "dev-main",
         "modules/wayfinding": "dev-main",
         "nativephp/mobile": "^4.4",
-        "psr/log": "^3.0",
-        "nativephp/mobile-ui": "^0.6"
+        "nativephp/mobile-ui": "^0.6",
+        "psr/log": "^3.0"
     },
     "require-dev": {
         "ext-simplexml": "*",
