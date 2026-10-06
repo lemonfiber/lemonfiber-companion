@@ -11,13 +11,13 @@ use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\WhatATitleIsOpenedWith;
+use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\StackId;
-use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * A member's shelf, flattened into the rows of posters a template draws.
@@ -148,7 +148,7 @@ final readonly class HowAShelfReads
             titled: $holding->titled(),
             medium: $holding->medium()->saidOnTheScreen(),
             year: $year,
-            goes: AStacksScreen::Title->forTheStacksTitle($opensOn, $holding->id()),
+            goes: WhereTheHouseIs::of($opensOn)->title($holding->id()),
             carries: [
                 WhatATitleIsOpenedWith::Titled->value => $holding->titled(),
                 WhatATitleIsOpenedWith::Medium->value => $holding->medium()->value,

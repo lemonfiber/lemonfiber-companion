@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 <x-operator::screen-opens :title="$this->title()->named" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
@@ -10,8 +11,10 @@
     <x-design::action label="{{ __('household.title.play') }}" :answersTo="__('household.title.play_named', ['title' => $this->title()->named])" :disabled="true" />
     <x-design::note>{{ __('household.title.cannot_play') }}</x-design::note>
 @else
-    {{-- Opened without what Home hands it, so there is no title to name. --}}
+    {{-- Opened without what Home hands it, so there is no title to name, and
+         Home is where it is opened from again. --}}
     <x-design::body>{{ __('household.title.not_handed_over') }}</x-design::body>
+    <x-design::action label="{{ __('household.title.to_home') }}" :goes="$this->goes()->to(AStacksScreen::Shelf)" tone="tonal" />
 @endif
 </x-operator::content>
 

@@ -217,7 +217,7 @@ function whereHomeSays(array $said, string $line): int
 }
 
 /** What a screen reader hears for the hero over the shelf of three. */
-function theHerosLabel(): string
+function theHeroLabel(): string
 {
     $said = __('household.hero.reads', ['reads' => 'A film, Film, 1999']);
 
@@ -268,7 +268,7 @@ it('draws each request as a poster saying where it stands, opening nothing, ahea
 
 it('draws the hero after their own rows, at the head of the house\'s, where they have titles of their own', function (): void {
     $said = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(whatTheyAskedFor())))->said();
-    $hero = whereHomeSays($said, theHerosLabel());
+    $hero = whereHomeSays($said, theHeroLabel());
 
     expect(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.ready_for_you')))->toBeLessThan(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.on_its_way')))
         ->and(whereHomeSays($said, WhatMarkupDraws::words('household.shelf.on_its_way')))->toBeLessThan($hero)
@@ -280,7 +280,7 @@ it('draws the hero first on Home where they have no titles of their own', functi
     $said = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())))->said();
     // Only the bar's four tabs are said before it: nothing on the screen
     // comes ahead of the hero.
-    expect(array_slice($said, 0, whereHomeSays($said, theHerosLabel())))->toBe(array_map(
+    expect(array_slice($said, 0, whereHomeSays($said, theHeroLabel())))->toBe(array_map(
         static fn(TheHouseholdsTabs $tab): string => WhatMarkupDraws::words($tab->said()),
         TheHouseholdsTabs::cases(),
     ));

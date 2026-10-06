@@ -93,7 +93,7 @@ it('says to open it from Home again where it was opened without the title', func
 
     expect($screen->title()->isKnown())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.title.not_handed_over'))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('household.title.play'));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('household.title.to_home')]);
 })->with([
     'nothing handed over' => [[]],
     'no name' => [[...whatAFilmsPosterHands(), WhatATitleIsOpenedWith::Titled->value => '']],

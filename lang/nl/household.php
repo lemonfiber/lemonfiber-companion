@@ -131,6 +131,7 @@ return [
         'play_named' => ':title afspelen',
         'cannot_play' => 'Afspelen kan niet in deze app. Kijk het op je tv of op een ander scherm in huis.',
         'not_handed_over' => 'Deze titel kan hier niet worden getoond. Open hem opnieuw vanuit Thuis.',
+        'to_home' => 'Naar Thuis',
     ],
 
     'preview' => [

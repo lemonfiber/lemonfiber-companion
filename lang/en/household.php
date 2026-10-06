@@ -148,6 +148,7 @@ return [
         'play_named' => 'Play :title',
         'cannot_play' => 'Playing isn\'t possible in this app. Watch it on your television or another screen in the house.',
         'not_handed_over' => 'This title can\'t be shown here. Open it again from Home.',
+        'to_home' => 'Go to Home',
     ],
 
     // The operator's preview of the member's side. The mark says what it is,
