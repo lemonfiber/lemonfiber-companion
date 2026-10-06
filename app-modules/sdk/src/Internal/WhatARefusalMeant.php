@@ -250,6 +250,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::SpelledAlike,
             RefusalCode::Unapproved,
             RefusalCode::AnotherPlugin,
+            RefusalCode::Occupied,
             RefusalCode::CatalogueReplaced,
             RefusalCode::NewestUnkept,
             RefusalCode::NoSuchFiller,
