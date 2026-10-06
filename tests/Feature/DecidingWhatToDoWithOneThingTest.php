@@ -122,6 +122,21 @@ it('the frame is about the one thing the route names', function (): void {
         ->and($thing->service?->leaning)->toBe(['Jellyfin']);
 });
 
+it('draws one service under what it is and what depends on it, its verbs and its log as words to tap', function (): void {
+    $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull())));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain('Sonarr')
+        ->toContain(__('health.what_it_is'))
+        ->toContain(__('health.depends_on_it'))
+        ->toContain('Jellyfin')
+        ->and($drawn->offers())->toContain(__(WhatToDoWithIt::Stop->saidOnTheScreen()))
+        ->toContain(__(WhatToDoWithIt::Restart->saidOnTheScreen()))
+        ->toContain(__('health.read_its_logs'))
+        ->toContain(__('health.ask_again'))
+        ->and($drawn->offersThatWait())->toBe([]);
+});
+
 it('a thing this machine is not running is an answer, not a blank frame', function (): void {
     // A route can name anything: a list tapped a moment before the stack
     // changed, or a screen restored after a service left its form.
@@ -642,7 +657,10 @@ it('a form says what starting it would bring up and leave out, as a rehearsal, b
         ->toContain(__('health.rehearsal.would_start', ['name' => 'jellyfin']))
         ->toContain(__('health.rehearsal.would_start', ['name' => 'sonarr']))
         ->toContain(__('health.rehearsal.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]))
-        ->toContain(__('health.rehearsal.estimate', ['mib' => 700]))
+        ->toContain(__('health.rehearsal.estimate'))
+        ->toContain('700')
+        ->toContain(__('health.rehearsal.estimate_unit'))
+        ->toContain(__('health.rehearsal.estimate_said'))
         ->toContain(__('health.rehearsal.unestimated', ['services' => 'sonarr']))
         ->and(is_int($rehearsed) && is_int($firstVerb) && $rehearsed < $firstVerb)->toBeTrue()
         ->and($rehearsing->asked())->toHaveCount(1)
@@ -679,7 +697,8 @@ it('a rehearsal that brings nothing up, leaves nothing out and takes nothing say
     expect($drawn)
         ->toContain(__('health.rehearsal.would_start_nothing'))
         ->toContain(__('health.rehearsal.nothing_left_out'))
-        ->toContain(__('health.rehearsal.estimate', ['mib' => 0]));
+        ->toContain(__('health.rehearsal.estimate'))
+        ->toContain('0');
     expect($drawn)->not->toContain(__('health.rehearsal.unestimated', ['services' => '']));
 });
 

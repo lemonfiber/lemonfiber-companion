@@ -19,3 +19,13 @@ it('sets a quiet action in lemon on the operator\'s screens and in muted text on
     'the operator\'s' => [WhoseTheme::Operator, ThemeToken::Accent->in(WhoseTheme::Operator)],
     'a member\'s' => [WhoseTheme::Member, ThemeToken::Muted->in(WhoseTheme::Member)],
 ]);
+
+it('hands the screen a road opens what it carries, besides the route, and nothing where it carries nothing', function (): void {
+    $carrying = WhatMarkupDraws::roads('<x-operator::quiet-action label="Read its log" goes="/logs" :carries="[\'exited\' => \'137\']" />');
+    $plain = WhatMarkupDraws::roads('<x-operator::quiet-action label="Read its log" goes="/logs" />');
+
+    expect($carrying)->toHaveCount(1)
+        ->and(data_get($carrying, '0.uri'))->toBe('/logs')
+        ->and(data_get($carrying, '0.data'))->toBe(['exited' => '137'])
+        ->and(data_get($plain, '0.data'))->toBe([]);
+});

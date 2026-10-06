@@ -68,18 +68,18 @@
         @if (count($this->thing()->service?->leaning ?? []) > 0)
             {{-- What will not work without it. The part an
                  operator cannot work out from the row they tapped. --}}
-            <x-design::section :label="__('health.leaning_on_it')">
-                @forelse ($this->thing()->service->leaning as $name)
-                    <x-design::row :headline="$name" />
-                @empty
+            <x-operator::heading>{{ __('health.depends_on_it') }}</x-operator::heading>
+            @forelse ($this->thing()->service->leaning as $name)
+                <x-design::body>{{ $name }}</x-design::body>
+                <x-operator::rule />
+            @empty
                 {{-- Unreachable while the branch above guards it, and
                      written anyway: `F6` wants the empty case to be the
                      same edit as the loop, so that removing the guard
                      cannot silently turn *nothing depends on it* into a
                      blank space. --}}
-                    <x-design::row :headline="__('health.nothing_leans_on_it')" />
-                @endforelse
-            </x-design::section>
+                <x-design::body>{{ __('health.nothing_leans_on_it') }}</x-design::body>
+            @endforelse
         @else
             <x-design::body>{{ __('health.nothing_leans_on_it') }}</x-design::body>
         @endif
@@ -91,7 +91,7 @@
     @if ($this->answer()->waitsForTheStack)
         <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
     @endif
-    <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
+    <x-operator::quiet-action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @elseif ($this->thing()->waits)
     {{-- Not a service of this name, and the forms are read on the next
          frame: nothing is said about it until they are. --}}
@@ -106,16 +106,19 @@
     </x-design::notice>
     <x-design::action label="{{ __('health.back_to_what_runs') }}" :goes="$this->goes()->to(AStacksScreen::Services)" />
 @else
-    {{-- Which thing, and for a service how it stands, as the glyph and
-         words its row on the list carries. --}}
+    {{-- Which thing, and for a service how it stands: led by its port in the
+         tone its row on the list carries, and the words for how it runs under
+         its name. --}}
     @if ($this->thing()->isAForm)
         <x-design::title>{{ $this->thing()->named }}</x-design::title>
     @else
-        <x-design::standing
-            :said="$this->thing()->service->name"
-            :tone="$this->thing()->service->tone"
-            :note="__($this->thing()->service->runsSaid)"
-        />
+        <native:row class="w-full gap-3 items-center">
+            <x-operator::port :tone="$this->thing()->service->tone" />
+            <native:column class="flex-1 gap-1">
+                <x-design::title>{{ $this->thing()->service->name }}</x-design::title>
+                <x-design::note>{{ __($this->thing()->service->runsSaid) }}</x-design::note>
+            </native:column>
+        </native:row>
     @endif
 
     @if ($this->whatItCameTo()->wasAsked)
@@ -123,7 +126,7 @@
              report of it. The listing below says where things stand; this
              says what the verb did, which the listing cannot. --}}
         <x-design::card>
-            <x-design::heading>{{ __('health.came_to.heading') }}</x-design::heading>
+            <x-operator::heading>{{ __('health.came_to.heading') }}</x-operator::heading>
 
             @if (! $this->whatItCameTo()->went->cameBack())
                 {{-- Asking again is the column's own, at its foot. --}}
@@ -214,7 +217,7 @@
              left out says what it would need, so a service filtered on
              purpose never reads as one that failed. --}}
         <x-design::card>
-            <x-design::heading>{{ __('health.rehearsal.heading') }}</x-design::heading>
+            <x-operator::heading>{{ __('health.rehearsal.heading') }}</x-operator::heading>
             <x-design::note>{{ __('health.rehearsal.nothing_started') }}</x-design::note>
 
             @if ($this->rehearsal() === null)
@@ -249,7 +252,12 @@
 
                 {{-- The stack's estimate, said as one, and the services it could
                      not estimate, so a short sum reads as short. --}}
-                <x-design::note>{{ __('health.rehearsal.estimate', ['mib' => $this->rehearsal()->estimatedMib]) }}</x-design::note>
+                <x-operator::figure
+                    :figure="(string) $this->rehearsal()->estimatedMib"
+                    :unit="__('health.rehearsal.estimate_unit')"
+                    :eyebrow="__('health.rehearsal.estimate')"
+                    :caption="__('health.rehearsal.estimate_said')"
+                />
 
                 @if ($this->rehearsal()->unestimated !== [])
                     <x-design::note>{{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->unestimated)]) }}</x-design::note>
@@ -257,23 +265,26 @@
             @endif
         </x-design::card>
     @else
-        <x-design::card>
-            <x-design::body>{{ __($this->thing()->service->mattersSaid) }}</x-design::body>
+        <x-operator::heading>{{ __('health.what_it_is') }}</x-operator::heading>
+        <x-design::body>{{ __($this->thing()->service->mattersSaid) }}</x-design::body>
 
-            @if ($this->thing()->service->stoppedSaid !== '')
-                {{-- How it stopped, with an error or without one. A service
-                     that is running has no exit code at all, so this line
-                     appears only where there is one; the code itself is said
-                     where its logs are read. --}}
-                <x-design::note>{{ __($this->thing()->service->stoppedSaid) }}</x-design::note>
-            @endif
+        @if ($this->thing()->service->stoppedSaid !== '')
+            {{-- How it stopped, with an error or without one. A service
+                 that is running has no exit code at all, so this line
+                 appears only where there is one; the code itself is said
+                 where its logs are read. --}}
+            <x-design::note>{{ __($this->thing()->service->stoppedSaid) }}</x-design::note>
+        @endif
 
-            @forelse ($this->thing()->service->leaning as $name)
-                <x-design::note>{{ __('health.leaned_on_by', ['name' => $name]) }}</x-design::note>
-            @empty
-                <x-design::note>{{ __('health.nothing_leans_on_it') }}</x-design::note>
-            @endforelse
-        </x-design::card>
+        {{-- Every service that will not work without it, one a row on a
+             hairline, and said where there is none. --}}
+        <x-operator::heading>{{ __('health.depends_on_it') }}</x-operator::heading>
+        @forelse ($this->thing()->service->leaning as $name)
+            <x-design::body>{{ $name }}</x-design::body>
+            <x-operator::rule />
+        @empty
+            <x-design::body>{{ __('health.nothing_leans_on_it') }}</x-design::body>
+        @endforelse
     @endif
 
     @forelse ($this->thing()->verbs as $verb)
@@ -281,7 +292,16 @@
              one subject on this frame, so the label is the whole name a
              reader needs — which is the difference between a verb here and
              the same verb drawn once per row on the listing. --}}
-        <x-design::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" :disabled="$this->answer()->waitsForTheStack" />
+        @if ($this->answer()->waitsForTheStack)
+            {{-- Drawn and not usable while the listing drawn is one the
+                 phone kept, never hidden, and the note below says why. A
+                 line of words cannot be marked as not usable, so a waiting
+                 verb is the platform's quiet button, disabled, which a screen
+                 reader announces as such. --}}
+            <x-design::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" tone="tonal" :disabled="true" />
+        @else
+            <x-operator::quiet-action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" />
+        @endif
     @empty
         {{-- Said rather than left blank: a thing this stack runs and offers
              nothing for reads as a frame whose buttons failed to draw. --}}
@@ -304,14 +324,14 @@
     @endif
 
     @unless ($this->thing()->isAForm)
-        <x-design::link
+        <x-operator::quiet-action
             label="{{ __('health.read_its_logs') }}"
             :goes="$this->goes()->logsOf($this->thing()->service->id)"
             :carries="$this->thing()->service->carriedToTheLogs()"
         />
     @endunless
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 @endif
 </x-operator::content>
 @else

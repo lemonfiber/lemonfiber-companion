@@ -371,14 +371,14 @@ return [
     'open_service' => 'Open :name',
     'open_form' => 'Open the :name form',
     'a_whole_form' => 'A form is every service in it. The verbs below reach all of them.',
-    'leaned_on_by' => ':name will not work without it',
+    'what_it_is' => 'What it is',
 
     // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'About to change :what',
     'about_to_form' => 'This is every service in that form, not just one of them.',
     'fetch_may_take_long' => 'Fetching can take a long time and can use a lot of your line. The stack says nothing beforehand about how long or how much, so nothing is guessed here.',
     'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
-    'leaning_on_it' => 'These will not work while it is off:',
+    'depends_on_it' => 'Depends on it',
     'nothing_leans_on_it' => 'Nothing else in the stack depends on it.',
     'go_ahead' => 'Go ahead',
     'never_mind' => 'Never mind',
@@ -403,7 +403,9 @@ return [
         'running_unread' => 'Whether these are already running could not be read.',
         'would_start_nothing' => 'No service would start.',
         'left_out' => ':name would be left out: :needs',
-        'estimate' => 'The stack estimates about :mib MiB of memory. That is its estimate, not a measurement.',
+        'estimate' => 'Memory, estimated',
+        'estimate_unit' => 'MiB',
+        'estimate_said' => 'The stack\'s estimate, not a measurement.',
         'unestimated' => ':services declare no estimate, so the real figure is higher.',
         'nothing_left_out' => 'Nothing would be left out.',
         'needs' => [

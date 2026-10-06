@@ -367,14 +367,14 @@ return [
     'open_service' => ':name openen',
     'open_form' => 'Form :name openen',
     'a_whole_form' => 'Een form is elke dienst erin. De knoppen hieronder raken ze allemaal.',
-    'leaned_on_by' => ':name werkt niet zonder hem',
+    'what_it_is' => 'Wat het is',
 
     // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'Op het punt :what te wijzigen',
     'about_to_form' => 'Dit is elke dienst in die form, niet alleen die ene.',
     'fetch_may_take_long' => 'Ophalen kan lang duren en kan veel van je lijn gebruiken. De stack zegt vooraf niet hoe lang of hoeveel, dus hier wordt niets geschat.',
     'would_not_help' => 'Hij start al keer op keer opnieuw. Nog een herstart komt in de rij.',
-    'leaning_on_it' => 'Deze werken niet zolang hij uit staat:',
+    'depends_on_it' => 'Heeft hem nodig',
     'nothing_leans_on_it' => 'Niets anders in de stack heeft hem nodig.',
     'go_ahead' => 'Doe maar',
     'never_mind' => 'Laat maar',
@@ -399,7 +399,9 @@ return [
         'running_unread' => 'Of deze al draaien kon niet worden gelezen.',
         'would_start_nothing' => 'Er zou geen dienst starten.',
         'left_out' => ':name zou worden overgeslagen: :needs',
-        'estimate' => 'De stack schat ongeveer :mib MiB geheugen. Dat is een schatting, geen meting.',
+        'estimate' => 'Geheugen, geschat',
+        'estimate_unit' => 'MiB',
+        'estimate_said' => 'Een schatting van de stack, geen meting.',
         'unestimated' => ':services geven geen schatting op, dus het echte getal is hoger.',
         'nothing_left_out' => 'Er zou niets worden overgeslagen.',
         'needs' => [

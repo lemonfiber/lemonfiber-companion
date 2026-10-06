@@ -37,13 +37,18 @@ use function view;
  *
  * `$tap` and `$goes` behave as {@see Action}'s do: exactly one is set, because
  * a control that does two things on one press is two controls sharing a name.
+ * A road may carry what the screen it opens needs, as a link's does.
  */
 final class QuietAction extends Component
 {
+    /**
+     * @param array<string, string> $carries what the road hands the screen it opens, besides the route
+     */
     public function __construct(
         public readonly string $label,
         public readonly string $tap = '',
         public readonly string $goes = '',
+        public readonly array $carries = [],
     ) {}
 
     public function render(): View
