@@ -17,6 +17,7 @@ use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
@@ -67,6 +68,7 @@ final readonly class Coincidences
             'LAST_SECOND' => 'the highest second a timestamp may write, a leap second included',
         ],
         ARatio::class => ['HUNDREDTHS' => 'the hundredths in a ratio of one'],
+        HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
         SomethingStillComing::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
         PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the field of a kept record that holds the handle'],

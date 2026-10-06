@@ -90,13 +90,18 @@ final readonly class WhatTheDeviceWouldDraw
     /**
      * Every kind of node a person operates whatever it holds.
      *
-     * A button, a tappable row and a chip. A list row is operated only when it
-     * is given something to do, which {@see isOperated()} reads off the node.
+     * A button, a chip and a toggle. A list row and a tappable area are
+     * operated only when they are given something to do, which
+     * {@see isOperated()} reads off the node.
      */
-    private const array OPERATED = ['button', 'pressable', 'chip', 'toggle'];
+    private const array OPERATED = ['button', 'chip', 'toggle'];
 
-    /** The list row, a control only when something handles its press. */
-    private const string LIST_ROW = 'list_item';
+    /**
+     * The list row and the tappable area, each a control only when something
+     * handles its press: a poster is a tappable area with nothing to press,
+     * drawn as one so it is read as one.
+     */
+    private const array OPERATED_WHEN_PRESSED = ['list_item', 'pressable'];
 
     /** Where a screen's children hang. */
     private const string BENEATH = 'children';
@@ -374,15 +379,16 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
-     * Whether a person operates this node: always for a button, a tappable row
-     * or a chip, and for a list row when something handles its press.
+     * Whether a person operates this node: always for a button, a chip or a
+     * toggle, and for a list row or a tappable area when something handles
+     * its press.
      *
      * @param array<mixed> $node
      */
     private static function isOperated(string $type, array $node): bool
     {
         return in_array($type, self::OPERATED, strict: true)
-            || ($type === self::LIST_ROW && array_key_exists('on_press', $node));
+            || (in_array($type, self::OPERATED_WHEN_PRESSED, strict: true) && array_key_exists('on_press', $node));
     }
 
     /**

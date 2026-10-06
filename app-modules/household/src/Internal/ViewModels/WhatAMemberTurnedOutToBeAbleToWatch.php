@@ -17,7 +17,7 @@ namespace Modules\Household\Internal\ViewModels;
  * collection could not be reached*. Telling somebody the first when the second
  * is true is the failure this screen exists around.
  *
- * @param list<WhatOneHoldingSays> $holdings
+ * @param list<WhatAShelfRowSays> $rows
  * @param list<string>             $reasons
  */
 use Modules\Kernel\Api\Obstacle;
@@ -25,7 +25,7 @@ use Modules\Kernel\Api\Obstacle;
 final readonly class WhatAMemberTurnedOutToBeAbleToWatch
 {
     /**
-     * @param list<WhatOneHoldingSays> $holdings
+     * @param list<WhatAShelfRowSays> $rows
      * @param list<string>             $reasons
      */
     private function __construct(
@@ -33,27 +33,27 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
         public string $met,
         public string $remedy,
         public bool $isOutOfReach,
-        public array $holdings,
+        public array $rows,
         public array $reasons,
         private ?Obstacle $why = null,
     ) {}
 
     /**
-     * The core answered, and this is the shelf.
+     * The core answered, and this is the shelf, in its rows.
      *
-     * An empty list is an ordinary answer: a member with nothing on their
-     * shelf is told so in as many words.
+     * No rows is an ordinary answer: a member with nothing on their shelf is
+     * told so in as many words.
      *
-     * @param list<WhatOneHoldingSays> $holdings
+     * @param list<WhatAShelfRowSays> $rows
      */
-    public static function these(array $holdings): self
+    public static function these(array $rows): self
     {
         return new self(
             isSignedIn: true,
             met: '',
             remedy: '',
             isOutOfReach: false,
-            holdings: $holdings,
+            rows: $rows,
             reasons: [],
         );
     }
@@ -74,7 +74,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             met: '',
             remedy: '',
             isOutOfReach: true,
-            holdings: [],
+            rows: [],
             reasons: $reasons,
         );
     }
@@ -87,7 +87,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             met: '',
             remedy: '',
             isOutOfReach: false,
-            holdings: [],
+            rows: [],
             reasons: [],
         );
     }
@@ -102,7 +102,7 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
                 met: $why->said(),
                 remedy: $why->remedy(),
                 isOutOfReach: false,
-                holdings: [],
+                rows: [],
                 reasons: [],
                 why: $why,
             );

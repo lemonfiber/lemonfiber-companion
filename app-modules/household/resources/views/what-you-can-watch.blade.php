@@ -3,21 +3,20 @@
 <x-operator::content>
 
 @if ($this->answer()->cameBack())
-    {{-- One row per holding: the title, the kind under it, and the year at
-         its end where the core had one. The kind is drawn under the title
-         rather than beside it: a row that runs out of width puts the title
-         second, and the title is the part somebody is scanning for. --}}
-    <x-design::section>
-        @forelse ($this->answer()->holdings as $holding)
-            <x-design::row :headline="$holding->titled" :supporting="__($holding->medium)" :trailing="$holding->year" />
-        @empty
-            {{-- Said in as many words. A member whose shelf holds nothing has an
-                 answer, and a blank frame is what a library nobody could reach
-                 looks like — the branch below is what keeps those apart, and this
-                 arm is only reached where the core answered. --}}
+    {{-- The shelf as rows of posters: what came in most recently, then a row
+         for each kind it holds. A poster carries its title, its kind and its
+         year, and says all three to a screen reader at once. --}}
+    @forelse ($this->answer()->rows as $row)
+        <x-household::shelf-row :row="$row" />
+    @empty
+        {{-- Said in as many words. A member whose shelf holds nothing has an
+             answer, and a blank frame is what a library nobody could reach
+             looks like — the branch below is what keeps those apart, and this
+             arm is only reached where the core answered. --}}
+        <x-design::section>
             <x-design::row :headline="__('household.shelf_is_empty')" :supporting="__('household.shelf_is_empty_action')" />
-        @endforelse
-    </x-design::section>
+        </x-design::section>
+    @endforelse
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
 @elseif ($this->answer()->isOutOfReach)

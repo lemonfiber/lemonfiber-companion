@@ -106,12 +106,19 @@ function thePreview(
     return $screen;
 }
 
-it('draws the shelf the household\'s defaults hold, asked for as the defaults and never as anybody', function (): void {
+it('draws the shelf the household\'s defaults hold in a member\'s rows, asked for as the defaults and never as anybody', function (): void {
     $watching = AShelfThatWasRead::holding(whatTheDefaultsHold());
     $drawn = WhatTheDeviceWouldDraw::by(thePreview(watching: $watching))->said();
+    $first = array_search(__('household.shelf.new'), $drawn, strict: true);
 
-    expect($drawn)->toContain('A film')
-        ->and($drawn)->toContain('A series')
+    expect($first)->toBeInt()
+        ->and(array_slice($drawn, (int) $first, 7))->toBe([
+            __('household.shelf.new'),
+            'A film, Film, 1999', '1999 · Film', 'A film',
+            'A series, Series', 'Series', 'A series',
+        ])
+        ->and($drawn)->toContain(__(Medium::Film->shelvedUnder()))
+        ->and($drawn)->toContain(__(Medium::Series->shelvedUnder()))
         ->and($watching->askings())->toBe(1)
         ->and($watching->askingsForTheDefaults())->toBe(1);
 });

@@ -179,7 +179,7 @@ function everyDerivedKey(): array
         ),
         Medium::class => aPairPerCase(
             Medium::cases(),
-            static fn(Medium $medium): array => [$medium->saidOnTheScreen()],
+            static fn(Medium $medium): array => [$medium->saidOnTheScreen(), $medium->shelvedUnder()],
         ),
         HowItEnded::class => aPairPerCase(
             HowItEnded::cases(),

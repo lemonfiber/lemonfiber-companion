@@ -5,7 +5,7 @@ Profile, in a bottom bar, and no side menu.
 
 | Tab | Screen | What it draws |
 |---|---|---|
-| Home | `WhatYouCanWatch` | what they can watch, which is where a member lands |
+| Home | `WhatYouCanWatch` | what they can watch, as rows of posters, which is where a member lands |
 | Search | `LookingForATitle` | that searching from the phone is coming, in household words |
 | Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
 | Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, and taking the house off the phone |
@@ -18,14 +18,26 @@ because how a house's machine stands is the operator's to read. The operator's
 screens are never built for a member's session: the composition root builds
 Home in their place.
 
+**Home is rows of posters.** `HowAShelfReads` turns the shelf the core
+answered into rows: *New in the house*, the first
+`HowAShelfReads::NEW_IN_THE_HOUSE` titles in the core's order, which is newest
+first, and then one row for each kind the shelf holds, in the order `Medium`
+declares the kinds. A kind the shelf holds none of has no row, and a row shows
+what the shelf read returned, with nothing leading on to a longer list. Each
+title is a `Poster`: a raised 2:3 tile with its year and kind at the top and
+its name lettered at the bottom, at the step `HowAPosterIsLettered` reads off
+the name's length, with nothing under the tile. A screen reader hears the
+title, its kind and its year once, from the tile's label. The core serves the
+app no artwork, so every title is drawn lettered.
+
 **The operator previews the member's side here too.** `WhatAMemberWouldSee`,
-opened from *View as member* in the operator's menu, draws Home and Requests as
-somebody invited with the household's defaults would see them, in the member's
-theme, from the core's answers for those defaults. They are read for nobody, so
-the preview names no member, and it asks for nothing: the control a member asks
-with is drawn and cannot be used. Its mark carries the way back to the
-operator's screen it was opened from, and a member's session is given Home in
-its place.
+opened from *View as member* in the operator's menu, draws Home, in the same
+rows, and Requests as somebody invited with the household's defaults would see
+them, in the member's theme, from the core's answers for those defaults. They
+are read for nobody, so the preview names no member, and it asks for nothing:
+the control a member asks with is drawn and cannot be used. Its mark carries the
+way back to the operator's screen it was opened from, and a member's session is
+given Home in its place.
 
 The module was empty for a long time and the reason is worth keeping, because it
 is what decides the shape of what is here now. `lemonfiber` minted one token for

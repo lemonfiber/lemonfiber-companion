@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
+use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
@@ -90,27 +92,70 @@ function theShelfScreen(
     return $screen;
 }
 
-it('draws the shelf the core listed, in its order and unfiltered', function (): void {
+/**
+ * What one row of the shelf screen carries, as one thing read off each poster.
+ *
+ * @param Closure(WhatOneHoldingSays): string $read
+ *
+ * @return list<string>
+ */
+function eachPosterIn(WhatYouCanWatch $screen, int $row, Closure $read): array
+{
+    return array_map($read, $screen->answer()->rows[$row]->holdings);
+}
+
+/** A poster's title. */
+function itsTitle(): Closure
+{
+    return static fn(WhatOneHoldingSays $poster): string => $poster->titled;
+}
+
+it('draws the shelf the core listed, in its order and unfiltered, first as what is new', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
 
-    $titles = array_map(
-        static fn(object $row): string => $row->titled,
-        $screen->answer()->holdings,
-    );
-
-    expect($titles)->toBe(['A film', 'A series', 'Something else'])
+    expect(eachPosterIn($screen, 0, itsTitle()))->toBe(['A film', 'A series', 'Something else'])
+        ->and($screen->answer()->rows[0]->heading)->toBe('household.shelf.new')
         ->and($screen->answer()->cameBack())->toBeTrue();
 });
 
-it('names each kind against a key rather than in English', function (): void {
+it('follows what is new with a row for each kind the shelf holds, in the order the kinds are declared', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
 
-    $media = array_map(
-        static fn(object $row): string => $row->medium,
-        $screen->answer()->holdings,
-    );
+    expect(array_map(static fn(object $row): string => $row->heading, $screen->answer()->rows))->toBe([
+        'household.shelf.new',
+        Medium::Film->shelvedUnder(),
+        Medium::Series->shelvedUnder(),
+        Medium::Other->shelvedUnder(),
+    ])
+        ->and(eachPosterIn($screen, 1, itsTitle()))->toBe(['A film'])
+        ->and(eachPosterIn($screen, 2, itsTitle()))->toBe(['A series'])
+        ->and(eachPosterIn($screen, 3, itsTitle()))->toBe(['Something else']);
+});
 
-    expect($media)->toBe([
+it('cuts the first row at the newest few and leaves every holding of a kind in its own row', function (): void {
+    $films = [];
+
+    for ($nth = 1; $nth <= HowAShelfReads::NEW_IN_THE_HOUSE + 1; $nth++) {
+        $films[] = Holding::of(HoldingId::called(sprintf('f%d', $nth)), sprintf('Film %d', $nth), Medium::Film, WhenItCameOut::in(2000 + $nth));
+    }
+
+    $screen = theShelfScreen(AShelfThatWasRead::holding(Shelf::of(...$films)));
+    $everyTitle = array_map(static fn(Holding $film): string => $film->titled(), $films);
+
+    expect(eachPosterIn($screen, 0, itsTitle()))->toBe(array_slice($everyTitle, 0, HowAShelfReads::NEW_IN_THE_HOUSE))
+        ->and(eachPosterIn($screen, 1, itsTitle()))->toBe($everyTitle)
+        ->and($screen->answer()->rows)->toHaveCount(2);
+});
+
+it('offers no poster as a control while there is nothing to press on one', function (): void {
+    $screen = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())));
+
+    expect($screen->said())->toContain('A film, Film, 1999')
+        ->and($screen->offers())->toBe([__('household.ask_again')]);
+});
+
+it('names each kind against a key rather than in English', function (): void {
+    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOneHoldingSays $poster): string => $poster->medium))->toBe([
         'household.medium.film',
         'household.medium.series',
         'household.medium.other',
@@ -120,23 +165,19 @@ it('names each kind against a key rather than in English', function (): void {
 it('leaves the year off a holding the core could not date', function (): void {
     // Empty rather than a placeholder: a year invented here would be a fact
     // about somebody's library that nobody claimed.
-    $years = array_map(
-        static fn(object $row): string => $row->year,
-        theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()))->answer()->holdings,
-    );
-
-    expect($years)->toBe(['1999', '', '2012']);
+    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOneHoldingSays $poster): string => $poster->year))->toBe(['1999', '', '2012']);
 });
 
-it('draws each holding as a row: its title, its kind under it, and its year at its end where it has one', function (): void {
+it('draws each row under its heading, each poster labelled with its title, kind and year and drawn as its year and kind above its title', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())))->said();
-    $first = array_search('A film', $drawn, strict: true);
+    $first = array_search(__('household.shelf.new'), $drawn, strict: true);
 
     expect($first)->toBeInt()
-        ->and(array_slice($drawn, (int) $first, 8))->toBe([
-            'A film', __('household.medium.film'), '1999',
-            'A series', __('household.medium.series'),
-            'Something else', __('household.medium.other'), '2012',
+        ->and(array_slice($drawn, (int) $first, 10))->toBe([
+            __('household.shelf.new'),
+            'A film, Film, 1999', '1999 · Film', 'A film',
+            'A series, Series', 'Series', 'A series',
+            'Something else, Other, 2012', '2012 · Other', 'Something else',
         ]);
 });
 
@@ -164,7 +205,7 @@ it('says an empty shelf in as many words', function (): void {
     $empty = theShelfScreen(AShelfThatWasRead::holdingNothing());
 
     expect($empty->answer()->cameBack())->toBeTrue()
-        ->and($empty->answer()->holdings)->toBe([]);
+        ->and($empty->answer()->rows)->toBe([]);
 
     $drawn = WhatTheDeviceWouldDraw::by($empty)->said();
 
@@ -268,7 +309,7 @@ it('carries no sentence and no remedy where the core answered', function (): voi
         ->and($empty->isOutOfReach)->toBeFalse()
         ->and($unread->isSignedIn)->toBeTrue()
         ->and($out->isOutOfReach)->toBeFalse()
-        ->and($out->holdings)->toBe([])
+        ->and($out->rows)->toBe([])
         ->and($out->reasons)->toBe([]);
 });
 

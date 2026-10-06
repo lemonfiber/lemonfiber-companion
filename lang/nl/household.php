@@ -101,6 +101,20 @@ return [
         'other' => 'Overig',
     ],
 
+    'shelf' => [
+        'new' => 'Nieuw in huis',
+        'film' => 'Films',
+        'series' => 'Series',
+        'other' => 'Overig',
+    ],
+
+    'poster' => [
+        'above' => ':year · :kind',
+        'above_undated' => ':kind',
+        'reads' => ':title, :kind, :year',
+        'reads_undated' => ':title, :kind',
+    ],
+
     'preview' => [
         'marked' => 'Voorbeeld: wat een lid ziet',
         'about' => 'Dit ziet iemand die met de standaardinstellingen van het huishouden is uitgenodigd. Niemands eigen plank of aanvragen worden getoond.',
