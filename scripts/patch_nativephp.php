@@ -2419,6 +2419,92 @@ SHIPS,
 BECOMES,
     ],
     [
+        // A chip is one control to a screen reader: one choice of several,
+        // said by its name, chosen or not, and chosen by a tap through the
+        // accessibility layer the same way a finger chooses it. Material draws
+        // a filter chip as a checkbox, with its name on a node of its own and
+        // the words under it read again; every chip here picks one choice of
+        // a row, so it is a radio button and nothing inside it is said.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
+        'ships' => <<<'SHIPS'
+        val chipModifier = modifier.nuiA11y(a11yLabel, a11yHint)
+
+        FilterChip(
+            selected = isSelected,
+            onClick = {
+                if (onPressCb != 0) {
+                    // Server-driven: the press handler owns selection. Toggling
+                    // locally would make the chip fight the state it is handed
+                    // back, so a filter chip would flicker off on its own tap.
+                    NativeUIBridge.sendPressEvent(onPressCb, node.id)
+                } else {
+                    val new = !isSelected
+                    isSelected = new
+                    lastSentValue = new
+                    if (onChangeCb != 0) {
+                        NativeUIBridge.sendToggleChangeEvent(onChangeCb, node.id, new)
+                    }
+                }
+            },
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val chosen: () -> Unit = {
+                if (onPressCb != 0) {
+                    // Server-driven: the press handler owns selection. Toggling
+                    // locally would make the chip fight the state it is handed
+                    // back, so a filter chip would flicker off on its own tap.
+                    NativeUIBridge.sendPressEvent(onPressCb, node.id)
+                } else {
+                    val new = !isSelected
+                    isSelected = new
+                    lastSentValue = new
+                    if (onChangeCb != 0) {
+                        NativeUIBridge.sendToggleChangeEvent(onChangeCb, node.id, new)
+                    }
+                }
+        }
+        val chipModifier = modifier.saidAsAControl(
+            listOf(a11yLabel.ifEmpty { label }, a11yHint).filter { it.isNotEmpty() }.joinToString(". "),
+            Role.RadioButton,
+            pressable = !disabled,
+            state = { selected = isSelected },
+            onPress = chosen,
+        )
+
+        FilterChip(
+            selected = isSelected,
+            onClick = chosen,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
+        'ships' => <<<'SHIPS'
+import com.nativephp.mobile.ui.nativerender.NativeUINode
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import com.nativephp.mobile.ui.nativerender.NativeUINode
+import com.nativephp.mobile.ui.nativerender.saidAsAControl
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+BECOMES,
+    ],
+    [
+        // On iOS a chip is one button already, chosen or not by the system's
+        // own selected trait, which is said in the phone's language. The word
+        // the package adds after it, in English whatever the phone speaks, is
+        // the same state said a second time.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIChipRenderer.swift',
+        'ships' => <<<'SHIPS'
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .modifier(A11yLabelModifier(label: a11yLabel))
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .modifier(A11yLabelModifier(label: a11yLabel))
+BECOMES,
+    ],
+    [
         // A chip is drawn as the pill on iOS, which the brand allows on a chip
         // and a button alone, and as Material's default eight-point corner on
         // Android, which is no radius of the brand's. So Android's chip takes

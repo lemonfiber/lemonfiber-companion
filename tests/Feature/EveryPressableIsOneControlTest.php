@@ -82,7 +82,40 @@ KOTLIN,
         'vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeNavRenderers.kt',
         'IconButton(onClick = { onCloseDrawer {} }, modifier = Modifier.saidAsAControl("Close drawer", Role.Button) { onCloseDrawer {} }) {',
     ],
+    // One choice of a row: a radio button, chosen or not, named on the node a
+    // finger chooses, and nothing under it said, Material's checkbox included.
+    'a chip' => [
+        'vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
+        <<<'KOTLIN'
+        val chipModifier = modifier.saidAsAControl(
+            listOf(a11yLabel.ifEmpty { label }, a11yHint).filter { it.isNotEmpty() }.joinToString(". "),
+            Role.RadioButton,
+            pressable = !disabled,
+            state = { selected = isSelected },
+            onPress = chosen,
+        )
+
+        FilterChip(
+            selected = isSelected,
+            onClick = chosen,
+KOTLIN,
+        'modifier = chipModifier,',
+    ],
 ]);
+
+it('says a chip on iOS as one button, chosen by the system\'s own trait and not by a word after it', function (): void {
+    $chip = (string) file_get_contents(base_path('vendor/nativephp/mobile-ui/resources/ios/NativeUIChipRenderer.swift'));
+
+    expect($chip)->toContain('.accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)')
+        ->and(str_contains($chip, '.accessibilityValue(isSelected ? "Selected" : "Not selected")'))->toBeFalse();
+});
+
+it('draws every chip through the one renderer that says it as one choice', function (): void {
+    expect((string) file_get_contents(base_path('app-modules/design/resources/views/components/chip.blade.php')))
+        ->toContain('<native:chip ')
+        ->toContain('a11y-label="{{ $named }}"')
+        ->toContain(':selected="$chosen"');
+});
 
 it('puts the keyboard away on a tap on nothing without offering the whole screen as a control', function (): void {
     $root = (string) file_get_contents(base_path('vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeUIRenderer.kt'));
