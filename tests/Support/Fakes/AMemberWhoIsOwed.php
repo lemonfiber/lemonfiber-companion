@@ -39,6 +39,7 @@ final class AMemberWhoIsOwed implements Owing
         private readonly Requested $wanted,
         private ?Stack $asked = null,
         private int $askings = 0,
+        private int $askingsForTheDefaults = 0,
     ) {}
 
     /** A member the stack has something to tell. */
@@ -97,6 +98,25 @@ final class AMemberWhoIsOwed implements Owing
     public function askings(): int
     {
         return $this->askings;
+    }
+
+    /**
+     * How many of those askings were for the household's defaults.
+     *
+     * The preview reads nobody's requests, and the only way to hold it to that
+     * is to count which question it asked.
+     */
+    public function askingsForTheDefaults(): int
+    {
+        return $this->askingsForTheDefaults;
+    }
+
+    #[Override]
+    public function whatTheDefaultsAreTold(Stack $stack, Session $session): WhatTheyAreOwed
+    {
+        $this->askingsForTheDefaults++;
+
+        return $this->toHandOver($stack, $session);
     }
 
     #[Override]

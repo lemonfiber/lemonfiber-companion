@@ -47,4 +47,14 @@ interface Owing
      * asked for has answered half, and {@see WhatTheirAskingSaid} says so.
      */
     public function theirRequests(Stack $stack, Session $session): WhatTheirAskingSaid;
+
+    /**
+     * What this stack says somebody invited with the household's defaults
+     * would be told.
+     *
+     * Read for nobody: the core answers with the household's own setting and
+     * reads no member's requests or allowance to do it. It is what the
+     * operator previews the member's side with.
+     */
+    public function whatTheDefaultsAreTold(Stack $stack, Session $session): WhatTheyAreOwed;
 }

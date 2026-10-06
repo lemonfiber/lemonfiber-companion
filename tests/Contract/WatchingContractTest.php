@@ -266,3 +266,58 @@ it('the payload this suite stands a shelf in with is one a stack would send', fu
             whatAStackSendsAboutAShelf([], available: false, findings: ['The media server did not answer.']),
         ))->toBe([], "The unreadable-shelf payload this suite stands in with is not one a stack would send.\n");
 });
+
+/** What a stack answered about the household's defaults, as one string, whichever arm it took. */
+function whatTheDefaultShelfSaid(Watching $watching): string
+{
+    return $watching->theDefaultShelf(theHouseAShelfBelongsTo(), theSessionAShelfIsAskedUnder())->either(
+        told: static fn(Shelf $shelf): TheWordCarriedOut => new TheWordCarriedOut(sprintf('told:%d', iterator_count($shelf->getIterator()))),
+        outOfReach: static fn(): TheWordCarriedOut => new TheWordCarriedOut('out-of-reach'),
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
+    )->said;
+}
+
+it('hands over the shelf the household\'s defaults hold, unchanged', function (): void {
+    // Nobody's shelf, and held to the same promise as a member's: what the
+    // core listed is what arrives, and an unread library is not an empty one.
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutAShelf([
+        oneHoldingOnTheWire('a1', 'A film', 'film', 1999),
+    ])));
+
+    $fake = AShelfThatWasRead::holding(Shelf::of(
+        Holding::of(HoldingId::called('a1'), 'A film', Medium::Film, WhenItCameOut::in(1999)),
+    ));
+
+    foreach (everyWayOfReadingAShelf($answered, $fake) as $which => $build) {
+        expect(whatTheDefaultShelfSaid($build()))->toBe('told:1', $which);
+    }
+
+    $unread = MockResponse::make((string) json_encode(
+        whatAStackSendsAboutAShelf([], available: false, findings: ['The media server did not answer.']),
+    ));
+
+    foreach (everyWayOfReadingAShelf(
+        $unread,
+        AShelfThatWasRead::outOfReach(Sentences::of(Sentence::of('The media server did not answer.'))),
+    ) as $which => $build) {
+        expect(whatTheDefaultShelfSaid($build()))->toBe('out-of-reach', $which);
+    }
+
+    foreach (everyWayOfReadingAShelf(
+        MockResponse::make('{"error":"no"}', 401),
+        AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
+    ) as $which => $build) {
+        expect(whatTheDefaultShelfSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::CredentialWasRefused->value), $which);
+    }
+});
+
+it('counts which of the two shelves the fake was asked for', function (): void {
+    $watching = AShelfThatWasRead::holdingNothing();
+
+    $watching->theDefaultShelf(theHouseAShelfBelongsTo(), theSessionAShelfIsAskedUnder());
+    $watching->theShelfOf(theHouseAShelfBelongsTo(), theSessionAShelfIsAskedUnder(), theMemberWhoseShelfItIs());
+
+    expect($watching->askingsForTheDefaults())->toBe(1)
+        ->and($watching->askings())->toBe(2);
+});

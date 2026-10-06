@@ -10,6 +10,7 @@ use Closure;
 
 use function is_string;
 
+use Modules\Household\Internal\Screens\WhatAMemberWouldSee;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
@@ -39,6 +40,10 @@ use function str_starts_with;
  * lock stands. What it reads is whose session the phone holds, as the theme
  * reads it for every screen, and never the session itself.
  *
+ * The operator's preview of the member's side is drawn by the household's
+ * screens and is the operator's all the same, so it is kept from a member's
+ * session by name: a member is somebody, and their side is their own.
+ *
  * The navigation stack keeps the path it was asked for beside what this built.
  */
 final readonly class OutOfTheOperatorsScreens
@@ -50,6 +55,15 @@ final readonly class OutOfTheOperatorsScreens
      */
     public const array EVERY_SESSION_OPENS = [
         SignIntoAStack::class => 'signing in is where a session that ended is renewed, whoever held it',
+    ];
+
+    /**
+     * Screens outside the operator's namespace that only the operator's session opens, and why.
+     *
+     * @var array<class-string, string>
+     */
+    public const array ONLY_THE_OPERATOR_OPENS = [
+        WhatAMemberWouldSee::class => 'the preview of the member\'s side is the operator\'s, and a member\'s side is their own',
     ];
 
     /** Where the operator's screens live, by namespace. */
@@ -82,7 +96,10 @@ final readonly class OutOfTheOperatorsScreens
      */
     private function isKeptFromAMember(string $asked): bool
     {
-        if (! str_starts_with($asked, self::THE_OPERATORS) || array_key_exists($asked, self::EVERY_SESSION_OPENS) || ! array_key_exists('stack', $this->params)) {
+        $theOperators = (str_starts_with($asked, self::THE_OPERATORS) && ! array_key_exists($asked, self::EVERY_SESSION_OPENS))
+            || array_key_exists($asked, self::ONLY_THE_OPERATOR_OPENS);
+
+        if (! $theOperators || ! array_key_exists('stack', $this->params)) {
             return false;
         }
 

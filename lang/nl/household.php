@@ -100,4 +100,12 @@ return [
         'series' => 'Serie',
         'other' => 'Overig',
     ],
+
+    'preview' => [
+        'marked' => 'Voorbeeld: wat een lid ziet',
+        'about' => 'Dit ziet iemand die met de standaardinstellingen van het huishouden is uitgenodigd. Niemands eigen plank of aanvragen worden getoond.',
+        'back' => 'Terug naar Switchboard',
+        'ask' => 'Iets aanvragen',
+        'cannot_ask' => 'Een voorbeeld kan niets aanvragen.',
+    ],
 ];

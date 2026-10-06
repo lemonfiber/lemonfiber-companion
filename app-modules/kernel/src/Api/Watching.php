@@ -32,4 +32,14 @@ interface Watching
 {
     /** What the core says this member may watch, or why it would not say. */
     public function theShelfOf(Stack $stack, Session $session, Whose $whose): WhatTheyMayWatch;
+
+    /**
+     * What the core says somebody invited with the household's defaults may
+     * watch, or why it would not say.
+     *
+     * Nobody's shelf: the core reads it for no account, so asking it names no
+     * member and the answer carries nothing of anybody's. It is what the
+     * operator previews the member's side with.
+     */
+    public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch;
 }

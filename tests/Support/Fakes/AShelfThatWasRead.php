@@ -35,6 +35,7 @@ final class AShelfThatWasRead implements Watching
         private readonly bool $outOfReach,
         private ?Stack $asked = null,
         private int $askings = 0,
+        private int $askingsForTheDefaults = 0,
     ) {}
 
     /** A member with things on their shelf. */
@@ -78,8 +79,33 @@ final class AShelfThatWasRead implements Watching
         return $this->askings;
     }
 
+    /**
+     * How many of those askings were for the household's defaults.
+     *
+     * The preview reads nobody's shelf, and the only way to hold it to that is
+     * to count which of the two it asked.
+     */
+    public function askingsForTheDefaults(): int
+    {
+        return $this->askingsForTheDefaults;
+    }
+
     #[Override]
     public function theShelfOf(Stack $stack, Session $session, Whose $whose): WhatTheyMayWatch
+    {
+        return $this->answer($stack);
+    }
+
+    #[Override]
+    public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch
+    {
+        $this->askingsForTheDefaults++;
+
+        return $this->answer($stack);
+    }
+
+    /** The shelf it was given, whichever of the two was asked. */
+    private function answer(Stack $stack): WhatTheyMayWatch
     {
         $this->asked = $stack;
         $this->askings++;

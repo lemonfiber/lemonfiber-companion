@@ -136,6 +136,17 @@ enum AStacksScreen: string
     case Profile = '/stacks/{stack}/profile';
 
     /**
+     * The member's side as somebody invited with the household's defaults sees
+     * it: the operator's preview.
+     *
+     * Not under the member's own paths. It is opened with the operator's
+     * session and is never built for a member's, so a path a member's tab could
+     * lead to would be a route the guard had to tell apart by something other
+     * than its name.
+     */
+    case AsAMember = '/stacks/{stack}/as-a-member';
+
+    /**
      * What this machine has changed about itself, and how far each could be put back.
      *
      * Beside what it is set to rather than under it: that screen is a setting

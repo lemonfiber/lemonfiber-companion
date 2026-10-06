@@ -110,4 +110,14 @@ return [
         'series' => 'Series',
         'other' => 'Other',
     ],
+
+    // The operator's preview of the member's side. The mark says what it is,
+    // and its control leads back to the operator's own screens.
+    'preview' => [
+        'marked' => 'Preview: what a member sees',
+        'about' => 'This is what somebody invited with the household\'s defaults sees. Nobody\'s own shelf or requests are shown.',
+        'back' => 'Back to Switchboard',
+        'ask' => 'Ask for something',
+        'cannot_ask' => 'A preview cannot ask for anything.',
+    ],
 ];

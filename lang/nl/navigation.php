@@ -36,6 +36,7 @@ return [
         'app_settings' => 'App-instellingen',
         'requests' => 'Verzoeken',
         'allowance' => 'Tegoed',
+        'view_as_member' => 'Bekijken als lid',
         'stuck_downloads' => 'Vastgelopen downloads',
         'follow_a_download' => 'Download volgen',
         'invite_someone' => 'Iemand uitnodigen',

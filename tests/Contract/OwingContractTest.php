@@ -503,3 +503,67 @@ it('stands in for a member who has asked with a payload the contract would accep
         whatAStackSendsOneMemberWhoHasAsked(theRequestsAMemberMade()),
     ))->toBe([], "The payload this suite stands in for a member's requests with is not one a stack would send.\n");
 });
+
+/** What a stack answered about the household's defaults, as one string, whichever arm it took. */
+function whatTheDefaultsWereTold(Owing $owing): string
+{
+    return $owing->whatTheDefaultsAreTold(theHouseAMemberBelongsTo(), theSessionAMemberHolds())->either(
+        told: static function (Sentences $said): TheWordCarriedOut {
+            $lines = [];
+
+            foreach ($said as $sentence) {
+                $lines[] = $sentence->shown();
+            }
+
+            return new TheWordCarriedOut(sprintf('told:%s', implode('|', $lines)));
+        },
+        refused: static fn(Obstacle $why): TheWordCarriedOut
+            => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
+    )->said;
+}
+
+it('hands over what the household\'s defaults are told, unchanged', function (): void {
+    // The same promise as a member's: the core wrote it, so neither side may
+    // compose a word of it. The row the core sends for the defaults is the
+    // shape a member's is.
+    $said = whatTheCoreWroteToAMember();
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsOneMember($said)));
+
+    foreach (everyWayOfBeingOwed($answered, $said) as $which => $build) {
+        expect(whatTheDefaultsWereTold($build()))->toBe(sprintf('told:%s', implode('|', $said)), $which);
+    }
+});
+
+it('tells a refused session from a stack that did not answer, where the defaults could not be read', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfBeingOwed($answered, [], $why) as $which => $build) {
+            expect(whatTheDefaultsWereTold($build()))
+                ->toBe(sprintf('refused:%s', $why->kind()->value), sprintf('%s, %s', $which, $why->kind()->value));
+        }
+    }
+});
+
+it('asks for the household\'s defaults by name, and names no member', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make((string) json_encode(whatAStackSendsOneMember([])))]);
+
+    new TheirOwn(new PinnedClients())->whatTheDefaultsAreTold(theHouseAMemberBelongsTo(), theSessionAMemberHolds());
+
+    expect($mock->getLastPendingRequest()?->query()->all())->toBe(['defaults' => 'true']);
+});
+
+it('counts which of its questions the fake was asked', function (): void {
+    $owing = AMemberWhoIsOwed::owedNothing();
+
+    $owing->whatTheDefaultsAreTold(theHouseAMemberBelongsTo(), theSessionAMemberHolds());
+    $owing->toHandOver(theHouseAMemberBelongsTo(), theSessionAMemberHolds());
+
+    expect($owing->askingsForTheDefaults())->toBe(1)
+        ->and($owing->askings())->toBe(2);
+});
