@@ -150,12 +150,26 @@ it('names only operator screens about a stack as opened by every session, and do
 });
 
 it('builds the member\'s own screens as asked, for a member\'s session', function (): void {
-    $screens = everyScreenAboutAStack('Modules\\Household\\');
+    $screens = array_filter(
+        everyScreenAboutAStack('Modules\\Household\\'),
+        static fn(string $class): bool => ! array_key_exists($class, OutOfTheOperatorsScreens::ONLY_THE_OPERATOR_OPENS),
+    );
 
     expect($screens)->not->toBeEmpty();
 
     foreach ($screens as $pattern => $class) {
         expect(whatIsBuiltFor(aKeychainHoldingBothSessions(), $class, aHouseSignedInto(A_MEMBERS_HOUSE)))->toBe($class, $pattern);
+    }
+});
+
+it('builds the member\'s Home in place of the preview of the member\'s side, for a member\'s session', function (): void {
+    // The preview is drawn by the household's screens and is the operator's
+    // all the same: a member is somebody, and their side is their own.
+    expect(OutOfTheOperatorsScreens::ONLY_THE_OPERATOR_OPENS)->not->toBeEmpty();
+
+    foreach (array_keys(OutOfTheOperatorsScreens::ONLY_THE_OPERATOR_OPENS) as $class) {
+        expect(whatIsBuiltFor(aKeychainHoldingBothSessions(), $class, aHouseSignedInto(A_MEMBERS_HOUSE)))->toBe(whereAMemberLands(), $class)
+            ->and(whatIsBuiltFor(aKeychainHoldingBothSessions(), $class, aHouseSignedInto(THE_OPERATORS_HOUSE)))->toBe($class, $class);
     }
 });
 

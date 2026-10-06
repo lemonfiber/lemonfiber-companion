@@ -309,6 +309,28 @@ final readonly class Analysability
                     }
                 }
                 PHP, 'Q2 —'),
+
+            // A screen that holds the field its navigation trait reads as
+            // private, and reads it nowhere itself: read alone, the class
+            // shows a private field nothing reads.
+            Fixture::suite('P5', 'app-modules/household/src/Internal/Fixtures/HoldsTheWayAroundPrivately.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Household\Internal\Fixtures;
+
+                use Modules\Household\Internal\Screens\FindsItsWayAroundTheHouse;
+                use Modules\Wayfinding\Api\TheWayAround;
+                use Native\Mobile\Edge\NativeComponent;
+
+                final class HoldsTheWayAroundPrivately extends NativeComponent
+                {
+                    use FindsItsWayAroundTheHouse;
+
+                    public function __construct(private readonly TheWayAround $around) {}
+                }
+                PHP, 'holds a field only a trait reads as protected, never private'),
         ];
     }
 }

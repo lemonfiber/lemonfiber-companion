@@ -18,6 +18,15 @@ because how a house's machine stands is the operator's to read. The operator's
 screens are never built for a member's session: the composition root builds
 Home in their place.
 
+**The operator previews the member's side here too.** `WhatAMemberWouldSee`,
+opened from *View as member* in the operator's menu, draws Home and Requests as
+somebody invited with the household's defaults would see them, in the member's
+theme, from the core's answers for those defaults. They are read for nobody, so
+the preview names no member, and it asks for nothing: the control a member asks
+with is drawn and cannot be used. Its mark carries the way back to the
+operator's screen it was opened from, and a member's session is given Home in
+its place.
+
 The module was empty for a long time and the reason is worth keeping, because it
 is what decides the shape of what is here now. `lemonfiber` minted one token for
 the run and exchanged one password for one session, and the `admission` envelope

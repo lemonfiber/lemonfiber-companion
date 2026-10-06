@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
+use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
 
@@ -46,17 +47,27 @@ final readonly class Shelves implements Watching
         return $whose->either(
             operator: static fn(): WhatTheyMayWatch
                 => WhatTheyMayWatch::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
-            member: fn(string $member): WhatTheyMayWatch => $this->read($stack, $session, $member),
+            member: fn(string $member): WhatTheyMayWatch => $this->read($stack, $session, ['member' => $member]),
         );
     }
 
-    /** The shelf that member's account can see, or why it could not be had. */
-    private function read(Stack $stack, Session $session, string $member): WhatTheyMayWatch
+    #[Override]
+    public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch
+    {
+        return $this->read($stack, $session, AsTheHouseholdsDefaults::QUERY);
+    }
+
+    /**
+     * The shelf that member's account can see, or why it could not be had.
+     *
+     * @param array<string, string> $query whose shelf, as the read is asked
+     */
+    private function read(Stack $stack, Session $session, array $query): WhatTheyMayWatch
     {
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->read(Api::HELD_ENDPOINT, ['member' => $member]);
+            $envelope = $client->read(Api::HELD_ENDPOINT, $query);
 
             // Inside the same `try` as the request, for {@see TheirOwn}'s
             // reason: a payload the client fetched and this side could not

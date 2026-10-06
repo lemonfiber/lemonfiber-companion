@@ -481,6 +481,7 @@ function everyAdapterCallThatReads(): array
             => new Scrollbacks($clients)->saidBy($stack, $session, ServiceId::called('sonarr'), HowManyLines::of(3)),
         'Shelves::theShelfOf' => static fn(): object
             => new Shelves($clients)->theShelfOf($stack, $session, Whose::member('robin')),
+        'Shelves::theDefaultShelf' => static fn(): object => new Shelves($clients)->theDefaultShelf($stack, $session),
         'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
         'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
         'Supervisors::formsOn' => static fn(): object => new Supervisors($clients, $entropy)->formsOn($stack, $session),
@@ -500,6 +501,7 @@ function everyAdapterCallThatReads(): array
         'Surveyors::measuredOn' => static fn(): object => new Surveyors($clients)->measuredOn($stack, $session),
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
         'TheirOwn::theirRequests' => static fn(): object => new TheirOwn($clients)->theirRequests($stack, $session)->asked(),
+        'TheirOwn::whatTheDefaultsAreTold' => static fn(): object => new TheirOwn($clients)->whatTheDefaultsAreTold($stack, $session),
         'Upgraders::whatItWouldComeTo' => static fn(): object
             => new Upgraders($clients, $entropy)->whatItWouldComeTo($stack, $session),
         'Upgraders::upgrade' => static fn(): object

@@ -86,3 +86,21 @@ it('asks nothing at all where the session is the operator\'s', function (): void
     // a question this side already knows the answer to.
     expect(whatWasSentAskingAfterAShelf(Whose::theOperator()))->toBeNull();
 });
+
+it('asks for the household\'s defaults by name, and names no member', function (): void {
+    // The defaults are nobody's shelf. A request carrying a member as well
+    // would be refused by the core, and one carrying only a member would be
+    // somebody's library shown as everybody's.
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
+
+    new Shelves(new PinnedClients())->theDefaultShelf(
+        theStackWhoseShelfTheAdapterAsksAfter(),
+        Session::of('a-session-not-a-secret'),
+    );
+
+    $sent = $mock->getLastPendingRequest();
+
+    expect($sent?->query()->all())->toBe(['defaults' => 'true'])
+        ->and($sent?->getUrl())->toContain(Api::HELD_ENDPOINT);
+});

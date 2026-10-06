@@ -537,6 +537,7 @@ every rule that would otherwise have applied to whatever it exposes.
 | P2 | No variable variables and no dynamic class, method or property name | phpstan: own rule |
 | P3 | No `func_get_args()`, no `#[AllowDynamicProperties]` | phpstan `disallowed-calls` |
 | P4 | No reflection in production code | phpstan `disallowed-calls`, scoped by path |
+| P5 | A field only a trait reads is protected, never private: read alone, the class shows a private field nothing reads | arch: every class's fields read by the traits it uses, against where the class reads them itself |
 
 ### The runtime is one long-lived process
 

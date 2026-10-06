@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheirAskingSaid;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
+use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 
@@ -80,6 +81,26 @@ final readonly class TheirOwn implements Owing
             return WhatTheirAskingSaid::bothRefused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
             return WhatTheirAskingSaid::bothRefused($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    /**
+     * What somebody invited with the household's defaults would be told.
+     *
+     * The same endpoint, asked as the defaults, so the core answers with one
+     * row under no name and reads nobody's requests. The fold is the member's
+     * own, because what the defaults are told is written the way a member is.
+     */
+    public function whatTheDefaultsAreTold(Stack $stack, Session $session): WhatTheyAreOwed
+    {
+        $client = $this->clients->client($stack, $session);
+
+        try {
+            return $this->owedIn($stack, $client->read(Api::REQUESTS_ENDPOINT, AsTheHouseholdsDefaults::QUERY));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatTheyAreOwed::refused(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+            return WhatTheyAreOwed::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

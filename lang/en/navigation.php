@@ -36,6 +36,7 @@ return [
         'app_settings' => 'App settings',
         'requests' => 'Requests',
         'allowance' => 'Allowance',
+        'view_as_member' => 'View as member',
         'stuck_downloads' => 'Stuck downloads',
         'follow_a_download' => 'Follow a download',
         'invite_someone' => 'Invite someone',

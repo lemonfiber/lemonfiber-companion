@@ -10,6 +10,7 @@ use Closure;
 
 use function is_string;
 
+use Modules\Design\Api\DrawnAsAMemberSeesIt;
 use Modules\Design\Api\Radius;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\Theme;
@@ -33,7 +34,8 @@ use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
  * application: a screen about a stack is drawn in the operator's theme where
  * this phone holds the operator's session for that stack, and in the member's
  * otherwise. A screen about no stack is drawn in the member's, unless it
- * {@see TakesTheThemeItOpensOver}. No setting chooses between them.
+ * {@see TakesTheThemeItOpensOver}. A screen {@see DrawnAsAMemberSeesIt} is
+ * drawn in the member's whoever opened it. No setting chooses between them.
  *
  * `TailwindParser` holds one light and one dark resolver and keeps whichever
  * was set last, and `nativephp/mobile-ui` sets its own in its boot. So the
@@ -167,8 +169,20 @@ final class TheTheme implements WhichThemeIsOnTheGlass
         return $this->painted ?? WhoseTheme::Member;
     }
 
-    /** A route naming a stack it cannot identify names nobody's session, so its screen is drawn as one for no session is. */
+    /**
+     * The theme a screen is drawn in.
+     *
+     * A screen drawn as a member sees it is the member's whoever opened it,
+     * which is asked first because it is the one answer the session does not
+     * decide.
+     */
     private function whoseThemeIs(NativeComponent $screen): WhoseTheme
+    {
+        return $screen instanceof DrawnAsAMemberSeesIt ? WhoseTheme::Member : $this->whoseSessionDraws($screen);
+    }
+
+    /** A route naming a stack it cannot identify names nobody's session, so its screen is drawn as one for no session is. */
+    private function whoseSessionDraws(NativeComponent $screen): WhoseTheme
     {
         $stack = $screen->param('stack');
 
