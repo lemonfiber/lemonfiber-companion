@@ -871,24 +871,129 @@ import androidx.compose.ui.semantics.semantics
 BECOMES,
     ],
     [
-        // And where the tab carries a mark, the name it says is the mark's
-        // own sentence, which names the tab and how many new items it holds:
-        // the count drawn in the badge is a number to the eye and nothing a
-        // reader is told on its own.
+        // A tab is one control to a screen reader: it says its name, or the
+        // mark's own sentence where it carries a mark, which names the tab and
+        // how many new items it holds, and it is a tab, selected or not, that
+        // a tap through the accessibility layer selects. Said on the item's
+        // own outermost node rather than beside the selectable inside it, so
+        // the name and the tap are one node, and nothing inside it is said
+        // again: the count drawn in the badge is a number to the eye.
         'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
         'ships' => <<<'SHIPS'
                         NavigationBarItem(
                             selected = actualIdx == selection,
+                            onClick = {
+                                // Local selection updates instantly so
+                                // the ripple / selection indicator
+                                // responds; for the search tab, no PHP
+                                // navigation fires (it's an iOS-/Android-
+                                // side overlay). For regular tabs, the
+                                // BottomNavItem-auto-wired `replace`
+                                // press handler fires here. A tap back
+                                // to the active tab normally needs no
+                                // press — except while another tab's
+                                // navigation is in flight: PHP is
+                                // already navigating away and must be
+                                // told to come back.
+                                selection = actualIdx
+                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                    if (tab.props.getString("url", "").isNotEmpty()) {
+                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                        pendingTabId?.let { prev ->
+                                            if (prev != tappedId) supersededTabIds.add(prev)
+                                        }
+                                        pendingTabId = tappedId
+                                    }
+                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                }
+                            },
+                            icon = {
 SHIPS,
         'was' => <<<'WAS'
                         NavigationBarItem(
-                            modifier = Modifier.semantics { contentDescription = label },
-                            selected = actualIdx == selection,
-WAS,
-        'becomes' => <<<'BECOMES'
-                        NavigationBarItem(
                             modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
                             selected = actualIdx == selection,
+                            onClick = {
+                                // Local selection updates instantly so
+                                // the ripple / selection indicator
+                                // responds; for the search tab, no PHP
+                                // navigation fires (it's an iOS-/Android-
+                                // side overlay). For regular tabs, the
+                                // BottomNavItem-auto-wired `replace`
+                                // press handler fires here. A tap back
+                                // to the active tab normally needs no
+                                // press — except while another tab's
+                                // navigation is in flight: PHP is
+                                // already navigating away and must be
+                                // told to come back.
+                                selection = actualIdx
+                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                    if (tab.props.getString("url", "").isNotEmpty()) {
+                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                        pendingTabId?.let { prev ->
+                                            if (prev != tappedId) supersededTabIds.add(prev)
+                                        }
+                                        pendingTabId = tappedId
+                                    }
+                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                }
+                            },
+                            icon = {
+WAS,
+        'becomes' => <<<'BECOMES'
+                        val tabTapped: () -> Unit = {
+                                // Local selection updates instantly so
+                                // the ripple / selection indicator
+                                // responds; for the search tab, no PHP
+                                // navigation fires (it's an iOS-/Android-
+                                // side overlay). For regular tabs, the
+                                // BottomNavItem-auto-wired `replace`
+                                // press handler fires here. A tap back
+                                // to the active tab normally needs no
+                                // press — except while another tab's
+                                // navigation is in flight: PHP is
+                                // already navigating away and must be
+                                // told to come back.
+                                selection = actualIdx
+                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                    if (tab.props.getString("url", "").isNotEmpty()) {
+                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                        pendingTabId?.let { prev ->
+                                            if (prev != tappedId) supersededTabIds.add(prev)
+                                        }
+                                        pendingTabId = tappedId
+                                    }
+                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                }
+                        }
+                        NavigationBarItem(
+                            modifier = Modifier.clearAndSetSemantics {
+                                contentDescription = tab.props.getString("badge_label", "").ifEmpty { label }
+                                role = Role.Tab
+                                selected = actualIdx == selection
+                                onClick { tabTapped(); true }
+                            },
+                            selected = actualIdx == selection,
+                            onClick = tabTapped,
+                            icon = {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.semantics.semantics
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+
 BECOMES,
     ],
     [
@@ -1010,9 +1115,10 @@ BECOMES,
         // A tappable area that was given a label is one element to a screen
         // reader, as it is on iOS: its label is said, and the words drawn
         // inside it are not said after it. A tappable area with something to
-        // press merges what it holds already; one with nothing to press, such
-        // as a poster, would otherwise be read as its label and then as each
-        // line on it.
+        // press is said as a control on its click region, by
+        // `nodeSaidAsAControl` below; this is for one with nothing to press,
+        // such as a poster, which would otherwise be read as its label and
+        // then as each line on it.
         'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
         'ships' => <<<'SHIPS'
 internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
@@ -1065,6 +1171,91 @@ BECOMES,
 SHIPS,
         'becomes' => <<<'BECOMES'
             modifier = clickModifier.nuiA11y(p.getString("a11y_label"), p.getString("a11y_hint")),
+BECOMES,
+    ],
+    [
+        // A pressable the markup gave a label is one control to a screen
+        // reader, whatever draws it: a button, a list row, a tappable area. The
+        // press is put on the node by `nodeGestures`, and each renderer said
+        // its label on a node of its own inside that one, so the node a reader
+        // focuses was a tap with no name and no role, and the label and the
+        // words drawn under it were read after it, one by one. Said here, on
+        // the outermost node of the click region, the control says its label
+        // once, is a button, is pressed through the accessibility layer by the
+        // same press, and nothing inside it is said again. One place, because
+        // every node is drawn through `NodeView`.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.foundation.clickable
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt',
+        'ships' => <<<'SHIPS'
+// MARK: - Gesture Modifier
+SHIPS,
+        'becomes' => <<<'BECOMES'
+// MARK: - Said as a control
+
+/**
+ * A pressable node the markup gave a label, said as the one control it is.
+ *
+ * Its label, and its hint after it, are what a screen reader says; it is a
+ * button; a tap through the accessibility layer sends the node's own press;
+ * and nothing drawn inside it is said again. Where it cannot be pressed it
+ * says so. A node with no label, or nothing to press, or a menu that takes
+ * its tap, is left as it was.
+ */
+fun Modifier.nodeSaidAsAControl(node: NativeUINode): Modifier {
+    val label = node.props.getString("a11y_label", "")
+    val press = node.props.getCallbackId("on_press").let { if (it != 0) it else node.onPress }
+
+    if (label.isEmpty() || press == 0 || node.props.getBool("has_menu")) {
+        return this
+    }
+
+    val said = listOf(label, node.props.getString("a11y_hint", "")).filter { it.isNotEmpty() }.joinToString(". ")
+    val pressable = !node.props.getBool("disabled") && !node.props.getBool("loading")
+    val nodeId = node.id
+
+    return clearAndSetSemantics {
+        contentDescription = said
+        role = Role.Button
+        if (pressable) {
+            onClick {
+                NativeElementBridge.sendPressEvent(press, nodeId)
+                true
+            }
+        } else {
+            disabled()
+        }
+    }
+}
+
+// MARK: - Gesture Modifier
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeView.kt',
+        'ships' => <<<'SHIPS'
+        modifier = modifier
+            .nodeGestures(node, interactionSource)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        modifier = modifier
+            .nodeSaidAsAControl(node)
+            .nodeGestures(node, interactionSource)
 BECOMES,
     ],
     [
