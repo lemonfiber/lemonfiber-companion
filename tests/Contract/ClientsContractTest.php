@@ -20,6 +20,7 @@ use Modules\Sdk\Api\ClientsThatAskTheDevice;
 use Modules\Sdk\Api\PinnedClients;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ALocalNetworkThat;
+use Tests\Support\Fakes\NotesKeptInMemory;
 
 // The Clients contract beyond the kernel's port: what stood in the way of a
 // reach that got no answer this app could read. `ReachingContractTest` holds
@@ -49,6 +50,7 @@ dataset('every set of clients', [
         new PinnedClients(),
         ADeviceOnANetwork::connected(),
         ALocalNetworkThat::letsItThrough(),
+        new NotesKeptInMemory(),
     )],
 ]);
 

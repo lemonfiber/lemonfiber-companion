@@ -12,6 +12,11 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheLocalNetwork;
+use Modules\Sdk\Internal\WhatTheTransportReported;
+use Psr\Log\LoggerInterface;
+
+use function sprintf;
+
 use Throwable;
 
 /**
@@ -31,13 +36,23 @@ use Throwable;
  * **It opens nothing.** The client comes from {@see PinnedClients}, pinned, and
  * is handed straight on, so the one file that can open a connection is still
  * one.
+ *
+ * **Silence is noted for a developer, without the address.** The note names
+ * the kind of failure the transport reported, the port, and which kind of
+ * name the address is, and never the address: it is where somebody lives. It
+ * goes to the log a debug build keeps, and nowhere in any other build, where
+ * the composition root hands this a log that keeps nothing.
  */
 final readonly class ClientsThatAskTheDevice implements Clients
 {
+    /** The note a silent reach leaves: what was raised, what the transport reported, the port, and which kind of address was tried. */
+    private const string NOTED = 'reach: nothing answered (%s), %s, port %d, address %s';
+
     public function __construct(
         private PinnedClients $pinned,
         private Networking $network,
         private TheLocalNetwork $localNetwork,
+        private LoggerInterface $notes,
     ) {}
 
     public function client(Stack $stack, Session $session): Client
@@ -47,6 +62,16 @@ final readonly class ClientsThatAskTheDevice implements Clients
 
     public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
     {
+        if ($why instanceof Unreachable) {
+            $this->notes->debug(sprintf(
+                self::NOTED,
+                $why::class,
+                WhatTheTransportReported::in($why->reason())->value,
+                $stack->at()->port(),
+                $stack->at()->howItIsWritten()->value,
+            ));
+        }
+
         if ($why instanceof Unreachable && ! $this->network->isConnected()) {
             return Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
         }

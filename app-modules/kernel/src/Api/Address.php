@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use const FILTER_VALIDATE_IP;
+
+use function filter_var;
+use function is_int;
 use function is_string;
 
 use JsonSerializable;
@@ -11,8 +15,11 @@ use JsonSerializable;
 use function mb_strtolower;
 use function parse_url;
 
+use const PHP_URL_HOST;
+use const PHP_URL_PORT;
 use const PHP_URL_SCHEME;
 
+use function str_ends_with;
 use function trim;
 
 /**
@@ -48,6 +55,9 @@ use function trim;
  */
 final readonly class Address implements JsonSerializable
 {
+    /** How a name only the local network answers for ends. */
+    private const string ONLY_THE_LOCAL_NETWORK_ANSWERS = '.local';
+
     private function __construct(private string $url, private Scheme $scheme) {}
 
     /**
@@ -121,6 +131,31 @@ final readonly class Address implements JsonSerializable
     public function forTheClient(): string
     {
         return $this->url;
+    }
+
+    /**
+     * Which kind of name it reaches its machine by: numeric, a `.local` name or
+     * any other name, and nothing of the name itself.
+     */
+    public function howItIsWritten(): HowAnAddressIsWritten
+    {
+        $host = trim((string) parse_url($this->url, PHP_URL_HOST), '[]');
+
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return HowAnAddressIsWritten::Numeric;
+        }
+
+        return str_ends_with(mb_strtolower($host), self::ONLY_THE_LOCAL_NETWORK_ANSWERS)
+            ? HowAnAddressIsWritten::LocalName
+            : HowAnAddressIsWritten::Named;
+    }
+
+    /** The port it is dialled on, its own or its scheme's where it names none. */
+    public function port(): int
+    {
+        $port = parse_url($this->url, PHP_URL_PORT);
+
+        return is_int($port) ? $port : $this->scheme->standardPort();
     }
 
     /**

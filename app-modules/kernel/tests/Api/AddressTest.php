@@ -11,6 +11,7 @@ use function mb_strlen;
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AddressIsUnreachable;
+use Modules\Kernel\Api\HowAnAddressIsWritten;
 use Modules\Kernel\Api\MustNotLeaveThisProcess;
 use Modules\Kernel\Api\Scheme;
 
@@ -163,4 +164,20 @@ it('an address does not come back from a serialised payload either', function ()
 
     expect(fn(): mixed => unserialize($payload))
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
+});
+
+it('says which kind of name it reaches its machine by, and nothing of the name', function (string $url, HowAnAddressIsWritten $written): void {
+    expect(Address::of($url)->howItIsWritten())->toBe($written);
+})->with([
+    'a numeric address' => ['https://192.168.1.42:8443', HowAnAddressIsWritten::Numeric],
+    'a numeric address of the newer kind' => ['https://[fd00::1]:8443', HowAnAddressIsWritten::Numeric],
+    'a name only the local network answers for' => ['https://Wessels-MacBook-Pro.local:8443', HowAnAddressIsWritten::LocalName],
+    'any other name' => ['https://loft.example.org', HowAnAddressIsWritten::Named],
+    'a name that only contains local' => ['https://local.example.org', HowAnAddressIsWritten::Named],
+]);
+
+it('says the port it is dialled on, its own or its scheme\'s', function (): void {
+    expect(Address::of('https://192.168.1.42:8443')->port())->toBe(8443)
+        ->and(Address::of('https://loft.example.org')->port())->toBe(443)
+        ->and(Address::of('http://loft.example.org')->port())->toBe(80);
 });
