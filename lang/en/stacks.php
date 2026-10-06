@@ -176,6 +176,8 @@ return [
             'withdraw' => 'What lemonfiber wrote into the file is taken back out',
             'repin' => 'Pinned back to the version it was on',
             'reconfigure' => 'The service\'s own setting is put back',
+            'revoke' => 'The key it made is revoked',
+            'reinstate' => 'The key it revoked is made good again',
         ],
     ],
 

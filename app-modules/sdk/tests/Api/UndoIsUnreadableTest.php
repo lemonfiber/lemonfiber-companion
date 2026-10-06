@@ -26,7 +26,7 @@ it('names the list, the row and the field of a row it could not read', function 
 
 it('names every kind of reversal it reads when refusing one it does not', function (): void {
     expect(UndoIsUnreadable::does('rewind', 1)->getMessage())
-        ->toBe('Row 1 of `reversed` in the undo envelope says it does `rewind`, and this app reads `remove`, `restore`, `delete`, `withdraw`, `repin`, `reconfigure`.');
+        ->toBe('Row 1 of `reversed` in the undo envelope says it does `rewind`, and this app reads `remove`, `restore`, `delete`, `withdraw`, `repin`, `reconfigure`, `revoke`, `reinstate`.');
 });
 
 /**
