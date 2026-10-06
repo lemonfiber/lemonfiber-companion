@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80bfb07c208719fdb7b7e168d208a79e",
+    "content-hash": "c1f77851f0cdf1a05ec41801e1f16761",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3778,12 +3778,13 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/sdk",
-                "reference": "bddd4b6cc5056986a6d4bfea1e5c7e883c047297"
+                "reference": "a183e631eab7fcf8f0ee6743170c592dfb35ad55"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
                 "modules/kernel": "dev-main",
-                "php": "^8.5"
+                "php": "^8.5",
+                "psr/log": "^3.0"
             },
             "type": "library",
             "extra": {

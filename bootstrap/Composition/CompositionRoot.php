@@ -27,6 +27,9 @@ use Lemonfiber\Native\LocalNetwork as TheLocalNetworkProbe;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
+
+use function logger;
+
 use Modules\Codes\Api\QrCodes;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\TheLock;
@@ -206,6 +209,8 @@ use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Native\Mobile\Edge\TreeObservers;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * The composition root.
@@ -242,6 +247,9 @@ final class CompositionRoot extends ServiceProvider
 
     /** The tag every store of readings is registered under. */
     private const string EVERY_STORE_OF_READINGS = 'every-store-of-readings';
+
+    /** The setting that says this build is one a developer runs. */
+    private const string A_DEBUG_BUILD = 'app.debug';
 
     /**
      * Which theme is on the glass, one for the life of the process, made when first asked for.
@@ -628,6 +636,12 @@ final class CompositionRoot extends ServiceProvider
         // Over the phone's own answers about its network, so that a stack that
         // went silent is told apart from a phone that has no way to it.
         $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
+
+        // A silent reach is noted for a developer in a debug build's log, and
+        // in no other build: a release is handed a log that keeps nothing.
+        $this->app->when(ClientsThatAskTheDevice::class)
+            ->needs(LoggerInterface::class)
+            ->give(static fn(): LoggerInterface => config(self::A_DEBUG_BUILD) === true ? logger() : new NullLogger());
 
         // The kernel's name for the same thing, so a capability can say *a way
         // to reach a stack* without naming the SDK. One binding rather than two

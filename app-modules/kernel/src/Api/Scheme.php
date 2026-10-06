@@ -34,6 +34,9 @@ enum Scheme: string
     /** Dialled over TLS. */
     case Https = 'https';
 
+    /** The port each scheme is dialled on where an address names none. */
+    private const array STANDARD_PORTS = ['http' => 80, 'https' => 443];
+
     /**
      * Whether what travels over this scheme is encrypted.
      *
@@ -44,5 +47,11 @@ enum Scheme: string
     public function isEncrypted(): bool
     {
         return $this === self::Https;
+    }
+
+    /** The port this scheme is dialled on where an address names none. */
+    public function standardPort(): int
+    {
+        return self::STANDARD_PORTS[$this->value];
     }
 }

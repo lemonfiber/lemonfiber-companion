@@ -39,3 +39,8 @@ it('is a decision each case answers for itself', function (): void {
 
     expect(count($encrypted))->toBe(2);
 });
+
+it('names the port each scheme is dialled on where an address names none', function (): void {
+    expect(Scheme::Http->standardPort())->toBe(80)
+        ->and(Scheme::Https->standardPort())->toBe(443);
+});
