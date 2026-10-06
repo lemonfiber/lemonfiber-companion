@@ -11,7 +11,7 @@
      centred in it rather than sitting at the top, because a target whose ink
      is at one end of it is a target people aim at the wrong half of. --}}
 @if ($goes !== '')
-    <native:pressable native:key="{{ $label }}" class="w-full min-h-12 justify-center py-2" @navigate="$goes" a11y-label="{{ $label }}" :press-opacity="0.6">
+    <native:pressable native:key="{{ $label }}" class="w-full min-h-12 justify-center py-2" @navigate="$goes, $carries" a11y-label="{{ $label }}" :press-opacity="0.6">
         <native:text class="text-[13] font-medium text-theme-own-action" font="GolosText-Medium">{{ $label }}</native:text>
     </native:pressable>
 @else

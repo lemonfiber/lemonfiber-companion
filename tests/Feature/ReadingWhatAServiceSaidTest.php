@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\Typeface;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
@@ -748,3 +749,45 @@ it('offers nothing to show from where no line declared an error, or where the fi
     expect($atOnce->answer()->startsAtTheFirstError)->toBeFalse()
         ->and($atOnce->answer()->lines)->toHaveCount(2);
 });
+
+it('sets every line in the figures face, weighting one from the error stream in the same face', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
+        $service,
+        HowManyLines::of(2),
+        Said::whenever('connection timed out', $service, Stream::Stderr),
+        Said::whenever('listening on 8989', $service, Stream::Stdout),
+    )));
+    $lines = linesOnTheLogScreen(WhatTheDeviceWouldDraw::tree($screen));
+
+    expect($lines['connection timed out'] ?? null)->toBe(Typeface::FiguresMedium->value)
+        ->and($lines['listening on 8989'] ?? null)->toBe(Typeface::Figures->value);
+});
+
+/**
+ * Every text node on the log screen, by what it says, with the face it is set in.
+ *
+ * @param array<array-key, mixed> $node
+ *
+ * @return array<string, string>
+ */
+function linesOnTheLogScreen(array $node): array
+{
+    $found = [];
+    $text = data_get($node, 'props.text');
+    $face = data_get($node, 'props.font_name');
+
+    if (is_string($text) && is_string($face)) {
+        $found[$text] = $face;
+    }
+
+    $children = data_get($node, 'children');
+
+    foreach (is_array($children) ? $children : [] as $child) {
+        if (is_array($child)) {
+            $found = [...$found, ...linesOnTheLogScreen($child)];
+        }
+    }
+
+    return $found;
+}
