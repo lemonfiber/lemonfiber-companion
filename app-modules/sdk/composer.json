@@ -6,7 +6,8 @@
     "require": {
         "php": "^8.5",
         "lemonfiber/sdk-php": "dev-main",
-        "modules/kernel": "dev-main"
+        "modules/kernel": "dev-main",
+        "psr/log": "^3.0"
     },
     "autoload": {
         "psr-4": {
