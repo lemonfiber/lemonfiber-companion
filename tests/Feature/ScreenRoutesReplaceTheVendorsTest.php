@@ -14,6 +14,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Modules\Connection\Api\Opening;
+use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\YourStacks;
@@ -21,6 +22,7 @@ use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADeviceOnANetwork;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
@@ -122,7 +124,9 @@ it('serves the route this application actually registered', function (): void {
     // The composition root's own wiring, end to end: its build closure reaches
     // the container, and the runloop it chose for a suite answers instead of
     // blocking. Safe now for the reason it was not before — `TheHarnessInstead`
-    // is what a test gets, so there is no runloop to fall into.
+    // is what a test gets, so there is no runloop to fall into. The device's
+    // lock is open, so what the harness built is the screen the route names.
+    app()->instance(DeviceAuth::class, ADeviceThatKnowsYou::unlocked());
     $answered = ranTheRouteAt('/');
 
     expect($answered)->toBeInstanceOf(Response::class);
@@ -319,7 +323,7 @@ it('the package\'s own macro would not have used ours', function (): void {
  * is one it has to have been given: a closure that ignored its argument would
  * pass whether or not anything ever consulted it.
  *
- * @return Closure(string): mixed
+ * @return Closure(string, array<mixed>): mixed
  */
 function aBuildThatKnows(): Closure
 {

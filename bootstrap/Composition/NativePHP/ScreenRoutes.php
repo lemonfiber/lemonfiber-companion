@@ -69,7 +69,7 @@ use function sprintf;
 final readonly class ScreenRoutes
 {
     /**
-     * @param Closure(string): mixed $build how a screen is made, given its name
+     * @param Closure(string, array<mixed>): mixed $build how a screen is made, given its name and its route's parameters
      *
      * @param-later-invoked-callable $build The container raises where a name
      * resolves to nothing, and that is a launch-time fatal wherever it is

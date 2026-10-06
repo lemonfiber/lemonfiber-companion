@@ -31,15 +31,15 @@ final class ARunloopThatOnlyRemembers implements Runloop
     private array $entered = [];
 
     /**
-     * @param Closure(string): mixed $build
-     * @param array<mixed>           $params
+     * @param Closure(string, array<mixed>): mixed $build
+     * @param array<mixed>                        $params
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {
         // Built and dropped, as `TheHarnessInstead` builds and drops it. What
         // is remembered is what a test asks about; what is built is what the
         // contract holds every implementation of this seam to.
-        $build($screen);
+        $build($screen, $params);
 
         $this->entered[] = ['screen' => $screen, 'params' => $params, 'path' => $path];
 

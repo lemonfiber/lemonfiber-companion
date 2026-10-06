@@ -30,8 +30,8 @@ interface Runloop
      * Takes how to build a screen rather than a router, so that nothing on the
      * calling side has to name the class that enters the loop.
      *
-     * @param Closure(string): mixed $build  how a screen is made, given its name
-     * @param array<mixed>           $params what the route carried
+     * @param Closure(string, array<mixed>): mixed $build  how a screen is made, given its name and its route's parameters
+     * @param array<mixed>                        $params what the route carried
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed;
 }
