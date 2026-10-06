@@ -80,7 +80,7 @@ final class WhatYouCanWatch extends NativeComponent
     public function __construct(
         private readonly Watching $watching,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
 

@@ -13,5 +13,5 @@ final class AMemberScreenOpenedOverATab extends NativeComponent
 {
     use FindsItsWayAroundTheHouse;
 
-    public function __construct(private readonly TheWayAround $around) {}
+    public function __construct(protected readonly TheWayAround $around) {}
 }

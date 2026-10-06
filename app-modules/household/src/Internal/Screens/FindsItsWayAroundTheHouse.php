@@ -22,6 +22,9 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * **It reads the screen's own `$around`**, which answers the stack the route
  * names. That is the coupling, stated here because a trait cannot declare it.
+ * The screen takes `$around` as protected where only this trait reads it,
+ * because an analyser that does not follow a trait reads a private one as
+ * never used.
  *
  * @phpstan-require-extends NativeComponent
  */

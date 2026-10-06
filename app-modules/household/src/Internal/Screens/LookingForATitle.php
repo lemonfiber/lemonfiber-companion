@@ -25,5 +25,5 @@ final class LookingForATitle extends NativeComponent
 
     public const string TEMPLATE = 'household::looking-for-a-title';
 
-    public function __construct(private readonly TheWayAround $around) {}
+    public function __construct(protected readonly TheWayAround $around) {}
 }
