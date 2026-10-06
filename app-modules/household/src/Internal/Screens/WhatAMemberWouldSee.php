@@ -83,7 +83,7 @@ final class WhatAMemberWouldSee extends NativeComponent implements DrawnAsAMembe
         private readonly Watching $watching,
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
 
