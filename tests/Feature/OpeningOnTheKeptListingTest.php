@@ -218,7 +218,7 @@ it('keeps the kept listing, with its age, beside what stopped the stack answerin
         ->and($drawn->said())->toContain('Jellyfin')
         // The forms are those the kept listing names, so the form an operator
         // came to start is still there to open.
-        ->and($drawn->offers())->toContain('watching');
+        ->and($drawn->offers())->toContain(__('health.open_form', ['name' => 'watching']));
 });
 
 it('keeps the kept listing beside the way back in where the session has ended', function (): void {

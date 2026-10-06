@@ -45,3 +45,12 @@ it('reads a port row that does something by the name it answers to', function ()
         ->and(data_get($drawn, 'children.0.props.a11y_label'))->toBe('Open Sonarr')
         ->and(data_get($drawn, 'children.0.on_press'))->toBeInt();
 });
+
+it('leads a row with no tone with a blank the width of a port, and draws no port', function (): void {
+    $drawn = WhatMarkupDraws::drawn('<native:column><x-operator::port-row name="library" goes="\'/forms/library\'" /></native:column>');
+
+    expect(data_get($drawn, 'children.0.children.0.type'))->toBe('column')
+        ->and(data_get($drawn, 'children.0.children.0.children'))->toBeEmpty()
+        ->and(data_get($drawn, 'children.0.children.0.layout.width'))->toBe(data_get(WhatMarkupDraws::drawn('<native:column><x-operator::port-row tone="fine" name="Sonarr" /></native:column>'), 'children.0.children.0.layout.width'))
+        ->and(data_get($drawn, 'children.0.children.1.children.0.props.text'))->toBe('library');
+});
