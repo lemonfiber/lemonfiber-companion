@@ -207,12 +207,13 @@ final readonly class Templates
     }
 
     /**
-     * A screen about a stack with no menu, a screen of one stack in no menu,
-     * and a navigation label that runs to a sentence.
+     * An operator's screen about a stack with no menu, a member's screen about
+     * a stack without the four tabs, a screen of one stack in no menu, and a
+     * navigation label that runs to a sentence.
      *
-     * The first is a class with nothing but the answer to which stack it is
-     * about, because that answer is what makes a screen one the menu belongs
-     * on. The second adds a screen to the ones a stack has and nothing that
+     * The first two are classes with nothing but the answer to which stack each
+     * is about, because that answer is what makes a screen one its surface's way
+     * around belongs on. The second adds a screen to the ones a stack has and nothing that
      * opens it. The third is a menu item's Dutch label written as a sentence.
      *
      * @return list<Fixture>
@@ -234,7 +235,7 @@ final readonly class Templates
                         return 'the loft';
                     }
                 }
-                PHP, 'every screen about a stack in either surface carries the menu', 'AScreenWithoutTheMenu'),
+                PHP, 'every operator screen about a stack carries the menu and the list of stacks', 'AScreenWithoutTheMenu'),
 
             Fixture::suite('F17', 'app-modules/household/src/Internal/Screens/Fixtures/AMembersScreenWithoutTheMenu.php', <<<'PHP'
                 <?php
@@ -250,7 +251,7 @@ final readonly class Templates
                         return 'the loft';
                     }
                 }
-                PHP, 'every screen about a stack in either surface carries the menu', 'AMembersScreenWithoutTheMenu'),
+                PHP, 'every member screen about a stack carries the four tabs', 'AMembersScreenWithoutTheMenu'),
 
             Fixture::edit(
                 'F18',
