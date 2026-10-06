@@ -185,7 +185,7 @@ design module's colour roles, faces and measures, and take nothing else.
 | Element | What it is |
 |---|---|
 | `port` | The tile a service ends in: its tone's glyph on a raised tile, on the warning tint inside a warning edge, or in ink on an alarm fill |
-| `port-row` | One thing a stack runs, as a row led by its port, its name over what is said about it, a figure as a stamp, and a hairline under it; one target with a chevron where it goes somewhere |
+| `port-row` | One thing a stack runs, as a row led by its port, its name over what is said about it, a figure as a stamp, and a hairline under it; one target with a chevron where it goes somewhere. Given no tone, it leads with a blank the width of a port, for something with no standing of its own such as a form |
 | `figure` | One figure with a block of its own, in DM Mono at the brand's smallest display size, what it is above it, its whole and unit beside it, and what it means under it; said in words where nobody measured it, and always in the text role, since a figure that wants the operator says so through a port or a state's glyph beside it |
 | `stamp` | A time, a version or an identifier beside the words about it, in DM Mono at the caption size in the faintest text role |
 | `rule` | The hairline between two entries, one point in the line role |

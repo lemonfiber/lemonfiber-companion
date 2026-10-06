@@ -22,6 +22,10 @@ use function view;
  * its name and what is said about it, or by `answersTo` where that alone
  * would be ambiguous. Rows are told apart by the hairline under each, as the
  * operator's theme draws a list.
+ *
+ * A row about something with no standing of its own, such as a form or a
+ * service the stack left out, is given no tone and draws no port: a quiet
+ * port would claim a standing nobody gave it.
  */
 final class PortRow extends Component
 {
@@ -35,8 +39,8 @@ final class PortRow extends Component
 
     public function __construct(
         WhichThemeIsOnTheGlass $glass,
-        public readonly string $tone,
         public readonly string $name,
+        public readonly string $tone = '',
         public readonly string $said = '',
         public readonly string $figure = '',
         public readonly string $tap = '',

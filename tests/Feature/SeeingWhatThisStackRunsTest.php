@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
@@ -20,6 +22,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatItWouldNeed;
+use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -122,8 +125,8 @@ it('draws a control for each form the stack declares', function (): void {
     // each, so the form an operator opens this screen to start is on it.
     $frame = WhatTheDeviceWouldDraw::onTheSecondFrame(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull())));
 
-    expect($frame->offers())->toContain('library')
-        ->and($frame->offers())->toContain('full')
+    expect($frame->offers())->toContain(__('health.open_form', ['name' => 'library']))
+        ->and($frame->offers())->toContain(__('health.open_form', ['name' => 'full']))
         ->and($frame->said())->not->toContain(__('health.no_forms_at_all'));
 });
 
@@ -149,11 +152,11 @@ it('reads the forms on the frame after what is running, and asks for that frame 
     $second = WhatTheDeviceWouldDraw::by($screen);
 
     expect($asked)->toBe([1, 0])
-        ->and($first->offers())->not->toContain('library')
+        ->and($first->offers())->not->toContain(__('health.open_form', ['name' => 'library']))
         ->and($waited)->toBeTrue()
         ->and($screen->waitsForTheNextFrame())->toBeFalse()
         ->and([$supervising->askings(), $supervising->formsAskings()])->toBe([1, 1])
-        ->and($second->offers())->toContain('library');
+        ->and($second->offers())->toContain(__('health.open_form', ['name' => 'library']));
 });
 
 it('keeps the forms while what is running is read again', function (): void {
@@ -165,7 +168,7 @@ it('keeps the forms while what is running is read again', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect([$supervising->askings(), $supervising->formsAskings()])->toBe([2, 1])
-        ->and($drawn->offers())->toContain('library');
+        ->and($drawn->offers())->toContain(__('health.open_form', ['name' => 'library']));
 });
 
 it('forms that could not be read stop the screen on the next frame, and are asked again with it', function (): void {
@@ -434,4 +437,52 @@ it('keeps a service a running form asked for and has not got among the rest, wit
     expect($screen->answer()->notInstalled())->toBe([])
         ->and($screen->answer()->installed()[0]->tone)->toBe('attention')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.not_installed', ['count' => 0]));
+});
+
+/**
+ * Every icon a tree draws, by the name it is drawn with, in the order drawn.
+ *
+ * @param  array<array-key, mixed> $node
+ * @return list<string>
+ */
+function theGlyphsDrawnIn(array $node): array
+{
+    $name = data_get($node, 'props.name');
+    $found = data_get($node, 'type') === 'icon' && is_string($name) ? [$name] : [];
+    $children = data_get($node, 'children');
+
+    foreach (is_array($children) ? $children : [] as $child) {
+        if (is_array($child)) {
+            $found = [...$found, ...theGlyphsDrawnIn($child)];
+        }
+    }
+
+    return $found;
+}
+
+it('draws each service as a row led by its port, the port saying how it stands and the row going to the service', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Failed, HowTheStackIsRunning::Degraded)));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect(theGlyphsDrawnIn(WhatTheDeviceWouldDraw::tree($screen)))->toContain(Tone::Trouble->glyph())
+        ->and($drawn->offers())->toContain(__('health.open_service', ['name' => 'Sonarr']), __('health.ask_again'))
+        ->and($drawn->said())->toContain(__('health.services_heading'), 'Sonarr');
+});
+
+it('sets a service that exited with its exit code at the end of its row, and a running one with no figure', function (): void {
+    $exited = Daemon::thatExited('Radarr', ServiceId::called('radarr'), HowAServiceRuns::Failed, HowMuchItMatters::Important, WhatLeansOnIt::nothing(), 137);
+    $screen = theServicesScreen(AStackThatSupervises::with(Daemons::of(HowTheStackIsRunning::Degraded, WhatAMachineRuns::whatTheVerbsCost(), WhatAMachineRuns::aService(), $exited)));
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(__('health.exit_figure', ['code' => '137']))
+        ->and(preg_grep('/^exit \\d+$/', $said))->toHaveCount(1);
+});
+
+it('draws a service the forms left out and each form with no port, and what nobody asked for with the quiet one', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose())->declaring(WhatAMachineRuns::libraryAndFull()));
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $glyphs = theGlyphsDrawnIn(WhatTheDeviceWouldDraw::tree($screen));
+    $ports = count(array_filter($glyphs, static fn(string $glyph): bool => $glyph !== 'chevron_right'));
+
+    expect($ports)->toBe(count($screen->answer()->installed()) + ($screen->answer()->notInstalled() === [] ? 0 : 1));
 });
