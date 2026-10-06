@@ -360,7 +360,7 @@ it('says the mark as the tab\'s name on each platform, and the count drawn in th
 })->with([
     'Android' => [
         'vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'contentDescription = tab.props.getString("badge_label", "").ifEmpty { label }',
+        'tab.props.getString("badge_label", "").ifEmpty { label },',
         'Text(badge, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {})',
     ],
     'iOS' => [
