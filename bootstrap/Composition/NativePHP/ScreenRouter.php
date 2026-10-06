@@ -46,8 +46,8 @@ use Native\Mobile\Events\Screen\ScreenResumed;
 final class ScreenRouter extends NativeRouter
 {
     /**
-     * @param Closure(string): mixed          $build      how a screen is made, given its name
-     * @param Closure(NativeComponent): void $atTheFront what a screen coming to the front is handed to
+     * @param Closure(string, array<mixed>): mixed $build      how a screen is made, given its name and its route's parameters
+     * @param Closure(NativeComponent): void        $atTheFront what a screen coming to the front is handed to
      */
     public function __construct(
         private readonly Closure $build,
@@ -66,7 +66,7 @@ final class ScreenRouter extends NativeRouter
      */
     protected function createComponent(string $class, array $params = [], array $data = []): NativeComponent
     {
-        $component = ($this->build)($class);
+        $component = ($this->build)($class, $params);
 
         if (! $component instanceof NativeComponent) {
             throw ScreenIsNotAScreen::named($class);

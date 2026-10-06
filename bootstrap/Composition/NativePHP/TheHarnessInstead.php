@@ -6,6 +6,7 @@ namespace Bootstrap\Composition\NativePHP;
 
 use Closure;
 
+use function get_debug_type;
 use function response;
 use function sprintf;
 
@@ -23,8 +24,11 @@ use function sprintf;
  * rather than about routing. The composition root decides it once, where every
  * other such decision is already made.
  *
- * It says where to test the screen, because a 200 with nothing in it is what a
- * passing smoke test looks like when the route is wrong.
+ * It says which screen it built and where to test it, because a 200 with
+ * nothing in it is what a passing smoke test looks like when the route is
+ * wrong. What it built is not always what the route named: the lock, or a
+ * member's own screen in place of an operator's, is built instead where the
+ * composition root says so.
  *
  * **It builds the screen before answering, and that is the point of doing this
  * here rather than returning a constant.** A route naming a screen that cannot
@@ -44,18 +48,18 @@ final readonly class TheHarnessInstead implements Runloop
     private const int THE_ROUTE_IS_THERE = 200;
 
     /**
-     * @param Closure(string): mixed $build
-     * @param array<mixed>           $params
+     * @param Closure(string, array<mixed>): mixed $build
+     * @param array<mixed>                        $params
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {
         // Built and dropped. What this proves is that the route names something
         // this application can construct, which is the half of a screen a
         // machine with no handset can check.
-        $build($screen);
+        $built = $build($screen, $params);
 
         return response(
-            sprintf('Native screen [%s] — test it with Native::test() / Native::visit().', $screen),
+            sprintf('Native screen [%s] — test it with Native::test() / Native::visit().', get_debug_type($built)),
             self::THE_ROUTE_IS_THERE,
         );
     }

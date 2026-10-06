@@ -111,6 +111,24 @@ it('builds that screen once', function (): void {
     }
 });
 
+it('builds it with the parameters its route carried', function (): void {
+    // The composition root decides what to build from the route's parameters
+    // as well as its screen: a member's session for the stack the route names
+    // gets the member's own screen in place of an operator's. A runloop that
+    // dropped them would build the operator's screen for anybody.
+    foreach (everyRunloopThatCanBeEntered() as $which => $runloop) {
+        $handed = [];
+
+        $runloop->enter(static function (string $named, array $params) use (&$handed): string {
+            $handed = $params;
+
+            return $named;
+        }, A_SCREEN_TO_RUN, ['stack' => 'the-loft'], '/stacks/the-loft');
+
+        expect($handed)->toBe(['stack' => 'the-loft'], $which);
+    }
+});
+
 it('answers the route with something rather than nothing', function (): void {
     // What comes back is what the route closure hands Laravel, and the three
     // answers are deliberately different: a redirect or an empty string from a

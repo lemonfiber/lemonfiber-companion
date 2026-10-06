@@ -33,8 +33,8 @@ final readonly class TheRunloop implements Runloop
     public function __construct(private Closure $atTheFront) {}
 
     /**
-     * @param Closure(string): mixed $build
-     * @param array<mixed>           $params
+     * @param Closure(string, array<mixed>): mixed $build
+     * @param array<mixed>                        $params
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {

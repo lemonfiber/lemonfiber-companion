@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bootstrap\Composition;
 
 use Bootstrap\Composition\NativePHP\BehindTheLock;
+use Bootstrap\Composition\NativePHP\OutOfTheOperatorsScreens;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
 use Bootstrap\Composition\NativePHP\TheLockIsOnTheGlass;
@@ -923,6 +924,9 @@ final class CompositionRoot extends ServiceProvider
     /**
      * One screen, built with whatever it declared in its constructor — or the
      * lock, while the device's lock stands, which {@see BehindTheLock} decides.
+     * Before the lock is asked, {@see OutOfTheOperatorsScreens} puts the
+     * member's own screen in place of an operator's for a stack this phone
+     * holds a member's session for, so the lock has the last word over both.
      *
      * The one place a screen meets a port. NativePHP builds a screen with `new
      * $class`, so without this a screen could hold nothing — and a screen that
@@ -935,10 +939,14 @@ final class CompositionRoot extends ServiceProvider
      *
      * `mixed` rather than `NativeComponent`, so that the check about what came
      * back lives with the router that is about to call methods on it.
+     *
+     * @param array<mixed> $params the route's parameters
      */
-    private function screen(string $class): mixed
+    private function screen(string $class, array $params): mixed
     {
-        return new BehindTheLock($this->app->make(TheLock::class), $this->made(...))->screen($class);
+        $lock = new BehindTheLock($this->app->make(TheLock::class), $this->made(...));
+
+        return new OutOfTheOperatorsScreens($this->theKeychain(), $params, $lock->screen(...))->screen($class);
     }
 
     /**
