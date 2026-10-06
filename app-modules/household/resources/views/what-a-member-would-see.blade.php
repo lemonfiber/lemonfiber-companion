@@ -16,13 +16,13 @@
     @if ($this->shelf()->cameBack())
         {{-- The rows a member's Home draws, from the core's answer for the
              household's defaults: nobody's library, so no name and no history. --}}
-        <x-design::section>
-            @forelse ($this->shelf()->holdings as $holding)
-                <x-design::row :headline="$holding->titled" :supporting="__($holding->medium)" :trailing="$holding->year" />
-            @empty
+        @forelse ($this->shelf()->rows as $row)
+            <x-household::shelf-row :row="$row" />
+        @empty
+            <x-design::section>
                 <x-design::row :headline="__('household.shelf_is_empty')" :supporting="__('household.shelf_is_empty_action')" />
-            @endforelse
-        </x-design::section>
+            </x-design::section>
+        @endforelse
 
         <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
     @elseif ($this->shelf()->isOutOfReach)

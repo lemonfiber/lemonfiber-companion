@@ -111,6 +111,24 @@ return [
         'other' => 'Other',
     ],
 
+    // The rows a shelf is drawn in: what came into the house most recently,
+    // then one row for each kind it holds.
+    'shelf' => [
+        'new' => 'New in the house',
+        'film' => 'Films',
+        'series' => 'Series',
+        'other' => 'Other',
+    ],
+
+    // A poster on the shelf: the line at the top of its tile, and what a
+    // screen reader says for it, which carries the whole title.
+    'poster' => [
+        'above' => ':year · :kind',
+        'above_undated' => ':kind',
+        'reads' => ':title, :kind, :year',
+        'reads_undated' => ':title, :kind',
+    ],
+
     // The operator's preview of the member's side. The mark says what it is,
     // and its control leads back to the operator's own screens.
     'preview' => [

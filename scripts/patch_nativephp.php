@@ -1007,23 +1007,55 @@ MaterialIcon(name = icon, contentDescription = null)
 BECOMES,
     ],
     [
+        // A tappable area that was given a label is one element to a screen
+        // reader, as it is on iOS: its label is said, and the words drawn
+        // inside it are not said after it. A tappable area with something to
+        // press merges what it holds already; one with nothing to press, such
+        // as a poster, would otherwise be read as its label and then as each
+        // line on it.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
+        'ships' => <<<'SHIPS'
+internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
+    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
+    return if (merged.isEmpty()) this else semantics { contentDescription = merged }
+}
+SHIPS,
+        'becomes' => <<<'BECOMES'
+internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
+    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
+    return if (merged.isEmpty()) this else semantics { contentDescription = merged }
+}
+
+/** The label an area was given, said as the one element it and everything in it are. */
+internal fun Modifier.nuiSaidAsOne(label: String, hint: String): Modifier {
+    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
+    return if (merged.isEmpty()) this else semantics(mergeDescendants = true) { contentDescription = merged }
+}
+BECOMES,
+    ],
+    [
         // A tappable area and a list row say the label the markup gave them.
         // Both drop it: neither renderer reads `a11y_label`, so a reader is
         // given the words drawn inside instead, and a row or a link whose
         // words are the same on every card cannot say which one it opens.
-        // It is applied the way the package applies it to a button and a
-        // chip, through the helper they share.
+        // A tappable area says it as one element, through the helper above.
         'in' => '/../vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt',
         'ships' => <<<'SHIPS'
 object PressableRenderer {
     @Composable
     fun Render(node: NativeUINode, modifier: Modifier) {
 SHIPS,
-        'becomes' => <<<'BECOMES'
+        'was' => <<<'WAS'
 object PressableRenderer {
     @Composable
     fun Render(node: NativeUINode, given: Modifier) {
         val modifier = given.nuiA11y(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
+WAS,
+        'becomes' => <<<'BECOMES'
+object PressableRenderer {
+    @Composable
+    fun Render(node: NativeUINode, given: Modifier) {
+        val modifier = given.nuiSaidAsOne(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
 BECOMES,
     ],
     [

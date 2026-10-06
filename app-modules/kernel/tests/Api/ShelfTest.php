@@ -97,3 +97,10 @@ it('names the key a screen shows each medium under', function (): void {
         ->and(Medium::Series->saidOnTheScreen())->toBe('household.medium.series')
         ->and(Medium::Other->saidOnTheScreen())->toBe('household.medium.other');
 });
+
+// L1 — text a person reads comes from the translator
+it('names the key the row of each medium is headed with', function (): void {
+    expect(Medium::Film->shelvedUnder())->toBe('household.shelf.film')
+        ->and(Medium::Series->shelvedUnder())->toBe('household.shelf.series')
+        ->and(Medium::Other->shelvedUnder())->toBe('household.shelf.other');
+});

@@ -47,4 +47,15 @@ enum Medium: string
     {
         return sprintf('household.medium.%s', $this->value);
     }
+
+    /**
+     * The key the row of everything of this kind is headed with on a shelf.
+     *
+     * Derived from the case for the same reason as the key above, and checked
+     * against the catalogue the same way.
+     */
+    public function shelvedUnder(): string
+    {
+        return sprintf('household.shelf.%s', $this->value);
+    }
 }
