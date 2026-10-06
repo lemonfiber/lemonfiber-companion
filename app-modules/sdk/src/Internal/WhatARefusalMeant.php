@@ -200,6 +200,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::NoUpdateObject,
             RefusalCode::NotALineCount,
             RefusalCode::NotAChoice,
+            RefusalCode::MemberAndDefaults,
             RefusalCode::Unrenderable,
             RefusalCode::NoJobName,
             // An answer given for an offer or a listing that has since moved.
@@ -251,6 +252,8 @@ final readonly class WhatARefusalMeant
             RefusalCode::Unapproved,
             RefusalCode::AnotherPlugin,
             RefusalCode::Occupied,
+            RefusalCode::SchemeRefused,
+            RefusalCode::AddressRefused,
             RefusalCode::CatalogueReplaced,
             RefusalCode::NewestUnkept,
             RefusalCode::NoSuchFiller,

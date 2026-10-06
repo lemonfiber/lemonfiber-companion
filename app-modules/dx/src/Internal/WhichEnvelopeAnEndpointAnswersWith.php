@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use function implode;
 use function mb_strlen;
 
 use Modules\Dx\Adapters\TheInstalledPackage;
@@ -23,8 +24,9 @@ use function str_starts_with;
  * the day lemonfiber moves an endpoint or changes what one answers with, a
  * table says nothing and every screen built on it keeps rendering.
  *
- * So the table is read. `Lemonfiber\Sdk\Contract\Api` is where the paths are
- * declared, and its own docblocks say what each one answers with — the SDK
+ * So the table is read. `Lemonfiber\Sdk\Contract` is where the paths are
+ * declared, on `Api` and the interfaces holding its reads, and their own
+ * docblocks say what each one answers with — the SDK
  * wrote them for a human and they turn out to be machine-readable, which is a
  * happy accident worth using rather than a contract to rely on blindly. Where a
  * docblock says nothing this answers nothing, and the caller has a sentence for
@@ -39,8 +41,8 @@ use function str_starts_with;
  */
 final readonly class WhichEnvelopeAnEndpointAnswersWith
 {
-    /** Where the endpoints are declared, under whatever root the SDK was installed at. */
-    private const string DECLARED_IN = 'src/Contract/Api.php';
+    /** Where the endpoints are declared, under whatever root the SDK was installed at: every file of it. */
+    private const string DECLARED_IN = 'src/Contract';
 
     /**
      * A docblock and the endpoint it introduces.
@@ -226,6 +228,12 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      */
     private static function whatApiDeclares(): string
     {
-        return TheInstalledPackage::text(self::DECLARED_IN);
+        $declared = [];
+
+        foreach (TheInstalledPackage::namesUnder(self::DECLARED_IN, '') as $file) {
+            $declared[] = TheInstalledPackage::text(sprintf('%s/%s.php', self::DECLARED_IN, $file));
+        }
+
+        return implode("\n", $declared);
     }
 }

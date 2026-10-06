@@ -33,3 +33,10 @@ it('answers nothing for a path nothing declares', function (): void {
 it('names an envelope for every endpoint it lists', function (): void {
     expect(WhichEnvelopeAnEndpointAnswersWith::everyOneNamed())->not->toContain('');
 });
+
+it('reads every file the SDK declares its endpoints in, not only Api', function (): void {
+    // The reads are written on interfaces `Api` implements, one file each.
+    expect(WhichEnvelopeAnEndpointAnswersWith::at(Api::CAPABILITIES_ENDPOINT))->toBe('CapabilitiesEnvelope')
+        ->and(WhichEnvelopeAnEndpointAnswersWith::at(Api::KEYS_ENDPOINT))->toBe('KeysEnvelope')
+        ->and(WhichEnvelopeAnEndpointAnswersWith::at(Api::ACTIONS_ENDPOINT))->toBe('');
+});
