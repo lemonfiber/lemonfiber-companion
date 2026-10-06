@@ -19,6 +19,8 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADeviceOnANetwork;
@@ -193,7 +195,8 @@ it('tapping a stack a member is signed into goes to their Home', function (): vo
 
     $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
 
-    expect($screen->tappingGoesTo($loft))->toBe(sprintf('/stacks/%s/watch', $loft->id()->stored()))
+    expect($screen->tappingGoesTo($loft))->toBe(TheHouseholdsTabs::Home->screen()->forTheStack($loft->id()))
+        ->and(TheHouseholdsTabs::Home->screen())->toBe(AStacksScreen::Shelf)
         ->and(NativeRouter::resolve($screen->tappingGoesTo($loft)))->not->toBeNull(
             'A member tapping their machine lands on a URI the navigation stack does '
             . 'not know, so they would tap into nothing.',
