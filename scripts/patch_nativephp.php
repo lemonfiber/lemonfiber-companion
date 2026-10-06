@@ -817,15 +817,6 @@ SHIPS,
 BECOMES,
     ],
     [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-                    Icon(Icons.Filled.Menu, contentDescription = "Open menu")
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                    Icon(Icons.Filled.Menu, contentDescription = drawerNode.props.getString("a11y_label", "Open menu"))
-BECOMES,
-    ],
-    [
         // Back closes an open drawer before it leaves the screen. Composed
         // after the drawer, so it is registered after the screen's own back
         // handlers and is asked first.
@@ -911,38 +902,6 @@ BECOMES,
                             icon = {
 SHIPS,
         'was' => <<<'WAS'
-                        NavigationBarItem(
-                            modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
-                            selected = actualIdx == selection,
-                            onClick = {
-                                // Local selection updates instantly so
-                                // the ripple / selection indicator
-                                // responds; for the search tab, no PHP
-                                // navigation fires (it's an iOS-/Android-
-                                // side overlay). For regular tabs, the
-                                // BottomNavItem-auto-wired `replace`
-                                // press handler fires here. A tap back
-                                // to the active tab normally needs no
-                                // press — except while another tab's
-                                // navigation is in flight: PHP is
-                                // already navigating away and must be
-                                // told to come back.
-                                selection = actualIdx
-                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
-                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
-                                    if (tab.props.getString("url", "").isNotEmpty()) {
-                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
-                                        pendingTabId?.let { prev ->
-                                            if (prev != tappedId) supersededTabIds.add(prev)
-                                        }
-                                        pendingTabId = tappedId
-                                    }
-                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
-                                }
-                            },
-                            icon = {
-WAS,
-        'becomes' => <<<'BECOMES'
                         val tabTapped: () -> Unit = {
                                 // Local selection updates instantly so
                                 // the ripple / selection indicator
@@ -976,6 +935,43 @@ WAS,
                                 selected = actualIdx == selection
                                 onClick { tabTapped(); true }
                             },
+                            selected = actualIdx == selection,
+                            onClick = tabTapped,
+                            icon = {
+WAS,
+        'becomes' => <<<'BECOMES'
+                        val tabTapped: () -> Unit = {
+                                // Local selection updates instantly so
+                                // the ripple / selection indicator
+                                // responds; for the search tab, no PHP
+                                // navigation fires (it's an iOS-/Android-
+                                // side overlay). For regular tabs, the
+                                // BottomNavItem-auto-wired `replace`
+                                // press handler fires here. A tap back
+                                // to the active tab normally needs no
+                                // press — except while another tab's
+                                // navigation is in flight: PHP is
+                                // already navigating away and must be
+                                // told to come back.
+                                selection = actualIdx
+                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                    if (tab.props.getString("url", "").isNotEmpty()) {
+                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                        pendingTabId?.let { prev ->
+                                            if (prev != tappedId) supersededTabIds.add(prev)
+                                        }
+                                        pendingTabId = tappedId
+                                    }
+                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                }
+                        }
+                        NavigationBarItem(
+                            modifier = Modifier.saidAsAControl(
+                                tab.props.getString("badge_label", "").ifEmpty { label },
+                                Role.Tab,
+                                state = { selected = actualIdx == selection },
+                            ) { tabTapped() },
                             selected = actualIdx == selection,
                             onClick = tabTapped,
                             icon = {
@@ -1189,12 +1185,28 @@ BECOMES,
 import androidx.compose.foundation.clickable
 
 SHIPS,
-        'becomes' => <<<'BECOMES'
+        'was' => <<<'WAS'
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+
+WAS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.focused
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 
@@ -1205,7 +1217,7 @@ BECOMES,
         'ships' => <<<'SHIPS'
 // MARK: - Gesture Modifier
 SHIPS,
-        'becomes' => <<<'BECOMES'
+        'was' => <<<'WAS'
 // MARK: - Said as a control
 
 /**
@@ -1244,6 +1256,298 @@ fun Modifier.nodeSaidAsAControl(node: NativeUINode): Modifier {
 }
 
 // MARK: - Gesture Modifier
+WAS,
+        'becomes' => <<<'BECOMES'
+// MARK: - Said as a control
+
+/**
+ * A control said as the one element it is, under the name it was given.
+ *
+ * Its name is what a screen reader says; it is a control in this role; a tap
+ * through the accessibility layer presses it where it can be pressed, and it
+ * is said to be disabled where it cannot; whether it holds the focus is said
+ * with it, so a keyboard, a switch and a screen reader all find the same node;
+ * and nothing drawn inside it is said again. Put outside whatever takes the
+ * press, so the name and the press are one node.
+ */
+@Composable
+fun Modifier.saidAsAControl(
+    name: String,
+    role: Role,
+    pressable: Boolean = true,
+    state: SemanticsPropertyReceiver.() -> Unit = {},
+    onPress: () -> Unit,
+): Modifier {
+    var holdsTheFocus by remember { mutableStateOf(false) }
+    val focusedNow = holdsTheFocus
+
+    return onFocusChanged { holdsTheFocus = it.hasFocus }.clearAndSetSemantics {
+        contentDescription = name
+        this.role = role
+        focused = focusedNow
+        state()
+        if (pressable) {
+            onClick {
+                onPress()
+                true
+            }
+        } else {
+            disabled()
+        }
+    }
+}
+
+/**
+ * A pressable node the markup gave a label, said as the one control it is.
+ *
+ * Its label, and its hint after it, are its name, and it is a button pressed
+ * by the node's own press. A node with no label, or nothing to press, or a
+ * menu that takes its tap, is left as it was.
+ */
+@Composable
+fun Modifier.nodeSaidAsAControl(node: NativeUINode): Modifier {
+    val label = node.props.getString("a11y_label", "")
+    val press = node.props.getCallbackId("on_press").let { if (it != 0) it else node.onPress }
+
+    if (label.isEmpty() || press == 0 || node.props.getBool("has_menu")) {
+        return this
+    }
+
+    val said = listOf(label, node.props.getString("a11y_hint", "")).filter { it.isNotEmpty() }.joinToString(". ")
+    val pressable = !node.props.getBool("disabled") && !node.props.getBool("loading")
+    val nodeId = node.id
+
+    return saidAsAControl(said, Role.Button, pressable) {
+        NativeElementBridge.sendPressEvent(press, nodeId)
+    }
+}
+
+// MARK: - Gesture Modifier
+BECOMES,
+    ],
+    [
+        // A tap on nothing in particular puts the keyboard away, and it was
+        // taken by a click on the whole screen, which a screen reader then
+        // found first: one unnamed control the size of the window, under
+        // everything. Heard as a gesture rather than offered as a control, it
+        // does the same and is nothing a reader can land on.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeUIRenderer.kt',
+        'ships' => <<<'SHIPS'
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                // Tap outside any input dismisses keyboard
+                focusManager.clearFocus()
+            }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            .pointerInput(Unit) {
+                // Tap outside any input dismisses keyboard
+                detectTapGestures { focusManager.clearFocus() }
+            }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeUIRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.foundation.clickable
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
+BECOMES,
+    ],
+    [
+        // The package's own buttons in the bars are one control each, as the
+        // markup's are: the back arrow, the drawer's close button and an
+        // action in the top bar say their name on the node that takes the
+        // press, and the glyph inside says nothing of its own.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt',
+        'ships' => <<<'SHIPS'
+            IconButton(onClick = {
+                // Manual back chevron always defers to system back —
+                // shrinks path if pushed, otherwise tells PHP.
+                if (path.isNotEmpty()) {
+                    // removeAt, NOT removeLast() — see BackHandler above.
+                    path.removeAt(path.lastIndex)
+                    coordinator.onPathChange(path.toList())
+                } else {
+                    NativeElementBridge.sendSystemBackEvent()
+                }
+            }) {
+                // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                MaterialIcon(
+                    name = "arrow_back",
+                    contentDescription = "Back",
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            val goBack: () -> Unit = {
+                // Manual back chevron always defers to system back —
+                // shrinks path if pushed, otherwise tells PHP.
+                if (path.isNotEmpty()) {
+                    // removeAt, NOT removeLast() — see BackHandler above.
+                    path.removeAt(path.lastIndex)
+                    coordinator.onPathChange(path.toList())
+                } else {
+                    NativeElementBridge.sendSystemBackEvent()
+                }
+            }
+            IconButton(onClick = goBack, modifier = Modifier.saidAsAControl("Back", Role.Button, onPress = goBack)) {
+                // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                MaterialIcon(
+                    name = "arrow_back",
+                    contentDescription = null,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt',
+        'ships' => <<<'SHIPS'
+        IconButton(onClick = {
+            if (action.onPress != 0) {
+                NativeElementBridge.sendPressEvent(action.onPress, action.id)
+            }
+        }) {
+            MaterialIcon(name = icon, contentDescription = action.props.getString("label", ""))
+        }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val pressed: () -> Unit = {
+            if (action.onPress != 0) {
+                NativeElementBridge.sendPressEvent(action.onPress, action.id)
+            }
+        }
+        IconButton(onClick = pressed, modifier = Modifier.saidAsAControl(action.props.getString("label", ""), Role.Button, onPress = pressed)) {
+            MaterialIcon(name = icon, contentDescription = null)
+        }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt',
+        'ships' => <<<'SHIPS'
+        IconButton(onClick = { expanded = true }) {
+            MaterialIcon(name = icon, contentDescription = action.props.getString("label", ""))
+        }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        IconButton(onClick = { expanded = true }, modifier = Modifier.saidAsAControl(action.props.getString("label", ""), Role.Button) { expanded = true }) {
+            MaterialIcon(name = icon, contentDescription = null)
+        }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.Modifier
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                            IconButton(onClick = { NativeElementBridge.sendSystemBackEvent() }) {
+                                // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                                val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                                MaterialIcon(
+                                    name = "arrow_back",
+                                    contentDescription = "Back",
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                            IconButton(
+                                onClick = { NativeElementBridge.sendSystemBackEvent() },
+                                modifier = Modifier.saidAsAControl("Back", Role.Button) { NativeElementBridge.sendSystemBackEvent() },
+                            ) {
+                                // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                                val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                                MaterialIcon(
+                                    name = "arrow_back",
+                                    contentDescription = null,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeNavRenderers.kt',
+        'ships' => <<<'SHIPS'
+                IconButton(onClick = { onCloseDrawer {} }) {
+                    MaterialIcon(
+                        name = "close",
+                        contentDescription = "Close drawer",
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                IconButton(onClick = { onCloseDrawer {} }, modifier = Modifier.saidAsAControl("Close drawer", Role.Button) { onCloseDrawer {} }) {
+                    MaterialIcon(
+                        name = "close",
+                        contentDescription = null,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeNavRenderers.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.Modifier
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+
+BECOMES,
+    ],
+    [
+        // The button that opens the menu is one control too, named as the
+        // markup named it, on the node that takes the press.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+                IconButton(
+                    onClick = { scope.launch { drawerState.open() } },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .padding(start = 4.dp, top = 8.dp)
+                ) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Open menu")
+SHIPS,
+        'was' => <<<'WAS'
+                IconButton(
+                    onClick = { scope.launch { drawerState.open() } },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .padding(start = 4.dp, top = 8.dp)
+                ) {
+                    Icon(Icons.Filled.Menu, contentDescription = drawerNode.props.getString("a11y_label", "Open menu"))
+WAS,
+        'becomes' => <<<'BECOMES'
+                IconButton(
+                    onClick = { scope.launch { drawerState.open() } },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .padding(start = 4.dp, top = 8.dp)
+                        .saidAsAControl(drawerNode.props.getString("a11y_label", "Open menu"), Role.Button) { scope.launch { drawerState.open() } }
+                ) {
+                    Icon(Icons.Filled.Menu, contentDescription = null)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.Modifier
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import com.nativephp.mobile.ui.nativerender.saidAsAControl
+
 BECOMES,
     ],
     [
