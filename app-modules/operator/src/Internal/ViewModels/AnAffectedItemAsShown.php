@@ -20,6 +20,7 @@ final readonly class AnAffectedItemAsShown
 {
     /**
      * @param string       $severity   the key for how bad it is
+     * @param string       $tone       the tone it is drawn in, a `Modules\Design\View\Tone` value
      * @param string       $summary    what is wrong, in one line
      * @param string       $meaning    what it costs the operator
      * @param list<string> $remedies   what to try, most likely first
@@ -29,6 +30,7 @@ final readonly class AnAffectedItemAsShown
      */
     public function __construct(
         public string $severity,
+        public string $tone,
         public string $summary,
         public string $meaning,
         public array $remedies,

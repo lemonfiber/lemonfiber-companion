@@ -165,8 +165,8 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
     /**
      * Mark one item seen, and every older one of its kind with it, and open where it belongs.
      *
-     * An update opens Updates, a request Requests, and a problem Health with
-     * what is wrong opened out.
+     * An update opens Updates, a request Requests, and a problem Health, which
+     * draws what is wrong without being asked.
      */
     public function open(string $stack, string $kind, string $named): void
     {
@@ -219,7 +219,7 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
         );
     }
 
-    /** Open the screen an item belongs to, with what is wrong opened out where it is a problem. */
+    /** Open the screen an item belongs to; a problem's screen draws what is wrong without being asked. */
     private function goTo(AnItem $item, Stack $stack): void
     {
         $goes = match ($item->kind()) {
@@ -228,9 +228,6 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
             KindOfNews::Problem => AStacksScreen::Health,
         };
 
-        $this->navigate(
-            $goes->forTheStack($stack->id()),
-            $item->kind() === KindOfNews::Problem ? [HowThisStackIs::WHATS_WRONG_OPENED => true] : [],
-        );
+        $this->navigate($goes->forTheStack($stack->id()));
     }
 }

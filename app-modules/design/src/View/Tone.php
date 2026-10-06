@@ -6,6 +6,7 @@ namespace Modules\Design\View;
 
 use Modules\Design\Api\ThemeToken;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\Severity;
 
 /**
  * How a status reads, and the glyph that says so beside its words.
@@ -44,6 +45,17 @@ enum Tone: string
             HowItStands::Broken, HowItStands::Critical => self::Trouble,
             HowItStands::Unknown => self::Unknown,
         };
+    }
+
+    /**
+     * The tone a finding of one severity is drawn in.
+     *
+     * What {@see Severity::demandsAttention()} says the operator must be shown
+     * now is drawn as broken, and the rest as wanting a look.
+     */
+    public static function ofASeverity(Severity $severity): self
+    {
+        return $severity->demandsAttention() ? self::Trouble : self::Attention;
     }
 
     /** The role its glyph is painted in. */

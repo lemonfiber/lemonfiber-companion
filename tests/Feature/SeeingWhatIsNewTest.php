@@ -22,7 +22,6 @@ use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\News\Api\KindOfNews;
 use Modules\Operator\Internal\Presenters\HowWhatIsNewReads;
-use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Tests\Support\APhoneLookingAtWhatIsNew;
@@ -235,7 +234,7 @@ it('opens an update on Updates, a request on Requests and a problem on Health op
     $screen->open($home->id()->stored(), KindOfNews::Request->value, '12');
     $toRequests = [$screen->getNavigationIntent()?->uri, $screen->getNavigationIntent()?->data];
 
-    expect($toHealth)->toBe([AStacksScreen::Health->forTheStack($home->id()), [HowThisStackIs::WHATS_WRONG_OPENED => true]])
+    expect($toHealth)->toBe([AStacksScreen::Health->forTheStack($home->id()), []])
         ->and($toUpdates)->toBe([AStacksScreen::Updates->forTheStack($home->id()), []])
         ->and($toRequests)->toBe([AStacksScreen::Requests->forTheStack($home->id()), []])
         ->and(WhatTheDeviceWouldDraw::by($phone->opens())->said())->toContain(__('news.nothing_new'));

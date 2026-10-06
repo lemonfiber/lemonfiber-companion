@@ -20,9 +20,8 @@ use function view;
  * tint inside a warning edge, and one that is broken is filled with the alarm
  * colour and its glyph drawn in ink on it, so the only tiles with weight on a
  * screen are the ones that want the operator. The glyph is the tone's own
- * shape, so the tile says its state without its colour. `label` is read aloud
- * where no words beside the tile say the same thing, and left out where they
- * do, which makes the tile furniture.
+ * shape, so the tile says its state without its colour. `label` is what a
+ * screen reader says for the tile; a tile given none is furniture.
  */
 final class Port extends Component
 {

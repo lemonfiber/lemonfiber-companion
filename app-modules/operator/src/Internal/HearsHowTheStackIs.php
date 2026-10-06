@@ -14,9 +14,8 @@ use Native\Mobile\Edge\NativeComponent;
  * The core publishes the summary on its event stream and nowhere else, and
  * every operator's screen about a stack holds that stream through
  * {@see HoldsItsStacksStream}. What is here is what only the screen drawing the
- * summary does with what it holds: open it out to what it counts, say it as one
- * line, and open the stream as the screen mounts, opened out where What's new
- * asked for that.
+ * summary does with what it holds: say it as one line, with what it counts
+ * drawn under it, and open the stream as the screen mounts.
  *
  * **A screen opening on a stack starts from the summary kept from before**, as
  * of when it was read, rather than from nothing, because the stream keeps every
@@ -26,27 +25,9 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait HearsHowTheStackIs
 {
-    /**
-     * What a screen opening this one hands it to have what is wrong opened out.
-     *
-     * What's new opens a problem here, and the operator arrives on the list of
-     * what is wrong rather than having to ask for it.
-     */
-    public const string WHATS_WRONG_OPENED = 'whats_wrong_opened';
-
-    /** Whether the operator has opened the summary out to what it counts. */
-    public bool $expanded = false;
-
     public function mount(): void
     {
-        $this->expanded = $this->expanded || $this->data(self::WHATS_WRONG_OPENED) === true;
         $this->listen();
-    }
-
-    /** Open the summary out to what it counts, or fold it back. */
-    public function expand(): void
-    {
-        $this->expanded = ! $this->expanded;
     }
 
     /** The summary as the template draws it. */

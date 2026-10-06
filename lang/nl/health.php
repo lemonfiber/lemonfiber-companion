@@ -63,9 +63,10 @@ return [
     'summary' => [
         'waiting' => 'Wacht op bericht van deze stack.',
         'as_of' => 'Bijgewerkt :ago',
-        'notes' => '{1} 1 opmerking bekijken|[2,*] :count opmerkingen bekijken',
-        'wanting' => '{1} 1 probleem bekijken|[2,*] :count problemen bekijken',
-        'reported' => '{1} 1 onderdeel bekijken|[2,*] :count onderdelen bekijken',
+        'needs_you' => 'Vraagt om jou',
+        'notes' => '{1} opmerking, per oorzaak geteld|[2,*] opmerkingen, per oorzaak geteld',
+        'wanting' => '{1} probleem, per oorzaak geteld|[2,*] problemen, per oorzaak geteld',
+        'reported' => '{1} onderdeel, per oorzaak geteld|[2,*] onderdelen, per oorzaak geteld',
         'also' => 'Ook hierdoor: :what',
     ],
     'because_of' => 'Vanwege: :title',
