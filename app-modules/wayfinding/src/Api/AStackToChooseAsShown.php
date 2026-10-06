@@ -15,9 +15,11 @@ use function sprintf;
  */
 final readonly class AStackToChooseAsShown
 {
-    private const string CHECK = 'check_circle';
+    /** The glyph Android marks the current stack with, on either surface's list. */
+    public const string CHECK = 'check_circle';
 
-    private const string IOS_CHECK = 'checkmark.circle.fill';
+    /** The glyph iOS marks the current stack with, on either surface's list. */
+    public const string IOS_CHECK = 'checkmark.circle.fill';
 
     /**
      * @param string $id      what this phone calls the stack, which choosing it hands back

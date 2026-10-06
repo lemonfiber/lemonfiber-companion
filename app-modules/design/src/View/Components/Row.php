@@ -28,6 +28,8 @@ use function view;
  * neither starts with its headline. `badge` is a count a row that goes
  * somewhere draws between its headline and its chevron, as a tab's badge is
  * drawn; `answersTo` then says it, since the digits say nothing of their own.
+ * `carries` is what a row that goes somewhere hands the screen it opens,
+ * besides the route, as a link's does.
  */
 final class Row extends Component
 {
@@ -52,6 +54,8 @@ final class Row extends Component
         string $tone = '',
         string $icon = '',
         string $iosIcon = '',
+        /** @var array<string, mixed> what the screen it opens is handed, besides the route */
+        public readonly array $carries = [],
     ) {
         $this->named = $answersTo === '' ? $headline : $answersTo;
         $says = $tone === '' ? null : Tone::from($tone);

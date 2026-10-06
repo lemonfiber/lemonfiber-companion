@@ -38,19 +38,18 @@ enum WhichSurfaceTheyAreGiven: string
     /**
      * The machine's own report, which is what the operator came for.
      *
-     * They are given the household's application as well, not instead: nothing here
-     * takes a member's reading away from them, and the road to it is Allowance
-     * in the menu.
+     * Not the member's application: what the household is allowed, the operator
+     * reads through Allowance in the menu.
      */
     case TheReport = 'the_report';
 
     /**
-     * What this machine says they are owed, which is a member's whole application.
+     * The member's own application, opened on Home.
      *
      * Not the report. That is the operator's reading of the machine — a verdict, its
      * services and what it would put right — and a member is never shown diagnostics.
      * Handing them there would be this app deciding to show what the core would
      * refuse, one screen before the core was asked anything.
      */
-    case WhatTheyAreOwed = 'what_they_are_owed';
+    case TheirHome = 'their_home';
 }

@@ -1,7 +1,22 @@
 # The household surface
 
-What a member of the house sees, which is two screens: what this machine says
-they are owed, in the words the core wrote it in, and what they can watch.
+What a member of the house sees: four tabs, Home, Search, Requests and
+Profile, in a bottom bar, and no side menu.
+
+| Tab | Screen | What it draws |
+|---|---|---|
+| Home | `WhatYouCanWatch` | what they can watch, which is where a member lands |
+| Search | `LookingForATitle` | that searching from the phone is coming, in household words |
+| Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
+| Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, and taking the house off the phone |
+
+Every member screen draws its way around through `FindsItsWayAroundTheHouse`:
+the platform's top bar with the screen's title, and the bar the household's
+`screen-closes` draws, shown on a tab's screen and hidden on one opened over a
+tab. Changing house is a sheet on Profile listing the houses by name alone,
+because how a house's machine stands is the operator's to read. The operator's
+screens are never built for a member's session: the composition root builds
+Home in their place.
 
 The module was empty for a long time and the reason is worth keeping, because it
 is what decides the shape of what is here now. `lemonfiber` minted one token for

@@ -1,7 +1,6 @@
-<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
+<x-operator::screen-opens :title="__('household.tabs.requests')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
-    <x-design::title>{{ __('household.yours') }}</x-design::title>
 
 @if ($this->answer()->cameBack())
     {{-- The core's own sentences, in the core's own order and wording.
@@ -66,12 +65,6 @@
     {{-- Tonal, because the reading is what this frame is for. A filled bar
          would make asking again look like the thing to do. --}}
     <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
-
-    {{-- Across to what is already theirs. Offered on this arm alone: a member
-         reading what they can ask for is the one about to wonder what they
-         already have, and a screen that would not say what they are owed has
-         no business claiming to know what is on their shelf. --}}
-    <x-design::link label="{{ __('household.shelf') }}" :goes="$this->shelf()" />
 @elseif ($this->answer()->isSignedIn)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
@@ -98,10 +91,6 @@
     <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
     <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
 @endif
-
-    {{-- The operator's way back to the machine this reading is about,
-         whatever became of the reading. --}}
-    @if ($this->goesBackToTheMachine())
-        <x-design::link label="{{ __('household.back_to_the_machine') }}" :goes="$this->health()" />
-    @endif
 </x-operator::content>
+
+<x-household::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />

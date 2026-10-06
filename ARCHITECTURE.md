@@ -35,7 +35,7 @@ app-modules/
   backups/                snapshots
   updates/                versions, apply, undo
 
-  wayfinding/             the top bar, list of stacks, menu   (N28)
+  wayfinding/             top bar, stacks list, menu, tabs    (N28)
   operator/               navigation + screen composition     (N2)
   household/              navigation + screen composition     (N3)
 
@@ -387,8 +387,8 @@ automatic and the operator never sees the question.
 | F14 | Every step a template takes after its screen answered, and every step a component takes off what it was handed — a field or a further call — is one that value has | `tests/Templates`: the chain walked by declared type, from the screen's return type or the component's property onward |
 | F15 | Every screen the router serves is built the way the app builds it, drawn, and draws something — the render path is where a frame is actually decided | `tests/Feature`: every route's screen, rendered with stand-ins answering |
 | F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
-| F17 | Every screen about a stack, in either surface, carries the side menu and the list of stacks, and one that goes without the menu is named with why | arch: every operator and household screen answering which stack it is about uses the wayfinding trait, directly or through its surface's own, against a register that may shrink and may not grow, and carries the list of stacks |
-| F18 | Every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, the tabs and a register that may shrink and may not grow |
+| F17 | Every operator screen about a stack carries the side menu and the list of stacks, and every member screen about a stack carries the member's four tabs and no menu; one that goes without is named with why | arch: every operator screen answering which stack it is about uses the wayfinding trait and carries the list of stacks; every household screen answering it uses the household's own trait and has neither the menu nor the list; both against a register that may shrink and may not grow |
+| F18 | Every screen of one stack is an operator's tab, a menu item, a member's tab, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, both surfaces' tabs and a register that may shrink and may not grow |
 | F19 | Every text element takes its colour from a theme role, so it reads in the member's theme and the operator's alike | arch: over every element of every template |
 | F20 | Every text element names the bundled face it is set in, with the weight class that face is, and no template picks a platform face | arch: over every element of every template, against `Typeface` |
 

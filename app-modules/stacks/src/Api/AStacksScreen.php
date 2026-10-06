@@ -108,26 +108,32 @@ enum AStacksScreen: string
     case Logs = '/stacks/{stack}/logs/{service}';
 
     /**
-     * What this machine says the member holding the session is owed.
+     * What this machine says the member holding the session is owed, and what
+     * they have asked it for: the member's Requests tab.
      *
-     * The one case here a member's surface draws rather than an operator's,
-     * and it is a case here rather than an enum of its own for the reason the
-     * type carries: it is a screen under one machine, reached by naming that
-     * machine, and a second enum spelling `/stacks/{stack}/` would be the
-     * drift this exists to prevent with the placeholder in a different file.
+     * The member's four tabs are cases here rather than an enum of their own
+     * for the reason the type carries: each is a screen under one machine,
+     * reached by naming that machine, and a second enum spelling
+     * `/stacks/{stack}/` would be the drift this exists to prevent with the
+     * placeholder in a different file.
      */
     case Owed = '/stacks/{stack}/yours';
 
     /**
-     * What this machine says the member holding the session may watch.
+     * What this machine says the member holding the session may watch: the
+     * member's Home tab, where a member lands.
      *
-     * The second of the member's own screens, and here for the reason
-     * {@see self::Owed} is. It is deliberately not under `yours`: what a
-     * member may ask for and what they already have are two readings of two
-     * endpoints, and one path covering both would be a screen having to
-     * decide which the person meant.
+     * Not under `yours`: what a member may ask for and what they already have
+     * are two readings of two endpoints, and one path covering both would be
+     * a screen having to decide which the person meant.
      */
     case Shelf = '/stacks/{stack}/watch';
+
+    /** The member's Search tab, which says that searching from the phone is coming. */
+    case Search = '/stacks/{stack}/search';
+
+    /** The member's own corner of the app: changing house, the phone's settings and taking the house off the phone. */
+    case Profile = '/stacks/{stack}/profile';
 
     /**
      * What this machine has changed about itself, and how far each could be put back.

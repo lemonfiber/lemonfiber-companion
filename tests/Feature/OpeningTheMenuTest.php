@@ -108,16 +108,13 @@ it('draws only the stack, the way to another stack and the two settings where th
         ->and($drawn->offers())->toBe($items);
 });
 
-it('draws a member what the stack owes them between the way to another stack and the two settings, and none of the operator\'s', function (): void {
+it('draws a member\'s session only the stack, the way to another stack and the two settings, and none of the operator\'s', function (): void {
+    // A member's own screens draw no menu, and the operator's are never built
+    // for a member's session; the menu still says nothing of the operator's
+    // should it be drawn for one.
     $screen = aTabWithTheMenu(theAtticSignedIntoBy(Whose::member('ada')));
     $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
-    $items = [
-        __('navigation.menu.switch_stack'),
-        __('household.yours'),
-        __('household.shelf'),
-        __('navigation.menu.stack_settings'),
-        __('navigation.menu.app_settings'),
-    ];
+    $items = [__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
 
     expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe(['The attic', ...$items])
         ->and($drawn->offers())->toBe($items)

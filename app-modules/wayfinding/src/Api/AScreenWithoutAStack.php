@@ -58,4 +58,7 @@ enum AScreenWithoutAStack: string
      * The operator can widen it to every stack from there.
      */
     public const string WHATS_NEW_SHOWS = 'whats_new_shows';
+
+    /** What opening App settings hands it: whose words it speaks in, as a {@see WhoTheSettingsSpeakTo} value. */
+    public const string SETTINGS_SPEAK_TO = 'settings_speak_to';
 }

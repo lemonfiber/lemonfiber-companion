@@ -199,7 +199,7 @@ it('opens another stack where choosing it leads, and shuts the list as it does',
 })->with([
     'nobody signed in, to its sign-in' => [null, '/stacks/%s/sign-in'],
     'the operator signed in, to its health' => [Whose::theOperator(), '/stacks/%s'],
-    'a member signed in, to what they are owed' => [Whose::member('the-member-the-server-files-them-under'), '/stacks/%s/yours'],
+    'a member signed in, to their Home' => [Whose::member('the-member-the-server-files-them-under'), '/stacks/%s/watch'],
 ]);
 
 it('only shuts the list when the current stack is chosen', function (): void {

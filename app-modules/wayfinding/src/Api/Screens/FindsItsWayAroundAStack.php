@@ -17,7 +17,7 @@ use Native\Mobile\UI\Builders\Drawer;
 use function view;
 
 /**
- * The way around, on every screen about a stack in either surface.
+ * The way around, on every operator's screen about a stack.
  *
  * The stack's name in the top bar, and the menu's first row, open the list of
  * stacks. NativePHP asks a screen for `drawerOverride()` and draws what it
@@ -68,16 +68,8 @@ trait FindsItsWayAroundAStack
         $this->navigate(new TheWhatsNewInTheMenu($this->howMuchIsNewHere())->goes(), [AScreenWithoutAStack::WHATS_NEW_SHOWS => $this->stack()->id()->stored()]);
     }
 
-    /**
-     * How much is new on this stack, which the menu counts beside What's new.
-     *
-     * Nothing, for a screen that holds no stream of its stack. A screen that
-     * holds one says otherwise, through the trait that holds it.
-     */
-    protected function howMuchIsNewHere(): HowMuchIsNew
-    {
-        return HowMuchIsNew::none();
-    }
+    /** How much is new on this stack, which the menu counts beside What's new. */
+    abstract protected function howMuchIsNewHere(): HowMuchIsNew;
 
     /** Whether this screen is opened on top of another, and so has a back button. */
     protected function opensOnTopOfAnother(): bool

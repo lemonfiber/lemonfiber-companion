@@ -284,7 +284,7 @@ final class SignIntoAStack extends NativeComponent
 
         return match ($this->given) {
             WhichSurfaceTheyAreGiven::TheReport => $where->to(AStacksScreen::Health),
-            WhichSurfaceTheyAreGiven::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($this->stack()->id()),
+            WhichSurfaceTheyAreGiven::TheirHome => AStacksScreen::Shelf->forTheStack($this->stack()->id()),
         };
     }
 
@@ -320,7 +320,7 @@ final class SignIntoAStack extends NativeComponent
         $this->menuIsFor = null;
         $this->given = $whose->either(
             operator: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::TheReport,
-            member: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::WhatTheyAreOwed,
+            member: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::TheirHome,
         );
 
         return $this->storage->keep($this->stack()->id(), $session, $whose)->either(

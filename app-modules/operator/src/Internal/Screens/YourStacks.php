@@ -369,7 +369,7 @@ final class YourStacks extends NativeComponent
         return match ($leads) {
             WhereTappingLeads::TheSignIn => $this->signInAt($stack),
             WhereTappingLeads::TheReport => $this->landing->onItsLastTab($stack),
-            WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
+            WhereTappingLeads::TheirHome => AStacksScreen::Shelf->forTheStack($stack->id()),
         };
     }
 

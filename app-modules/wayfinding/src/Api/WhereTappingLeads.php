@@ -34,14 +34,14 @@ enum WhereTappingLeads: string
     case TheReport = 'the_report';
 
     /**
-     * A member is, so the list hands them the reading that is theirs.
+     * A member is, so the list hands them their own application, on Home.
      *
      * The same answer the sign-in screen gives, arrived at a day later. A member
      * whose session outlived the app being closed is still a member, and a list that
      * remembered only *that* a session was held would hand them the operator's
      * machine report every launch after the first.
      */
-    case WhatTheyAreOwed = 'what_they_are_owed';
+    case TheirHome = 'their_home';
 
     /**
      * Where opening this stack leads, from whose session this phone holds for it.
@@ -56,7 +56,7 @@ enum WhereTappingLeads: string
             nobody: static fn(): self => self::TheSignIn,
             theirs: static fn(Whose $whose): self => $whose->either(
                 operator: static fn(): self => self::TheReport,
-                member: static fn(): self => self::WhatTheyAreOwed,
+                member: static fn(): self => self::TheirHome,
             ),
         );
     }

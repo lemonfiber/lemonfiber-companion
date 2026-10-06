@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Modules\Wayfinding\Api\TheTabs;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\TheStacksSettingsInTheMenu;
 
-// F18 — every screen of one stack is a tab, a menu item, or a step of another.
+// F18 — every screen of one stack is an operator's tab, a menu item, a
+// member's tab, or a step of another.
 //
 // Read from the screens a stack has, so a screen added tomorrow is covered the
 // moment it exists. A screen that needs more than the stack — one service, one
@@ -23,16 +25,15 @@ const REACHED_FROM_THEIR_SCREEN = [
     'Copy' => 'taking a copy is begun from Backups, and from Uninstall',
     'Reset' => 'putting the configuration back is begun from General',
     'SignIn' => 'signing in is offered by the screen that found the session ended',
-    'Owed' => 'a member of the household\'s own screen, which the household surface draws',
-    'Shelf' => 'a member of the household\'s own screen, which the household surface draws',
     'Versions' => 'Versions details what About says is running, and is reached from About',
 ];
 
-// F18 — every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins
+// F18 — every screen of one stack is an operator's tab, a menu item, a member's tab, or a step of another screen named with where it begins
 it('every screen of one stack is a tab, a menu item, or a step named with where it begins', function (): void {
     $covered = [
         ...array_map(static fn(TheMenu $item): string => $item->screen()->name, TheMenu::cases()),
         ...array_map(static fn(TheTabs $tab): string => $tab->screen()->name, TheTabs::cases()),
+        ...array_map(static fn(TheHouseholdsTabs $tab): string => $tab->screen()->name, TheHouseholdsTabs::cases()),
         ...array_keys(REACHED_FROM_THEIR_SCREEN),
         new TheStacksSettingsInTheMenu()->screen()->name,
     ];
@@ -57,5 +58,5 @@ it('names only screens a stack has as steps, and does not let the steps grow', f
     $names = array_map(static fn(AStacksScreen $screen): string => $screen->name, AStacksScreen::cases());
 
     expect(array_diff(array_keys(REACHED_FROM_THEIR_SCREEN), $names))->toBe([])
-        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(7);
+        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(5);
 });

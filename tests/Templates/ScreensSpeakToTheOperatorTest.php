@@ -334,11 +334,12 @@ it('every screen under a machine offers a way back to it', function (): void {
         // `->to(AStacksScreen::Health)` rather than the whole
         // `goes()->to(AStacksScreen::Health)`, because the way back is the
         // chrome's and the chrome holds the destination as the argument it was
-        // handed — `$goes->to(AStacksScreen::Health)`. A household screen asks
-        // its own `health()`, because that surface does not name the
-        // operator's routes. What the rule is asking is whether the composed
-        // screen reaches the machine, not which spelling it got there by.
-        if (! str_contains($said, '->to(AStacksScreen::Health)') && ! str_contains($said, '$this->health()')) {
+        // handed — `$goes->to(AStacksScreen::Health)`. A member's screen has
+        // no machine to go back to: its way back is Home, which the member's
+        // bar holds as `$goes->to(AStacksScreen::Shelf)`. What the rule is
+        // asking is whether the composed screen reaches where its surface
+        // begins, not which spelling it got there by.
+        if (! str_contains($said, '->to(AStacksScreen::Health)') && ! str_contains($said, '->to(AStacksScreen::Shelf)')) {
             $trapped[] = $path;
         }
     }

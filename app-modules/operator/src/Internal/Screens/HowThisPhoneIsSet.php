@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use InvalidArgumentException;
+
+use function is_string;
+
 use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LettingGoOfOldReadings;
@@ -23,7 +26,9 @@ use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
+use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -60,6 +65,9 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     /** Whether the count typed was not one readings can be kept for. */
     public bool $daysRefused = false;
 
+    /** Whose words this screen speaks in, which the screen it was opened from said. */
+    public WhoTheSettingsSpeakTo $speaksTo = WhoTheSettingsSpeakTo::Anyone;
+
     /** Whether the operator is being asked whether to clear saved data. */
     public bool $confirmingTheClear = false;
 
@@ -78,6 +86,14 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
         private readonly ClearingWhatThePhoneKeeps $clearing,
         private readonly Stacks $stacks,
     ) {}
+
+    /** Speak in the words the screen it was opened from asked for: a member's Profile asks for household words. */
+    public function mount(): void
+    {
+        $said = $this->data(AScreenWithoutAStack::SETTINGS_SPEAK_TO);
+
+        $this->speaksTo = WhoTheSettingsSpeakTo::tryFrom(is_string($said) ? $said : '') ?? WhoTheSettingsSpeakTo::Anyone;
+    }
 
     /** Whether the phone keeps nothing between launches, having nowhere safe to. */
     public function keepsNothing(): bool

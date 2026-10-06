@@ -293,7 +293,20 @@ it('a screen that asks nothing on open still offers the act that asks', function
  * list holds them to exactly that, so a screen named here that starts asking
  * its machine is caught rather than excused.
  */
-const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone'];
+const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone', 'Search', 'Profile'];
+
+/**
+ * Screens among those whose only ways off are the tabs in the bar under them, and why.
+ *
+ * The bar is the platform's own navigation and is not counted among what a
+ * frame offers, so a tab drawing nothing to tap of its own is named here and
+ * held to offering exactly nothing else.
+ *
+ * @var array<string, string> the screen's name => why the bar is its only way off
+ */
+const LEFT_BY_THE_BAR_ALONE = [
+    'Search' => 'searching from the phone is coming, so the tab says so and the member leaves it by another tab',
+];
 
 it('draws a screen that asks its machine nothing the same against every machine, and never what stood in the way', function (): void {
     withNoStackRunning();
@@ -307,7 +320,7 @@ it('draws a screen that asks its machine nothing the same against every machine,
     foreach (ASKS_NOTHING_OF_THE_MACHINE as $name) {
         foreach ($drawn as $against) {
             expect($against)->toHaveKey($name)
-                ->and($against[$name]->offers())->not->toBe([], $name)
+                ->and($against[$name]->offers() === [])->toBe(array_key_exists($name, LEFT_BY_THE_BAR_ALONE), $name)
                 ->and($against[$name]->offers())->toBe($drawn[0][$name]->offers(), $name)
                 ->and(array_intersect(whatNoAnswerLooksLike(), $against[$name]->said()))->toBe([], $name);
         }

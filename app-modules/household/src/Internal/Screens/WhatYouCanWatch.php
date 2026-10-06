@@ -30,10 +30,10 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * What this machine says the person holding the session may watch.
  *
- * The member's own shelf, and the whole of what this screen does is render it.
- * Which libraries they reach, what their age limit allows and what they are
- * entitled to were decided by the core before the list arrived, so nothing
- * here filters a row, sorts one or hides one.
+ * The member's Home tab, where a member lands, and the whole of what it does
+ * is render their shelf. Which libraries they reach, what their age limit
+ * allows and what they are entitled to were decided by the core before the
+ * list arrived, so nothing here filters a row, sorts one or hides one.
  *
  * **There is no asking for anything on this screen.** Requesting something,
  * approving it and spending an allowance are the household surface's and are
@@ -80,31 +80,14 @@ final class WhatYouCanWatch extends NativeComponent
     public function __construct(
         private readonly Watching $watching,
         private readonly SecureStorage $storage,
-        private readonly TheWayAround $around,
+        protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
-
-    /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $this->answered ??= $this->ask();
-    }
-
-    /** The operator's way back to the machine this reading is about. */
-    public function health(): string
-    {
-        return AStacksScreen::Health->forTheStack($this->stack()->id());
     }
 
     /** Where a session that has ended is renewed. */

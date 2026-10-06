@@ -1,7 +1,6 @@
-<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
+<x-operator::screen-opens :title="__('household.tabs.home')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
-    <x-design::title>{{ __('household.shelf') }}</x-design::title>
 
 @if ($this->answer()->cameBack())
     {{-- One row per holding: the title, the kind under it, and the year at
@@ -63,10 +62,6 @@
     <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
     <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
 @endif
-
-    {{-- The operator's way back to the machine this reading is about,
-         whatever became of the reading. --}}
-    @if ($this->goesBackToTheMachine())
-        <x-design::link label="{{ __('household.back_to_the_machine') }}" :goes="$this->health()" />
-    @endif
 </x-operator::content>
+
+<x-household::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />

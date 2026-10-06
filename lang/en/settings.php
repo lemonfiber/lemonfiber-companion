@@ -33,6 +33,16 @@ return [
     'remove_confirm' => 'Remove :name from this phone? Its readings and settings go with it. The stack itself keeps running.',
     'remove' => 'Remove',
     'remove_refused' => 'lemonfiber could not remove :name from this phone. Nothing was removed.',
+    // The same settings, opened from a member's Profile: in household words,
+    // with the house rather than the stack.
+    'household' => [
+        'readings' => 'Kept on this phone',
+        'keep_readings' => 'Keep for',
+        'keep_readings_is' => 'What the app saved longer ago is deleted from this phone.',
+        'stacks' => 'Houses',
+        'stack_order' => 'House order',
+        'clear_confirm' => 'Clear everything the app saved on this phone? Your houses stay on the phone and you stay signed in.',
+    ],
     'after' => [
         'immediately' => 'Immediately',
         'one_minute' => '1 minute',

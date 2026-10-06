@@ -427,7 +427,7 @@ it('takes them to the report once they are in, rather than describing where it i
         );
 });
 
-it('hands a member their own reading rather than the operator\'s report', function (): void {
+it('hands a member their own application, on Home, rather than the operator\'s report', function (): void {
     // The identity decides the application. Both people offer a password at
     // the same field and come away signed in the same way; the only thing that
     // differs is what the stack said about whose session it opened. A screen
@@ -444,7 +444,7 @@ it('hands a member their own reading rather than the operator\'s report', functi
     $screen->offer();
 
     expect($screen->isSignedIn())->toBeTrue()
-        ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s/yours', aStackToSignInto()->id()->stored()))
+        ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s/watch', aStackToSignInto()->id()->stored()))
         ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
             'A member signing in leads to a URI the navigation stack does not know, so '
             . 'they would tap into nothing.',
@@ -492,19 +492,14 @@ it('carries the menu, ending in Stack settings and App settings, so a stack that
     expect(array_slice($offers, -2))->toBe([__('navigation.menu.stack_settings'), __('navigation.menu.app_settings')]);
 });
 
-it('offers only the way to another stack and the two settings until signed in, and a member\'s menu once a member is', function (): void {
+it('offers only the way to another stack and the two settings, before signing in and once a member is', function (): void {
     $screen = typedPassword(signInScreen(aDoorThatOpensForAMember()), 'the-members-password');
     $before = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers();
     $screen->offer();
+    $anyones = [__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
 
-    expect($before)->toBe([__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')])
-        ->and(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toBe([
-            __('navigation.menu.switch_stack'),
-            __('household.yours'),
-            __('household.shelf'),
-            __('navigation.menu.stack_settings'),
-            __('navigation.menu.app_settings'),
-        ]);
+    expect($before)->toBe($anyones)
+        ->and(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toBe($anyones);
 });
 
 /** The screen with a member's name typed into it. */
