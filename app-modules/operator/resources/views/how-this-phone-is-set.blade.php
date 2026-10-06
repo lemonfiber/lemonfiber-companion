@@ -27,8 +27,8 @@
 
     {{-- How long readings are kept. A count of days is said as that count;
          Other… opens a field for any count the offered ones do not name. --}}
-    <x-design::section :label="__('settings.readings')">
-        <x-design::row :headline="__('settings.keep_readings')" :trailing="trans_choice($this->keepReadings()->said, $this->keepReadings()->count)" />
+    <x-design::section :label="__($this->speaksTo->kept())">
+        <x-design::row :headline="__($this->speaksTo->keepFor())" :trailing="trans_choice($this->keepReadings()->said, $this->keepReadings()->count)" />
     </x-design::section>
 
     <x-design::chips>
@@ -53,15 +53,15 @@
         </x-design::card>
     @endif
 
-    <x-design::note>{{ __('settings.keep_readings_is') }}</x-design::note>
+    <x-design::note>{{ __($this->speaksTo->keptExplained()) }}</x-design::note>
 
     {{-- The order every list of stacks follows. A row is dragged into place,
          or moved one place at a time with a screen reader's actions. --}}
-    <x-design::section :label="__('settings.stacks')">
-        <x-design::row :headline="__('settings.stack_order')" />
+    <x-design::section :label="__($this->speaksTo->theStacks())">
+        <x-design::row :headline="__($this->speaksTo->theirOrder())" />
     </x-design::section>
 
-    <x-design::order :rows="$this->stacksInOrder()" change="putStacksInOrder" :label="__('settings.stack_order')" :move-up="'settings.move_up'" :move-down="'settings.move_down'" />
+    <x-design::order :rows="$this->stacksInOrder()" change="putStacksInOrder" :label="__($this->speaksTo->theirOrder())" :move-up="'settings.move_up'" :move-down="'settings.move_down'" />
 
     {{-- Every reading, setting and marker, and never a pairing or a session.
          Asked on this screen rather than in a dialog, where the question can
@@ -71,7 +71,7 @@
     </x-design::section>
 
     @if ($this->confirmingTheClear)
-        <x-design::body>{{ __('settings.clear_confirm') }}</x-design::body>
+        <x-design::body>{{ __($this->speaksTo->clearing()) }}</x-design::body>
         <x-design::action label="{{ __('settings.clear') }}" tap="clearSavedData()" />
         <x-design::action label="{{ __('settings.keep_it') }}" tap="keepSavedData()" tone="tonal" />
     @endif

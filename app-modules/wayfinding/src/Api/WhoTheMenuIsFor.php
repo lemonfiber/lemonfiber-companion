@@ -20,7 +20,7 @@ enum WhoTheMenuIsFor: string
     {
         return match (WhereTappingLeads::for($storage, $stack)) {
             WhereTappingLeads::TheSignIn => self::Anyone,
-            WhereTappingLeads::WhatTheyAreOwed => self::AMember,
+            WhereTappingLeads::TheirHome => self::AMember,
             WhereTappingLeads::TheReport => self::TheOperator,
         };
     }

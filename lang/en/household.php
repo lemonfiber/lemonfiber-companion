@@ -62,26 +62,49 @@ return [
     'nothing_asked_action' => 'What the household asks for shows up here as soon as somebody requests something.',
     'refused_because' => 'Turned down: :reason',
     'refused_at' => 'Turned down at :when',
-    // What the machine says the person holding the session is owed. The
+    // A member's four tabs, each also the title of the screen it opens.
+    'tabs' => [
+        'home' => 'Home',
+        'search' => 'Search',
+        'requests' => 'Requests',
+        'profile' => 'Profile',
+    ],
+
+    // What the house says the person holding the session is owed. The
     // sentences themselves are the core's and are never in this catalogue —
     // these are the frame around them, and the two answers a reading can have
     // that are not sentences: nothing to tell you, and a way to ask again.
-    'yours' => 'What you can ask for',
     'nothing_owed' => 'There is nothing to tell you here.',
-    'nothing_owed_action' => 'This machine has nothing to say about what you can ask for.',
+    'nothing_owed_action' => 'The house has nothing to say about what you can ask for.',
     'ask_again' => 'Ask again',
-    'back_to_the_machine' => 'Back to the machine',
 
-    // What the machine says this member may watch. The shelf itself is the
+    // Searching, which this version of the app does not have yet.
+    'search_is_coming' => 'Searching from your phone is coming.',
+    'search_is_coming_action' => 'Until then, what you can watch is on Home, and what you asked for is under Requests.',
+
+    // A member's own corner: changing house, the phone's settings, and taking
+    // the house off this phone.
+    'switch_house' => 'Switch house',
+    'your_houses' => 'Your houses',
+    'add_house' => 'Add a house',
+    'open_house' => 'Open :house',
+    'current_house' => ':house, the one you are in',
+    'app_settings' => 'App settings',
+    'remove_house' => 'Remove this house from the phone',
+    'remove_house_confirm' => 'Remove :house from this phone? You can add it again later. Nothing changes at the house.',
+    'remove' => 'Remove',
+    'keep_it' => 'Keep it',
+    'remove_house_refused' => 'The phone could not remove :house. Nothing was removed.',
+
+    // What the house says this member may watch. The shelf itself is the
     // core's answer; these are the frame around it and the two answers that
     // are not a list — nothing on it, and a library that could not be reached.
     // The second is never drawn as the first: one says you have nothing, and
     // the other says your collection is out of reach.
-    'shelf' => 'What you can watch',
     'shelf_is_empty' => 'There is nothing on your shelf.',
     'shelf_is_empty_action' => 'Anything the household adds for you shows up here.',
     'shelf_is_out_of_reach' => 'Your library could not be reached.',
-    'shelf_is_out_of_reach_action' => 'The machine answered, but could not read what is on your shelf.',
+    'shelf_is_out_of_reach_action' => 'The house answered, but could not read what is on your shelf.',
     'medium' => [
         'film' => 'Film',
         'series' => 'Series',

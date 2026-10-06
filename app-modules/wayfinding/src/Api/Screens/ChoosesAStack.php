@@ -22,10 +22,11 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * **It listens while it is open**, by the list of stacks' own rules, so each
  * row says how its stack stands now rather than a word that has gone out of
- * date on a screen that holds no stream. Its first frame is drawn from what
- * was kept, and every way it closes lets go, as does the screen stopping. A
- * screen that already holds its own stack's stream says so through
- * {@see holdsItsStacksStream()}, and that stack is not asked twice.
+ * date. Its first frame is drawn from what was kept, and every way it closes
+ * lets go. Whether the screen already holds its own stack's stream it says
+ * through {@see holdsItsStacksStream()}, and that stack is then not asked
+ * twice; the screen's own `stop()` lets the list go with everything else it
+ * holds, through {@see letTheListOfStacksGo()}.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -94,31 +95,16 @@ trait ChoosesAStack
         return $this->choosingAStack ? $this->around->stacksToChooseFrom($this->stack()) : TheStacksToChooseFrom::none();
     }
 
-    /**
-     * Let go of what the list holds whenever the screen stops being the one in front.
-     *
-     * The list stays open, and a return opens its subscriptions again at once.
-     * A screen that holds a stream of its own lets go of it in the same
-     * `stop()`, which the trait that holds it writes.
-     */
-    public function stop(): void
-    {
-        $this->letTheListOfStacksGo();
-
-        parent::stop();
-    }
+    /** Whether this screen holds its own stack's stream, which the list then does not ask for. */
+    abstract protected function holdsItsStacksStream(): bool;
 
     /**
-     * Whether this screen holds its own stack's stream, which the list then does not ask for.
+     * Every subscription the list holds let go of, and what each held kept as no longer current.
      *
-     * No, for every screen that does not say otherwise.
+     * The screen calls it from its own `stop()`, whenever it stops being the
+     * one in front. The list stays open, and a return opens its subscriptions
+     * again at once.
      */
-    protected function holdsItsStacksStream(): bool
-    {
-        return false;
-    }
-
-    /** Every subscription the list holds let go of, and what each held kept as no longer current. */
     private function letTheListOfStacksGo(): void
     {
         $this->heardWhileChoosing = $this->around->stopHearingWhileChoosing($this->heardWhileChoosingSoFar());

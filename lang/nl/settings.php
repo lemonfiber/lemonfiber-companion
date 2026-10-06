@@ -33,6 +33,14 @@ return [
     'remove_confirm' => ':name van deze telefoon verwijderen? De metingen en instellingen gaan mee. De stack zelf blijft draaien.',
     'remove' => 'Verwijderen',
     'remove_refused' => 'lemonfiber kon :name niet van deze telefoon verwijderen. Er is niets verwijderd.',
+    'household' => [
+        'readings' => 'Bewaard op deze telefoon',
+        'keep_readings' => 'Bewaren voor',
+        'keep_readings_is' => 'Wat de app langer geleden bewaarde, wordt van deze telefoon verwijderd.',
+        'stacks' => 'Huizen',
+        'stack_order' => 'Volgorde van huizen',
+        'clear_confirm' => 'Alles wissen wat de app op deze telefoon bewaarde? Je huizen blijven op de telefoon en je blijft ingelogd.',
+    ],
     'after' => [
         'immediately' => 'Meteen',
         'one_minute' => '1 minuut',

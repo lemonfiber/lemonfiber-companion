@@ -33,8 +33,8 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * What this machine says the person holding the session is owed.
  *
- * The member's own reading, and the first screen of this surface. What it draws
- * is what the core wrote to them: whether what they ask for needs approval,
+ * The member's Requests tab, and their own reading. What it draws is what
+ * the core wrote to them: whether what they ask for needs approval,
  * what their period has left and when it makes room again, what is still
  * waiting and what was refused and why.
  *
@@ -96,18 +96,6 @@ final class WhatYouAreOwed extends NativeComponent
     ) {}
 
     /**
-     * The stack this screen is about.
-     *
-     * Read from the route on every frame rather than held, so there is one
-     * answer to *which machine* and it is the one the URI names — and a route
-     * naming a stack this device has forgotten is refused rather than drawn.
-     */
-    public function stack(): Stack
-    {
-        return $this->around->stackOn($this);
-    }
-
-    /**
      * Ask the machine again.
      *
      * The action an obstacle must not take away. A control is not hidden
@@ -133,25 +121,6 @@ final class WhatYouAreOwed extends NativeComponent
     public function requests(): WhatAMemberTurnedOutToHaveAsked
     {
         return $this->readings()->asked;
-    }
-
-    /** The operator's way back to the machine this reading is about. */
-    public function health(): string
-    {
-        return AStacksScreen::Health->forTheStack($this->stack()->id());
-    }
-
-    /**
-     * The member's other screen: what is already on their shelf.
-     *
-     * Beside this one rather than under it. What a member may ask for and
-     * what they already have are two readings of two endpoints, and a person
-     * who has just been told something arrived is a person about to look for
-     * it — so the way across is here.
-     */
-    public function shelf(): string
-    {
-        return AStacksScreen::Shelf->forTheStack($this->stack()->id());
     }
 
     /** Where a session that has ended is renewed. */

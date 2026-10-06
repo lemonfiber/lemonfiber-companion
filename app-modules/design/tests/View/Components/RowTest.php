@@ -74,3 +74,13 @@ it('paints a toned row\'s glyph in the tone\'s colour, and leaves a glyph of the
         ->and(data_get($own, 'props'))->not->toHaveKey('leading_icon_color')
         ->and(data_get($plain, 'props'))->not->toHaveKey('leading_icon_color');
 });
+
+it('hands the screen a row opens what it carries, besides the route, and nothing where it carries nothing', function (): void {
+    $carrying = WhatMarkupDraws::roads('<x-design::row headline="App settings" goes="/settings" :carries="[\'spoken_to\' => \'a_member\']" />');
+    $plain = WhatMarkupDraws::roads('<x-design::row headline="App settings" goes="/settings" />');
+
+    expect($carrying)->toHaveCount(1)
+        ->and(data_get($carrying, '0.uri'))->toBe('/settings')
+        ->and(data_get($carrying, '0.data'))->toBe(['spoken_to' => 'a_member'])
+        ->and(data_get($plain, '0.data'))->toBe([]);
+});

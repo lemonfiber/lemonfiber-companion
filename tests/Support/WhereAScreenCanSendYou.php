@@ -326,7 +326,8 @@ final readonly class WhereAScreenCanSendYou
     }
 
     /**
-     * The ways off a screen that belong to the chrome it stands in.
+     * The ways off a screen that belong to the chrome it stands in: the
+     * operator's bar or the member's, whichever the screen closes with.
      *
      * A screen handing `:goes` to the chrome gets the chrome's whole bottom
      * navigation, and those are real edges — they are how a person moves
@@ -346,11 +347,11 @@ final readonly class WhereAScreenCanSendYou
      */
     private function waysOffTheChromeOf(string $source): array
     {
-        if (preg_match('/<x-operator::screen-closes\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
+        if (preg_match('/<x-(operator|household)::screen-closes\b[^<]*?:goes\s*=\s*(["\'])(.*?)\2/s', $source, $handed) !== 1) {
             return [];
         }
 
-        $chrome = Tree::at('app-modules/operator/resources/views/components/screen-closes.blade.php');
+        $chrome = Tree::at(sprintf('app-modules/%s/resources/views/components/screen-closes.blade.php', $handed[1]));
 
         if (! is_file($chrome)) {
             return [];
@@ -369,7 +370,7 @@ final readonly class WhereAScreenCanSendYou
         // argument each screen supplies separately — substituting the wrong
         // one would invent an edge rather than find one.
         $reached = array_map(
-            static fn(string $expression): string => str_replace('$goes->', sprintf('%s->', $handed[2]), $expression),
+            static fn(string $expression): string => str_replace('$goes->', sprintf('%s->', $handed[3]), $expression),
             $found[2],
         );
 

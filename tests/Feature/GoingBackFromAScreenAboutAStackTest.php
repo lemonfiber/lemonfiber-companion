@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
-use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Operator\Internal\WhereTheTabsAreDrawn;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheTabs;
@@ -64,10 +63,10 @@ function offersAWayBackOver(NativeComponent $screen, AStacksScreen $case, int $b
     return $menu instanceof Drawer && $menu->isBesideBack();
 }
 
-/** Whether a screen is drawn as a tab: one of the operator's, or what a member is owed. */
+/** Whether a screen is drawn as one of the operator's tabs. */
 function isDrawnAsATab(NativeComponent $screen): bool
 {
-    $tabs = [WhatYouAreOwed::class];
+    $tabs = [];
 
     foreach (TheTabs::cases() as $tab) {
         $tabs[] = WhereTheTabsAreDrawn::classOf($tab);
@@ -128,6 +127,6 @@ it('never offers the way back on a tab, whatever the router holds beneath it', f
         }
     }
 
-    expect($tabs)->toBe(count(TheTabs::cases()) + 1)
+    expect($tabs)->toBe(count(TheTabs::cases()))
         ->and($with)->toBe([], 'These tabs offer a way back.');
 });

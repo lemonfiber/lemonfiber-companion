@@ -35,11 +35,8 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait FindsItsWayAround
 {
-    use FindsItsWayAroundAStack, HoldsItsStacksStream {
-        HoldsItsStacksStream::stop insteadof FindsItsWayAroundAStack;
-        HoldsItsStacksStream::holdsItsStacksStream insteadof FindsItsWayAroundAStack;
-        HoldsItsStacksStream::howMuchIsNewHere insteadof FindsItsWayAroundAStack;
-    }
+    use FindsItsWayAroundAStack;
+    use HoldsItsStacksStream;
 
     /**
      * The stack this screen is about.

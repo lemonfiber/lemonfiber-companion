@@ -85,8 +85,9 @@ use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
+use Modules\Wayfinding\Api\TheHouseholdsTabs;
+use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Modules\Wayfinding\Internal\TheMenu;
-use Modules\Wayfinding\Internal\WhatAMemberFindsInTheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
 use Tests\Support\Catalogue;
 use Tests\Support\Tree;
@@ -468,9 +469,13 @@ function everyDerivedKey(): array
             LockAfter::cases(),
             static fn(LockAfter $after): array => [$after->said()],
         ),
-        WhatAMemberFindsInTheMenu::class => aPairPerCase(
-            WhatAMemberFindsInTheMenu::cases(),
-            static fn(WhatAMemberFindsInTheMenu $item): array => [$item->said()],
+        TheHouseholdsTabs::class => aPairPerCase(
+            TheHouseholdsTabs::cases(),
+            static fn(TheHouseholdsTabs $tab): array => [$tab->said()],
+        ),
+        WhoTheSettingsSpeakTo::class => aPairPerCase(
+            WhoTheSettingsSpeakTo::cases(),
+            static fn(WhoTheSettingsSpeakTo $whose): array => [$whose->kept(), $whose->keepFor(), $whose->keptExplained(), $whose->theStacks(), $whose->theirOrder(), $whose->clearing()],
         ),
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),

@@ -41,7 +41,7 @@ they live where those live.
 | `Modules\Sdk\Api` | `Rosters`, `Supervisors` — the readers and the adapter |
 | `Modules\Services` | `KeepingWhatItRuns`, `WithoutWhatWasLeftOut`, `WhetherItIsInstalled` — what the phone keeps of a listing, and what the app decides about one |
 | `Modules\Operator` | `WhatThisStackRuns` and its folds |
-| `Modules\Household` | `WhatYouAreOwed`, which is a member's reading of the same machine |
+| `Modules\Household` | the member's four tabs, which are a member's reading of the same machine |
 
 That is not a mistake to be tidied up into here. A value belongs in `kernel`,
 which every module may use; moving it would make one capability module a

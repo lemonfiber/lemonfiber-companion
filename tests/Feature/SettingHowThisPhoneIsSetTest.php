@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -343,3 +344,34 @@ it('puts the stacks in the order the list sent, passing over a key that names no
 
     expect(theOrderAsDrawn($screen)['names'] ?? null)->toBe(['The attic', 'The loft']);
 });
+
+it('speaks in household words, with the house for the stack, when a member\'s Profile opens it', function (): void {
+    $settings = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $settings->setData([AScreenWithoutAStack::SETTINGS_SPEAK_TO => WhoTheSettingsSpeakTo::AMember->value]);
+    $settings->mount();
+    $settings->askToClear();
+    $said = WhatTheDeviceWouldDraw::by($settings)->said();
+
+    expect($settings->speaksTo)->toBe(WhoTheSettingsSpeakTo::AMember)
+        ->and($said)->toContain(__('settings.household.readings'), __('settings.household.keep_readings_is'), __('settings.household.stacks'), __('settings.household.clear_confirm'))
+        ->and($said)->not->toContain(__('settings.readings'))
+        ->and($said)->not->toContain(__('settings.stacks'))
+        ->and($said)->not->toContain(__('settings.clear_confirm'));
+});
+
+it('speaks in its own words when opened from anywhere but a member\'s Profile', function (array $handed): void {
+    $settings = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $settings->setData($handed);
+    $settings->mount();
+    $settings->askToClear();
+    $said = WhatTheDeviceWouldDraw::by($settings)->said();
+
+    expect($settings->speaksTo)->toBe(WhoTheSettingsSpeakTo::Anyone)
+        ->and($said)->toContain(__('settings.readings'), __('settings.stacks'), __('settings.clear_confirm'))
+        ->and($said)->not->toContain(__('settings.household.stacks'));
+})->with([
+    'nothing handed' => [[]],
+    'anyone' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => WhoTheSettingsSpeakTo::Anyone->value]],
+    'something that is not a word' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => true]],
+    'a word it does not know' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => 'the_neighbours']],
+]);

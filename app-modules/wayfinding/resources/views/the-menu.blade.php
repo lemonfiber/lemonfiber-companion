@@ -28,18 +28,6 @@
                 :ios-icon="$whatsNew->iosGlyph()"
             />
         @endif
-
-        @forelse ($rows->owed as $owed)
-            <x-design::row
-                :headline="__($owed->said())"
-                :answers-to="__($owed->said())"
-                :goes="$owed->screen()->forTheStack($stack->id())"
-                :icon="$owed->glyph()"
-                :ios-icon="$owed->iosGlyph()"
-            />
-        @empty
-            {{-- Nothing: only a member is owed anything here. --}}
-        @endforelse
     </x-design::section>
 
     @forelse ($rows->groups as $group)

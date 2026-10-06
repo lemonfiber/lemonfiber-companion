@@ -6,8 +6,10 @@ namespace Modules\Household\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Household\Internal\Screens\LookingForATitle;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
+use Modules\Household\Internal\Screens\YourCornerOfTheHouse;
 use Modules\Stacks\Api\AStacksScreen;
 
 /**
@@ -46,8 +48,10 @@ final class HouseholdServiceProvider extends ServiceProvider
         // the same thing and fires at the end of this provider's boot rather
         // than at the end of everybody's.
         $this->app->booted(static function (): void {
-            Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
             Router::native(AStacksScreen::Shelf->value, WhatYouCanWatch::class);
+            Router::native(AStacksScreen::Search->value, LookingForATitle::class);
+            Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
+            Router::native(AStacksScreen::Profile->value, YourCornerOfTheHouse::class);
         });
     }
 }

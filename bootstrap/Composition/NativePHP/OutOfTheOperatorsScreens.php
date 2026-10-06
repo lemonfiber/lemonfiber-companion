@@ -10,12 +10,11 @@ use Closure;
 
 use function is_string;
 
-use Modules\Household\Internal\Screens\WhatYouAreOwed;
+use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
-use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Wayfinding\Api\WhereTappingLeads;
 
 use function str_starts_with;
@@ -26,7 +25,7 @@ use function str_starts_with;
  *
  * An operator's screen about a stack is built only where this phone holds the
  * operator's session for that stack, or none: for a stack it holds a member's
- * session for, the screen the member lands on is built in its place, and
+ * session for, the member's Home is built in its place, and
  * nothing of the operator's screen is built or asked to read anything. A link,
  * a step back, a kept tab or a route typed by hand all come here first.
  *
@@ -51,7 +50,6 @@ final readonly class OutOfTheOperatorsScreens
      */
     public const array EVERY_SESSION_OPENS = [
         SignIntoAStack::class => 'signing in is where a session that ended is renewed, whoever held it',
-        ThisStackOnThisPhone::class => 'a member\'s menu offers taking the stack off the phone, and this is the screen it opens',
     ];
 
     /** Where the operator's screens live, by namespace. */
@@ -72,7 +70,7 @@ final readonly class OutOfTheOperatorsScreens
     /** The screen asked for, or the member's own in place of the operator's. */
     public function screen(string $asked): mixed
     {
-        return ($this->make)($this->isKeptFromAMember($asked) ? WhatYouAreOwed::class : $asked);
+        return ($this->make)($this->isKeptFromAMember($asked) ? WhatYouCanWatch::class : $asked);
     }
 
     /**
@@ -91,7 +89,7 @@ final readonly class OutOfTheOperatorsScreens
         $named = $this->params['stack'];
 
         try {
-            return is_string($named) && WhereTappingLeads::for($this->keychain, StackId::rememberedAs($named)) === WhereTappingLeads::WhatTheyAreOwed;
+            return is_string($named) && WhereTappingLeads::for($this->keychain, StackId::rememberedAs($named)) === WhereTappingLeads::TheirHome;
         } catch (StackIsUnidentified) {
             return false;
         }

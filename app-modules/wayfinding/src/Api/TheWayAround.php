@@ -185,14 +185,14 @@ final readonly class TheWayAround
     /**
      * Where choosing a stack from that list leads: its sign-in where this
      * phone holds no session for it, the tab the operator last used on it for
-     * the operator, and what a member is owed for a member.
+     * the operator, and Home for a member.
      */
     public function choosingLeadsTo(Stack $stack): string
     {
         return match (WhereTappingLeads::for($this->storage, $stack->id())) {
             WhereTappingLeads::TheSignIn => AStacksScreen::SignIn->forTheStack($stack->id()),
             WhereTappingLeads::TheReport => $this->onItsLastTab($stack),
-            WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
+            WhereTappingLeads::TheirHome => AStacksScreen::Shelf->forTheStack($stack->id()),
         };
     }
 

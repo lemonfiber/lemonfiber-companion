@@ -22,6 +22,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -302,22 +303,19 @@ it('asking again is offered, and asks again', function (): void {
     expect($watching->askings())->toBe(2);
 });
 
-it('offers the way back to the machine and to a renewed session', function (): void {
+it('offers the way to a renewed session', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
-    $stack = theStackAShelfIsReadFrom()->id();
 
-    expect($screen->health())->toBe(AStacksScreen::Health->forTheStack($stack))
-        ->and($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack($stack));
+    expect($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack(theStackAShelfIsReadFrom()->id()));
 });
 
-it('ends with the way back to the machine for the operator, and with none for a member', function (): void {
-    $operator = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), whose: Whose::theOperator());
-    $member = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
+it('is the member\'s Home tab, titled Home, and offers no way back to the machine', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
+    $tree = WhatTheDeviceWouldDraw::tree($screen);
 
-    expect($operator->goesBackToTheMachine())->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::by($operator)->offers())->toContain(__('household.back_to_the_machine'))
-        ->and($member->goesBackToTheMachine())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($member)->offers())->not->toContain(__('household.back_to_the_machine'));
+    expect($screen->itsTab())->toBe(TheHouseholdsTabs::Home)
+        ->and(data_get($tree, 'props.nav_title'))->toBe(__('household.tabs.home'))
+        ->and((string) json_encode($tree, JSON_UNESCAPED_SLASHES))->not->toContain(sprintf('"%s"', AStacksScreen::Health->forTheStack(theStackAShelfIsReadFrom()->id())));
 });
 
 it('is what the router serves under the shelf path', function (): void {

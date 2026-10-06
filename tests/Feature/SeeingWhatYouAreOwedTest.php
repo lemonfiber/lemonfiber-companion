@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -244,24 +245,20 @@ it('reads a route parameter that is not text as naming no machine', function ():
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('the way back to the machine and on to signing in are both routes', function (): void {
+it('the way on to signing in is a route', function (): void {
     $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()));
-    $named = theStackAMemberReadsFrom()->id();
 
-    expect($screen->health())->toBe(AStacksScreen::Health->forTheStack($named))
-        ->and($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack($named))
-        ->and(NativeRouter::resolve($screen->health()))->not->toBeNull()
+    expect($screen->signIn())->toBe(AStacksScreen::SignIn->forTheStack(theStackAMemberReadsFrom()->id()))
         ->and(NativeRouter::resolve($screen->signIn()))->not->toBeNull();
 });
 
-it('ends with the way back to the machine for the operator, and with none for a member', function (): void {
-    $operator = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()));
-    $member = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()), whose: Whose::member('ada'));
+it('is the member\'s Requests tab, titled Requests, and offers no way back to the machine', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()), whose: Whose::member('ada'));
+    $tree = WhatTheDeviceWouldDraw::tree($screen);
 
-    expect($operator->goesBackToTheMachine())->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::by($operator)->offers())->toContain(__('household.back_to_the_machine'))
-        ->and($member->goesBackToTheMachine())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($member)->offers())->not->toContain(__('household.back_to_the_machine'));
+    expect($screen->itsTab())->toBe(TheHouseholdsTabs::Requests)
+        ->and(data_get($tree, 'props.nav_title'))->toBe(__('household.tabs.requests'))
+        ->and((string) json_encode($tree, JSON_UNESCAPED_SLASHES))->not->toContain(sprintf('"%s"', AStacksScreen::Health->forTheStack(theStackAMemberReadsFrom()->id())));
 });
 
 it('the screen is registered under the route that reaches it', function (): void {

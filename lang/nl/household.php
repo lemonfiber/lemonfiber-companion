@@ -62,20 +62,39 @@ return [
     'nothing_asked_action' => 'Wat het huishouden vraagt, verschijnt hier zodra iemand iets aanvraagt.',
     'refused_because' => 'Afgewezen: :reason',
     'refused_at' => 'Afgewezen op :when',
-    'yours' => 'Wat je kunt aanvragen',
+    'tabs' => [
+        'home' => 'Thuis',
+        'search' => 'Zoeken',
+        'requests' => 'Aanvragen',
+        'profile' => 'Profiel',
+    ],
+
     'nothing_owed' => 'Er is hier niets om je te vertellen.',
-    'nothing_owed_action' => 'Deze machine zegt niets over wat je kunt aanvragen.',
+    'nothing_owed_action' => 'Het huis zegt niets over wat je kunt aanvragen.',
     'ask_again' => 'Opnieuw vragen',
-    'back_to_the_machine' => 'Terug naar de machine',
+
+    'search_is_coming' => 'Zoeken vanaf je telefoon komt eraan.',
+    'search_is_coming_action' => 'Tot die tijd staat wat je kunt kijken op Thuis, en wat je hebt aangevraagd onder Aanvragen.',
+
+    'switch_house' => 'Ander huis',
+    'your_houses' => 'Je huizen',
+    'add_house' => 'Huis toevoegen',
+    'open_house' => ':house openen',
+    'current_house' => ':house, waar je nu bent',
+    'app_settings' => 'App-instellingen',
+    'remove_house' => 'Dit huis van de telefoon halen',
+    'remove_house_confirm' => ':house van deze telefoon halen? Je kunt het later weer toevoegen. Bij het huis verandert niets.',
+    'remove' => 'Weghalen',
+    'keep_it' => 'Laten staan',
+    'remove_house_refused' => 'De telefoon kon :house niet weghalen. Er is niets weggehaald.',
 
     // Wat de machine zegt dat dit lid kan kijken. Een lege plank en een
     // bibliotheek die niet bereikt kon worden zijn twee verschillende
     // antwoorden, en de tweede wordt nooit als de eerste getoond.
-    'shelf' => 'Wat je kunt kijken',
     'shelf_is_empty' => 'Er staat niets op je plank.',
     'shelf_is_empty_action' => 'Wat het huishouden voor je toevoegt, verschijnt hier.',
     'shelf_is_out_of_reach' => 'Je bibliotheek kon niet worden bereikt.',
-    'shelf_is_out_of_reach_action' => 'De machine antwoordde, maar kon niet lezen wat er op je plank staat.',
+    'shelf_is_out_of_reach_action' => 'Het huis antwoordde, maar kon niet lezen wat er op je plank staat.',
     'medium' => [
         'film' => 'Film',
         'series' => 'Serie',
