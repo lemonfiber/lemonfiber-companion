@@ -174,6 +174,7 @@ return [
             'restore' => 'The setting is put back to what it held',
             'delete' => 'What it made is deleted',
             'withdraw' => 'What lemonfiber wrote into the file is taken back out',
+            'rewind' => 'The file lemonfiber wrote over is written back to what it held',
             'repin' => 'Pinned back to the version it was on',
             'reconfigure' => 'The service\'s own setting is put back',
             'revoke' => 'The key it made is revoked',

@@ -302,7 +302,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     'a reversal with a blank target' => [['reversed' => [['target' => ' ', 'action' => ['does' => 'delete', 'path' => '/srv']]]]],
     'a reversal with no action' => [['reversed' => [['target' => 'sonarr', 'action' => 'delete']]]],
     'a reversal doing nothing it names' => [['reversed' => [['target' => 'sonarr', 'action' => ['path' => '/srv']]]]],
-    'a reversal doing something this app has no word for' => [['reversed' => [['target' => 'sonarr', 'action' => ['does' => 'rewind']]]]],
+    'a reversal doing something this app has no word for' => [['reversed' => [['target' => 'sonarr', 'action' => ['does' => 'teleport']]]]],
 ]);
 
 it('a report leaving out a list, or whether it was a rehearsal, is a stack that did not answer', function (string $field): void {
