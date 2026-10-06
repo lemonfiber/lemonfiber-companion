@@ -82,6 +82,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\KeepsReadingsFor;
+use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\MakingPairingCodes;
@@ -143,11 +144,13 @@ use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Assessors;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\ClientsThatAskTheDevice;
+use Modules\Sdk\Api\ClientsThatAskWhatIsOffered;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
@@ -195,6 +198,7 @@ use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Sdk\Api\Wirers;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Services\Internal\ListingsKept;
@@ -606,7 +610,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)
@@ -634,8 +638,20 @@ final class CompositionRoot extends ServiceProvider
         // its transport. This line is where those two facts meet the container.
         //
         // Over the phone's own answers about its network, so that a stack that
-        // went silent is told apart from a phone that has no way to it.
-        $this->app->bind(Clients::class, ClientsThatAskTheDevice::class);
+        // went silent is told apart from a phone that has no way to it; and in
+        // front of both, the stack asked first what it serves, so nothing is
+        // sent that the stack does not declare. A stand-in takes the whole of
+        // this binding over, and serves every request a stack can declare.
+        $this->app->bind(Clients::class, $this->askingFirst(...));
+
+        // What each stack last declared, held in memory for the life of the
+        // process and never kept. A singleton for `WhatEachStackLastNamed`'s
+        // reason: it is what one screen asks and the next screen draws, and a
+        // button and the request behind it are answered from the same answer.
+        $this->app->singleton(WhatEachStackOffers::class);
+
+        // The same answer, asked by a screen before it draws a button.
+        $this->app->bind(KnowingWhatAStackOffers::class, Assessors::class);
 
         // A silent reach is noted for a developer in a debug build's log, and
         // in no other build: a release is handed a log that keeps nothing.
@@ -899,6 +915,21 @@ final class CompositionRoot extends ServiceProvider
     private function theTheme(): TheTheme
     {
         return $this->theme ??= new TheTheme($this->theKeychain(...));
+    }
+
+    /**
+     * The clients that ask the phone, with the stack asked first what it serves.
+     *
+     * A method rather than a closure, because `make()` raises a checked
+     * exception and a closure's caller cannot see what it throws.
+     */
+    private function askingFirst(): Clients
+    {
+        return new ClientsThatAskWhatIsOffered(
+            $this->app->make(ClientsThatAskTheDevice::class),
+            $this->app->make(WhatEachStackOffers::class),
+            $this->app->make(Clock::class),
+        );
     }
 
     /** The keychain, made afresh each time it is asked for, as its binding says. */

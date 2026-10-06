@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundLeaving;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -36,7 +37,7 @@ final readonly class Lookouts implements Outgoing
 
     public function leaving(Stack $stack, Session $session): WhatWasFoundLeaving
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::OUTBOUND_ENDPOINT);
@@ -46,7 +47,7 @@ final readonly class Lookouts implements Outgoing
             return WhatWasFoundLeaving::leaving(WhatLeaves::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundLeaving::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OutboundIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|OutboundIsUnreadable $why) {
             return WhatWasFoundLeaving::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

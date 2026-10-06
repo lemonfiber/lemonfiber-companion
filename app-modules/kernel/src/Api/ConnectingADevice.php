@@ -10,7 +10,7 @@ namespace Modules\Kernel\Api;
  * One act: handing the device the way onto the media server, which also says
  * whether a device of theirs has arrived since the code was given.
  */
-enum ConnectingADevice: string
+enum ConnectingADevice: string implements AnAction
 {
     /** Give the code, or say where handing it over stands. */
     case HandOver = 'hand_over';

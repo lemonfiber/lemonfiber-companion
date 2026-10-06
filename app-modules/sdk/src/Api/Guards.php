@@ -25,6 +25,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -54,7 +55,7 @@ final readonly class Guards implements Guarding
 
     public function guard(Stack $stack, Session $session, AGuardAskedFor $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
         $forms = [];
 
         foreach ($asked->forms() as $form) {
@@ -71,7 +72,7 @@ final readonly class Guards implements Guarding
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -79,7 +80,7 @@ final readonly class Guards implements Guarding
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheGuardIsGoing
     {
         try {
-            return $this->standing($this->clients->client($stack, $session)->whatBecameOf($job->shown()));
+            return $this->standing(GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {
@@ -94,7 +95,7 @@ final readonly class Guards implements Guarding
     public function letGo(Stack $stack, Session $session, Job $job): HowTheGuardIsGoing
     {
         try {
-            return $this->standing($this->clients->client($stack, $session)->letGoOf($job->shown()));
+            return $this->standing(GatedClient::of($this->clients, $stack, $session)->letGoOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {

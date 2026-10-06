@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
@@ -23,6 +24,7 @@ use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -63,6 +65,7 @@ final readonly class AroundThePhone
         ?Hearing $hearing = null,
         ?Capture $capture = null,
         ?WhereTheOperatorWas $was = null,
+        ?KnowingWhatAStackOffers $offering = null,
     ): TheWayAround {
         $standings ??= StandingsInMemory::working();
         $clock ??= FrozenClock::at(Instant::atEpochSeconds(self::NOW));
@@ -76,6 +79,7 @@ final readonly class AroundThePhone
             $storage,
             new HearingEachStack(self::listening($hearing, $clock, $capture, $standings), $storage),
             $was ?? WhereTheOperatorWasInMemory::nowhere(),
+            $offering ?? AStackThatOffers::everything(),
         );
     }
 

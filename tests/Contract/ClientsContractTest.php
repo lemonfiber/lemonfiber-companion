@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Dx\Api\ClientsThatReachNothing;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -15,11 +18,17 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheVersionsSpoken;
+use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhetherItIsOffered;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\ClientsThatAskTheDevice;
+use Modules\Sdk\Api\ClientsThatAskWhatIsOffered;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\TheStackDoesNotOfferIt;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ALocalNetworkThat;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NotesKeptInMemory;
 
 // The Clients contract beyond the kernel's port: what stood in the way of a
@@ -52,6 +61,11 @@ dataset('every set of clients', [
         ALocalNetworkThat::letsItThrough(),
         new NotesKeptInMemory(),
     )],
+    'the clients that ask what is offered' => [fn(): Clients => new ClientsThatAskWhatIsOffered(
+        new PinnedClients(),
+        new WhatEachStackOffers(),
+        FrozenClock::at(Instant::atEpochSeconds(0)),
+    )],
 ]);
 
 it('reads silence as a stack that did not answer', function (Clients $clients): void {
@@ -69,4 +83,13 @@ it('reads an envelope in another API version as the two versions disagreeing, na
 it('reads an answer it could not read as a stack that did not answer', function (Clients $clients): void {
     expect($clients->whatStoodInTheWay(aStackThatWentQuiet(), UnreadableResponse::notAnEnvelope()))
         ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+})->with('every set of clients');
+
+it('reads a request the stack does not declare as the stack too old for it, or not this account\'s to ask', function (Clients $clients): void {
+    $path = Ability::of(Api::action(WhatToDoWithIt::Restart->asked()));
+
+    expect($clients->whatStoodInTheWay(aStackThatWentQuiet(), TheStackDoesNotOfferIt::at($path, WhetherItIsOffered::NeedsANewerLemonfiber)))
+        ->toEqual(Obstacle::of(KindOfObstacle::NotOnThisStack))
+        ->and($clients->whatStoodInTheWay(aStackThatWentQuiet(), TheStackDoesNotOfferIt::at($path, WhetherItIsOffered::NotTheirs)))
+        ->toEqual(Obstacle::of(KindOfObstacle::NotForThisAccount));
 })->with('every set of clients');

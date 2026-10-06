@@ -33,6 +33,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -88,6 +89,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowThisStackIs extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;

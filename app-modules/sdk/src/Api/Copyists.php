@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatCopiesWereFound;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -34,7 +35,7 @@ final readonly class Copyists implements Copying
 
     public function copiesOn(Stack $stack, Session $session): WhatCopiesWereFound
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::BACKUPS_ENDPOINT);
@@ -44,7 +45,7 @@ final readonly class Copyists implements Copying
             return WhatCopiesWereFound::copies(TheArchives::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatCopiesWereFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ArchivesAreUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ArchivesAreUnreadable $why) {
             return WhatCopiesWereFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

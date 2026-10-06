@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * unconfirmed it says what taking them out would cost, and confirmed it takes
  * them out.
  */
-enum TakingThemOut: string
+enum TakingThemOut: string implements AnAction
 {
     /** Take somebody out of the household, or say what taking them out would cost. */
     case TakeThemOut = 'take_them_out';

@@ -137,8 +137,13 @@ trait ChoosesWhatABundleHolds
         return $names;
     }
 
-    /** The bundle those choices describe, not written. */
-    private function chosen(): ABundleAsked
+    /**
+     * The bundle those choices describe, not written.
+     *
+     * Public, because its button asks the stack whether it offers a bundle
+     * before it is drawn.
+     */
+    public function chosen(): ABundleAsked
     {
         return ABundleAsked::described($this->window->lines(), $this->filenames, $this->revealedSoFar());
     }

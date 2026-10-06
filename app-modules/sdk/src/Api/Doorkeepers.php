@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Welcoming;
 use Modules\Kernel\Api\WhatWasFoundOfTheFrontDoor;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -29,7 +30,7 @@ final readonly class Doorkeepers implements Welcoming
 
     public function frontDoorOf(Stack $stack, Session $session): WhatWasFoundOfTheFrontDoor
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::FRONT_DOOR_ENDPOINT);
@@ -39,7 +40,7 @@ final readonly class Doorkeepers implements Welcoming
             return WhatWasFoundOfTheFrontDoor::found(WhereTheDoorIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheFrontDoor::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|FrontDoorIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|FrontDoorIsUnreadable $why) {
             return WhatWasFoundOfTheFrontDoor::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

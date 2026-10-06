@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\WhatIsStuck;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -50,7 +51,7 @@ final readonly class Stalls implements Stalling
 
     public function stoppedOn(Stack $stack, Session $session): WhatIsStuck
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::STUCK_ENDPOINT);
@@ -63,7 +64,7 @@ final readonly class Stalls implements Stalling
             return WhatIsStuck::these(Stoppages::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsStuck::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StuckIsUnreadable|ALimitSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|StuckIsUnreadable|ALimitSaysNothing $why) {
             return WhatIsStuck::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

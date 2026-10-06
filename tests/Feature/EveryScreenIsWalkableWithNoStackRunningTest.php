@@ -12,6 +12,7 @@ use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
+use Tests\Support\WhatASettledScreenDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -76,7 +77,7 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
             ? ['stack' => $stack, 'service' => 'gluetun']
             : ['stack' => $stack]);
 
-        $drawn[$case->name] = WhatTheDeviceWouldDraw::by($screen);
+        $drawn[$case->name] = WhatASettledScreenDraws::of($screen);
     }
 
     return $drawn;

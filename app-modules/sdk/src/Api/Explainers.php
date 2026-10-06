@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundOfTheWords;
 use Modules\Kernel\Api\WhatWasSaidOfOneWord;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -39,7 +40,7 @@ final readonly class Explainers implements Explaining
 
     public function glossaryOn(Stack $stack, Session $session): WhatWasFoundOfTheWords
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::EXPLAIN_ENDPOINT);
@@ -49,14 +50,14 @@ final readonly class Explainers implements Explaining
             return WhatWasFoundOfTheWords::found(TheWordsExplained::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheWords::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
             return WhatWasFoundOfTheWords::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function wordOn(Stack $stack, Session $session, AWordInUse $word): WhatWasSaidOfOneWord
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::EXPLAIN_ENDPOINT, [WireField::Word->value => $word->said()]);
@@ -66,7 +67,7 @@ final readonly class Explainers implements Explaining
             return WhatWasSaidOfOneWord::explained(TheWordsExplained::one($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedAWord($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable $why) {
             return WhatWasSaidOfOneWord::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

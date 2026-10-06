@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Sdk\Api\Fields\LifecycleField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -83,7 +84,7 @@ final readonly class Supervisors implements Supervising
 
     public function running(Stack $stack, Session $session): WhatIsRunning
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::STATUS_ENDPOINT);
@@ -91,7 +92,7 @@ final readonly class Supervisors implements Supervising
             return WhatIsRunning::these(Rosters::in($envelope), Rosters::whatElseIsRunning($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RosterIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|RosterIsUnreadable $why) {
             return WhatIsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -106,17 +107,17 @@ final readonly class Supervisors implements Supervising
     public function formsOn(Stack $stack, Session $session): WhatFormsThereAre
     {
         try {
-            return WhatFormsThereAre::these(Repertoires::in($this->clients->client($stack, $session)->read(Api::FORMS_ENDPOINT)));
+            return WhatFormsThereAre::these(Repertoires::in(GatedClient::of($this->clients, $stack, $session)->read(Api::FORMS_ENDPOINT)));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatFormsThereAre::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RepertoireIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|RepertoireIsUnreadable $why) {
             return WhatFormsThereAre::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function told(Stack $stack, Session $session, AgreedTo $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -132,14 +133,14 @@ final readonly class Supervisors implements Supervising
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function rehearsed(Stack $stack, Session $session, AgreedTo $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // Under a key of its own, as every action is: a rehearsal changes
@@ -153,7 +154,7 @@ final readonly class Supervisors implements Supervising
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -176,7 +177,7 @@ final readonly class Supervisors implements Supervising
     private function outcome(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheVerbIsGoing
                     => HowTheVerbIsGoing::done(Lifecycles::in($envelope)),

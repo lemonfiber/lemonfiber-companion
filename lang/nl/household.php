@@ -73,6 +73,8 @@ return [
     'nothing_owed_action' => 'Het huis zegt niets over wat je kunt aanvragen.',
     'ask_again' => 'Opnieuw vragen',
     'ask_again_for_yours' => 'Opnieuw vragen naar wat je hebt aangevraagd',
+    'needs_an_update' => 'Het huis heeft hiervoor een update nodig.',
+    'needs_an_update_action' => 'Wie het huis beheert, kan het bijwerken.',
 
     'search_is_coming' => 'Zoeken vanaf je telefoon komt eraan.',
     'search_is_coming_action' => 'Tot die tijd staat wat je kunt kijken op Thuis, en wat je hebt aangevraagd onder Aanvragen.',

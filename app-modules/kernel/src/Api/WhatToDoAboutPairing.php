@@ -10,7 +10,7 @@ namespace Modules\Kernel\Api;
  * One act: making a fresh pairing code. It carries no credential and admits
  * nobody, and replacing the certificate a paired phone pins is not offered.
  */
-enum WhatToDoAboutPairing: string
+enum WhatToDoAboutPairing: string implements AnAction
 {
     /** Make a fresh pairing code another phone adds the stack with. */
     case MakeACode = 'make_a_code';

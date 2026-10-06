@@ -10,23 +10,29 @@ use function is_string;
 
 use Modules\Design\View\Tone;
 use Modules\Health\Api\WhatWasHeardSoFar;
+use Modules\Kernel\Api\AnAction;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WhereTheOperatorWas;
+use Modules\Kernel\Api\WhetherItIsOffered;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
  * What a screen about one stack reads about the stacks this phone holds, what
- * its menu is called and whose it is, where choosing another stack leads, and
- * how each stack stands while the list of them is open.
+ * its menu is called and whose it is, where choosing another stack leads, how
+ * each stack stands while the list of them is open, and what the stack it is
+ * about offers before a button is drawn.
  *
  * Every screen about a stack is handed one, built by the container, and asks
  * it rather than the stacks themselves. The container builds each with a
@@ -45,6 +51,7 @@ final readonly class TheWayAround
         private SecureStorage $storage,
         private HearingEachStack $hearing,
         private WhereTheOperatorWas $was,
+        private KnowingWhatAStackOffers $offering,
     ) {}
 
     /**
@@ -65,6 +72,36 @@ final readonly class TheWayAround
     public function stack(StackId $named): Stack
     {
         return $this->stacks->configured()->stack($named);
+    }
+
+    /**
+     * Whether this stack offers this action, asked before its button is drawn.
+     *
+     * Asked of the stack with the session this phone holds for it, because
+     * what an account may ask for is part of the answer. With none held the
+     * screen is about to say the session ended, and the button is not known
+     * to be offered or not, so it stays a button. Where nothing is held of
+     * what the stack serves, asking it is the frame's one reading, and the
+     * button is drawn on the next frame.
+     */
+    public function offers(Stack $stack, AnAction $action): WhetherItIsOffered
+    {
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhetherItIsOffered => $this->offering->whetherItOffers($stack, $session, $action),
+            notHeld: static fn(): WhetherItIsOffered => WhetherItIsOffered::NotKnown,
+        );
+    }
+
+    /** Ask the stack again what it offers, the next time anything is asked of it, and say what was let go of. */
+    public function askAgainOf(Stack $stack): Forgotten
+    {
+        return $this->offering->askAgain($stack->id());
+    }
+
+    /** A screen opens: what any stack said longer ago than a break is asked again, and what was let go of is said. */
+    public function aScreenOpens(): Forgotten
+    {
+        return $this->offering->aScreenOpens();
     }
 
     /** What a screen reader calls the control that opens the menu. */

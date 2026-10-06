@@ -28,6 +28,7 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -62,6 +63,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

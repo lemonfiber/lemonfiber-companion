@@ -39,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
 use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Services\Api\KeepingWhatItRuns;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -105,6 +106,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
     use FollowsWhatTheVerbCameTo;

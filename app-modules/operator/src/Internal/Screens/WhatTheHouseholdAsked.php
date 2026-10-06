@@ -31,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
 use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -79,6 +80,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatTheHouseholdAsked extends NativeComponent
 {
+    use AsksTheStackAgain;
     use LooksAgainWhileOpen;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

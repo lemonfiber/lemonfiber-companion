@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Obstacle;
@@ -58,6 +59,16 @@ final readonly class ClientsThatAskTheDevice implements Clients
     public function client(Stack $stack, Session $session): Client
     {
         return $this->pinned->client($stack, $session);
+    }
+
+    /**
+     * The pinned client, handed on as the pinned clients hand it: nothing here asks the stack what it serves.
+     *
+     * @throws void
+     */
+    public function towards(Stack $stack, Session $session, Ability $path): Client
+    {
+        return $this->pinned->towards($stack, $session, $path);
     }
 
     public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle

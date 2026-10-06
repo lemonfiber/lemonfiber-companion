@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -56,6 +57,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisStackIsSetTo extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

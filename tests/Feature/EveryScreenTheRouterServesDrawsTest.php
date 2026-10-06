@@ -3,14 +3,20 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Providers\DxServiceProvider;
+use Modules\Kernel\Api\Ability;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\ClientsThatAskWhatIsOffered;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeComponent;
@@ -20,6 +26,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
+use Tests\Support\WhatASettledScreenDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -74,7 +81,11 @@ function theStackThisWalkLooksAt(): string
 }
 
 /**
- * What the router was given for one screen, drawn.
+ * What the router was given for one screen, drawn, as it settles.
+ *
+ * A frame that asks for the next at once is followed by it, as on a device,
+ * where a person sees that frame for as long as one round trip: a first frame
+ * that asked the stack what it serves draws only that it is waiting.
  *
  * A named function because reflection and rendering both raise, and the
  * analyser refuses a checked exception inside a closure — rightly.
@@ -93,7 +104,7 @@ function whatThisScreenDraws(string $class, array $params): WhatTheDeviceWouldDr
         $screen->setParams($params);
     }
 
-    return WhatTheDeviceWouldDraw::by($screen);
+    return WhatASettledScreenDraws::of($screen);
 }
 
 /**
@@ -225,7 +236,21 @@ function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): C
 
         public function client(Stack $stack, Session $session): Client
         {
-            $client = $this->standIn->client($stack, $session);
+            return $this->writingDownWhatIsRead($this->standIn->client($stack, $session));
+        }
+
+        public function towards(Stack $stack, Session $session, Ability $path): Client
+        {
+            return $this->writingDownWhatIsRead($this->standIn->towards($stack, $session, $path));
+        }
+
+        public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
+        {
+            return $this->standIn->whatStoodInTheWay($stack, $why);
+        }
+
+        private function writingDownWhatIsRead(Client $client): Client
+        {
             $answering = Closure::bind(static fn(Client $built): ?MockClient => $built->connector->getMockClient(), null, Client::class)($client);
             $reads = $this->reads;
             $tried = $this->tried;
@@ -234,16 +259,15 @@ function clientsThatWriteDownTheirReads(Clients $standIn, ArrayObject $reads): C
                 '*' => static fn(PendingRequest $asked): MockResponse|Fixture => theStandInsAnswer($asked, $answering, $reads, $tried),
             ]));
         }
-
-        public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
-        {
-            return $this->standIn->whatStoodInTheWay($stack, $why);
-        }
     };
 }
 
 /**
- * The stand-ins switched on, and the list every read a client of theirs is sent is written to.
+ * The stand-ins switched on, behind the gate that asks each what it serves, and the list every read a client of theirs is sent is written to.
+ *
+ * The gate the application ships, in front of the stand-ins, so asking what a
+ * stack serves is a read written down like any other: a frame that asked is a
+ * frame that read.
  *
  * @return ArrayObject<int, string>
  */
@@ -254,7 +278,9 @@ function theStandInsWithTheirReadsWrittenDown(): ArrayObject
 
     $reads = new ArrayObject();
     $standIn = app()->make(Clients::class);
-    app()->bind(Clients::class, static fn(): Clients => clientsThatWriteDownTheirReads($standIn, $reads));
+    $held = app()->make(WhatEachStackOffers::class);
+    $clock = app()->make(Clock::class);
+    app()->bind(Clients::class, static fn(): Clients => new ClientsThatAskWhatIsOffered(clientsThatWriteDownTheirReads($standIn, $reads), $held, $clock));
 
     return $reads;
 }
@@ -266,8 +292,9 @@ function theStandInsWithTheirReadsWrittenDown(): ArrayObject
  * as the device takes them in one request. The start itself is the operator's
  * act and not a read, so the count begins on the first tick after it.
  *
- * A form the stand-in lists, because it runs no services; drawn twice
- * first, as the screen takes its forms a frame after what is running.
+ * A form the stand-in lists, because it runs no services; drawn three times
+ * first, as the screen asks the stack what it serves on its first frame and
+ * takes its forms a frame after what is running.
  *
  * @return array{0: list<string>, 1: list<string>}
  */
@@ -281,6 +308,7 @@ function theFramesFollowingAVerbThatReadTwice(): array
     }
 
     $screen->setParams(['stack' => theStackThisWalkLooksAt(), 'service' => 'Id']);
+    WhatTheDeviceWouldDraw::by($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
@@ -304,10 +332,11 @@ function theFramesFollowingAVerbThatReadTwice(): array
 /**
  * Every frame of a routed screen that read a stack more than once, and how many reads there were in all.
  *
- * Three frames of each, on one screen, as the device draws them while the
- * screen stays open. A screen with two readings takes the second on a frame of
- * its own, so the first three frames are where a second read in one frame
- * would be. A named function for {@see whatThisScreenDraws()}'s reason.
+ * Four frames of each, on one screen, as the device draws them while the
+ * screen stays open, each opened on a stack nothing is held for. The first
+ * asks the stack what it serves, and a screen with two readings takes the
+ * second on a frame of its own, so the first four frames are where a second
+ * read in one frame would be. A named function for {@see whatThisScreenDraws()}'s reason.
  *
  * @return array{0: list<string>, 1: int}
  */
@@ -326,8 +355,11 @@ function theFramesThatReadTwice(): array
         }
 
         $screen->setParams($params);
+        // Each screen opens on a stack nothing is held for, so each asks it
+        // what it serves on a frame of its own.
+        app()->make(WhatEachStackOffers::class)->letGoOf(StackId::rememberedAs(theStackThisWalkLooksAt()));
 
-        foreach ([1, 2, 3] as $frame) {
+        foreach ([1, 2, 3, 4] as $frame) {
             $reads->exchangeArray([]);
             WhatTheDeviceWouldDraw::by($screen);
             $readAtAll += count($reads);
@@ -340,6 +372,93 @@ function theFramesThatReadTwice(): array
 
     return [$twice, $readAtAll];
 }
+
+/**
+ * How soon the frame a screen drew last asked to be drawn again, in milliseconds, if it asked.
+ *
+ * Read off the package's own record of the intervals a template declared,
+ * which it keeps to itself, because that record is what wakes the next frame.
+ *
+ * @return list<int>
+ */
+function howSoonTheScreenAskedForTheNextFrame(NativeComponent $screen): array
+{
+    $asked = Closure::bind(static fn(NativeComponent $drawn): array => array_keys($drawn->bladePollDeadlines), null, NativeComponent::class)($screen);
+
+    return array_values(array_filter($asked, is_int(...)));
+}
+
+/**
+ * What a screen whose first frame asked the stack what it serves did wrong after it.
+ *
+ * @param ArrayObject<int, string> $reads
+ *
+ * @return list<string>
+ */
+function whatTheFrameAfterAskingDidWrong(string $case, NativeComponent $screen, ArrayObject $reads): array
+{
+    $soon = howSoonTheScreenAskedForTheNextFrame($screen);
+    $reads->exchangeArray([]);
+    WhatTheDeviceWouldDraw::by($screen);
+    $askedAgain = array_filter($reads->getArrayCopy(), static fn(string $read): bool => str_ends_with($read, Api::CAPABILITIES_ENDPOINT));
+    $wrong = [];
+
+    if ($soon !== [16]) {
+        $wrong[] = sprintf('%s — asked for the next frame in [%s] ms rather than at once', $case, implode(', ', $soon));
+    }
+
+    if ($askedAgain !== []) {
+        $wrong[] = sprintf('%s — asked the stack what it serves again on the next frame', $case);
+    }
+
+    return $wrong;
+}
+
+/**
+ * Every routed screen whose first frame asked the stack what it serves, and what went wrong with each that did.
+ *
+ * @return array{0: list<string>, 1: list<string>} the screens that asked, and what each did wrong
+ */
+function theFirstFramesThatAskedWhatTheStackServes(): array
+{
+    $reads = theStandInsWithTheirReadsWrittenDown();
+    $served = WhereAScreenCanSendYou::read()->screensTheRouterServes();
+    $asked = [];
+    $wrong = [];
+
+    foreach (everyRouteTheAppServes(theStackThisWalkLooksAt()) as $case => $params) {
+        $screen = array_key_exists($case, $served) ? app()->make($served[$case]) : null;
+
+        if (! $screen instanceof NativeComponent) {
+            continue;
+        }
+
+        $screen->setParams($params);
+        app()->make(WhatEachStackOffers::class)->letGoOf(StackId::rememberedAs(theStackThisWalkLooksAt()));
+        $reads->exchangeArray([]);
+        WhatTheDeviceWouldDraw::by($screen);
+        $first = $reads->getArrayCopy();
+
+        if ($first !== [] && str_ends_with($first[0], Api::CAPABILITIES_ENDPOINT)) {
+            $asked[] = $case;
+            $wrong = [...$wrong, ...whatTheFrameAfterAskingDidWrong($case, $screen, $reads)];
+        }
+    }
+
+    return [$asked, $wrong];
+}
+
+it('asks for the next frame at once where a first frame asked the stack what it serves, and never asks it again there', function (): void {
+    [$asked, $wrong] = theFirstFramesThatAskedWhatTheStackServes();
+
+    expect(count($asked))->toBeGreaterThan(3, 'hardly a screen asked the stack what it serves on its first frame, so this rule read almost nothing')
+        ->and($wrong)->toBe([], sprintf(
+            "These screens waited on the stack saying what it serves:\n  %s\n\n"
+            . 'The frame that asks is the frame\'s one reading, and the reading it put off is taken '
+            . 'on the next frame, which is asked for at once rather than on the next look.',
+            implode("\n  ", $wrong),
+        ));
+});
 
 it('no frame of a screen the router serves reads a stack more than once', function (): void {
     [$twice, $readAtAll] = theFramesThatReadTwice();

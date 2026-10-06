@@ -22,7 +22,7 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 
 use function sprintf;
 
-it('is the twelve an operator must be able to tell apart', function (): void {
+it('is the thirteen an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -40,6 +40,7 @@ it('is the twelve an operator must be able to tell apart', function (): void {
         KindOfObstacle::AddressIsNotTheStacks,
         KindOfObstacle::VersionsDisagree,
         KindOfObstacle::StackIsBusy,
+        KindOfObstacle::NotOnThisStack,
     ]);
 });
 
@@ -72,6 +73,7 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-ADDRESS-NOT-THE-STACKS',
         'COMPANION-VERSIONS-DISAGREE',
         'COMPANION-STACK-BUSY',
+        'COMPANION-NOT-ON-THIS-STACK',
     ]);
 });
 
@@ -112,6 +114,9 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
     // two versions that disagree stay that way until one side is updated.
     expect(KindOfObstacle::StackIsBusy->severity())->toBe(Severity::Warning);
     expect(KindOfObstacle::VersionsDisagree->severity())->toBe(Severity::Error);
+
+    // A stack older than what was asked of it works, and is older.
+    expect(KindOfObstacle::NotOnThisStack->severity())->toBe(Severity::Warning);
 });
 
 it('offers a button only where the app can press it', function (): void {
@@ -139,6 +144,10 @@ it('offers a button only where the app can press it', function (): void {
     // app cannot act.
     expect(KindOfObstacle::VersionsDisagree->standing())->toBe(Standing::Guided);
     expect(KindOfObstacle::StackIsBusy->standing())->toBe(Standing::Guided);
+
+    // A stack too old for what was asked is updated from the app's own
+    // updates screen, so the remedy is a road there.
+    expect(KindOfObstacle::NotOnThisStack->standing())->toBe(Standing::Actionable);
 
     expect(KindOfObstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();
     expect(KindOfObstacle::StackDidNotAnswer->standing()->offersAButton())->toBeFalse();

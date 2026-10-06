@@ -1009,9 +1009,10 @@ it('answers a machine that is not the one paired as exactly that', function (str
 });
 
 /**
- * The public calls of a reading adapter that ask the stack nothing, each with
- * why, so the list above holds only calls that can meet a stack and the rule
- * below still accounts for every public method.
+ * The public calls of a reading adapter that ask the stack nothing, or whose
+ * answer is not an outcome that can meet an obstacle, each with why, so the
+ * list above holds only calls that can meet a stack and the rule below still
+ * accounts for every public method.
  *
  * @return array<string, string>
  */
@@ -1021,20 +1022,29 @@ function adapterCallsThatAskNothing(): array
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'StartLines::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+        'Assessors::aScreenOpens' => 'lets go of what any stack said longer ago than a break, which asks the stack nothing',
+        'Assessors::askAgain' => 'lets go of what the stack last declared, which asks the stack nothing',
+        'Assessors::forgetTheStack' => 'lets go of what the stack last declared, which asks the stack nothing',
+        'Assessors::keepsAnythingOf' => 'says whether anything is held for the stack, which asks the stack nothing',
+        // Not a call that asks nothing, and not one whose answer can carry an
+        // obstacle: what a stack declares is asked so a button can be drawn,
+        // and an answer that could not be read is read as not knowing, which
+        // keeps the button. `AssessorsTest` holds every way that answer ends.
+        'Assessors::whetherItOffers' => 'reads what the stack declares, and reads an answer it cannot read as not knowing rather than as an obstacle',
     ];
 }
 
 it('asks every adapter call that reads a stack', function (): void {
     // The list above is written out, because each call needs its own
     // arguments. This holds it to the adapters: every public method of a class
-    // in `Modules\Sdk\Api` that opens a client, itself or through the streams
-    // it holds, is one of the calls asked.
+    // in `Modules\Sdk\Api` that opens a client, through the gate, itself or
+    // through the streams it holds, is one of the calls asked.
     $expected = [];
 
     foreach (Tree::filesUnder(Tree::at('app-modules/sdk/src/Api'), '.php') as $file) {
         $source = (string) file_get_contents($file);
 
-        if (! str_contains($source, '$this->clients->client(') && ! str_contains($source, 'new TheStreamsHeld(')) {
+        if (! str_contains($source, 'GatedClient::of($this->clients') && ! str_contains($source, '$this->clients->client(') && ! str_contains($source, 'new TheStreamsHeld(')) {
             continue;
         }
 

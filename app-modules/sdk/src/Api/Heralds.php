@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\WhatTheAlertsWere;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -30,7 +31,7 @@ final readonly class Heralds implements Telling
 
     public function toldAbout(Stack $stack, Session $session): WhatTheAlertsWere
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::ALERTS_ENDPOINT);
@@ -40,7 +41,7 @@ final readonly class Heralds implements Telling
             return WhatTheAlertsWere::told(WhatIsTold::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheAlertsWere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable $why) {
             return WhatTheAlertsWere::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

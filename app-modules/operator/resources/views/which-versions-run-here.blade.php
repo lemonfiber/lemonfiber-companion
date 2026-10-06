@@ -51,13 +51,13 @@
         <x-design::note>{{ __($this->answer()->notesMeanSaid) }}</x-design::note>
     @endif
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

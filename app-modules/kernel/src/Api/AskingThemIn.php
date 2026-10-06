@@ -12,7 +12,7 @@ namespace Modules\Kernel\Api;
  * this app able to ask for any action a stack offers. These two are the whole
  * of what the invitation screen can ask for.
  */
-enum AskingThemIn: string
+enum AskingThemIn: string implements AnAction
 {
     /** Offer somebody an account, or say what offering one would come to. */
     case Invite = 'invite';

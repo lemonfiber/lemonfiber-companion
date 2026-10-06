@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatToDoWithARun;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -51,7 +52,7 @@ final readonly class Reversers implements PuttingARunBack
 
     public function putBack(Stack $stack, Session $session, ARunAgreedTo $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -63,7 +64,7 @@ final readonly class Reversers implements PuttingARunBack
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -90,7 +91,7 @@ final readonly class Reversers implements PuttingARunBack
     private function outcome(Stack $stack, Session $session, Job $job): HowPuttingARunBackIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowPuttingARunBackIsGoing => HowPuttingARunBackIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPuttingARunBackIsGoing
                     => HowPuttingARunBackIsGoing::done(TheRunPutBack::in($envelope)),

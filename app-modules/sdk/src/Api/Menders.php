@@ -29,6 +29,7 @@ use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -72,7 +73,7 @@ final readonly class Menders implements Mending
 
     public function wouldPutRight(Stack $stack, Session $session): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->repair(
@@ -81,14 +82,14 @@ final readonly class Menders implements Mending
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function agreeTo(Stack $stack, Session $session, Confirmed $confirmed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // The listing's name and the repair's check, which is exactly what
@@ -106,7 +107,7 @@ final readonly class Menders implements Mending
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -166,7 +167,7 @@ final readonly class Menders implements Mending
     private function outcome(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheRepairIsGoing
                     => HowTheRepairIsGoing::done(Offers::mendedIn($envelope)),
@@ -202,7 +203,7 @@ final readonly class Menders implements Mending
      */
     private function reading(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing
     {
-        return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+        return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
             stillRunning: static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::stillRunning(),
             finished: static fn(Envelope $envelope): HowTheOfferIsGoing
                 => HowTheOfferIsGoing::offering(Offers::offerIn($envelope)),

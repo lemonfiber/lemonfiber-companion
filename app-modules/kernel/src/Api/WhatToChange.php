@@ -14,7 +14,7 @@ namespace Modules\Kernel\Api;
  * one file instead of from every adapter, which is the reason
  * {@see WhatToDoWithIt} and {@see WhatWasDecided} exist.
  */
-enum WhatToChange: string
+enum WhatToChange: string implements AnAction
 {
     /** Put a value in one setting. */
     case Setting = 'setting';

@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatWasDecided')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -12,7 +13,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->answer()->askedNow"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                :goes="$this->goes()"
             />
         @endif
         <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -51,10 +52,11 @@
             />
         </x-design::card>
 
-        <x-design::action
+        <x-operator::offered-action
             label="{{ __('household.turn_it_down') }}"
             :disabled="! $this->mayDecline() || $this->answer()->waitsForTheStack"
             tap="decline()"
+            :offer="$this->offered(WhatWasDecided::Decline)"
         />
         @if ($this->answer()->waitsForTheStack)
             <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -94,16 +96,18 @@
                      for, and it owes them nothing but the thing itself.
                      Turning one down is tonal because it opens a question
                      rather than settling one. --}}
-                <x-design::action
+                <x-operator::offered-action
                     label="{{ __('household.approve') }}"
                     answers-to="{{ __('household.approve_that', ['title' => $request->title]) }}"
                     tap="approve('{{ $request->number }}')"
+                    :offer="$this->offered(WhatWasDecided::Approve)"
                     :disabled="$this->answer()->waitsForTheStack"
                 />
-                <x-design::action
+                <x-operator::offered-action
                     label="{{ __('household.turn_down') }}"
                     answers-to="{{ __('household.turn_down_that', ['title' => $request->title]) }}"
                     tap="wouldDecline('{{ $request->number }}')"
+                    :offer="$this->offered(WhatWasDecided::Decline)"
                     tone="tonal"
                     :disabled="$this->answer()->waitsForTheStack"
                 />
@@ -125,13 +129,13 @@
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

@@ -11,7 +11,7 @@ namespace Modules\Kernel\Api;
  * segment of its path, and a name spelled at the call site is this app able to
  * ask for any action a stack offers.
  */
-enum WhatToDoAboutWiring: string
+enum WhatToDoAboutWiring: string implements AnAction
 {
     /** Wire them, or finish what an earlier run could not. */
     case Wire = 'wire';

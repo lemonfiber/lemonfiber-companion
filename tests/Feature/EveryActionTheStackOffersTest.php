@@ -36,7 +36,7 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
+    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
@@ -93,7 +93,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Capabilities', 'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing', 'Plugins',
+    'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing', 'Plugins',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

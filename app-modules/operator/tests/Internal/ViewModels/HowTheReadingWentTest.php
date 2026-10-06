@@ -74,3 +74,11 @@ it('is put right in the app\'s settings only where the local network was refused
         HowTheReadingWent::itCameBack()->isPutRightInTheAppsSettings(),
     ])->toBe([true, false, false]);
 });
+
+it('is provided by an update only where the stack is too old for what was asked', function (): void {
+    expect([
+        HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::NotOnThisStack))->isProvidedByAnUpdate(),
+        HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackIsBusy))->isProvidedByAnUpdate(),
+        HowTheReadingWent::itCameBack()->isProvidedByAnUpdate(),
+    ])->toBe([true, false, false]);
+});

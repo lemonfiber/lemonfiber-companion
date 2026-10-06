@@ -20,6 +20,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatKeepsRunning;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -67,7 +68,7 @@ final readonly class Keepers implements Hosting
 
     public function keptRunningOn(Stack $stack, Session $session): WhatKeepsRunning
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::HOSTING_ENDPOINT);
@@ -80,14 +81,14 @@ final readonly class Keepers implements Hosting
             return WhatKeepsRunning::keeps(Hosts::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatKeepsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
             return WhatKeepsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function handOver(Stack $stack, Session $session, HostingAgreed $agreed): HowTheHandoverWent
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -102,7 +103,7 @@ final readonly class Keepers implements Hosting
             return HowTheHandoverWent::did(Handovers::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedWith($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
             return HowTheHandoverWent::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

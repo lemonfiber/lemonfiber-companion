@@ -18,7 +18,7 @@ use function sprintf;
  * segment of the path it is asked for, and a name spelled at a call site is
  * this app able to ask a stack for any action it offers.
  */
-enum HandingOver: string
+enum HandingOver: string implements AnAction
 {
     /** Hand it to the machine, which runs it for as long as it is installed. */
     case Install = 'install';

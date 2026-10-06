@@ -319,7 +319,11 @@ enum HowTheSignInWent: string
             // the day it does, it is owed a state of its own rather than this one.
             KindOfObstacle::MediaServerDidNotAnswer,
             // The door reads no household, so this cannot arrive here either.
-            KindOfObstacle::HouseholdCouldNotBeRead => self::StackDidNotAnswer,
+            KindOfObstacle::HouseholdCouldNotBeRead,
+            // Signing in is not asked of what a stack declares it can do, so
+            // the door cannot be found missing; a stack too old to have one
+            // answers it as a door that did not answer in a way this app reads.
+            KindOfObstacle::NotOnThisStack => self::StackDidNotAnswer,
         };
     }
 

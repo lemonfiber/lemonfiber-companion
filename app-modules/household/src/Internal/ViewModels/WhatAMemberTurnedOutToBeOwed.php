@@ -67,9 +67,9 @@ final readonly class WhatAMemberTurnedOutToBeOwed
     /**
      * Something stood in the way, and this is what the member met.
      *
-     * Both keys come off the obstacle, which owns them — what happened and what
-     * to do about it are not the same sentence, and neither is one this module
-     * wrote. A refused credential is being signed out rather than something to
+     * Both keys come off the obstacle, which owns them, in the house's words
+     * ({@see WhatAMemberIsTold}) — what happened and what to do about it are not
+     * the same sentence. A refused credential is being signed out rather than something to
      * report, and that line is drawn by the obstacle rather than here, so this
      * screen cannot come to disagree with the ones beside it about whether
      * somebody is signed in.
@@ -78,7 +78,7 @@ final readonly class WhatAMemberTurnedOutToBeOwed
     {
         return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), sentences: [], why: $why);
+            : new self(isSignedIn: true, met: WhatAMemberIsTold::met($why), remedy: WhatAMemberIsTold::remedy($why), sentences: [], why: $why);
     }
 
     /** Whether what stood in the way is put right on this app's page in the phone's settings. */

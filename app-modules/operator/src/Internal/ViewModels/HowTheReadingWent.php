@@ -94,6 +94,18 @@ final readonly class HowTheReadingWent
     }
 
     /**
+     * Whether what stood in the way is a stack too old for what was asked, which a newer lemonfiber provides.
+     *
+     * Decided once, here, for {@see self::isPutRightInTheAppsSettings()}'s
+     * reason: the road to the stack's updates is drawn beside the one obstacle
+     * whose remedy is there.
+     */
+    public function isProvidedByAnUpdate(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->is(KindOfObstacle::NotOnThisStack);
+    }
+
+    /**
      * Whether other work held the stack, so the same request can be sent again once it is done.
      *
      * Nothing was changed: the stack turned the request away before acting on

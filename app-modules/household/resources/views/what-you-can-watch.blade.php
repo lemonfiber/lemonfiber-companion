@@ -18,7 +18,7 @@
         <x-design::strong>{{ __($this->theirOwn()->met, $this->theirOwn()->filling()) }}</x-design::strong>
         <x-design::body>{{ __($this->theirOwn()->remedy, $this->theirOwn()->filling()) }}</x-design::body>
     </x-design::notice>
-    <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
 @endif
 
 @if ($this->answer()->cameBack())
@@ -41,7 +41,7 @@
         </x-design::section>
     @endforelse
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->isOutOfReach)
     {{-- Not an empty shelf, and drawn so it can never be mistaken for one. The
          library exists and could not be reached, which is the opposite thing
@@ -61,7 +61,7 @@
         @endforelse
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
 @elseif ($this->answer()->isSignedIn)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
@@ -71,7 +71,7 @@
         <x-design::body>{{ __($this->answer()->remedy, $this->answer()->filling()) }}</x-design::body>
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
     @if ($this->answer()->isPutRightInTheAppsSettings())
         <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)

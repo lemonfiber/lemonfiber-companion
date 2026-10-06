@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 {{-- Drawn only where a reading did not come back, which is the arm of the
      screen's own `cameBack()` that says so. There is no guard here: a second
      one would be a second expression of the same rule, and two expressions are
@@ -20,6 +21,12 @@
         <x-operator::action label="{{ __('health.ask_again') }}" :tap="$askAgain" />
     @endif
 
+    {{-- Where the stack is too old for what was asked, the road to its
+         updates, which is what would provide it. --}}
+    @if ($went->isProvidedByAnUpdate())
+        <x-operator::action label="{{ __('connection.go_to_updates') }}" :goes="$goes->to(AStacksScreen::Updates)" />
+    @endif
+
     {{-- Beside asking again, where the remedy is a switch in the phone's
          settings: one tap to the switch rather than a hunt for it. --}}
     @if ($went->isPutRightInTheAppsSettings())
@@ -32,5 +39,5 @@
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
     <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
-    <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$signInGoesTo" />
+    <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$goes->to(AStacksScreen::SignIn)" />
 @endif

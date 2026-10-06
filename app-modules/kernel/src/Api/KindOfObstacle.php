@@ -207,6 +207,19 @@ enum KindOfObstacle: string
     case StackIsBusy = 'busy';
 
     /**
+     * The stack does not have this: the lemonfiber on it is older than what it
+     * was asked for.
+     *
+     * Met before anything is sent. The stack declares what it can do, and a
+     * request it does not declare is not attempted, so this is never a failure
+     * of what the operator asked: it is the stack being too old to be asked.
+     * The remedy names what would provide it, a newer lemonfiber on that
+     * machine, and never a version number, because which release brought what
+     * is the stack's to say and not a table this app keeps.
+     */
+    case NotOnThisStack = 'not_on_this_stack';
+
+    /**
      * The key for what stood in the way.
      *
      * The value *is* the stem, so a case added here has a sentence by existing
@@ -316,6 +329,7 @@ enum KindOfObstacle: string
             self::AddressIsNotTheStacks => 'COMPANION-ADDRESS-NOT-THE-STACKS',
             self::VersionsDisagree => 'COMPANION-VERSIONS-DISAGREE',
             self::StackIsBusy => 'COMPANION-STACK-BUSY',
+            self::NotOnThisStack => 'COMPANION-NOT-ON-THIS-STACK',
         });
     }
 
@@ -346,7 +360,9 @@ enum KindOfObstacle: string
             self::HouseholdCouldNotBeRead,
             // Other work holding the stack is the stack working; the refusal
             // clears itself once that work is done.
-            self::StackIsBusy => Severity::Warning,
+            self::StackIsBusy,
+            // Nothing is broken: the stack works, and is older than this.
+            self::NotOnThisStack => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
             self::AddressIsNotTheStacks,
@@ -390,7 +406,10 @@ enum KindOfObstacle: string
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
             self::AddressIsNotTheStacks,
-            self::StackIsNotTheOnePaired => Standing::Actionable,
+            self::StackIsNotTheOnePaired,
+            // Updating the machine is a thing the app offers, on its updates
+            // screen, so the remedy is a road there.
+            self::NotOnThisStack => Standing::Actionable,
         };
     }
 }

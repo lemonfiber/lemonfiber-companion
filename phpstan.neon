@@ -158,6 +158,17 @@ parameters:
     exceptions:
         uncheckedExceptionClasses:
             - Native\Mobile\Edge\Exceptions\LockedPropertyException
+            # A frame that asked a stack what it serves is a frame whose one
+            # reading is spent, and the reading it was drawing for waits for
+            # the next. It crosses an adapter, a port and the screen that
+            # asked, on purpose, to the one place every screen is drawn,
+            # `WaitsAFrameForWhatTheStackServes`, which draws the waiting
+            # frame. Declared at every port between, it would be a line on
+            # every reading saying the same thing, and caught at any of them
+            # it would be held as the screen's answer, which is the one thing
+            # it must not be. `WaitsAFrameForWhatTheStackServesTest` is what
+            # holds the one catch to drawing that frame.
+            - Modules\Kernel\Api\TheReadingWaitsAFrame
 
     ergebnis:
         # `allRules` is where several documented rules actually live rather than

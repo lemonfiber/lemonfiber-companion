@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\RestoreField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -80,7 +81,7 @@ final readonly class Fillers implements ChoosingAFiller
      */
     private function asking(Stack $stack, Session $session, array $asked): WhatBecameOfTheFill
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -95,7 +96,7 @@ final readonly class Fillers implements ChoosingAFiller
             return WhatBecameOfTheFill::fill(Substitutions::fillIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refused($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SubstitutionIsUnreadable|FillSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SubstitutionIsUnreadable|FillSaysNothing $why) {
             return WhatBecameOfTheFill::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

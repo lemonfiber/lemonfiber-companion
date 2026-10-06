@@ -31,6 +31,7 @@ use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -58,7 +59,7 @@ final readonly class Bundlers implements AskingForHelp
 
     public function ask(Stack $stack, Session $session, ABundleAsked $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -70,7 +71,7 @@ final readonly class Bundlers implements AskingForHelp
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (Unreachable|ApiVersionMismatch|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -100,7 +101,7 @@ final readonly class Bundlers implements AskingForHelp
     public function fetch(Stack $stack, Session $session, AWrittenBundle $written): ABundleFetched
     {
         try {
-            $file = $this->clients->client($stack, $session)->bundle($written->name());
+            $file = GatedClient::of($this->clients, $stack, $session)->bundle($written->name());
 
             return ABundleFetched::as(ABundleFile::fetched($written, $file->bytes()));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -145,7 +146,7 @@ final readonly class Bundlers implements AskingForHelp
     private function outcome(Stack $stack, Session $session, Job $job): HowTheBundleIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheBundleIsGoing => HowTheBundleIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheBundleIsGoing
                     => HowTheBundleIsGoing::done(TheBundle::in($envelope)),

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
@@ -406,6 +407,27 @@ it('a field declared twice with different unions is refused', function (): void 
     $agreeing = "category: 'storage'|'network',\ncategory: 'storage'|'network',";
 
     expect(unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
+});
+
+it('every state a stack declares a capability in has a case', function (): void {
+    // Read from the capabilities envelope by name, and as the value of a map
+    // rather than a field: each path is a key, and the union is what any key
+    // may say. The reading below is `unionIn`'s, shaped for that one place.
+    preg_match_all(
+        "/\\bcapabilities: array<string, ((?:'[a-z_-]+'\\|)+'[a-z_-]+')>/",
+        theGeneratedEnvelope('CapabilitiesEnvelope'),
+        $found,
+    );
+    $union = [];
+
+    if (count(array_unique($found[1])) === 1) {
+        preg_match_all("/'([a-z_-]+)'/", $found[1][0], $literals);
+        $union = $literals[1];
+        sort($union);
+    }
+
+    expect($union)->not->toBe([], 'no capability state union was found in the generated envelope');
+    expect(valuesOf(Availability::cases()))->toBe($union);
 });
 
 it('every request standing the contract describes has a case', function (): void {
@@ -1092,6 +1114,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereAConnectionStands::class => 'state',
     HowSeriousAConnectionIs::class => 'severity',
     WhatGoingBackDoes::class => 'does',
+    Availability::class => 'capabilities',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

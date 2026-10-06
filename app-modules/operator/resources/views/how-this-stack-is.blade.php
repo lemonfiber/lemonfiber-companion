@@ -188,13 +188,13 @@
 
     {{-- Under the findings: somebody who has just fixed something scrolls to
          the end of what was wrong, and that is where they ask whether it took. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

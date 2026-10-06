@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Presenters\HowTheQualityReads;
 use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -62,6 +63,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class ChoosingHowGood extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

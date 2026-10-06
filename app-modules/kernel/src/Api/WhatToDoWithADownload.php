@@ -11,7 +11,7 @@ namespace Modules\Kernel\Api;
  * segment of its path, and a name spelled at the call site is this app able to
  * ask for any action a stack offers.
  */
-enum WhatToDoWithADownload: string
+enum WhatToDoWithADownload: string implements AnAction
 {
     /** Stop seeding it, or say what stopping would cost. */
     case StopSeeding = 'stop_seeding';

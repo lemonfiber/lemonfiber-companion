@@ -94,7 +94,7 @@ final readonly class Templates
             // and two rules answering for one fixture proves neither.
             Fixture::suite('F11', sprintf('%s/unclassified-component.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
-                    <native:activity-indicator />
+                    <native:spacer />
                 </native:column>
                 BLADE, 'every component in', 'unclassified-component'),
 

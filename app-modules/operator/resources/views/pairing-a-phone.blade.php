@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoAboutPairing')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -12,7 +13,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->going()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
             ask-again="make()"
         />
     @elseif ($this->going()->isWorking)
@@ -49,14 +50,14 @@
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.pairing.expired') }}</x-design::strong>
         </x-design::notice>
-        <x-design::action label="{{ __('stacks.pairing.make_a_new_one') }}" tap="make()" />
+        <x-operator::offered-action label="{{ __('stacks.pairing.make_a_new_one') }}" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either
              way the next thing to do is to ask for a code. --}}
         @if ($this->going()->refused !== '')
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
-        <x-design::action label="{{ __('stacks.pairing.make') }}" tap="make()" />
+        <x-operator::offered-action label="{{ __('stacks.pairing.make') }}" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
     @endif
 </x-operator::content>
 

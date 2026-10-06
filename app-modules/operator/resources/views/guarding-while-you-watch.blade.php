@@ -18,7 +18,7 @@
     <x-design::body>{{ __('stacks.guard.would_do') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_said_before') }}</x-operator::note>
 
-    <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-operator::offered-action label="{{ __('health.go_ahead') }}" tap="agree()" :offer="$this->offered($this->asking)" />
     <x-operator::quiet-action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @endif
 
@@ -54,11 +54,11 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->lastGuard()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @endif
 
 @if ($this->asking === null && ! $this->lastGuard()->wasAsked)
@@ -85,10 +85,10 @@
     @endforelse
 
     @if ($this->choosing()->canStart)
-        <x-operator::action label="{{ __('stacks.guard.start') }}" tap="wouldGuard()" />
+        <x-operator::offered-action label="{{ __('stacks.guard.start') }}" tap="wouldGuard()" :offer="$this->offered($this->theGuardNamed())" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else
@@ -97,7 +97,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

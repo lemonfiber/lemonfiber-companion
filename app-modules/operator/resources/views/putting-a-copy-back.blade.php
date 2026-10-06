@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoWithACopy')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -25,7 +26,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @elseif ($this->done()->isWorking)
         <x-design::standing
@@ -74,7 +75,7 @@
     @endif
 
     @if ($this->done()->refused === null)
-        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
     @endif
 @else
     {{-- A rehearsal, and said to be one before anything else: nothing below
@@ -119,8 +120,8 @@
 
     <x-design::note>{{ __('stacks.put_back.only_while_stopped') }}</x-design::note>
 
-    <x-design::action label="{{ __('stacks.put_back.put_it_back') }}" tap="agree()" />
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-operator::offered-action label="{{ __('stacks.put_back.put_it_back') }}" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::PutBack)" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 @endif
 </x-operator::content>
 @else
@@ -129,7 +130,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

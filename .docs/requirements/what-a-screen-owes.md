@@ -35,7 +35,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced, and a screen with a second reading takes it on the next frame through `ReadsAStackOnceAFrame`; `tests/Feature/EveryScreenTheRouterServesDrawsTest.php` draws three frames of every screen the router serves and counts what each read; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
+| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced, and a screen with a second reading takes it on the next frame through `ReadsAStackOnceAFrame`; asking a stack what it serves is a frame's one reading, and the screen draws `WaitsAFrameForWhatTheStackServes`'s frame and reads on the next (`WaitsAFrameForWhatTheStackServesTest`); `tests/Feature/EveryScreenTheRouterServesDrawsTest.php` draws four frames of every screen the router serves, each opened on a stack nothing is held for, counts what each read, and holds that a frame which asked asks for the next at once; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
 | `N1-R66` | Beyond that, only a declared cadence or an operator's act — never a value read, a key pressed, or a screen rebuilt | the screens that poll declare their `HowOftenAScreenLooks`, and poll only while something is settling |
 | `N1-R24` | A session lives no longer than the reach it was made for | opening a screen is a reach, and it carries when it was read |
 
@@ -95,8 +95,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 72 envelopes and this app follows 62.
-Of the rest, 9 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 72 envelopes and this app follows 63.
+Of the rest, 8 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 1 more — `Pull` — is named without being followed. `Admission` is
 followed through the SDK: signing in opens a door whose class reads that
 envelope itself, so no reader here opens it.

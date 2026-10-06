@@ -12,7 +12,7 @@ namespace Modules\Kernel\Api;
  * written is the one described: {@see written()} keeps every choice and
  * changes only that.
  */
-final readonly class ABundleAsked
+final readonly class ABundleAsked implements AnAction
 {
     private function __construct(
         private HowManyLines $lines,
@@ -34,6 +34,16 @@ final readonly class ABundleAsked
     }
 
     /**
+     * The action's name, for a caller that has to name it before there is one
+     * to ask for: what a stack says it serves is asked by name before a button
+     * is drawn.
+     */
+    public static function named(): string
+    {
+        return 'support';
+    }
+
+    /**
      * lemonfiber's name for the action, spelled once here.
      *
      * One action describes and writes, so there is nothing to choose between
@@ -42,7 +52,7 @@ final readonly class ABundleAsked
      */
     public function asked(): string
     {
-        return 'support';
+        return self::named();
     }
 
     /** How many log lines each service contributes. */

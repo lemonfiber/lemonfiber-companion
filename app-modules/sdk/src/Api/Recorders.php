@@ -15,6 +15,7 @@ use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasRecorded;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -42,7 +43,7 @@ final readonly class Recorders implements History
 
     public function recordedOn(Stack $stack, Session $session): WhatWasRecorded
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::HISTORY_ENDPOINT);
@@ -54,7 +55,7 @@ final readonly class Recorders implements History
             return WhatWasRecorded::record(Records::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasRecorded::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HistoryIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HistoryIsUnreadable $why) {
             return WhatWasRecorded::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

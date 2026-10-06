@@ -27,6 +27,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsCurrent;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhichUpdate;
 
@@ -43,7 +44,7 @@ final readonly class Upkeepers implements KeepingCurrent
 
     public function standing(Stack $stack, Session $session): WhatIsCurrent
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // Naming what this is about, because the endpoint serves two things
@@ -62,14 +63,14 @@ final readonly class Upkeepers implements KeepingCurrent
             return WhatIsCurrent::stands(Standings::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsCurrent::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
             return WhatIsCurrent::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function take(Stack $stack, Session $session, TakingAnUpdate $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // `confirm` and nothing else. Unconfirmed, the stack's `update`
@@ -87,7 +88,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -114,7 +115,7 @@ final readonly class Upkeepers implements KeepingCurrent
     private function outcome(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheUpdateIsGoing
                     => HowTheUpdateIsGoing::done(Standings::in($envelope)),

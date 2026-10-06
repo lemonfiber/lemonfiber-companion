@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\ConnectingADevice')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -9,7 +10,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->going()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
             ask-again="show()"
         />
     @elseif ($this->going()->isWorking)
@@ -82,7 +83,7 @@
         {{-- What there is to do next, as the stack named it: asking again is
              a tap here, and anything else is a screen of its own. --}}
         @if ($this->going()->handoff->asksAgain)
-            <x-design::action label="{{ __('health.ask_again') }}" tap="show()" />
+            <x-operator::offered-action label="{{ __('health.ask_again') }}" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
         @endif
         @if ($this->going()->handoff->invites)
             <x-design::link label="{{ __('stacks.handoff.invite_them') }}" :goes="$this->goes()->inviting($this->named())" />
@@ -99,7 +100,7 @@
         @if ($this->going()->refused !== '')
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
-        <x-design::action label="{{ __('stacks.handoff.show') }}" tap="show()" />
+        <x-operator::offered-action label="{{ __('stacks.handoff.show') }}" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
     @endif
 </x-operator::content>
 

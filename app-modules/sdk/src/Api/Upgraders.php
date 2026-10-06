@@ -21,6 +21,7 @@ use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -48,7 +49,7 @@ final readonly class Upgraders implements UpgradingTheLibrary
     /** The one call both methods make, the yes named at both call sites. */
     private function asking(Stack $stack, Session $session, bool $confirmed): WhatTheUpgradeCameTo
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -60,7 +61,7 @@ final readonly class Upgraders implements UpgradingTheLibrary
             return WhatTheUpgradeCameTo::said(WhatAnUpgradeComesTo::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheUpgradeCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
             return WhatTheUpgradeCameTo::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

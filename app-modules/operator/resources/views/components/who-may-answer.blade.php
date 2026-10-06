@@ -5,10 +5,11 @@
     @if ($loop->first)
         <x-design::note>{{ __('stacks.wiring.fills.choose') }}</x-design::note>
     @endif
-    <x-design::action
+    <x-operator::offered-action
         label="{{ $service }}"
         :answers-to="__('stacks.wiring.fills.choose_for', ['service' => $service, 'capability' => $capability, 'by' => $by])"
         tap="choose('{{ $capability }}', '{{ $service }}')"
+        :offer="$offer"
         tone="tonal"
     />
 @empty

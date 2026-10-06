@@ -42,7 +42,7 @@
         <x-design::section :label="__('stacks.keeps.copies')">
             <x-design::row :headline="__('stacks.keeps.reading_copies')" />
         </x-design::section>
-        <x-operator::the-next-frame />
+        <x-design::the-next-frame />
     @elseif ($this->copies()->went->cameBack())
         <x-design::section :label="__('stacks.keeps.copies')">
             @forelse ($this->copies()->names as $name)
@@ -87,13 +87,13 @@
 
     <x-design::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->to(AStacksScreen::Copy)" />
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

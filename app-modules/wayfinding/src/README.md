@@ -18,6 +18,8 @@ module and the capabilities, and the surfaces may reach it.
 | `Screens\FindsItsWayAroundAStack` | The trait an operator's screen about a stack uses. It carries the list of stacks and hands NativePHP the menu. The operator's own trait wraps it, and says whether a screen opens on top of another and how much is new. |
 | `Screens\ChoosesAStack` | The list of stacks as a sheet over the screen, listening to each stack while it is open. |
 | `Screens\DrawsItsTemplate` | The `render()` of a screen that hands its template nothing. The screen names the template in its `TEMPLATE` constant. |
+| `Screens\WaitsAFrameForWhatTheStackServes` | The frame every screen that asks a stack anything draws where asking the stack what it serves was the frame's one reading: the platform's indicator and the next frame at once. Its first frame is where it opens, and opening after a break asks every stack again. Both stack traits carry it. |
+| `Screens\AsksTheStackAgain` | The `askAgain()` the operator taps, which asks the stack again what it offers as well as reading again. |
 | `Screens\AsksAgain` | The `again()` of a screen whose answer is its `$answered`: letting go of the answer, so the next frame asks. |
 | `TheWayAround` | What a screen reads to find its way: the stack its route names, the stacks to choose from, where choosing one leads, where the app opens, and whose menu it draws. |
 | `WhoTheMenuIsFor` | Whose session this phone holds for the stack: nobody, a member, or the operator. |

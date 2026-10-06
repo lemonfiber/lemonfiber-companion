@@ -104,8 +104,8 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             ? self::theSessionEnded()
             : new self(
                 isSignedIn: true,
-                met: $why->said(),
-                remedy: $why->remedy(),
+                met: WhatAMemberIsTold::met($why),
+                remedy: WhatAMemberIsTold::remedy($why),
                 isOutOfReach: false,
                 hero: null,
                 rows: [],

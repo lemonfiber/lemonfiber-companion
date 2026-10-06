@@ -57,10 +57,10 @@
         @endif
     @endforelse
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 
     @if ($this->waitsForTheNextFrame())
         {{-- This frame read one stack, and another shown is still to be read. --}}
-        <x-operator::the-next-frame />
+        <x-design::the-next-frame />
     @endif
 </x-operator::content>

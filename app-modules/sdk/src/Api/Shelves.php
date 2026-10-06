@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
 
@@ -64,7 +65,7 @@ final readonly class Shelves implements Watching
      */
     private function read(Stack $stack, Session $session, array $query): WhatTheyMayWatch
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::HELD_ENDPOINT, $query);
@@ -76,7 +77,7 @@ final readonly class Shelves implements Watching
             return Holdings::in($envelope);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyMayWatch::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ShelfIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ShelfIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing $why) {
             return WhatTheyMayWatch::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

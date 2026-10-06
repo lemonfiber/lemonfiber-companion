@@ -62,6 +62,20 @@ const THE_DECISION = 'HowTheReadingWent::somethingStopped($why)';
 const THE_EFFECT = ['$this->letGoOfTheSession(', '$this->lettingGoIfRefused('];
 
 /**
+ * What resumes a session for a question no refusal can reach, each with why.
+ *
+ * Named one at a time, because the rule's own test of *uses it* is a token:
+ * an entry is a claim that what the session is handed reads a refusal as
+ * something other than an obstacle, and that the screen's own reading is what
+ * meets the refusal and lets go of the session.
+ *
+ * @var array<string, string> the file's name => why no refusal reaches it
+ */
+const WHAT_NO_REFUSAL_REACHES = [
+    'TheWayAround.php' => 'asks what the stack offers before a button is drawn, which reads a refused session as not knowing; the reading of the screen drawing the button is what meets the refusal and lets go of the session',
+];
+
+/**
  * Every source file in the app holding one of these, by what it holds.
  *
  * @return array{folds: list<string>, screens: list<string>}
@@ -87,7 +101,7 @@ function whatHandlesARefusal(): array
         // call for a stack to refuse and nothing to let go of. What matters is
         // a screen that takes the session out and uses it, which is the arm
         // that binds one.
-        if (str_contains($source, '->resume(') && str_contains($source, 'Session $session')) {
+        if (str_contains($source, '->resume(') && str_contains($source, 'Session $session') && ! array_key_exists(basename($path), WHAT_NO_REFUSAL_REACHES)) {
             $screens[] = $path;
         }
     }

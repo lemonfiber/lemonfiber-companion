@@ -8,12 +8,14 @@ use function expect;
 use function implode;
 use function it;
 
+use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 
 use function mb_strtolower;
 
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -95,6 +97,14 @@ it('asks the phone nothing about a reach that was answered', function (Throwable
 it('hands on the client pinned to the stack', function (): void {
     $clients = new ClientsThatAskTheDevice(new PinnedClients(), ADeviceOnANetwork::connected(), ALocalNetworkThat::letsItThrough(), new NotesKeptInMemory());
     $reaches = $clients->client(aStackOnTheShelf(), Session::of('a-session-not-a-secret'))->baseUrl();
+
+    expect($reaches->toString())->toBe('https://192.168.1.42:8443')
+        ->and($reaches->pin()?->toString())->toBe(str_repeat('d', Fingerprint::CHARACTERS));
+});
+
+it('hands on the client pinned to the stack towards a path, asking the stack nothing of it', function (): void {
+    $clients = new ClientsThatAskTheDevice(new PinnedClients(), ADeviceOnANetwork::connected(), ALocalNetworkThat::letsItThrough(), new NotesKeptInMemory());
+    $reaches = $clients->towards(aStackOnTheShelf(), Session::of('a-session-not-a-secret'), Ability::of(Api::STATUS_ENDPOINT))->baseUrl();
 
     expect($reaches->toString())->toBe('https://192.168.1.42:8443')
         ->and($reaches->pin()?->toString())->toBe(str_repeat('d', Fingerprint::CHARACTERS));

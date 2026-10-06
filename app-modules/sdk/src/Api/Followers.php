@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatWasFoundOfTheTrace;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -30,7 +31,7 @@ final readonly class Followers implements Tracing
 
     public function tracedOn(Stack $stack, Session $session, WhatToFollow $following): WhatWasFoundOfTheTrace
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::TRACE_ENDPOINT, [TraceField::Term->value => $following->term()]);
@@ -40,7 +41,7 @@ final readonly class Followers implements Tracing
             return WhatWasFoundOfTheTrace::found(Traces::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheTrace::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|TraceIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|TraceIsUnreadable $why) {
             return WhatWasFoundOfTheTrace::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

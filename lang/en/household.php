@@ -78,6 +78,8 @@ return [
     'nothing_owed_action' => 'The house has nothing to say about what you can ask for.',
     'ask_again' => 'Ask again',
     'ask_again_for_yours' => 'Ask again for what you asked for',
+    'needs_an_update' => 'The house needs an update for this.',
+    'needs_an_update_action' => 'Whoever looks after the house can update it.',
 
     // Searching, which this version of the app does not have yet.
     'search_is_coming' => 'Searching from your phone is coming.',

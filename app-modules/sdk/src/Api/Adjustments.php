@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -61,7 +62,7 @@ final readonly class Adjustments implements Adjusting
         WhatToSet $asked,
         bool $agreed,
     ): WhatTheStackMadeOfIt {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -81,7 +82,7 @@ final readonly class Adjustments implements Adjusting
             return WhatTheStackMadeOfIt::said(Dials::reviewIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheStackMadeOfIt::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
             return WhatTheStackMadeOfIt::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

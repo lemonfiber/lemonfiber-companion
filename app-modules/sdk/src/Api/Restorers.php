@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatTheRestoreRehearsalFound;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -66,7 +67,7 @@ final readonly class Restorers implements PuttingBack
 
     public function rehearse(Stack $stack, Session $session, ACopy $copy): WhatTheRestoreRehearsalFound
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -82,14 +83,14 @@ final readonly class Restorers implements PuttingBack
                 refused: WhatTheRestoreRehearsalFound::refused(...),
                 met: WhatTheRestoreRehearsalFound::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
             return WhatTheRestoreRehearsalFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function putBack(Stack $stack, Session $session, WhatPuttingItBackWouldDo $listed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -106,7 +107,7 @@ final readonly class Restorers implements PuttingBack
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -133,7 +134,7 @@ final readonly class Restorers implements PuttingBack
     private function outcome(Stack $stack, Session $session, Job $job): HowPuttingItBackIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPuttingItBackIsGoing
                     => HowPuttingItBackIsGoing::done(TheRestore::doneIn($envelope)),

@@ -83,15 +83,14 @@ final readonly class Capabilities
     }
 
     /**
-     * Whether a screen may offer this ability as an action on this stack.
+     * What a button for this ability says on this stack.
      *
-     * The question asked before an action is offered, answered in
-     * one place so no screen works it out from a version number — which the same
-     * requirement forbids by name.
+     * The question asked before an action is offered, answered in one place so
+     * no screen works it out from a version number, which is forbidden by name.
      */
-    public function offers(Ability $ability): bool
+    public function whetherItOffers(Ability $ability): WhetherItIsOffered
     {
-        return $this->forAbility($ability)->offersAnAction();
+        return $this->forAbility($ability)->offered();
     }
 
     /**

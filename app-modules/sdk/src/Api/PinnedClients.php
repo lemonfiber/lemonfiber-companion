@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -59,6 +60,18 @@ final readonly class PinnedClients implements Clients
             $stack->presents()->forComparingByEye(),
             HowLongACallWaits::ordinarily(),
         );
+    }
+
+    /**
+     * The same client, whatever the path: nothing here asks the stack what it
+     * serves. {@see ClientsThatAskWhatIsOffered} is what puts that question in
+     * front of every request the application sends.
+     *
+     * @throws void
+     */
+    public function towards(Stack $stack, Session $session, Ability $path): Client
+    {
+        return $this->client($stack, $session);
     }
 
     /** What the reach says by itself; {@see ClientsThatAskTheDevice} is what asks the device. */

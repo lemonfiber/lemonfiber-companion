@@ -27,6 +27,7 @@ use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -60,7 +61,7 @@ final readonly class Scouts implements MovingIn
 
     public function surveyedOn(Stack $stack, Session $session): WhatWasFoundAlreadyHere
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::MIGRATION_ENDPOINT);
@@ -70,7 +71,7 @@ final readonly class Scouts implements MovingIn
             return WhatWasFoundAlreadyHere::found(WhatIsAlreadyHere::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundAlreadyHere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable $why) {
             return WhatWasFoundAlreadyHere::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -78,14 +79,14 @@ final readonly class Scouts implements MovingIn
     public function wouldMoveIn(Stack $stack, Session $session, MovingInBy $by): WhatBecameOfTheMove
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action($by->asked()),
                 [UpdateField::Confirm->value => false],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheMove::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -93,14 +94,14 @@ final readonly class Scouts implements MovingIn
     public function moveIn(Stack $stack, Session $session, AMoveAgreed $agreed): WhatBecameOfTheMove
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action($agreed->by()->asked()),
                 $this->theYes($agreed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheMove::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -126,7 +127,7 @@ final readonly class Scouts implements MovingIn
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheMove
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheMove => WhatBecameOfTheMove::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheMove
                     => WhatBecameOfTheMove::answered(WhatMovingInCameTo::in($envelope)),
