@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What putting one change back does, in the stack's word for it.
  *
- * Six, and the contract closes the set, held to the wire by
+ * Eight, and the contract closes the set, held to the wire by
  * `EveryWireValueIsACaseTest`. A word this app has no case for is refused at
  * the reading rather than drawn as the nearest one, for
  * {@see HowFarItGoesBack}'s reason.
@@ -33,6 +33,12 @@ enum WhatGoingBackDoes: string
 
     /** One field of a service's own resource is put back. */
     case Reconfigure = 'reconfigure';
+
+    /** A key the change minted is revoked. */
+    case Revoke = 'revoke';
+
+    /** A key the change revoked is made good again. */
+    case Reinstate = 'reinstate';
 
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string

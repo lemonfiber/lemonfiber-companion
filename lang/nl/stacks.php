@@ -145,6 +145,8 @@ return [
             'withdraw' => 'Wat lemonfiber in het bestand schreef wordt eruit gehaald',
             'repin' => 'Teruggezet op de versie waarop het stond',
             'reconfigure' => 'De eigen instelling van de dienst wordt teruggezet',
+            'revoke' => 'De sleutel die het maakte wordt ingetrokken',
+            'reinstate' => 'De sleutel die het introk wordt weer geldig',
         ],
     ],
     'catalogue' => [

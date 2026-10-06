@@ -261,6 +261,10 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The version a run moved a service to, which a repin checks is still running. The stack carries no repin out: a run carried out reports it in `left` with why, which is read, and a rehearsal names it with `does`, which is drawn.',
     ],
     [
+        'path' => 'UndoEnvelope.reversed[].action.name',
+        'because' => 'The name of the key a revoke takes away or a reinstatement would make good again. `target` names what the change was against and `does` says a key is revoked or reinstated, and both are drawn; no requirement asks this app to name a key (`N1-R17`).',
+    ],
+    [
         'path' => 'UndoEnvelope.reversed[].action.previous',
         'because' => 'The version a repin would put back, for `UndoEnvelope.reversed[].action.current`\'s reason.',
     ],
