@@ -173,7 +173,7 @@ it('tapping a signed-in stack goes to the report, not back to the password', fun
         ->and(NativeRouter::resolve($screen->tappingGoesTo($shed)))->not->toBeNull();
 });
 
-it('tapping a stack a member is signed into goes to their reading', function (): void {
+it('tapping a stack a member is signed into goes to their Home', function (): void {
     // The launch half. Signing in already led where the subject said, but a
     // session outlives the app being closed, and a list that remembered only
     // *that* one was held handed a member the operator's machine report on
@@ -193,7 +193,7 @@ it('tapping a stack a member is signed into goes to their reading', function ():
 
     $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
 
-    expect($screen->tappingGoesTo($loft))->toBe(sprintf('/stacks/%s/yours', $loft->id()->stored()))
+    expect($screen->tappingGoesTo($loft))->toBe(sprintf('/stacks/%s/watch', $loft->id()->stored()))
         ->and(NativeRouter::resolve($screen->tappingGoesTo($loft)))->not->toBeNull(
             'A member tapping their machine lands on a URI the navigation stack does '
             . 'not know, so they would tap into nothing.',
