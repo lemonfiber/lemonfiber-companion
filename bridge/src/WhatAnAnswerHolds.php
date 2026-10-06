@@ -34,6 +34,9 @@ enum WhatAnAnswerHolds: string
     /** The notifications still to be shown. */
     case Pending = 'pending';
 
+    /** The addresses a name resolved to that the app may send to. */
+    case Addresses = 'addresses';
+
     /** The zone the phone's clock is set to. */
     case Zone = 'zone';
 
