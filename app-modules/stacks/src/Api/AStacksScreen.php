@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
@@ -128,6 +129,15 @@ enum AStacksScreen: string
      * a screen having to decide which the person meant.
      */
     case Shelf = '/stacks/{stack}/watch';
+
+    /**
+     * One title on the member's shelf, opened from the poster that shows it:
+     * its name, kind and year, and the action it carries.
+     *
+     * Under `watch` because it is reached from nowhere else: it details one
+     * thing Home shows, which is what the second segment names.
+     */
+    case Title = '/stacks/{stack}/watch/{service}';
 
     /** The member's Search tab, which says that searching from the phone is coming. */
     case Search = '/stacks/{stack}/search';
@@ -382,6 +392,22 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($word->said())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one title a member may watch on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: the identifier is
+     * the core's spelling, and this app does not decide which characters it
+     * holds.
+     */
+    public function forTheStacksTitle(StackId $stack, HoldingId $title): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->named())], $this->value);
     }
 
     /**

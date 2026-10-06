@@ -7,6 +7,7 @@ namespace Modules\Household\Internal;
 use function array_any;
 
 use Modules\Household\Internal\Screens\LookingForATitle;
+use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Household\Internal\Screens\YourCornerOfTheHouse;
@@ -30,7 +31,7 @@ final readonly class WhereTheTabsAreDrawn
     public static function owning(string $class): ?TheHouseholdsTabs
     {
         return match ($class) {
-            WhatYouCanWatch::class => TheHouseholdsTabs::Home,
+            WhatYouCanWatch::class, WhatThisTitleIs::class => TheHouseholdsTabs::Home,
             LookingForATitle::class => TheHouseholdsTabs::Search,
             WhatYouAreOwed::class => TheHouseholdsTabs::Requests,
             YourCornerOfTheHouse::class => TheHouseholdsTabs::Profile,

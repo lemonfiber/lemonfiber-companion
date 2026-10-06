@@ -67,6 +67,28 @@ final readonly class HowARequestStands
     }
 
     /**
+     * Whether what was asked for is here for the person who asked, in whole
+     * or in part.
+     *
+     * A standing nobody named is not: the app cannot say it arrived, for
+     * {@see wantsADecision()}'s reason.
+     */
+    public function isReadyForYou(): bool
+    {
+        $said = $this->said;
+
+        return $said instanceof Waiting && $said->isReadyForYou();
+    }
+
+    /** Whether what was asked for is still coming, and a standing nobody named is not, for the same reason. */
+    public function isOnItsWay(): bool
+    {
+        $said = $this->said;
+
+        return $said instanceof Waiting && $said->isOnItsWay();
+    }
+
+    /**
      * Whether the operator said no to this.
      *
      * Beside {@see wantsADecision()} and for its reason: a fact about the

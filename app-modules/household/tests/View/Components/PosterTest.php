@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Tests\View\Components;
 
+use function __;
 use function data_get;
 use function expect;
 use function it;
@@ -11,7 +12,10 @@ use function it;
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
-use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
+
+use function sprintf;
+
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -22,14 +26,14 @@ use function uses;
 uses(TestCase::class);
 
 /** A holding as the presenter hands it over. */
-function aPosterOf(string $titled, string $year = '1999', string $medium = 'household.medium.film'): WhatOneHoldingSays
+function aPosterOf(string $titled, string $year = '1999', string $medium = 'household.medium.film'): WhatOnePosterSays
 {
-    return new WhatOneHoldingSays(titled: $titled, medium: $medium, year: $year, lettered: HowAPosterIsLettered::for($titled));
+    return WhatOnePosterSays::ofATitle($titled, $medium, $year);
 }
 
 it('draws a raised 2:3 tile with its year and kind above its title, and nothing under it', function (): void {
-    $markup = '<x-household::poster :holding="$holding" />';
-    $data = ['holding' => aPosterOf('Alien')];
+    $markup = '<x-household::poster :poster="$poster" />';
+    $data = ['poster' => aPosterOf('Alien')];
     $tile = data_get(WhatMarkupDraws::drawn($markup, $data), 'children.0');
 
     expect(WhatMarkupDraws::outline($markup, $data))
@@ -44,19 +48,19 @@ it('draws a raised 2:3 tile with its year and kind above its title, and nothing 
 });
 
 it('is read as one element, its title, kind and year said once from its label', function (): void {
-    expect(data_get(WhatMarkupDraws::drawn('<x-household::poster :holding="$holding" />', ['holding' => aPosterOf('Alien')]), 'props.a11y_label'))
+    expect(data_get(WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien')]), 'props.a11y_label'))
         ->toBe('Alien, Film, 1999');
 });
 
 it('says nothing of a year the core could not give, on the tile or to a reader', function (): void {
-    $drawn = WhatMarkupDraws::drawn('<x-household::poster :holding="$holding" />', ['holding' => aPosterOf('Alien', year: '', medium: 'household.medium.series')]);
+    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien', year: '', medium: 'household.medium.series')]);
 
     expect(data_get($drawn, 'props.a11y_label'))->toBe('Alien, Series')
         ->and(data_get($drawn, 'children.0.children.0.props.text'))->toBe('Series');
 });
 
 it('letters each step at the brand\'s size it names, and lets it take that step\'s lines', function (string $titled, HowAPosterIsLettered $step): void {
-    $title = data_get(WhatMarkupDraws::drawn('<x-household::poster :holding="$holding" />', ['holding' => aPosterOf($titled)]), 'children.0.children.1.props');
+    $title = data_get(WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf($titled)]), 'children.0.children.1.props');
 
     expect(HowAPosterIsLettered::for($titled))->toBe($step)
         ->and(data_get($title, 'text'))->toBe($titled)
@@ -67,3 +71,24 @@ it('letters each step at the brand\'s size it names, and lets it take that step\
     'a sentence\'s length, at the middle step' => ['The Lord of the Rings: The Fellowship', HowAPosterIsLettered::Middle],
     'anything longer, small' => ['Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb', HowAPosterIsLettered::Small],
 ]);
+
+it('draws one of their requests with where it stands at the top, and says its name and standing', function (): void {
+    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => WhatOnePosterSays::ofARequest('Dune', 'household.asked.here')]);
+
+    expect(data_get($drawn, 'props.a11y_label'))->toBe(sprintf('Dune, %s', WhatMarkupDraws::words('household.asked.here')))
+        ->and(data_get($drawn, 'children.0.children.0.props.text'))->toBe(__('household.asked.here'))
+        ->and(data_get($drawn, 'on_press'))->toBeNull();
+});
+
+it('opens its title, handing over what it carries, where it has somewhere to go', function (): void {
+    $poster = WhatOnePosterSays::ofATitle('Alien', 'household.medium.film', '1979', '/titles/a1', ['titled' => 'Alien']);
+    $roads = WhatMarkupDraws::roads('<x-household::poster :poster="$poster" />', ['poster' => $poster]);
+
+    expect($roads)->toHaveCount(1)
+        ->and(data_get($roads, '0.uri'))->toBe('/titles/a1')
+        ->and(data_get($roads, '0.data'))->toBe(['titled' => 'Alien']);
+});
+
+it('opens nothing where it has nowhere to go', function (): void {
+    expect(WhatMarkupDraws::roads('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien')]))->toBe([]);
+});

@@ -2,10 +2,33 @@
 
 <x-operator::content>
 
+{{-- Home leads with what is theirs: what they asked for that has arrived, and
+     what is on its way, each row drawn only where it holds something. Where
+     those could not be asked for and the shelf answered, the space says so
+     rather than reading as nothing asked. --}}
+@if ($this->theirOwn()->cameBack)
+    @forelse ($this->theirOwn()->rows as $row)
+        <x-household::shelf-row :row="$row" />
+    @empty
+        {{-- Nothing of theirs is coming or here, which is said by drawing
+             nothing: a row with nothing in it is not drawn. --}}
+    @endforelse
+@elseif ($this->theirOwnWereStopped())
+    <x-design::notice tone="quiet">
+        <x-design::strong>{{ __($this->theirOwn()->met, $this->theirOwn()->filling()) }}</x-design::strong>
+        <x-design::body>{{ __($this->theirOwn()->remedy, $this->theirOwn()->filling()) }}</x-design::body>
+    </x-design::notice>
+    <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="again()" tone="tonal" />
+@endif
+
 @if ($this->answer()->cameBack())
-    {{-- The shelf as rows of posters: what came in most recently, then a row
-         for each kind it holds. A poster carries its title, its kind and its
-         year, and says all three to a screen reader at once. --}}
+    {{-- The house's own: the newest title across the screen, then the shelf
+         as rows of posters, what came in most recently and a row for each
+         kind it holds. A poster carries its title, its kind and its year, and
+         says all three to a screen reader at once. --}}
+    @if ($this->answer()->hasAHero())
+        <x-household::hero :poster="$this->answer()->hero" />
+    @endif
     @forelse ($this->answer()->rows as $row)
         <x-household::shelf-row :row="$row" />
     @empty

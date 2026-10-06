@@ -10,7 +10,12 @@ use Modules\Design\View\Prominence;
 
 use function view;
 
-/** A filled button, as tall as a thumb needs, drawn as loudly as its {@see Prominence} says. */
+/**
+ * A filled button, as tall as a thumb needs, drawn as loudly as its {@see Prominence} says.
+ *
+ * `carries` is what a button that goes somewhere hands the screen it opens,
+ * besides the route, as a link's does.
+ */
 final class Action extends Component
 {
     public readonly string $named;
@@ -24,6 +29,8 @@ final class Action extends Component
         public readonly bool $disabled = false,
         string $tone = 'primary',
         string $answersTo = '',
+        /** @var array<string, mixed> what the screen it opens is handed, besides the route */
+        public readonly array $carries = [],
     ) {
         $this->named = $answersTo === '' ? $label : $answersTo;
         $this->variant = Prominence::from($tone)->variant();

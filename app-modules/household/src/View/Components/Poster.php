@@ -7,66 +7,44 @@ namespace Modules\Household\View\Components;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-
-use function is_string;
-
-use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
+use Modules\Household\View\WhatAPosterIsFilledWith;
 
 use function view;
 
 /**
- * One title on a member's shelf, drawn as a poster: a raised 2:3 tile with
- * its year and kind at the top and its title lettered at the bottom.
+ * One title on a member's Home, drawn as a poster: a raised 2:3 tile with a
+ * line at the top — its year and kind, or where a request of theirs stands —
+ * and its name lettered at the bottom.
  *
- * The core hands the app no artwork, so the title is the picture, set at the
+ * The core hands the app no artwork, so the name is the picture, set at the
  * step its length allows. Nothing is written under the tile.
  *
- * **Read as one element.** A screen reader hears the title, its kind and its
- * year once, from the label, and not the words drawn on the tile a second
- * time: the year and kind at the top would otherwise come before the title,
- * and a title cut short on the tile would be cut short for the listener too.
+ * **Read as one element.** A screen reader hears the label once, and not the
+ * words drawn on the tile a second time: the line at the top would otherwise
+ * come before the name, and a name cut short on the tile would be cut short
+ * for the listener too.
  */
 final class Poster extends Component
 {
-    /** What the tile says for a dated holding: title, kind, year. */
-    private const string READS = 'household.poster.reads';
-
-    /** What the tile says for a holding the core could not date. */
-    private const string READS_UNDATED = 'household.poster.reads_undated';
-
-    /** The line at the top of a dated holding's tile. */
-    private const string ABOVE = 'household.poster.above';
-
-    /** The line at the top of an undated holding's tile. */
-    private const string ABOVE_UNDATED = 'household.poster.above_undated';
-
     /** What a screen reader says for the tile. */
     public readonly string $named;
 
-    /** The line at the top of the tile: the year and the kind, or the kind alone. */
+    /** The line at the top of the tile. */
     public readonly string $above;
 
-    /** How many lines the title may take before the rest is cut. */
+    /** How many lines the name may take before the rest is cut. */
     public readonly int $lines;
 
     public function __construct(
         Translator $catalogue,
-        public readonly WhatOneHoldingSays $holding,
+        public readonly WhatOnePosterSays $poster,
     ) {
-        $kind = $catalogue->get($holding->medium);
-        $filling = [
-            'title' => $holding->titled,
-            'kind' => is_string($kind) ? $kind : $holding->medium,
-            'year' => $holding->year,
-        ];
-        $isDated = $holding->year !== '';
+        $said = WhatAPosterIsFilledWith::by($catalogue, $poster);
 
-        $named = $catalogue->get($isDated ? self::READS : self::READS_UNDATED, $filling);
-        $above = $catalogue->get($isDated ? self::ABOVE : self::ABOVE_UNDATED, $filling);
-
-        $this->named = is_string($named) ? $named : $holding->titled;
-        $this->above = is_string($above) ? $above : $filling['kind'];
-        $this->lines = $holding->lettered->linesAtMost();
+        $this->named = $said->line($poster->reads, $poster->titled);
+        $this->above = $said->line($poster->above, '');
+        $this->lines = $poster->lettered->linesAtMost();
     }
 
     public function render(): View

@@ -182,7 +182,7 @@ final class WhatAMemberWouldSee extends NativeComponent implements DrawnAsAMembe
     {
         return $this->watching->theDefaultShelf($stack, $session)->either(
             told: static fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->these($shelf),
+                => new HowAShelfReads()->asAPreview($shelf),
             outOfReach: static fn(Sentences $said): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->outOfReach($said),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {

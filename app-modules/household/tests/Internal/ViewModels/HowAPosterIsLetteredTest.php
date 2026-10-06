@@ -57,3 +57,12 @@ it('lets a title take more lines the smaller it is lettered', function (): void 
         ->and(HowAPosterIsLettered::Middle->linesAtMost())->toBe(7)
         ->and(HowAPosterIsLettered::Small->linesAtMost())->toBe(8);
 });
+
+it('sets each step a size up on the hero, and lets it take fewer lines there the larger it is', function (): void {
+    expect(HowAPosterIsLettered::Large->setOnTheHero())->toBe(TypeSize::DisplayL)
+        ->and(HowAPosterIsLettered::Middle->setOnTheHero())->toBe(TypeSize::DisplayM)
+        ->and(HowAPosterIsLettered::Small->setOnTheHero())->toBe(TypeSize::Body)
+        ->and(HowAPosterIsLettered::Large->linesOnTheHero())->toBe(2)
+        ->and(HowAPosterIsLettered::Middle->linesOnTheHero())->toBe(4)
+        ->and(HowAPosterIsLettered::Small->linesOnTheHero())->toBe(6);
+});

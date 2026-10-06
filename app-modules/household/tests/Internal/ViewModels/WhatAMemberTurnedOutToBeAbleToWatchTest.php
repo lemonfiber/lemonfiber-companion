@@ -19,13 +19,13 @@ it('fills its obstacle sentences with the versions that disagreed', function ():
 });
 
 it('fills in nothing where nothing stood in the way', function (): void {
-    expect(WhatAMemberTurnedOutToBeAbleToWatch::these([])->filling())->toBe([]);
+    expect(WhatAMemberTurnedOutToBeAbleToWatch::these(null, [])->filling())->toBe([]);
 });
 
 it('is put right in the app\'s settings only where the local network was refused', function (): void {
     expect([
         WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->isPutRightInTheAppsSettings(),
         WhatAMemberTurnedOutToBeAbleToWatch::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
-        WhatAMemberTurnedOutToBeAbleToWatch::these([])->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToBeAbleToWatch::these(null, [])->isPutRightInTheAppsSettings(),
     ])->toBe([true, false, false]);
 });

@@ -33,3 +33,15 @@ it('draws a tonal action as the platform\'s second button, named for what it act
 it('refuses an action drawn at a prominence there is none of', function (): void {
     WhatMarkupDraws::drawn('<x-design::action label="Go" tap="go()" tone="loud" />');
 })->throws(ViewException::class, '"loud" is not a valid backing value for enum Modules\\Design\\View\\Prominence');
+
+it('hands the screen it opens what it carries, besides the route', function (): void {
+    $roads = WhatMarkupDraws::roads('<x-design::action label="More" goes="/more" :carries="[\'titled\' => \'Alien\']" />');
+
+    expect($roads)->toHaveCount(1)
+        ->and(data_get($roads, '0.uri'))->toBe('/more')
+        ->and(data_get($roads, '0.data'))->toBe(['titled' => 'Alien']);
+});
+
+it('carries nothing where it is given nothing to carry', function (): void {
+    expect(data_get(WhatMarkupDraws::roads('<x-design::action label="More" goes="/more" />'), '0.data'))->toBe([]);
+});

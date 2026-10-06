@@ -71,6 +71,20 @@ final readonly class WhereAScreenCanSendYou
     private const string AT_LAUNCH = '/';
 
     /**
+     * The roads a screen's presenter builds into what it hands its template,
+     * by the view that draws them, as the call that builds each.
+     *
+     * A poster's road is in its data, not in any template, so no reading of
+     * the markup finds it. Named here with the call the presenter makes, and
+     * resolved like any other: Home's posters and its hero's More open the
+     * title they show. The preview draws the same rows and opens nothing, so
+     * it is not here.
+     */
+    private const array ROADS_A_PRESENTER_BUILDS = [
+        'household::what-you-can-watch' => ['$this->goes()->title($holding->id())'],
+    ];
+
+    /**
      * @param array<string, string> $throughAType accessor => the case it answers with
      * @param array<string, string> $fromAScreen "class::accessor" => the case it answers with
      * @param array<string, string> $under case => the screen class the router serves
@@ -322,7 +336,7 @@ final readonly class WhereAScreenCanSendYou
         preg_match_all('/<x-(?:operator::(?:(?:quiet-)?action|port-row)|design::(?:action|link|row))\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
         $ways = [...$ways, ...$named[2]];
 
-        return [...$ways, ...$this->waysOffTheChromeOf($source)];
+        return [...$ways, ...(self::ROADS_A_PRESENTER_BUILDS[$view] ?? []), ...$this->waysOffTheChromeOf($source)];
     }
 
     /**

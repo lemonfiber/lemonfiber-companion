@@ -5,7 +5,7 @@ Profile, in a bottom bar, and no side menu.
 
 | Tab | Screen | What it draws |
 |---|---|---|
-| Home | `WhatYouCanWatch` | what they can watch, as rows of posters, which is where a member lands |
+| Home | `WhatYouCanWatch` | what is theirs, then the newest title and the shelf as rows of posters, which is where a member lands |
 | Search | `LookingForATitle` | that searching from the phone is coming, in household words |
 | Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
 | Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, and taking the house off the phone |
@@ -18,21 +18,38 @@ because how a house's machine stands is the operator's to read. The operator's
 screens are never built for a member's session: the composition root builds
 Home in their place.
 
-**Home is rows of posters.** `HowAShelfReads` turns the shelf the core
-answered into rows: *New in the house*, the first
-`HowAShelfReads::NEW_IN_THE_HOUSE` titles in the core's order, which is newest
-first, and then one row for each kind the shelf holds, in the order `Medium`
-declares the kinds. A kind the shelf holds none of has no row, and a row shows
-what the shelf read returned, with nothing leading on to a longer list. Each
-title is a `Poster`: a raised 2:3 tile with its year and kind at the top and
-its name lettered at the bottom, at the step `HowAPosterIsLettered` reads off
-the name's length, with nothing under the tile. A screen reader hears the
-title, its kind and its year once, from the tile's label. The core serves the
-app no artwork, so every title is drawn lettered.
+**Home leads with what is theirs.** `WhatYouCanWatch` asks for two things: the
+member's own requests and their shelf. `HowTheirOwnTitlesRead` turns the
+requests into *Ready for you*, what has arrived in whole or in part, and *On
+its way*, what is waiting for a yes, being fetched or partly here. Which
+standing belongs to which row is `Waiting`'s to say. A request is a poster
+with where it stands at the top, and it opens nothing, since a request names
+no title on the shelf. Where those could not be asked for and the shelf
+answered, Home says so in their place with Ask again.
+
+**Then the house's own.** The hero comes next: the shelf's first title, which
+is the newest in the house by the core's own order, lettered across a 16:9
+tile, with Play and More. Play is drawn and cannot be used, with the app's own
+sentence beside it, because the core hands the app no way to play a title.
+More opens the title's screen. A member with nothing of their own sees the hero
+first. After it, `HowAShelfReads` draws the shelf as rows: *New in the house*,
+the first `HowAShelfReads::NEW_IN_THE_HOUSE` titles in the core's order, and
+then one row for each kind the shelf holds, in the order `Medium` declares the
+kinds. A row with nothing in it is not drawn, and a row shows what the read
+returned, with nothing leading on to a longer list.
+
+**Every title is a lettered poster.** A `Poster` is a raised 2:3 tile with a
+line at the top and the name lettered at the bottom, at the step
+`HowAPosterIsLettered` reads off the name's length, with nothing under the
+tile. A screen reader hears its label once. The core serves the app no
+artwork, so every title is drawn lettered. A title's poster opens
+`WhatThisTitleIs`, handed the name, kind and year the shelf said, since the
+core answers no reading for one title: it draws the poster and Play, drawn and
+not usable, with its reason.
 
 **The operator previews the member's side here too.** `WhatAMemberWouldSee`,
-opened from *View as member* in the operator's menu, draws Home, in the same
-rows, and Requests as somebody invited with the household's defaults would see
+opened from *View as member* in the operator's menu, draws Home, with the hero
+and the same rows and none of anybody's own, opening nothing, and Requests as somebody invited with the household's defaults would see
 them, in the member's theme, from the core's answers for those defaults. They
 are read for nobody, so the preview names no member, and it asks for nothing:
 the control a member asks with is drawn and cannot be used. Its mark carries the

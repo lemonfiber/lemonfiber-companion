@@ -32,6 +32,9 @@ use Modules\Kernel\Api\Wanted;
  */
 final readonly class HowWhatAMemberAskedForReads
 {
+    /** What a request is said to stand at where the core named no standing. */
+    public const string UNNAMED = 'household.asked.unnamed';
+
     /** The stack answered, and this is what they have asked for. */
     public function these(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
     {
@@ -85,7 +88,7 @@ final readonly class HowWhatAMemberAskedForReads
             said: fn(Waiting $said): WhatOneOfTheirRequestsSays
                 => $this->told($wanted, $said->saidToTheMember()),
             unnamed: fn(): WhatOneOfTheirRequestsSays
-                => $this->told($wanted, 'household.asked.unnamed'),
+                => $this->told($wanted, self::UNNAMED),
         );
     }
 

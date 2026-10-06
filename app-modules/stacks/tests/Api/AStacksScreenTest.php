@@ -12,6 +12,7 @@ use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
@@ -77,6 +78,13 @@ it('puts one of lemonfiber\'s words where a service would go', function (): void
     ))->toBe(sprintf('/stacks/%s/words/ratio', A_MACHINE));
 });
 
+it('puts one title a member may watch where a service would go, encoded', function (): void {
+    expect(AStacksScreen::Title->forTheStacksTitle(
+        StackId::rememberedAs(A_MACHINE),
+        HoldingId::called('a1 b/2'),
+    ))->toBe(sprintf('/stacks/%s/watch/a1%%20b%%2F2', A_MACHINE));
+});
+
 it('leaves no placeholder in anything it hands out', function (): void {
     // The failure every one of these exists to prevent, asserted over the whole
     // enum rather than case by case: a path still carrying `{stack}` or
@@ -109,6 +117,10 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
     expect(fn(): string => AStacksScreen::Health->forTheStacksWord(
         StackId::rememberedAs(A_MACHINE),
         AWordInUse::named('ratio'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksTitle(
+        StackId::rememberedAs(A_MACHINE),
+        HoldingId::called('a1'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
     expect(fn(): string => AStacksScreen::Health->forTheStacksItem(
         StackId::rememberedAs(A_MACHINE),

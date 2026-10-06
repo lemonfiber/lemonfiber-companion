@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal;
 
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -28,5 +29,11 @@ final readonly class WhereTheHouseIs
     public function to(AStacksScreen $screen): string
     {
         return $screen->forTheStack($this->stack);
+    }
+
+    /** One title on this house's shelf, opened from what shows it. */
+    public function title(HoldingId $title): string
+    {
+        return AStacksScreen::Title->forTheStacksTitle($this->stack, $title);
     }
 }

@@ -293,7 +293,7 @@ it('a screen that asks nothing on open still offers the act that asks', function
  * list holds them to exactly that, so a screen named here that starts asking
  * its machine is caught rather than excused.
  */
-const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone', 'Search', 'Profile'];
+const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone', 'Search', 'Profile', 'Title'];
 
 /**
  * Screens among those whose only ways off are the tabs in the bar under them, and why.

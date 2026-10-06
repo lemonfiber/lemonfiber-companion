@@ -7,15 +7,17 @@ namespace Modules\Household\Internal\Presenters;
 use function array_key_exists;
 use function array_slice;
 
-use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
-use Modules\Household\Internal\ViewModels\WhatOneHoldingSays;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
+use Modules\Household\Internal\WhatATitleIsOpenedWith;
+use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Shelf;
+use Modules\Kernel\Api\StackId;
 
 /**
  * A member's shelf, flattened into the rows of posters a template draws.
@@ -42,31 +44,22 @@ final readonly class HowAShelfReads
     /** The key the first row is headed with. */
     private const string NEW_IN_THE_HOUSE_IS_HEADED = 'household.shelf.new';
 
-    /** The core answered, and this is what it says they may watch. */
-    public function these(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
+    /**
+     * The core answered, and this is what it says they may watch, each title
+     * opening its own screen on this machine.
+     */
+    public function these(Shelf $shelf, StackId $opensOn): WhatAMemberTurnedOutToBeAbleToWatch
     {
-        $posters = [];
-        $byKind = [];
+        return $this->drawn($shelf, $opensOn);
+    }
 
-        foreach ($shelf as $holding) {
-            $poster = $this->posterFor($holding);
-            $posters[] = $poster;
-            $byKind[$holding->medium()->value][] = $poster;
-        }
-
-        if ($posters === []) {
-            return WhatAMemberTurnedOutToBeAbleToWatch::these([]);
-        }
-
-        $rows = [new WhatAShelfRowSays(self::NEW_IN_THE_HOUSE_IS_HEADED, array_slice($posters, 0, self::NEW_IN_THE_HOUSE))];
-
-        foreach (Medium::cases() as $medium) {
-            if (array_key_exists($medium->value, $byKind)) {
-                $rows[] = new WhatAShelfRowSays($medium->shelvedUnder(), $byKind[$medium->value]);
-            }
-        }
-
-        return WhatAMemberTurnedOutToBeAbleToWatch::these($rows);
+    /**
+     * The core answered for the household's defaults, drawn as a member's Home
+     * is and opening nothing: a preview is looked at, not used.
+     */
+    public function asAPreview(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
+    {
+        return $this->drawn($shelf, null);
     }
 
     /** The core answered and the library was not its to hand over. */
@@ -99,28 +92,68 @@ final readonly class HowAShelfReads
         return WhatAMemberTurnedOutToBeAbleToWatch::theSessionEnded();
     }
 
-    /** One holding, as the poster it is drawn as. */
-    private function posterFor(Holding $holding): WhatOneHoldingSays
+    /**
+     * The hero and the rows, from one pass over the shelf.
+     *
+     * The hero is the shelf's first title, which is the newest in the house by
+     * the core's own order; nothing here weighs one title against another.
+     */
+    private function drawn(Shelf $shelf, ?StackId $opensOn): WhatAMemberTurnedOutToBeAbleToWatch
     {
-        $lettered = HowAPosterIsLettered::for($holding->titled());
+        $posters = [];
+        $byKind = [];
 
+        foreach ($shelf as $holding) {
+            $poster = $this->posterFor($holding, $opensOn);
+            $posters[] = $poster;
+            $byKind[$holding->medium()->value][] = $poster;
+        }
+
+        if ($posters === []) {
+            return WhatAMemberTurnedOutToBeAbleToWatch::these(null, []);
+        }
+
+        $rows = [new WhatAShelfRowSays(self::NEW_IN_THE_HOUSE_IS_HEADED, array_slice($posters, 0, self::NEW_IN_THE_HOUSE))];
+
+        foreach (Medium::cases() as $medium) {
+            if (array_key_exists($medium->value, $byKind)) {
+                $rows[] = new WhatAShelfRowSays($medium->shelvedUnder(), $byKind[$medium->value]);
+            }
+        }
+
+        return WhatAMemberTurnedOutToBeAbleToWatch::these($posters[0], $rows);
+    }
+
+    /** One holding, as the poster it is drawn as. */
+    private function posterFor(Holding $holding, ?StackId $opensOn): WhatOnePosterSays
+    {
         // Folded rather than tested, so the undated arm is one the type
         // insists on: a holding the core could not date is shown undated,
         // and a year invented here would be a fact about somebody's
         // library that nobody claimed.
         return $holding->year()->either(
-            dated: static fn(int $year): WhatOneHoldingSays => new WhatOneHoldingSays(
-                titled: $holding->titled(),
-                medium: $holding->medium()->saidOnTheScreen(),
-                year: (string) $year,
-                lettered: $lettered,
-            ),
-            unstated: static fn(): WhatOneHoldingSays => new WhatOneHoldingSays(
-                titled: $holding->titled(),
-                medium: $holding->medium()->saidOnTheScreen(),
-                year: '',
-                lettered: $lettered,
-            ),
+            dated: fn(int $year): WhatOnePosterSays => $this->dated($holding, (string) $year, $opensOn),
+            unstated: fn(): WhatOnePosterSays => $this->dated($holding, '', $opensOn),
+        );
+    }
+
+    /** The poster, once its year is said or known to be unsaid, opening its title where there is somewhere to open it on. */
+    private function dated(Holding $holding, string $year, ?StackId $opensOn): WhatOnePosterSays
+    {
+        if (! $opensOn instanceof StackId) {
+            return WhatOnePosterSays::ofATitle($holding->titled(), $holding->medium()->saidOnTheScreen(), $year);
+        }
+
+        return WhatOnePosterSays::ofATitle(
+            titled: $holding->titled(),
+            medium: $holding->medium()->saidOnTheScreen(),
+            year: $year,
+            goes: WhereTheHouseIs::of($opensOn)->title($holding->id()),
+            carries: [
+                WhatATitleIsOpenedWith::Titled->value => $holding->titled(),
+                WhatATitleIsOpenedWith::Medium->value => $holding->medium()->value,
+                WhatATitleIsOpenedWith::Year->value => $year,
+            ],
         );
     }
 }

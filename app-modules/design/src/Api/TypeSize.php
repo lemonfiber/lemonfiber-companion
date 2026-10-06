@@ -28,12 +28,15 @@ enum TypeSize: string
     /** A screen's lead line. */
     case DisplayM = 'displayM';
 
+    /** A title lettered across the width of the screen, where it stands in for its artwork. */
+    case DisplayL = 'displayL';
+
     /**
      * The brand's sizes in points, its token file's `size` block at a sixteen-point root.
      *
-     * Eyebrow 0.75rem, caption 0.8125rem, body 0.9375rem and displayM 1.6875rem.
+     * Eyebrow 0.75rem, caption 0.8125rem, body 0.9375rem, displayM 1.6875rem and displayL 2.375rem.
      */
-    private const array POINTS = ['eyebrow' => 12, 'caption' => 13, 'body' => 15, 'displayM' => 27];
+    private const array POINTS = ['eyebrow' => 12, 'caption' => 13, 'body' => 15, 'displayM' => 27, 'displayL' => 38];
 
     /** The size in points at the platform's default text size. */
     public function points(): int
