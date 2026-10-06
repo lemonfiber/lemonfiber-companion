@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What putting one change back does, in the stack's word for it.
  *
- * Eight, and the contract closes the set, held to the wire by
+ * Nine, and the contract closes the set, held to the wire by
  * `EveryWireValueIsACaseTest`. A word this app has no case for is refused at
  * the reading rather than drawn as the nearest one, for
  * {@see HowFarItGoesBack}'s reason.
@@ -27,6 +27,9 @@ enum WhatGoingBackDoes: string
 
     /** A region lemonfiber wrote into a file is taken back out. */
     case Withdraw = 'withdraw';
+
+    /** A file lemonfiber wrote over is written back to what it held before. */
+    case Rewind = 'rewind';
 
     /** A service is pinned back to the version it was standing on. */
     case Repin = 'repin';

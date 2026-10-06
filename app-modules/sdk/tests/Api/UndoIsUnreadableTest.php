@@ -25,8 +25,8 @@ it('names the list, the row and the field of a row it could not read', function 
 });
 
 it('names every kind of reversal it reads when refusing one it does not', function (): void {
-    expect(UndoIsUnreadable::does('rewind', 1)->getMessage())
-        ->toBe('Row 1 of `reversed` in the undo envelope says it does `rewind`, and this app reads `remove`, `restore`, `delete`, `withdraw`, `repin`, `reconfigure`, `revoke`, `reinstate`.');
+    expect(UndoIsUnreadable::does('teleport', 1)->getMessage())
+        ->toBe('Row 1 of `reversed` in the undo envelope says it does `teleport`, and this app reads `remove`, `restore`, `delete`, `withdraw`, `rewind`, `repin`, `reconfigure`, `revoke`, `reinstate`.');
 });
 
 /**
@@ -57,7 +57,7 @@ it('names the row the reader stopped at, counted from nought in the stack\'s ord
     expect(static fn(): ARunPutBack => TheRunPutBack::in(new Envelope(1, 'undo', aRunPutBackOfTwoRows($changed)['data'])))->toThrow(UndoIsUnreadable::class, $said);
 })->with([
     [['reversed' => [['target' => 'lemonfiber', 'action' => ['does' => 'delete', 'path' => '/srv']], ['target' => ' ', 'action' => ['does' => 'delete', 'path' => '/srv']]]], 'Row 1 of `reversed` in the undo envelope has no readable `target`'],
-    [['reversed' => [['target' => 'lemonfiber', 'action' => ['does' => 'delete', 'path' => '/srv']], ['target' => 'sonarr', 'action' => ['does' => 'rewind']]]], 'Row 1 of `reversed`'],
+    [['reversed' => [['target' => 'lemonfiber', 'action' => ['does' => 'delete', 'path' => '/srv']], ['target' => 'sonarr', 'action' => ['does' => 'teleport']]]], 'Row 1 of `reversed`'],
     [['left' => [['target' => 'sonarr', 'because' => 'it did not answer'], ['target' => 'radarr', 'because' => ' ']]], 'Row 1 of `left` in the undo envelope has no readable `because`'],
     [['noted' => [['target' => 'lemonfiber', 'because' => 'it moved'], ['target' => ' ', 'because' => 'it moved']]], 'Row 1 of `noted` in the undo envelope has no readable `target`'],
 ]);

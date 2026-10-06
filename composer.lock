@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "332924827be7d190def8d1280640ca8730a3c985"
+                "reference": "f3d669228531dc304e0638ca1b1682d7cecb80af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/332924827be7d190def8d1280640ca8730a3c985",
-                "reference": "332924827be7d190def8d1280640ca8730a3c985",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/f3d669228531dc304e0638ca1b1682d7cecb80af",
+                "reference": "f3d669228531dc304e0638ca1b1682d7cecb80af",
                 "shasum": ""
             },
             "require": {
@@ -3195,7 +3195,8 @@
                 ],
                 "contract:check": [
                     "@contract:generate",
-                    "git diff --exit-code -- src/Generated contract"
+                    "git diff --exit-code -- src/Generated contract",
+                    "test -z \"$(git status --porcelain --untracked-files=all -- src/Generated contract)\""
                 ],
                 "contract:generate": [
                     "@php scripts/contract-generate.php"
@@ -3251,7 +3252,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-06T18:43:11+00:00"
+            "time": "2026-10-06T21:07:59+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
