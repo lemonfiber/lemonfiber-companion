@@ -304,7 +304,9 @@ final readonly class WhereAScreenCanSendYou
         // instead of spelling them out — and a graph with no edges reports
         // every screen as unreachable rather than reporting nothing.
         //
-        // Both spellings of a control, because a road may be the quiet one.
+        // Both spellings of a control, because a road may be the quiet one,
+        // and a row of the operator's kit, which is a control where it goes
+        // somewhere.
         // What makes a control filled or quiet is whether it is the way
         // forward, and a walk reading only the loud ones would report the way
         // *past* a screen as no way at all.
@@ -317,7 +319,7 @@ final readonly class WhereAScreenCanSendYou
         // somewhere nobody can get to. `<` cannot appear inside a tag, so it is
         // the bound that means *this tag* rather than *up to the first angle
         // bracket, whatever it belongs to*.
-        preg_match_all('/<x-(?:operator::(?:quiet-)?action|design::(?:action|link|row))\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
+        preg_match_all('/<x-(?:operator::(?:(?:quiet-)?action|port-row)|design::(?:action|link|row))\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
         $ways = [...$ways, ...$named[2]];
 
         return [...$ways, ...$this->waysOffTheChromeOf($source)];
