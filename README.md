@@ -77,6 +77,9 @@ change here. [`.docs/decisions/`](.docs/decisions/) records why this codebase is
 shaped the way it is; decisions about the product live in the
 [spec](https://github.com/lemonfiber/spec).
 
+A change that touches only documentation runs `rules` and none of the other
+code gates: `scripts/the_code_a_change_touches.py` decides which paths are code.
+
 ## Licence
 
 [Hippocratic License 3.0](LICENSE).
