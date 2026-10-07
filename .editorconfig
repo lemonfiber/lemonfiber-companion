@@ -11,6 +11,10 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
+# A blank context line in a unified diff is a single space.
+[*.patch]
+trim_trailing_whitespace = false
+
 [*.{yml,yaml}]
 indent_size = 2
 

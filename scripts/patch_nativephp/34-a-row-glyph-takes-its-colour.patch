@@ -1,0 +1,26 @@
+A list row's leading glyph in the colour the row hands it. Android's row reads
+`leading_icon_color`; iOS's reads it nowhere and draws the glyph in the
+system's secondary grey, so without this a service's state is drawn in its
+severity on Android and in grey on iOS. The colour is read here, handed to the
+leading content, and painted above where one was given; a row handed none keeps
+the grey.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
+@@ -51 +51,2 @@
+         let leadingIconBgColor = p.getColor("leading_icon_bg_color", default: 0)
++        let leadingIconColor = p.getColor("leading_icon_color", default: 0)
+@@ -70,2 +71,3 @@
+                 iconBgColor: leadingIconBgColor,
++                iconColor: leadingIconColor,
+                 checked: leadingChecked,
+@@ -128 +130 @@
+-    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
++    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, iconColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
+@@ -244,5 +246,6 @@
+         case "icon":
+             Image(systemName: getIconForName(value))
+                 .frame(width: 24, height: 24)
+                 .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
++                .accessibilityHidden(true)
+         case "text":

@@ -1,0 +1,14 @@
+A list row that goes somewhere carries a count between its label and its
+chevron, as a tab carries its badge: what the menu counts beside What's new.
+The package has no word for it, so the row takes one, `badge`, which reaches
+each renderer as `badge`.
+
+--- a/vendor/nativephp/mobile-ui/src/Elements/ListItem.php
++++ b/vendor/nativephp/mobile-ui/src/Elements/ListItem.php
+@@ -107,3 +107,6 @@
+         if (isset($attrs['trailingText'])) {
+             $this->trailingText($attrs['trailingText']);
+         }
++        if (isset($attrs['badge'])) {
++            $this->listItemProps['badge'] = (string) $attrs['badge'];
++        }

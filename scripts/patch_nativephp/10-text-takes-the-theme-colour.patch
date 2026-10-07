@@ -1,0 +1,12 @@
+Text with no colour of its own is painted black, in dark mode too, where the
+ground is the theme's dark background. It takes the theme's text colour
+instead, which follows the mode.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
+@@ -8 +8,2 @@
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.toArgb
+@@ -66 +67 @@
+-        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", 0xFF000000.toInt())
++        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb())

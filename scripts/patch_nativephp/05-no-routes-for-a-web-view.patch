@@ -1,0 +1,15 @@
+The package registers two HTTP routes for pages it renders in a web view: `POST
+_native/api/events`, which builds whatever class the request names with
+whatever arguments it carries, and `POST _native/api/call`, which calls
+whatever bridge function it names. This application renders no web view, so
+neither is used, and each is a door: the first is object injection by design,
+and the second reaches every bridge function this plugin declares, the app
+lock's and the secure store's included. Anything that ever got a page into a
+web view here could walk through both. So the package registers neither.
+
+--- a/vendor/nativephp/mobile/src/NativeServiceProvider.php
++++ b/vendor/nativephp/mobile/src/NativeServiceProvider.php
+@@ -69,3 +69,2 @@
+             ->hasConfigFile('nativephp')
+-            ->hasRoute('api')
+             ->hasCommands([

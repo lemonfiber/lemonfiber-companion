@@ -1,0 +1,41 @@
+Every step of a build must be asked the same question about development
+dependencies.
+
+NativePHP assembles a bundle in three steps. Both platform lanes decide whether
+to install development dependencies from the build type — debug keeps them,
+release does not — and the dump that follows is not asked at all: it passes no
+flag, so it always keeps `autoload-dev`.
+
+That disagreement is a fatal on a release build. The install has dropped the
+development packages and the dump writes an authoritative classmap that expects
+them, so package discovery registers a provider the classmap was built without:
+
+    Class "…\Collision\Adapters\Laravel\CollisionServiceProvider" not found
+
+`PHPBridge` then reports an empty response, so the first frame never renders
+and the app returns to the launcher without saying anything. Every suite is
+green when that happens, because no suite builds a bundle.
+
+So the dump is asked the same question the install was, from the same variable,
+in the same method. A debug build keeps its development dependencies through
+all three steps and a release build drops them through all three — which is
+what lets a stand-in for a stack reach a handset while being absent from
+anything shipped.
+
+What the bundle removes is the other half of this, and it is not patched here.
+The cleanup drops `tests` at any depth, so an autoloader entry pointing into it
+is a file that is gone by the time anything reads it. Only `autoload-dev.files`
+is `require`d unconditionally at boot, so that is the entry this application
+must not have — see `Tests\Support\Rules`, which is a class for exactly that
+reason. A classmap entry naming a dropped file is inert until something
+autoloads it, and on a device nothing does.
+
+--- a/vendor/nativephp/mobile/src/Concerns/PreparesBuild.php
++++ b/vendor/nativephp/mobile/src/Concerns/PreparesBuild.php
+@@ -279,4 +279,4 @@
+-            $this->components->task('Optimizing autoloader', function () use ($tempDir) {
++            $this->components->task('Optimizing autoloader', function () use ($tempDir, $excludeDevDependencies) {
+                 $result = Process::path($tempDir)
+                     ->timeout(60)
+-                    ->run('composer dump-autoload --optimize --classmap-authoritative');
++                    ->run('composer dump-autoload --optimize --classmap-authoritative'.($excludeDevDependencies ? ' --no-dev' : ''));

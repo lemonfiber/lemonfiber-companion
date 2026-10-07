@@ -1,0 +1,12 @@
+The tab carries its name itself, so the glyph beside it says nothing: now that
+a glyph says its label through 22-a-glyph-says-its-label.patch, a tab's would
+be the same name read twice.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -380 +380 @@
+-                                        MaterialIcon(name = icon, contentDescription = label)
++                                        MaterialIcon(name = icon, contentDescription = null)
+@@ -383 +383 @@
+-                                    MaterialIcon(name = icon, contentDescription = label)
++                                    MaterialIcon(name = icon, contentDescription = null)

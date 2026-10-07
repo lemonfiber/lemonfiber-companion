@@ -1,0 +1,11 @@
+What a package patched by an earlier build carries where
+21-a-tab-carries-its-name.patch names a tab by its mark's sentence: the tab's
+label alone.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -341,3 +341,3 @@
+                         NavigationBarItem(
+-                            modifier = Modifier.semantics { contentDescription = label },
++                            modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
+                             selected = actualIdx == selection,

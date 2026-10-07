@@ -130,12 +130,12 @@ jobs:
             #
             # `typecheck` compiles every Swift file the bridge ships against
             # the locked `nativephp/mobile` as `scripts/patch_nativephp.php`
-            # patches it. `swift` lints, builds and tests the Swift package, and
-            # `kotlin` the Gradle project, whose ktlint reads the root
-            # `.editorconfig` as well as the bridge's own. `agreement` reads
-            # the two test trees.
+            # patches it with `scripts/patch_nativephp/`. `swift` lints, builds
+            # and tests the Swift package, and `kotlin` the Gradle project,
+            # whose ktlint reads the root `.editorconfig` as well as the
+            # bridge's own. `agreement` reads the two test trees.
             case "${path}" in
-            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) run[typecheck]=true ;;&
+            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php | scripts/patch_nativephp/*) run[typecheck]=true ;;&
             bridge/resources/ios/* | bridge/ios/* | bridge/Package.swift | bridge/.swift-format) run[swift]=true ;;&
             bridge/resources/android/* | bridge/android/* | bridge/.editorconfig | .editorconfig) run[kotlin]=true ;;&
             bridge/android/src/test/kotlin/* | bridge/ios/Tests/*) run[agreement]=true ;;&

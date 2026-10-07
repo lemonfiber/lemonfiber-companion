@@ -1,0 +1,13 @@
+A tab carries a mark a screen reader announces: its name and how many new items
+it holds, in a sentence of its own beside the count drawn in the badge. The
+package has no word for it, so the tab takes one, `badge-label`, which reaches
+each renderer as `badge_label`.
+
+--- a/vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php
++++ b/vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php
+@@ -49 +49,2 @@
+             'badge-color' => 'badgeColor',
++            'badge-label' => 'badgeLabel',
+@@ -59 +60 @@
+-        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor'] as $key) {
++        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor', 'badgeLabel'] as $key) {

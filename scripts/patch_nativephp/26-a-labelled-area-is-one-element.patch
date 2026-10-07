@@ -1,0 +1,19 @@
+A tappable area that was given a label is one element to a screen reader, as it
+is on iOS: its label is said, and the words drawn inside it are not said after
+it. A tappable area with something to press merges what it holds already; one
+with nothing to press, such as a poster, would otherwise be read as its label
+and then as each line on it.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt
+@@ -520,4 +520,10 @@
+ internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
+     val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
+     return if (merged.isEmpty()) this else semantics { contentDescription = merged }
+ }
++
++/** The label an area was given, said as the one element it and everything in it are. */
++internal fun Modifier.nuiSaidAsOne(label: String, hint: String): Modifier {
++    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
++    return if (merged.isEmpty()) this else semantics(mergeDescendants = true) { contentDescription = merged }
++}

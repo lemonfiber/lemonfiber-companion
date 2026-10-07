@@ -1,0 +1,19 @@
+A tappable area and a list row say the label the markup gave them. Both drop
+it: neither renderer reads `a11y_label`, so a reader is given the words drawn
+inside instead, and a row or a link whose words are the same on every card
+cannot say which one it opens. A tappable area says it as one element, through
+the helper 26-a-labelled-area-is-one-element.patch adds.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt
+@@ -113,3 +113,4 @@
+ object PressableRenderer {
+     @Composable
+-    fun Render(node: NativeUINode, modifier: Modifier) {
++    fun Render(node: NativeUINode, given: Modifier) {
++        val modifier = given.nuiSaidAsOne(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
+--- a/vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt
+@@ -123 +123 @@
+-            modifier = clickModifier,
++            modifier = clickModifier.nuiA11y(p.getString("a11y_label"), p.getString("a11y_hint")),

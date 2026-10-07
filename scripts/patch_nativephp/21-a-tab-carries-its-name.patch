@@ -1,0 +1,27 @@
+A tab carries its own name. The tab bar is laid out to the bottom edge and
+padded above the system navigation bar, and on a handset with three-button
+navigation the accessibility layer clips the window above where that padding
+ends. Each tab's label then falls outside the clip and is reported with no
+bounds at all, so the tab a screen reader focuses has no name of its own and
+nothing on it can be found by its label. The name goes on the tab, whose bounds
+start at the top of the bar, and the label beside the icon is left to the eye
+rather than said a second time.
+
+Where the tab carries a mark, the name it says is the mark's own sentence,
+which names the tab and how many new items it holds: the count drawn in the
+badge is a number to the eye and nothing a reader is told on its own.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -58 +58,4 @@
+ import androidx.compose.ui.platform.LocalLayoutDirection
++import androidx.compose.ui.semantics.clearAndSetSemantics
++import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.semantics
+@@ -341,2 +344,3 @@
+                         NavigationBarItem(
++                            modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
+                             selected = actualIdx == selection,
+@@ -382 +386 @@
+-                            label = { Text(label, fontFamily = chromeFontFamily) },
++                            label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },

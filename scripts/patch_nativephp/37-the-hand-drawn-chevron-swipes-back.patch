@@ -1,0 +1,42 @@
+A screen at the root of its own stack draws its back chevron by hand, and a
+screen without a stack is one: it opens from a screen in the tabs, which is
+another stack. Pushed levels get the edge swipe from `NavigationStack`; this
+gives the hand-drawn chevron the same swipe, ending in the same call the
+chevron makes.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift
+@@ -231 +231,2 @@
+             .modifier(HideNavBarModifier(hidden: hideNavBar))
++            .modifier(EdgeSwipeBackModifier(enabled: showBack && isRoot))
+@@ -426 +427,30 @@
++/// The edge swipe back, for a level that draws its back chevron by hand.
++///
++/// A drag that starts at the leading edge and travels mostly sideways goes
++/// back, as the chevron does. Simultaneous, so a list beneath it still scrolls.
++private struct EdgeSwipeBackModifier: ViewModifier {
++    let enabled: Bool
++
++    /// How near the leading edge a drag must start, in points.
++    private static let edge: CGFloat = 24
++    /// How far it must travel before it counts, in points.
++    private static let travel: CGFloat = 80
++
++    func body(content: Content) -> some View {
++        if enabled {
++            content.simultaneousGesture(
++                DragGesture(minimumDistance: 10, coordinateSpace: .global)
++                    .onEnded { drag in
++                        let sideways = drag.translation.width
++                        if drag.startLocation.x < Self.edge, sideways > Self.travel, abs(drag.translation.height) < sideways {
++                            NativeElementBridge.sendSystemBackEvent()
++                        }
++                    }
++            )
++        } else {
++            content
++        }
++    }
++}
++
+ private struct StackBarBackgroundModifier: ViewModifier {

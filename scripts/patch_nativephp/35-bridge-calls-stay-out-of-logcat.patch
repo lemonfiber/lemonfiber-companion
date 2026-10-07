@@ -1,0 +1,19 @@
+What a bridge call carries stays out of the device log. The bridge writes every
+call's parameters and result to logcat at INFO, in debug and release builds
+alike, and this app's storage calls carry the session token, the stack's
+address and its pinned fingerprint. Anything that can read the log reads them.
+The function's name is still logged; what it was handed and what it handed back
+are not.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp
+@@ -222,5 +222 @@
+-    if (parametersJSON) {
+-        LOGI("📦 BridgeJNI: Parameters JSON: %s", parametersJSON);
+-    } else {
+-        LOGI("📦 BridgeJNI: Parameters JSON: NULL");
+-    }
++    // What a call carries is not logged: this app's calls carry its session.
+@@ -281 +277 @@
+-    LOGI("📤 BridgeJNI: Result JSON: %s", resultStr);
++    // What a call returned is not logged, for the reason its parameters are not.

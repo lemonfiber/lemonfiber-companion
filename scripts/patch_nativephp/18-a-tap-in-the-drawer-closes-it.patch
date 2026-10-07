@@ -1,0 +1,10 @@
+A tap inside the panel is a choice made, so the panel closes. A drag is a
+scroll and leaves it open.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -252,2 +252,3 @@
+-        .background(theme.background)
++        .background(themes.resolve(for: colorScheme).background)
++        .simultaneousGesture(TapGesture().onEnded { animateClosed() })
+     }

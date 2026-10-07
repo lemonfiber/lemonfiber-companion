@@ -1,0 +1,30 @@
+The iOS half of 07-a-field-knows-what-it-sent.patch. A field compares what PHP
+answers only with the last value it sent, so typing faster than PHP answers
+lets an earlier answer land after a later keystroke was sent, and it replaces
+what the person typed. Measured on 2026-09-30 on an iPhone 12 mini: a pairing
+code typed at a few characters a second kept only its last character. Each
+field now remembers what it sent and PHP has not answered, as the Android
+fields do, and only a value it never sent replaces the text.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift
+@@ -43 +43,5 @@
+     @State private var lastSentValue: String = ""
++    /// What this field sent that PHP has not answered yet, oldest first. PHP
++    /// answers in the order it was asked, so a server value matching one of
++    /// these answers it, and everything sent before it.
++    @State private var inFlight: [String] = []
+@@ -240,3 +244,8 @@
++            if let answered = inFlight.firstIndex(of: newServerValue) {
++                inFlight.removeFirst(answered + 1)
++                return
++            }
+             if newServerValue != lastSentValue {
+                 text = newServerValue
+                 lastSentValue = newServerValue
++                inFlight.removeAll()
+@@ -410,2 +419,4 @@
+     private func commit(_ value: String, onChangeCb: Int) {
+         lastSentValue = value
++        inFlight.append(value)
++        if inFlight.count > 64 { inFlight.removeFirst() }

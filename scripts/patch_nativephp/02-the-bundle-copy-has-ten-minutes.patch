@@ -1,0 +1,12 @@
+A bundle carrying development dependencies is a bigger bundle, and the copy
+that assembles it passes no timeout of its own — so it takes Laravel's default
+sixty seconds, which a debug build exceeds. Sixty seconds is a budget rather
+than a correctness property, and what it produces when it runs out is an rsync
+killed halfway: a partial tree, a build that fails somewhere later, and nothing
+saying the copy is what ended.
+
+--- a/vendor/nativephp/mobile/src/Support/BundleFileManager.php
++++ b/vendor/nativephp/mobile/src/Support/BundleFileManager.php
+@@ -80 +80 @@
+-        $result = Process::run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
++        $result = Process::timeout(600)->run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
