@@ -6,13 +6,14 @@ far it reached. The code is `TakingSomebodyOut`, reached from each member on
 the `Removals` reader. Taking lemonfiber off a machine is the other half of
 `N13`, and is not kept here.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
 ## What is answered
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N13-R1` | How far a revocation reached is shown as *everywhere*, *media-server-only* or *nothing*, never flattened into *removed* | `Removals` reads `revoked` into `HowFarTheRemovalReached`, a case for each of the three, and a word it has no case for is refused rather than read as the nearest one. Each is drawn in a sentence of its own, on the reading and on the removal alike |
 | `N13-R2` | A revocation that reached only the media server is never rendered as complete | `HowFarTheRemovalReached::isDone()` is true for *everywhere* alone, and only that is drawn as done. *Media-server-only* says they can neither watch nor ask, that the request service still holds an account for them, and that it is not finished; the screen offers reading the cost again, since the next removal takes that account |

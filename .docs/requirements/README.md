@@ -1,9 +1,11 @@
-# What this app is required to do, and where each requirement is kept
+# What this app is required to do, and why it answers each requirement as it does
 
 Every requirement lemonfiber's companion answers is written down in the
-[spec](https://github.com/lemonfiber/spec). This directory is the layer between
-that and the code: a page per subject, naming the requirements it covers, what
-each one asks, and the file or rule in this repository that keeps it.
+[spec](https://github.com/lemonfiber/spec). Whether this repository keeps one,
+and the code and the test that keep it, is its row in [`status.toml`](../../status.toml),
+which the specification's checks read and the release gate counts. This directory
+is the prose beside that: a page per subject, naming the requirements it covers,
+what each one asks, and why it is answered the way it is.
 
 ## Why it exists rather than a comment beside the code
 
@@ -18,21 +20,21 @@ is that provenance is not documentation. An identifier in a comment gestures at
 a page rather than saying anything, and it rots the moment that page is
 superseded — silently, because nothing reads a comment. The prose that explains
 *why* a thing is the way it is stays exactly where it was. What moves is the
-number, to a page that can be revised, that a link can reach, and that a gate
-can check.
+number, to the tracker row a gate checks and to a page that can be revised and
+that a link can reach.
 
 ## What a page here owes
 
-Both halves, or the move costs something real:
-
 - **what the requirement asks**, in one sentence, so a reader need not open the
   spec to know whether it is the one they want; and
-- **what keeps it here** — the class, the rule, the test — so the requirement is
-  findable from the code and the code from the requirement.
+- **why it is answered the way it is**, where that is not plain from the code,
+  naming the code it explains.
 
-A page naming only the first is a second copy of the spec that will drift from
-it. A page naming only the second is an index, and an index is what the reader
-already has.
+Whether a requirement is kept, and where, is not written here. It is the
+requirement's row in `status.toml`: its state, and the paths of the code and the
+test that keep it, each of which the specification's `status_check.py` finds or
+refuses. A page that said it as well would be a second record of the same fact,
+and the two would drift.
 
 ## This directory is not the spec, and answers no question about it
 

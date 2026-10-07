@@ -5,11 +5,12 @@ come to before anybody starts it. The code is the `N18` half of
 `app-modules/kernel` and `app-modules/sdk`, drawn by `WhatThisStackRuns` and
 `WhatToDoWithThis`.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N18-R1` | What is running is shown as the forms asked for and the services they expand to, and no service without what brought it | `WhatThisStackRuns` draws the forms running, off `active_forms`, above the services, and each service with every form it runs for, off its `forms`. A service no running form asked for says so |
 | `N18-R3` | A service filtered out of a form is shown as filtered with its reason, never omitted or drawn as failed | The services in `filtered` are drawn under their own heading, each with what it would need and the forms that asked for it, and are left out of the service rows, where the stack also lists them as absent |
@@ -18,7 +19,7 @@ requirement is right and this page is a defect.
 | `N18-R6` | A service several running forms include is shown once, naming every form that asked for it | Each service is one row, and its line names every form in its `forms` |
 | `N18-R7` | The app holds no copy of the forms or what they contain | The forms, what brought each service, what was left out and the rehearsal are all the stack's answers. Nothing in this repository names a form |
 | `N18-R8` | The app never starts or stops a form of its own accord | A form starts or stops only on a verb the operator taps on `WhatToDoWithThis`. No screen holds a clock or a threshold that sends one |
-| `N18-R9` | Forms that could not be read are told apart from there being none | A forms reading that could not be read is an obstacle, drawn as one; a stack that declares no forms has its own sentence (`SupervisingContractTest`) |
+| `N18-R9` | Forms that could not be read are told apart from there being none | A forms reading that could not be read is an obstacle, drawn as one; a stack that declares no forms has its own sentence |
 | `N18-R10` | Before a form is started, a service it holds that is already running is shown as already running, never as one the start would bring up | `Rehearsals` reads the preview's `running`, and the rehearsal draws each service it names as already running in place of the line saying it would start. Where the stack could not read what is running, one sentence says so above a list that still says what would start |
 
 ## Asked for, and not drawn yet

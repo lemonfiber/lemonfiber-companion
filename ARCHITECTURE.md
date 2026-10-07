@@ -859,10 +859,12 @@ argument is the same one K1 makes about recollections: an identifier gestures at
 a page rather than saying anything, and it rots the moment that page is
 superseded, silently, because nothing reads a comment.
 
-So the sentence stays and the number moves, to a page under
-[`.docs/requirements/`](.docs/requirements/README.md) that says what the
-requirement asks and what in this repository keeps it. A citation belongs in a
-commit trailer and a pull request body, which is where the gate reads it.
+So the sentence stays and the number moves: to the requirement's row in
+[`status.toml`](status.toml), which says whether it is kept and names the code
+and the test that keep it, and to a page under
+[`.docs/requirements/`](.docs/requirements/README.md) that says what it asks and
+why it is answered the way it is. A citation belongs in a commit trailer and a
+pull request body, which is where the gate reads it.
 
 This repository holds none. `NoRequirementIdInACommentTest` is what keeps it
 that way, and it is a flat refusal rather than a ratchet: a floor that has
@@ -889,7 +891,7 @@ but gesturing (G13). A native source may not name a requirement anywhere.
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 | G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
 | G12 | A suite standing a payload in for a stack reads it against the contract | arch: over the suites that write a wire body |
-| G13 | No test's title names a requirement: the requirement's row under `.docs/requirements/` names the test file instead | arch: `NoRequirementIdInACommentTest`, over every `it`, `test`, `arch` and `describe` title in the PHP test trees, as it already reads every Kotlin and Swift test |
+| G13 | No test's title names a requirement: the requirement's row in `status.toml` names the test file instead | arch: `NoRequirementIdInACommentTest`, over every `it`, `test`, `arch` and `describe` title in the PHP test trees, as it already reads every Kotlin and Swift test |
 | G14 | No test's title names a rule: an architecture test carries its rule's identifier in a comment directly above it, which is where `TheRulesAreRealTest` reads it | arch: `NoRuleIdInATestTitleTest`, over every `it`, `test` and `arch` title in the PHP test trees |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its

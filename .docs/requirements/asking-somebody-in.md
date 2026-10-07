@@ -9,13 +9,14 @@ before it is sent (`N9-R5`, `N9-R6`) are kept on [who gets in](who-gets-in.md),
 and taking a member out, which each member here offers, on
 [taking somebody out](taking-somebody-out.md).
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
 ## What is answered
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N21-R1` | Inviting is offered, with libraries, an age limit and what happens to unrated material chosen in the stack's terms, and nothing in the media server's own terms | The screen asks for a name, libraries by the names the stack uses, an age in years, and whether unrated material is held back, let through or left to the stack. `WhatTheInvitationIsAskedWith` makes those into an `AnInvitationAskedFor`, and `WhatAnInvitationAsksWith` sends them as the `invite` action's `name`, `libraries`, `age_limit` and `unrated`, an age or a word about unrated material only where one was said. What the stack wrote comes back as `applied` and is drawn as it wrote it |
 | `N21-R2` | The invitation is handed over as the address the stack gave, as text and as a code another device can scan, and no address is built or altered here | `AnInvitationToHand` holds the stack's `address` in an `AnAddressToHand`, which is never built here. The screen draws that text, and `QrCodes` draws the same text as a code, which the design module's `x-design::scannable` draws as squares of `bg-theme-on-accent` on `bg-theme-accent`, the two tokens that hold in light and dark alike. `QrCodesTest` holds the code to exactly the encoder's squares of the address, and to none of its caution, and `ScannableTest` holds the element to those squares and to words rather than an empty square where there is no code |

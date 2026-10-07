@@ -6,11 +6,12 @@ the device's own sharing. The code is the `N22` half of `app-modules/kernel` and
 `app-modules/sdk`, drawn by `AskingForHelpHere` and handed to the sheet by
 `app-modules/device` and the bridge.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N22-R1` | Producing a bundle is offered, with the log window, whether media filenames are shown and which settings are revealed chosen before it is written | `AskingForHelpHere`, reached from `HowThisStackIs`, with the choices in `ChoosesWhatABundleHolds`: three log windows, filenames replaced unless the operator shows them, and the settings to reveal. `ABundleAsked` carries all three, and `Bundlers` sends each as the `support` action's `logs`, `filenames` and `reveal` |
 | `N22-R2` | Before a bundle is written, what it would hold, how large it would be and where it would go are shown as the stack described them, and writing is agreed to separately | The screen opens by describing the careful bundle, and `AskingForHelpHere::describe()` describes the one chosen: both send `ABundleAsked::described()`, which asks for nothing to be written. The description is drawn with its size, where it would go and every file. `AskingForHelpHere::write()` is the only call sending `write`, it does nothing unless a description is what the stack last answered with, and it sends `ABundleAsked::written()`, which keeps every choice that was described |

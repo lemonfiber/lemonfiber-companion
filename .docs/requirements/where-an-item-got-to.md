@@ -8,11 +8,12 @@ The code is the trace half of `N8` in `app-modules/kernel` and
 item on `WhatStoppedComingIn`. A guard on the data location that has stopped
 is drawn by `GuardingWhileYouWatch`, reached from `WhatKeepsRunningHere`.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N8-R4` | A trace carries its confidence, and an uncertain one is not drawn as certain | `HowSureTheTraceIs` is required on every followed trace, and the screen draws it first, an uncertain one in emphasis saying it may not be the item meant |
 | `N8-R5` | Where the contract carries what is outstanding episode by episode, the gaps are shown rather than a completion figure alone | `HowMuchOfItIsHere` counts a series by `HowMuchOfASeasonIsHere`, each holding its outstanding episodes with the stage each rests at. The screen draws every season and every outstanding episode |

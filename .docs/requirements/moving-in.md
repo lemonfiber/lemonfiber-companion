@@ -9,11 +9,12 @@ asks about a mode, and agrees to it, from the modes list.
 run wires to each other, and starts a run and follows it to how each
 connection turned out.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N7-R11` | The survey is offered, every project and service it found is shown with whether each runs and could be taken over before any mode, and a survey that could not look is told apart from one that found nothing | `HowThisStackIs` offers the survey. `AProjectStanding` carries each project and `AServiceStanding` each service, with its ports, whether it runs and whether it could be adopted. The screen draws them all before the modes. `TheSurvey` carries whether the engine looked, and the screen says it could not look rather than that the machine is empty |
 | `N7-R12` | The modes are offered in the stack's order, each with what it comes to and whether it disturbs what is running, and nothing is preselected that the stack did not preselect, replacement least of all | `TheModes` keeps the stack's order and `AMode` carries each mode's word, what it comes to and whether it disturbs. `AMode::isPreselected()` is true only where the stack preselected a mode and it disturbs nothing, so a mode that stops what is running is never drawn as chosen |

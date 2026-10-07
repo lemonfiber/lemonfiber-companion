@@ -6,11 +6,12 @@ upgrading what is already in the library as its own act. The code is the
 choosing half of `N24` in `app-modules/kernel` and `app-modules/sdk`, drawn by
 `ChoosingHowGood` and reached from the home screen of a stack.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N24-R1` | Choosing a preset is offered for everything and for one kind of media, in the stack's plain terms | `ChoosingQuality::choose()` takes an `APresetToChoose`: a preset and a kind as the operator named them, no kind being everything. `Graders` sends `quality-set` with the preset, the kind only where one was named, and no yes. Every preset in force is drawn in the stack's words, the overall one first, with what an hour of it costs |
 | `N24-R2` | Media with no resolution is offered in the stack's terms for it, and never as a resolution | Music is `AFormatInForce`, its own type with a format, what it means, what it aims for and what an hour costs, and no resolution. It is drawn under its own heading, never among the presets; a choice for music is answered with the `music` envelope, read by `WhatMusicCameTo` with what its service made of it |

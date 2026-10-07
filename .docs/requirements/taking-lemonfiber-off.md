@@ -9,13 +9,14 @@ read once chosen. The code is
 reader. Taking somebody out of the household is the other half of `N13`, and
 is not kept here.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
 ## What is answered
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N13-R4` | An uninstall states whether its account of what would be removed is complete, and names what could not be read | `Uninstalls` reads `confidence` into `HowMuchWasRead`, whether it is complete as the stack said it and each sentence of what could not be read in the words of whatever refused. The screen says which it is straight after the removal's name, before what it removes, and lists what could not be read beneath it |
 | `N13-R5` | An incomplete account is never presented as a complete one | An incomplete reading is drawn with a sentence of its own, emphasised, that says there is more on the machine than is listed. What goes is said as what *could be read* of it, and a line whose size could not be read says so rather than counting as nothing |

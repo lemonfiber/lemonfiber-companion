@@ -18,10 +18,10 @@ use Tests\Support\Tree;
 // been the name of anything here. The move is only an improvement while
 // something reads the page, which is what this is.
 //
-// It reads the *what keeps it* column and nothing else. The first column is a
+// It reads the *why* column and nothing else. The first column is a
 // requirement and the gate resolves those against the spec; the second is a
-// sentence, and a sentence is not checkable. The third is a promise about this
-// repository, and this repository is right here.
+// sentence, and a sentence is not checkable. The third explains this repository
+// by naming its code, and this repository is right here.
 
 /**
  * Every page in the requirements layer, less the index.
@@ -46,10 +46,10 @@ function everyRequirementsPage(): array
 }
 
 /**
- * The names one page promises keep its requirements.
+ * The names one page gives for why its requirements are answered as they are.
  *
- * A row is `| requirement | what it asks | what keeps it |`, so the third cell
- * is the one that makes a claim about this tree. Rows are recognised by opening
+ * A row is `| requirement | what it asks | why |`, so the third cell is the one
+ * that names something in this tree. Rows are recognised by opening
  * with a backticked identifier, which is what every requirement row does and
  * what a header row and a separator do not.
  *
@@ -191,12 +191,10 @@ it('every page names something this repository has', function (): void {
     sort($missing);
 
     expect($missing)->toBe([], sprintf(
-        "These pages promise something this repository does not have:\n  %s\n\n"
-        . 'The *what keeps it* column is what makes the requirements layer worth more than a '
-        . 'second copy of the spec: it is how a reader gets from a requirement to the code and '
-        . 'back. A name nothing answers to sends them nowhere, and does it silently — which is '
-        . 'the whole of what taking these numbers out of code comments was meant to end '
-        . "(GOV-R6).",
+        "These pages name something this repository does not have:\n  %s\n\n"
+        . 'The *why* column explains a requirement by the code that answers it. A name nothing '
+        . 'answers to sends the reader nowhere, and does it silently — which is the whole of '
+        . 'what taking these numbers out of code comments was meant to end (GOV-R6).',
         implode("\n  ", $missing),
     ));
 });

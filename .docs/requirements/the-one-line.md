@@ -11,18 +11,19 @@ carries onto every operator's screen about a stack, `HearsHowTheStackIs` on
 `HowThisStackIs` and `HearsHowEachStackIs` on `YourStacks` in
 `app-modules/operator`.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
 ## What the line says
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `G7-R1` | A single-line health summary is available on every surface | The first thing `HowThisStackIs` draws, above the findings, and the line under each stack's name on `YourStacks` |
 | `G7-R8` | The summary is identical across surfaces, from one computation | `Summaries` reads the `health` of the `dashboard` envelope and nothing else, and no class here computes a word, a count or a worst thing. The list says the word `HowThisStackIs` last heard, kept in `Standings`, and `HowTheOneLineReads` renders it on both screens in the same sentences |
 | `G7-R5` | Where health cannot be determined, the summary reads unknown and never healthy | `HowItStands::Unknown` has its own sentence. A summary that is no longer current is drawn as unknown whatever it said, and a stream that could not be heard before it said anything is drawn as unknown with what stopped it. On the list, a stack never heard reads unknown, and so does a kept word older than `WhatWasHeardSoFar::isStillCurrent()` allows |
-| `G7-R7` | The summary expands to the affected items and their remedies | Wherever the core counted something, the health screen draws the count as a figure under *Needs you* and every affected item under it on its severity's ground, with its severity, what is wrong, what it costs, what to try and what else is wrong because of it; a healthy line draws none of it (`HearingHowAStackIsTest`) |
+| `G7-R7` | The summary expands to the affected items and their remedies | Wherever the core counted something, the health screen draws the count as a figure under *Needs you* and every affected item under it on its severity's ground, with its severity, what is wrong, what it costs, what to try and what else is wrong because of it; a healthy line draws none of it |
 | `G7-R9` | A deliberately stopped stack reports `stopped`, not a failure | `HowItStands::Stopped`, drawn as a sentence saying that is not a fault |
 | `G7-R10` | Failures confined to non-essential services report as advisory, not as requiring attention | `HowItStands::Advisory` counts in notes. Only `degraded`, `broken` and `critical` count things needing attention |
 | `G7-R12` | During startup the summary reports `unknown` rather than a failure | The core sends `unknown` for a stack that is starting, and the app draws the word it was sent |
@@ -30,7 +31,7 @@ requirement is right and this page is a defect.
 
 ## How the line is held
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen, holding one stream for each stack it is asked about. Every operator's screen about a stack holds one through `HoldsItsStacksStream`, keeping what it heard in `WhatWasHeardSoFar`, which is a value on the screen, and `HowThisStackIs` draws the summary from it. `YourStacks` holds one too, with a `WhatWasHeardSoFar` for each stack in `WhatEachStackSaidSoFar` |
 | `N1-R68` | The first frame is published before the subscription is opened, and opening carries the bounded timeout every call carries | The screen is `#[Lazy]`, so its placeholder is published before `mount()` opens the stream. The stream is opened through the pinned client every call uses |
@@ -39,7 +40,7 @@ requirement is right and this page is a defect.
 | `N1-R71` | A broken subscription is opened again on a declared cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOftenAScreenLooks::AfterABreak`. A value held from before a break is drawn as unknown with its age |
 | `N1-R72` | Held only while a screen showing it is in front; closed when the screen is left and when the app leaves the foreground | Every wake asks `Capture::isInFront()`, answered by `Lemonfiber.IsInFront` from the lifecycle observer capture protection installs, and lets go while the answer is no. Every way off a screen ends in `stop()`, which lets go |
 | `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current says when it was updated, and every word on the list is drawn with how long ago it was heard |
-| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]` on `HoldsItsStacksStream::listen()`, and `HowOftenAScreenLooks::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template (`HowAServiceRunsTest`, `DecidingWhatToDoWithOneThingTest`, `SeeingWhatThisStackRunsTest`, `SeeingWhatWouldBePutRightTest`, `SeeingWhatYouAreOwedTest`, `EveryReadingCanBeAskedAgainTest`) |
+| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]` on `HoldsItsStacksStream::listen()`, and `HowOftenAScreenLooks::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template |
 
 ## How the line reaches the list
 
@@ -51,12 +52,12 @@ never while the lock stands or on a launch with no network. Every word it and
 `HoldsItsStacksStream` hear is kept, with when it was heard, and the rows read it
 back.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N1-R25` | A screen that reads from a stack publishes its first frame before the read, built from what the app holds | `HearsHowEachStackIs::listen()` runs on `#[Poll]` wakes only, which come after the first render, and the rows read `Standings`. `TheListSaysTheOneLineTest` draws the kept word with its age before anything is asked, and the heard word after |
-| `N2-R1` | The app opens on the overall verdict, and renders `unknown` as its own answer | Every row on `YourStacks` says a word in its own sentence, and a stack never heard reads `HowItStands::Unknown` rather than nothing (`SeeingHowAStackIsTest`) |
+| `N2-R1` | The app opens on the overall verdict, and renders `unknown` as its own answer | Every row on `YourStacks` says a word in its own sentence, and a stack never heard reads `HowItStands::Unknown` rather than nothing |
 | `N1-R24` | A reading retained from an earlier session may be shown on opening, carrying when it was read, and never confirms an action | `Standings` answers `Showing`, whose held arm is a retained `Reading`. `PlatformStandings` keeps the word and the moment in the platform's store, and nothing else |
-| `N2-R13` | A reading older than the session carries its age wherever it is shown, including on the opening verdict | `HowTheOneLineReads::kept()` hands the word and its age out together, and the row draws the one line's own *last heard* sentence under it (`AReadingCarriesItsAgeTest`) |
+| `N2-R13` | A reading older than the session carries its age wherever it is shown, including on the opening verdict | `HowTheOneLineReads::kept()` hands the word and its age out together, and the row draws the one line's own *last heard* sentence under it |
 
 ## Why the stream is held on the screen
 

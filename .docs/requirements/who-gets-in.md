@@ -8,11 +8,12 @@ before it is sent. The code is the `N9` and `G9` half of `app-modules/kernel` an
 built, and by `AskingSomebodyIn`, which [asking somebody in](asking-somebody-in.md)
 covers.
 
-Each row says what the requirement asks and what in this repository answers it.
+Each row says what the requirement asks and why it is answered the way it is;
+whether it is kept, and by what, is its row in `status.toml`.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `N9-R1` | A credential is shown with the state the contract gives, and stale, invalid and rotating are never one warning | `WhereACredentialStands` has a case for each of the six states, and each is drawn in a sentence of its own. A state this app has no case for is refused, and the reading is an obstacle |
 | `N9-R2` | A credential names the services that consume it | Every consumer is drawn under the credential by name, and a credential nothing uses says so |
@@ -36,7 +37,7 @@ operator taps *Show the code*, because the first asking writes down when the
 code was given and which devices were signed in then. `Handoffs` reads the
 `handoff` envelope and `Connectors` asks and follows it.
 
-| Requirement | What it asks | What keeps it |
+| Requirement | What it asks | Why |
 |---|---|---|
 | `G9-R2` | A per-person scannable code of the server address, and a deep link where the client takes one | The address is drawn as a code by `x-design::scannable` and written out beside it. Each app whose code is a link is drawn with *A link that opens :client at this server* and the link, as the stack wrote it |
 | `G9-R3` | Code sign-in is guided and never approved on the person's behalf | The steps are the stack's, drawn in its words; this app offers no approval of any kind |
