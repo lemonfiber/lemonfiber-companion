@@ -254,6 +254,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::Occupied,
             RefusalCode::SchemeRefused,
             RefusalCode::AddressRefused,
+            RefusalCode::HeaderNamed,
             RefusalCode::CatalogueReplaced,
             RefusalCode::NewestUnkept,
             RefusalCode::NoSuchFiller,
