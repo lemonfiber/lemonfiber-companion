@@ -6,6 +6,7 @@ namespace Modules\Dx\Api;
 
 use Lemonfiber\Sdk\Client;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -80,6 +81,12 @@ final readonly class ClientsThatReachNothing implements Clients
         );
 
         return $client;
+    }
+
+    /** The same stand-in, whatever the path: it answers every one. */
+    public function towards(Stack $stack, Session $session, Ability $path): Client
+    {
+        return $this->client($stack, $session);
     }
 
     /**

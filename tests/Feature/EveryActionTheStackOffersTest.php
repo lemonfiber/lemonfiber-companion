@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Generated\Kind;
+use Lemonfiber\Sdk\Http\AdmissionRequest;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
@@ -36,7 +37,7 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
+    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
@@ -47,15 +48,16 @@ const OFFERED = [
 /**
  * Kinds the app offers through a class of the SDK's that reads the envelope itself.
  *
- * Signing in is one: the door the SDK opens reads `AdmissionEnvelope` and hands
- * back a session, so no reader here opens it and `OFFERED` cannot hold it. Each
- * entry names that SDK class, and is held to the class reading the envelope and
- * to this app using the class.
+ * Signing in is one: the door the SDK opens sends a request that reads
+ * `AdmissionEnvelope` and hands back a session, so no reader here opens it and
+ * `OFFERED` cannot hold it. Each entry names the SDK class this app uses and
+ * the SDK class that reads the envelope, and is held to the second reading it,
+ * the first sending it, and this app using the first.
  *
- * @var array<string, class-string>
+ * @var array<string, array{class-string, class-string}>
  */
 const THROUGH_THE_SDK = [
-    'Admission' => Admission::class,
+    'Admission' => [Admission::class, AdmissionRequest::class],
 ];
 
 /**
@@ -93,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Capabilities', 'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing', 'Plugins',
+    'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing', 'Plugins',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {
@@ -240,11 +242,13 @@ it('holds every kind offered through the SDK to a class that reads it, used here
         }
     }
 
-    foreach (THROUGH_THE_SDK as $kind => $class) {
-        $reads = (string) file_get_contents((string) new ReflectionClass($class)->getFileName());
+    foreach (THROUGH_THE_SDK as $kind => [$used, $reader]) {
+        $reads = (string) file_get_contents((string) new ReflectionClass($reader)->getFileName());
+        $sends = (string) file_get_contents((string) new ReflectionClass($used)->getFileName());
 
         expect($reads)->toContain(sprintf('%sEnvelope::in(', $kind))
-            ->and($source)->toContain(sprintf('use %s;', $class));
+            ->and($sends)->toContain(sprintf('new %s(', new ReflectionClass($reader)->getShortName()))
+            ->and($source)->toContain(sprintf('use %s;', $used));
     }
 });
 

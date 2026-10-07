@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\TakingItOff')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -26,7 +27,7 @@
     @if ($this->answer()->endsThisSession)
         <x-design::body>{{ __('uninstall.after_configuration') }}</x-design::body>
     @endif
-    <x-operator::action label="{{ __('uninstall.read_again') }}" tap="again()" />
+    <x-operator::action label="{{ __('uninstall.read_again') }}" tap="askAgain()" />
 @elseif ($this->answer()->refusal !== '')
     {{-- The stack's answer, drawn as the reason it is rather than as
          something to try again. --}}
@@ -202,20 +203,23 @@
 
         @if ($this->answer()->reading->coming !== [])
             <x-operator::note>{{ __('uninstall.interrupts') }}</x-operator::note>
-            <x-operator::action
+            <x-operator::offered-action
                 label="{{ __('uninstall.wait', ['agree' => __($this->answer()->reading->agreeSaid, ['figure' => $this->answer()->reading->frees->figure, 'unit' => __($this->answer()->reading->frees->unit)])]) }}"
                 tap="waitThenGo()"
+                :offer="$this->offered(TakingItOff::TakeItOff)"
                 :disabled="$this->stillToAcknowledge()"
             />
-            <x-operator::action
+            <x-operator::offered-action
                 label="{{ __('uninstall.go_ahead_now', ['agree' => __($this->answer()->reading->agreeSaid, ['figure' => $this->answer()->reading->frees->figure, 'unit' => __($this->answer()->reading->frees->unit)])]) }}"
                 tap="goAhead()"
+                :offer="$this->offered(TakingItOff::TakeItOff)"
                 :disabled="$this->stillToAcknowledge()"
             />
         @else
-            <x-operator::action
+            <x-operator::offered-action
                 label="{{ __($this->answer()->reading->agreeSaid, ['figure' => $this->answer()->reading->frees->figure, 'unit' => __($this->answer()->reading->frees->unit)]) }}"
                 tap="goAhead()"
+                :offer="$this->offered(TakingItOff::TakeItOff)"
                 :disabled="$this->stillToAcknowledge()"
             />
         @endif
@@ -235,7 +239,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

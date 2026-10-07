@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheRehearsalFound;
 use Modules\Sdk\Api\Fields\PreviewField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /** Asks a stack what starting a form would come to, through the forms read naming that form. */
@@ -26,7 +27,7 @@ final readonly class Rehearsers implements Rehearsing
 
     public function whatStarting(Stack $stack, Session $session, Form $form): WhatTheRehearsalFound
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::FORMS_ENDPOINT, [PreviewField::Form->value => $form->named()]);
@@ -36,7 +37,7 @@ final readonly class Rehearsers implements Rehearsing
             return WhatTheRehearsalFound::found(Rehearsals::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheRehearsalFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RehearsalIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|RehearsalIsUnreadable $why) {
             return WhatTheRehearsalFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

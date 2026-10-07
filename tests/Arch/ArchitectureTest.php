@@ -58,8 +58,8 @@ foreach (['app', 'resolve'] as $located) {
 // Everywhere but the composition root, which is where a facade is the
 // composition rather than a reach into one: `Route::native()` is how a screen
 // gets declared, and there is no constructor for a router to arrive through
-// before the application is built. `phpstan.neon` grants the same exemption by
-// path, and a rule here that did not would refuse what the analyser allows —
+// before the application is built. The analyser's configuration grants the
+// same exemption by path, and a rule here that did not would refuse what the analyser allows —
 // which is the shape of exemption somebody switches a rule off over.
 $outsideTheComposition = array_values(array_filter(
     $ourCode,

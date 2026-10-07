@@ -1,0 +1,67 @@
+The drawer names its ☰ and says whether the screen already has a back button in
+the leading slot. Both are the screen's to say: the label is text a person
+reads, so it comes from the translator, and only the screen knows whether it
+was pushed.
+
+--- a/vendor/nativephp/mobile-ui/src/Builders/Drawer.php
++++ b/vendor/nativephp/mobile-ui/src/Builders/Drawer.php
+@@ -80 +80,31 @@
++    private string $label = 'Open menu';
++
++    private bool $besideBack = false;
++
++    /** What a screen reader announces for the ☰ affordance. */
++    public function label(string $label): self
++    {
++        $this->label = $label;
++
++        return $this;
++    }
++
++    /** The screen has a back button in the leading slot, so the ☰ sits beside it. */
++    public function besideBack(bool $besideBack = true): self
++    {
++        $this->besideBack = $besideBack;
++
++        return $this;
++    }
++
++    public function getLabel(): string
++    {
++        return $this->label;
++    }
++
++    public function isBesideBack(): bool
++    {
++        return $this->besideBack;
++    }
++
+     public function getContent(): View|Element
+--- a/vendor/nativephp/mobile-ui/src/NativeUIServiceProvider.php
++++ b/vendor/nativephp/mobile-ui/src/NativeUIServiceProvider.php
+@@ -139,3 +139,5 @@
+                 'mode' => $builder->getMode(),
+                 'width' => $builder->getWidth(),
++                'a11y-label' => $builder->getLabel(),
++                'beside_back' => $builder->isBesideBack(),
+             ]);
+--- a/vendor/nativephp/mobile-ui/src/Elements/NativeDrawer.php
++++ b/vendor/nativephp/mobile-ui/src/Elements/NativeDrawer.php
+@@ -40,2 +40,5 @@
+             $this->props['width'] = (int) $attrs['width'];
+         }
++        if (isset($attrs['beside_back'])) {
++            $this->props['beside_back'] = (bool) $attrs['beside_back'];
++        }
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -199,2 +199,2 @@
+-                    .accessibilityLabel("Open menu")
+-                    .padding(.leading, 12)
++                    .accessibilityLabel(drawerNode.props.getString("a11y_label", default: "Open menu"))
++                    .padding(.leading, drawerNode.props.getBool("beside_back") ? besideTheBack : 12)
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -75,1 +75,1 @@
+-                    Icon(Icons.Filled.Menu, contentDescription = "Open menu")
++                    Icon(Icons.Filled.Menu, contentDescription = null)

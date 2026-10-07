@@ -1,0 +1,9 @@
+What a package patched by an earlier build carries where
+14-the-drawer-names-its-menu.patch leaves the menu's glyph saying nothing: the
+glyph named by the drawer's label, inside a button that had no name.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -75,1 +75,1 @@
+-                    Icon(Icons.Filled.Menu, contentDescription = drawerNode.props.getString("a11y_label", "Open menu"))
++                    Icon(Icons.Filled.Menu, contentDescription = null)

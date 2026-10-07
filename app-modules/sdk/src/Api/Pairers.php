@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 use Modules\Kernel\Api\WhatToDoAboutPairing;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -44,14 +45,14 @@ final readonly class Pairers implements MakingPairingCodes
     public function make(Stack $stack, Session $session): WhatBecameOfThePairingCode
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(WhatToDoAboutPairing::MakeACode->asked()),
                 [],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfThePairingCode::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -74,7 +75,7 @@ final readonly class Pairers implements MakingPairingCodes
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfThePairingCode
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfThePairingCode => WhatBecameOfThePairingCode::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfThePairingCode
                     => WhatBecameOfThePairingCode::made(PairingCodes::in($envelope)),

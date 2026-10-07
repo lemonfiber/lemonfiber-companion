@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundOfTheCredentials;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -31,7 +32,7 @@ final readonly class Keyholders implements Safekeeping
 
     public function heldOn(Stack $stack, Session $session): WhatWasFoundOfTheCredentials
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::CREDENTIALS_ENDPOINT);
@@ -41,7 +42,7 @@ final readonly class Keyholders implements Safekeeping
             return WhatWasFoundOfTheCredentials::found(CredentialsKept::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheCredentials::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|CredentialsIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|CredentialsIsUnreadable $why) {
             return WhatWasFoundOfTheCredentials::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

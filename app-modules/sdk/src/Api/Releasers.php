@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\StopSeedingField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -52,7 +53,7 @@ final readonly class Releasers implements StoppingSeeding
 
     public function whatItWouldCost(Stack $stack, Session $session, ADownloadHeld $download): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
@@ -62,7 +63,7 @@ final readonly class Releasers implements StoppingSeeding
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -80,7 +81,7 @@ final readonly class Releasers implements StoppingSeeding
 
     public function stop(Stack $stack, Session $session, WhatLettingItGoCosts $offer): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
@@ -93,7 +94,7 @@ final readonly class Releasers implements StoppingSeeding
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -116,7 +117,7 @@ final readonly class Releasers implements StoppingSeeding
     private function offer(Stack $stack, Session $session, Job $job): HowTheOfferToLetGoIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheOfferToLetGoIsGoing => HowTheOfferToLetGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheOfferToLetGoIsGoing
                     => HowTheOfferToLetGoIsGoing::offering(WhatLettingItGoComesTo::offerIn($envelope)),
@@ -134,7 +135,7 @@ final readonly class Releasers implements StoppingSeeding
     private function outcome(Stack $stack, Session $session, Job $job): HowLettingItGoIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowLettingItGoIsGoing => HowLettingItGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowLettingItGoIsGoing
                     => HowLettingItGoIsGoing::done(WhatLettingItGoComesTo::goneIn($envelope)),

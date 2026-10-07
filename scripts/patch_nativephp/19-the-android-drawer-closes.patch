@@ -1,0 +1,35 @@
+Closed when the screen under it changes, and by a tap inside the panel — a tap
+is a choice made, and a drag past the touch slop is a scroll that leaves it
+open.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -29 +29,5 @@
+ import kotlinx.coroutines.launch
++import androidx.compose.foundation.gestures.awaitEachGesture
++import androidx.compose.foundation.gestures.awaitFirstDown
++import androidx.compose.ui.input.pointer.PointerEventPass
++import androidx.compose.ui.input.pointer.pointerInput
+@@ -58,3 +62,21 @@
+     val scope = rememberCoroutineScope()
+ 
+-    val sheetModifier = if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier
++    androidx.compose.runtime.LaunchedEffect(uri) {
++        if (drawerState.isOpen) drawerState.close()
++    }
++
++    val sheetModifier = (if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier)
++        .pointerInput(drawerState) {
++            awaitEachGesture {
++                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
++                var dragged = false
++                while (true) {
++                    val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
++                    if ((change.position - down.position).getDistance() > viewConfiguration.touchSlop) dragged = true
++                    if (!change.pressed) {
++                        if (!dragged) scope.launch { drawerState.close() }
++                        break
++                    }
++                }
++            }
++        }

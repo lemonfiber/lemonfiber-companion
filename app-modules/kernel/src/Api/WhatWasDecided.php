@@ -17,7 +17,7 @@ namespace Modules\Kernel\Api;
  * would be a thing an operator could send that the stack has nothing to do
  * with.
  */
-enum WhatWasDecided: string
+enum WhatWasDecided: string implements AnAction
 {
     /** The person who asked gets what they asked for. */
     case Approve = 'approve';

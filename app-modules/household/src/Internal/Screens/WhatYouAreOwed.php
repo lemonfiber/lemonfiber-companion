@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
@@ -70,6 +71,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatYouAreOwed extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;

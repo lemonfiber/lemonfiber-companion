@@ -130,12 +130,12 @@ jobs:
             #
             # `typecheck` compiles every Swift file the bridge ships against
             # the locked `nativephp/mobile` as `scripts/patch_nativephp.php`
-            # patches it. `swift` lints, builds and tests the Swift package, and
-            # `kotlin` the Gradle project, whose ktlint reads the root
-            # `.editorconfig` as well as the bridge's own. `agreement` reads
-            # the two test trees.
+            # patches it with `scripts/patch_nativephp/`. `swift` lints, builds
+            # and tests the Swift package, and `kotlin` the Gradle project,
+            # whose ktlint reads the root `.editorconfig` as well as the
+            # bridge's own. `agreement` reads the two test trees.
             case "${path}" in
-            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) run[typecheck]=true ;;&
+            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php | scripts/patch_nativephp/*) run[typecheck]=true ;;&
             bridge/resources/ios/* | bridge/ios/* | bridge/Package.swift | bridge/.swift-format) run[swift]=true ;;&
             bridge/resources/android/* | bridge/android/* | bridge/.editorconfig | .editorconfig) run[kotlin]=true ;;&
             bridge/android/src/test/kotlin/* | bridge/ios/Tests/*) run[agreement]=true ;;&
@@ -189,7 +189,7 @@ jobs:
   # says `no PR range; skipping` in its own log before passing: a reported pass
   # rather than a silent one.
   dco:
-    uses: lemonfiber/spec/.github/workflows/dco.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/dco.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   # Beside `dco` because the two read the same record from opposite directions:
   # that one insists a human attested to the work, this one insists no tool is
@@ -197,7 +197,7 @@ jobs:
   # same way: it checks a pull request's range, and says "no PR range;
   # skipping" on a push to main.
   attribution:
-    uses: lemonfiber/spec/.github/workflows/attribution.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/attribution.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   # `pull-requests: write` is what lets the gate close a pull request whose
   # citation is missing or names an identifier that does not exist, rather than
@@ -210,16 +210,16 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   commitlint:
     # `push` stays out: `main` does not require this context, so no name is
     # waiting to be reported there and the runner would be spent for nothing.
     if: github.event_name == 'pull_request'
-    uses: lemonfiber/spec/.github/workflows/commitlint.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/commitlint.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   # Every pin this repository holds on a shared workflow, against what the
   # spec's default branch holds now. It fails naming the commits a pin has not
@@ -257,17 +257,17 @@ jobs:
   # the deferral buys and the whole of why it is written down rather than left to
   # look like a repository nobody finished configuring.
   workflow-pins:
-    uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/security.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   labeler:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/labeler.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/labeler.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
 
   # The rules, before anything slower gets a chance to hide a boundary break.
   #
@@ -277,8 +277,8 @@ jobs:
   # reviewer sees "this crosses a module boundary" rather than a coverage number.
   rules:
     name: rules
-    # Every change, documentation included. `tests/Arch` reads ARCHITECTURE.md
-    # and `.docs/requirements/` against the code, so a documentation change is
+    # Every change, documentation included. `tests/Arch` reads ARCHITECTURE.md,
+    # `.docs/architecture/` and `.docs/requirements/` against the code, so a documentation change is
     # exactly the change that can break it — and at about a minute it costs
     # less than any condition would save.
     runs-on: ubuntu-latest
@@ -818,7 +818,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@d7f5d8d7e0c6fbbd8022f94ea48abcd59a518989 # v1.0.34
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@c26ed83df4ecfeb0b1a2d4e565011605b67c648b # v1.0.38
     with:
       # Nothing, which is now true: `main` carries zero open issues, and the two
       # it did carry went out with the commit that installed this gate.

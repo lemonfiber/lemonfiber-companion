@@ -30,6 +30,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -73,6 +74,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisServiceSaid extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

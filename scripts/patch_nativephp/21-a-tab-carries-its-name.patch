@@ -1,0 +1,70 @@
+A tab carries its own name. The tab bar is laid out to the bottom edge and
+padded above the system navigation bar, and on a handset with three-button
+navigation the accessibility layer clips the window above where that padding
+ends. Each tab's label then falls outside the clip and is reported with no
+bounds at all, so the tab a screen reader focuses has no name of its own and
+nothing on it can be found by its label. The name goes on the tab, whose bounds
+start at the top of the bar, and the label beside the icon is left to the eye
+rather than said a second time.
+
+A tab is one control to a screen reader: it says its name, or the mark's own
+sentence where it carries a mark, which names the tab and how many new items it
+holds, and it is a tab, selected or not, that a tap through the accessibility
+layer selects. Said on the item's own outermost node rather than beside the
+selectable inside it, so the name and the tap are one node, and nothing inside
+it is said again: the count drawn in the badge is a number to the eye.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -58,1 +58,8 @@
+ import androidx.compose.ui.platform.LocalLayoutDirection
++import androidx.compose.ui.semantics.clearAndSetSemantics
++import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.semantics
++import androidx.compose.ui.semantics.Role
++import androidx.compose.ui.semantics.onClick
++import androidx.compose.ui.semantics.role
++import androidx.compose.ui.semantics.selected
+@@ -341,29 +341,35 @@
+-                        NavigationBarItem(
+-                            selected = actualIdx == selection,
+-                            onClick = {
++                        val tabTapped: () -> Unit = {
+                                 // Local selection updates instantly so
+                                 // the ripple / selection indicator
+                                 // responds; for the search tab, no PHP
+                                 // navigation fires (it's an iOS-/Android-
+                                 // side overlay). For regular tabs, the
+                                 // BottomNavItem-auto-wired `replace`
+                                 // press handler fires here. A tap back
+                                 // to the active tab normally needs no
+                                 // press — except while another tab's
+                                 // navigation is in flight: PHP is
+                                 // already navigating away and must be
+                                 // told to come back.
+                                 selection = actualIdx
+                                 val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                 if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                     if (tab.props.getString("url", "").isNotEmpty()) {
+                                         val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                         pendingTabId?.let { prev ->
+                                             if (prev != tappedId) supersededTabIds.add(prev)
+                                         }
+                                         pendingTabId = tappedId
+                                     }
+                                     NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                 }
+-                            },
++                        }
++                        NavigationBarItem(
++                            modifier = Modifier.saidAsAControl(
++                                tab.props.getString("badge_label", "").ifEmpty { label },
++                                Role.Tab,
++                                state = { selected = actualIdx == selection },
++                            ) { tabTapped() },
++                            selected = actualIdx == selection,
++                            onClick = tabTapped,
+                             icon = {
+@@ -382 +386 @@
+-                            label = { Text(label, fontFamily = chromeFontFamily) },
++                            label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },

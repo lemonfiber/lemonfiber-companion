@@ -41,5 +41,6 @@ it('writes the bundle described, changing nothing else', function (): void {
         ->and($written->lines()->figure())->toBe(50)
         ->and($written->filenames())->toBe(WhatFilenamesShow::Shown)
         ->and(WhatABundleSays::namesOf($written->revealing()))->toBe(['SONARR_URL'])
-        ->and($written->asked())->toBe('support');
+        ->and($written->asked())->toBe('support')
+        ->and(ABundleAsked::named())->toBe('support');
 });

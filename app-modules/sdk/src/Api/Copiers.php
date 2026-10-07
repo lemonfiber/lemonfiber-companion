@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -46,7 +47,7 @@ final readonly class Copiers implements TakingCopies
 
     public function take(Stack $stack, Session $session, ACopyAsked $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -58,7 +59,7 @@ final readonly class Copiers implements TakingCopies
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -98,7 +99,7 @@ final readonly class Copiers implements TakingCopies
     private function outcome(Stack $stack, Session $session, Job $job): HowTheCopyIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheCopyIsGoing => HowTheCopyIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheCopyIsGoing
                     => HowTheCopyIsGoing::done(TheCopyTaken::in($envelope)),

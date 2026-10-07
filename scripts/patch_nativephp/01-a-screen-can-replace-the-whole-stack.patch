@@ -1,0 +1,90 @@
+The navigation stack can start over at one screen. Removing a stack from the
+phone leaves every screen of it below the one the removal was asked on, and a
+stack that is gone cannot be drawn: going back into one would be a screen with
+nothing to draw. The package can push, pop and swap the top screen; this lets a
+screen replace the whole stack, which is the only way off every screen of a
+stack at once.
+
+--- a/vendor/nativephp/mobile/src/Edge/NavigationIntent.php
++++ b/vendor/nativephp/mobile/src/Edge/NavigationIntent.php
+@@ -15 +15,3 @@
+     const RESTART = 'restart';
++
++    const RESET = 'reset';
+--- a/vendor/nativephp/mobile/src/Edge/NativeComponent.php
++++ b/vendor/nativephp/mobile/src/Edge/NativeComponent.php
+@@ -2987,7 +2987,23 @@
+         $this->flushDispatchedEvents();
+         $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, $uri, $data);
+         $this->publishFinalState();
+         $this->stop();
+ 
+         return $this;
+     }
++
++    public function replaceTheWholeStack(string $uri, array $data = []): static
++    {
++        if ($this->nativeParentComponent !== null) {
++            $this->rootScreen()->replaceTheWholeStack($uri, $data);
++
++            return $this;
++        }
++
++        $this->flushDispatchedEvents();
++        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::RESET, $uri, $data);
++        $this->publishFinalState();
++        $this->stop();
++
++        return $this;
++    }
+--- a/vendor/nativephp/mobile/src/Edge/NativeRouter.php
++++ b/vendor/nativephp/mobile/src/Edge/NativeRouter.php
+@@ -657 +657,48 @@
++                case NavigationIntent::RESET:
++                    static::debugLog("RESET: resolving uri={$intent->uri}");
++                    try {
++                        $resolved = static::resolve($intent->uri);
++                    } catch (\Throwable $e) {
++                        static::debugLog('RESET binding FAILED: '.$e->getMessage());
++                        $component->renderErrorScreen($e);
++                        $freshPush = false;
++                        $reenterCurrentScreen = true;
++
++                        break;
++                    }
++
++                    if ($resolved === null) {
++                        $this->unmountComponent($component);
++                        $this->stack = [];
++
++                        return $intent->uri;
++                    }
++
++                    while (! empty($this->stack)) {
++                        $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
++                        array_pop($this->stack);
++                    }
++
++                    $this->deferredTransition = $intent->transition ?? Transition::Fade;
++
++                    try {
++                        $next = $this->createComponent($resolved['class'], $resolved['params'], $intent->data);
++                        if (! empty($resolved['layout'])) {
++                            $next->setLayout($resolved['layout']);
++                        }
++
++                        $this->stack[] = [
++                            'component' => $next,
++                            'uri' => $intent->uri,
++                            'params' => $resolved['params'],
++                        ];
++                    } catch (\Throwable $e) {
++                        static::debugLog('RESET FAILED: '.$e->getMessage());
++
++                        return null;
++                    }
++
++                    $freshPush = true;
++                    break;
++
+                 case NavigationIntent::EXIT_WEB:

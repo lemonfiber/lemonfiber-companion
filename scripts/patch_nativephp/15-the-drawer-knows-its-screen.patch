@@ -1,0 +1,27 @@
+The host is told which screen it is drawn around, so a navigation that keeps
+the drawer — one screen with a menu to the next — closes it.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -11 +11,2 @@
+-        return AnyView(NativeDrawerHost(drawerNode: drawerNode) { content })
++        let uri = root.props.getString("current_uri", default: "")
++        return AnyView(NativeDrawerHost(drawerNode: drawerNode, uri: uri) { content })
+@@ -214,3 +215,6 @@
+         .onChange(of: drawerNode.id) { _ in
+             if dragOffset != 0 { dragOffset = 0 }
+         }
++        .onChange(of: uri) { _ in
++            if state.isOpen { animateClosed() }
++        }
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeUIChromeInit.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeUIChromeInit.kt
+@@ -31 +31 @@
+-        NativeLayoutDrawerHost(drawerNode = drawerNode, content = content)
++        NativeLayoutDrawerHost(drawerNode = drawerNode, uri = root.props.getString("current_uri", ""), content = content)
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -46,2 +46,3 @@
+     drawerNode: NativeUINode?,
++    uri: String = "",
+     content: @Composable () -> Unit,

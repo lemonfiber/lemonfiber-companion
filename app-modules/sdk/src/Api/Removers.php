@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -53,14 +54,14 @@ final readonly class Removers implements RemovingSomebody
     public function wouldRemove(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheRemoval
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(TakingThemOut::TakeThemOut->asked()),
                 [WireField::Name->value => $who->name()],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheRemoval::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -68,7 +69,7 @@ final readonly class Removers implements RemovingSomebody
     public function remove(Stack $stack, Session $session, ARemovalAgreed $agreed): WhatBecameOfTheRemoval
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(TakingThemOut::TakeThemOut->asked()),
                 [
                     WireField::Name->value => $agreed->who()->name(),
@@ -78,7 +79,7 @@ final readonly class Removers implements RemovingSomebody
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheRemoval::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -104,7 +105,7 @@ final readonly class Removers implements RemovingSomebody
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheRemoval
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheRemoval => WhatBecameOfTheRemoval::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheRemoval
                     => WhatBecameOfTheRemoval::answered(Removals::in($envelope)),

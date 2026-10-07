@@ -18,7 +18,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheReadingWaitsAFrame;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhichTab;
 use Modules\Kernel\Api\Whose;
 use Modules\News\Api\AnItem;
@@ -28,6 +30,9 @@ use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Requests\Api\KeepingWhatWasAsked;
+use Modules\Sdk\Api\Assessors;
+use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformKeychain;
@@ -35,6 +40,8 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
@@ -48,11 +55,26 @@ use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatIsKeptOfRequests;
 use Tests\Support\WhatIsKeptOfServices;
 use Tests\Support\WhatIsKeptOfUpdates;
+use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The ForgetsAStack contract, run against every keeper of a stack and against
 // all of them together: what it keeps for one stack goes, what it keeps for
 // any other stays, and it says afterwards that it keeps nothing of the one.
+
+afterEach(function (): void {
+    MockClient::destroyGlobal();
+});
+
+/**
+ * What a stack declares when it serves nothing this app asks for.
+ *
+ * @return array<string, mixed>
+ */
+function aStackThatDeclaresNothing(): array
+{
+    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => []]];
+}
 
 /** A stack a keeper holds something for. Named for this file. */
 function aStackSomethingIsKeptFor(string $seed): Stack
@@ -91,6 +113,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake work' => WorkLeftRunningInMemory::working(),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::working()),
         'the fake place' => WhereTheOperatorWasInMemory::nowhere(),
+        'what each stack offers' => new Assessors(new PinnedClients(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackOffers()),
     ];
 
     foreach ([...$keepers, $pairings, $words] as $keeper) {
@@ -164,7 +187,27 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
         return;
     }
 
+    if ($keeper instanceof Assessors) {
+        haveWhatAStackOffersHeldFor($keeper, $stack);
+
+        return;
+    }
+
     throw new LogicException(sprintf('No way to have %s keep something.', $keeper::class));
+}
+
+/** Have what this stack offers held, by asking it on a frame of its own. */
+function haveWhatAStackOffersHeldFor(Assessors $assessors, Stack $stack): void
+{
+    MockClient::destroyGlobal();
+    MockClient::global(['*' => MockResponse::make((string) json_encode(aStackThatDeclaresNothing()))]);
+
+    try {
+        $assessors->whetherItOffers($stack, Session::of('a-session'), WhatToDoWithIt::Restart);
+    } catch (TheReadingWaitsAFrame) {
+        // Asking a stack nothing is held for is a frame of its own: what it
+        // said is held, and the frame that asked is told to wait.
+    }
 }
 
 it('keeps something for each stack it was given', function (): void {
@@ -200,4 +243,8 @@ it('says it may still keep something where its store cannot be read', function (
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);
     }
+});
+
+it('stands in for a stack with a declaration the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('CapabilitiesEnvelope', aStackThatDeclaresNothing()))->toBe([]);
 });

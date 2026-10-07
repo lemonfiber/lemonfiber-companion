@@ -43,7 +43,7 @@ use function trim;
  * is refused as a reading that contradicts itself.
  *
  * **What this app does not read is recorded in
- * `WhatTheContractCarriesThatNothingReadsTest`**: each client's holding, the
+ * `WhatThisAppDoesNotRead`**: each client's holding, the
  * month's metering, the override, the household's hours and the structured
  * limits the `says` sentences already carry.
  */

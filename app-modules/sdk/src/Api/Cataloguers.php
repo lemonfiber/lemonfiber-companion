@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheCatalogueSaid;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -39,7 +40,7 @@ final readonly class Cataloguers implements Cataloguing
 
     public function describedOn(Stack $stack, Session $session): WhatTheCatalogueSaid
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::CATALOGUE_ENDPOINT);
@@ -53,7 +54,7 @@ final readonly class Cataloguers implements Cataloguing
                 refused: WhatTheCatalogueSaid::refused(...),
                 met: WhatTheCatalogueSaid::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|CatalogueIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|CatalogueIsUnreadable $why) {
             return WhatTheCatalogueSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

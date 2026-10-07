@@ -8,6 +8,7 @@ use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\BundleField;
+use Modules\Sdk\Api\Fields\CapabilitiesField;
 use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
@@ -80,6 +81,7 @@ function everyFieldNamedOnTheWire(): array
         ...BandwidthField::cases(),
         ...CatalogueField::cases(),
         ...BundleField::cases(),
+        ...CapabilitiesField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
         ...CredentialsField::cases(),

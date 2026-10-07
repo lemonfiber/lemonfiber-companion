@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundOfItself;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -31,7 +32,7 @@ final readonly class Inspectors implements SelfChecking
 
     public function checkedOn(Stack $stack, Session $session): WhatWasFoundOfItself
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::UPDATE_ENDPOINT, [WireField::What->value => SelfUpdateField::ThisCopy->value]);
@@ -41,7 +42,7 @@ final readonly class Inspectors implements SelfChecking
             return WhatWasFoundOfItself::found(WhereThisCopyIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfItself::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SelfUpdateIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SelfUpdateIsUnreadable $why) {
             return WhatWasFoundOfItself::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhichRemoval;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -55,7 +56,7 @@ final readonly class Dismantlers implements TakingLemonfiberOff
 
     public function surveyed(Stack $stack, Session $session, WhichRemoval $tier): WhatWasFoundOfTheUninstall
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::UNINSTALL_ENDPOINT, [UninstallField::Tier->value => $tier->value]);
@@ -65,7 +66,7 @@ final readonly class Dismantlers implements TakingLemonfiberOff
             return WhatWasFoundOfTheUninstall::found(Uninstalls::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheUninstall::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|UninstallIsUnreadable|UninstallSaysNothing|RoomSaysNothing $why) {
             return WhatWasFoundOfTheUninstall::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -73,7 +74,7 @@ final readonly class Dismantlers implements TakingLemonfiberOff
     public function takeItOff(Stack $stack, Session $session, AnUninstallAgreed $agreed): WhatBecameOfTheUninstall
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(TakingItOff::TakeItOff->asked()),
                 [
                     UninstallField::Tier->value => $agreed->tier()->value,
@@ -85,7 +86,7 @@ final readonly class Dismantlers implements TakingLemonfiberOff
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheUninstall::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -111,7 +112,7 @@ final readonly class Dismantlers implements TakingLemonfiberOff
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheUninstall
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheUninstall
                     => WhatBecameOfTheUninstall::answered(Uninstalls::in($envelope)),

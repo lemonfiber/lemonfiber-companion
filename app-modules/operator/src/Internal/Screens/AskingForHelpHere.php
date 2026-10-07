@@ -29,6 +29,7 @@ use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\WhatHandingOverCameTo;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -69,6 +70,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;

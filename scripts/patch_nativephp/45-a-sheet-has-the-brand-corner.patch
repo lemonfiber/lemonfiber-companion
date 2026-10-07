@@ -1,0 +1,16 @@
+A sheet's top corners are the brand's `md`, from the widget theme, rather than
+each platform's own large sheet corner.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt
+@@ -5 +5,2 @@
+ import androidx.compose.foundation.layout.fillMaxHeight
++import androidx.compose.foundation.shape.RoundedCornerShape
+@@ -75 +76,2 @@
+             scrimColor = BottomSheetDefaults.ScrimColor,
++            shape = RoundedCornerShape(topStart = theme.radiusMd, topEnd = theme.radiusMd),
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIBottomSheetRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIBottomSheetRenderer.swift
+@@ -41 +41,2 @@
+                 .presentationDragIndicator(.visible)
++                .presentationCornerRadius(theme.radiusMd)

@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\TakingThemOut')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -26,7 +27,7 @@
         @else
             <x-operator::emphasis>{{ __('stacks.removal.no_outcome', ['name' => $this->answer()->name]) }}</x-operator::emphasis>
         @endif
-        <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->name]) }}" tap="again()" />
+        <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->name]) }}" tap="askAgain()" />
     @elseif ($this->answer()->refusal !== '')
         {{-- The stack's answer, with the name it was about, drawn as the
              reason it is rather than as something to try again. --}}
@@ -67,12 +68,12 @@
         @endforelse
 
         @if (! $this->answer()->removal->carriedOut)
-            <x-operator::action label="{{ __('stacks.removal.take_them_out', ['name' => $this->answer()->removal->name]) }}" tap="agree()" />
+            <x-operator::offered-action label="{{ __('stacks.removal.take_them_out', ['name' => $this->answer()->removal->name]) }}" tap="agree()" :offer="$this->offered(TakingThemOut::TakeThemOut)" />
         @elseif (! $this->answer()->removal->isDone)
             {{-- An account is still held on the request service, and the next
                  removal takes it: read what that would cost, and agree to it
                  again. --}}
-            <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->removal->name]) }}" tap="again()" />
+            <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->removal->name]) }}" tap="askAgain()" />
         @endif
     @endif
 
@@ -91,7 +92,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

@@ -94,6 +94,30 @@ final readonly class HowTheReadingWent
     }
 
     /**
+     * Whether what stood in the way is a stack too old for what was asked, which a newer lemonfiber provides.
+     *
+     * Decided once, here, for {@see self::isPutRightInTheAppsSettings()}'s
+     * reason: the road to the stack's updates is drawn beside the one obstacle
+     * whose remedy is there.
+     */
+    public function isProvidedByAnUpdate(): bool
+    {
+        return $this->why instanceof Obstacle && $this->why->is(KindOfObstacle::NotOnThisStack);
+    }
+
+    /**
+     * The address a reach that met nothing was tried at, or nothing.
+     *
+     * The one place an address is drawn: the operator's screen that says the
+     * stack was not reached, where a stale or wrong address is often the whole
+     * story. A member's screen has no such method to call.
+     */
+    public function whereItWasTried(): string
+    {
+        return $this->why instanceof Obstacle ? $this->why->whereItWasTried() : '';
+    }
+
+    /**
      * Whether other work held the stack, so the same request can be sent again once it is done.
      *
      * Nothing was changed: the stack turned the request away before acting on

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function in_array;
+
 /**
  * Which thing stood between the app and a stack, told apart rather than summarised.
  *
@@ -92,6 +94,31 @@ enum KindOfObstacle: string
      * enough that it is modelled rather than thrown.
      */
     case StackDidNotAnswer = 'no_answer';
+
+    /**
+     * The machine's name turned into no address from this phone.
+     *
+     * Nothing was sent: there was nowhere to send it. The machine may be fine;
+     * what failed is finding it by the name it was paired with.
+     */
+    case NameWasNotFound = 'name_not_found';
+
+    /**
+     * Nothing on the network answers at the address this phone was paired with.
+     *
+     * The shape a machine that moved to another address leaves behind, which
+     * is why pairing again is its remedy rather than checking the machine:
+     * the machine may be on and well somewhere else.
+     */
+    case NothingAtThePairedAddress = 'nothing_at_the_address';
+
+    /**
+     * Something at the address turned the connection away.
+     *
+     * The machine is there and lemonfiber is not answering on it, which sends
+     * the operator to the machine rather than to the network.
+     */
+    case ConnectionWasTurnedAway = 'connection_refused';
 
     /**
      * Something answered, and it is not the machine this app was paired with.
@@ -207,6 +234,27 @@ enum KindOfObstacle: string
     case StackIsBusy = 'busy';
 
     /**
+     * The stack does not have this: the lemonfiber on it is older than what it
+     * was asked for.
+     *
+     * Met before anything is sent. The stack declares what it can do, and a
+     * request it does not declare is not attempted, so this is never a failure
+     * of what the operator asked: it is the stack being too old to be asked.
+     * The remedy names what would provide it, a newer lemonfiber on that
+     * machine, and never a version number, because which release brought what
+     * is the stack's to say and not a table this app keeps.
+     */
+    case NotOnThisStack = 'not_on_this_stack';
+
+    /** The kinds met on the way to the stack's address, beside which the address tried is shown. */
+    private const array MET_ON_THE_WAY_TO_THE_STACK = [
+        self::StackDidNotAnswer,
+        self::NameWasNotFound,
+        self::NothingAtThePairedAddress,
+        self::ConnectionWasTurnedAway,
+    ];
+
+    /**
      * The key for what stood in the way.
      *
      * The value *is* the stem, so a case added here has a sentence by existing
@@ -232,7 +280,7 @@ enum KindOfObstacle: string
      * not the same sentence: what happened is a fact about the world, and what
      * to do about it is advice. The advice is what differs most between these —
      * a router and a cupboard are not the same errand — which is why a screen
-     * showing one summary for all six would be useless even with six summaries.
+     * showing one summary for all of them would be useless even with one each.
      *
      * `_action` is the suffix every remedy in this catalogue carries, which is
      * why one stem serves both: {@see \Modules\Connection\Api\HowTheSignInWent}
@@ -241,6 +289,25 @@ enum KindOfObstacle: string
     public function remedy(): string
     {
         return InTheConnectionCatalogue::under($this->value)->remedy();
+    }
+
+    /**
+     * The key for what stood in the way, on a member's screen.
+     *
+     * A member is told what an operator is, in the household's words, where
+     * the obstacle was met on the way to the stack: those sentences name a
+     * machine, an address and software, and a member has none of them to look
+     * at. Everything else is the same sentence on both sides.
+     */
+    public function saidToTheHousehold(): string
+    {
+        return $this->isMetOnTheWayToTheStack() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->said() : $this->said();
+    }
+
+    /** The key for what a member can do about it, in the household's words where {@see saidToTheHousehold()} is. */
+    public function remedyForTheHousehold(): string
+    {
+        return $this->isMetOnTheWayToTheStack() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy() : $this->remedy();
     }
 
     /**
@@ -292,6 +359,19 @@ enum KindOfObstacle: string
     }
 
     /**
+     * Whether this was met on the way to the stack's address: no answer, a
+     * name not found, nothing at the address, or a connection turned away.
+     *
+     * The ones where the address that was tried is what the operator needs
+     * to see beside the sentence, since a stale or wrong address is what
+     * several of them are.
+     */
+    public function isMetOnTheWayToTheStack(): bool
+    {
+        return in_array($this, self::MET_ON_THE_WAY_TO_THE_STACK, strict: true);
+    }
+
+    /**
      * The identifier an operator can search for.
      *
      * The app's own, not the server's. `Code` says codes are declared beside
@@ -307,6 +387,9 @@ enum KindOfObstacle: string
             self::DeviceHasNoNetwork => 'COMPANION-NO-NETWORK',
             self::LocalNetworkIsNotPermitted => 'COMPANION-LOCAL-NETWORK-REFUSED',
             self::StackDidNotAnswer => 'COMPANION-NO-ANSWER',
+            self::NameWasNotFound => 'COMPANION-NAME-NOT-FOUND',
+            self::NothingAtThePairedAddress => 'COMPANION-NOTHING-AT-THE-ADDRESS',
+            self::ConnectionWasTurnedAway => 'COMPANION-CONNECTION-REFUSED',
             self::StackIsNotTheOnePaired => 'COMPANION-CERTIFICATE-CHANGED',
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
             self::NotForThisAccount => 'COMPANION-NOT-FOR-THIS-ACCOUNT',
@@ -316,6 +399,7 @@ enum KindOfObstacle: string
             self::AddressIsNotTheStacks => 'COMPANION-ADDRESS-NOT-THE-STACKS',
             self::VersionsDisagree => 'COMPANION-VERSIONS-DISAGREE',
             self::StackIsBusy => 'COMPANION-STACK-BUSY',
+            self::NotOnThisStack => 'COMPANION-NOT-ON-THIS-STACK',
         });
     }
 
@@ -346,9 +430,14 @@ enum KindOfObstacle: string
             self::HouseholdCouldNotBeRead,
             // Other work holding the stack is the stack working; the refusal
             // clears itself once that work is done.
-            self::StackIsBusy => Severity::Warning,
+            self::StackIsBusy,
+            // Nothing is broken: the stack works, and is older than this.
+            self::NotOnThisStack => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
+            self::NameWasNotFound,
+            self::NothingAtThePairedAddress,
+            self::ConnectionWasTurnedAway,
             self::AddressIsNotTheStacks,
             self::VersionsDisagree,
             self::CredentialWasRefused => Severity::Error,
@@ -371,6 +460,9 @@ enum KindOfObstacle: string
         return match ($this) {
             self::DeviceHasNoNetwork,
             self::StackDidNotAnswer,
+            // Starting lemonfiber happens on the machine, where this app
+            // cannot reach.
+            self::ConnectionWasTurnedAway,
             // Waiting is the whole remedy, and it is not a thing the app can
             // offer to do: a button here would either do nothing or make the
             // wait longer, which is the one outcome worse than no button.
@@ -390,7 +482,14 @@ enum KindOfObstacle: string
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
             self::AddressIsNotTheStacks,
-            self::StackIsNotTheOnePaired => Standing::Actionable,
+            // Pairing again gives the phone the address, or the name, the
+            // machine answers at now, and pairing is a thing this app does.
+            self::NameWasNotFound,
+            self::NothingAtThePairedAddress,
+            self::StackIsNotTheOnePaired,
+            // Updating the machine is a thing the app offers, on its updates
+            // screen, so the remedy is a road there.
+            self::NotOnThisStack => Standing::Actionable,
         };
     }
 }

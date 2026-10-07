@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
@@ -37,7 +38,6 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
-use Tests\Support\Tree;
 use Tests\Support\WhatTheContractAccepts;
 
 // The KeepingCurrent contract, run against the adapter and against the fake.
@@ -533,7 +533,7 @@ it('the contract still names a way back on every service', function (): void {
     // so, rather than the app quietly promising a way back it was handed null
     // for. The check a planted violation would otherwise have to prove, kept
     // where the assumption is made.
-    $shape = thePayloadShapeOfTheUpdateEnvelope();
+    $shape = WhatTheContractDeclares::shapeOf('UpdateEnvelope');
 
     expect($shape)
         ->toContain("reversal: 'rollback'|'restore'")
@@ -663,18 +663,6 @@ it('asking after an update names the handle the take answered', function (): voi
     expect($keeping->followed())->toHaveCount(1)
         ->and($keeping->followed()[0]->shown())->toBe(AStackThatKeepsCurrent::THE_JOB);
 });
-
-/** The `update` envelope's declared payload shape, as text. */
-function thePayloadShapeOfTheUpdateEnvelope(): string
-{
-    $said = (string) file_get_contents(
-        Tree::at('vendor/lemonfiber/sdk-php/src/Generated/UpdateEnvelope.php'),
-    );
-
-    preg_match('/@phpstan-type Data (.*)/', $said, $shape);
-
-    return $shape[1] ?? '';
-}
 
 /**
  * A stack whose record holds one release, carrying whatever a case puts in `delivers`.

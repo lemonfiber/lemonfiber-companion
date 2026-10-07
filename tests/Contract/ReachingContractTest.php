@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Session;
@@ -12,10 +13,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\ClientsThatAskTheDevice;
+use Modules\Sdk\Api\ClientsThatAskWhatIsOffered;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Tests\Support\Fakes\AClientForWhicheverStack;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ALocalNetworkThat;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NotesKeptInMemory;
 
 // The Reaching contract, run against the adapter and against the fake.
@@ -77,6 +81,14 @@ dataset('every way of reaching a stack', [
         ADeviceOnANetwork::connected(),
         ALocalNetworkThat::letsItThrough(),
         new NotesKeptInMemory(),
+    )],
+    // And in front of those, the stack asked what it serves before a request
+    // is sent. Building a client asks nothing, so it is held to every clause
+    // the clients behind it are.
+    'the clients that ask what is offered' => [fn(): Reaching => new ClientsThatAskWhatIsOffered(
+        new PinnedClients(),
+        new WhatEachStackOffers(),
+        FrozenClock::at(Instant::atEpochSeconds(0)),
     )],
 ]);
 

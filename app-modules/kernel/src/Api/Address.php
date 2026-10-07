@@ -28,15 +28,17 @@ use function trim;
  * Treated like a secret and it is not one, which is worth saying plainly.
  * A stack address is named in the same breath as a credential and a
  * session token: never logged, never transmitted, never in a diagnostic
- * report. The reason is not confidentiality — it is that an address is where
- * somebody lives, and a support bundle full of them is a map of private
- * networks. So this carries the same redaction `Session` does, and for a
- * different reason.
+ * report, and shown only to the operator, on the screen that says it was
+ * tried and not reached. The reason is not confidentiality — it is that an
+ * address is where somebody lives, and a support bundle full of them is a map
+ * of private networks. So this carries the same redaction `Session` does, and
+ * for a different reason.
  *
- * The only accessor is named for where the value goes, which keeps the
- * session out of the URL, and this is the other half of that: a type whose
- * single reader says `forTheClient()` makes building a string out of an address
- * for any other purpose read wrong at the call site.
+ * Each accessor is named for where the value goes, which keeps the session
+ * out of the URL, and this is the other half of that: a type whose readers
+ * say `forTheClient()` and `forTheOperatorWhoCouldNotReachIt()` makes building
+ * a string out of an address for any other purpose read wrong at the call
+ * site.
  *
  * **Whether the connection is encrypted is read off the scheme, here.**
  * The app must state it and must not imply protection it does not
@@ -129,6 +131,21 @@ final readonly class Address implements JsonSerializable
 
     /** The value the client dials, and nothing else. */
     public function forTheClient(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * The address, for the operator's screen that says it was tried and not
+     * reached, and nowhere else.
+     *
+     * The one place an address is shown: a stale or wrong one is what a reach
+     * that met nothing often is, and the operator cannot see that without
+     * seeing it. Never on a member's screen, never in a log, never in a
+     * diagnostic report; `TheTriedAddressIsShownOnlyToTheOperatorTest` holds
+     * every reader to that.
+     */
+    public function forTheOperatorWhoCouldNotReachIt(): string
     {
         return $this->url;
     }

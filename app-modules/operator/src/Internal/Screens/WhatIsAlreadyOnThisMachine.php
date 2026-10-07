@@ -29,6 +29,7 @@ use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSurveyTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -63,6 +64,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatIsAlreadyOnThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

@@ -6,13 +6,13 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheLocalNetwork;
-use Modules\Sdk\Internal\WhatTheTransportReported;
 use Psr\Log\LoggerInterface;
 
 use function sprintf;
@@ -30,7 +30,7 @@ use Throwable;
  * **Asked in that order, and only after the silence.** No network at all is
  * the first question, because a phone with none has no local network to refuse.
  * A platform that refused the app comes next. Silence that neither explains is
- * the stack's. A reach that was answered asks the phone nothing, and an
+ * whichever silence the reach says it was. A reach that was answered asks the phone nothing, and an
  * envelope in another API version is never the phone's.
  *
  * **It opens nothing.** The client comes from {@see PinnedClients}, pinned, and
@@ -38,14 +38,14 @@ use Throwable;
  * one.
  *
  * **Silence is noted for a developer, without the address.** The note names
- * the kind of failure the transport reported, the port, and which kind of
+ * the way the SDK says nothing answered, the port, and which kind of
  * name the address is, and never the address: it is where somebody lives. It
  * goes to the log a debug build keeps, and nowhere in any other build, where
  * the composition root hands this a log that keeps nothing.
  */
 final readonly class ClientsThatAskTheDevice implements Clients
 {
-    /** The note a silent reach leaves: what was raised, what the transport reported, the port, and which kind of address was tried. */
+    /** The note a silent reach leaves: what was raised, which way nothing answered, the port, and which kind of address was tried. */
     private const string NOTED = 'reach: nothing answered (%s), %s, port %d, address %s';
 
     public function __construct(
@@ -60,13 +60,23 @@ final readonly class ClientsThatAskTheDevice implements Clients
         return $this->pinned->client($stack, $session);
     }
 
+    /**
+     * The pinned client, handed on as the pinned clients hand it: nothing here asks the stack what it serves.
+     *
+     * @throws void
+     */
+    public function towards(Stack $stack, Session $session, Ability $path): Client
+    {
+        return $this->pinned->towards($stack, $session, $path);
+    }
+
     public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
     {
         if ($why instanceof Unreachable) {
             $this->notes->debug(sprintf(
                 self::NOTED,
                 $why::class,
-                WhatTheTransportReported::in($why->reason())->value,
+                $why->why()->value,
                 $stack->at()->port(),
                 $stack->at()->howItIsWritten()->value,
             ));

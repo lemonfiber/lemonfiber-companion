@@ -65,16 +65,16 @@ final readonly class WhatTheStackSays
     }
 
     /**
-     * Whether a screen may offer this as an action now.
+     * What a button for it says, absence included.
      *
-     * The one question asked before an action is offered, and the only
-     * one this type answers without an `either` — because every answer that is
-     * not `Available` collapses to the same button state, and there is exactly
-     * one of those. Anything that needs to *explain* the state reads it with
-     * `either` and gets the case.
+     * The one question asked before an action is offered, answered without an
+     * `either` because every answer has a sentence of its own: a stack that
+     * named nothing is too old to have it, which is what absence means.
      */
-    public function offersAnAction(): bool
+    public function offered(): WhetherItIsOffered
     {
-        return $this->availability === Availability::Available;
+        return $this->availability instanceof Availability
+            ? $this->availability->offered()
+            : WhetherItIsOffered::NeedsANewerLemonfiber;
     }
 }

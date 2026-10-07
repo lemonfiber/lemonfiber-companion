@@ -39,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -82,6 +83,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use ChoosesWhatAnInvitationAsks;
     use LetsGoOfARefusedSession;

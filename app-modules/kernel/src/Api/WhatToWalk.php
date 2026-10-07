@@ -16,7 +16,7 @@ use function trim;
  * so the stack is then left to choose something well seeded, and says what it
  * chose.
  */
-final readonly class WhatToWalk
+final readonly class WhatToWalk implements AnAction
 {
     private function __construct(private ?string $item) {}
 
@@ -29,6 +29,16 @@ final readonly class WhatToWalk
     }
 
     /**
+     * The action's name, for a caller that has to name it before there is one
+     * to ask for: what a stack says it serves is asked by name before a button
+     * is drawn.
+     */
+    public static function named(): string
+    {
+        return 'walkthrough';
+    }
+
+    /**
      * The name lemonfiber's surface asks for this by.
      *
      * Spelled here, once, for {@see TakingAnUpdate::asked()}'s reason: an
@@ -36,7 +46,7 @@ final readonly class WhatToWalk
      */
     public function asked(): string
     {
-        return 'walkthrough';
+        return self::named();
     }
 
     /**

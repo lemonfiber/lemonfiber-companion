@@ -35,7 +35,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced, and a screen with a second reading takes it on the next frame through `ReadsAStackOnceAFrame`; `tests/Feature/EveryScreenTheRouterServesDrawsTest.php` draws three frames of every screen the router serves and counts what each read; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
+| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced, and a screen with a second reading takes it on the next frame through `ReadsAStackOnceAFrame`; asking a stack what it serves is a frame's one reading, and the screen draws `WaitsAFrameForWhatTheStackServes`'s frame and reads on the next (`WaitsAFrameForWhatTheStackServesTest`); `tests/Feature/EveryScreenTheRouterServesDrawsTest.php` draws four frames of every screen the router serves, each opened on a stack nothing is held for, counts what each read, and holds that a frame which asked asks for the next at once; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
 | `N1-R66` | Beyond that, only a declared cadence or an operator's act — never a value read, a key pressed, or a screen rebuilt | the screens that poll declare their `HowOftenAScreenLooks`, and poll only while something is settling |
 | `N1-R24` | A session lives no longer than the reach it was made for | opening a screen is a reach, and it carries when it was read |
 
@@ -44,7 +44,7 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R8` | A credential never appears in a URL | routes carry a stored id and never an address or a secret |
-| `N1-R15` | An address has one destination and a screen is not it | a row is a name and nothing else; `tests/Templates/NothingSecretReachesAScreenTest.php` |
+| `N1-R15` | An address goes to the client, and to a screen only as the operator's note of where a stack that was not reached was tried | a row is a name and nothing else; `tests/Templates/NothingSecretReachesAScreenTest.php`, `tests/Arch/TheTriedAddressIsShownOnlyToTheOperatorTest.php` |
 | `N4-R13` | A diagnostic report is assembled from what the operator chooses to send, not from whatever a screen happened to hold | `Concealed` on every stack-facing screen (`DiagnosticsTest`, `SharingContractTest`, `TheFirstFrameIsOfferedTest`, `ADiagnosticReportSaysNothingSecretTest`) |
 | `N4-R18` | Credentials and pairing material are kept out of a capture, and so is the report | `tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php` (`ConcealedTest`, `CaptureContractTest`, `EveryPluginThisAppShipsIsAdmittedTest`) |
 
@@ -74,7 +74,7 @@ requirement is right and this page is a defect.
 | `N1-R1` | Parity across surfaces, rather than parity by everybody remembering | the catalogues, and the rules over them |
 | `N1-R2` | **Every action available from another surface is offered here**, unless a requirement says otherwise and why | **Not kept.** See *What is not built* below (`EveryActionTheStackOffersTest`, `PairingAStackByScanningTest`, `PairingAStackByTypingTest`, `SeeingHowAStackIsTest`, `SigningIntoAStackTest`, `TheFirstFrameIsOfferedTest`) |
 | `N2-R1` | The app opens on the overall verdict, and says `unknown` as its own answer | `YourStacks`, whose every row says how that stack stands in the one line's own sentence, `HowTheOneLineReads`. A stack never heard reads unknown |
-| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` (`WorstFirstTest`, `SeeingHowAStackIsTest`) |
+| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` (`WorstFirstTest`, `SeeingAStacksFindingsInOrderTest`) |
 | `N2-R3` | A finding carries its meaning and its remedy, in the core's own words, and its code one step away | `HowAFindingReads`; `WhatOneFindingSays::carriedToTheLogs()` hands a service finding's code to its logs, which `WhatThisServiceSaid` says above the lines, and `codeAtTheFoot()` keeps a machine finding's code in the detail at the foot of its card |
 | `G4-R3` | The cause is reported rather than each symptom independently | narrow, sort, then group — grouping last (`TheCauseBeforeItsSymptomsTest`) |
 | `G4-R4` | Plain explanation leads; technical detail is available and does not lead | it arrives on the row beneath everything above it |
@@ -95,8 +95,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 72 envelopes and this app follows 62.
-Of the rest, 9 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 72 envelopes and this app follows 63.
+Of the rest, 8 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 1 more — `Pull` — is named without being followed. `Admission` is
 followed through the SDK: signing in opens a door whose class reads that
 envelope itself, so no reader here opens it.

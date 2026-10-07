@@ -1,0 +1,8 @@
+A level with a back button keeps the left-edge swipe for going back.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -183,2 +183,2 @@
+                 // Left-edge detector for swipe-to-open (both modes), when closed.
+-                if !state.isOpen {
++                if !state.isOpen && !drawerNode.props.getBool("beside_back") {

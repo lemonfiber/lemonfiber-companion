@@ -268,6 +268,20 @@ it('reads each stack once while open, and again when it looks again', function (
     expect($once)->toBe(1)->and($phone->listing->askings($home->id()))->toBe(2);
 });
 
+it('asks every stack shown again what it offers when the operator asks again, and not on the screen\'s own cadence', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $phone = new APhoneLookingAtWhatIsNew($home, $away);
+    $screen = $phone->opens();
+
+    $screen->again();
+    $onTheCadence = [$phone->offering->wasAskedAgain($home->id()), $phone->offering->wasAskedAgain($away->id())];
+    $screen->askAgain();
+
+    expect($onTheCadence)->toBe([false, false])
+        ->and([$phone->offering->wasAskedAgain($home->id()), $phone->offering->wasAskedAgain($away->id())])->toBe([true, true]);
+});
+
 it('reads one stack a frame, and says nothing is new only once every stack shown was read', function (): void {
     $home = aStackWithNews('a', 'The loft');
     $away = aStackWithNews('b', 'The cabin');

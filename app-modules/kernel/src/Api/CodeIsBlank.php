@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * and nothing else. Built through a named constructor rather than by overriding
  * `__construct`, because `parent::__construct()` reads as the base class's
  * constructor called from outside it; `new self(...)` inside the class is the
- * cure `phpstan.neon` describes.
+ * cure `phpstan/disallowed-methods-and-names.neon` describes.
  */
 final class CodeIsBlank extends InvalidArgumentException
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Tests\Support\Rules;
 
-// ARCHITECTURE.md, checked against itself.
+// The rules ARCHITECTURE.md indexes, checked against themselves.
 //
-// The document carries a table of rules and, for each, the mechanism that
-// enforces it. That column is the part a reader trusts and stops checking, and
+// ARCHITECTURE.md and the files in `.docs/architecture/` carry tables of rules
+// and, for each, the mechanism that enforces it. That column is the part a reader trusts and stops checking, and
 // it can go wrong in two ways that look identical from the outside: a rule that
 // claims `arch` with nothing behind it, and a rule that names a Pest
 // expectation which does not exist, so the suite reports a green tick for a
@@ -37,7 +37,7 @@ it('enforces every rule the architecture documents', function (): void {
     }
 
     expect($unenforced)->toBe([], sprintf(
-        "ARCHITECTURE.md claims these are enforced and nothing carries their identifier:\n  %s\n\n"
+        "The rules claim these are enforced and nothing carries their identifier:\n  %s\n\n"
         . 'Either write the rule and tag it with its identifier, or change the '
         . "enforcement column to `review` and accept that a human has to catch it.",
         implode("\n  ", $unenforced),
@@ -126,7 +126,7 @@ it('documents every rule the codebase enforces', function (): void {
     sort($undocumented);
 
     expect($undocumented)->toBe([], sprintf(
-        "These identifiers are enforced somewhere but appear in no ARCHITECTURE.md rule table:\n  %s",
+        "These identifiers are enforced somewhere but appear in no rule table of ARCHITECTURE.md or .docs/architecture/:\n  %s",
         implode(', ', $undocumented),
     ));
 });

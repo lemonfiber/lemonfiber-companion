@@ -12,6 +12,7 @@ use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
+use Tests\Support\WhatASettledScreenDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -76,7 +77,7 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
             ? ['stack' => $stack, 'service' => 'gluetun']
             : ['stack' => $stack]);
 
-        $drawn[$case->name] = WhatTheDeviceWouldDraw::by($screen);
+        $drawn[$case->name] = WhatASettledScreenDraws::of($screen);
     }
 
     return $drawn;
@@ -154,7 +155,26 @@ function whatNoAnswerLooksLike(): array
         theSignedOutSentence(),
         theExpiredSentence(),
         whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said()),
+        whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()),
     ];
+}
+
+/**
+ * The sentence a screen owes a machine that did not answer, and the one it must never draw.
+ *
+ * Chosen by the screen's surface, read off the class the router serves it
+ * with: a screen in the household module is a member's, and says it in the
+ * household's words; every other screen is the operator's, and says it in the
+ * operator's.
+ *
+ * @return array{string, string}
+ */
+function theSentencesASurfaceOwes(string $class): array
+{
+    $operators = whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said());
+    $households = whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold());
+
+    return str_starts_with($class, A_MEMBERS_SURFACE) ? [$households, $operators] : [$operators, $households];
 }
 
 /**
@@ -257,6 +277,9 @@ it('finds screens to draw', function (): void {
  */
 const NEVER_REACHES_THE_MACHINE = ['Shelf'];
 
+/** Where a member's screens live: every screen under it is a member's, and says things in the household's words. */
+const A_MEMBERS_SURFACE = 'Modules\\Household\\';
+
 /**
  * Screens that ask the machine nothing until the operator taps, and why each does not.
  *
@@ -334,12 +357,20 @@ it('a machine that does not answer draws what stood in the way, and the way back
 
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::NotAnswering->asAStack()->id()->stored());
 
+    // Read once: the reading walks the source, and taken per screen it is
+    // most of what this test costs.
+    $served = WhereAScreenCanSendYou::read()->screensTheRouterServes();
+
     foreach (whatEachScreenDrewOf(AStandInStack::NotAnswering) as $name => $drawn) {
         if ($name === $wayBackIn || in_array($name, [...NEVER_REACHES_THE_MACHINE, ...ASKS_NOTHING_OF_THE_MACHINE], strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 
-        $met = in_array(whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
+        // Each surface in its own words, and never the other's: an
+        // operator's screen says it as the operator is told it, and a
+        // member's as the household is.
+        [$owed, $foreign] = theSentencesASurfaceOwes($served[sprintf('AStacksScreen::%s', $name)] ?? '');
+        $met = in_array($owed, $drawn->said(), strict: true) && ! in_array($foreign, $drawn->said(), strict: true);
 
         // An obstacle never takes the action away. A screen that
         // reported the failure and offered nothing leaves an operator whose

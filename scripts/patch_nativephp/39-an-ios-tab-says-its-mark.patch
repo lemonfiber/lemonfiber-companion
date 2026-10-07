@@ -1,0 +1,17 @@
+On iOS the mark's sentence is the tab's name to a screen reader where the tab
+carries one, as it is on Android, so the tab is named once and the count is
+said with it.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
+@@ -241 +241,2 @@
+                 .badge(badgeFor(tab))
++                .accessibilityLabel(markFor(tab), isEnabled: !markFor(tab).isEmpty)
+@@ -393 +394,7 @@
++    /// What a screen reader says for a tab carrying a mark: its name and how
++    /// many new items it holds, or nothing where the tab carries none.
++    private func markFor(_ tab: NativeUINode) -> String {
++        tab.props.getString("badge_label", default: "")
++    }
++
+     private func badgeFor(_ tab: NativeUINode) -> Text? {

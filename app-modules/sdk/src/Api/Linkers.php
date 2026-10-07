@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheLinksSaid;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -36,7 +37,7 @@ final readonly class Linkers implements Linking
 
     public function linkedOn(Stack $stack, Session $session): WhatTheLinksSaid
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::WIRING_ENDPOINT);
@@ -50,7 +51,7 @@ final readonly class Linkers implements Linking
                 refused: WhatTheLinksSaid::refused(...),
                 met: WhatTheLinksSaid::met(...),
             );
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LinksAreUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|LinksAreUnreadable $why) {
             return WhatTheLinksSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

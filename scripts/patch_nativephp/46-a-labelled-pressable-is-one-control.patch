@@ -1,0 +1,98 @@
+A pressable the markup gave a label is one control to a screen reader, whatever
+draws it: a button, a list row, a tappable area. The press is put on the node by
+`nodeGestures`, and each renderer said its label on a node of its own inside
+that one, so the node a reader focuses was a tap with no name and no role, and
+the label and the words drawn under it were read after it, one by one. Said
+here, on the outermost node of the click region, the control says its label
+once, is a button, is pressed through the accessibility layer by the same
+press, and nothing inside it is said again. One place, because every node is
+drawn through `NodeView`.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt
+@@ -6,1 +6,13 @@
+ import androidx.compose.foundation.clickable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.focus.onFocusChanged
++import androidx.compose.ui.semantics.Role
++import androidx.compose.ui.semantics.SemanticsPropertyReceiver
++import androidx.compose.ui.semantics.clearAndSetSemantics
++import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.disabled
++import androidx.compose.ui.semantics.focused
++import androidx.compose.ui.semantics.onClick
++import androidx.compose.ui.semantics.role
+@@ -319,1 +325,65 @@
++// MARK: - Said as a control
++
++/**
++ * A control said as the one element it is, under the name it was given.
++ *
++ * Its name is what a screen reader says; it is a control in this role; a tap
++ * through the accessibility layer presses it where it can be pressed, and it
++ * is said to be disabled where it cannot; whether it holds the focus is said
++ * with it, so a keyboard, a switch and a screen reader all find the same node;
++ * and nothing drawn inside it is said again. Put outside whatever takes the
++ * press, so the name and the press are one node.
++ */
++@Composable
++fun Modifier.saidAsAControl(
++    name: String,
++    role: Role,
++    pressable: Boolean = true,
++    state: SemanticsPropertyReceiver.() -> Unit = {},
++    onPress: () -> Unit,
++): Modifier {
++    var holdsTheFocus by remember { mutableStateOf(false) }
++    val focusedNow = holdsTheFocus
++
++    return onFocusChanged { holdsTheFocus = it.hasFocus }.clearAndSetSemantics {
++        contentDescription = name
++        this.role = role
++        focused = focusedNow
++        state()
++        if (pressable) {
++            onClick {
++                onPress()
++                true
++            }
++        } else {
++            disabled()
++        }
++    }
++}
++
++/**
++ * A pressable node the markup gave a label, said as the one control it is.
++ *
++ * Its label, and its hint after it, are its name, and it is a button pressed
++ * by the node's own press. A node with no label, or nothing to press, or a
++ * menu that takes its tap, is left as it was.
++ */
++@Composable
++fun Modifier.nodeSaidAsAControl(node: NativeUINode): Modifier {
++    val label = node.props.getString("a11y_label", "")
++    val press = node.props.getCallbackId("on_press").let { if (it != 0) it else node.onPress }
++
++    if (label.isEmpty() || press == 0 || node.props.getBool("has_menu")) {
++        return this
++    }
++
++    val said = listOf(label, node.props.getString("a11y_hint", "")).filter { it.isNotEmpty() }.joinToString(". ")
++    val pressable = !node.props.getBool("disabled") && !node.props.getBool("loading")
++    val nodeId = node.id
++
++    return saidAsAControl(said, Role.Button, pressable) {
++        NativeElementBridge.sendPressEvent(press, nodeId)
++    }
++}
++
+ // MARK: - Gesture Modifier
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeView.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeView.kt
+@@ -59,2 +59,3 @@
+         modifier = modifier
++            .nodeSaidAsAControl(node)
+             .nodeGestures(node, interactionSource)

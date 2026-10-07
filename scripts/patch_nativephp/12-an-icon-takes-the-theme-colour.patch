@@ -1,0 +1,11 @@
+An icon with no colour of its own takes the theme's text colour on its surface,
+for the reason text does.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt
+@@ -8 +8,2 @@
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.toArgb
+@@ -20 +21 @@
+-        val lightArgb = p.getColor("color", 0xFF000000.toInt())
++        val lightArgb = p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onSurface.toArgb())

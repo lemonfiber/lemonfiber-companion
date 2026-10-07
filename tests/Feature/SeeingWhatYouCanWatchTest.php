@@ -299,8 +299,8 @@ it('says where their own could not be asked for, while the shelf answered', func
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->theirOwnWereStopped())->toBeTrue()
-        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
-        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()))
+        ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold()))
         ->and($drawn->said())->toContain('A film')
         ->and(array_count_values($drawn->offers())[WhatMarkupDraws::words('household.ask_again')])->toBe(2)
         ->and((string) json_encode(WhatTheDeviceWouldDraw::tree($screen)))->toContain(__('household.ask_again_for_yours'));
@@ -311,7 +311,7 @@ it('says an obstacle once where both readings met it', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::met($stopped), owing: AMemberWhoIsOwed::met($stopped));
 
     expect($screen->theirOwnWereStopped())->toBeFalse()
-        ->and(array_count_values(WhatTheDeviceWouldDraw::by($screen)->said())[WhatMarkupDraws::words(KindOfObstacle::StackDidNotAnswer->said())])->toBe(1);
+        ->and(array_count_values(WhatTheDeviceWouldDraw::by($screen)->said())[WhatMarkupDraws::words(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())])->toBe(1);
 });
 
 it('asks for both again when asked to, and once a frame otherwise', function (): void {
@@ -417,11 +417,30 @@ it('says an empty shelf in as many words', function (): void {
 it('reports what stood in the way and keeps the way back', function (): void {
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($met->answer()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($met->answer()->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
+    expect($met->answer()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())
+        ->and($met->answer()->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold())
         ->and($met->answer()->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toBe([]);
 });
+
+it('tells a member the house was not reached in the household\'s words, and never where it was tried', function (KindOfObstacle $kind): void {
+    // A member has no machine, address or software to look at, so the
+    // operator's sentences are not theirs, and the address is never drawn
+    // on a member's screen at all.
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of($kind)->whenTriedAt(theStackAShelfIsReadFrom()->at())));
+    $drawn = WhatTheDeviceWouldDraw::by($met)->said();
+
+    expect($drawn)->toContain(__($kind->saidToTheHousehold()))
+        ->and($drawn)->toContain(__($kind->remedyForTheHousehold()))
+        ->and($drawn)->not->toContain(__($kind->said()))
+        ->and(implode("\n", $drawn))->not->toContain('192.168.1.42')
+        ->and(implode("\n", $drawn))->not->toContain(__('connection.tried_at', ['address' => '']));
+})->with([
+    'no answer' => [KindOfObstacle::StackDidNotAnswer],
+    'a name found nowhere' => [KindOfObstacle::NameWasNotFound],
+    'nothing at the address' => [KindOfObstacle::NothingAtThePairedAddress],
+    'a connection turned away' => [KindOfObstacle::ConnectionWasTurnedAway],
+]);
 
 it('draws an obstacle as itself, never as a library out of reach', function (): void {
     // The third pair this screen has to keep apart, and the one nothing read.
@@ -440,8 +459,8 @@ it('draws an obstacle as itself, never as a library out of reach', function (): 
 
     $drawn = WhatTheDeviceWouldDraw::by($met)->said();
 
-    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
-    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()));
+    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()));
+    expect($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold()));
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach'));
     expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach_action'));
 });

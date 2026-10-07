@@ -27,6 +27,7 @@ use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatAnInvitationAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
@@ -65,14 +66,14 @@ final readonly class Ushers implements Inviting
         try {
             // The household is read where the operator's requests are, and
             // for its people: the same answer, and one way of asking for it.
-            $envelope = $this->clients->client($stack, $session)->read(Api::REQUESTS_ENDPOINT);
+            $envelope = GatedClient::of($this->clients, $stack, $session)->read(Api::REQUESTS_ENDPOINT);
 
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatWasFoundOfTheMembers::found(Households::whoIsIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheMembers::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|InvitationSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|InvitationSaysNothing $why) {
             return WhatWasFoundOfTheMembers::met(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
@@ -80,14 +81,14 @@ final readonly class Ushers implements Inviting
     public function wouldInvite(Stack $stack, Session $session, AnInvitationAskedFor $asked): WhatBecameOfTheInvitation
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(AskingThemIn::Invite->asked()),
                 WhatAnInvitationAsksWith::offering($asked)->said,
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -95,14 +96,14 @@ final readonly class Ushers implements Inviting
     public function invite(Stack $stack, Session $session, AnInvitationAgreed $agreed): WhatBecameOfTheInvitation
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(AskingThemIn::Invite->asked()),
                 WhatAnInvitationAsksWith::agreeing($agreed->asked())->said,
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -110,14 +111,14 @@ final readonly class Ushers implements Inviting
     public function takeThePasswordOff(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheInvitation
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(AskingThemIn::TakeThePasswordOff->asked()),
                 [WireField::Name->value => $who->name()],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheInvitation::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -143,7 +144,7 @@ final readonly class Ushers implements Inviting
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheInvitation
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheInvitation => WhatBecameOfTheInvitation::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheInvitation
                     => WhatBecameOfTheInvitation::answered(Invitations::in($envelope)),

@@ -73,6 +73,10 @@ const WHAT_A_COMPONENT_IS = [
     // one, and what a reader hears about it is said in the words beside it.
     'stack' => false,
 
+    // The platform's indicator, drawn while a frame waits for the stack. The
+    // platform says it is busy in its own words, and nothing on it is pressed.
+    'activity-indicator' => false,
+
     // A glyph beside the words that say the same thing: furniture, because the
     // words are what a reader hears, and a glyph announced before them is the
     // same news twice.

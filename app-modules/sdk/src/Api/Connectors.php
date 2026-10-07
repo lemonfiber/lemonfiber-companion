@@ -26,6 +26,7 @@ use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheDoorSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -46,14 +47,14 @@ final readonly class Connectors implements HandingOverADevice
     public function handOver(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheHandoff
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(ConnectingADevice::HandOver->asked()),
                 [WireField::Name->value => $who->name()],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheHandoff::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -76,7 +77,7 @@ final readonly class Connectors implements HandingOverADevice
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheHandoff
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheHandoff => WhatBecameOfTheHandoff::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheHandoff
                     => WhatBecameOfTheHandoff::answered(Handoffs::in($envelope)),

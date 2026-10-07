@@ -1,0 +1,58 @@
+What a package patched by an earlier build carries where
+21-a-tab-carries-its-name.patch makes a tab one control: the tab named by a
+semantics modifier beside its selectable, with the selection's own click, or
+said as a tab with semantics of its own written out in place.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -58,4 +58,8 @@
+ import androidx.compose.ui.platform.LocalLayoutDirection
+ import androidx.compose.ui.semantics.clearAndSetSemantics
+ import androidx.compose.ui.semantics.contentDescription
+ import androidx.compose.ui.semantics.semantics
++import androidx.compose.ui.semantics.Role
++import androidx.compose.ui.semantics.onClick
++import androidx.compose.ui.semantics.role
++import androidx.compose.ui.semantics.selected
+@@ -341,36 +341,35 @@
+                         val tabTapped: () -> Unit = {
+                                 // Local selection updates instantly so
+                                 // the ripple / selection indicator
+                                 // responds; for the search tab, no PHP
+                                 // navigation fires (it's an iOS-/Android-
+                                 // side overlay). For regular tabs, the
+                                 // BottomNavItem-auto-wired `replace`
+                                 // press handler fires here. A tap back
+                                 // to the active tab normally needs no
+                                 // press — except while another tab's
+                                 // navigation is in flight: PHP is
+                                 // already navigating away and must be
+                                 // told to come back.
+                                 selection = actualIdx
+                                 val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
+                                 if (!isSearchTab && tapNavigates && tab.onPress != 0) {
+                                     if (tab.props.getString("url", "").isNotEmpty()) {
+                                         val tappedId = tabIds.getOrElse(actualIdx) { "" }
+                                         pendingTabId?.let { prev ->
+                                             if (prev != tappedId) supersededTabIds.add(prev)
+                                         }
+                                         pendingTabId = tappedId
+                                     }
+                                     NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
+                                 }
+                         }
+                         NavigationBarItem(
+-                            modifier = Modifier.clearAndSetSemantics {
+-                                contentDescription = tab.props.getString("badge_label", "").ifEmpty { label }
+-                                role = Role.Tab
+-                                selected = actualIdx == selection
+-                                onClick { tabTapped(); true }
+-                            },
++                            modifier = Modifier.saidAsAControl(
++                                tab.props.getString("badge_label", "").ifEmpty { label },
++                                Role.Tab,
++                                state = { selected = actualIdx == selection },
++                            ) { tabTapped() },
+                             selected = actualIdx == selection,
+                             onClick = tabTapped,
+                             icon = {

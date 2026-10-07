@@ -1,0 +1,9 @@
+The count in a tab's badge is said by the tab, in the mark's own sentence, so
+the digits drawn in the badge say nothing of their own: read as well, the count
+would be heard twice.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -377 +377 @@
+-                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily)
++                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {})

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheLineWasFound;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -30,7 +31,7 @@ final readonly class Quartermasters implements Rationing
 
     public function rationedOn(Stack $stack, Session $session): WhatTheLineWasFound
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::BANDWIDTH_ENDPOINT);
@@ -40,7 +41,7 @@ final readonly class Quartermasters implements Rationing
             return WhatTheLineWasFound::shared(HowTheLineIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheLineWasFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|BandwidthIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|BandwidthIsUnreadable $why) {
             return WhatTheLineWasFound::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

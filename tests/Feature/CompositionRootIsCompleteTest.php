@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AnAction;
 use Tests\Support\Module;
 use Tests\Support\Stores;
 
@@ -24,6 +25,19 @@ pest()->group('holds:bootstrap/Composition');
 // for anything. The composition root is the one place where the answer is
 // wrong, and this is the one test that looks there.
 
+/**
+ * The kernel's interfaces that its own values implement, which no adapter answers, each with why.
+ *
+ * The kernel holds values as well as ports, and an interface over values is
+ * not a seam anything is bound at: there is no adapter to resolve, only the
+ * kernel's own cases and values, each answering for itself.
+ *
+ * @var array<class-string, string>
+ */
+const WHAT_THE_KERNELS_VALUES_IMPLEMENT = [
+    AnAction::class => 'the name the stack serves an action by, which every action the kernel names spells for itself',
+];
+
 // G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it
 it('every port is bound to exactly one adapter', function (): void {
     $unbound = [];
@@ -34,7 +48,7 @@ it('every port is bound to exactly one adapter', function (): void {
         }
 
         foreach ($module->classNames() as $name) {
-            if (! interface_exists($name)) {
+            if (! interface_exists($name) || array_key_exists($name, WHAT_THE_KERNELS_VALUES_IMPLEMENT)) {
                 continue;
             }
 
@@ -60,6 +74,8 @@ it('every port is bound to exactly one adapter', function (): void {
         . 'container exists (G8, A3).',
         implode("\n  ", $unbound),
     ));
+    expect(array_filter(array_keys(WHAT_THE_KERNELS_VALUES_IMPLEMENT), static fn(string $name): bool => app()->bound($name)))
+        ->toBe([], 'an interface excused as one the kernel\'s values implement has a binding, so it is a port and the excuse is stale');
 });
 
 /**

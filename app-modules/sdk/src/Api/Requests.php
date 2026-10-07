@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\WhatWasWanted;
 use Modules\Sdk\Api\Fields\HouseholdField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatADecisionAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
@@ -60,7 +61,7 @@ final readonly class Requests implements Wanting
 
     public function askedOf(Stack $stack, Session $session): WhatWasWanted
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::REQUESTS_ENDPOINT);
@@ -73,14 +74,14 @@ final readonly class Requests implements Wanting
             return WhatWasWanted::these(Households::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasWanted::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
             return WhatWasWanted::met(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 
     public function decided(Stack $stack, Session $session, Decided $decided): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
@@ -97,7 +98,7 @@ final readonly class Requests implements Wanting
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

@@ -1,0 +1,35 @@
+A glyph is a word in an icon font, drawn by its ligature, so every icon is a
+line of text to the accessibility layer: a screen reader reads "chevron_right"
+and "error" aloud, and the label the markup gave the glyph is dropped, because
+the helper that draws it takes a description and never applies it. The ligature
+is hidden from the reader, and the glyph says its label where it was given one
+and nothing where it was not. One place, because every icon the app draws on
+Android goes through it: a glyph on its own, a row's leading and trailing
+icons, and a tab's.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt
+@@ -9 +9,4 @@
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.semantics.clearAndSetSemantics
++import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.semantics
+@@ -53 +56 @@
+-        modifier = modifier.size(24.dp),
++        modifier = modifier.size(24.dp).saidAs(contentDescription),
+@@ -57 +60,2 @@
+             text = getIconName(name),
++            modifier = Modifier.clearAndSetSemantics {},
+@@ -89 +93 @@
+-        modifier = modifier.size(size),
++        modifier = modifier.size(size).saidAs(contentDescription),
+@@ -93 +97,2 @@
+             text = getIconName(name),
++            modifier = Modifier.clearAndSetSemantics {},
+@@ -113,2 +118,6 @@
++/** The glyph's label for a screen reader, where it was given one. */
++private fun Modifier.saidAs(label: String?): Modifier =
++    if (label.isNullOrEmpty()) this else semantics { contentDescription = label }
++
+ /**
+  * Get the Material Icon ligature name for the given icon name.

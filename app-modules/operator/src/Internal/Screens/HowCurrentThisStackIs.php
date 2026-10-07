@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -70,6 +71,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
@@ -109,15 +111,16 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     ) {}
 
     /**
-     * Open the stack's stream and ask the stack, behind the first frame.
+     * Open the stack's stream, behind the first frame.
      *
-     * The first frame drew what the phone kept; what the stack says now
-     * replaces it.
+     * The first frame drew what the phone kept; the next asks the stack, and
+     * what it says replaces it. Asked there rather than here, because a frame
+     * is where a stack nothing is held for is asked what it serves first.
      */
     public function mount(): void
     {
         $this->listen();
-        $this->answered = $this->ask();
+        $this->answered = null;
     }
 
     /**

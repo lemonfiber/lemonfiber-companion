@@ -18,6 +18,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAdviceReads;
 use Modules\Operator\Internal\ViewModels\TheAdviceTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -40,6 +41,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhichAppToWatchOn extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;

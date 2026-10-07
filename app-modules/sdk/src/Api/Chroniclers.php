@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\VersionIsBlank;
 use Modules\Kernel\Api\WhatWasFoundOfTheVersions;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -30,7 +31,7 @@ final readonly class Chroniclers implements ReadingVersions
 
     public function versionsOn(Stack $stack, Session $session): WhatWasFoundOfTheVersions
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::VERSION_ENDPOINT);
@@ -40,7 +41,7 @@ final readonly class Chroniclers implements ReadingVersions
             return WhatWasFoundOfTheVersions::found(TheVersions::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheVersions::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ChangelogIsUnreadable|VersionsAreUnreadable|VersionIsBlank $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ChangelogIsUnreadable|VersionsAreUnreadable|VersionIsBlank $why) {
             return WhatWasFoundOfTheVersions::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

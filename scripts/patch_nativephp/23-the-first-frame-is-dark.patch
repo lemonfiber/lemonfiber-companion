@@ -1,0 +1,11 @@
+Both themes are dark whatever the phone is set to, so the colour scheme behind
+the first frame is the dark one too. Before the app has painted its theme, the
+package's own palette is what the splash and the frame around it are drawn in,
+and on a phone set to light it would be the light one, a white flash before
+every launch.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
+@@ -175 +175 @@
+-            val isDark = isSystemInDarkTheme()
++            val isDark = true

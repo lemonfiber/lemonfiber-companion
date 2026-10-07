@@ -1,0 +1,24 @@
+The iOS half of 22-a-glyph-says-its-label.patch. A list row's leading and
+trailing icons are SF Symbols drawn as images VoiceOver can reach, so a row is
+read as its symbol's name ("exclamationmark.octagon.fill") and a chevron as
+"Forward", each a stop of its own beside the row. They decorate a row whose
+words, and whose label, already say what it is, so they are hidden from
+VoiceOver, as the Android row's icons are and as the row's avatar, monogram and
+image already were.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
+@@ -134,10 +134,12 @@
+                     Image(systemName: getIconForName(value))
+                         .nuiScaledFont(size: 18, weight: .medium)
+                         .foregroundColor(.white)
+                 }
+                 .frame(width: 40, height: 40)
++                .accessibilityHidden(true)
+             } else {
+                 Image(systemName: getIconForName(value))
+                     .frame(width: 24, height: 24)
+-                    .foregroundColor(.secondary)
++                    .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
++                    .accessibilityHidden(true)
+             }

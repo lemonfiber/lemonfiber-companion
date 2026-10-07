@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatADecisionAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -39,7 +40,7 @@ final readonly class Guides implements WalkingThrough
 
     public function walk(Stack $stack, Session $session, WhatToWalk $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // The item where one was named and nothing where none was: the
@@ -57,7 +58,7 @@ final readonly class Guides implements WalkingThrough
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -84,7 +85,7 @@ final readonly class Guides implements WalkingThrough
     private function outcome(Stack $stack, Session $session, Job $job): HowTheWalkthroughIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheWalkthroughIsGoing => HowTheWalkthroughIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheWalkthroughIsGoing
                     => HowTheWalkthroughIsGoing::done(Walkthroughs::in($envelope)),

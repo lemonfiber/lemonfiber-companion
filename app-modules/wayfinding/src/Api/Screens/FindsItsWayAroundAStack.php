@@ -38,6 +38,7 @@ use function view;
 trait FindsItsWayAroundAStack
 {
     use ChoosesAStack;
+    use WaitsAFrameForWhatTheStackServes;
 
     /**
      * Whose menu this screen draws, read once from the phone's keychain.

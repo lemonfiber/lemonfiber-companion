@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatTheirAskingSaid;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 
@@ -71,7 +72,7 @@ final readonly class TheirOwn implements Owing
      */
     public function theirRequests(Stack $stack, Session $session): WhatTheirAskingSaid
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::REQUESTS_ENDPOINT);
@@ -79,7 +80,7 @@ final readonly class TheirOwn implements Owing
             return WhatTheirAskingSaid::of($this->owedIn($stack, $envelope), $this->askedIn($stack, $envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheirAskingSaid::bothRefused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatTheirAskingSaid::bothRefused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -93,13 +94,13 @@ final readonly class TheirOwn implements Owing
      */
     public function whatTheDefaultsAreTold(Stack $stack, Session $session): WhatTheyAreOwed
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return $this->owedIn($stack, $client->read(Api::REQUESTS_ENDPOINT, AsTheHouseholdsDefaults::QUERY));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyAreOwed::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatTheyAreOwed::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

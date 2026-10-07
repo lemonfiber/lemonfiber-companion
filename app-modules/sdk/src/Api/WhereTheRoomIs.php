@@ -48,7 +48,7 @@ use function trim;
  * arrives as `null` and becomes {@see AnAmountOfRoom::unread()}, never nought.
  *
  * Only what the requirements ask for is read. The rest is recorded in
- * `WhatTheContractCarriesThatNothingReadsTest`, each with its reason.
+ * `WhatThisAppDoesNotRead`, each with its reason.
  */
 final readonly class WhereTheRoomIs
 {

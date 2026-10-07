@@ -21,6 +21,7 @@ rules:
   - changed-files:
       - any-glob-to-any-file:
           - 'ARCHITECTURE.md'
+          - '.docs/architecture/**'
           - 'phpstan.neon'
           - 'phpstan/**'
           - 'tests/Arch/**'

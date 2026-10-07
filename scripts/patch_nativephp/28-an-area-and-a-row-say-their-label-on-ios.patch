@@ -1,0 +1,39 @@
+The two of 27-an-area-and-a-row-say-their-label.patch, on iOS, where neither
+renderer reads `a11y_label` either: a tappable area is read as the words inside
+it, one at a time, and a list row as its lines combined. Each becomes one
+element saying its label, a button where something handles its press. The
+modifier is shared by the two files, so it is not private to either.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift
+@@ -22,5 +22,25 @@
+         } else {
+             NativeUIColumnRenderer(node: node)
++                .modifier(NativeUISaidAs(node: node))
+         }
+     }
+ }
++
++/// The label the markup gave an element, said as one element, where it gave one.
++struct NativeUISaidAs: ViewModifier {
++    let node: NativeUINode
++
++    func body(content: Content) -> some View {
++        let label = node.props.getString("a11y_label", default: "")
++        let hint = node.props.getString("a11y_hint", default: "")
++        if label.isEmpty {
++            content
++        } else {
++            content
++                .accessibilityElement(children: .combine)
++                .accessibilityLabel(label)
++                .accessibilityHint(hint)
++                .accessibilityAddTraits(node.onPress != 0 ? .isButton : [])
++        }
++    }
++}
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
+@@ -95 +95,2 @@
+             .accessibilityElement(children: .combine)
++            .modifier(NativeUISaidAs(node: node))

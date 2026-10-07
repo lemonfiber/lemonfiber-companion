@@ -1,0 +1,21 @@
+An agent's git worktree inside the project is a second checkout of this
+repository — a `vendor/` of its own, its own `app-modules`, its own lockfile —
+and the bundler copies it. Measured on 2026-09-16: a debug bundle came to 243
+MB, of which 225 MB was one worktree under `.claude/`, carried onto a handset
+and unpacked there.
+
+`.git` is already excluded at any depth and this is the same fact wearing a
+different name: a directory a tool keeps its own state in, which no build has a
+use for. It sits beside `.git` rather than in `PROJECT` because a worktree can
+be nested anywhere, and a project-root rule would miss one a directory deeper.
+
+The alternative was asking every agent to put its worktree somewhere else,
+which is a convention — and a convention is what this repository calls the
+thing that holds until somebody new arrives.
+
+--- a/vendor/nativephp/mobile/src/Support/BundleExclusions.php
++++ b/vendor/nativephp/mobile/src/Support/BundleExclusions.php
+@@ -8,2 +8,3 @@
+     public const ANY_DEPTH = [
+         '.git',
++        '.claude',

@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Internal;
 
 use function array_filter;
+use function basename;
+use function dirname;
 use function expect;
+use function file_get_contents;
+use function glob;
+use function is_array;
+use function is_subclass_of;
 use function it;
 use function json_encode;
 
@@ -16,6 +22,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use ReflectionClass;
 
 use function sprintf;
 use function str_repeat;
@@ -57,8 +64,10 @@ it('reads everything else as a stack that did not answer', function (): void {
     // A stack asleep, a network that dropped, an endpoint answering five
     // hundred — and a stack that could not check an account with its media
     // server, which belongs here rather than beside the refusal above: nothing
-    // about it is the account's doing, and what it wants is another go.
-    foreach ([500, 502, 503, 418] as $status) {
+    // about it is the account's doing, and what it wants is another go. One of
+    // each family that is not a refusal of who is asking or other work: failed,
+    // misasked, missing, and a door counting attempts away from the door.
+    foreach ([500, 502, 503, 418, 400, 404, 429] as $status) {
         $obstacle = WhatARefusalMeant::obstacle(refusedWith($status));
 
         expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer), (string) $status)
@@ -244,4 +253,27 @@ it('reads a code it does not know by the status it came with', function (): void
 it('reads a media server that could not vouch for an account as met rather than in the stack\'s words', function (): void {
     expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Unconfirmed)))->toEqual(KindOfObstacle::MediaServerDidNotAnswer->name)
         ->and(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Elsewhere)))->toEqual(KindOfObstacle::AddressIsNotTheStacks->name);
+});
+
+it('names every family of refusal the SDK raises', function (): void {
+    // The base is abstract, so a family the SDK adds would fall to the arm no
+    // family reaches and be read as a stack that did not answer, unread. Every
+    // concrete family is named in the reading, by `instanceof`.
+    $reading = (string) file_get_contents((string) new ReflectionClass(WhatARefusalMeant::class)->getFileName());
+    $whereTheyAre = glob(sprintf('%s/*.php', dirname((string) new ReflectionClass(RequestFailed::class)->getFileName())));
+    $families = [];
+
+    foreach (is_array($whereTheyAre) ? $whereTheyAre : [] as $file) {
+        $class = sprintf('Lemonfiber\\Sdk\\Exception\\%s', basename($file, '.php'));
+
+        if (is_subclass_of($class, RequestFailed::class)) {
+            $families[] = basename($file, '.php');
+        }
+    }
+
+    expect($families)->not->toBe([]);
+
+    foreach ($families as $family) {
+        expect($reading)->toContain(sprintf('$why instanceof %s', $family), $family);
+    }
 });

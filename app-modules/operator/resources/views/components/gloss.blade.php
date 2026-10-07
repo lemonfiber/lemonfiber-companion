@@ -12,5 +12,5 @@
     <x-operator::quiet-action label="{{ __('stacks.words.ask_in_place', ['word' => $gloss->word]) }}" :goes="$gloss->asks" />
 @endif
 @if ($gloss->waits)
-    <x-operator::the-next-frame />
+    <x-design::the-next-frame />
 @endif

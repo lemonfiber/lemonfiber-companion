@@ -1,0 +1,20 @@
+What a package patched by an earlier build carries where
+33-row-icons-are-hidden-from-voiceover.patch paints a row's trailing glyph in
+the colour it is handed: the glyph in the system's secondary grey.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
+@@ -134,12 +134,12 @@
+                     Image(systemName: getIconForName(value))
+                         .nuiScaledFont(size: 18, weight: .medium)
+                         .foregroundColor(.white)
+                 }
+                 .frame(width: 40, height: 40)
+                 .accessibilityHidden(true)
+             } else {
+                 Image(systemName: getIconForName(value))
+                     .frame(width: 24, height: 24)
+-                    .foregroundColor(.secondary)
++                    .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
+                     .accessibilityHidden(true)
+             }

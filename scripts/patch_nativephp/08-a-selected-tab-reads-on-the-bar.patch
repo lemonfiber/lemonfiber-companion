@@ -1,0 +1,13 @@
+The theme store's `secondary` is the tonal button's fill, and Material draws a
+selected tab's label in its own `secondary`. One key cannot be both a quiet
+fill and a label that has to read on the bar, so Material's is the surface's
+text colour, and the store's stays the button's.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt
+@@ -243,3 +243,3 @@
+-        secondary        = secondary,
+-        onSecondary      = onSecondary,
++        secondary        = onSurface,
++        onSecondary      = surface,
+         tertiary         = accent,

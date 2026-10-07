@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\WhatWasFoundKept;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -34,7 +35,7 @@ final readonly class Storekeepers implements Storing
 
     public function storedOn(Stack $stack, Session $session): WhatWasFoundKept
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::STORED_ENDPOINT);
@@ -44,7 +45,7 @@ final readonly class Storekeepers implements Storing
             return WhatWasFoundKept::kept(WhatIsStored::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundKept::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|StoredIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|StoredIsUnreadable $why) {
             return WhatWasFoundKept::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

@@ -41,7 +41,7 @@ final readonly class WhatTheirOwnTitlesTurnedOutToBe
     /** Something stood in the way, and this is what the member met. */
     public static function somethingStopped(Obstacle $why): self
     {
-        return new self(cameBack: false, met: $why->said(), remedy: $why->remedy(), rows: [], why: $why);
+        return new self(cameBack: false, met: WhatAMemberIsTold::met($why), remedy: WhatAMemberIsTold::remedy($why), rows: [], why: $why);
     }
 
     /** This device holds no session for that house, so nothing was asked. */

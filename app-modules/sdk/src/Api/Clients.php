@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
+use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Session;
@@ -43,6 +45,20 @@ interface Clients extends Reaching
      * interface that may say what a client is.
      */
     public function client(Stack $stack, Session $session): Client;
+
+    /**
+     * A client for this stack, for one request: the one at this path.
+     *
+     * Where the stack is asked first whether it serves the path, the request is
+     * refused before it is sent when it does not; the binding that ships asks
+     * first for every stack ({@see ClientsThatAskWhatIsOffered}). Every read and
+     * every action an adapter sends comes through here, and waits for the next
+     * frame where asking the stack was this frame's one reading of it.
+     *
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable where the stack did not answer being asked whether it serves the path
+     */
+    public function towards(Stack $stack, Session $session, Ability $path): Client;
 
     /**
      * What stood between this stack and an answer this app could read.

@@ -1,0 +1,13 @@
+A divider with no colour of its own is a fixed light grey in both modes. It
+takes the theme's hairline colour, which follows the mode.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt
+@@ -28,2 +28,2 @@
+-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
++        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
+         HorizontalDivider(modifier = modifier, color = color)
+@@ -51,2 +51,2 @@
+-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
++        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
+         val strokeWidth = node.style?.borderWidth ?: 1f

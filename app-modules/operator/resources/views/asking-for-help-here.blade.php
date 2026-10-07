@@ -66,13 +66,13 @@
         </x-design::card>
     @endif
 
-    <x-design::action label="{{ __('stacks.help.describe') }}" tap="describe()" />
+    <x-operator::offered-action label="{{ __('stacks.help.describe') }}" tap="describe()" :offer="$this->offered($this->chosen())" />
 @elseif ($this->answer()->isWorking)
     <x-design::standing
         :said="__('stacks.help.gathering')"
         tone="working"
     />
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure: the stack no longer says what became of it. --}}
     <x-design::notice tone="unknown">
@@ -141,7 +141,7 @@
         <x-design::action label="{{ __('stacks.help.hand_over') }}" tap="handOver()" />
     @else
         {{-- The second yes, on the description above and on nothing else. --}}
-        <x-design::action label="{{ __('stacks.help.write') }}" tap="write()" />
+        <x-operator::offered-action label="{{ __('stacks.help.write') }}" tap="write()" :offer="$this->offered($this->chosen())" />
     @endif
 
     @if ($this->handing !== '')
@@ -158,7 +158,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

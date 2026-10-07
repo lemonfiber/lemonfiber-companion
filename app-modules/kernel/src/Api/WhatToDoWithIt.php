@@ -39,7 +39,7 @@ use function sprintf;
  * operator to confirm without reading, which is what makes the stop
  * confirmation worthless.
  */
-enum WhatToDoWithIt: string
+enum WhatToDoWithIt: string implements AnAction
 {
     /** Bring it up. Nothing that is running stops. */
     case Start = 'start';

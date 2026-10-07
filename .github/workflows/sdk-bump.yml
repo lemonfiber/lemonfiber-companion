@@ -32,9 +32,18 @@ permissions:
   contents: read
 
 concurrency:
-  # One bump at a time: two runs would each reset the branch under the other.
+  # One bump at a time, and the newest wins. Two runs would each reset the
+  # branch under the other, and a run still in flight when the client moves
+  # again is building a bump the next run replaces, so it is cancelled rather
+  # than left to push a head whose checks nobody will read.
+  #
+  # A run cancelled at any step leaves nothing the next one cannot finish. The
+  # scratch ref is reset before it is used and deleted by whichever run gets
+  # past it; the branch moves in one call or not at all; and a pull request left
+  # unopened, unarmed or titled for another revision is not what the next run
+  # treats as already carried, so that run pushes and puts it right.
   group: sdk-bump
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   BRANCH: chore/the-companion-takes-the-client
@@ -89,8 +98,13 @@ jobs:
           PY
           )"
           head="$(gh api "repos/${SDK}/commits/main" --jq .sha)"
-          echo "pin=${pin}" >> "$GITHUB_OUTPUT"
-          echo "head=${head}" >> "$GITHUB_OUTPUT"
+          # The pull request's title is spelled once, here, for the step that
+          # sets it and the step that checks an open pull request already has it.
+          {
+            echo "pin=${pin}"
+            echo "head=${head}"
+            echo "title=chore(sdk): take sdk-php ${head:0:7}"
+          } >> "$GITHUB_OUTPUT"
           if [ "$pin" = "$head" ]; then
             echo "moved=no" >> "$GITHUB_OUTPUT"
             echo "## The companion is already on the client's main" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
@@ -151,6 +165,7 @@ jobs:
           HEAD_SHA: ${{ steps.behind.outputs.head }}
           CLEAN: ${{ steps.build.outcome }}
           INSTALLED: ${{ steps.install.outcome }}
+          TITLE: ${{ steps.behind.outputs.title }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -168,6 +183,103 @@ jobs:
           fi
 
           echo "moved=yes" >> "$GITHUB_OUTPUT"
+
+          # Every file the commit below writes, named once for it and for the
+          # comparison that decides whether it is made at all.
+          files="composer.lock"
+
+          # Pushed only when the push would change something. Every push moves
+          # the pull request's head and runs its whole suite again, and a run
+          # that took exactly what the open pull request already holds would
+          # spend that suite on nothing.
+          #
+          # Asked of the branch, not of `main`: while a pull request is open,
+          # `main` still holds what it replaces, so a comparison with `main`
+          # finds a change every time. What is compared is whole trees: the
+          # commit the branch was built on with this run's files laid over it,
+          # against the branch itself. That sees a file whose bytes differ, and
+          # also a file the branch carries that this run no longer writes, which
+          # comparing only the files written here would miss. A `main` that has
+          # moved on since is not a difference: the pull request's diff holds
+          # none of it either way.
+          #
+          # It says "carried" only on proof. A branch that does not exist, no
+          # open pull request on it, a tree too large to list, or any call that
+          # fails means a push, as does a clean build whose pull request has no
+          # auto-merge armed, or a pull request titled for another revision:
+          # that is what a run cancelled between moving the branch and the step
+          # after it leaves, and the push is what puts it right.
+          if FILES="$files" python3 - >"${RUNNER_TEMP}/carried" <<'PY'
+          import hashlib
+          import json
+          import os
+          import subprocess
+          import sys
+
+          repo, branch = os.environ["REPO"], os.environ["BRANCH"]
+          files = [name for name in os.environ["FILES"].splitlines() if name]
+
+
+          def api(path):
+              done = subprocess.run(["gh", "api", path], capture_output=True, text=True)
+              if done.returncode != 0:
+                  sys.exit(f"pushing: {path} answered {done.stderr.strip() or done.returncode}")
+              return json.loads(done.stdout)
+
+
+          def blob(name):
+              # The id git gives these bytes, which is what a tree records for
+              # a file, so equal ids are equal bytes.
+              with open(name, "rb") as handle:
+                  data = handle.read()
+              return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+          def blobs(commit):
+              tree = api(f"repos/{repo}/git/trees/{commit}?recursive=1")
+              if tree.get("truncated", True):
+                  sys.exit(f"pushing: the tree of {commit} is too large to list whole")
+              return {e["path"]: e["sha"] for e in tree["tree"] if e["type"] == "blob"}
+
+
+          head = api(f"repos/{repo}/git/ref/heads/{branch}")["object"]["sha"]
+          owner = repo.split("/")[0]
+          pulls = [
+              pull
+              for pull in api(f"repos/{repo}/pulls?head={owner}:{branch}&state=open")
+              if pull["head"]["ref"] == branch and pull["head"]["repo"]["full_name"] == repo
+          ]
+          if not pulls:
+              sys.exit(f"pushing: no pull request is open on {branch}")
+          pull = pulls[0]
+          if os.environ["CLEAN"] == "success" and not pull.get("auto_merge"):
+              sys.exit(f"pushing: #{pull['number']} has no auto-merge armed, which a clean run leaves")
+          if pull["title"] != os.environ["TITLE"]:
+              sys.exit(f"pushing: #{pull['number']} is titled {pull['title']!r}, not {os.environ['TITLE']!r}")
+
+          base = api(f"repos/{repo}/compare/main...{head}")["merge_base_commit"]["sha"]
+          after = blobs(base)
+          after.update({name: blob(name) for name in files})
+          carried = blobs(head)
+          differ = sorted(p for p in after.keys() | carried.keys() if after.get(p) != carried.get(p))
+          if differ:
+              sys.exit(f"pushing: {len(differ)} path(s) differ from {branch}, first {', '.join(differ[:5])}")
+          print(head, pull["number"])
+          PY
+          then
+            read -r carried pull <"${RUNNER_TEMP}/carried"
+            # A scratch ref a cancelled run left behind would otherwise wait for
+            # the next push to clear it.
+            gh api --method DELETE "repos/${REPO}/git/refs/heads/${BRANCH}-staging" >/dev/null 2>&1 || true
+            echo "carried=yes" >> "$GITHUB_OUTPUT"
+            echo "::notice::${BRANCH} already holds this at ${carried}; nothing pushed."
+            {
+              echo "## \`${BRANCH}\` already carries this"
+              echo ""
+              echo "Its head \`${carried}\` holds byte for byte what this run would commit, so nothing was pushed and #${pull} and its checks were left alone."
+            } >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
+            exit 0
+          fi
 
           base="$(gh api "repos/${REPO}/commits/main" --jq .sha)"
 
@@ -226,13 +338,14 @@ jobs:
           #
           # Building the JSON in Python also means the message and the file
           # contents are encoded rather than quoted into place by hand.
-          python3 - "$REPO" "$staging" "$base" "$HEAD_SHA" "$PIN" "$body" <<'PY' >request.json
+          FILES="$files" python3 - "$REPO" "$staging" "$base" "$HEAD_SHA" "$PIN" "$body" <<'PY' >request.json
           import base64
           import json
+          import os
           import sys
 
           repo, branch, base, head, pin, note = sys.argv[1:7]
-          files = ["composer.lock"]
+          files = [name for name in os.environ["FILES"].splitlines() if name]
 
           print(json.dumps({
               "query": (
@@ -300,13 +413,14 @@ jobs:
           echo "installed=${INSTALLED}" >> "$GITHUB_OUTPUT"
 
       - name: Open the pull request, or leave the open one updated
-        if: steps.behind.outputs.moved == 'yes' && steps.commit.outputs.moved == 'yes'
+        if: steps.behind.outputs.moved == 'yes' && steps.commit.outputs.moved == 'yes' && steps.commit.outputs.carried != 'yes'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PIN: ${{ steps.behind.outputs.pin }}
           HEAD_SHA: ${{ steps.behind.outputs.head }}
           CLEAN: ${{ steps.commit.outputs.clean }}
           INSTALLED: ${{ steps.commit.outputs.installed }}
+          TITLE: ${{ steps.behind.outputs.title }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -350,11 +464,11 @@ jobs:
           existing="$(gh pr list --repo "${REPO}" --head "${BRANCH}" --state open --json number --jq '.[0].number // ""')"
           if [ -n "$existing" ]; then
             gh pr edit "${existing}" --repo "${REPO}" \
-              --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" >/dev/null 2>&1 || true
+              --title "${TITLE}" >/dev/null 2>&1 || true
             echo "::notice::#${existing} updated to ${HEAD_SHA}"
           else
             created="$(gh pr create --repo "${REPO}" --head "${BRANCH}" --base main \
-              --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" \
+              --title "${TITLE}" \
               --body "$(printf '%s\n' \
                 "\`sdk-drift\` is a required check here, and the lock was behind. This takes the client so that the next author to open a pull request is not handed a dependency bump they did not come for." \
                 "" \

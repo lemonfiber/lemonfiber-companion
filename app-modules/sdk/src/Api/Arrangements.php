@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HowItIsSet;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -32,7 +33,7 @@ final readonly class Arrangements implements Arranging
 
     public function asItStands(Stack $stack, Session $session): HowItIsSet
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::CONFIG_ENDPOINT);
@@ -43,7 +44,7 @@ final readonly class Arrangements implements Arranging
             return HowItIsSet::told(Dials::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowItIsSet::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
             // {@see SettingIsUnnamed} is here rather than guarded against
             // above, so the kernel type keeps deciding what a nameless setting
             // means and this decides what an unreadable answer looks like to

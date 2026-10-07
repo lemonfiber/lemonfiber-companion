@@ -288,6 +288,19 @@ const VERBS_THE_APP_ASKS_FOR = [
 ];
 
 /**
+ * What hands the writing door a path its own caller named, and why that is not a name chosen.
+ *
+ * A relay holds no name of its own: what reaches the door through it is what
+ * its callers wrote, and their calls are read below like any other. Named one
+ * at a time so a second relay is a line somebody justifies.
+ *
+ * @var array<string, string> the file, from the root => why it names no path itself
+ */
+const WHAT_RELAYS_THE_WRITING_DOOR = [
+    'app-modules/sdk/src/Internal/GatedClient.php' => 'hands the SDK the path its caller named, after asking the stack whether it serves it',
+];
+
+/**
  * Every first argument the application hands to the writing door.
  *
  * The expression as it is written, not what it evaluates to. What this rule has
@@ -304,8 +317,9 @@ const VERBS_THE_APP_ASKS_FOR = [
 function everyCallOnTheWritingDoor(): array
 {
     $found = [];
+    $relays = array_map(Tree::at(...), array_keys(WHAT_RELAYS_THE_WRITING_DOOR));
 
-    foreach (theApplicationsSources() as $path) {
+    foreach (array_diff(theApplicationsSources(), $relays) as $path) {
         preg_match_all('/->act\(\s*([^,)]+)/', (string) file_get_contents($path), $called);
 
         foreach ($called[1] as $argument) {
@@ -317,7 +331,8 @@ function everyCallOnTheWritingDoor(): array
 }
 
 /**
- * Every action named to `Api::action()` by something other than `asked()`.
+ * Every action named to `Api::action()` by something other than `asked()`, or
+ * than the `named()` a single action spells itself by before there is one.
  *
  * Two shapes, one list: a string literal is a name this app chose, and a
  * `->value` is a verb's name in the operator's words rather than in
@@ -345,7 +360,7 @@ function theNamesHandedToTheWritingDoor(): array
                 continue;
             }
 
-            if (str_contains($said, '->asked()')) {
+            if (str_contains($said, '->asked()') || preg_match('/Api::action\([A-Z][A-Za-z]+::named\(\)\)/', $said) === 1) {
                 continue;
             }
 

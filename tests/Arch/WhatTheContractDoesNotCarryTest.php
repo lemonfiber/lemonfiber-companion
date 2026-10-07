@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
 
 // W8 — the requirements this app cannot answer, and the field each waits on.
@@ -107,7 +108,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'anything in. `NothingPlaysMediaHereTest` refuses every player for as long as this row '
             . 'stands, and is the rule to replace with ones holding the player to `N3-R14` and '
             . '`N3-R16` when it goes. `HouseholdEnvelope.members[].requests[].media` is the other '
-            . 'handle on this wire, and its row in `WhatTheContractCarriesThatNothingReadsTest` is '
+            . 'handle on this wire, and its row in `WhatThisAppDoesNotRead` is '
             . 'read beside this one.',
     ],
     [
@@ -266,7 +267,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // which nothing serves over HTTP.
         'envelope' => 'WizardEnvelope',
         'field' => null,
-        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: array{from: mixed, value?: string|null, withheld: bool}}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, rehearsed: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
+        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: mixed}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, rehearsed: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
         'raised' => 'What setup settled is carried whole only by `setup` — `data_root`, `protocols`, '
             . '`service_user` — and only the command line writes that kind; no read, action or endpoint '
             . 'answers with it. Setup\'s own read, `GET /api/setup`, answers with `wizard`, whose `plan` '
@@ -541,20 +542,6 @@ function everyGeneratedEnvelope(): array
     return $found;
 }
 
-/**
- * The payload shape one envelope declares, as text.
- *
- * The `@phpstan-type Data` line and nothing else, so a field name that appears
- * in a docblock explaining the envelope is not read as a field it carries —
- * which is the mistake `K1` made about its own markers, in a different file.
- */
-function thePayloadShapeOf(string $said): string
-{
-    preg_match('/@phpstan-type Data (.*)/', $said, $shape);
-
-    return $shape[1] ?? '';
-}
-
 it('every gap names an envelope the contract still has', function (): void {
     // The half that keeps the register honest about the present. An envelope
     // renamed in the contract would leave a row describing a type nobody
@@ -608,7 +595,7 @@ it('every gap is still a gap', function (): void {
             // A shape row names its envelope by construction — the rule below
             // refuses a row that watches neither or both, and an unnamed one
             // would be watching nothing.
-            $said = trim(thePayloadShapeOf($named === null ? '' : $envelopes[$named] ?? ''));
+            $said = trim(WhatTheContractDeclares::shapeOf((string) $named));
 
             if ($said !== $shape) {
                 $closed[] = sprintf(
@@ -624,11 +611,11 @@ it('every gap is still a gap', function (): void {
             continue;
         }
 
-        $looking = $named === null ? $envelopes : [$named => $envelopes[$named] ?? ''];
+        $looking = $named === null ? array_keys($envelopes) : [$named];
         $field = sprintf('/\b%s\??:/', preg_quote((string) $gap['field'], '/'));
 
-        foreach ($looking as $envelope => $said) {
-            if (preg_match($field, thePayloadShapeOf($said)) === 1) {
+        foreach ($looking as $envelope) {
+            if (preg_match($field, WhatTheContractDeclares::shapeOf($envelope)) === 1) {
                 $closed[] = sprintf(
                     '%s waits on `%s`, and %s now carries it — %s',
                     $gap['requirement'],

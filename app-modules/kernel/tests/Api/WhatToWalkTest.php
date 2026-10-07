@@ -33,5 +33,6 @@ it('leaves the choice to the stack where nothing was typed', function (string $t
 
 it('is asked for by the name lemonfiber gives the action', function (): void {
     expect(WhatToWalk::called('Sintel')->asked())->toBe('walkthrough')
-        ->and(WhatToWalk::called('')->asked())->toBe('walkthrough');
+        ->and(WhatToWalk::called('')->asked())->toBe('walkthrough')
+        ->and(WhatToWalk::named())->toBe('walkthrough');
 });

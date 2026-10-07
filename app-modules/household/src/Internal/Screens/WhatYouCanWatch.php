@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
@@ -64,6 +65,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatYouCanWatch extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;

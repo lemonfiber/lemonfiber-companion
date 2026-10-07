@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -35,6 +36,8 @@ const NEVER_IN_A_REPORT = [
     Fingerprint::class,
     Nonce::class,
     Address::class,
+    // It carries the address a reach that met nothing was tried at.
+    Obstacle::class,
     Reading::class,
     WhatTheRefusalNamed::class,
     ARefusalInItsWords::class,

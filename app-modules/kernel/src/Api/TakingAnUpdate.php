@@ -20,7 +20,7 @@ namespace Modules\Kernel\Api;
  * confirmation names what it would change, which is only worth anything if
  * what was named is what gets done.
  */
-final readonly class TakingAnUpdate
+final readonly class TakingAnUpdate implements AnAction
 {
     private function __construct(
         private Services $changing,
@@ -44,6 +44,16 @@ final readonly class TakingAnUpdate
     }
 
     /**
+     * The action's name, for a caller that has to name it before there is one
+     * to ask for: what a stack says it serves is asked by name before a button
+     * is drawn.
+     */
+    public static function named(): string
+    {
+        return 'update';
+    }
+
+    /**
      * The name lemonfiber's surface asks for this by.
      *
      * Here rather than on an enum of its own, because there is exactly one
@@ -59,7 +69,7 @@ final readonly class TakingAnUpdate
      */
     public function asked(): string
     {
-        return 'update';
+        return self::named();
     }
 
     /**

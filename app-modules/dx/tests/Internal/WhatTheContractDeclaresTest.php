@@ -39,3 +39,20 @@ it('reads only the fields of a shape, not the mark that leaves it open', functio
     expect(WhatTheContractDeclares::fieldsOf('array{name: string, ...}'))->toBe(['name' => [false, 'string']])
         ->and(WhatTheContractDeclares::fieldsOf('array{}'))->toBe([]);
 });
+
+it('spells out a shape the package names rather than writes', function (): void {
+    // The installed contract writes every payload as a name, so a reading that
+    // stopped at the name would hand every caller a type with no brackets.
+    expect(WhatTheContractDeclares::shapeOf('ErrorEnvelope'))->toStartWith('array{')
+        ->toContain('remedies: list<array{');
+});
+
+it('leaves a literal, a field and a name nothing declares as they are written', function (): void {
+    expect(WhatTheContractDeclares::spelledOut("array{Code: 'Code', code: Code, other: Unknown}", ['Code' => 'string']))
+        ->toBe("array{Code: 'Code', code: string, other: Unknown}");
+});
+
+it('stops spelling out a shape that holds itself', function (): void {
+    expect(WhatTheContractDeclares::spelledOut('Problem', ['Problem' => 'array{cause?: Problem|null}']))
+        ->toBe('array{cause?: mixed|null}');
+});

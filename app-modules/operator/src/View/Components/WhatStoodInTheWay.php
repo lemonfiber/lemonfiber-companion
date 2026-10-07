@@ -7,6 +7,7 @@ namespace Modules\Operator\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\WhereAStackIs;
 
 use function view;
 
@@ -34,8 +35,8 @@ final class WhatStoodInTheWay extends Component
 {
     public function __construct(
         public readonly HowTheReadingWent $went,
-        public readonly string $signInGoesTo,
-        public readonly string $askAgain = 'again()',
+        public readonly WhereAStackIs $goes,
+        public readonly string $askAgain = 'askAgain()',
         public readonly bool $settingsWouldNotOpen = false,
     ) {}
 

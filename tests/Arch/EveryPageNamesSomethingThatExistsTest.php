@@ -123,13 +123,17 @@ function aNameShapedLikeAClass(string $name): bool
  * written nowhere inside any PHP — which had the first draft of this rule refuse
  * a row that was correct.
  *
+ * The text read is this repository's PHP and the patches it makes to NativePHP:
+ * a page naming a vendor class one of them rewrites names something this
+ * repository writes.
+ *
  * @return array<string, true>
  */
 function everyNameWeAnswerTo(): array
 {
     $found = [];
 
-    foreach (OurCode::phpFiles() as $path) {
+    foreach ([...OurCode::phpFiles(), ...Tree::filesUnder(Tree::at('scripts/patch_nativephp'), '.patch')] as $path) {
         // Not itself. The prose above names the two rows that rotted, in order
         // to say what this rule is for — and a rule that read its own
         // description would answer *yes, this repository has that* about every

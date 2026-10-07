@@ -23,6 +23,7 @@ use Modules\Kernel\Api\TheWiringSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WiringTheServices;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -42,14 +43,14 @@ final readonly class Wirers implements WiringTheServices
     public function wire(Stack $stack, Session $session): WhatBecameOfTheWiring
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
                 Api::action(WhatToDoAboutWiring::Wire->asked()),
                 [],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -72,7 +73,7 @@ final readonly class Wirers implements WiringTheServices
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheWiring
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheWiring => WhatBecameOfTheWiring::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheWiring
                     => WhatBecameOfTheWiring::answered(WhatTheWiringCameTo::in($envelope)),

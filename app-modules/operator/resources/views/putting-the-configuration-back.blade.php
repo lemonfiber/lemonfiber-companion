@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToChange')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -52,14 +53,14 @@
     @endforelse
 
     @if ($this->answer()->mayBeAgreedTo)
-        <x-operator::action label="{{ __('stacks.reset.put_them_back') }}" tap="agree()" />
+        <x-operator::offered-action label="{{ __('stacks.reset.put_them_back') }}" tap="agree()" :offer="$this->offered(WhatToChange::BackToItsOwn)" />
     @endif
 @endif
 
 @if ($this->wasAgreedTo())
     <x-operator::action label="{{ __('stacks.reset.see_the_settings') }}" :goes="$this->goes()->to(AStacksScreen::Settings)" />
 @endif
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 </x-operator::content>
 @else
     {{-- The stack could not be asked, so there is nothing to agree to and
@@ -67,7 +68,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

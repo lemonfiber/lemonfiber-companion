@@ -19,6 +19,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -49,6 +50,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatLeavesHere extends NativeComponent
 {
+    use AsksTheStackAgain;
     use LooksAgainWhileItMoves;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

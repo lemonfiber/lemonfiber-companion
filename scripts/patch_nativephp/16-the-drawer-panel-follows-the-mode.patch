@@ -1,0 +1,22 @@
+The panel's colour is read from the theme store for the mode the phone is in.
+The environment's theme is not set this far out, so it answered the package's
+light fallback in dark mode too. The ☰ sits past the system's back button: a
+44-point glass circle from iOS 26, a chevron and a word before it.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -64,6 +64,13 @@
+     let drawerNode: NativeUINode?
++    var uri: String = ""
+     @ViewBuilder var content: Content
+ 
+     @ObservedObject private var state = DrawerHostState.shared
++    @ObservedObject private var themes = NativeUITheme.shared
+     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+-    @Environment(\.nativeUITheme) private var theme
++    @Environment(\.colorScheme) private var colorScheme
++
++    private var besideTheBack: CGFloat {
++        if #available(iOS 26, *) { return 64 }
++        return 100
++    }

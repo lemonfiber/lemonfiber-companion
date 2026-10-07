@@ -636,7 +636,7 @@ it('every enum that builds a catalogue key is asked above', function (): void {
     // has been written down at all.
     $stems = array_map(
         static fn(string $file): string => basename($file, '.php'),
-        Tree::filesUnder(Tree::at(sprintf('lang/%s', Catalogue::locales()[0])), '.php'),
+        Catalogue::groupFiles(Catalogue::locales()[0]),
     );
 
     // Anything between the group and the placeholder, because a key may be

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Declared;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatTheStackSays;
+use Modules\Kernel\Api\WhetherItIsOffered;
 
 const THE_LOFT = 'd4e5f60718293a4b';
 const THE_SHED = 'e5f60718293a4b5c';
@@ -47,7 +48,7 @@ function saidAbout(WhatTheStackSays $says): string
 it('answers what a stack can do by reading what it declared', function (): void {
     $declared = Capabilities::of(aStackCalled(THE_LOFT), Declared::of(backups(), Availability::Available));
 
-    expect($declared->offers(backups()))->toBeTrue();
+    expect($declared->whetherItOffers(backups()))->toBe(WhetherItIsOffered::Offered);
     expect(saidAbout($declared->forAbility(backups())))->toBe('available');
 });
 
@@ -61,7 +62,7 @@ it('a capability the stack does not have is absent, not false', function (): voi
     $declared = Capabilities::of(aStackCalled(THE_LOFT), Declared::of(backups(), Availability::Available));
 
     expect(saidAbout($declared->forAbility(Ability::of('tunnel.rotate'))))->toBe('said nothing');
-    expect($declared->offers(Ability::of('tunnel.rotate')))->toBeFalse();
+    expect($declared->whetherItOffers(Ability::of('tunnel.rotate')))->toBe(WhetherItIsOffered::NeedsANewerLemonfiber);
 });
 
 it('present-but-unconfigured and not-permitted are each themselves', function (): void {
@@ -76,11 +77,12 @@ it('present-but-unconfigured and not-permitted are each themselves', function ()
     );
 
     expect(saidAbout($declared->forAbility(backups())))->toBe('unconfigured');
-    expect(saidAbout($declared->forAbility(Ability::of('tunnel.rotate'))))->toBe('not_permitted');
+    expect(saidAbout($declared->forAbility(Ability::of('tunnel.rotate'))))->toBe('unpermitted');
 
-    // Neither offers a button, and neither is absence.
-    expect($declared->offers(backups()))->toBeFalse();
-    expect($declared->offers(Ability::of('tunnel.rotate')))->toBeFalse();
+    // Each says itself on its button, and neither is absence: one not set up
+    // is offered and says what is missing, one not theirs is not offered.
+    expect($declared->whetherItOffers(backups()))->toBe(WhetherItIsOffered::NotSetUp);
+    expect($declared->whetherItOffers(Ability::of('tunnel.rotate')))->toBe(WhetherItIsOffered::NotTheirs);
 });
 
 it('a capability set knows which stack declared it', function (): void {
@@ -102,7 +104,7 @@ it('a stack that has declared nothing is not a stack that can do nothing', funct
     $nothing = Capabilities::undeclared(aStackCalled(THE_LOFT));
 
     expect(saidAbout($nothing->forAbility(backups())))->toBe('said nothing');
-    expect($nothing->offers(backups()))->toBeFalse();
+    expect($nothing->whetherItOffers(backups()))->toBe(WhetherItIsOffered::NeedsANewerLemonfiber);
     expect($nothing->describes(aStackCalled(THE_LOFT)))->toBeTrue();
 });
 
@@ -114,5 +116,5 @@ it('absence is read by saying what happens, not by checking for null', function 
     // there is no point at which "the stack did not say" exists as a value that
     // can be treated as "no".
     expect(get_class_methods(WhatTheStackSays::class))
-        ->toBe(['declared', 'nothing', 'either', 'offersAnAction']);
+        ->toBe(['declared', 'nothing', 'either', 'offered']);
 });
