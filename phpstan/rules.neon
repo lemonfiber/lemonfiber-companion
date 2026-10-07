@@ -1,0 +1,143 @@
+services:
+    # H5 — sprintf over concatenation and over interpolation. Two classes
+    # because a PHPStan rule declares exactly one node type, one rule as far as
+    # a reader is concerned: there is one way to build a string with a value in
+    # it. Written here rather than found in a package because no published rule
+    # set carries it, and the rule is small enough that owning it costs less
+    # than the alternative of not having it.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\PreferSprintfOverConcatRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\PreferSprintfOverInterpolationRule
+        tags:
+            - phpstan.rules.rule
+
+    # D5 — no positional boolean literal at a call site.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoPositionalBooleanArgumentRule
+        tags:
+            - phpstan.rules.rule
+
+    # L1 — text a person reads comes from the translator. Scoped to the
+    # directories a string passes through on its way to a screen, because that
+    # is where the distinction between user-facing and developer-facing text
+    # can be drawn from the path alone.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoUserFacingLiteralRule
+        tags:
+            - phpstan.rules.rule
+
+    # P1/P2 — what the analyser cannot see, it cannot govern. A magic method or
+    # a dynamic name switches off every rule here for whatever it exposes.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoMagicMethodRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoDynamicAccessRule
+        tags:
+            - phpstan.rules.rule
+
+    # Q3/Q4 — the shapes that only make sense in a codebase this one is not:
+    # late static binding with no subclass to find, and output with no stream
+    # to write to.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoLateStaticBindingRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoOutputRule
+        tags:
+            - phpstan.rules.rule
+
+    # C6/C7/C8/C9 — absence, and the four ways it gets papered over.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoBroadCatchRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoEmptyRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoNullsafeInDomainRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoNestedTernaryRule
+        tags:
+            - phpstan.rules.rule
+
+    # N2-R14 — a reader one field short refuses rather than substituting. The
+    # coalesce that hands back a default is the same expression as the one that
+    # raises, and only one of them is honest about what arrived.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoSubstitutedWireValueRule
+        tags:
+            - phpstan.rules.rule
+
+    # H8 — a method leaves by at most three doors. SonarCloud's S1142 found the
+    # first one, on a pull request, which is after the work is finished and
+    # where the author has stopped looking. Same argument as D6 below: a rule
+    # that only fails in review is a rule people meet too late to act on.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoManyReturnsRule
+        tags:
+            - phpstan.rules.rule
+
+    # H3 — a class answers at most twenty questions. The other half of that
+    # row's sentence, which named methods per class and had nothing counting
+    # them until a screen went over and SonarCloud said so. Same number as
+    # S1448 on purpose: a class that passes here must not fail there.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoManyMethodsRule
+        tags:
+            - phpstan.rules.rule
+
+    # D6 — a number in a method body has a name. SonarCloud reports this too,
+    # which makes it a backstop rather than the gate: a rule that only fails in
+    # review is a rule people meet after they have finished.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoMagicNumberRule
+        tags:
+            - phpstan.rules.rule
+
+    # D8 — a closed set of strings is an enum. D4 refuses the literal; this
+    # refuses the same set written as the class's own constants, or as a list
+    # a lookup asks. The files that read an outside vocabulary in its own words
+    # are OutsideVocabularies, a list that only shrinks.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoStringClosedSetRule
+        tags:
+            - phpstan.rules.rule
+
+    # D9 — one value has one home. The collector gathers every constant and
+    # backed enum case; the rule reports a value two classes declare. The
+    # constants whose value only matches another's are Coincidences, a list
+    # that only shrinks.
+    -
+        class: Lemonfiber\Companion\PHPStan\Collectors\ConstantValues
+        tags:
+            - phpstan.collector
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\OneHomePerValueRule
+        tags:
+            - phpstan.rules.rule
+
+    # S3 — certificate verification is never turned off. ADR-0018 pins a stack
+    # by a fingerprint from the pairing material, and a verify-off switch leaves
+    # the pin in place while making sure nothing ever reaches it.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule
+        tags:
+            - phpstan.rules.rule
+
+    # A9 — a service provider binds and does not work. Twelve module providers
+    # run before the first frame; N1-R36 wants that frame usable without waiting
+    # on a read.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\ServiceProviderBindsOnlyRule
+        tags:
+            - phpstan.rules.rule

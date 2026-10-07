@@ -277,8 +277,8 @@ jobs:
   # reviewer sees "this crosses a module boundary" rather than a coverage number.
   rules:
     name: rules
-    # Every change, documentation included. `tests/Arch` reads ARCHITECTURE.md
-    # and `.docs/requirements/` against the code, so a documentation change is
+    # Every change, documentation included. `tests/Arch` reads ARCHITECTURE.md,
+    # `.docs/architecture/` and `.docs/requirements/` against the code, so a documentation change is
     # exactly the change that can break it — and at about a minute it costs
     # less than any condition would save.
     runs-on: ubuntu-latest

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\AnalyserConfiguration;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
@@ -70,7 +71,7 @@ function commentedFiles(): array
 {
     $found = [];
 
-    $files = [...OurCode::phpFiles(), Tree::at('phpstan.neon')];
+    $files = [...OurCode::phpFiles(), ...AnalyserConfiguration::files()];
 
     foreach ($files as $path) {
         $contents = file_get_contents($path);

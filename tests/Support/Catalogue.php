@@ -8,6 +8,7 @@ use function app;
 use function array_map;
 use function array_search;
 use function basename;
+use function dirname;
 use function glob;
 
 use const GLOB_ONLYDIR;
@@ -15,6 +16,7 @@ use const GLOB_ONLYDIR;
 use Illuminate\Contracts\Translation\Translator;
 
 use function is_array;
+use function is_file;
 use function is_string;
 use function mb_strlen;
 use function mb_substr;
@@ -103,11 +105,37 @@ final readonly class Catalogue
         $said = [];
         $under = Tree::at(sprintf('lang/%s', $locale));
 
-        foreach (Tree::filesUnder($under, '.php') as $file) {
+        foreach (self::groupFiles($locale) as $file) {
             $said = [...$said, ...self::of($locale, self::groupOf($under, $file))];
         }
 
         return $said;
+    }
+
+    /**
+     * Every file of one locale that is a group of its own.
+     *
+     * A file in a directory beside a group file of the same name is a part of
+     * that group, as `lang/en/stacks/moving-in.php` is of `lang/en/stacks.php`:
+     * the group file spreads it in, so it is read through the group, under the
+     * group's keys, and never as a group of its own.
+     *
+     * @return list<string>
+     */
+    public static function groupFiles(string $locale): array
+    {
+        $under = Tree::at(sprintf('lang/%s', $locale));
+        $groups = [];
+
+        foreach (Tree::filesUnder($under, '.php') as $file) {
+            if (dirname($file) !== $under && is_file(sprintf('%s.php', dirname($file)))) {
+                continue;
+            }
+
+            $groups[] = $file;
+        }
+
+        return $groups;
     }
 
     /**

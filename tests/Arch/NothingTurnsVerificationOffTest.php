@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule;
+use Tests\Support\AnalyserConfiguration;
 use Tests\Support\Tree;
 
 // One vocabulary for certificate verification, read by both gates.
@@ -13,7 +14,7 @@ use Tests\Support\Tree;
 // — because it looks at the value. `Settings::ABOUT_VERIFICATION` reads
 // configuration key names as text, where there is no value to look at and
 // substring matching is the point. A `disallowedMethodCalls` entry in
-// `phpstan.neon` refuses `withoutVerifying()`, which is a *call* and invisible
+// `phpstan/disallowed-methods-and-names.neon` refuses `withoutVerifying()`, which is a *call* and invisible
 // to the first two.
 //
 // This file read two of the three, and said it was "the one place the spellings
@@ -51,7 +52,7 @@ const MEANS_VERIFICATION = [
 it('every spelling of verification is held by a gate', function (): void {
     $analyser = (string) file_get_contents(Tree::at('phpstan/Rules/NoWeakenedTlsRule.php'));
     $settings = (string) file_get_contents(Tree::at('tests/Support/Settings.php'));
-    $disallowed = (string) file_get_contents(Tree::at('phpstan.neon'));
+    $disallowed = AnalyserConfiguration::text();
 
     $unheld = [];
 
@@ -77,7 +78,7 @@ it('every spelling of verification is held by a gate', function (): void {
         . 'Add each to whichever gate can see it. `NoWeakenedTlsRule` reads a call and '
         . 'its options, so it needs the polarity too — off when false, or off when true. '
         . '`Settings::ABOUT_VERIFICATION` reads configuration key names as text and '
-        . 'matches on substrings, and the `disallowedMethodCalls` entry in `phpstan.neon` '
+        . 'matches on substrings, and the `disallowedMethodCalls` entry in the analyser\'s configuration '
         . "refuses a call.\nThe three stay three because they read different things. "
         . 'The vocabulary is what stops them drifting, and it had: five spellings a real '
         . 'client accepts were unknown to the analyser, so a line switching verification '

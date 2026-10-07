@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Tests\Support\Rules;
 use Tests\Support\TestTitles;
 
-// A test's title says what the test shows. Which rule of ARCHITECTURE.md it
+// A test's title says what the test shows. Which rule ARCHITECTURE.md indexes it
 // keeps is carried by a comment directly above it, which is where
 // `TheRulesAreRealTest` reads the identifier; written into the title, it is a
 // code a reader of the run has to look up before the sentence means anything.

@@ -179,10 +179,11 @@ Blade file is not in one.
 
 ### ARCHITECTURE.md is checked, not just written
 
-Every rule there names the mechanism that enforces it, and
-`tests/Arch/TheRulesAreRealTest.php` fails when the two disagree — in both
-directions. A documented rule with no artifact carrying its identifier fails;
-so does an artifact carrying an identifier the document never mentions.
+Every rule it indexes, in `.docs/architecture/`, names the mechanism that
+enforces it, and `tests/Arch/TheRulesAreRealTest.php` fails when the two
+disagree — in both directions. A documented rule with no artifact carrying its
+identifier fails; so does an artifact carrying an identifier no rule table
+mentions.
 
 Two states are honest answers rather than mechanisms. `review` means a rule
 cannot be mechanised and a human has to catch it; the suite prints how many

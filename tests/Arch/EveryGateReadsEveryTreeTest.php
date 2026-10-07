@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\AnalyserConfiguration;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
@@ -44,7 +45,7 @@ use Tests\Support\Tree;
  */
 function neonListUnder(string $key): array
 {
-    $configuration = (string) file_get_contents(Tree::at('phpstan.neon'));
+    $configuration = AnalyserConfiguration::text();
 
     // The list is every `- entry` line following the key, comments included:
     // this file writes the reason for a path directly above it, and a block
@@ -71,7 +72,7 @@ function entriesIn(string $block): array
 }
 
 /**
- * Every `allowIn` list in `phpstan.neon`, one group per directive.
+ * Every `allowIn` list in the analyser's configuration, one group per directive.
  *
  * Grouped rather than flattened, because the question is asked of a directive:
  * one that exempts a place tests live has to exempt all of them, and a flat list
@@ -82,7 +83,7 @@ function entriesIn(string $block): array
  */
 function everyTestExemption(): array
 {
-    $configuration = (string) file_get_contents(Tree::at('phpstan.neon'));
+    $configuration = AnalyserConfiguration::text();
 
     // No comments inside this one, unlike `paths`: an `allowIn` here is a run
     // of patterns and the reason is written above the directive, so a block

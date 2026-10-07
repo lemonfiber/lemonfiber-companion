@@ -4,7 +4,7 @@
 
 ## Context
 
-`ARCHITECTURE.md` lists every rule and, beside it, the mechanism enforcing it.
+`ARCHITECTURE.md` indexes every rule, kept in `.docs/architecture/`, and beside each the mechanism enforcing it.
 `tests/Arch/TheRulesAreRealTest.php` reads that column and fails when the two
 disagree, in both directions.
 
@@ -40,7 +40,7 @@ Each is waiting on code that does not exist yet, not on a decision.
 
 > **This table records the state on 2026-09-11, the day this decision was
 > accepted, and is left as it stood.** Every rule in it is enforced today —
-> `F2`'s first presenter exists — and no row in `ARCHITECTURE.md` says `planned`
+> `F2`'s first presenter exists — and no row of the rules says `planned`
 > any more, so the ratchet in `TheRulesAreRealTest` counts zero. That document
 > is the live one the suite reads; this is the record of what was decided and
 > when.

@@ -68,8 +68,9 @@ composer test        # just the suite
 composer lint:fix    # formatting
 ```
 
-[`ARCHITECTURE.md`](ARCHITECTURE.md) is the contract — the rules, and for each
-one the mechanism that enforces it. A test reads that table and fails if a rule
+[`ARCHITECTURE.md`](ARCHITECTURE.md) is the contract — the shape, and an index
+of the rules in [`.docs/architecture/`](.docs/architecture/), each with the
+mechanism that enforces it. A test reads those tables and fails if a rule
 claims an enforcement it does not have, so it cannot quietly go out of date.
 
 [`AGENTS.md`](AGENTS.md) is the guide for anyone, human or otherwise, making a

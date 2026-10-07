@@ -59,7 +59,7 @@ final readonly class OurCode
      * Named because it is the one exemption the framework-coupling rules have to
      * grant: `bootstrap/Composition` is where a port meets an adapter and where
      * a facade is the composition rather than a reach into one, which is the
-     * same exemption `phpstan.neon` grants it by path. A constant rather than a
+     * same exemption the analyser's configuration grants it by path. A constant rather than a
      * string beside each rule, so the two cannot drift apart.
      */
     public const string THE_COMPOSITION_ROOT = 'Bootstrap\Composition';
