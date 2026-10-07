@@ -1,16 +1,16 @@
 # lemonfiber companion
 
-A companion app for a [lemonfiber](https://github.com/lemonfiber/lemonfiber)
-stack, for phones. It is the fourth surface after the CLI, the TUI and the web
-UI — and the first one that does not run on the machine it operates.
+A phone app for a [lemonfiber](https://github.com/lemonfiber/lemonfiber) stack.
+It lets you check on and fix your media stack, or ask for something to watch,
+from your phone instead of from the machine the stack runs on.
 
-It renders natively. There is no web view, no DOM and no JavaScript bridge:
-Blade templates compile to a native element tree, which the platform draws as
-SwiftUI or Jetpack Compose.
+It is a native app on iOS and Android, built with
+[NativePHP](https://nativephp.com): Blade templates compile to a native element
+tree, which the platform draws as SwiftUI or Jetpack Compose. There is no web
+view.
 
-> **Status: early.** This repository is catching up with the rest of the
-> estate. Nothing is versioned yet and nothing is published; everything lands on
-> `main` until it is complete enough to pin alongside the other repositories.
+> **Status:** in development. There is no release and no app-store build yet;
+> to try it you build it yourself.
 
 ## What it does
 
@@ -25,9 +25,9 @@ They are not shown the machinery, because it is not theirs to operate.
 
 ## What it will not do
 
-- **Talk to the API itself.** Every call goes through the published SDK. Where
-  the SDK lacks something, the gap is raised against the SDK and the work stops
-  rather than reaching past it.
+- **Talk to the API itself.** Every call goes through
+  [`sdk-php`](https://github.com/lemonfiber/sdk-php). Where the SDK lacks
+  something, the SDK is changed first.
 - **Send anything anywhere.** No analytics, no crash reporting, no telemetry.
   There is no setting for this because there is no code for it.
 - **Set up a stack.** First-run setup happens at the machine. The app says so
@@ -35,48 +35,42 @@ They are not shown the machinery, because it is not theirs to operate.
 - **Accept any certificate.** The certificate fingerprint comes from the pairing
   material and is pinned; a changed certificate is refused, not warned about.
 
-## Layout
-
-```
-bootstrap/Composition/  the composition root, and nothing else
-app-modules/
-  kernel/               ports, values, outcomes — depends on nothing
-  design/               EDGE components and theme tokens
-
-  connection/           pairing, the session, holding more than one stack
-  stacks/  health/  backups/  updates/
-
-  operator/             navigation and screen composition
-  household/            navigation and screen composition
-
-  sdk/                  the only module that calls the SDK
-  device/  vault/       the platform, and secure storage
-
-  dx/                   stand-ins for a stack, installed only under require-dev
-```
-
-Each module declares what kind it is, and that declaration generates the rules
-about what it may depend on — so a module added later is governed the moment it
-exists rather than when somebody remembers to write its test.
-
 ## Working on it
+
+You need PHP 8.5 and Composer.
+
+`composer install` needs a credential for `plugins.nativephp.com`: the app uses
+a paid NativePHP plugin, and without the credential the download fails with HTTP
+`402`. Put it in Composer's `auth.json` or the `COMPOSER_AUTH` environment
+variable, as Composer's
+[authentication guide](https://getcomposer.org/doc/articles/authentication-for-private-packages.md)
+describes.
 
 ```bash
 composer install
-composer ci          # every gate, in the order CI runs them
-composer test        # just the suite
+composer ci          # every PHP gate, in the order CI runs them
+composer test        # just the test suite
 composer lint:fix    # formatting
 ```
 
-[`ARCHITECTURE.md`](ARCHITECTURE.md) is the contract — the rules, and for each
-one the mechanism that enforces it. A test reads that table and fails if a rule
-claims an enforcement it does not have, so it cannot quietly go out of date.
+The code is split into modules under `app-modules/`. Each module declares what
+kind it is, and that declaration generates the rules about what it may depend
+on, so a new module is governed from the moment it exists.
 
-[`AGENTS.md`](AGENTS.md) is the guide for anyone, human or otherwise, making a
-change here. [`.docs/decisions/`](.docs/decisions/) records why this codebase is
-shaped the way it is; decisions about the product live in the
-[spec](https://github.com/lemonfiber/spec).
+[`ARCHITECTURE.md`](ARCHITECTURE.md) describes the modules and the rules, and
+for each rule the check that enforces it; a test fails if a rule claims a check
+it does not have. [`.docs/decisions/`](.docs/decisions/) records why the code is
+shaped this way; product decisions live in the
+[specification](https://github.com/lemonfiber/spec). Read the
+[contributing guide](https://github.com/lemonfiber/spec/blob/main/50-governance/contributing.md)
+and [`AGENTS.md`](AGENTS.md) before your first pull request.
+
+Report a vulnerability privately, as
+[SECURITY.md](https://github.com/lemonfiber/.github/blob/main/SECURITY.md)
+describes.
 
 ## Licence
 
 [Hippocratic License 3.0](LICENSE).
+
+lemonfiber is made by [NightWorksIO](https://nightworks.io).
