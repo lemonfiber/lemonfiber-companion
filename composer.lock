@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "dd3d05ae1149766ec79a08705c07e63c1c11b4af"
+                "reference": "67276726c9131d02b7e504e4ebb262f99139301f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/dd3d05ae1149766ec79a08705c07e63c1c11b4af",
-                "reference": "dd3d05ae1149766ec79a08705c07e63c1c11b4af",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/67276726c9131d02b7e504e4ebb262f99139301f",
+                "reference": "67276726c9131d02b7e504e4ebb262f99139301f",
                 "shasum": ""
             },
             "require": {
@@ -3132,7 +3132,6 @@
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.9",
-                "captainhook/captainhook": "^5.29",
                 "ergebnis/composer-normalize": "^2.52",
                 "ergebnis/phpstan-rules": "^2.13",
                 "ext-curl": "*",
@@ -3179,6 +3178,9 @@
                 ],
                 "bc": [
                     "vendor-bin/bc/vendor/bin/roave-backward-compatibility-check"
+                ],
+                "changelog": [
+                    "git-cliff -o CHANGELOG.md"
                 ],
                 "ci": [
                     "@composer validate --strict",
@@ -3252,7 +3254,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-07T03:45:14+00:00"
+            "time": "2026-10-07T22:47:24+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
