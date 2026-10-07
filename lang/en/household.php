@@ -106,6 +106,19 @@ return [
     'shelf_is_empty_action' => 'Anything the household adds for you shows up here.',
     'shelf_is_out_of_reach' => 'Your library could not be reached.',
     'shelf_is_out_of_reach_action' => 'The house answered, but could not read what is on your shelf.',
+    // What stood in the way of reaching the house, as a member is told it:
+    // the operator's sentences name a machine, an address and software, and a
+    // member has none of those to look at.
+    'out_of_reach' => [
+        'no_answer' => 'The house is not answering right now.',
+        'no_answer_action' => 'Check that this phone is on the home network, then try again in a moment.',
+        'name_not_found' => 'This phone could not find the house.',
+        'name_not_found_action' => 'Check that this phone is on the home network. If it is, ask whoever runs the house to set this phone up again.',
+        'nothing_at_the_address' => 'The house is not where this phone last found it.',
+        'nothing_at_the_address_action' => 'Ask whoever runs the house to set this phone up again.',
+        'connection_refused' => 'The house is closed right now.',
+        'connection_refused_action' => 'Ask whoever runs the house to open it again.',
+    ],
     'medium' => [
         'film' => 'Film',
         'series' => 'Series',

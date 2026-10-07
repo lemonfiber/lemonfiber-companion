@@ -17,13 +17,22 @@ namespace Modules\Kernel\Api;
  * Each fact-carrying kind has its own named constructor and its own typed
  * field, so a kind cannot be met without its facts and a fact cannot be given
  * to a kind that does not say it.
+ *
+ * An obstacle met on the way to the stack may carry the address that was
+ * tried, for the one screen that shows it: the operator's, beside the
+ * sentence. It is never part of what fills a sentence, and it goes nowhere
+ * else, for {@see Address}'s reason.
  */
 final readonly class Obstacle
 {
     /** The stem the remedy is under where the stack is the older of the two. */
     private const string FROM_AN_OLDER_STACK = 'version_mismatch_older';
 
-    private function __construct(private KindOfObstacle $kind, private ?TheVersionsSpoken $versions) {}
+    private function __construct(
+        private KindOfObstacle $kind,
+        private ?TheVersionsSpoken $versions,
+        private ?Address $triedAt = null,
+    ) {}
 
     /** A kind met with nothing beyond itself; a kind that carries facts is refused here. */
     public static function of(KindOfObstacle $kind): self
@@ -39,6 +48,24 @@ final readonly class Obstacle
     public static function versionsDisagree(TheVersionsSpoken $versions): self
     {
         return new self(KindOfObstacle::VersionsDisagree, $versions);
+    }
+
+    /**
+     * The same obstacle, with the address that was tried where it was met on
+     * the way to the stack, and unchanged where it was met anywhere else.
+     */
+    public function whenTriedAt(Address $tried): self
+    {
+        return $this->kind->isMetOnTheWayToTheStack() ? new self($this->kind, $this->versions, $tried) : $this;
+    }
+
+    /**
+     * The address that was tried, for the operator's screen that says it was
+     * not reached, or nothing where none was tried or none is to be shown.
+     */
+    public function whereItWasTried(): string
+    {
+        return $this->triedAt instanceof Address ? $this->triedAt->forTheOperatorWhoCouldNotReachIt() : '';
     }
 
     /** Which kind it is. */
@@ -70,6 +97,24 @@ final readonly class Obstacle
         return $this->versions instanceof TheVersionsSpoken && ! $this->versions->isTheStackNewer()
             ? InTheConnectionCatalogue::under(self::FROM_AN_OLDER_STACK)->remedy()
             : $this->kind->remedy();
+    }
+
+    /** The key for what stood in the way, on a member's screen; {@see KindOfObstacle::saidToTheHousehold()}. */
+    public function saidToTheHousehold(): string
+    {
+        return $this->kind->saidToTheHousehold();
+    }
+
+    /**
+     * The key for what a member can do about it.
+     *
+     * The household's words where the obstacle was met on the way to the
+     * stack, and {@see self::remedy()} everywhere else, which keeps the remedy
+     * a disagreement over versions owes.
+     */
+    public function remedyForTheHousehold(): string
+    {
+        return $this->kind->isMetOnTheWayToTheStack() ? $this->kind->remedyForTheHousehold() : $this->remedy();
     }
 
     /** Whether its remedy is a switch on this app's page in the phone's settings. */

@@ -11,6 +11,13 @@
     <x-operator::emphasis>{{ __($went->met, $went->filling()) }}</x-operator::emphasis>
     <x-design::body>{{ __($went->remedy, $went->filling()) }}</x-design::body>
 
+    {{-- The address that was tried, where the stack was not reached: a stale
+         or wrong one is often the whole story, and the operator cannot see
+         that without seeing it. Drawn here and on no member's screen. --}}
+    @if ($went->whereItWasTried() !== '')
+        <x-operator::note>{{ __('connection.tried_at', ['address' => $went->whereItWasTried()]) }}</x-operator::note>
+    @endif
+
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
          leaving and returning, which is named separately as what a screen must

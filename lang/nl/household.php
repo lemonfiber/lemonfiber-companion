@@ -96,6 +96,17 @@ return [
     'shelf_is_empty_action' => 'Wat het huishouden voor je toevoegt, verschijnt hier.',
     'shelf_is_out_of_reach' => 'Je bibliotheek kon niet worden bereikt.',
     'shelf_is_out_of_reach_action' => 'Het huis antwoordde, maar kon niet lezen wat er op je plank staat.',
+    // Wat het bereiken van het huis in de weg stond, zoals een lid het hoort.
+    'out_of_reach' => [
+        'no_answer' => 'Het huis antwoordt nu niet.',
+        'no_answer_action' => 'Controleer of deze telefoon op het thuisnetwerk zit en probeer het zo nog eens.',
+        'name_not_found' => 'Deze telefoon kon het huis niet vinden.',
+        'name_not_found_action' => 'Controleer of deze telefoon op het thuisnetwerk zit. Zo ja, vraag wie het huis beheert om deze telefoon opnieuw in te stellen.',
+        'nothing_at_the_address' => 'Het huis is niet meer waar deze telefoon het de vorige keer vond.',
+        'nothing_at_the_address_action' => 'Vraag wie het huis beheert om deze telefoon opnieuw in te stellen.',
+        'connection_refused' => 'Het huis is nu dicht.',
+        'connection_refused_action' => 'Vraag wie het huis beheert om het weer open te zetten.',
+    ],
     'medium' => [
         'film' => 'Film',
         'series' => 'Serie',

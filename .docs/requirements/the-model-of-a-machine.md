@@ -23,9 +23,9 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R8` | A session stays out of the URL | `Address`, whose only accessor is named for where the value goes |
+| `N1-R8` | A session stays out of the URL | `Address`, whose accessors are each named for where the value goes |
 | `N1-R12` | An unencrypted address is stated, and protection it does not have is not implied | `Address` (`AddressTest`, `SchemeTest`) |
-| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never shown | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`, `PlatformStacksTest`) |
+| `N1-R15` | A stack address is named in the same breath as a credential and a session: never logged, never transmitted, never in a diagnostic report, and shown to the operator only on the unreachable state | `Address` (`AddressTest`, `CredentialTest`, `SessionTest`, `PlatformStacksTest`, `TheTriedAddressIsShownOnlyToTheOperatorTest`, `ADiagnosticReportSaysNothingSecretTest`) |
 | `N1-R16` | Every call goes through the SDK | `KeepingCurrent` and the ports beside it |
 | `N1-R17` | Where the contract does not carry something, the work stops rather than approximating it from a neighbour | `WhatTheCoreDecided` (`TypesThatMustNotMeetTest`, `WhatTheContractCarriesThatNothingReadsTest`) |
 | `N1-R13` | A refused wire version carries both halves: what arrived, and what is supported | `EnvelopeIsNotRead` |

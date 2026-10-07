@@ -11,6 +11,7 @@ use function it;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\WhyNothingAnswered;
 
 use function mb_strtolower;
 
@@ -47,7 +48,7 @@ function aStackOnTheShelf(): Stack
 
 function silence(): Unreachable
 {
-    return Unreachable::whenAsking('/api/status', 'Connection timed out');
+    return Unreachable::whenAsking('/api/status', 'Connection timed out', WhyNothingAnswered::TimedOut);
 }
 
 /** What these clients say stood in the way, on a phone that answers like this. */
@@ -71,6 +72,37 @@ it('reads silence where the platform refused the app the local network as that r
 it('reads silence the phone does not explain as the stack\'s', function (): void {
     expect(whatThePhoneMakesOf(silence(), ADeviceOnANetwork::connected(), ALocalNetworkThat::letsItThrough()))
         ->toBe(KindOfObstacle::StackDidNotAnswer);
+});
+
+it('reads each way nothing answered as its own obstacle, with the address it tried', function (WhyNothingAnswered $way, KindOfObstacle $met): void {
+    $obstacle = new ClientsThatAskTheDevice(new PinnedClients(), ADeviceOnANetwork::connected(), ALocalNetworkThat::letsItThrough(), new NotesKeptInMemory())
+        ->whatStoodInTheWay(aStackOnTheShelf(), Unreachable::whenAsking('/api/status', 'whatever the transport said', $way));
+
+    expect($obstacle->kind())->toBe($met)
+        ->and($obstacle->whereItWasTried())->toBe('https://192.168.1.42:8443');
+})->with([
+    'a name found nowhere' => [WhyNothingAnswered::NameNotFound, KindOfObstacle::NameWasNotFound],
+    'nothing at the address' => [WhyNothingAnswered::NoRoute, KindOfObstacle::NothingAtThePairedAddress],
+    'a connection turned away' => [WhyNothingAnswered::Refused, KindOfObstacle::ConnectionWasTurnedAway],
+    'no answer in time' => [WhyNothingAnswered::TimedOut, KindOfObstacle::StackDidNotAnswer],
+    'a silence the SDK could not place' => [WhyNothingAnswered::Other, KindOfObstacle::StackDidNotAnswer],
+]);
+
+it('carries no address where the phone, not the way to the stack, stood in the way', function (ADeviceOnANetwork $network): void {
+    $obstacle = new ClientsThatAskTheDevice(new PinnedClients(), $network, ALocalNetworkThat::refusesIt(), new NotesKeptInMemory())
+        ->whatStoodInTheWay(aStackOnTheShelf(), silence());
+
+    expect($obstacle->whereItWasTried())->toBe('');
+})->with([
+    'no network' => [ADeviceOnANetwork::withNothingToReachOver()],
+    'the local network refused' => [ADeviceOnANetwork::connected()],
+]);
+
+it('carries no address where an answer came back', function (): void {
+    $obstacle = new ClientsThatAskTheDevice(new PinnedClients(), ADeviceOnANetwork::connected(), ALocalNetworkThat::letsItThrough(), new NotesKeptInMemory())
+        ->whatStoodInTheWay(aStackOnTheShelf(), ApiVersionMismatch::between(spoken: 1, answered: 2));
+
+    expect($obstacle->whereItWasTried())->toBe('');
 });
 
 it('asks the platform about the stack\'s own address', function (): void {
@@ -117,9 +149,9 @@ function whatIsNotedOf(Throwable $why, string $address): string
     return implode("\n", $notes->noted());
 }
 
-it('notes what was raised, what the transport reported, the port and which kind of address, and never the address', function (): void {
+it('notes what was raised, which way nothing answered, the port and which kind of address, and never the address', function (): void {
     $noted = whatIsNotedOf(
-        Unreachable::whenAsking('/api/status', 'php_network_getaddresses: getaddrinfo for Wessels-MacBook-Pro.local failed: No address associated with hostname'),
+        Unreachable::whenAsking('/api/status', 'php_network_getaddresses: getaddrinfo for Wessels-MacBook-Pro.local failed: No address associated with hostname', WhyNothingAnswered::NameNotFound),
         'https://Wessels-MacBook-Pro.local:8443',
     );
 

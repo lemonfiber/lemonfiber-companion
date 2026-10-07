@@ -44,7 +44,7 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R8` | A credential never appears in a URL | routes carry a stored id and never an address or a secret |
-| `N1-R15` | An address has one destination and a screen is not it | a row is a name and nothing else; `tests/Templates/NothingSecretReachesAScreenTest.php` |
+| `N1-R15` | An address goes to the client, and to a screen only as the operator's note of where a stack that was not reached was tried | a row is a name and nothing else; `tests/Templates/NothingSecretReachesAScreenTest.php`, `tests/Arch/TheTriedAddressIsShownOnlyToTheOperatorTest.php` |
 | `N4-R13` | A diagnostic report is assembled from what the operator chooses to send, not from whatever a screen happened to hold | `Concealed` on every stack-facing screen (`DiagnosticsTest`, `SharingContractTest`, `TheFirstFrameIsOfferedTest`, `ADiagnosticReportSaysNothingSecretTest`) |
 | `N4-R18` | Credentials and pairing material are kept out of a capture, and so is the report | `tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php` (`ConcealedTest`, `CaptureContractTest`, `EveryPluginThisAppShipsIsAdmittedTest`) |
 

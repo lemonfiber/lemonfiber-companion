@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\WhyNothingAnswered;
 use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
@@ -54,9 +55,19 @@ dataset('every set of clients', [
     )],
 ]);
 
-it('reads silence as a stack that did not answer', function (Clients $clients): void {
+it('reads silence as a stack that did not answer, at the address it tried', function (Clients $clients): void {
     expect($clients->whatStoodInTheWay(aStackThatWentQuiet(), Unreachable::whenAsking('/api/status', 'Connection timed out')))
-        ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+        ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->whenTriedAt(aStackThatWentQuiet()->at()));
+})->with('every set of clients');
+
+it('reads each way nothing answered as its own obstacle, at the address it tried', function (Clients $clients): void {
+    $met = static fn(WhyNothingAnswered $way): Obstacle => $clients->whatStoodInTheWay(aStackThatWentQuiet(), Unreachable::whenAsking('/api/status', 'whatever the transport said', $way));
+    $at = aStackThatWentQuiet()->at();
+
+    expect($met(WhyNothingAnswered::NameNotFound))->toEqual(Obstacle::of(KindOfObstacle::NameWasNotFound)->whenTriedAt($at))
+        ->and($met(WhyNothingAnswered::NoRoute))->toEqual(Obstacle::of(KindOfObstacle::NothingAtThePairedAddress)->whenTriedAt($at))
+        ->and($met(WhyNothingAnswered::Refused))->toEqual(Obstacle::of(KindOfObstacle::ConnectionWasTurnedAway)->whenTriedAt($at))
+        ->and($met(WhyNothingAnswered::TimedOut))->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->whenTriedAt($at));
 })->with('every set of clients');
 
 it('reads an envelope in another API version as the two versions disagreeing, naming both', function (Clients $clients): void {
@@ -68,5 +79,5 @@ it('reads an envelope in another API version as the two versions disagreeing, na
 
 it('reads an answer it could not read as a stack that did not answer', function (Clients $clients): void {
     expect($clients->whatStoodInTheWay(aStackThatWentQuiet(), UnreadableResponse::notAnEnvelope()))
-        ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+        ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->whenTriedAt(aStackThatWentQuiet()->at()));
 })->with('every set of clients');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use function in_array;
+
 use Modules\Kernel\Api\InTheConnectionCatalogue;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -74,6 +76,30 @@ enum HowTheSignInWent: string
     /** Nothing came back, so nothing is known about the password. */
     case StackDidNotAnswer = 'no_answer';
 
+    /**
+     * The machine's name turned into no address from this phone.
+     *
+     * Nothing was sent, so nothing is known about the password either; what
+     * failed is finding the machine by the name it was paired with.
+     */
+    case NameWasNotFound = 'name_not_found';
+
+    /**
+     * Nothing answers at the address this phone was paired with.
+     *
+     * The shape a machine that moved leaves behind, so the way on is pairing
+     * again, which gives this phone the address the machine answers at now.
+     */
+    case NothingAtThePairedAddress = 'nothing_at_the_address';
+
+    /**
+     * The machine is there and turned the connection away.
+     *
+     * Guided rather than offered a password: lemonfiber is not running on it,
+     * and starting it happens on the machine.
+     */
+    case ConnectionWasTurnedAway = 'connection_refused';
+
     /** There is nowhere on this device this app may keep a session. */
     case NoStoreOnThisDevice = 'no_store_for_a_session';
 
@@ -116,6 +142,14 @@ enum HowTheSignInWent: string
      */
     case TheAddressIsNotTheStacks = 'address_not_the_stacks';
 
+    /** The states whose way on is the pairing screen rather than this one. */
+    private const array PUT_RIGHT_BY_PAIRING_AGAIN = [
+        self::TheMachineIsNotTheOnePaired,
+        self::TheAddressIsNotTheStacks,
+        self::NameWasNotFound,
+        self::NothingAtThePairedAddress,
+    ];
+
     /**
      * Whether the operator is in, with a session that will survive the launch.
      *
@@ -147,13 +181,13 @@ enum HowTheSignInWent: string
     /**
      * Whether pairing the machine again is the way on.
      *
-     * The one state whose button is not on this screen: what gets somebody
-     * past it is the pairing screen, where a new code replaces the certificate
-     * pinned for the stack.
+     * The states whose button is not on this screen: what gets somebody past
+     * them is the pairing screen, where a new code replaces the certificate
+     * pinned for the stack, or the address or name it is reached at.
      */
     public function asksForAnotherPairing(): bool
     {
-        return $this === self::TheMachineIsNotTheOnePaired || $this === self::TheAddressIsNotTheStacks;
+        return in_array($this, self::PUT_RIGHT_BY_PAIRING_AGAIN, strict: true);
     }
 
     /**
@@ -224,7 +258,7 @@ enum HowTheSignInWent: string
         return match ($this) {
             self::NotYet, self::CredentialWasRefused, self::ThePairWasRefused => Standing::Actionable,
             self::SignedIn => Standing::Suppressed,
-            self::TooManyAttempts, self::StackDidNotAnswer => Standing::Guided,
+            self::TooManyAttempts, self::StackDidNotAnswer, self::ConnectionWasTurnedAway => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
             // `Guided` rather than `Actionable`, which is the distinction that
             // makes the distinction worth having: the operator must act, and not here.
@@ -235,7 +269,10 @@ enum HowTheSignInWent: string
             self::TheNetworkIsNotPermitted => Standing::Guided,
             // `Actionable`, as the kernel judges the obstacle: there is a
             // button, and it leads to pairing rather than to a password field.
-            self::TheMachineIsNotTheOnePaired, self::TheAddressIsNotTheStacks => Standing::Actionable,
+            self::TheMachineIsNotTheOnePaired,
+            self::TheAddressIsNotTheStacks,
+            self::NameWasNotFound,
+            self::NothingAtThePairedAddress => Standing::Actionable,
         };
     }
 
@@ -299,6 +336,11 @@ enum HowTheSignInWent: string
             KindOfObstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
             KindOfObstacle::StackIsNotTheOnePaired => self::TheMachineIsNotTheOnePaired,
             KindOfObstacle::AddressIsNotTheStacks => self::TheAddressIsNotTheStacks,
+            // Each silence its own, because each has its own remedy: a name
+            // to find, an address to pair again, a machine to start.
+            KindOfObstacle::NameWasNotFound => self::NameWasNotFound,
+            KindOfObstacle::NothingAtThePairedAddress => self::NothingAtThePairedAddress,
+            KindOfObstacle::ConnectionWasTurnedAway => self::ConnectionWasTurnedAway,
             KindOfObstacle::StackDidNotAnswer,
             KindOfObstacle::DeviceHasNoNetwork,
             // The door answers neither: it is asked before any version is

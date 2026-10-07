@@ -249,11 +249,11 @@ it('draws a library out of reach and a stack that would not say as themselves', 
     $met = thePreview(owing: AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $met->showRequests();
 
-    expect(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
+    expect(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()));
 
     $shelfMet = thePreview(watching: AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect(WhatTheDeviceWouldDraw::by($shelfMet)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()));
+    expect(WhatTheDeviceWouldDraw::by($shelfMet)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold()));
 });
 
 it('asks each tab once per frame, and asks both again', function (): void {

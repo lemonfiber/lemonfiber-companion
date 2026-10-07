@@ -61,9 +61,9 @@ final readonly class PinnedClients implements Clients
         );
     }
 
-    /** What the reach says by itself; {@see ClientsThatAskTheDevice} is what asks the device. */
+    /** What the reach says by itself, with the address it tried; {@see ClientsThatAskTheDevice} is what asks the device. */
     public function whatStoodInTheWay(Stack $stack, Throwable $why): Obstacle
     {
-        return WhatTheReachMet::byItself($why);
+        return WhatTheReachMet::byItself($why)->whenTriedAt($stack->at());
     }
 }

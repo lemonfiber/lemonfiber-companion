@@ -87,7 +87,7 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
     {
         return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), rows: [], why: $why);
+            : new self(isSignedIn: true, met: $why->saidToTheHousehold(), remedy: $why->remedyForTheHousehold(), rows: [], why: $why);
     }
 
     /** Whether what stood in the way is put right on this app's page in the phone's settings. */

@@ -8,23 +8,24 @@ use Tests\Support\OneDestination;
 /**
  * Values that may be read for one purpose, and are held to it by their surface.
  *
- * Three types here each carry a string that has exactly one place to go, and
- * each publishes exactly one way to reach it, named for that place:
- * `forTheHeader`, `forTheExchange`, `forTheClient`. The naming is deliberate and
- * every one of the three docblocks says so — reading it for any other purpose is
- * meant to read wrong at the call site.
+ * Three types here each carry a string with a fixed place to go, and each
+ * publishes one way to reach it per place, named for that place:
+ * `forTheHeader`, `forTheExchange`, `forTheClient`, and for an address also
+ * `forTheOperatorWhoCouldNotReachIt`. The naming is deliberate and every one of
+ * the three docblocks says so — reading it for any other purpose is meant to
+ * read wrong at the call site.
  *
  * Nothing held them to it. A second accessor — `value()`, `token()`,
  * `forTheQuery()` — compiles, passes every architecture rule, and is the whole
  * of how it gets broken: nobody puts a session in a query string on
  * purpose; somebody adds a plain getter because a template wanted the string,
  * and six months later a different caller uses it to build a URL. The rule that
- * the name is the guard is only a rule while there is one name.
+ * the name is the guard is only a rule while every name is one somebody chose.
  *
  * The table itself lives in {@see OneDestination}, because a second rule needs
- * the same three facts: this one asks whether a second accessor has appeared
- * beside the one, and `NothingSecretReachesAScreenTest` asks whether a template
- * calls the one. Two copies would go stale separately, and a template rule
+ * the same three facts: this one asks whether an accessor has appeared beside
+ * the ones named, and `NothingSecretReachesAScreenTest` asks whether a template
+ * calls any of them. Two copies would go stale separately, and a template rule
  * naming an accessor that had since been renamed would find nothing and report
  * a clean run.
  *
@@ -82,16 +83,18 @@ function answeringAString(ReflectionClass $class): array
 it('a value with one destination publishes one way to reach it', function (): void {
     $wrong = [];
 
-    foreach (OneDestination::all() as [$subject, $accessor, $requirement, $why]) {
+    foreach (OneDestination::all() as [$subject, $accessors, $requirement, $why]) {
         $answering = answeringAString(reflectValue($subject));
+        $allowed = $accessors;
+        sort($allowed);
 
-        if ($answering !== [$accessor]) {
+        if ($answering !== $allowed) {
             $wrong[] = sprintf(
                 "%s — %s answers a string from %s, and may answer from %s alone\n    %s",
                 $requirement,
                 $subject,
                 $answering === [] ? 'nothing' : implode(', ', $answering),
-                $accessor,
+                implode(', ', $allowed),
                 $why,
             );
         }
