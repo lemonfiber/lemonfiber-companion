@@ -57,20 +57,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # One output per gate this job decides, each named for the job it starts;
-    # `code` starts the PHP gates. The step below writes every one of them.
+    # `code` starts the PHP gates. `scripts/the_code_a_change_touches.py`
+    # decides every one of them, and `codeql.yml` asks it too, so the two cannot
+    # disagree about a path. On a tree already proven it is not asked, and
+    # every gate is false.
     outputs:
       tree: ${{ steps.tree.outputs.tree }}
       proved: ${{ steps.proved.outputs.cache-hit }}
-      code: ${{ steps.diff.outputs.code }}
-      typecheck: ${{ steps.diff.outputs.typecheck }}
-      kotlin: ${{ steps.diff.outputs.kotlin }}
-      swift: ${{ steps.diff.outputs.swift }}
-      agreement: ${{ steps.diff.outputs.agreement }}
+      code: ${{ steps.diff.outputs.code || 'false' }}
+      typecheck: ${{ steps.diff.outputs.typecheck || 'false' }}
+      kotlin: ${{ steps.diff.outputs.kotlin || 'false' }}
+      swift: ${{ steps.diff.outputs.swift || 'false' }}
+      agreement: ${{ steps.diff.outputs.agreement || 'false' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
+          # Every commit, so the base is here to compare against, and no file
+          # contents but the checkout's: the comparison reads trees, and the
+          # few files it reads lines of are fetched when it asks for them.
+          fetch-depth: 0
+          filter: blob:none
       # The tree these gates would test. On a pull request that is the branch
       # merged onto its base, so a rebase that leaves the result byte for byte
       # as it was — a stacked branch whose base was squash-merged, a base that
@@ -88,97 +95,20 @@ jobs:
           path: .ci-proved
           key: ${{ env.PROVED_TREE }}-${{ steps.tree.outputs.tree }}
           lookup-only: true
-      - id: diff
+      - name: Every gate already passed on this tree
+        if: steps.proved.outputs.cache-hit == 'true'
         env:
-          PROVED: ${{ steps.proved.outputs.cache-hit }}
           TREE: ${{ steps.tree.outputs.tree }}
-          # What this branch is measured against: a pull request's base, and on
-          # a push to `main` the commit before it, so a push of documentation
-          # alone starts no PHP gate there either.
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          set -euo pipefail
-          # Every gate this job decides, and the only list of them. Each stays
-          # false until a changed path names it.
-          declare -A run=([code]=false [typecheck]=false [kotlin]=false [swift]=false [agreement]=false)
-          every() {
-            for gate in "${!run[@]}"; do run[${gate}]=$1; done
-          }
-          decided() {
-            for gate in "${!run[@]}"; do echo "${gate}=${run[${gate}]}"; done >> "$GITHUB_OUTPUT"
-          }
-          if [ "${PROVED}" = true ]; then
-            echo "Every gate already passed on tree ${TREE}; none is run again." | tee -a "$GITHUB_STEP_SUMMARY"
-            decided
-            exit 0
-          fi
-          # No base to compare against means run everything rather than guess.
-          if [ -z "${BASE}" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            every true
-            decided
-            echo "No usable base commit, so every gate runs."
-            exit 0
-          fi
-          changed="$(git diff --name-only "${BASE}" HEAD)"
-          nativephp() {
-            git show "$1:composer.lock" 2>/dev/null \
-              | jq -c '.packages[]? | select(.name == "nativephp/mobile")' || true
-          }
-          while IFS= read -r path; do
-            # What each bridge gate reads, one row per gate. `;;&` tests the
-            # next row as well, so one path can start several gates.
-            #
-            # `typecheck` compiles every Swift file the bridge ships against
-            # the locked `nativephp/mobile` as `scripts/patch_nativephp.php`
-            # patches it. `swift` lints, builds and tests the Swift package, and
-            # `kotlin` the Gradle project, whose ktlint reads the root
-            # `.editorconfig` as well as the bridge's own. `agreement` reads
-            # the two test trees.
-            case "${path}" in
-            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) run[typecheck]=true ;;&
-            bridge/resources/ios/* | bridge/ios/* | bridge/Package.swift | bridge/.swift-format) run[swift]=true ;;&
-            bridge/resources/android/* | bridge/android/* | bridge/.editorconfig | .editorconfig) run[kotlin]=true ;;&
-            bridge/android/src/test/kotlin/* | bridge/ios/Tests/*) run[agreement]=true ;;&
-            composer.lock)
-              if [ "$(nativephp "${BASE}")" != "$(nativephp HEAD)" ]; then
-                run[typecheck]=true
-              fi
-              ;;
-            esac
-            # Anything that is not documentation is treated as code. The list is
-            # deliberately short: a new kind of file defaults to running the gates.
-            # A Markdown file is documentation wherever it sits, a module's
-            # README as much as the root's; the one suite that reads Markdown is
-            # Arch, and `rules` runs it on every change.
-            #
-            # Under `.github/`, only this file runs the gates this job decides,
-            # so a change to any other file there starts none of them. A change
-            # to this file starts every one of them, except where every line it
-            # changes is a pin on a shared workflow from `lemonfiber/spec`:
-            # those jobs run none of these gates.
-            case "${path}" in
-            '' | .docs/* | *.md | LICENSE) continue ;;
-            .github/workflows/ci.yml)
-              # Every changed line that is not a pin, read to the end. A
-              # `grep -q` here would stop at the first such line, the writers
-              # before it would die of SIGPIPE, and `pipefail` would turn that
-              # into "no such line": a change to how the gates run would skip
-              # them.
-              moved="$(git diff -U0 "${BASE}" HEAD -- "${path}" \
-                | grep -E '^[-+]' | grep -vE '^(\+\+\+|---) ' \
-                | grep -vE '^[-+][[:space:]]*uses: lemonfiber/spec/\.github/workflows/[^@]+@[0-9a-f]{40}( # .*)?$' || true)"
-              if [ -n "${moved}" ]; then
-                every true
-              fi
-              ;;
-            .github/*) continue ;;
-            *) run[code]=true ;;
-            esac
-          done <<< "${changed}"
-          decided
-          if [ "${run[code]}" = false ]; then
-            echo "Documentation, and workflows that run no PHP gate; the PHP gates are skipped."
-          fi
+        run: echo "Every gate already passed on tree ${TREE}; none is run again." | tee -a "$GITHUB_STEP_SUMMARY"
+      - id: diff
+        if: steps.proved.outputs.cache-hit != 'true'
+        env:
+          # What this branch is measured against: a pull request's base, a merge
+          # group's, and on a push to `main` the commit before it, so a push of
+          # documentation alone starts no PHP gate there either. Any other event
+          # has none, and the answer is then that everything runs.
+          BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+        run: python3 scripts/the_code_a_change_touches.py "${BASE}"
 
   # The gates every repository in the org shares, defined once in the spec repo
   # and pinned by commit. Those needing a pull request are guarded, because this
@@ -312,8 +242,8 @@ jobs:
     # protection, a pull request merges with none of these run and nothing red.
     # If it does not, the check never reports and the pull request is blocked
     # forever with nothing anywhere naming the cause. The job's own comments say
-    # which way it means to fail — "No usable base commit, so every gate runs",
-    # "a new kind of file defaults to running the gates" — and its own failure
+    # which way it means to fail — with no commit to compare against every gate
+    # runs, and a file of a kind nobody listed is code — and its own failure
     # was the one path that did the opposite.
     #
     # So the condition asks the result as well as the output.
@@ -348,8 +278,8 @@ jobs:
     # protection, a pull request merges with none of these run and nothing red.
     # If it does not, the check never reports and the pull request is blocked
     # forever with nothing anywhere naming the cause. The job's own comments say
-    # which way it means to fail — "No usable base commit, so every gate runs",
-    # "a new kind of file defaults to running the gates" — and its own failure
+    # which way it means to fail — with no commit to compare against every gate
+    # runs, and a file of a kind nobody listed is code — and its own failure
     # was the one path that did the opposite.
     #
     # So the condition asks the result as well as the output.
@@ -360,6 +290,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # The answer `what changed` gives, which decides whether these gates run.
+      # Proven here rather than there: a red `what changed` runs everything, so
+      # a broken answer would be paid for and never seen. A change to the script
+      # starts every gate, so this runs on every change that could break it.
+      - name: What reaches code is told from what does not
+        run: python3 scripts/the_code_a_change_touches.py --self-test
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -607,8 +543,8 @@ jobs:
     # protection, a pull request merges with none of these run and nothing red.
     # If it does not, the check never reports and the pull request is blocked
     # forever with nothing anywhere naming the cause. The job's own comments say
-    # which way it means to fail — "No usable base commit, so every gate runs",
-    # "a new kind of file defaults to running the gates" — and its own failure
+    # which way it means to fail — with no commit to compare against every gate
+    # runs, and a file of a kind nobody listed is code — and its own failure
     # was the one path that did the opposite.
     #
     # So the condition asks the result as well as the output.
