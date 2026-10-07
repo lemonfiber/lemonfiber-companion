@@ -42,9 +42,10 @@ it this app has had reason to touch.
 
 It matters because the question gets asked in the other direction. A field
 arrives on the wire, nothing reads it, and somebody has to decide whether
-anything should — `WhatTheContractCarriesThatNothingReadsTest` is where that
-decision is written down, and *no requirement asks for this* is one of its two
-legitimate answers. Deciding that by searching this directory, or by searching
+anything should — `WhatThisAppDoesNotRead`, which
+`WhatTheContractCarriesThatNothingReadsTest` holds to the contract, is where
+that decision is written down, and *no requirement asks for this* is one of its
+two legitimate answers. Deciding that by searching this directory, or by searching
 `N1`–`N4`, has now been wrong twice: `F7-R3` requires a setting's origin shown
 beside it wherever it is shown, and `E5-R6` requires the changelog in the
 stack-update flow. Both bind a surface this app has, neither is in area `N`,

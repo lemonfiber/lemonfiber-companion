@@ -39,8 +39,8 @@ use function trim;
  *
  * **Of each reversal, the target and what it does are read.** The rest of an
  * action — which setting, which path, what it held — is the instruction the
- * stack carried out with, and `WhatTheContractCarriesThatNothingReadsTest`
- * says why each part is left.
+ * stack carried out with, and `WhatThisAppDoesNotRead` says why each
+ * part is left.
  */
 final readonly class TheRunPutBack
 {

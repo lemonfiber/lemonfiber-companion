@@ -84,4 +84,4 @@ the app leaves the foreground, so every wake asks the bridge.
 has the decision and the alternatives the spec weighed.
 
 The rest of the dashboard is not read. Each part is recorded in
-`WhatTheContractCarriesThatNothingReadsTest` with the reason.
+`WhatThisAppDoesNotRead` with the reason.

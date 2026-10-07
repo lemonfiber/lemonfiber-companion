@@ -107,7 +107,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'anything in. `NothingPlaysMediaHereTest` refuses every player for as long as this row '
             . 'stands, and is the rule to replace with ones holding the player to `N3-R14` and '
             . '`N3-R16` when it goes. `HouseholdEnvelope.members[].requests[].media` is the other '
-            . 'handle on this wire, and its row in `WhatTheContractCarriesThatNothingReadsTest` is '
+            . 'handle on this wire, and its row in `WhatThisAppDoesNotRead` is '
             . 'read beside this one.',
     ],
     [

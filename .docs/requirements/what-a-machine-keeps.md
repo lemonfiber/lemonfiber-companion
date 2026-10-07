@@ -32,7 +32,7 @@ could not be listed still has what it keeps shown.
 
 What is on the machine and is not the stack's is listed beside what it keeps.
 Whether the call that answered removed anything is recorded as not read in
-`WhatTheContractCarriesThatNothingReadsTest`, with its reason, and so is each
+`WhatThisAppDoesNotRead`, with its reason, and so is each
 field of a copy and a restore that no screen draws.
 
 ## Asked for, and not drawn yet

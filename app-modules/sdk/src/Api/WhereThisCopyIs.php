@@ -32,7 +32,7 @@ use function trim;
  * `null` or absent and are read as empty.
  *
  * Only what the requirements ask for is read. The rest is recorded in
- * `WhatTheContractCarriesThatNothingReadsTest`, each with its reason.
+ * `WhatThisAppDoesNotRead`, each with its reason.
  */
 final readonly class WhereThisCopyIs
 {

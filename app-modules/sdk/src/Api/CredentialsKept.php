@@ -33,8 +33,8 @@ use function trim;
  * **No value is read, and none could be.** A credential on the wire carries
  * none, and the one place the envelope can carry a value — what an operator
  * asked to be shown — is not read at all. Only what the requirements ask for
- * is read; the rest is recorded in `WhatTheContractCarriesThatNothingReadsTest`,
- * each with its reason.
+ * is read; the rest is recorded in `WhatThisAppDoesNotRead`, each with its
+ * reason.
  */
 final readonly class CredentialsKept
 {
