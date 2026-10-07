@@ -3,6 +3,14 @@
 The mobile companion app: a fourth surface for lemonfiber, built with NativePHP
 in SuperNative mode. Read this before changing anything.
 
+> **Start at the report** of where every unreleased version stands: the summary
+> of the newest run of the spec's [`state` workflow](https://github.com/lemonfiber/spec/actions/workflows/state.yml),
+> or `just goals <version>` in a spec checkout.
+> **Then the rules every repository shares:**
+> [working in the repositories](https://github.com/lemonfiber/spec/blob/main/50-governance/working-in-the-repositories.md)
+> and [the rules for agents](https://github.com/lemonfiber/spec/blob/main/50-governance/ai-contributors.md).
+> This file holds only what is true of `lemonfiber-companion`.
+
 The specification is [area N](https://github.com/lemonfiber/spec/tree/main/10-functional/features/n-companion)
 and [ADR-0017](https://github.com/lemonfiber/spec/blob/main/00-overview/decisions/0017-the-companion-app-as-a-fourth-surface.md).
 This file is how to work here; the spec is what to build.
@@ -213,17 +221,6 @@ cannot be immutable.
 That exemption is named explicitly in the architecture test rather than left as a
 gap. If you add a class that needs to be mutable and is not a component, the test
 will refuse it and it is probably the wrong design.
-
-## Committing
-
-- `git commit -s` — DCO sign-off, enforced.
-- A `Spec:` trailer naming a real requirement that exists on `spec@main`, e.g.
-  `Spec: N2-R4`. Enforced by the shared `spec-check` workflow, which reads the
-  trailer from **both** the commit and the pull request body.
-- Conventional commits — enforced by commitlint.
-- **No AI attribution anywhere.** Not in commits, not in pull request bodies, not
-  in squash messages.
-- Stage paths explicitly. Never `git add -A`.
 
 ## Versioning
 
