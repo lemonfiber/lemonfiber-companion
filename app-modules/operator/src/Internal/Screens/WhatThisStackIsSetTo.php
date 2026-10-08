@@ -47,6 +47,11 @@ use function view;
  * this app's own: a key and what it holds, in the order the stack said them.
  * Anything prettier would be this side deciding something the other side owns.
  *
+ * **It says setup is done at the machine, on every stack.** What setup settled
+ * is carried whole only by what the command line writes, and nothing this app
+ * can read says whether a stack has setup left to do, so the sentence is drawn
+ * on every stack rather than only on one that has setup left.
+ *
  * **{@see Concealed} because a withheld row is still about a credential.** The
  * stack withholds the value and sends a note in its place, so nothing secret
  * reaches this screen — but the *names* do, and a task-switcher snapshot of a

@@ -143,8 +143,8 @@ final readonly class Origins
             self::text($row, WireField::Name, $position),
             self::text($row, ProvenanceField::Image, $position),
             self::text($row, ProvenanceField::Pinned, $position),
-            self::text($row, ProvenanceField::Upstream, $position),
-            self::text($row, ProvenanceField::License, $position),
+            self::text($row, WireField::Upstream, $position),
+            self::text($row, WireField::License, $position),
         );
 
         // Absent and null mean the same here: the stack pins this image by tag

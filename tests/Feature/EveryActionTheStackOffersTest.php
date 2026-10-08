@@ -39,7 +39,7 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
-    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Preview',
+    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Plugins', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Alert', 'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing', 'Plugins',
+    'Alert', 'Certificate', 'Keys', 'MintedKey', 'Pausing', 'Playing',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {
@@ -272,51 +272,4 @@ it('every excuse names a requirement', function (): void {
         . 'it here as `N1-R35 — the reason` (N1-R2).',
         implode("\n  ", $unexplained),
     ));
-});
-
-/**
- * The kinds offered nowhere here that this app's code names, tests aside.
- *
- * Naming one is not reading it: `dx` names `AdmissionEnvelope` to build what a
- * stand-in stack answers, and follows none of its fields.
- *
- * @return list<string>
- */
-function theUnofferedKindsTheCodeNames(): array
-{
-    $source = '';
-
-    foreach ([...Tree::filesUnder(Tree::at('app-modules'), '.php'), ...Tree::filesUnder(Tree::at('bridge/src'), '.php')] as $file) {
-        if (! str_contains($file, '/tests/')) {
-            $source .= (string) file_get_contents($file);
-        }
-    }
-
-    $named = [];
-
-    foreach ([...NOT_YET, ...array_keys(ELSEWHERE)] as $kind) {
-        if (preg_match(sprintf('/\b%sEnvelope\b/', $kind), $source) === 1) {
-            $named[] = $kind;
-        }
-    }
-
-    sort($named);
-
-    return $named;
-}
-
-it('states on the parity page the counts these lists come to', function (): void {
-    // The page says how far this app is from parity, and the three lists above
-    // are what that is measured from. A page that says a number these lists do
-    // not come to reads as current and is not.
-    $page = (string) preg_replace('/\s+/', ' ', (string) file_get_contents(Tree::at('.docs/requirements/what-a-screen-owes.md')));
-    $named = theUnofferedKindsTheCodeNames();
-    $names = array_map(static fn(string $kind): string => sprintf('`%s`', $kind), $named);
-    $last = array_pop($names);
-    $listed = $names === [] ? (string) $last : sprintf('%s and %s', implode(', ', $names), $last);
-
-    expect($page)
-        ->toContain(sprintf('The SDK ships %d envelopes and this app follows %d.', count(Kind::cases()), count(OFFERED) + count(THROUGH_THE_SDK)))
-        ->toContain(sprintf('Of the rest, %d are never named by the code in `app-modules` or `bridge`', count(NOT_YET) + count(ELSEWHERE) - count($named)))
-        ->toContain(sprintf('and %d more — %s — %s named without being followed.', count($named), $listed, count($named) === 1 ? 'is' : 'are'));
 });

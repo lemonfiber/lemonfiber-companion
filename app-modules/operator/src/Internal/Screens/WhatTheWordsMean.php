@@ -45,6 +45,11 @@ use function view;
  * The glossary is asked for once and held, so typing narrows what is shown
  * without asking the machine again.
  *
+ * **A word is found by any form lemonfiber writes it in.** Its own name, any
+ * other name the glossary gives it, or any of its forms, whatever the case: the
+ * stage `grabbed` is explained by the entry for `grab`. The forms are not
+ * drawn, because they are the word rather than another name for it.
+ *
  * **A word the held glossary has no entry for can be asked for alone.** The
  * operator asks, for the one word searched for, and only then: typing never
  * reaches the machine. A word the stack explains joins the glossary held here

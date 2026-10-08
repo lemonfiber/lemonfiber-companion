@@ -35,9 +35,6 @@ enum WiringField: string implements NamesAWireField
     /** How an ask was settled, tagged by its own word. */
     case Settled = 'settled';
 
-    /** Every candidate in a contest, named. */
-    case Claimants = 'claimants';
-
     /** The claimants not chosen, where a choice is recorded. */
     case Over = 'over';
 

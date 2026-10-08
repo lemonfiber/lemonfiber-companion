@@ -40,7 +40,7 @@ final readonly class TheRestore
      */
     public static function listedIn(Envelope $envelope, ACopy $copy): WhatPuttingItBackWouldDo
     {
-        $would = self::table(self::data($envelope), RestoreField::Would);
+        $would = self::table(self::data($envelope), WireField::Would);
         $manifest = self::table($would, WireField::Manifest);
 
         return WhatPuttingItBackWouldDo::listed(

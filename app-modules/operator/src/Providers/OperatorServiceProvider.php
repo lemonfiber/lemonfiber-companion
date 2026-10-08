@@ -33,6 +33,7 @@ use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -350,6 +351,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // Wiring the services to each other. Its own screen, because a run
             // is an act with a report of its own, one connection at a time.
             Router::native(AStacksScreen::Wiring->value, HowTheServicesAreWired::class);
+
+            // The plugins that extend the machine. Its own screen, because an
+            // install is rehearsed, agreed to in two parts and followed.
+            Router::native(AStacksScreen::Plugins->value, WhatExtendsThisStack::class);
 
             // Taking lemonfiber off the machine. Its own screen, because each
             // removal is read and agreed to on its own, and the last of them

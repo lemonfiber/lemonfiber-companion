@@ -51,6 +51,7 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -166,6 +167,7 @@ final readonly class TheWireUnions
         WhereAConnectionStands::class => 'state',
         HowSeriousAConnectionIs::class => 'severity',
         WhatGoingBackDoes::class => 'does',
+        WhatAChangePuts::class => 'puts',
         Availability::class => 'capabilities',
 
         // `state` twice, and that is the wire's name rather than a mistake here:

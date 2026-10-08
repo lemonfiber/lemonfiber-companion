@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\APairingLine;
+use Modules\Kernel\Api\APluginInstallAgreed;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARunAgreedTo;
@@ -94,6 +95,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     AMoveAgreed::class,
     AnInvitationAgreed::class,
     AnUninstallAgreed::class,
+    APluginInstallAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,
     AFillAgreed::class,

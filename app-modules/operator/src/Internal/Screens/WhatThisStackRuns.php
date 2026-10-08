@@ -47,6 +47,12 @@ use function view;
  * to in what was actually read, and builds {@see AgreedTo} from *that* — a name
  * this screen never read cannot be acted on, whatever a template sends.
  *
+ * **The stack's own condition is drawn as it said it.** It is worked out over
+ * every service the stack lists, the ones left out on purpose among them, so a
+ * stack running part of itself on purpose can read as partial. No count or
+ * share is drawn beside it, and a condition worked out here in its place would
+ * be this app deciding what the core decides.
+ *
  * **A start is not confirmed and the other two are.** That line is
  * {@see WhatToDoWithIt::takesSomethingAway()}'s and is not redrawn here. A
  * screen that asked about a start would be teaching an operator to confirm

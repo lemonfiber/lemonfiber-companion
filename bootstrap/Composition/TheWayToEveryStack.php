@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
@@ -87,6 +88,7 @@ use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
@@ -386,6 +388,10 @@ final class TheWayToEveryStack extends ServiceProvider
         // Taking lemonfiber off the machine: a reading, and the removal agreed
         // against it, bound beside the rest for the same reason.
         $this->app->bind(TakingLemonfiberOff::class, Dismantlers::class);
+
+        // The plugins that extend the stack: what is installed, a rehearsal of
+        // an install, and the install agreed against it.
+        $this->app->bind(ExtendingTheStack::class, Extenders::class);
 
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);

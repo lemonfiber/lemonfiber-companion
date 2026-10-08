@@ -139,7 +139,7 @@ final readonly class WhatLeaves
         $service = ServiceId::called(self::text($row, OutboundField::Theirs, WireField::Service, $position));
         $origin = self::origin($row, $position);
 
-        if (! self::flag($row, OutboundField::Theirs, OutboundField::Recorded, $position)) {
+        if (! self::flag($row, OutboundField::Theirs, WireField::Recorded, $position)) {
             return ARequestOfTheirs::unrecorded($service, $origin);
         }
 

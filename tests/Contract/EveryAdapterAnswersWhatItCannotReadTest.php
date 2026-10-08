@@ -93,6 +93,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Extenders::whatBecameOf' => sprintf('%sPluginsEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Fillers::') => sprintf('%sSubstitutionEnvelope', AN_ENVELOPE_BY_NAME),
@@ -119,9 +120,27 @@ function theStandInsAnswerTo(string $endpoint, string ...$asked): MockResponse
  * own shape, which the contract types only as text and a payload built from
  * the declaration cannot be.
  *
+ * Built once for each call and question, and handed out again for every
+ * place it is spoiled at: a stand-in is read out of the contract's whole
+ * declaration, and building the larger envelopes again at each of their
+ * thousand-odd places is most of what this suite would otherwise spend.
+ *
  * @return list<array<mixed>>
  */
 function theEnvelopesACallIsSent(string $which, string $endpoint, string ...$asked): array
+{
+    /** @var array<string, list<array<mixed>>> $built */
+    static $built = [];
+
+    return $built[implode("\0", [$which, $endpoint, ...$asked])] ??= theEnvelopesBuiltFor($which, $endpoint, ...$asked);
+}
+
+/**
+ * The envelopes one call is sent, built afresh.
+ *
+ * @return list<array<mixed>>
+ */
+function theEnvelopesBuiltFor(string $which, string $endpoint, string ...$asked): array
 {
     return match ($which) {
         'Guides::whatBecameOf' => [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()],

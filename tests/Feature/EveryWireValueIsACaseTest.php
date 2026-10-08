@@ -36,6 +36,7 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -387,6 +388,13 @@ it('everything putting one change back can do has a case', function (): void {
 
     expect($does)->not->toBe([], 'no reversal arm was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
+});
+
+it('everything a plugin install puts at a path has a case', function (): void {
+    $puts = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginsEnvelope'), 'puts');
+
+    expect($puts)->not->toBe([], 'no puts union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatAChangePuts::cases()))->toBe($puts);
 });
 
 it('every request lemonfiber makes on its own account has a case', function (): void {

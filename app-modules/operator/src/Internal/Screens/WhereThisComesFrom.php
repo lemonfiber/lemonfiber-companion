@@ -41,6 +41,11 @@ use Native\Mobile\Edge\NativeComponent;
  * licence or a version, so one that has gone away leaves this screen exactly
  * as true as it was — the pin and the licence are facts the stack wrote down.
  *
+ * **The digest is drawn beside the version, not in its place.** The version is
+ * what a person recognises, and the digest is what makes the pin immutable;
+ * where the stack's manifest names none, the row says the image is pinned by
+ * tag alone.
+ *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business.
  */

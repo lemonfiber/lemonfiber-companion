@@ -52,6 +52,12 @@ use function trim;
  * against that reading; nothing is carried in from another screen, and a
  * reading asked for again is agreed to again.
  *
+ * **The yes quotes no reading on the wire.** The action takes a name and a
+ * bare confirmation, so holding the reading on this screen is what ties the
+ * yes to it. Nothing on the wire says what taking somebody out does to their
+ * watch history, and the screen says nothing about it rather than saying it
+ * for the stack.
+ *
  * **How far it reached is the stack's word**, and only *everywhere* is drawn
  * as done. Every act is work the stack names and this follows, at
  * {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs.

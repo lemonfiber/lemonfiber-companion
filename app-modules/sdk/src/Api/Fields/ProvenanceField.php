@@ -30,15 +30,4 @@ enum ProvenanceField: string implements NamesAWireField
 
     /** The digest the image is pinned to, where the stack's manifest names one. */
     case Digest = 'digest';
-
-    /** The project a service is built from, where its licence is checked. */
-    case Upstream = 'upstream';
-
-    /**
-     * The licence a service is published under, as an SPDX identifier.
-     *
-     * Spelled as the wire spells it, which is the American way; the kernel's
-     * word is `licence` and this case is the one place the two meet.
-     */
-    case License = 'license';
 }

@@ -133,7 +133,7 @@ final readonly class Links
         return match (HowItSettled::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WiringField::Settled, $said, $position)) {
             HowItSettled::Outright => WhatSettledIt::outright(),
             HowItSettled::Each => WhatSettledIt::each(),
-            HowItSettled::Contested => WhatSettledIt::contested(self::services($settled, WiringField::Claimants, $position)),
+            HowItSettled::Contested => WhatSettledIt::contested(self::services($settled, WireField::Claimants, $position)),
             HowItSettled::Chosen => self::chosen($settled, $position),
             HowItSettled::Unfilled => WhatSettledIt::unfilled(),
         };

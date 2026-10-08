@@ -17,9 +17,6 @@ enum RestoreField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** What putting the copy back would do, read before anything is overwritten. */
-    case Would = 'would';
-
     /** What putting it back did, absent where nothing was put back. */
     case Done = 'done';
 

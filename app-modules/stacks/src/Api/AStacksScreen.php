@@ -289,6 +289,9 @@ enum AStacksScreen: string
     /** Wiring the services to each other, and how each connection turned out. */
     case Wiring = '/stacks/{stack}/wiring';
 
+    /** The plugins that extend this machine, and installing one, rehearsed before it is agreed to. */
+    case Plugins = '/stacks/{stack}/plugins';
+
     /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
     case Uninstall = '/stacks/{stack}/uninstall';
 

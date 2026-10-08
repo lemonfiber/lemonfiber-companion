@@ -6,14 +6,14 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "N20-R1", state = "open" },
-  { id = "N20-R2", state = "open" },
-  { id = "N20-R3", state = "open" },
-  { id = "N20-R4", state = "open" },
-  { id = "N20-R5", state = "open" },
-  { id = "N20-R6", state = "open" },
-  { id = "N20-R7", state = "open" },
-  { id = "N20-R8", state = "open" },
-  { id = "N20-R9", state = "open" },
-  { id = "N20-R10", state = "open" },
+  { id = "N20-R1", state = "done", evidence = ["app-modules/kernel/src/Api/AValueItCarries.php", "app-modules/operator/resources/views/what-extends-this-stack.blade.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N20-R2", state = "done", evidence = ["app-modules/kernel/src/Api/APluginInstallAgreed.php", "app-modules/operator/src/Internal/Screens/WhatExtendsThisStack.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N20-R3", state = "done", evidence = ["app-modules/kernel/src/Api/AValueItCarries.php", "tests/Contract/ExtendingTheStackContractTest.php"] },
+  { id = "N20-R4", state = "done", evidence = ["app-modules/sdk/src/Api/Extenders.php", "tests/Contract/ExtendingTheStackContractTest.php"] },
+  { id = "N20-R5", state = "done", evidence = ["app-modules/kernel/src/Api/ARecipe.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N20-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ARecipeStep.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N20-R7", state = "done", evidence = ["app-modules/sdk/src/Api/Extenders.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N20-R8", state = "done", evidence = ["app-modules/kernel/src/Api/HowExtendingItIsGoing.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N20-R9", state = "done", evidence = ["app-modules/sdk/src/Api/Extenders.php", "tests/Contract/ExtendingTheStackContractTest.php"] },
+  { id = "N20-R10", state = "done", evidence = ["app-modules/sdk/src/Internal/PluginRecords.php", "app-modules/sdk/tests/Api/PluginInstallsTest.php"] },
 ]

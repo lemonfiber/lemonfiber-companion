@@ -60,6 +60,11 @@ use Native\Mobile\Edge\NativeComponent;
  * the only thing that sends, and it sends what was asked about. Nothing else on
  * this screen reaches the machine's service manager.
  *
+ * **A command is handed over by its name alone.** The guard on the data
+ * location is installed against forms, and nothing this app reads says which
+ * command takes them, so an install the stack refuses for want of them is drawn
+ * as its refusal, in its words, rather than guessed at from the name.
+ *
  * **What came back is reported as the stack said it.** Where the command now
  * stands, whether it was started, where its words are written, every file
  * written or taken back, and whether it was a rehearsal — never *installed*,

@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ConnectingADevice;
+use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowManyLines;
@@ -241,16 +242,23 @@ const VERBS_THE_APP_ASKS_FOR = [
     // moved on is refused by the stack rather than carried out.
     'uninstall' => 'takes one of the four removals off the machine, against the reading of it the operator was shown and agreed to',
 
-    // The one verb that fetches something. It names at most a title, and
-    // with none the stack chooses something likely to work; the stack
-    // refuses to grab outside the tunnel and never re-fetches what is
-    // already here, so what it can do is what an operator asked to watch.
     // A long-running command handed to the machine's service manager, or taken
     // back from it. Each is asked for on its own and named by the command, so
     // nothing comes to run on a machine as a side effect of another act.
     'hosting-install' => 'hands one command the stack hosts to the machine\'s service manager, which keeps it running',
     'hosting-remove' => 'takes one command back from the machine\'s service manager, so it runs only while a terminal holds it',
 
+    // A plugin, rehearsed and then installed. Asked with no offer it is the
+    // reading and writes nothing; asked with the reading's name and every
+    // value a recipe carries elsewhere approved as itself, it installs what
+    // was shown. The stack runs the plugin's proofs and its own checks, and
+    // puts the install back where either does not hold.
+    'plugin-install' => 'rehearses installing one plugin, and installs the one rehearsed on a second yes with each value it sends approved',
+
+    // The one verb that fetches something. It names at most a title, and
+    // with none the stack chooses something likely to work; the stack
+    // refuses to grab outside the tunnel and never re-fetches what is
+    // already here, so what it can do is what an operator asked to watch.
     'walkthrough' => 'fetches one thing while the operator watches, narrated end to end, on a stack already set up',
 
     // A support bundle, described and then written. Described, it writes
@@ -543,6 +551,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(HandingOver $over): string => $over->asked(), HandingOver::cases()),
+        ...array_map(static fn(ExtendingIt $extending): string => $extending->asked(), ExtendingIt::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
