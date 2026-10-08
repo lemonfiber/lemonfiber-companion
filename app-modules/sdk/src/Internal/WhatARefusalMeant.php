@@ -41,9 +41,9 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
  * them apart, never its sentence, which is written for a person and may be
  * reworded.
  *
- * Only the first ends the session. Reading any other as it would sign a member
- * out the first time they reached something that was never theirs, or on the
- * day their media server restarted.
+ * Only the first ends the session, whatever status any other code came with.
+ * Reading any other as it would sign a member out the first time they reached
+ * something that was never theirs, or on the day their media server restarted.
  *
  * **A refusal with no code is read by its status.** A stack from before codes,
  * or a code newer than this app knows, still says `401` for a session it will
@@ -142,7 +142,7 @@ final readonly class WhatARefusalMeant
         $code = $why->code();
 
         if (! $code instanceof RefusalCode) {
-            return self::byFamily($why);
+            return self::byStatus($why);
         }
 
         return match ($code) {
@@ -264,7 +264,22 @@ final readonly class WhatARefusalMeant
     }
 
     /**
-     * What a refusal carrying no code this app knows means, read from its family.
+     * What a refusal with a code this app knows, other than the session's, means, read from its family.
+     *
+     * The code is known and it is not the one that says the session is not
+     * admitted, so whatever status it came with, it signs nobody out: a request
+     * turned away is an account that may not ask. Every other family is read as
+     * a refusal with no code is.
+     */
+    private static function byFamily(RequestFailed $why): Obstacle
+    {
+        return $why instanceof NotAdmitted || $why instanceof Declined
+            ? Obstacle::of(KindOfObstacle::NotForThisAccount)
+            : self::byStatus($why);
+    }
+
+    /**
+     * What a refusal carrying no code, or a code this app does not know, means, read from its status and family.
      *
      * Every family is named, and a test refuses one the SDK adds that is not,
      * so each is decided here rather than swept into an answer written for
@@ -273,7 +288,7 @@ final readonly class WhatARefusalMeant
      * not ask everywhere else; other work holding the stack is a remedy of its
      * own; and the rest are a stack that did not answer what was asked.
      */
-    private static function byFamily(RequestFailed $why): Obstacle
+    private static function byStatus(RequestFailed $why): Obstacle
     {
         return match (true) {
             $why instanceof NotAdmitted,
