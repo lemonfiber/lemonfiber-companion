@@ -1,0 +1,19 @@
+# What this app implements of N12, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N12-R1", state = "done", evidence = ["app-modules/kernel/src/Api/ADownloadOnDisk.php", "app-modules/kernel/src/Api/WhereADownloadStands.php", "app-modules/kernel/tests/Api/ADownloadOnDiskTest.php", "app-modules/sdk/tests/Api/WhereTheRoomIsTest.php"] },
+  { id = "N12-R2", state = "done", evidence = ["app-modules/kernel/src/Api/ADownloadOnDisk.php", "app-modules/kernel/src/Api/ARatio.php", "app-modules/kernel/tests/Api/ADownloadOnDiskTest.php", "app-modules/kernel/tests/Api/ARatioTest.php"] },
+  { id = "N12-R3", state = "done", evidence = ["app-modules/kernel/tests/Api/ADownloadOnDiskTest.php", "app-modules/sdk/tests/Api/WhereTheRoomIsTest.php"] },
+  { id = "N12-R4", state = "done", evidence = ["tests/Feature/SeeingHowFullThisMachineIsTest.php"] },
+  { id = "N12-R5", state = "done", evidence = ["app-modules/kernel/src/Api/StoppingSeeding.php", "app-modules/kernel/src/Api/WhatLettingItGoCosts.php", "tests/Contract/StoppingSeedingContractTest.php"] },
+  { id = "N12-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ALineOfTheAccount.php", "app-modules/kernel/tests/Api/ALineOfTheAccountTest.php", "app-modules/sdk/tests/Api/WhereTheRoomIsTest.php"] },
+  { id = "N12-R7", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/LettingADownloadGo.php", "tests/Contract/AwaitsAnOutcomeContractTest.php", "tests/Feature/StoppingSeedingOneDownloadTest.php"] },
+  { id = "N12-R8", state = "done", evidence = ["app-modules/kernel/src/Api/ADownloadLetGo.php", "app-modules/kernel/src/Api/WhetherItWasRehearsed.php", "tests/Feature/StoppingSeedingOneDownloadTest.php"] },
+  { id = "N12-R9", state = "done", evidence = ["app-modules/kernel/src/Api/StoppingSeeding.php", "app-modules/operator/src/Internal/Screens/LettingADownloadGo.php", "tests/Feature/StoppingSeedingOneDownloadTest.php"] },
+  { id = "N12-R10", state = "done", evidence = ["app-modules/kernel/src/Api/AnAmountOfRoom.php", "app-modules/kernel/src/Api/WhereTheRoomStands.php", "app-modules/kernel/tests/Api/AnAmountOfRoomTest.php", "app-modules/kernel/tests/Api/WhatWasMeasuredTest.php"] },
+]

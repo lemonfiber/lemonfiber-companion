@@ -1,0 +1,28 @@
+# What this app implements of N13, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N13-R1", state = "done", evidence = ["app-modules/kernel/src/Api/HowFarTheRemovalReached.php", "app-modules/sdk/src/Api/Removals.php", "app-modules/kernel/tests/Api/ARemovalAgreedTest.php", "app-modules/kernel/tests/Api/ARemovalTest.php"] },
+  { id = "N13-R2", state = "done", evidence = ["app-modules/kernel/src/Api/HowFarTheRemovalReached.php", "app-modules/kernel/tests/Api/ARemovalAgreedTest.php", "app-modules/kernel/tests/Api/ARemovalTest.php"] },
+  { id = "N13-R3", state = "done", evidence = ["app-modules/sdk/src/Api/Removers.php", "app-modules/operator/src/Internal/Screens/TakingSomebodyOut.php", "tests/Contract/RemovingSomebodyContractTest.php", "tests/Feature/TakingSomebodyOutTest.php"] },
+  { id = "N13-R4", state = "done", evidence = ["app-modules/kernel/src/Api/HowMuchWasRead.php", "app-modules/sdk/src/Api/Uninstalls.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "app-modules/kernel/tests/Api/WhatTakingItOffComesToTest.php"] },
+  { id = "N13-R5", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R6", state = "done", evidence = ["app-modules/kernel/src/Api/WhatIsNotLemonfibers.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "app-modules/kernel/tests/Api/WhatTakingItOffComesToTest.php"] },
+  { id = "N13-R7", state = "done", evidence = ["app-modules/kernel/src/Api/AnUninstallAgreed.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "tests/Arch/WhatThePhoneMayKeepTest.php"] },
+  { id = "N13-R9", state = "done", evidence = ["app-modules/kernel/src/Api/WhatBecameOfTheRemoval.php", "app-modules/kernel/src/Api/WhatBecameOfTheUninstall.php", "app-modules/kernel/tests/Api/WhatBecameOfTheRemovalTest.php", "tests/Contract/RemovingSomebodyContractTest.php"] },
+  { id = "N13-R10", state = "done", evidence = ["app-modules/kernel/src/Api/WhereTakingItOffGot.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "app-modules/kernel/tests/Api/WhereTakingItOffGotTest.php"] },
+  { id = "N13-R11", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php", "tests/Contract/RemovingSomebodyContractTest.php", "tests/Feature/TakingSomebodyOutTest.php"] },
+  { id = "N13-R12", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R13", state = "done", evidence = ["app-modules/kernel/src/Api/AnUninstallAgreed.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "tests/Arch/WhatThePhoneMayKeepTest.php"] },
+  { id = "N13-R14", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R15", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R16", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R17", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R18", state = "done", evidence = ["app-modules/kernel/src/Api/WhatItCannotTake.php", "app-modules/kernel/src/Api/WhatWasLeftBehind.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "app-modules/kernel/tests/Api/WhatTakingItOffComesToTest.php"] },
+  { id = "N13-R19", state = "done", evidence = ["app-modules/sdk/src/Api/Removers.php", "app-modules/operator/src/Internal/Screens/TakingSomebodyOut.php", "tests/Contract/RemovingSomebodyContractTest.php", "tests/Feature/TakingSomebodyOutTest.php"] },
+  { id = "N13-R20", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+]

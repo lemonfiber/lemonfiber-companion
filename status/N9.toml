@@ -1,0 +1,19 @@
+# What this app implements of N9, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N9-R1", state = "done", evidence = ["app-modules/kernel/src/Api/WhereACredentialStands.php", "app-modules/kernel/tests/Api/ACredentialHeldTest.php", "app-modules/kernel/tests/Api/TheCredentialsHeldTest.php"] },
+  { id = "N9-R2", state = "done", evidence = ["app-modules/sdk/src/Api/CredentialsKept.php", "app-modules/sdk/tests/Api/CredentialsKeptTest.php", "tests/Contract/SafekeepingContractTest.php"] },
+  { id = "N9-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhoMadeACredential.php", "app-modules/kernel/tests/Api/ACredentialHeldTest.php", "app-modules/kernel/tests/Api/TheCredentialsHeldTest.php"] },
+  { id = "N9-R4", state = "done", evidence = ["app-modules/kernel/src/Api/ACredentialHeld.php", "app-modules/sdk/src/Api/CredentialsKept.php", "app-modules/kernel/tests/Api/ACredentialHeldTest.php", "app-modules/kernel/tests/Api/TheCredentialsHeldTest.php"] },
+  { id = "N9-R5", state = "done", evidence = ["app-modules/kernel/src/Api/AnInvitationAgreed.php", "app-modules/kernel/src/Api/WhatWasGranted.php", "app-modules/kernel/tests/Api/AnInvitationAgreedTest.php", "app-modules/sdk/tests/Api/UshersTest.php"] },
+  { id = "N9-R6", state = "done", evidence = ["app-modules/sdk/src/Api/Ushers.php", "app-modules/sdk/tests/Api/UshersTest.php", "tests/Contract/InvitingContractTest.php"] },
+  { id = "N9-R8", state = "done", evidence = ["app-modules/kernel/src/Api/ADeviceToWatchOn.php", "app-modules/kernel/src/Api/HowWellADeviceIsServed.php", "app-modules/kernel/tests/Api/ADeviceToWatchOnTest.php", "tests/Contract/AdvisingContractTest.php"] },
+  { id = "N9-R9", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhichAppToWatchOn.php", "tests/Feature/SeeingWhichAppToWatchOnTest.php", "tests/Contract/AdvisingContractTest.php"] },
+  { id = "N9-R10", state = "done", evidence = ["app-modules/kernel/src/Api/AnAddressToHand.php", "app-modules/kernel/src/Api/HowTheDoorWasChosen.php", "app-modules/codes/tests/Api/QrCodesTest.php", "app-modules/kernel/tests/Api/AHandoffTest.php"] },
+  { id = "N9-R11", state = "done", evidence = ["app-modules/sdk/src/Api/CredentialsKept.php", "tests/Contract/EveryAdapterAnswersWhatItCannotReadTest.php", "tests/Contract/SafekeepingContractTest.php"] },
+]

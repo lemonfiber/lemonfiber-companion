@@ -1,0 +1,17 @@
+# What this app implements of N14, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N14-R1", state = "done", evidence = ["app-modules/kernel/src/Api/HowLemonfiberWasInstalled.php", "app-modules/kernel/tests/Api/HowLemonfiberWasInstalledTest.php", "app-modules/kernel/tests/Api/HowThisCopyGotThereTest.php"] },
+  { id = "N14-R2", state = "done", evidence = ["app-modules/kernel/src/Api/HowItWouldBeUpdated.php", "app-modules/kernel/tests/Api/HowItWouldBeUpdatedTest.php", "app-modules/kernel/tests/Api/ThisCopyOfLemonfiberTest.php"] },
+  { id = "N14-R3", state = "done", evidence = ["app-modules/kernel/src/Api/Upkeep.php", "app-modules/kernel/tests/Api/TakingAnUpdateTest.php", "app-modules/kernel/tests/Api/UpkeepTest.php"] },
+  { id = "N14-R4", state = "done", evidence = ["app-modules/sdk/src/Api/Chroniclers.php", "app-modules/operator/src/Internal/Screens/WhichVersionsRunHere.php", "tests/Contract/ReadingVersionsContractTest.php", "tests/Feature/SeeingWhichVersionsRunTest.php"] },
+  { id = "N14-R5", state = "done", evidence = ["app-modules/kernel/src/Api/WhatAnUpdateWouldBring.php", "app-modules/kernel/tests/Api/ThisCopyOfLemonfiberTest.php", "app-modules/kernel/tests/Api/WhatAnUpdateWouldBringTest.php"] },
+  { id = "N14-R6", state = "done", evidence = ["app-modules/sdk/src/Api/Chroniclers.php", "app-modules/operator/src/Internal/Screens/WhichVersionsRunHere.php", "tests/Contract/ReadingVersionsContractTest.php", "tests/Feature/SeeingWhichVersionsRunTest.php"] },
+  { id = "N14-R7", state = "done", evidence = ["app-modules/kernel/src/Api/HowTheNotesStand.php", "app-modules/kernel/src/Api/Upkeep.php", "tests/Feature/SeeingWhichVersionsRunTest.php"] },
+  { id = "N14-R8", state = "done", evidence = ["app-modules/sdk/src/Api/Chroniclers.php", "app-modules/operator/src/Internal/Screens/WhichVersionsRunHere.php", "tests/Contract/ReadingVersionsContractTest.php", "tests/Feature/SeeingWhichVersionsRunTest.php"] },
+]

@@ -1,0 +1,22 @@
+# What this app implements of N23, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N23-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Hosting.php", "app-modules/kernel/src/Api/HostingAgreed.php", "tests/Contract/HostingContractTest.php", "tests/Feature/EveryActionTheStackOffersTest.php"] },
+  { id = "N23-R2", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheHandoverDid.php", "app-modules/sdk/src/Api/Handovers.php", "app-modules/kernel/tests/Api/HowTheHandoverWentTest.php", "app-modules/kernel/tests/Api/WhatTheHandoverDidTest.php"] },
+  { id = "N23-R3", state = "done", evidence = ["app-modules/kernel/src/Api/TheFilesTouched.php", "app-modules/kernel/tests/Api/HowTheHandoverWentTest.php", "app-modules/kernel/tests/Api/TheFilesTouchedTest.php"] },
+  { id = "N23-R4", state = "done", evidence = ["app-modules/kernel/src/Api/InstructionSaysNothing.php", "app-modules/kernel/src/Api/WhatKeepsItRunning.php", "app-modules/kernel/tests/Api/WhatRunsUnattendedTest.php"] },
+  { id = "N23-R5", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheHandoverDid.php", "app-modules/sdk/src/Api/Handovers.php", "app-modules/kernel/tests/Api/HowTheHandoverWentTest.php", "app-modules/kernel/tests/Api/WhatTheHandoverDidTest.php"] },
+  { id = "N23-R6", state = "done", evidence = ["app-modules/kernel/src/Api/HowItStopped.php", "app-modules/kernel/src/Api/WhatStoppedMoving.php", "app-modules/health/tests/Api/KeepingTheLastReadingTest.php", "app-modules/kernel/tests/Api/AStoppageTest.php"] },
+  { id = "N23-R7", state = "done", evidence = ["app-modules/kernel/src/Api/AStoppage.php", "app-modules/health/tests/Api/KeepingTheLastReadingTest.php", "app-modules/kernel/tests/Api/AStoppageTest.php"] },
+  { id = "N23-R8", state = "done", evidence = ["app-modules/kernel/src/Api/AStoppage.php", "app-modules/kernel/src/Api/HowLongAgo.php", "app-modules/health/tests/Api/KeepingTheLastReadingTest.php", "app-modules/kernel/tests/Api/AStoppageTest.php"] },
+  { id = "N23-R9", state = "done", evidence = ["app-modules/kernel/src/Api/HowMuchIsShown.php", "app-modules/kernel/src/Api/Stalled.php", "app-modules/kernel/tests/Api/HowMuchIsShownTest.php", "app-modules/kernel/tests/Api/StalledTest.php"] },
+  { id = "N23-R10", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowThisStackIs.php", "app-modules/operator/src/Internal/Screens/WhatStoppedComingIn.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Arch/NoArgumentThatCannotBeWrongTest.php"] },
+  { id = "N23-R11", state = "done", evidence = ["app-modules/kernel/src/Api/AGuardAskedFor.php", "app-modules/kernel/src/Api/Guarding.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N23-R12", state = "done", evidence = ["app-modules/kernel/src/Api/Guarding.php", "app-modules/kernel/src/Api/HowOftenAScreenLooks.php", "tests/Contract/GuardingContractTest.php"] },
+  { id = "N23-R13", state = "done", evidence = ["app-modules/kernel/src/Api/HowTheGuardIsGoing.php", "app-modules/kernel/src/Api/WhatTheGuardSaw.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+]

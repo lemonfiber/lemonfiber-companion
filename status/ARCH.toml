@@ -1,0 +1,14 @@
+# What this app implements of ARCH, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "ARCH-R55", state = "partial", evidence = ["app-modules/kernel/src/Api/Obstacle.php", "app-modules/sdk/src/Api/Clients.php", "tests/Contract/ClientsContractTest.php"] },
+  { id = "ARCH-R56", state = "partial", evidence = [".github/workflows/sdk-drift.yml", "tests/Support/WhatTheContractAccepts.php"] },
+  { id = "ARCH-R62", state = "partial", evidence = ["app-modules/sdk/src/Api/Listeners.php", "app-modules/sdk/src/Api/Narrators.php", "tests/Contract/HearingContractTest.php", "tests/Contract/HearingTheStartContractTest.php"] },
+  { id = "ARCH-R79", state = "partial", evidence = ["app-modules/kernel/src/Api/Ability.php", "app-modules/sdk/src/Api/Lines.php", "app-modules/kernel/tests/Api/AvailabilityTest.php", "app-modules/kernel/tests/Api/CapabilitiesTest.php"] },
+  { id = "ARCH-R135", state = "partial", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/operator/src/Internal/ViewModels/HowTheReadingWent.php", "app-modules/dx/tests/Api/AStandInStackTest.php", "app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php"] },
+]

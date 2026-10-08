@@ -1,0 +1,18 @@
+# What this app implements of N8, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N8-R1", state = "done", evidence = ["app-modules/sdk/src/Api/Graders.php", "app-modules/operator/src/Internal/Screens/ChoosingHowGood.php", "tests/Contract/ChoosingQualityContractTest.php", "tests/Feature/ChoosingHowGoodItShouldBeTest.php"] },
+  { id = "N8-R2", state = "done", evidence = ["app-modules/kernel/src/Api/APresetInForce.php", "app-modules/kernel/tests/Api/TheQualityChosenTest.php", "tests/Contract/ChoosingQualityContractTest.php"] },
+  { id = "N8-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhatBecameOfTheChoice.php", "app-modules/kernel/tests/Api/APresetToChooseTest.php", "app-modules/kernel/tests/Api/TheQualityChosenTest.php"] },
+  { id = "N8-R4", state = "done", evidence = ["app-modules/kernel/src/Api/HowSureTheTraceIs.php", "app-modules/kernel/tests/Api/WhereItGotToTest.php", "tests/Arch/EveryDerivedKeyResolvesTest.php"] },
+  { id = "N8-R5", state = "done", evidence = ["app-modules/kernel/src/Api/HowMuchOfASeasonIsHere.php", "app-modules/kernel/src/Api/HowMuchOfItIsHere.php", "app-modules/kernel/tests/Api/WhereItGotToTest.php", "tests/Contract/TracingContractTest.php"] },
+  { id = "N8-R6", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatStoppedComingIn.php", "tests/Feature/SeeingWhatStoppedComingInTest.php", "tests/Contract/TracingContractTest.php"] },
+  { id = "N8-R7", state = "done", evidence = ["app-modules/kernel/src/Api/HowTheGuardIsGoing.php", "app-modules/kernel/src/Api/WhatTheGuardSaw.php", "tests/Feature/GuardingWhileYouWatchTest.php"] },
+  { id = "N8-R8", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhereThisGotTo.php", "tests/Arch/EveryCadenceIsDeclaredTest.php", "tests/Feature/SeeingWhereThisGotToTest.php"] },
+  { id = "N8-R9", state = "done", evidence = ["app-modules/kernel/src/Api/WhereItGotTo.php", "app-modules/kernel/tests/Api/WhereItGotToTest.php", "app-modules/sdk/tests/Api/TracesTest.php"] },
+]

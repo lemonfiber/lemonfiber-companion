@@ -1,0 +1,20 @@
+# What this app implements of N10, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N10-R1", state = "done", evidence = ["app-modules/kernel/src/Api/OurRequests.php", "app-modules/kernel/src/Api/TheirRequests.php", "app-modules/kernel/tests/Api/WhatLeavesThisMachineTest.php", "app-modules/sdk/tests/Api/WhatLeavesTest.php"] },
+  { id = "N10-R2", state = "done", evidence = ["app-modules/kernel/src/Api/ARequestOfOurs.php", "app-modules/kernel/src/Api/RequestSaysNothing.php", "app-modules/kernel/tests/Api/ARequestOfOursTest.php", "app-modules/sdk/tests/Api/WhatLeavesTest.php"] },
+  { id = "N10-R3", state = "done", evidence = ["app-modules/kernel/src/Api/ARequestOfOurs.php", "app-modules/kernel/tests/Api/ARequestOfOursTest.php", "app-modules/sdk/tests/Api/WhatLeavesTest.php"] },
+  { id = "N10-R4", state = "done", evidence = ["app-modules/kernel/src/Api/HowFast.php", "app-modules/kernel/src/Api/HowTheLineWasMeasured.php", "app-modules/kernel/tests/Api/HowFastTest.php", "app-modules/kernel/tests/Api/WhatTheLineCarriesTest.php"] },
+  { id = "N10-R5", state = "done", evidence = ["app-modules/kernel/src/Api/WhetherItGoesThroughTheTunnel.php", "app-modules/kernel/tests/Api/WhatTheLineCarriesTest.php", "app-modules/kernel/tests/Api/WhetherItGoesThroughTheTunnelTest.php"] },
+  { id = "N10-R6", state = "done", evidence = ["app-modules/kernel/src/Api/AMonthlyCap.php", "app-modules/kernel/src/Api/WhatACapDoes.php", "app-modules/kernel/tests/Api/AMonthlyCapTest.php", "app-modules/sdk/tests/Api/HowTheLineIsTest.php"] },
+  { id = "N10-R7", state = "done", evidence = ["app-modules/kernel/src/Api/AMonthlyCap.php", "app-modules/kernel/src/Api/HowTheLineIsShared.php", "app-modules/kernel/tests/Api/AMonthlyCapTest.php", "app-modules/kernel/tests/Api/HowTheLineIsSharedTest.php"] },
+  { id = "N10-R8", state = "done", evidence = ["app-modules/kernel/src/Api/AlertSaysNothing.php", "app-modules/kernel/src/Api/AnEventSetApart.php", "app-modules/kernel/tests/Api/WhatTheOperatorIsToldTest.php", "app-modules/sdk/tests/Api/WhatIsToldTest.php"] },
+  { id = "N10-R10", state = "done", evidence = ["app-modules/kernel/src/Api/HowItIsHosted.php", "app-modules/kernel/src/Api/Unattended.php", "tests/Arch/EveryDerivedKeyResolvesTest.php"] },
+  { id = "N10-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Telling.php", "app-modules/operator/src/Internal/Screens/WhatYouAreToldAbout.php", "app-modules/connection/tests/Api/IntroducingTest.php", "app-modules/kernel/tests/Api/PairingTest.php"] },
+  { id = "N10-R12", state = "done", evidence = ["app-modules/kernel/src/Api/WhatWasFoundLeaving.php", "app-modules/sdk/src/Api/WhatLeaves.php", "app-modules/kernel/tests/Api/WhatLeavesThisMachineTest.php", "app-modules/kernel/tests/Api/WhatTheAlertsWereTest.php"] },
+]

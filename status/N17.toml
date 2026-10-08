@@ -1,0 +1,14 @@
+# What this app implements of N17, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N17-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Notifier.php", "app-modules/device/src/Api/PlatformNotifier.php", "tests/Feature/NothingButTheStackDeliversAMessageTest.php"] },
+  { id = "N17-R2", state = "done", evidence = ["app-modules/kernel/src/Api/Notifier.php", "tests/Arch/NothingOpensAConnectionByHandTest.php", "tests/Feature/NothingButTheStackDeliversAMessageTest.php"] },
+  { id = "N17-R6", state = "done", evidence = ["tests/Arch/TheAppOpensOnlyTheseDoorsTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N17-R8", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/device/src/Api/PlatformNotifier.php", "app-modules/kernel/tests/Api/NotificationTest.php", "tests/Contract/NotifierContractTest.php"] },
+  { id = "N17-R9", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/kernel/src/Api/WhatTheCoreDecided.php", "app-modules/kernel/tests/Api/NotificationTest.php", "tests/Feature/EveryNotificationIsTheCoresTest.php"] },
+]

@@ -1,0 +1,16 @@
+# What this app implements of N19, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N19-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Supervising.php", "app-modules/kernel/src/Api/TheCommandLine.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N19-R2", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatIsRunningHere.php", "app-modules/operator/src/Internal/Screens/WhatKeepsRunningHere.php", "tests/Feature/AWayAroundTheAppIsOfferedPlainlyTest.php", "tests/Feature/SeeingWhatIsRunningTest.php"] },
+  { id = "N19-R3", state = "done", evidence = ["app-modules/kernel/src/Api/AStackEdit.php", "app-modules/kernel/src/Api/Upkeep.php", "app-modules/kernel/tests/Api/AStackEditTest.php", "app-modules/kernel/tests/Api/TheResetTest.php"] },
+  { id = "N19-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AResetAgreed.php", "app-modules/kernel/src/Api/ResettingTheConfiguration.php", "tests/Feature/AnOperatorsChangeGoesBackOnlyWithEverythingTest.php", "tests/Feature/FollowingWhatAVerbCameToTest.php"] },
+  { id = "N19-R6", state = "done", evidence = ["app-modules/kernel/src/Api/Stance.php", "app-modules/kernel/src/Api/WhatBecameOfIt.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php", "tests/Feature/SeeingWhatWouldBePutRightTest.php"] },
+  { id = "N19-R9", state = "done", evidence = ["app-modules/kernel/src/Api/AStackEditCannotBeShown.php", "app-modules/sdk/src/Api/LifecycleIsUnreadable.php", "app-modules/sdk/tests/Api/LifecyclesTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N19-R10", state = "done", evidence = ["tests/Arch/TheAppOpensOnlyTheseDoorsTest.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
+]

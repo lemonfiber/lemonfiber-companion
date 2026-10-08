@@ -1,0 +1,29 @@
+# What this app implements of N27, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N27-R1", state = "done", evidence = ["app-modules/health/src/Api/KeepingTheLastReading.php", "app-modules/requests/src/Api/KeepingWhatWasAsked.php", "app-modules/news/tests/Internal/TheNewsAsKeptTest.php"] },
+  { id = "N27-R2", state = "done", evidence = ["app-modules/kernel/src/Api/APairingCode.php", "app-modules/kernel/src/Api/APairingLine.php", "tests/Arch/WhatThePhoneMayKeepTest.php"] },
+  { id = "N27-R3", state = "done", evidence = ["app-modules/kernel/src/Api/HoldsTheSealKeys.php", "app-modules/seal/src/Api/EncrypterSeal.php", "tests/Feature/WhatThePhoneKeepsIsUnreadableOnDiskTest.php"] },
+  { id = "N27-R4", state = "done", evidence = ["app-modules/kernel/src/Api/SealedStack.php", "app-modules/seal/src/Api/EncrypterSeal.php", "app-modules/connection/tests/Api/ClearingWhatCannotBeReadTest.php", "app-modules/connection/tests/Api/LettingGoOfOldReadingsTest.php"] },
+  { id = "N27-R5", state = "done", evidence = ["app-modules/kernel/src/Api/SealStanding.php", "app-modules/kernel/src/Api/Sealing.php", "app-modules/kernel/tests/Api/SealStandingTest.php", "tests/Contract/SealedContractTest.php"] },
+  { id = "N27-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ForgetsEverythingKept.php", "app-modules/kernel/src/Api/Sealed.php", "tests/Contract/ForgetsEverythingKeptContractTest.php", "tests/Feature/ClearingWhatThePhoneKeepsLeavesPairingsTest.php"] },
+  { id = "N27-R7", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowCurrentThisStackIs.php", "app-modules/operator/src/Internal/Screens/HowThisStackIs.php", "tests/Feature/OpeningOnTheKeptListingTest.php", "tests/Feature/OpeningOnTheKeptRequestsTest.php"] },
+  { id = "N27-R8", state = "done", evidence = ["app-modules/operator/resources/views/how-current-this-stack-is.blade.php", "app-modules/operator/resources/views/what-the-household-asked.blade.php", "tests/Feature/OpeningOnTheKeptListingTest.php", "tests/Feature/OpeningOnTheKeptRequestsTest.php"] },
+  { id = "N27-R9", state = "done", evidence = ["app-modules/kernel/src/Api/DaysAsked.php", "app-modules/kernel/src/Api/HowLongReadingsAreKept.php", "app-modules/kernel/tests/Api/DaysAskedTest.php"] },
+  { id = "N27-R10", state = "done", evidence = ["app-modules/kernel/src/Api/ForgetsOldReadings.php", "app-modules/operator/src/Internal/Screens/YourStacks.php", "app-modules/connection/tests/Api/LettingGoOfOldReadingsTest.php", "tests/Contract/ForgetsOldReadingsContractTest.php"] },
+  { id = "N27-R11", state = "done", evidence = ["app-modules/kernel/src/Api/ForgetsAStack.php", "app-modules/kernel/src/Api/RemovalsUnderWay.php", "tests/Feature/RemovingAStackFromThePhoneTest.php", "tests/Feature/RemovingAStackOnItsSettingsPageTest.php"] },
+  { id = "N27-R12", state = "done", evidence = ["app-modules/kernel/src/Api/ForgetsEverythingKept.php", "app-modules/connection/src/Api/ClearingWhatThePhoneKeeps.php", "tests/Feature/ClearingWhatThePhoneKeepsLeavesPairingsTest.php", "tests/Feature/SettingHowThisPhoneIsSetTest.php"] },
+  { id = "N27-R13", state = "done", evidence = ["app-modules/kernel/src/Api/NewestReading.php", "app-modules/kernel/src/Api/Shape.php", "app-modules/requests/tests/Api/KeepingWhatWasAskedTest.php", "app-modules/services/tests/Api/KeepingWhatItRunsTest.php"] },
+  { id = "N27-R14", state = "done", evidence = ["app-modules/kernel/src/Api/DeviceAuth.php", "app-modules/kernel/src/Api/LockAfter.php", "tests/Contract/DeviceAuthContractTest.php", "tests/Contract/NotifierContractTest.php"] },
+  { id = "N27-R15", state = "done", evidence = ["app-modules/kernel/src/Api/Stacks.php", "app-modules/operator/src/Internal/Screens/HowThisPhoneIsSet.php", "tests/Contract/StacksContractTest.php", "tests/Feature/EveryListOfStacksFollowsTheOrderTest.php"] },
+  { id = "N27-R16", state = "done", evidence = ["app-modules/kernel/src/Api/WhereTheOperatorWas.php", "app-modules/kernel/src/Api/WhichTab.php", "tests/Contract/WhereTheOperatorWasContractTest.php", "tests/Feature/OpeningWhereTheOperatorLeftOffTest.php"] },
+  { id = "N27-R18", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/ThisStackOnThisPhone.php", "app-modules/news/src/Api/MarkingAsNew.php", "tests/Feature/ChoosingWhatAStackMarksAsNewTest.php"] },
+  { id = "N27-R19", state = "done", evidence = ["app-modules/news/src/Api/MarkingAsNew.php", "app-modules/news/src/Api/Noticing.php", "app-modules/news/tests/Api/MarkingAsNewTest.php", "app-modules/news/tests/Api/NoticingTest.php"] },
+  { id = "N27-R21", state = "done", evidence = ["app-modules/kernel/src/Api/TheNewestNamed.php", "app-modules/sdk/src/Api/Listeners.php", "app-modules/news/tests/Api/NoticingTest.php", "tests/Feature/CountingWhatIsNewTest.php"] },
+  { id = "N27-R22", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "app-modules/connection/src/Api/TheLock.php", "tests/Feature/NothingIsBuiltBehindTheLockTest.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
+]

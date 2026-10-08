@@ -1,0 +1,15 @@
+# What this app implements of F7, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "F7-R3", state = "partial", evidence = ["app-modules/kernel/src/Api/Finding.php", "app-modules/kernel/src/Api/Setting.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
+  { id = "F7-R4", state = "partial", evidence = ["app-modules/kernel/src/Api/WhatItReplaced.php", "app-modules/kernel/src/Api/WhoPutItThere.php", "app-modules/kernel/tests/Api/WhatItReplacedTest.php", "app-modules/kernel/tests/Api/WhoPutItThereTest.php"] },
+  { id = "F7-R9", state = "partial", evidence = ["app-modules/kernel/src/Api/ARequestOfTheirs.php", "app-modules/sdk/src/Api/WhatLeaves.php", "app-modules/sdk/tests/Api/WhatLeavesTest.php", "tests/Feature/SeeingWhatLeavesTest.php"] },
+  { id = "F7-R10", state = "partial", evidence = ["app-modules/kernel/src/Api/WhoPutItThere.php", "app-modules/health/tests/Api/Queries/InCategoryTest.php", "app-modules/health/tests/Api/Queries/TheCauseBeforeItsSymptomsTest.php"] },
+  { id = "F7-R11", state = "partial", evidence = ["app-modules/kernel/src/Api/AnOriginIsUnnamed.php", "app-modules/kernel/src/Api/WhoPutItThere.php", "tests/Feature/SeeingWhatLeavesTest.php", "tests/Feature/SeeingWhoPutACheckThereTest.php"] },
+  { id = "F7-R12", state = "partial", evidence = ["app-modules/kernel/src/Api/Provenance.php", "tests/Contract/ProvenanceContractTest.php"] },
+]
