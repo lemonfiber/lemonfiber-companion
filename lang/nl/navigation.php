@@ -54,6 +54,7 @@ return [
         'general' => 'Algemeen',
         'quality' => 'Kwaliteit',
         'connections' => 'Verbindingen',
+        'plugins' => 'Plug-ins',
         'bandwidth' => 'Bandbreedte',
         'outgoing_traffic' => 'Uitgaand verkeer',
         'alerts' => 'Meldingen',

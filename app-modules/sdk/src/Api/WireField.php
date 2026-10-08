@@ -765,4 +765,40 @@ enum WireField: string implements NamesAWireField
 
     /** What stands after: the data root a copy goes to here, and the service a choice of filler makes answer. */
     case Now = 'now';
+
+    /**
+     * Where a project's source is published: a service's, where its licence is
+     * checked, and a plugin's, as it names it.
+     */
+    case Upstream = 'upstream';
+
+    /**
+     * The licence a service or a plugin is distributed under.
+     *
+     * Spelled as the wire spells it, which is the American way; the kernel's
+     * word is `licence` and this case is the one place the two meet.
+     */
+    case License = 'license';
+
+    /** One thing after another, in order: how somebody signs in on a new device, and the calls a plugin's recipe makes. */
+    case Steps = 'steps';
+
+    /**
+     * Whether something was written down: a service's destinations, where
+     * false is *nobody knows*, and a plugin install, which a reading leaves
+     * false.
+     */
+    case Recorded = 'recorded';
+
+    /** What would be: putting a copy back, read before anything is overwritten, and the plugin an install settles. */
+    case Would = 'would';
+
+    /** Every candidate in a contest, named: on the wiring, and among what a plugin install would leave contested. */
+    case Claimants = 'claimants';
+
+    /** What putting something back reversed, or would: a run of changes, and a plugin install that did not hold. */
+    case Reversed = 'reversed';
+
+    /** What going back means beyond the changes themselves, where a run or a plugin install was put back; absent where nothing does. */
+    case Noted = 'noted';
 }

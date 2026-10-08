@@ -112,8 +112,8 @@ final readonly class Handoffs
     {
         $found = [];
 
-        foreach (self::rows($data, HandoffField::Steps) as $position => $step) {
-            $found[] = is_string($step) ? $step : throw HandoffIsUnreadable::row(HandoffField::Steps, $position);
+        foreach (self::rows($data, WireField::Steps) as $position => $step) {
+            $found[] = is_string($step) ? $step : throw HandoffIsUnreadable::row(WireField::Steps, $position);
         }
 
         return $found;

@@ -54,6 +54,7 @@ return [
         'general' => 'General',
         'quality' => 'Quality',
         'connections' => 'Connections',
+        'plugins' => 'Plugins',
         'bandwidth' => 'Bandwidth',
         'outgoing_traffic' => 'Outgoing traffic',
         'alerts' => 'Alerts',

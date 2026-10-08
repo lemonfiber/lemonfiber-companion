@@ -14,9 +14,6 @@ enum HandoffField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** How the person signs in on the new device, one step at a time. */
-    case Steps = 'steps';
-
     /** Every app a device can be pointed at the stack with, and the code that points it. */
     case Clients = 'clients';
 

@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'heading' => 'Plugins',
+
+    // What is installed, one plugin at a time, with what vouches for it.
+    'none' => 'No plugins are installed on this machine',
+    'named' => ':name :version',
+    'reviewed' => 'Reviewed: it came through a catalogue whose signature verified',
+    'not_reviewed' => 'Not reviewed: nobody checked it before it was installed',
+    'from' => 'From :source',
+    'source' => [
+        'reachable' => 'Its source answers, so it can be updated from there',
+        'unreachable' => 'Its source does not answer, so it cannot be updated from there: :why',
+        'unasked' => 'Its source was not asked: :why',
+    ],
+    'revision' => 'At commit :revision',
+    'signed' => 'Signed by :signed',
+    'unsigned' => 'Nothing signed it',
+    'upstream' => 'Published at :upstream',
+    'licence' => 'Licence: :licence',
+    'install_one' => 'Install a plugin',
+
+    // Typing where a plugin comes from.
+    'where_from' => 'Source',
+    'source_is' => 'Where the plugin comes from',
+    'source_catalogue' => 'Its name in the catalogue, such as tdarr',
+    'source_directory' => 'A directory on the machine, or the plugin.toml inside it',
+    'source_git' => 'A git repository, with the branch, tag or commit after its last @',
+    'rehearse' => 'Rehearse installing',
+    'back' => 'Back to plugins',
+
+    // The rehearsal, and what an install came to.
+    'rehearsing' => 'Asking the machine what installing it would do. Nothing is written',
+    'installing' => 'Installing. It counts as installed only once the machine has recorded it, its proofs have held and nothing it checks broke',
+    'rehearsal' => 'Rehearsal: nothing was written. This is what installing it would do',
+    'installed_it' => 'Installed: recorded, its proofs held, and nothing the machine checks broke',
+    'put_back' => 'Not installed: something did not hold, and the install was put back',
+    'not_installed' => 'Not installed: the machine did not record it',
+    'changes' => 'Changes',
+    'no_changes' => 'It changes nothing on the machine',
+    'puts' => [
+        'directory' => 'A directory',
+        'document' => 'A whole file',
+        'region' => 'A part of a file',
+    ],
+    'proofs' => 'Proofs',
+    'no_proofs' => 'It states no proofs',
+    'proof' => [
+        'not_asked' => 'Not asked',
+        'passed' => 'Held',
+        'failed' => 'Did not hold',
+        'unproven' => 'Could not conclude',
+        'failing_as_declared' => 'Fails only where the plugin says it will',
+    ],
+    'overrides' => 'Settings it changes',
+    'no_overrides' => 'It changes no bundled setting',
+    'contests' => 'Left contested',
+    'no_contests' => 'It leaves nothing contested',
+    'asked_by' => 'Asked for by :by. Choose which answers on the Connections screen',
+    'claimant' => 'Claimed by :claimant',
+    'recipes' => 'Recipes',
+    'no_recipes' => 'It has no recipes',
+    'step' => ':method :to :path',
+    'adapter' => 'Through lemonfiber\'s own :adapter adapter, not the plugin\'s',
+    'pair' => 'Would send :value to :to',
+    'origin' => 'Comes from: :origin',
+    'release' => 'Read from :from and released: :why',
+    'approve' => 'Allow sending :value to :to',
+    'stays_here' => 'Stays on this machine, and asks for no approval',
+    'approvals_apart' => 'Each switch above allows one value to go where it says, and nothing else. Installing is a separate yes',
+    'install' => 'Install',
+    'inputs_elsewhere' => 'This app gives a recipe no values of yours. A plugin whose recipes ask for one is installed at the web console or the terminal',
+
+    // After the yes.
+    'broke' => 'What it broke',
+    'broke_nothing' => 'Nothing the machine checks got worse',
+    'unsettled' => 'Not concluded',
+    'not_checked' => 'The machine\'s own checks were not asked, because a proof did not hold',
+    'what_went_back' => 'What went back',
+    'nothing_left' => 'Everything went back',
+    'rehearsal_refused' => 'The machine would not rehearse installing it',
+    'install_refused' => 'The machine did not install it',
+    'no_outcome' => 'The machine has no outcome for this any more. That is not the same as it not having happened, so look at what is installed',
+    'unread_after_yes' => 'Whether it was installed could not be read',
+    'no_claimants' => 'Nothing claims it yet',
+    'no_steps' => 'It makes no calls',
+    'sends_nothing' => 'It carries no value anywhere',
+    'all_settled' => 'Every check reached a conclusion',
+    'nothing_reversed' => 'Nothing needed putting back',
+];

@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'heading' => 'Plug-ins',
+
+    // What is installed, one plugin at a time, with what vouches for it.
+    'none' => 'Er zijn geen plug-ins geïnstalleerd op deze machine',
+    'named' => ':name :version',
+    'reviewed' => 'Gecontroleerd: hij kwam via een catalogus waarvan de handtekening klopte',
+    'not_reviewed' => 'Niet gecontroleerd: niemand heeft hem bekeken voordat hij werd geïnstalleerd',
+    'from' => 'Van :source',
+    'source' => [
+        'reachable' => 'De bron antwoordt, dus hij kan daarvandaan worden bijgewerkt',
+        'unreachable' => 'De bron antwoordt niet, dus hij kan daarvandaan niet worden bijgewerkt: :why',
+        'unasked' => 'De bron is niet gevraagd: :why',
+    ],
+    'revision' => 'Op commit :revision',
+    'signed' => 'Ondertekend door :signed',
+    'unsigned' => 'Niets heeft hem ondertekend',
+    'upstream' => 'Gepubliceerd op :upstream',
+    'licence' => 'Licentie: :licence',
+    'install_one' => 'Plug-in installeren',
+
+    // Typing where a plugin comes from.
+    'where_from' => 'Bron',
+    'source_is' => 'Waar de plug-in vandaan komt',
+    'source_catalogue' => 'Zijn naam in de catalogus, zoals tdarr',
+    'source_directory' => 'Een map op de machine, of de plugin.toml daarin',
+    'source_git' => 'Een git-repository, met de branch, tag of commit na de laatste @',
+    'rehearse' => 'Installatie oefenen',
+    'back' => 'Terug naar plug-ins',
+
+    // The rehearsal, and what an install came to.
+    'rehearsing' => 'De machine vragen wat installeren zou doen. Er wordt niets geschreven',
+    'installing' => 'Bezig met installeren. Hij telt pas als geïnstalleerd als de machine hem heeft vastgelegd, zijn bewijzen hebben standgehouden en niets wat ze controleert stuk is gegaan',
+    'rehearsal' => 'Oefening: er is niets geschreven. Dit is wat installeren zou doen',
+    'installed_it' => 'Geïnstalleerd: vastgelegd, zijn bewijzen hielden stand en niets wat de machine controleert ging stuk',
+    'put_back' => 'Niet geïnstalleerd: iets hield geen stand, en de installatie is teruggedraaid',
+    'not_installed' => 'Niet geïnstalleerd: de machine heeft hem niet vastgelegd',
+    'changes' => 'Wijzigingen',
+    'no_changes' => 'Hij wijzigt niets op de machine',
+    'puts' => [
+        'directory' => 'Een map',
+        'document' => 'Een heel bestand',
+        'region' => 'Een deel van een bestand',
+    ],
+    'proofs' => 'Bewijzen',
+    'no_proofs' => 'Hij noemt geen bewijzen',
+    'proof' => [
+        'not_asked' => 'Niet gevraagd',
+        'passed' => 'Hield stand',
+        'failed' => 'Hield geen stand',
+        'unproven' => 'Geen conclusie mogelijk',
+        'failing_as_declared' => 'Faalt alleen waar de plug-in zegt dat hij zal falen',
+    ],
+    'overrides' => 'Instellingen die hij wijzigt',
+    'no_overrides' => 'Hij wijzigt geen meegeleverde instelling',
+    'contests' => 'Onbeslist gelaten',
+    'no_contests' => 'Hij laat niets onbeslist',
+    'asked_by' => 'Gevraagd door :by. Kies op het scherm Verbindingen wie antwoordt',
+    'claimant' => 'Geclaimd door :claimant',
+    'recipes' => 'Recepten',
+    'no_recipes' => 'Hij heeft geen recepten',
+    'step' => ':method :to :path',
+    'adapter' => 'Via de eigen :adapter-adapter van lemonfiber, niet die van de plug-in',
+    'pair' => 'Zou :value naar :to sturen',
+    'origin' => 'Komt van: :origin',
+    'release' => 'Gelezen uit :from en vrijgegeven: :why',
+    'approve' => ':value naar :to sturen toestaan',
+    'stays_here' => 'Blijft op deze machine, en vraagt geen toestemming',
+    'approvals_apart' => 'Elke schakelaar hierboven staat één waarde toe om te gaan waar hij zegt, en niets anders. Installeren is een apart ja',
+    'install' => 'Installeren',
+    'inputs_elsewhere' => 'Deze app geeft een recept geen waarden van jou. Een plug-in waarvan de recepten er een vragen, installeer je via de webconsole of de terminal',
+
+    // After the yes.
+    'broke' => 'Wat hij brak',
+    'broke_nothing' => 'Niets wat de machine controleert ging achteruit',
+    'unsettled' => 'Geen conclusie',
+    'not_checked' => 'De eigen controles van de machine zijn niet gevraagd, omdat een bewijs geen stand hield',
+    'what_went_back' => 'Wat is teruggezet',
+    'nothing_left' => 'Alles is teruggezet',
+    'rehearsal_refused' => 'De machine wilde het installeren niet oefenen',
+    'install_refused' => 'De machine heeft hem niet geïnstalleerd',
+    'no_outcome' => 'De machine heeft hier geen uitkomst meer voor. Dat is niet hetzelfde als dat het niet is gebeurd, dus kijk wat er is geïnstalleerd',
+    'unread_after_yes' => 'Of hij is geïnstalleerd, kon niet worden gelezen',
+    'no_claimants' => 'Nog niets claimt het',
+    'no_steps' => 'Het doet geen aanroepen',
+    'sends_nothing' => 'Het brengt geen waarde ergens heen',
+    'all_settled' => 'Elke controle kwam tot een conclusie',
+    'nothing_reversed' => 'Er hoefde niets te worden teruggezet',
+];

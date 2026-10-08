@@ -31,6 +31,7 @@ use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PairingField;
+use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
@@ -48,7 +49,6 @@ use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Api\Fields\TraceField;
-use Modules\Sdk\Api\Fields\UndoField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
@@ -103,6 +103,7 @@ function everyFieldNamedOnTheWire(): array
         ...MusicField::cases(),
         ...OutboundField::cases(),
         ...PairingField::cases(),
+        ...PluginsField::cases(),
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
@@ -120,7 +121,6 @@ function everyFieldNamedOnTheWire(): array
         ...StuckField::cases(),
         ...SubstitutionField::cases(),
         ...TraceField::cases(),
-        ...UndoField::cases(),
         ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),

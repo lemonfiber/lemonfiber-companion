@@ -39,6 +39,7 @@ enum TheMenu: string
     case General = 'general';
     case Quality = 'quality';
     case Connections = 'connections';
+    case Plugins = 'plugins';
     case Bandwidth = 'bandwidth';
     case OutgoingTraffic = 'outgoing_traffic';
     case Alerts = 'alerts';
@@ -61,7 +62,7 @@ enum TheMenu: string
             self::Requests, self::Allowance, self::ViewAsMember, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::PairAPhone => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
-            self::General, self::Quality, self::Connections, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
+            self::General, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
     }
@@ -90,6 +91,7 @@ enum TheMenu: string
             self::General => AStacksScreen::Settings,
             self::Quality => AStacksScreen::Quality,
             self::Connections => AStacksScreen::Wiring,
+            self::Plugins => AStacksScreen::Plugins,
             self::Bandwidth => AStacksScreen::Line,
             self::OutgoingTraffic => AStacksScreen::Leaving,
             self::Alerts => AStacksScreen::Told,
@@ -141,6 +143,7 @@ enum TheMenu: string
             self::General => ['tune', 'slider.horizontal.3'],
             self::Quality => ['high_quality', 'sparkles'],
             self::Connections => ['cable', 'cable.connector'],
+            self::Plugins => ['extension', 'puzzlepiece.extension'],
             self::Bandwidth => ['speed', 'speedometer'],
             self::OutgoingTraffic => ['upload', 'arrow.up.forward'],
             self::Alerts => ['notifications', 'bell'],

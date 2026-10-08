@@ -44,7 +44,9 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatALineIsAbout;
+use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -62,6 +64,7 @@ use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -164,6 +167,20 @@ function everyDerivedKey(): array
         Awaiting::class => aPairPerCase(
             Awaiting::cases(),
             static fn(Awaiting $awaiting): array => [$awaiting->saidOnTheScreen()],
+        ),
+        WhatAChangePuts::class => aPairPerCase(
+            WhatAChangePuts::cases(),
+            static fn(WhatAChangePuts $puts): array => [$puts->saidOnTheScreen()],
+        ),
+        // `NotSaid` is skipped: it is a plugin the stack said nothing of, and
+        // a screen draws nothing for it.
+        WhereItsSourceStands::class => aPairPerCase(
+            [WhereItsSourceStands::Reachable, WhereItsSourceStands::Unreachable, WhereItsSourceStands::Unasked],
+            static fn(WhereItsSourceStands $standing): array => [$standing->saidOnTheScreen()],
+        ),
+        WhatAProofSays::class => aPairPerCase(
+            WhatAProofSays::cases(),
+            static fn(WhatAProofSays $says): array => [$says->saidOnTheScreen()],
         ),
         Cost::class => aPairPerCase(
             Cost::cases(),

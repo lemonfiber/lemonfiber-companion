@@ -47,13 +47,4 @@ enum OutboundField: string implements NamesAWireField
 
     /** Which of lemonfiber's own requests a row is. */
     case Reach = 'reach';
-
-    /**
-     * Whether the stack ships a record of what a service reaches.
-     *
-     * False is *nobody knows*, and a service's destination is not read at
-     * all where it is — an empty destination would otherwise say the service
-     * reaches nothing.
-     */
-    case Recorded = 'recorded';
 }

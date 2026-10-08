@@ -27,6 +27,8 @@ use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
+use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
@@ -57,6 +59,7 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Offer;
+use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Repair;
@@ -127,6 +130,7 @@ use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
@@ -231,6 +235,13 @@ final readonly class EveryAdapterCallThatReads
             'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
             'Explainers::wordOn' => static fn(): object
                 => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),
+            'Extenders::installedOn' => static fn(): object => new Extenders($clients, $entropy)->installedOn($stack, $session),
+            'Extenders::rehearseInstalling' => static fn(): object
+                => new Extenders($clients, $entropy)->rehearseInstalling($stack, $session, APluginSource::typed('tdarr')),
+            'Extenders::install' => static fn(): object
+                => new Extenders($clients, $entropy)->install($stack, $session, APluginInstallAgreed::after(APluginAsItArrives::theReading(), APluginSource::typed('tdarr'), PluginLines::none())),
+            'Extenders::whatBecameOf' => static fn(): object
+                => new Extenders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Followers::tracedOn' => static fn(): object
                 => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
             'Graders::inForceOn' => static fn(): object => new Graders($clients, $entropy)->inForceOn($stack, $session),
