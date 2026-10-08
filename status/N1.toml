@@ -80,6 +80,6 @@ requirement = [
   { id = "N1-R72", state = "done", evidence = ["app-modules/kernel/src/Api/Capture.php", "app-modules/operator/src/Internal/HoldsItsStacksStream.php", "tests/Contract/CaptureContractTest.php"] },
   { id = "N1-R73", state = "done", evidence = ["app-modules/kernel/src/Api/APairingCode.php", "app-modules/kernel/src/Api/AtAGlance.php", "app-modules/kernel/tests/Api/AtAGlanceTest.php", "tests/Feature/PairingAPhoneTest.php"] },
   { id = "N1-R74", state = "partial", evidence = ["app-modules/operator/src/Internal/Screens/PairingAPhone.php", "tests/Feature/PairingAPhoneTest.php"] },
-  { id = "N1-R75", state = "open" },
+  { id = "N1-R75", state = "done", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php", "tests/Contract/CataloguingContractTest.php"] },
   { id = "N1-R76", state = "partial", evidence = ["app-modules/sdk/src/Api/PairingCodes.php", "tests/Feature/PairingAPhoneTest.php"] },
 ]

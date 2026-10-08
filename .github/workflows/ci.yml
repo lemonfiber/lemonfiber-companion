@@ -210,7 +210,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@9e4af595a441995073b44629dcac592813f646bf # v1.0.60
 
   commitlint:
     # `push` stays out: `main` does not require this context, so no name is
@@ -219,7 +219,7 @@ jobs:
     uses: lemonfiber/spec/.github/workflows/commitlint.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@9e4af595a441995073b44629dcac592813f646bf # v1.0.60
 
   # Every pin this repository holds on a shared workflow, against what the
   # spec's default branch holds now. It fails naming the commits a pin has not
@@ -260,7 +260,7 @@ jobs:
     uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
+    uses: lemonfiber/spec/.github/workflows/security.yml@9e4af595a441995073b44629dcac592813f646bf # v1.0.60
 
   labeler:
     if: github.event_name == 'pull_request'
@@ -818,7 +818,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@f1f7ba7d5cdb455ecb6e2a232763b460487a4bd5 # v1.0.58
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@9e4af595a441995073b44629dcac592813f646bf # v1.0.60
     with:
       # Nothing, which is now true: `main` carries zero open issues, and the two
       # it did carry went out with the commit that installed this gate.
