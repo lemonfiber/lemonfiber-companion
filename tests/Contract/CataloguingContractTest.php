@@ -261,13 +261,17 @@ it('a stack that cannot read its own manifest is its refusal, in its words, with
     }
 });
 
-it('a manifest problem at a status that says who may ask, or a sentence with no problem around it, is what was met', function (MockResponse $answered, Obstacle $why): void {
+it('a manifest problem at a status that says who may ask, a refused session, or a sentence with no problem around it, is what was met', function (MockResponse $answered, Obstacle $why): void {
     MockClient::destroyGlobal();
     MockClient::global([$answered]);
 
     expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->kind()->name);
 })->with([
-    'a refused session' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
+    // A code this app knows is read by its code, whatever its status: only
+    // the session's own ends a session, so a manifest problem at 401 is an
+    // account that may not ask.
+    'a manifest problem at the status a refused session has' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 401), Obstacle::of(KindOfObstacle::NotForThisAccount)],
+    'a refused session' => [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
     'an account that may not ask' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
     'a sentence' => [MockResponse::make('This answer could not be rendered.', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
