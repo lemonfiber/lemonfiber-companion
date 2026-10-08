@@ -11,7 +11,10 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\HostingInstallAction;
+use Lemonfiber\Sdk\Generated\HostingRemoveAction;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowTheHandoverWent;
@@ -92,11 +95,10 @@ final readonly class Keepers implements Hosting
 
         try {
             $envelope = $client->act(
-                Api::action($agreed->doing()->asked()),
-                // Spelled here rather than through a field enum: `kept` is a
-                // word this app sends and never reads back, and the enums
-                // under `Fields` hold the words a reader reaches for.
-                ['kept' => $agreed->named()],
+                match ($agreed->doing()) {
+                    HandingOver::Install => new HostingInstallAction(kept: $agreed->named()),
+                    HandingOver::Remove => new HostingRemoveAction(kept: $agreed->named()),
+                },
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

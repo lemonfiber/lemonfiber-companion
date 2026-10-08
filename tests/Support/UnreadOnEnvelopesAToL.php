@@ -310,6 +310,17 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'is one of four sentences this app has written and not a page of the core\'s.',
         ],
         [
+            'path' => 'DoctorEnvelope.findings[].verdict.steps',
+            'because' => 'Every step of a plugin\'s recipe and what each came to, where a run of them stopped '
+                . 'part-way. This app installs no plugin and runs no recipe, so no screen here has a run to '
+                . 'account for, and no companion requirement asks for one — `N1-R17`.',
+        ],
+        [
+            'path' => 'ErrorEnvelope.steps',
+            'because' => 'The same steps on a refusal, and the same answer: the refusal reaches the operator as '
+                . 'an obstacle, and nothing this app asks for runs a recipe.',
+        ],
+        [
             'path' => 'FormsEnvelope.forms[].name',
             'because' => 'What a form is called, in the stack\'s words. The `id` is what `up`, `down` and '
                 . '`restart` are told, and a control here shows the id so that its label and its request '
@@ -480,6 +491,24 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'That the member was told, and who. `D7-R7` has a decline reach them by name and the '
                 . 'stack is what reaches them; a screen here reporting that a notification was sent would be '
                 . 'this app describing a message it neither sent nor can see.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].arrived',
+            'because' => 'When the title arrived on the media server. A request is drawn by where it stands, '
+                . 'and no companion requirement asks a screen to say when it arrived — raise it against the '
+                . 'spec before reading it, which is `N1-R17`.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].shelf_id',
+            'because' => 'The media server\'s handle for the title once it has arrived, the one the held read '
+                . 'names it by. This app plays nothing and opens no shelf, for the reason '
+                . '`HouseholdEnvelope.members[].requests[].media` gives, so there is nothing for the handle to '
+                . 'find.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].year',
+            'because' => 'The year the title came out. `N2-R11` asks for enough to decide on, and the title '
+                . 'beside it is what a person recognises; no requirement asks for the year — `N1-R17`.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].standing',

@@ -20,11 +20,10 @@ use const JSON_THROW_ON_ERROR;
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Generated\RefusalCode;
+use Lemonfiber\Sdk\Generated\RestoreAction;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\WhatToChange;
-use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\WireField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -275,13 +274,21 @@ final readonly class WhatTheWireWouldAnswer
      * Whether this request is one a stack answers with its outcome rather than
      * with a name for the work: asking what putting a copy back would do, with
      * no yes.
+     *
+     * The yes is read off the arguments the action names as carrying one, so
+     * a rehearsal is a restore that carries none of them.
      */
     private static function answersAtOnce(PendingRequest $asked): bool
     {
+        $restoring = new RestoreAction();
         $body = $asked->body()?->all();
+        $said = is_array($body) ? $body : [];
+        $carried = array_filter(
+            $restoring->consent(),
+            static fn(string $yes): bool => array_key_exists($yes, $said) && $said[$yes] !== null && $said[$yes] !== false,
+        );
 
-        return $asked->getRequest()->resolveEndpoint() === Api::action(WhatToDoWithACopy::PutBack->asked())
-            && (!is_array($body) || !array_key_exists(UpdateField::Confirm->value, $body));
+        return $asked->getRequest()->resolveEndpoint() === $restoring->endpoint() && $carried === [];
     }
 
     /** Whether this request asks what stopping seeding would cost, or says yes to it. */

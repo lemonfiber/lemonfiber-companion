@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\UninstallAction;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -21,15 +22,12 @@ use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\RoomSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\UninstallSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhatWasFoundOfTheUninstall;
 use Modules\Kernel\Api\WhichRemoval;
-use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\UninstallField;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -75,13 +73,12 @@ final readonly class Dismantlers implements TakingLemonfiberOff
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action(TakingItOff::TakeItOff->asked()),
-                [
-                    UninstallField::Tier->value => $agreed->tier()->value,
-                    UpdateField::Confirm->value => true,
-                    RestoreField::Offer->value => $agreed->agreement(),
-                    UninstallField::Wait->value => $agreed->waiting()->waits(),
-                ],
+                new UninstallAction(
+                    wait: $agreed->waiting()->waits(),
+                    offer: $agreed->agreement(),
+                    confirm: true,
+                    tier: $agreed->tier()->value,
+                ),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {

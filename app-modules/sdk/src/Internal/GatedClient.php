@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use Lemonfiber\Sdk\ActionRequest;
 use Lemonfiber\Sdk\BundleFile;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -74,8 +75,6 @@ final readonly class GatedClient
     }
 
     /**
-     * @param array<string, mixed> $body
-     *
      * @return Envelope<mixed>
      *
      * @throws ApiVersionMismatch
@@ -85,9 +84,9 @@ final readonly class GatedClient
      * @throws Unreachable
      * @throws UnreadableResponse
      */
-    public function act(string $endpoint, array $body = [], ?string $idempotencyKey = null): Envelope
+    public function act(ActionRequest $action, ?string $idempotencyKey = null): Envelope
     {
-        return $this->clients->towards($this->stack, $this->session, Ability::of($endpoint))->act($endpoint, $body, $idempotencyKey);
+        return $this->clients->towards($this->stack, $this->session, Ability::of($action->endpoint()))->act($action, $idempotencyKey);
     }
 
     /**
@@ -102,7 +101,7 @@ final readonly class GatedClient
      */
     public function repair(Repair $asked, ?string $idempotencyKey = null): Envelope
     {
-        return $this->clients->towards($this->stack, $this->session, Ability::of($asked->endpoint()))->repair($asked, $idempotencyKey);
+        return $this->clients->towards($this->stack, $this->session, Ability::of($asked->request()->endpoint()))->repair($asked, $idempotencyKey);
     }
 
     /**

@@ -74,7 +74,7 @@ it('asks what stopping seeding would cost by naming the download, under a key of
     // No offer: without the offer's name the stack states the cost and lets
     // nothing go. The key is there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/stop-seeding')
-        ->and($sent->body()?->all())->toBe(['download' => 'Show.Season1'])
+        ->and($sent->body()?->all())->toBe(['offer' => null, 'download' => 'Show.Season1'])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
@@ -92,7 +92,7 @@ it('stops seeding against the offer it was shown, naming the offer as the yes an
     $sent = theRequestTheReleaserSent($mock);
 
     expect($sent->getUrl())->toEndWith('/api/actions/stop-seeding')
-        ->and($sent->body()?->all())->toBe(['download' => 'Show.Season1', 'offer' => 'stop-seeding-show-season1-4000'])
+        ->and($sent->body()?->all())->toBe(['offer' => 'stop-seeding-show-season1-4000', 'download' => 'Show.Season1'])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBe(SequencedEntropy::counting()->nonce()->shown());
 });
 

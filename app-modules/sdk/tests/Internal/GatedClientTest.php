@@ -22,6 +22,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RestartAction;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\Repair;
 use Modules\Kernel\Api\Ability;
@@ -122,7 +123,7 @@ function whatACallAskedTheGate(string $call): array
     try {
         $answered = match ($call) {
             'read' => $client->read(Api::STATUS_ENDPOINT),
-            'act' => $client->act(Api::action(WhatToDoWithIt::Restart->asked()), [], 'a-key'),
+            'act' => $client->act(new RestartAction(services: ['sonarr']), 'a-key'),
             'repair' => $client->repair(Repair::offer()),
             'logs' => $client->logs(Logs::ofService('sonarr', 3)),
             'follow' => $client->whatBecameOf('a-job'),
@@ -147,7 +148,7 @@ it('asks the stack about an action by the path it is asked at', function (): voi
 });
 
 it('asks the stack about a repair by the path the repair is asked at', function (): void {
-    expect(whatACallAskedTheGate('repair'))->toBe([Repair::offer()->endpoint()]);
+    expect(whatACallAskedTheGate('repair'))->toBe([Repair::offer()->request()->endpoint()]);
 });
 
 it('asks the stack about a scrollback by the path logs are read at', function (): void {

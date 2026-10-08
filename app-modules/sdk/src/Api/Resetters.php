@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\ResetAction;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARevertCannotBeShown;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
@@ -25,8 +25,6 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatToChange;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -63,8 +61,7 @@ final readonly class Resetters implements ResettingTheConfiguration
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToChange::BackToItsOwn->asked()),
-                [UpdateField::Confirm->value => false],
+                new ResetAction(confirm: false),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -80,8 +77,7 @@ final readonly class Resetters implements ResettingTheConfiguration
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToChange::BackToItsOwn->asked()),
-                [UpdateField::Confirm->value => true],
+                new ResetAction(confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {

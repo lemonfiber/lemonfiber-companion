@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Lemonfiber\Sdk\Http\ActionRequest;
+use Lemonfiber\Sdk\Http\ActRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Cost;
@@ -421,8 +421,8 @@ it('a setting to write naming nothing is refused, and a blank value is not', fun
 // stand-in response either way, so all three of these passed with the flag
 // inverted, dropped, or sent as the wrong value:
 //
-//   wouldBe sending agreed: true      the review writes to somebody's machine
-//   agreedTo sending agreed: false    agreeing does nothing and says it did
+//   wouldBe sending confirm: true     the review writes to somebody's machine
+//   agreedTo sending confirm: false   agreeing does nothing and says it did
 //   the key absent altogether         the stack decides, and it is not told
 //
 // The first of those is the one that matters. A screen whose whole promise is
@@ -448,11 +448,12 @@ it('asks for a review without agreeing to it', function (): void {
     // The class as well as the body. A review sent as some other request would
     // read the same here if only the payload were checked, and the action is
     // half of what was asked.
-    expect($sent)->toBeInstanceOf(ActionRequest::class)
-        ->and($sent instanceof ActionRequest ? $sent->body()->all() : null)->toBe([
+    expect($sent)->toBeInstanceOf(ActRequest::class)
+        ->and($sent instanceof ActRequest ? $sent->body()->all() : null)->toBe([
+            'wait' => false,
             'key' => 'LIBRARY_PATH',
             'value' => '/data/films',
-            'agreed' => false,
+            'confirm' => false,
         ]);
 });
 
@@ -471,10 +472,11 @@ it('agrees to exactly what it was shown', function (): void {
     // and a test reading only the flag would not see it.
     $sent = MockClient::getGlobal()?->getLastRequest();
 
-    expect($sent)->toBeInstanceOf(ActionRequest::class)
-        ->and($sent instanceof ActionRequest ? $sent->body()->all() : null)->toBe([
+    expect($sent)->toBeInstanceOf(ActRequest::class)
+        ->and($sent instanceof ActRequest ? $sent->body()->all() : null)->toBe([
+            'wait' => false,
             'key' => 'LIBRARY_PATH',
             'value' => '/data/films',
-            'agreed' => true,
+            'confirm' => true,
         ]);
 });

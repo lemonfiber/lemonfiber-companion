@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\UndoAction;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
@@ -23,7 +23,6 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -56,8 +55,7 @@ final readonly class Reversers implements PuttingARunBack
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoWithARun::PutBack->asked()),
-                [WireField::At->value => $agreed->run()->stamp()],
+                new UndoAction(at: $agreed->run()->stamp()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

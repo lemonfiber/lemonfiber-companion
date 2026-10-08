@@ -82,7 +82,7 @@ it('asks for a copy of the whole stack at the backup action, naming no service',
     $sent = whatAskingForACopySent(ACopyAsked::ofTheWholeStack());
 
     expect($sent->getUrl())->toEndWith('/api/actions/backup')
-        ->and($sent->body()?->all())->toBe([]);
+        ->and($sent->body()?->all())->toBe(['service' => null]);
 });
 
 it('asks for a copy of one service by naming it under `service`', function (): void {

@@ -174,6 +174,8 @@ final readonly class WhatARefusalMeant
             RefusalCode::NoEndpoint,
             RefusalCode::WrongMethod,
             RefusalCode::NotAKeyRequest,
+            RefusalCode::NotAnIdempotencyKey,
+            RefusalCode::IdempotencyKeyReused,
             RefusalCode::Unwanted,
             RefusalCode::Repeated,
             RefusalCode::NoSuchRead,
@@ -192,6 +194,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::MemberAndDefaults,
             RefusalCode::Unrenderable,
             RefusalCode::NoJobName,
+            RefusalCode::Unanswered,
             // An answer given for an offer or a listing that has since moved.
             // The stack's words say what moved, and the adapter following the
             // work it ended decides whether there is a fresh offer to read.
@@ -244,6 +247,11 @@ final readonly class WhatARefusalMeant
             RefusalCode::SchemeRefused,
             RefusalCode::AddressRefused,
             RefusalCode::HeaderNamed,
+            RefusalCode::InputUnmatched,
+            RefusalCode::CallRefused,
+            RefusalCode::StepFailed,
+            RefusalCode::PathNotPlain,
+            RefusalCode::ValueWithheld,
             RefusalCode::CatalogueReplaced,
             RefusalCode::NewestUnkept,
             RefusalCode::NoSuchFiller,

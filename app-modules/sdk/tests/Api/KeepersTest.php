@@ -132,7 +132,7 @@ it('asks for an install and a removal at the paths the SDK composes, naming the 
     );
 
     expect($install->getUrl())->toEndWith('/api/actions/hosting-install')
-        ->and($install->body()?->all())->toBe(['kept' => 'watch'])
+        ->and($install->body()?->all())->toBe(['forms' => [], 'kept' => 'watch'])
         ->and($remove->getUrl())->toEndWith('/api/actions/hosting-remove')
         ->and($remove->body()?->all())->toBe(['kept' => 'boot']);
 });
@@ -148,7 +148,7 @@ it('names each attempt in the header, afresh, and never in what the action takes
 
     expect($first->headers()->get(Api::IDEMPOTENCY_HEADER))->toBe(SequencedEntropy::counting()->nonce()->shown())
         ->and($second->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBe($first->headers()->get(Api::IDEMPOTENCY_HEADER))
-        ->and($first->body()?->all())->toBe(['kept' => 'watch']);
+        ->and($first->body()?->all())->toBe(['forms' => [], 'kept' => 'watch']);
 });
 
 it('stands in for a machine with a payload the contract would accept', function (): void {

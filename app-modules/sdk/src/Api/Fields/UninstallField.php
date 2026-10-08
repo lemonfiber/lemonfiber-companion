@@ -12,13 +12,13 @@ use Modules\Sdk\Api\SaysWhereItSits;
  *
  * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
  * carries; this holds the rest of this one's, and the words the `uninstall`
- * read and action are asked with.
+ * read is asked with.
  */
 enum UninstallField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Which of the four removals: read, asked for, and answered. */
+    /** Which of the four removals: asked for on the read, and answered. */
     case Tier = 'tier';
 
     /** What a removal takes, in the operator's words. */
@@ -65,7 +65,4 @@ enum UninstallField: string implements NamesAWireField
 
     /** The credentials a removal destroyed, said rather than left to be inferred. */
     case Credentials = 'credentials';
-
-    /** Whether what is still coming down is let land before anything stops, as the action is asked. */
-    case Wait = 'wait';
 }

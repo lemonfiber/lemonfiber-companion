@@ -357,8 +357,8 @@ it('asks the reading by its tier, and the removal with the tier, the yes, the re
 
     expect($sent)->toBe([
         ['/api/uninstall', ['tier' => 'media'], null, false],
-        ['/api/actions/uninstall', [], ['tier' => 'configuration', 'confirm' => true, 'offer' => 'configuration-2-lines', 'wait' => true], true],
-        ['/api/actions/uninstall', [], ['tier' => 'configuration', 'confirm' => true, 'offer' => 'configuration-2-lines', 'wait' => false], true],
+        ['/api/actions/uninstall', [], ['wait' => true, 'offer' => 'configuration-2-lines', 'confirm' => true, 'tier' => 'configuration'], true],
+        ['/api/actions/uninstall', [], ['wait' => false, 'offer' => 'configuration-2-lines', 'confirm' => true, 'tier' => 'configuration'], true],
     ]);
 });
 

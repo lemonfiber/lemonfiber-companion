@@ -103,7 +103,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
         ];
 
         return [
-            Repair::offer()->endpoint(),
+            Repair::offer()->request()->endpoint(),
             Api::action(ABundleAsked::named()),
             Api::action(AGuardAskedFor::named()),
             Api::action(TakingAnUpdate::named()),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RemoveAction;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -23,9 +23,7 @@ use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -34,9 +32,8 @@ use Modules\Sdk\Internal\WhatTheReachMet;
  * The one place this application asks a stack to take somebody out of the household.
  *
  * Built the way {@see Ushers} is: the client is fetched per stack and session,
- * the action is asked through {@see Api::action()} by the name
- * {@see TakingThemOut} spells, and the stack answers with a handle that
- * {@see self::whatBecameOf()} follows to the removal.
+ * the action is asked as the SDK's `remove`, and the stack answers with a
+ * handle that {@see self::whatBecameOf()} follows to the removal.
  *
  * **One action read twice.** Without the yes, `remove` says what taking them
  * out would cost and takes nobody out; with it, it takes them out. The yes
@@ -55,8 +52,7 @@ final readonly class Removers implements RemovingSomebody
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action(TakingThemOut::TakeThemOut->asked()),
-                [WireField::Name->value => $who->name()],
+                new RemoveAction(name: $who->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -70,11 +66,7 @@ final readonly class Removers implements RemovingSomebody
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action(TakingThemOut::TakeThemOut->asked()),
-                [
-                    WireField::Name->value => $agreed->who()->name(),
-                    UpdateField::Confirm->value => true,
-                ],
+                new RemoveAction(name: $agreed->who()->name(), confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {

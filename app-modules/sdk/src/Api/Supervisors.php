@@ -13,6 +13,10 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\DownAction;
+use Lemonfiber\Sdk\Generated\PullAction;
+use Lemonfiber\Sdk\Generated\RestartAction;
+use Lemonfiber\Sdk\Generated\UpAction;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
@@ -26,7 +30,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
-use Modules\Sdk\Api\Fields\LifecycleField;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -41,11 +45,10 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * client constructor, so it cannot make a decision about whether a certificate
  * is checked.
  *
- * **The verb reaches the wire through {@see Api::action()}.** The path of an
- * action is one segment and a name, and the SDK composes it so no caller
- * spells either half. What names are offered is lemonfiber's own list and not
- * this client's to hold — a name it does not offer is refused by name, which is
- * an answer, where a copy of the list kept here would go stale in silence.
+ * **The verb reaches the wire as the SDK's own action.** Each verb is a class
+ * the SDK generates from the contract, so no caller spells its name, its path
+ * or its arguments, and an argument the action does not take is a mistake the
+ * analyser points at.
  *
  * **A form and a service are different arguments, not one narrowing.** Stopping
  * a whole form is `forms`, stopping one of its services is `services`, and the
@@ -121,8 +124,7 @@ final readonly class Supervisors implements Supervising
 
         try {
             $envelope = $client->act(
-                Api::action($agreed->doing()->asked()),
-                $this->about($agreed),
+                $this->action($agreed),
                 // Built inline rather than into a variable. A key held for the
                 // length of a method is a key a second statement can reach, and
                 // this method's whole obligation is that no second send ever
@@ -146,8 +148,7 @@ final readonly class Supervisors implements Supervising
             // Under a key of its own, as every action is: a rehearsal changes
             // nothing, and a key still names this asking apart from the yes.
             $envelope = $client->act(
-                Api::action($agreed->doing()->asked()),
-                [...$this->about($agreed), LifecycleField::DryRun->value => true],
+                $this->action($agreed)->rehearsed(),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
@@ -189,19 +190,22 @@ final readonly class Supervisors implements Supervising
     }
 
     /**
-     * What the operator agreed about, under the argument that carries it.
+     * The verb the operator agreed to, about the form or the service it names.
      *
-     * One key and not both. The surface takes an action's arguments with
-     * `deny_unknown_fields` and every field defaulted, so naming the one that
-     * applies says exactly what was agreed to — where sending an empty list
-     * beside it would put a second, silent subject in every request.
-     *
-     * @return array<string, list<string>>
+     * A form travels under `forms` and a service under `services`: a form's
+     * name sent as a service's would stop nothing and report that it had. A
+     * fetch is only ever about a form, which {@see AgreedTo} holds to.
      */
-    private function about(AgreedTo $agreed): array
+    private function action(AgreedTo $agreed): UpAction|DownAction|RestartAction|PullAction
     {
-        $field = $agreed->isAboutAForm() ? WireField::Forms : WireField::Services;
+        $forms = $agreed->isAboutAForm() ? [$agreed->named()] : [];
+        $services = $agreed->isAboutAForm() ? [] : [$agreed->named()];
 
-        return [$field->value => [$agreed->named()]];
+        return match ($agreed->doing()) {
+            WhatToDoWithIt::Start => new UpAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Stop => new DownAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Restart => new RestartAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Pull => new PullAction(forms: $forms),
+        };
     }
 }

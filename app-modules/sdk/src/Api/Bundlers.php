@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\SupportAction;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFetched;
 use Modules\Kernel\Api\ABundleFile;
@@ -28,9 +28,6 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFilenamesShow;
-use Modules\Sdk\Api\Fields\BundleField;
-use Modules\Sdk\Api\Fields\UpdateField;
-use Modules\Sdk\Api\Fields\WalkthroughField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -63,7 +60,6 @@ final readonly class Bundlers implements AskingForHelp
 
         try {
             $envelope = $client->act(
-                Api::action($asked->asked()),
                 $this->arguments($asked),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
@@ -118,10 +114,8 @@ final readonly class Bundlers implements AskingForHelp
      * holds a bundle revealing a setting back until it is confirmed, and one
      * revealing nothing needs no yes, so sending one there would be agreeing
      * to nothing.
-     *
-     * @return array<string, bool|int|list<string>>
      */
-    private function arguments(ABundleAsked $asked): array
+    private function arguments(ABundleAsked $asked): SupportAction
     {
         $revealing = [];
 
@@ -129,13 +123,13 @@ final readonly class Bundlers implements AskingForHelp
             $revealing[] = $setting->name();
         }
 
-        return [
-            BundleField::Write->value => $asked->writes(),
-            WalkthroughField::Logs->value => $asked->lines()->figure(),
-            BundleField::Filenames->value => $asked->filenames() === WhatFilenamesShow::Shown,
-            BundleField::Reveal->value => $revealing,
-            UpdateField::Confirm->value => $revealing !== [],
-        ];
+        return new SupportAction(
+            write: $asked->writes(),
+            logs: $asked->lines()->figure(),
+            filenames: $asked->filenames() === WhatFilenamesShow::Shown,
+            reveal: $revealing,
+            confirm: $revealing !== [],
+        );
     }
 
 

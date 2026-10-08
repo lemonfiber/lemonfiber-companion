@@ -13,6 +13,10 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\MigrateAdoptAction;
+use Lemonfiber\Sdk\Generated\MigrateBesideAction;
+use Lemonfiber\Sdk\Generated\MigrateImportAction;
+use Lemonfiber\Sdk\Generated\MigrateReplaceAction;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -25,8 +29,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheMoveSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
-use Modules\Sdk\Api\Fields\RestoreField;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -80,8 +82,7 @@ final readonly class Scouts implements MovingIn
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action($by->asked()),
-                [UpdateField::Confirm->value => false],
+                $this->move($by, confirmed: false, offer: null),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -95,8 +96,7 @@ final readonly class Scouts implements MovingIn
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action($agreed->by()->asked()),
-                $this->theYes($agreed),
+                $this->move($agreed->by(), confirmed: true, offer: $agreed->offer()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -139,15 +139,25 @@ final readonly class Scouts implements MovingIn
     }
 
     /**
-     * The yes a move is sent with: the name of the offer where it was given one, a confirmation where not.
+     * The action each way of moving in is asked by, with its yes or without one.
      *
-     * @return array<string, bool|string>
+     * A replacement's yes is the name of the offer that said what it would
+     * stop, and it takes no confirmation; every other way of moving in is
+     * agreed to by confirming it. Without the yes each only says what it would
+     * come to. A replacement the stack named no offer for is sent with that
+     * empty name, which the stack refuses, rather than as a second rehearsal.
      */
-    private function theYes(AMoveAgreed $agreed): array
-    {
-        return $agreed->offer() === ''
-            ? [UpdateField::Confirm->value => true]
-            : [RestoreField::Offer->value => $agreed->offer()];
+    private function move(
+        MovingInBy $by,
+        bool $confirmed,
+        ?string $offer,
+    ): MigrateAdoptAction|MigrateImportAction|MigrateBesideAction|MigrateReplaceAction {
+        return match ($by) {
+            MovingInBy::Adopting => new MigrateAdoptAction(confirm: $confirmed),
+            MovingInBy::Importing => new MigrateImportAction(confirm: $confirmed),
+            MovingInBy::StandingBeside => new MigrateBesideAction(confirm: $confirmed),
+            MovingInBy::Replacing => new MigrateReplaceAction(offer: $offer),
+        };
     }
 
     /**

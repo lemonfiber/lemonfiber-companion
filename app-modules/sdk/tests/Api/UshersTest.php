@@ -231,17 +231,17 @@ it('asks for the rehearsal at the invite action, with everything asked and no ye
 
     expect(whereItGot($ushers->wouldInvite(theStackSomebodyIsAskedInTo(), Session::of('a-session-not-a-secret'), anInvitationForAnnaAsked())))->toBe('underway:j-1')
         ->and(theLastRequestSent($mock)->getUrl())->toEndWith('/api/actions/invite')
-        ->and(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => ['Films', 'Kids'], 'confirm' => false, 'age_limit' => 12, 'unrated' => 'block'])
+        ->and(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => ['Films', 'Kids'], 'age_limit' => 12, 'unrated' => 'block', 'confirm' => false])
         ->and(itNamedTheAttempt($mock))->toBeTrue();
 });
 
-it('sends nothing for an age or for unrated material that was not said', function (): void {
+it('sends no age and no word about unrated material where neither was said', function (): void {
     $ushers = theUshersAnswering(aHandleNamedJ1());
     $mock = theMockTheUshersAsk();
 
     $ushers->wouldInvite(theStackSomebodyIsAskedInTo(), Session::of('a-session-not-a-secret'), AnInvitationAskedFor::for('anna', TheLibraries::of()));
 
-    expect(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => [], 'confirm' => false]);
+    expect(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => [], 'age_limit' => null, 'unrated' => null, 'confirm' => false]);
 });
 
 it('sends the same request with the yes, under a key naming the attempt', function (): void {
@@ -251,7 +251,7 @@ it('sends the same request with the yes, under a key naming the attempt', functi
 
     expect(whereItGot($ushers->invite(theStackSomebodyIsAskedInTo(), Session::of('a-session-not-a-secret'), $agreed)))->toBe('underway:j-1')
         ->and(theLastRequestSent($mock)->getUrl())->toEndWith('/api/actions/invite')
-        ->and(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => ['Films', 'Kids'], 'confirm' => true, 'age_limit' => 12, 'unrated' => 'block'])
+        ->and(theBodySent($mock))->toBe(['name' => 'anna', 'libraries' => ['Films', 'Kids'], 'age_limit' => 12, 'unrated' => 'block', 'confirm' => true])
         ->and(itNamedTheAttempt($mock))->toBeTrue();
 });
 

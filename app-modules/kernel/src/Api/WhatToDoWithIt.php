@@ -22,16 +22,13 @@ use function sprintf;
  * debugging on a Tuesday.
  *
  * **The value is the operator's word and {@see self::asked()} is
- * lemonfiber's.** That surface offers `up`, `down`, `restart` and `pull`, and
- * the SDK deliberately keeps no copy of its list — a name it does not offer is
- * refused by name, which is an answer a caller can act on, where a stale list
- * held there would go wrong in silence. So the names live here, in one `match`,
- * and the value stays the word a catalogue key is built from: a key is rebuilt
- * from a case's value, and a value of `up` would leave every sentence on this
- * screen out of reach of the check that finds sentences nothing reads.
- *
- * Which means `->value` must never reach the wire, and the rule that opens the
- * writing door says so by name — see `TheAppOpensOnlyTheseDoorsTest`.
+ * lemonfiber's.** That surface offers `up`, `down`, `restart` and `pull`, and a
+ * screen asks whether a stack declares each by that name before it draws the
+ * button. So the names live here, in one `match`, and the value stays the word
+ * a catalogue key is built from: a key is rebuilt from a case's value, and a
+ * value of `up` would leave every sentence on this screen out of reach of the
+ * check that finds sentences nothing reads. The verb itself is sent as the
+ * class the SDK generates for it, so neither word is spelled on the wire.
  *
  * **Starting is the one that disturbs nothing.** Whatever is running goes on
  * running, so the statement about what will be disturbed has nothing to

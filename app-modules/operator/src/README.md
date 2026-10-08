@@ -33,12 +33,10 @@ it governs is a rule written around whatever is already there.
 ### The half that is a door
 
 Whether the app *offers* a credential-writing action is checked at the door.
-The only write path is `Client::act()`, which takes the endpoint as a string,
-and `tests/Arch/TheAppOpensOnlyTheseDoorsTest.php` reads the argument: every
-call composes its path with `Api::action()` from an `asked()` the kernel spells,
-a string or a `->value` handed to `Api::action()` is refused, and the verbs are
-checked against its list of reasons in both directions — none of them a
-credential.
+The only write path is `Client::act()`, which takes an action the SDK generates
+from the contract, one class per action. `tests/Arch/TheAppOpensOnlyTheseDoorsTest.php`
+refuses an action class of the app's own, and checks the actions the app builds
+against its list of reasons in both directions — none of them a credential.
 
 ## `N2-R8` — a duration the core never sends
 

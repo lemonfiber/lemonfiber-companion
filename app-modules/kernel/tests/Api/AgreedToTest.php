@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\OnlyAFormIsFetched;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
 
 it('carries the verb that was agreed to, whichever it was', function (): void {
     foreach (WhatToDoWithIt::cases() as $doing) {
-        expect(AgreedTo::theService($doing, ServiceId::called('sonarr'))->doing())->toBe($doing);
+        expect(AgreedTo::theForm($doing, Form::called('media'))->doing())->toBe($doing);
+
+        if ($doing->reachesAService()) {
+            expect(AgreedTo::theService($doing, ServiceId::called('sonarr'))->doing())->toBe($doing);
+        }
     }
+});
+
+it('refuses a fetch agreed to for one service, which the stack does only by form', function (): void {
+    expect(static fn(): AgreedTo => AgreedTo::theService(WhatToDoWithIt::Pull, ServiceId::called('sonarr')))
+        ->toThrow(OnlyAFormIsFetched::class, 'The operator agreed to pull for the service sonarr, and that is done only to a whole form.');
 });
 
 it('names one service, and says it is not a form', function (): void {

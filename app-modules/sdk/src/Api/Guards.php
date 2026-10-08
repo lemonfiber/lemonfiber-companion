@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\WatchAction;
 use Lemonfiber\Sdk\JobStanding;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\Entropy;
@@ -64,8 +64,7 @@ final readonly class Guards implements Guarding
 
         try {
             $envelope = $client->act(
-                Api::action($asked->asked()),
-                [WireField::Forms->value => $forms],
+                new WatchAction(forms: $forms),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

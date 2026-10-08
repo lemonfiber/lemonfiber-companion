@@ -31,16 +31,4 @@ enum UpdateField: string implements NamesAWireField
 
     /** How one service's share of an applied update finished. */
     case Ending = 'ending';
-
-    /**
-     * The operator's yes, on the actions that only describe themselves or hold
-     * back without one: the update, an invitation, confirming a held quality
-     * choice, upgrading what is already in the library, putting a copy back,
-     * and a support bundle revealing a setting.
-     *
-     * Here rather than in `WireField`, which holds the words read out of more
-     * than one envelope. This one is sent and never read, and a word is named
-     * once, so it stays with the first action that sent it.
-     */
-    case Confirm = 'confirm';
 }

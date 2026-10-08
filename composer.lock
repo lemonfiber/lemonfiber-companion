@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "67276726c9131d02b7e504e4ebb262f99139301f"
+                "reference": "3d8d48c65e0d52e518a4a2dfd3b18fcd533e0237"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/67276726c9131d02b7e504e4ebb262f99139301f",
-                "reference": "67276726c9131d02b7e504e4ebb262f99139301f",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/3d8d48c65e0d52e518a4a2dfd3b18fcd533e0237",
+                "reference": "3d8d48c65e0d52e518a4a2dfd3b18fcd533e0237",
                 "shasum": ""
             },
             "require": {
@@ -3136,6 +3136,7 @@
                 "ergebnis/phpstan-rules": "^2.13",
                 "ext-curl": "*",
                 "ext-tokenizer": "*",
+                "ext-zlib": "*",
                 "guzzlehttp/psr7": "^3.1",
                 "laravel/pint": "^1.30",
                 "pestphp/pest": "^5.1",
@@ -3254,7 +3255,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-07T22:47:24+00:00"
+            "time": "2026-10-08T18:49:05+00:00"
         },
         {
             "name": "marc-mabe/php-enum",

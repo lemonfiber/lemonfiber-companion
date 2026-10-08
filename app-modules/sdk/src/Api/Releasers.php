@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\StopSeedingAction;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowLettingItGoIsGoing;
@@ -26,9 +26,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
-use Modules\Kernel\Api\WhatToDoWithADownload;
-use Modules\Sdk\Api\Fields\RestoreField;
-use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -57,8 +54,7 @@ final readonly class Releasers implements StoppingSeeding
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToDoWithADownload::StopSeeding->asked()),
-                [StopSeedingField::Download->value => $download->name()],
+                new StopSeedingAction(download: $download->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -85,11 +81,7 @@ final readonly class Releasers implements StoppingSeeding
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToDoWithADownload::StopSeeding->asked()),
-                [
-                    StopSeedingField::Download->value => $offer->download()->name(),
-                    RestoreField::Offer->value => $offer->agreement(),
-                ],
+                new StopSeedingAction(offer: $offer->agreement(), download: $offer->download()->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {

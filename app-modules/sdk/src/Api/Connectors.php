@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,7 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\ConnectingADevice;
+use Lemonfiber\Sdk\Generated\HouseholdHandoffAction;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\HandoffSaysNothing;
@@ -33,10 +32,10 @@ use Modules\Sdk\Internal\WhatTheReachMet;
 /**
  * The one place this application asks a stack to hand one person's device over, and follows it.
  *
- * Built the way {@see Removers} is: the action is asked by the name
- * {@see ConnectingADevice} spells, with the person's name, and the stack
- * answers with a handle the hand-off arrives through. A name the stack turns
- * down is said in its own words and handed on as the refusal.
+ * Built the way {@see Removers} is: the action is asked as the SDK's
+ * `household-handoff`, with the person's name, and the stack answers with a
+ * handle the hand-off arrives through. A name the stack turns down is said in
+ * its own words and handed on as the refusal.
  *
  * **Each asking carries a key of its own**, for {@see HandingOverADevice}' reason.
  */
@@ -48,8 +47,7 @@ final readonly class Connectors implements HandingOverADevice
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                Api::action(ConnectingADevice::HandOver->asked()),
-                [WireField::Name->value => $who->name()],
+                new HouseholdHandoffAction(name: $who->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {

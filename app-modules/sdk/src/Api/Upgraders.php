@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\QualityUpgradeAction;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -19,8 +19,6 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
-use Modules\Kernel\Api\WhatToDoAboutQuality;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -53,8 +51,7 @@ final readonly class Upgraders implements UpgradingTheLibrary
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoAboutQuality::Upgrade->asked()),
-                [UpdateField::Confirm->value => $confirmed],
+                new QualityUpgradeAction(confirm: $confirmed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

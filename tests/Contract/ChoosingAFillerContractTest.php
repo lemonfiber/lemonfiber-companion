@@ -292,7 +292,7 @@ it('an answer whose data is not a table, or of another kind, is a stack that did
     'an answer of another kind' => [['api_version' => 1, 'kind' => 'wiring', 'data' => []]],
 ]);
 
-it('asks for the reading as a rehearsal, naming no offer, and writes with the offer and the reason', function (): void {
+it('asks for the reading naming no offer, and writes with the offer and the reason', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not json at all'), MockResponse::make('not json at all')]);
     $filler = new Fillers(new PinnedClients(), SequencedEntropy::counting());
@@ -303,8 +303,8 @@ it('asks for the reading as a rehearsal, naming no offer, and writes with the of
     $agreeing = $mock->getLastPendingRequest();
 
     expect($reading?->getUrl())->toEndWith('/api/actions/wiring-fill')
-        ->and($reading?->body()?->all())->toBe(['capability' => 'media-server', 'service' => 'plex', 'dry_run' => true])
-        ->and($agreeing?->body()?->all())->toBe(['capability' => 'media-server', 'service' => 'plex', 'offer' => THE_READING_IS_NAMED, 'reason' => 'Plex plays the 4K files']);
+        ->and($reading?->body()?->all())->toBe(['service' => 'plex', 'offer' => null, 'reason' => null, 'capability' => 'media-server'])
+        ->and($agreeing?->body()?->all())->toBe(['service' => 'plex', 'offer' => THE_READING_IS_NAMED, 'reason' => 'Plex plays the 4K files', 'capability' => 'media-server']);
 });
 
 it('sends no reason where none was given', function (): void {
@@ -313,7 +313,7 @@ it('sends no reason where none was given', function (): void {
 
     whatAgreeingCameTo(new Fillers(new PinnedClients(), SequencedEntropy::counting()), '  ');
 
-    expect($mock->getLastPendingRequest()?->body()?->all())->toBe(['capability' => 'media-server', 'service' => 'plex', 'offer' => THE_READING_IS_NAMED]);
+    expect($mock->getLastPendingRequest()?->body()?->all())->toBe(['service' => 'plex', 'offer' => THE_READING_IS_NAMED, 'reason' => null, 'capability' => 'media-server']);
 });
 
 it('the fake remembers every question, in order', function (): void {

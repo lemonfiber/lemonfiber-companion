@@ -22,6 +22,7 @@ use function trim;
  */
 final readonly class AnInvitationAskedFor
 {
+    /** @param int<0, max>|null $age */
     private function __construct(
         private string $name,
         private TheLibraries $libraries,
@@ -69,8 +70,8 @@ final readonly class AnInvitationAskedFor
      * @template TLimited of object
      * @template TUnlimited of object
      *
-     * @param Closure(int): TLimited $upTo
-     * @param Closure(): TUnlimited  $none
+     * @param Closure(int<0, max>): TLimited $upTo
+     * @param Closure(): TUnlimited          $none
      *
      * @return TLimited|TUnlimited
      */
