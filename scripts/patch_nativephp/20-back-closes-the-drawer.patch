@@ -1,0 +1,15 @@
+Back closes an open drawer before it leaves the screen. Composed after the
+drawer, so it is registered after the screen's own back handlers and is asked
+first.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -122,4 +122,8 @@
+             content = wrappedContent
+         )
+     }
++
++    androidx.activity.compose.BackHandler(enabled = drawerState.isOpen) {
++        scope.launch { drawerState.close() }
++    }
+ }

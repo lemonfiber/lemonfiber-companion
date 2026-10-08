@@ -166,6 +166,16 @@ enum Call: string
      */
     case LocalNetworkProbe = 'Lemonfiber.LocalNetwork.Probe';
 
+    /**
+     * Look a machine's name up the way the phone itself does, and answer the
+     * addresses the app may send to.
+     *
+     * The app's runtime does not resolve a `.local` name and the phone does.
+     * What comes back is sent to while the name stays the one paired with, and
+     * none of it is kept or written to a log line.
+     */
+    case Resolve = 'Lemonfiber.Resolve';
+
     /** Open this app's own page in the phone's settings, and answer whether it opened. */
     case SettingsOpen = 'Lemonfiber.Settings.Open';
 

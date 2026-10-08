@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * the word a survey offers the mode under, so a mode the survey lists and
  * this set does not know is one no act is offered for.
  */
-enum MovingInBy: string
+enum MovingInBy: string implements AnAction
 {
     /** Take over the setup already here, as it stands. */
     case Adopting = 'adopt';

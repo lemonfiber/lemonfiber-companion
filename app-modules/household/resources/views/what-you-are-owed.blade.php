@@ -64,7 +64,7 @@
 
     {{-- Tonal, because the reading is what this frame is for. A filled bar
          would make asking again look like the thing to do. --}}
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->isSignedIn)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
@@ -78,7 +78,7 @@
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
          leaving and returning. --}}
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
     @if ($this->answer()->isPutRightInTheAppsSettings())
         <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)

@@ -20,6 +20,7 @@ use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Services\Api\KeepingWhatItRuns;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -88,6 +89,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatThisStackRuns extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
     use LetsGoOfARefusedSession;

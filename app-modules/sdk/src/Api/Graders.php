@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\MusicEnvelope;
+use Lemonfiber\Sdk\Generated\QualitySetAction;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ChoosingQuality;
@@ -22,10 +23,8 @@ use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
-use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatWasFoundOfTheQuality;
-use Modules\Sdk\Api\Fields\UpdateField;
-use Modules\Sdk\Api\Fields\UpgradeField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -48,7 +47,7 @@ final readonly class Graders implements ChoosingQuality
 
     public function inForceOn(Stack $stack, Session $session): WhatWasFoundOfTheQuality
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::QUALITY_ENDPOINT);
@@ -58,7 +57,7 @@ final readonly class Graders implements ChoosingQuality
             return WhatWasFoundOfTheQuality::found(WhatIsChosen::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheQuality::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
             return WhatWasFoundOfTheQuality::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -82,11 +81,10 @@ final readonly class Graders implements ChoosingQuality
      */
     private function asking(Stack $stack, Session $session, APresetToChoose $asked, bool $confirmed): WhatTheChoiceCameTo
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoAboutQuality::Choose->asked()),
                 $this->body($asked, $confirmed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
@@ -97,7 +95,7 @@ final readonly class Graders implements ChoosingQuality
             return $this->cameTo($envelope);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheChoiceCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
             return WhatTheChoiceCameTo::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -105,21 +103,16 @@ final readonly class Graders implements ChoosingQuality
     /**
      * What is put on the wire.
      *
-     * A choice for everything leaves `media_type` out rather than sending it
-     * blank, which is how the stack tells the two apart.
-     *
-     * @return array<string, bool|string>
+     * A choice for everything names no kind of media, which is how the stack
+     * tells the two apart.
      */
-    private function body(APresetToChoose $asked, bool $confirmed): array
+    private function body(APresetToChoose $asked, bool $confirmed): QualitySetAction
     {
-        // One literal rather than keys written into a table afterwards: a
-        // subscript on the left of an assignment reads to the wire register
-        // as a field being reached for.
-        return [
-            WireField::Preset->value => $asked->preset(),
-            ...($asked->isForEverything() ? [] : [UpgradeField::MediaType->value => $asked->kind()]),
-            UpdateField::Confirm->value => $confirmed,
-        ];
+        return new QualitySetAction(
+            preset: $asked->preset(),
+            mediaType: $asked->isForEverything() ? null : $asked->kind(),
+            confirm: $confirmed,
+        );
     }
 
     /**

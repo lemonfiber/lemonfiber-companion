@@ -244,7 +244,7 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     $table = [
         [[MockResponse::make('{"error":"no"}', 401)], Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [[MockResponse::make('{"error":"gone"}', 500)], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [[$unreachable, $unreachable, $unreachable], Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [[$unreachable, $unreachable, $unreachable], Obstacle::of(KindOfObstacle::ConnectionWasTurnedAway)],
     ];
 
     foreach ($table as [$answered, $why]) {

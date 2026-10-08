@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\UndoAction;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
@@ -23,7 +23,7 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatToDoWithARun;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -51,19 +51,18 @@ final readonly class Reversers implements PuttingARunBack
 
     public function putBack(Stack $stack, Session $session, ARunAgreedTo $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoWithARun::PutBack->asked()),
-                [WireField::At->value => $agreed->run()->stamp()],
+                new UndoAction(at: $agreed->run()->stamp()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -90,7 +89,7 @@ final readonly class Reversers implements PuttingARunBack
     private function outcome(Stack $stack, Session $session, Job $job): HowPuttingARunBackIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowPuttingARunBackIsGoing => HowPuttingARunBackIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPuttingARunBackIsGoing
                     => HowPuttingARunBackIsGoing::done(TheRunPutBack::in($envelope)),

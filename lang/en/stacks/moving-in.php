@@ -1,0 +1,178 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    // What is already on the machine, before anything is moved in.
+    'already_here' => [
+        'found' => 'What lemonfiber found already running here',
+        // Never the same screen as a machine with nothing on it.
+        'could_not_look' => 'lemonfiber could not look at what is running here, so this is not an empty machine',
+        'nothing_found' => 'Nothing else is set up on this machine',
+        'project' => 'Project :project',
+        'running' => 'Running',
+        'stopped' => 'Present, and stopped',
+        'adoptable' => 'lemonfiber could take it over as it stands',
+        'not_adoptable' => 'lemonfiber cannot take it over as it stands',
+        'ports' => 'Publishes :ports',
+        'no_ports' => 'Publishes no port',
+        'no_services' => 'It has no services',
+        'conflicts' => 'Ports already taken',
+        'no_conflicts' => 'No port lemonfiber wants is taken',
+        'conflict' => 'Port :port is held by :held_by, and lemonfiber\'s :wanted_by wants it',
+        'beside' => 'Where each service would be reached, beside what is here',
+        'moved' => ':service would be on port :to instead of :from',
+        'none_moved' => 'No service would move to another port',
+        'cannot_take' => 'What cannot be taken over',
+        'unsupported' => ':what: :because',
+        'nothing_unsupported' => 'Nothing found is out of lemonfiber\'s reach',
+        'cannot_link' => 'This layout cannot hold a hardlink',
+        'filesystems' => 'The filesystems it is about: :filesystems',
+        'remedy_is_yours' => 'Nothing here does this for you: it is yours to do, on your own disks',
+        'modes' => 'What may be done about it',
+        'no_modes' => 'This machine offered nothing to do about it',
+        'disturbs' => 'Stops or alters what is already running',
+        'disturbs_nothing' => 'Leaves what is already running as it is',
+        'preselected' => 'Offered already chosen',
+        'look_again' => 'Look at what is on this machine again',
+    ],
+
+    // Moving in beside what is already on the machine: asking what a mode
+    // would come to, and agreeing to it.
+    'moving_in' => [
+        'ask' => [
+            'adopt' => 'What would taking it over come to?',
+            'import' => 'What would importing its records come to?',
+            'beside' => 'What would standing beside it come to?',
+            'replace' => 'What would standing in its place come to?',
+        ],
+        'about' => 'Moving in: :mode',
+        'working' => 'The machine is working out where this stands',
+        'no_outcome' => 'The machine no longer has an answer for this',
+        'refused' => 'The machine turned this down',
+        'leave_it' => 'Leave it',
+        // Where a move stands, as the stack gave it. Only applied says
+        // anything was done.
+        'stance' => [
+            'unchanged' => 'Nothing needed doing, and nothing was done',
+            'pending' => 'Nothing has been done yet',
+            'blocked' => 'The machine turned this away, and nothing was done',
+            'applied' => 'Done',
+            // A replacement the stack applied while something it replaces is
+            // still up: never said to be done.
+            'applied_still_running' => 'Not finished: something it replaces is still running',
+        ],
+        // An import that carried nothing and one that has not run are both
+        // quiet, and mean opposite things.
+        'import' => [
+            'not_run' => 'Nothing has been carried across yet: this is what importing would do',
+            'nothing_to_carry' => 'It ran, and there was nothing to carry: lemonfiber already holds what the old setup held',
+            'carried_nothing' => 'It ran, and carried nothing across',
+        ],
+        'left_behind' => 'What did not come across',
+        'would_leave_behind' => 'What would not come across',
+        'not_carried' => ':what: :because',
+        'nothing_left_behind' => 'Nothing is left behind',
+        'nothing_listed' => 'The machine listed nothing more about it',
+        'upgrade' => ':service is :existing here and :ours in lemonfiber (:verdict). :because',
+        'upgrade_refused' => ':service will not be taken over: it is :existing here and :ours in lemonfiber (:verdict). :because',
+        'backed_up' => 'A copy was written to :path before anything was opened',
+        'would_carry' => ':service would take :name (:kind)',
+        'carried' => ':service took :name (:kind)',
+        'listens' => ':service is on port :to instead of :from',
+        'written' => 'Where each service listens is written in :path',
+        'would_stop' => ':service would be stopped, and not deleted',
+        'stopped' => ':service was stopped, and not deleted',
+        'still_running' => ':service would not stop, and is still running',
+        // Said with the decision rather than after it.
+        'before_you_agree' => 'Before you agree',
+        'copy_first' => ':service\'s database is upgraded when lemonfiber opens it, so it wants a copy first: :because',
+        'copies' => 'A copy is taken of :path before anything is opened',
+        'nothing_copied_first' => 'Nothing here wants a copy first',
+        'agree' => [
+            'adopt' => 'Take it over',
+            'import' => 'Carry these across',
+            'beside' => 'Stand beside it',
+            'replace' => 'Stop it and stand in its place',
+        ],
+    ],
+
+    // Wiring the services to each other, and how each connection turned out.
+    'wiring' => [
+        'road_in' => 'How the services are wired to each other',
+        'what_a_run_does' => 'A run changes nothing that is already right, and keeps what you changed by hand',
+        'wire' => 'Wire the services',
+        'services' => 'The services a run wires to each other',
+        'no_services' => 'This machine runs no service to wire',
+        'working' => 'The machine is wiring the services',
+        'no_outcome' => 'The machine no longer has an answer for this run',
+        'refused' => 'The machine turned this down',
+        // Said before anything else, and never drawn as a run that wrote.
+        'rehearsed' => 'A rehearsal: this run only said what it would do, and nothing was written',
+        'assessed' => 'Each connection was judged against what lemonfiber last wrote',
+        'unassessable' => 'Whether anything was changed by hand could not be judged this time: the record of what lemonfiber last wrote could not be read',
+        // One sentence per state. Skipped is not failed, and a value changed
+        // by hand is kept, not wired and not something to put back.
+        'state' => [
+            'wired' => 'Wired, and read back',
+            'already_wired' => 'Already wired; nothing was done',
+            'drifted' => 'Kept as you changed it',
+            'stale' => 'Still lemonfiber\'s own value, behind what it would write now; left as it is',
+            'conflicted' => 'You and lemonfiber both changed it; left as it is',
+            'adopted' => 'Your change is kept as the way it is meant to be',
+            'unmanaged' => 'A value lemonfiber never wrote; kept as it was',
+            'would_wire' => 'A run that writes would wire this',
+            'would_adopt' => 'A run that writes would keep your value as the way it is meant to be',
+            'observed' => 'Left alone, because you said to',
+            'unmatched' => 'Nothing lemonfiber does connects these two',
+            'skipped' => 'Not wired yet: something it needs is not there, and a later run finishes it',
+            'failed' => 'The service rejected it',
+            'refused' => 'lemonfiber will not do this',
+        ],
+        'yours' => 'The service holds: :value',
+        'ours' => 'lemonfiber would write: :value',
+        'breaks' => 'This breaks something: :breakage',
+        'remedy' => 'To put it right: :remediation',
+        'no_connections' => 'This run attempted no connection',
+        'cannot_wire' => 'What this run cannot wire',
+        'nothing_unsupported' => 'Every service here is one this run can speak to',
+        'fills' => [
+            'label' => 'What answers what',
+            'asks' => ':by asks for :capability',
+            'outright' => 'Answered by :service',
+            'each' => 'Answered by each of :services',
+            'contested' => 'More than one service claims this, and nothing answers until you choose',
+            'claimed_by' => 'Claimed by',
+            'chosen_operator' => 'You chose :service over :over',
+            'chosen_stack' => 'The stack chose :service over :over',
+            'why' => 'Why: :why',
+            'unfilled' => 'Nothing answers this',
+            'by_name' => 'Wired to :service by name, not by what it does',
+            'none' => 'The stack asks nothing of its services',
+            'unreadable' => 'What answers what could not be read',
+            // Choosing who answers a capability more than one service claims:
+            // what it would come to before the yes, and what became of it.
+            'choose' => 'Choose who answers',
+            'choose_for' => ':service to answer :capability for :by',
+            'reaches_now' => 'Reaches now: :service',
+            'reaches_nothing' => 'Reaches nothing now',
+            'would_reach' => 'Would reach: :service',
+            'asked_by' => 'Asked for by :services',
+            'leaves_unfilled' => ':by would lose :capability',
+            'leaves_nothing' => 'Nothing is left unanswered',
+            'reason' => 'Your reason (optional)',
+            'agree' => 'Make this the choice',
+            'never_mind' => 'Leave it as it is',
+            'close' => 'Close',
+            'made' => ':service answers :capability now',
+            'moved' => 'The stack changed since this was worked out; here it is again',
+            'already' => 'It already answers this; nothing needed to change',
+            'no_such_service' => 'The stack has no service by that name any more',
+            'cannot_fill' => 'That service cannot answer this',
+            'nothing_asks' => 'Nothing in the stack asks for this any more',
+            'nowhere_to_keep' => 'The stack has nowhere to keep this choice until it is set up',
+            'reason_cannot_be_kept' => 'That reason cannot be kept with the choice; say it in one shorter line, or leave it empty',
+            'not_chosen' => 'The choice was not made',
+        ],
+    ],
+];

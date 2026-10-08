@@ -12,7 +12,7 @@ use Native\Mobile\Edge\NativeComponent;
  * A frame reads a stack once and draws everything from what came back. A
  * screen whose frame needs a second reading takes it on the next frame: the
  * reading that waits draws what it can without it, and the frame asks for the
- * next one at once with `<x-operator::the-next-frame />`.
+ * next one at once with `<x-design::the-next-frame />`.
  *
  * The screen's own reading is always taken where it is due. Every other
  * reading asks first, and waits where the frame has read the stack already.

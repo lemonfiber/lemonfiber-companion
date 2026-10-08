@@ -178,6 +178,7 @@ it('keeps the fresh reading for the next opening', function (): void {
     $kept = WhatIsKeptOfUpdates::onAPhoneThatSeals()->keeping;
     $screen = theCellarsUpdates(AStackThatKeepsCurrent::with(WhatIsKeptOfUpdates::aReadingWithEveryPart()), $kept);
     $screen->mount();
+    WhatTheDeviceWouldDraw::by($screen);
 
     $next = WhatTheDeviceWouldDraw::whileItOpens(theCellarsUpdates(AStackThatKeepsCurrent::withNothingWaiting(), $kept));
 

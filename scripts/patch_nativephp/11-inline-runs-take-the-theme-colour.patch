@@ -1,0 +1,12 @@
+The theme's text colour, which 10-text-takes-the-theme-colour.patch makes the
+default for text, for text drawn as inline runs too.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
+@@ -108,4 +108,5 @@
+         val ctx = LocalContext.current
++        val themeTextArgb = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb()
+         val annotated = buildAnnotatedString {
+-            appendTextRuns(node, RunCtx.Root, isDark, ctx)
++            appendTextRuns(node, RunCtx.Root.copy(colorArgb = themeTextArgb), isDark, ctx)
+         }

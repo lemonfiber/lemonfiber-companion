@@ -24,18 +24,6 @@ enum HouseholdField: string implements NamesAWireField
     case Measured = 'measured';
 
     /**
-     * Which request a decision is about, when one is sent.
-     *
-     * A second case for one number, because the wire says it twice under two
-     * names: a reading calls it `id` inside the row it belongs to, and an
-     * action asks for `request` because nothing around it says which kind of
-     * thing is being named. One case serving both would be this app deciding
-     * they are the same word, which is a fact about the contract and not about
-     * this enum.
-     */
-    case Request = 'request';
-
-    /**
      * The sentences a member is owed, written to them by the core.
      *
      * A list of strings and never parts to assemble: what a surface renders

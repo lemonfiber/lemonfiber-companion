@@ -17,12 +17,14 @@ use function preg_quote;
 
 use RuntimeException;
 
+use function sort;
 use function sprintf;
 use function str_starts_with;
 use function trim;
 
 /**
- * What ARCHITECTURE.md claims is enforced, and everything that could enforce it.
+ * What the rules ARCHITECTURE.md indexes claim is enforced, and everything that
+ * could enforce it.
  *
  * **A class rather than a file of functions, and the reason is the device.** A
  * namespaced function cannot be reached by PSR-4, so a file holding one is
@@ -58,37 +60,29 @@ final readonly class Rules
     private const string THE_FIXTURE_FAMILIES = 'tests/Support/Violations/';
 
     /**
-     * Every rule ARCHITECTURE.md documents, and the mechanism it claims.
+     * The directory the rules ARCHITECTURE.md indexes live in, one file to an area.
+     */
+    private const string THE_RULES = '.docs/architecture';
+
+    /**
+     * Every rule ARCHITECTURE.md and the files it indexes document, and the
+     * mechanism it claims.
      *
      * @return array<string, string> rule identifier => claimed enforcement
      */
     public static function documented(): array
     {
-        $path = Tree::at('ARCHITECTURE.md');
-        $document = file_get_contents($path);
-
-        if (! is_string($document)) {
-            throw new RuntimeException(sprintf('%s could not be read', $path));
-        }
-
         $rules = [];
 
-        foreach (explode("\n", $document) as $line) {
-            // | **A1** | the rule, in words | how it is enforced |
-            // The identifier is emphasised in the table; the emphasis is
-            // stripped so the join is on the identifier itself.
-            if (preg_match('/^\|\s*\*{0,2}([A-Z]\d{1,2})\*{0,2}\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*$/u', $line, $found) !== 1) {
-                continue;
-            }
-
-            $rules[$found[1]] = trim($found[3]);
+        foreach (self::theDocuments() as $path) {
+            $rules = [...$rules, ...self::rulesIn($path)];
         }
 
         if ($rules === []) {
             throw new RuntimeException(
-                'No rules were read from ARCHITECTURE.md. Either the tables moved or the '
-                . 'format changed — and a checker that silently finds nothing to check is '
-                . 'the failure it exists to prevent.',
+                'No rules were read from ARCHITECTURE.md or .docs/architecture/. Either the '
+                . 'tables moved or the format changed — and a checker that silently finds '
+                . 'nothing to check is the failure it exists to prevent.',
             );
         }
 
@@ -128,7 +122,7 @@ final readonly class Rules
     {
         return [
             'arch' => self::phpFilesUnder(Tree::at('tests/Arch')),
-            'phpstan' => [...self::phpFilesUnder(Tree::at('phpstan')), self::theConfiguration('phpstan.neon')],
+            'phpstan' => [...self::phpFilesUnder(Tree::at('phpstan')), AnalyserConfiguration::text()],
         ];
     }
 
@@ -181,10 +175,9 @@ final readonly class Rules
      */
     private static function configSources(): array
     {
-        $found = [];
+        $found = [AnalyserConfiguration::text()];
 
         $configs = [
-            'phpstan.neon',
             'phpunit.xml',
             'composer.json',
             'pint.json',
@@ -230,12 +223,53 @@ final readonly class Rules
         return $found;
     }
 
-    /** One configuration file, as text, or nothing where it cannot be read. */
-    private static function theConfiguration(string $file): string
+    /**
+     * ARCHITECTURE.md and every file of rules it indexes, refused where the
+     * directory holds none: a rule file read from nowhere is a table that
+     * stopped being checked.
+     *
+     * @return list<string>
+     */
+    private static function theDocuments(): array
     {
-        $contents = file_get_contents(Tree::at($file));
+        $files = Tree::filesUnder(Tree::at(self::THE_RULES), '.md');
 
-        return is_string($contents) ? $contents : '';
+        if ($files === []) {
+            throw new RuntimeException(sprintf('No rules were found under %s.', self::THE_RULES));
+        }
+
+        sort($files);
+
+        return [Tree::at('ARCHITECTURE.md'), ...$files];
+    }
+
+    /**
+     * The rules one document's tables carry, and the mechanism each claims.
+     *
+     * @return array<string, string>
+     */
+    private static function rulesIn(string $path): array
+    {
+        $document = file_get_contents($path);
+
+        if (! is_string($document)) {
+            throw new RuntimeException(sprintf('%s could not be read', $path));
+        }
+
+        $rules = [];
+
+        foreach (explode("\n", $document) as $line) {
+            // | **A1** | the rule, in words | how it is enforced |
+            // The identifier is emphasised in the table; the emphasis is
+            // stripped so the join is on the identifier itself.
+            if (preg_match('/^\|\s*\*{0,2}([A-Z]\d{1,2})\*{0,2}\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*$/u', $line, $found) !== 1) {
+                continue;
+            }
+
+            $rules[$found[1]] = trim($found[3]);
+        }
+
+        return $rules;
     }
 
     /**

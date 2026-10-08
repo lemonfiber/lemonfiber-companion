@@ -25,6 +25,7 @@ use Modules\Operator\Internal\Presenters\HowAScopeReads;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -58,6 +59,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;

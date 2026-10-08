@@ -86,7 +86,7 @@ final readonly class Admissions implements Admitting
             $opened = $named instanceof AMembersName
                 ? $door->openAs($named->forTheExchange(), $said->forTheExchange())
                 : $door->open($said->forTheExchange());
-        } catch (CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why) {
+        } catch (CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why) {
             return Admitted::refused($this->met($stack, $why));
         }
 
@@ -114,7 +114,7 @@ final readonly class Admissions implements Admitting
      * refused*. {@see Clients::whatStoodInTheWay()} decides which obstacle it
      * is, the same way every other reach of a stack does.
      */
-    private function met(Stack $stack, CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
+    private function met(Stack $stack, CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
     {
         return match (true) {
             $why instanceof PasswordWasRefused => Obstacle::of(KindOfObstacle::CredentialWasRefused),

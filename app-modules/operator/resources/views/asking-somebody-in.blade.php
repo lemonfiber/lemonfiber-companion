@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\AskingThemIn')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -97,7 +98,7 @@
             @endif
 
             @if ($this->howItIsGoing()->invitation->mayBeSent)
-                <x-design::action label="{{ __('stacks.invitation.send', ['name' => $this->howItIsGoing()->invitation->toHand->name]) }}" tap="send()" />
+                <x-operator::offered-action label="{{ __('stacks.invitation.send', ['name' => $this->howItIsGoing()->invitation->toHand->name]) }}" tap="send()" :offer="$this->offered(AskingThemIn::Invite)" />
             @endif
 
             @if ($this->howItIsGoing()->invitation->toHand->handsOver)
@@ -145,7 +146,7 @@
 
             <x-design::action label="{{ __('stacks.invitation.start_again') }}" tap="startAgain()" tone="tonal" />
         @else
-            <x-design::action label="{{ __('stacks.invitation.what_would_it_grant') }}" tap="offer()" />
+            <x-operator::offered-action label="{{ __('stacks.invitation.what_would_it_grant') }}" tap="offer()" :offer="$this->offered(AskingThemIn::Invite)" />
         @endif
     @else
         {{-- Asking, or asking after it, met something: said where the answer
@@ -153,7 +154,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howItIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @endif
 
@@ -167,7 +168,7 @@
             <x-design::note>{{ __($member->standingSaid) }}</x-design::note>
             @if ($this->member === $member->name)
                 <x-design::body>{{ __('stacks.invitation.taking_it_off_means', ['name' => $member->name]) }}</x-design::body>
-                <x-design::action label="{{ __('stacks.invitation.take_it_off', ['name' => $member->name]) }}" tap="takeThePasswordOff()" />
+                <x-operator::offered-action label="{{ __('stacks.invitation.take_it_off', ['name' => $member->name]) }}" tap="takeThePasswordOff()" :offer="$this->offered(AskingThemIn::TakeThePasswordOff)" />
                 <x-design::action
                     label="{{ __('stacks.invitation.never_mind') }}"
                     answers-to="{{ __('stacks.invitation.never_mind_for', ['name' => $member->name]) }}"
@@ -175,9 +176,11 @@
                     tone="tonal"
                 />
             @else
-                <x-design::link
+                <x-operator::offered-action
                     label="{{ __('stacks.invitation.would_take_it_off', ['name' => $member->name]) }}"
                     tap="wouldTakeThePasswordOff('{{ $member->name }}')"
+                    :offer="$this->offered(AskingThemIn::TakeThePasswordOff)"
+                    drawn="link"
                 />
             @endif
             {{-- Connecting a device of theirs is its own screen, where the
@@ -201,13 +204,13 @@
     {{-- Asking again reads who is in, and asks after work still being
          followed. It is not a retry of anything the stack refused, and is
          named for what it does. --}}
-    <x-design::action label="{{ __('stacks.invitation.ask_who_is_in_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('stacks.invitation.ask_who_is_in_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

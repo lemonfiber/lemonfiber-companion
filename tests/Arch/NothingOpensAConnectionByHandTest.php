@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\AnalyserConfiguration;
 use Tests\Support\Tree;
 
 // One list of the ways to open a connection, and both gates read it.
@@ -40,7 +41,7 @@ const BY_HAND = [
 ];
 
 it('every way to open a connection is held by a gate', function (): void {
-    $analyser = (string) file_get_contents(Tree::at('phpstan.neon'));
+    $analyser = AnalyserConfiguration::text();
     $arch = (string) file_get_contents(Tree::at('tests/Arch/ModuleBoundariesTest.php'));
 
     $unheld = [];
@@ -56,7 +57,7 @@ it('every way to open a connection is held by a gate', function (): void {
 
     expect($unheld)->toBe([], sprintf(
         "These ways to open a connection are on the list and no gate refuses them:\n  %s\n\n"
-        . 'Add each to whichever gate can see it: `phpstan.neon` reads a call and its '
+        . 'Add each to whichever gate can see it: the analyser reads a call and its '
         . 'arguments, which is what catches verification being switched off in a '
         . 'positional option; the arch rule in ModuleBoundariesTest reads usage anywhere '
         . "in a module.\nThe two mechanisms stay two because they read different things. "

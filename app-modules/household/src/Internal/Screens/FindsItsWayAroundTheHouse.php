@@ -7,6 +7,7 @@ namespace Modules\Household\Internal\Screens;
 use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Household\Internal\WhereTheTabsAreDrawn;
 use Modules\Kernel\Api\Stack;
+use Modules\Wayfinding\Api\Screens\WaitsAFrameForWhatTheStackServes;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\Layouts\Builders\TabBarOptions;
 use Native\Mobile\Edge\NativeComponent;
@@ -30,6 +31,8 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait FindsItsWayAroundTheHouse
 {
+    use WaitsAFrameForWhatTheStackServes;
+
     /**
      * The house this screen is about.
      *

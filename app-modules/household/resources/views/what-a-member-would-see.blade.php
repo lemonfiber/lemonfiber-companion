@@ -28,7 +28,7 @@
             </x-design::section>
         @endforelse
 
-        <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
+        <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
     @elseif ($this->shelf()->isOutOfReach)
         {{-- Not an empty shelf, and drawn so it can never be mistaken for one. --}}
         <x-design::notice tone="unknown">
@@ -40,14 +40,14 @@
             @endforelse
         </x-design::notice>
 
-        <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+        <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
     @elseif ($this->shelf()->isSignedIn)
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __($this->shelf()->met, $this->shelf()->filling()) }}</x-design::strong>
             <x-design::body>{{ __($this->shelf()->remedy, $this->shelf()->filling()) }}</x-design::body>
         </x-design::notice>
 
-        <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+        <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
         @if ($this->shelf()->isPutRightInTheAppsSettings())
             <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
@@ -76,14 +76,14 @@
     <x-design::action label="{{ __('household.preview.ask') }}" :disabled="true" />
     <x-design::note>{{ __('household.preview.cannot_ask') }}</x-design::note>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
 @elseif ($this->allowance()->isSignedIn)
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __($this->allowance()->met, $this->allowance()->filling()) }}</x-design::strong>
         <x-design::body>{{ __($this->allowance()->remedy, $this->allowance()->filling()) }}</x-design::body>
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
     @if ($this->allowance()->isPutRightInTheAppsSettings())
         <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)

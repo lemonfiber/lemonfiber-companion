@@ -28,20 +28,22 @@ enum Availability: string
     /** Present, and nothing has been set up for it yet. */
     case Unconfigured = 'unconfigured';
 
-    /** Present and configured, and this credential may not use it. */
-    case NotPermitted = 'not_permitted';
+    /** Present and configured, and this credential may not use it. The stack's own word for it. */
+    case NotPermitted = 'unpermitted';
 
     /**
-     * Whether a screen may offer this as an action now.
+     * What a button for it says.
      *
-     * Only the first. The other two are shown and explained rather than hidden
-     * — hiding is refused — but neither is a button that would work.
+     * Each is reported as itself: one not set up is offered and says what is
+     * missing, and one this credential may not use says it is not theirs
+     * rather than that the stack cannot.
      */
-    public function offersAnAction(): bool
+    public function offered(): WhetherItIsOffered
     {
         return match ($this) {
-            self::Available => true,
-            self::Unconfigured, self::NotPermitted => false,
+            self::Available => WhetherItIsOffered::Offered,
+            self::Unconfigured => WhetherItIsOffered::NotSetUp,
+            self::NotPermitted => WhetherItIsOffered::NotTheirs,
         };
     }
 }

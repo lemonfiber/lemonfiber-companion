@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AboutWhat;
-use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
@@ -11,9 +10,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
-use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
-use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
@@ -23,10 +20,8 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
-use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
@@ -34,7 +29,6 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
-use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
@@ -44,6 +38,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheHealthScreenOfTheLoft;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -57,17 +52,6 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 // Here rather than in the operator module's own tests because a screen renders,
 // and rendering needs the application — `view()` and `__()` are not there in a
 // module suite.
-
-/** The machine this screen is about. */
-function theStackBeingLookedAt(): Stack
-{
-    return Stack::of(
-        StackId::of(Nonce::of(str_repeat('a', Nonce::SHORTEST))),
-        StackName::of('The loft'),
-        Address::of('https://192.168.1.42:8443'),
-        Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS)),
-    );
-}
 
 /** A run that found one thing worth saying. */
 function aRunWithAWarning(): Report
@@ -109,30 +93,10 @@ function aRunThatExplainsItself(): Report
     ));
 }
 
-/**
- * The screen, with a stack it knows and a keychain holding whatever a test says.
- *
- * Named for this file, since the root suites share one namespace (`G10`).
- */
-function theHealthScreen(
-    AStackThatWasAsked $asking,
-    ?AKeychainInMemory $keychain = null,
-    ?string $named = null,
-): HowThisStackIs {
-    $stack = theStackBeingLookedAt();
-    $keychain ??= AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
-
-    return $screen;
-}
-
 it('shows what the checks found', function (): void {
     // What it amounts to is the core's one line, which this screen holds from
     // the event stream rather than working out from the findings.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->howMany())->toBe(1)
         // Neither of the obstacle's two keys, because nothing was met. The
@@ -152,7 +116,7 @@ it('says what the check meant and what to try, in the core\'s own words', functi
     // Rendered rather than translated: these are the machine's sentences about
     // the machine, and putting them through the catalogue would mean this app
     // inventing a line for a check it has never heard of.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     $rows = $screen->findings();
 
@@ -172,7 +136,7 @@ it('offers every remedy, because the first one may not work', function (): void 
     // `Remedies::likeliest()` exists for a screen with room for one line. This
     // screen has room for the list, and an operator whose first remedy did not
     // work would otherwise have nowhere to find the second.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     $actions = array_map(
         static fn(Remedy $remedy): string => $remedy->action(),
@@ -186,7 +150,7 @@ it('says so where the machine knows what is wrong and has nothing to suggest', f
     // A failure with no remedy is representable and is a sentence rather than
     // blank space: the operator is being told the stack knows what is wrong and
     // has nothing to offer, which is what sends them to the machine itself.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.egress-match'),
             Category::Vpn,
@@ -232,18 +196,18 @@ function aFindingWithNothingToTry(string $check): Finding
 }
 
 it('offers somebody to ask once, at the foot of the findings, where any said nothing to try', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         aFindingWithNothingToTry('vpn.egress-match'),
         aFindingWithNothingToTry('vpn.killswitch'),
     ))));
     $offered = array_filter(WhatTheDeviceWouldDraw::by($screen)->offers(), static fn(mixed $said): bool => $said === __('device.share_diagnostics'));
 
     expect($offered)->toHaveCount(1)
-        ->and($screen->goes()->to(AStacksScreen::Help))->toBe(AStacksScreen::Help->forTheStack(theStackBeingLookedAt()->id()));
+        ->and($screen->goes()->to(AStacksScreen::Help))->toBe(AStacksScreen::Help->forTheStack(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()));
 });
 
 it('offers nobody to ask where every finding names something to try', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('device.share_diagnostics'));
 });
@@ -252,7 +216,7 @@ it('says nothing it was not told about a check that passed', function (): void {
     // A passing check has no meaning to explain and no remedy to offer.
     // Inventing a sentence for one would be this app writing words the machine
     // did not say, which is the opposite of what a finding owes.
-    $row = $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
+    $row = $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
 
     expect($row->explainsItself())->toBeFalse()
         ->and($row->meaning)->toBe('')
@@ -267,7 +231,7 @@ it('says which part of the machine every finding is about', function (): void {
     // is deliberately not changed to group them — reordering would be this app
     // second-guessing the engine about which finding matters most — so saying
     // what each is about does that work without taking the decision.
-    $passing = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
+    $passing = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
 
     expect($passing->about)->toBe(Category::Storage->saidOnTheScreen())
         ->and(__($passing->about))->not->toBe($passing->about);
@@ -284,7 +248,7 @@ it('asks once however many times the frame reads it', function (): void {
     // and a screen that asked per accessor would open six connections to a
     // machine over somebody's home network to draw one frame.
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
-    $screen = theHealthScreen($asking);
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen($asking);
 
     $screen->answer();
     $screen->findings();
@@ -304,7 +268,7 @@ it('asks again when the operator asks it to, and not otherwise', function (): vo
     // timer would be talking to a machine over a home network unprompted, which
     // is what the cadence rule refuses. A tap is a prompt.
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
-    $screen = theHealthScreen($asking);
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen($asking);
 
     $screen->answer();
     $screen->findings();
@@ -321,7 +285,7 @@ it('asking again notices a session that has ended underneath them', function ():
     // An operator may have been on this screen a while. A refresh that reused a
     // session it never re-checked would show them a stale report under a stack
     // they are no longer signed into.
-    $stack = theStackBeingLookedAt();
+    $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
@@ -355,7 +319,7 @@ it('says what the operator met where the stack did not answer', function (): voi
 
     foreach ($standing as $met) {
         $why = $met->kind();
-        $screen = theHealthScreen(AStackThatWasAsked::met($met));
+        $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::met($met));
 
         expect($screen->answer()->went->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->answer()->went->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
@@ -377,7 +341,7 @@ it('a session that has ended sends them to sign in rather than to an error', fun
     // the app did not get as far as the machine. The remedy is a screen rather
     // than a sentence, which is why signed-out is its own state.
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
-    $stack = theStackBeingLookedAt();
+    $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
 
     $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
@@ -397,29 +361,29 @@ it('a keychain that will not open asks for the password rather than breaking', f
         'no store at all' => AKeychainInMemory::withNowhereSafe(),
         'a store that will not open' => AKeychainInMemory::thatWillNotOpen(),
     ] as $which => $keychain) {
-        $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()), $keychain);
+        $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()), $keychain);
 
         expect($screen->answer()->went->isSignedIn)->toBeFalse($which);
     }
 });
 
 it('signing in again goes to this stack and no other', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->to(AStacksScreen::SignIn))
-        ->toBe(sprintf('/stacks/%s/sign-in', theStackBeingLookedAt()->id()->stored()));
+        ->toBe(sprintf('/stacks/%s/sign-in', TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()->stored()));
 });
 
 it('refuses a route naming a stack this device does not hold', function (): void {
     // A launch-time fault rather than a screen state: the URI names something
     // that has been forgotten, and there is no screen to draw for it.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()), named: 'a-stack-long-forgotten');
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()), named: 'a-stack-long-forgotten');
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsNotConfigured::class);
 });
 
 it('renders the frame it is named for', function (): void {
-    expect(theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->render()->name())
+    expect(TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->render()->name())
         ->toBe('operator::how-this-stack-is');
 });
 
@@ -440,7 +404,7 @@ it('refuses a route parameter that is not text', function (): void {
     // branch nothing drives is a branch that can quietly become the other one.
     // `SigningIntoAStackTest` makes the same assertion about the same shape one
     // screen over.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
@@ -451,7 +415,7 @@ it('says one word for where a finding stands: what it costs, where it cost somet
     // beside *broken* says one thing twice. What it costs says more, so a
     // failed check reads as that, and a critical failure and an ordinary one
     // still read differently.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->findings()[0]->verdict)->toBe(Severity::Critical->saidOnTheScreen())
@@ -462,7 +426,7 @@ it('says one word for where a finding stands: what it costs, where it cost somet
 it('says the verdict of a finding with nothing graded, and no code', function (): void {
     // A passing check was never graded, so there is no word for what it costs
     // and none is invented: its word is its verdict.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(
         Report::of(Overall::Healthy, Findings::of(
             Finding::of(
                 Check::of('storage.room'),
@@ -480,7 +444,7 @@ it('says the verdict of a finding with nothing graded, and no code', function ()
 });
 
 it('carries a service finding\'s code to its logs, and says neither the code nor the id on the card', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.up'),
             Category::Vpn,
@@ -508,7 +472,7 @@ it('carries a service finding\'s code to its logs, and says neither the code nor
 });
 
 it('names a service finding by what the stack calls it, beside its category and on the road to its logs', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.tunnel'),
             Category::Vpn,
@@ -532,7 +496,7 @@ it('names a service finding by what the stack calls it, beside its category and 
 });
 
 it('says a machine finding\'s code at the foot of its card, having no logs to carry it to', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     $row = $screen->findings()[0];
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -552,7 +516,7 @@ it('a row whose check could not run carries the reason and nothing else', functi
     // row through a different arm. `explainsItself()` cannot stand in for
     // this: it reads the meaning, and on this path the meaning is the reason,
     // so it is true whatever the other two hold.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(
         Report::of(Overall::Degraded, Findings::of(
             Finding::of(
                 Check::of('vpn.egress-match'),
@@ -586,7 +550,7 @@ it('a row whose check could not run carries the reason and nothing else', functi
  */
 function aFindingRowFor(WhatItSaysUnderneath $underneath): WhatOneFindingSays
 {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.egress'),
             Category::Vpn,
@@ -624,7 +588,7 @@ it('a row names the service it is about, and what explains it', function (): voi
     // The cause is shown by the other row's *title*, not by its identifier.
     // `vpn.up` is right on a wire and jargon on a phone; "The tunnel" is what
     // the operator is looking at two rows up.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.up'),
             Category::Vpn,
@@ -656,7 +620,7 @@ it('a cause the report does not hold is shown as the identifier', function (): v
     // in it. Showing the identifier is honest rather than tidy: the operator
     // has a string they can quote to somebody who can fix it, where a blank
     // would leave them with a row that used to say something.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.egress-match'),
             Category::Vpn,
@@ -671,212 +635,10 @@ it('a cause the report does not hold is shown as the identifier', function (): v
 });
 
 it('a row about the machine names no service', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
 
     expect($screen->findings()[0]->service)->toBe('')
         ->and($screen->findings()[0]->because)->toBe('');
-});
-
-/** A run whose worst finding is not the one the checks reached first. */
-function aRunWhoseWorstRanLast(): Report
-{
-    return Report::of(Overall::Broken, Findings::of(
-        Finding::of(
-            Check::of('storage.room'),
-            Category::Storage,
-            'Room to grow',
-            Conclusion::Passed,
-            WhatTheCheckSaid::nothingWrong(),
-            WhoPutItThere::bundled(),
-        ),
-        Finding::of(
-            Check::of('vpn.egress-match'),
-            Category::Vpn,
-            'Torrent traffic leaves through the tunnel',
-            Conclusion::Failed,
-            WhatTheCheckSaid::wentWrong(
-                Code::of('VPN-3'),
-                'Your address was visible to the swarm',
-                Remedies::none(),
-                Severity::Critical,
-                Standing::Remediable,
-                WhatItSaysUnderneath::none(),
-            ),
-            WhoPutItThere::bundled(),
-        ),
-    ));
-}
-
-/** A run with something to say about two families and nothing about the other seven. */
-function aRunAcrossTwoFamilies(): Report
-{
-    return Report::of(Overall::Degraded, Findings::of(
-        Finding::of(
-            Check::of('queue.stuck'),
-            Category::Queue,
-            'Two downloads have not moved',
-            Conclusion::Warned,
-            WhatTheCheckSaid::nothingWrong(),
-            WhoPutItThere::bundled(),
-        ),
-        Finding::of(
-            Check::of('queue.imports'),
-            Category::Queue,
-            'An import keeps failing',
-            Conclusion::Warned,
-            WhatTheCheckSaid::nothingWrong(),
-            WhoPutItThere::bundled(),
-        ),
-        Finding::of(
-            Check::of('storage.room'),
-            Category::Storage,
-            'The disk is nearly full',
-            Conclusion::Warned,
-            WhatTheCheckSaid::nothingWrong(),
-            WhoPutItThere::bundled(),
-        ),
-    ));
-}
-
-it('shows the worst finding first, whatever order the checks ran in', function (): void {
-    // The engine sends findings in the order the checks ran, and a list drawn
-    // straight off the envelope looks ordered on any report whose worst finding
-    // happened to run first. This one deliberately is not that report: a
-    // passing storage check arrives ahead of a critical failure, and the screen
-    // is what has to put them the right way round.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWhoseWorstRanLast()));
-
-    $titles = array_map(
-        static fn(WhatOneFindingSays $row): string => $row->title,
-        $screen->findings(),
-    );
-
-    expect($titles)->toBe([
-        'Torrent traffic leaves through the tunnel',
-        'Room to grow',
-    ]);
-});
-
-it('offers the families this run has something to say about, and no others', function (): void {
-    // Storage before Queue, which is the engine's own order rather than the
-    // order the checks ran — the two queue findings arrived first. And seven
-    // families are missing, because a control leading to a blank screen teaches
-    // an operator that the row is not worth reading.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
-
-    $offered = array_map(
-        static fn(WhichFamilyToRead $family): array => [$family->family, $family->howMany, $family->isOpen],
-        $screen->families(),
-    );
-
-    expect($offered)->toBe([
-        [Category::Storage->value, 1, false],
-        [Category::Queue->value, 2, false],
-    ]);
-
-    // And each control has a word for itself and a line to show it in, because
-    // a control drawn from a key nothing resolves renders the key.
-    $storage = $screen->families()[0];
-
-    expect($storage->said)->toBe(Category::Storage->saidOnTheScreen())
-        ->and(__($storage->said))->not->toBe($storage->said)
-        // Both replacements land, which is the whole of what the line does: a
-        // name with no number beside it is a control an operator has to open
-        // in order to find out whether it was worth opening.
-        ->and(__('health.family_and_count', ['family' => 'Storage', 'count' => $storage->howMany]))
-        ->toContain('Storage')
-        ->toContain('1');
-});
-
-it('reading one family narrows the report to it', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
-
-    expect($screen->isNarrowed())->toBeFalse()
-        ->and($screen->howMany())->toBe(3);
-
-    $screen->read(Category::Queue->value);
-
-    $about = array_map(
-        static fn(WhatOneFindingSays $row): string => $row->about,
-        $screen->findings(),
-    );
-
-    expect($screen->isNarrowed())->toBeTrue()
-        ->and($screen->howMany())->toBe(2)
-        ->and($about)->toBe([
-            Category::Queue->saidOnTheScreen(),
-            Category::Queue->saidOnTheScreen(),
-        ]);
-
-    // The row itself does not narrow with the list. Both families keep their
-    // control and their count — a row that collapsed to the family being read
-    // would take away the only way back to the other one — and the one being
-    // read says so, because the template has nothing else to draw it from.
-    $offered = array_map(
-        static fn(WhichFamilyToRead $family): array => [$family->family, $family->howMany, $family->isOpen],
-        $screen->families(),
-    );
-
-    expect($offered)->toBe([
-        [Category::Storage->value, 1, false],
-        [Category::Queue->value, 2, true],
-    ]);
-});
-
-it('reading the family already open widens back out', function (): void {
-    // The way back is the way in, which is the gesture somebody makes without
-    // being told: there is no separate "all" control to go and find.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
-
-    $screen->read(Category::Queue->value);
-    $screen->read(Category::Queue->value);
-
-    expect($screen->isNarrowed())->toBeFalse()
-        ->and($screen->howMany())->toBe(3);
-
-    // And the control that was open closes with the report it narrowed. The
-    // row is the only thing on the frame that says which family is being read
-    // — the list below it looks the same whether nine findings arrived or nine
-    // were left after narrowing — so a control still marked open over a report
-    // that has widened tells the operator they are reading the queue while
-    // they are reading everything. Asserted on the way out and not only on the
-    // way in, because the two are separate reads of the same state and only
-    // the way in has ever been looked at.
-    $closed = array_map(
-        static fn(WhichFamilyToRead $family): bool => $family->isOpen,
-        $screen->families(),
-    );
-
-    expect($closed)->toBe([false, false]);
-
-    // And naming another family while one is open moves to it rather than
-    // widening, which is the other half of the same tap.
-    $screen->read(Category::Queue->value);
-    $screen->read(Category::Storage->value);
-
-    expect($screen->isNarrowed())->toBeTrue()
-        ->and($screen->howMany())->toBe(1)
-        ->and($screen->findings()[0]->about)->toBe(Category::Storage->saidOnTheScreen());
-});
-
-it('a value naming no family shows the whole report rather than nothing', function (): void {
-    // The screen's own state is the only thing that writes it, so this is a
-    // value that cannot arrive — and `tryFrom` is what makes that a fact rather
-    // than a hope. What it prevents is a blank report where the operator
-    // expected a report, which is a worse answer than a tap that does nothing.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunAcrossTwoFamilies()));
-
-    $screen->read('a-family-this-engine-has-never-heard-of');
-
-    $open = array_map(
-        static fn(WhichFamilyToRead $family): bool => $family->isOpen,
-        $screen->families(),
-    );
-
-    expect($screen->isNarrowed())->toBeFalse()
-        ->and($screen->howMany())->toBe(3)
-        ->and($screen->findings())->toHaveCount(3)
-        ->and($open)->toBe([false, false]);
 });
 
 it('what the household asked for is one tap from the machine it is about', function (): void {
@@ -884,10 +646,10 @@ it('what the household asked for is one tap from the machine it is about', funct
     // that something is registered under that route; this asserts that the
     // screen an operator is actually looking at points at it, which is what
     // makes the requests screen reachable rather than merely present.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->to(AStacksScreen::Requests))
-        ->toBe(AStacksScreen::Requests->forTheStack(theStackBeingLookedAt()->id()))
+        ->toBe(AStacksScreen::Requests->forTheStack(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Requests)))->not->toBeNull();
 });
 
@@ -897,10 +659,10 @@ it('what this machine would put right is one tap from the machine', function ():
     // operator is looking at points at it. A screen rather than a button beside
     // one finding, because a listing reached from one finding would show the
     // repairs for all of them under a heading naming one.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->to(AStacksScreen::Repairs))
-        ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()))
+        ->toBe(AStacksScreen::Repairs->forTheStack(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Repairs)))->not->toBeNull();
 });
 
@@ -909,10 +671,10 @@ it('what stopped coming in is one tap from the machine', function (): void {
     // it. It hangs off the machine rather than off the verdict above, because a
     // stack passing every check and a household getting nothing are not a
     // contradiction — a screen under the verdict would be claiming they are.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id()))
-        ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()))
+        ->toBe(AStacksScreen::Stuck->forTheStack(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
@@ -920,7 +682,7 @@ it('a finding about a service offers what that service said', function (): void 
     // Offered from the finding rather than from a list of every service the
     // stack runs: this row is already about one, and a picker would put a
     // choice in front of somebody who came here to read a specific thing.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.up'),
             Category::Vpn,
@@ -936,7 +698,7 @@ it('a finding about a service offers what that service said', function (): void 
     expect($rows[0]->service)->toBe('gluetun')
         ->and($screen->logsOf($rows[0]->service))
         ->toBe(AStacksScreen::Logs->forTheStacksService(
-            theStackBeingLookedAt()->id(),
+            TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(),
             ServiceId::called('gluetun'),
         ))
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
@@ -952,7 +714,7 @@ it('a finding about the machine has no log to go to, and asking for one comes aw
     // So it answers this machine's own screen: a button leading back to where the
     // operator already is leads nowhere wrong, where building the value object
     // first put a raise on a tap.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('disk.space'),
             Category::Storage,
@@ -974,7 +736,7 @@ it('a name that is only whitespace is no name either', function (): void {
     // The trim is the whole of the difference, and a guard comparing the
     // untrimmed string would let every one of these reach `ServiceId::called()`,
     // which raises on exactly the same set.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     foreach ([' ', '   ', "\t", "\n"] as $blank) {
         expect($screen->logsOf($blank))->toBe($screen->goes()->to(AStacksScreen::Health), sprintf('logsOf(%s)', var_export($blank, return: true)));
@@ -986,7 +748,7 @@ it('a credential the stack refused signs this device out', function (): void {
     // no, so whatever this device is holding is not a session any more — the
     // identity was removed, the password changed, or the stack rebuilt.
     $keychain = AKeychainInMemory::working();
-    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine.
@@ -1001,13 +763,13 @@ it('a refused credential lets the session go, rather than only hiding it', funct
     // next frame and refused again, so the operator would be looking at a
     // sign-in prompt over a device that still believes it is signed in.
     $keychain = AKeychainInMemory::working();
-    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
-    expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue();
+    expect($keychain->isHolding(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))->toBeTrue();
 
     $screen->answer();
 
-    expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeFalse();
+    expect($keychain->isHolding(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))->toBeFalse();
 });
 
 it('no other obstacle throws the session away', function (): void {
@@ -1020,9 +782,9 @@ it('no other obstacle throws the session away', function (): void {
         }
 
         $keychain = AKeychainInMemory::working();
-        theHealthScreen(AStackThatWasAsked::met($met), $keychain)->answer();
+        TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::met($met), $keychain)->answer();
 
-        expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue($met->kind()->value);
+        expect($keychain->isHolding(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))->toBeTrue($met->kind()->value);
     }
 });
 
@@ -1045,7 +807,7 @@ it('a check with no verdict to explain carries no detail either', function (): v
     // passed has nothing underneath because nothing went wrong; a check that
     // could not run has nothing underneath because it never got far enough to
     // produce one. Both are the empty string, and the template branches on it.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.egress'),
             Category::Vpn,
@@ -1090,66 +852,10 @@ it('the findings reach the glass, not only the view model', function (): void {
     // serves and reaches this one behind a session it does not hold, so what it
     // proves is that the frame is drawn at all; this is what proves the reading
     // is on it.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('health.summary.waiting'))
         ->and($drawn->said())->toContain($screen->findings()[0]->title);
-});
-
-/**
- * A run where the stack's own check ran first and a plugin's second.
- *
- * In that order so a screen deciding from the first row alone — whether to
- * mark, or whether to say what an unmarked row is — gets this one wrong.
- */
-function aRunWithAPluginsCheck(WhoPutItThere $second): Report
-{
-    return Report::of(Overall::Degraded, Findings::of(
-        Finding::of(
-            Check::of('disk.space'),
-            Category::Storage,
-            'The disk is nearly full',
-            Conclusion::Warned,
-            WhatTheCheckSaid::nothingWrong(),
-            WhoPutItThere::bundled(),
-        ),
-        Finding::of(
-            Check::of('plex.reachable'),
-            Category::Services,
-            'Plex answers',
-            Conclusion::Warned,
-            WhatTheCheckSaid::nothingWrong(),
-            $second,
-        ),
-    ));
-}
-
-it('a plugin\'s check says so beside its title, and the report says once what an unmarked row is', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::plugin('plex'))));
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
-
-    expect($screen->answer()->marksAnOrigin)->toBeTrue()
-        ->and($drawn)->toContain(__('health.origin.plugin', ['named' => 'plex']))
-        ->and($drawn)->toContain(__('health.origin.legend'))
-        // The stack's own is left unmarked: the legend is what says it.
-        ->and($drawn)->not->toContain(__('health.origin.bundled'));
-});
-
-it('a check nobody could attribute is marked with the stack\'s reason, never left to read as its own', function (): void {
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::unknown('the plugin was removed'))));
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
-
-    expect($drawn)->toContain(__('health.origin.unknown', ['why' => 'the plugin was removed']))
-        ->and($drawn)->toContain(__('health.origin.legend'));
-});
-
-it('a report of only the stack\'s own checks marks none and explains nothing', function (): void {
-    // The legend explains marks, and a legend under a list with none is a
-    // sentence about something that is not on the screen.
-    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::bundled())));
-
-    expect($screen->answer()->marksAnOrigin)->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.origin.legend'));
 });

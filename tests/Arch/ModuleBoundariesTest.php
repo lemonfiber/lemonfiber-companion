@@ -10,6 +10,7 @@ use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Internal\TheStreamsHeld;
+use Modules\Sdk\Internal\WhatEachStackOffers;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
@@ -106,6 +107,11 @@ const MUTABLE_BY_DESIGN = [
     // earlier one heard. What one screen hears and the next draws is a thing
     // that changes; it is never kept, and it is forgotten with the stack.
     WhatEachStackLastNamed::class,
+    // What each stack last declared it can do, held in memory for the life of
+    // the process so a button and the request behind it are answered from the
+    // same answer without asking the stack on every frame. Asking again and
+    // removing the stack let go of it, which is a mutation; it is never kept.
+    WhatEachStackOffers::class,
 ];
 
 foreach ($modules as $module) {

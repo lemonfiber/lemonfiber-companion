@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Lemonfiber\Sdk\Http\ActionRequest;
+use Lemonfiber\Sdk\Http\ActRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\Fingerprint;
@@ -134,7 +134,7 @@ function whatTheUpgradersSent(): array
 {
     $sent = MockClient::getGlobal()?->getLastRequest();
 
-    return $sent instanceof ActionRequest ? [$sent->resolveEndpoint(), $sent->body()->all()] : ['', null];
+    return $sent instanceof ActRequest ? [$sent->resolveEndpoint(), $sent->body()->all()] : ['', null];
 }
 
 /**

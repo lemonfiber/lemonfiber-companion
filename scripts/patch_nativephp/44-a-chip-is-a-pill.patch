@@ -1,0 +1,16 @@
+A chip is drawn as the pill on iOS, which the brand allows on a chip and a
+button alone, and as Material's default eight-point corner on Android, which is
+no radius of the brand's. So Android's chip takes the pill from the widget
+theme, which carries the brand's.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt
+@@ -3,2 +3,3 @@
+ import androidx.compose.foundation.isSystemInDarkTheme
++import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.material3.ExperimentalMaterial3Api
+@@ -92,3 +93,4 @@
+             colors = colors,
+             border = border,
++            shape = RoundedCornerShape(theme.radiusFull),
+         )

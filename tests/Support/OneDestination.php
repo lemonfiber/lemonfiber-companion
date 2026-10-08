@@ -9,12 +9,13 @@ use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Session;
 
 /**
- * Values that may be read for one purpose, and the one accessor that reads them.
+ * Values that may be read only where they are meant to go, and the accessors that read them.
  *
- * Three types each carry a string with exactly one place to go, and each
- * publishes exactly one way to reach it, named for that place:
- * `forTheHeader`, `forTheExchange`, `forTheClient`. The naming is the guard —
- * reading one for any other purpose is meant to read wrong at the call site.
+ * Three types each carry a string with a fixed place to go, and each
+ * publishes one way to reach it per place, named for that place:
+ * `forTheHeader`, `forTheExchange`, `forTheClient`, and for an address also
+ * `forTheOperatorWhoCouldNotReachIt`. The naming is the guard — reading one
+ * for any other purpose is meant to read wrong at the call site.
  *
  * **Here rather than in the test that counts them, because two rules need it.**
  * `AValueWithOneDestinationTest` asks whether a second accessor has appeared
@@ -22,21 +23,24 @@ use Modules\Kernel\Api\Session;
  * calls the one. They are different questions about the same three facts, and
  * the copy that goes stale is whichever is not being edited that day — a
  * template rule naming `forTheClient` while the accessor had been renamed would
- * find nothing and report a clean run.
+ * find nothing and report a clean run. Neither accessor of an address is a
+ * template's to call: the operator's screen draws the address through the
+ * obstacle that carries it, and `TheTriedAddressIsShownOnlyToTheOperatorTest`
+ * holds who reads it.
  */
 final readonly class OneDestination
 {
     /**
-     * The types, the one accessor each may publish, and what that buys.
+     * The types, the accessors each may publish, and what that buys.
      *
-     * @return list<array{class-string, string, string, string}>
+     * @return list<array{class-string, list<string>, string, string}>
      */
     public static function all(): array
     {
         return [
             [
                 Session::class,
-                'forTheHeader',
+                ['forTheHeader'],
                 'N1-R8',
                 'The session is carried in the credential header the API defines and must never '
                 . 'reach a URL or a query parameter. A query string is written to every proxy '
@@ -45,7 +49,7 @@ final readonly class OneDestination
             ],
             [
                 Credential::class,
-                'forTheExchange',
+                ['forTheExchange'],
                 'N1-R7',
                 'A credential is exchanged once and must not be retained for re-sending. '
                 . '`forTheExchange()` forgets before it answers, which is what makes "once" a '
@@ -54,11 +58,12 @@ final readonly class OneDestination
             ],
             [
                 Address::class,
-                'forTheClient',
+                ['forTheClient', 'forTheOperatorWhoCouldNotReachIt'],
                 'N1-R15',
-                'A stack address must not be logged, transmitted or put in a diagnostic report. '
-                . 'One accessor named for the transport is what makes a second use read wrong '
-                . 'where it is written, which is the only place anybody would catch it.',
+                'A stack address must not be logged, transmitted or put in a diagnostic report, '
+                . 'and is shown only to the operator on the screen that says it was not reached. '
+                . 'One accessor named for the transport and one for that screen are what make any '
+                . 'other use read wrong where it is written, which is the only place anybody would catch it.',
             ],
         ];
     }

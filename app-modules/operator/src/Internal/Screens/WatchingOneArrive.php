@@ -37,6 +37,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -80,6 +81,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use HearsWhereTheWalkIs {
         HearsWhereTheWalkIs::letGoOfWhatElseItHears insteadof FindsItsWayAround;

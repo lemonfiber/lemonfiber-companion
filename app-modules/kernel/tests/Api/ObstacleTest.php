@@ -13,6 +13,7 @@ use function count;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ObstacleIsNotOne;
@@ -22,7 +23,7 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 
 use function sprintf;
 
-it('is the twelve an operator must be able to tell apart', function (): void {
+it('is the sixteen an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -31,6 +32,9 @@ it('is the twelve an operator must be able to tell apart', function (): void {
         KindOfObstacle::DeviceHasNoNetwork,
         KindOfObstacle::LocalNetworkIsNotPermitted,
         KindOfObstacle::StackDidNotAnswer,
+        KindOfObstacle::NameWasNotFound,
+        KindOfObstacle::NothingAtThePairedAddress,
+        KindOfObstacle::ConnectionWasTurnedAway,
         KindOfObstacle::StackIsNotTheOnePaired,
         KindOfObstacle::CredentialWasRefused,
         KindOfObstacle::NotForThisAccount,
@@ -40,6 +44,7 @@ it('is the twelve an operator must be able to tell apart', function (): void {
         KindOfObstacle::AddressIsNotTheStacks,
         KindOfObstacle::VersionsDisagree,
         KindOfObstacle::StackIsBusy,
+        KindOfObstacle::NotOnThisStack,
     ]);
 });
 
@@ -63,6 +68,9 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-NO-NETWORK',
         'COMPANION-LOCAL-NETWORK-REFUSED',
         'COMPANION-NO-ANSWER',
+        'COMPANION-NAME-NOT-FOUND',
+        'COMPANION-NOTHING-AT-THE-ADDRESS',
+        'COMPANION-CONNECTION-REFUSED',
         'COMPANION-CERTIFICATE-CHANGED',
         'COMPANION-CREDENTIAL-REFUSED',
         'COMPANION-NOT-FOR-THIS-ACCOUNT',
@@ -72,6 +80,7 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-ADDRESS-NOT-THE-STACKS',
         'COMPANION-VERSIONS-DISAGREE',
         'COMPANION-STACK-BUSY',
+        'COMPANION-NOT-ON-THIS-STACK',
     ]);
 });
 
@@ -112,6 +121,14 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
     // two versions that disagree stay that way until one side is updated.
     expect(KindOfObstacle::StackIsBusy->severity())->toBe(Severity::Warning);
     expect(KindOfObstacle::VersionsDisagree->severity())->toBe(Severity::Error);
+
+    // A stack older than what was asked of it works, and is older.
+    expect(KindOfObstacle::NotOnThisStack->severity())->toBe(Severity::Warning);
+
+    // Each way a reach met nothing is something supposed to work that does not.
+    expect(KindOfObstacle::NameWasNotFound->severity())->toBe(Severity::Error);
+    expect(KindOfObstacle::NothingAtThePairedAddress->severity())->toBe(Severity::Error);
+    expect(KindOfObstacle::ConnectionWasTurnedAway->severity())->toBe(Severity::Error);
 });
 
 it('offers a button only where the app can press it', function (): void {
@@ -135,10 +152,20 @@ it('offers a button only where the app can press it', function (): void {
     expect(KindOfObstacle::MediaServerDidNotAnswer->standing())->toBe(Standing::Guided);
     expect(KindOfObstacle::AddressIsNotTheStacks->standing())->toBe(Standing::Actionable);
 
+    // Pairing again gives the phone the name or address the machine answers
+    // at now; starting lemonfiber happens on the machine.
+    expect(KindOfObstacle::NameWasNotFound->standing())->toBe(Standing::Actionable);
+    expect(KindOfObstacle::NothingAtThePairedAddress->standing())->toBe(Standing::Actionable);
+    expect(KindOfObstacle::ConnectionWasTurnedAway->standing())->toBe(Standing::Guided);
+
     // Updating either side, and waiting for other work, happen where this
     // app cannot act.
     expect(KindOfObstacle::VersionsDisagree->standing())->toBe(Standing::Guided);
     expect(KindOfObstacle::StackIsBusy->standing())->toBe(Standing::Guided);
+
+    // A stack too old for what was asked is updated from the app's own
+    // updates screen, so the remedy is a road there.
+    expect(KindOfObstacle::NotOnThisStack->standing())->toBe(Standing::Actionable);
 
     expect(KindOfObstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();
     expect(KindOfObstacle::StackDidNotAnswer->standing()->offersAButton())->toBeFalse();
@@ -225,4 +252,41 @@ it('puts only a refused local-network permission right in the app\'s settings', 
     expect($there)->toBe([KindOfObstacle::LocalNetworkIsNotPermitted])
         ->and(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)->isPutRightInTheAppsSettings())->toBeTrue()
         ->and(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->isPutRightInTheAppsSettings())->toBeFalse();
+});
+
+/** The kinds met on the way to the stack's address. */
+const MET_ON_THE_WAY = [
+    KindOfObstacle::StackDidNotAnswer,
+    KindOfObstacle::NameWasNotFound,
+    KindOfObstacle::NothingAtThePairedAddress,
+    KindOfObstacle::ConnectionWasTurnedAway,
+];
+
+it('says which kinds were met on the way to the stack\'s address', function (): void {
+    expect(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind->isMetOnTheWayToTheStack())))
+        ->toBe(MET_ON_THE_WAY);
+});
+
+it('carries the address tried only where it was met on the way to the stack', function (KindOfObstacle $kind): void {
+    $tried = Obstacle::of($kind)->whenTriedAt(Address::of('https://192.168.1.42:8443'))->whereItWasTried();
+
+    expect($tried)->toBe($kind->isMetOnTheWayToTheStack() ? 'https://192.168.1.42:8443' : '');
+})->with(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind !== KindOfObstacle::VersionsDisagree)));
+
+it('carries no address where none was tried', function (): void {
+    expect(Obstacle::of(KindOfObstacle::NothingAtThePairedAddress)->whereItWasTried())->toBe('');
+});
+
+it('tells a member in the household\'s words where it was met on the way to the stack, and as the operator is told everywhere else', function (KindOfObstacle $kind): void {
+    $met = Obstacle::of($kind);
+
+    expect($met->saidToTheHousehold())->toBe($kind->isMetOnTheWayToTheStack() ? sprintf('household.out_of_reach.%s', $kind->value) : $met->said())
+        ->and($met->remedyForTheHousehold())->toBe($kind->isMetOnTheWayToTheStack() ? sprintf('household.out_of_reach.%s_action', $kind->value) : $met->remedy());
+})->with(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind !== KindOfObstacle::VersionsDisagree)));
+
+it('keeps the remedy a disagreement over versions owes on a member\'s screen', function (): void {
+    $met = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 1, spoken: 2));
+
+    expect($met->remedyForTheHousehold())->toBe($met->remedy())
+        ->and($met->saidToTheHousehold())->toBe($met->said());
 });

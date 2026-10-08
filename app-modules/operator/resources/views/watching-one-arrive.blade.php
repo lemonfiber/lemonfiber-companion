@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToWalk')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -143,7 +144,7 @@
         @if ($this->answer()->record->suggestions !== [])
             <x-design::heading>{{ __('health.walkthrough.suggested') }}</x-design::heading>
             @forelse ($this->answer()->record->suggestions as $suggestion)
-                <x-design::link label="{{ __('health.walkthrough.walk_this', ['item' => $suggestion]) }}" tap="walkSuggested('{{ $loop->index }}')" />
+                <x-operator::offered-action label="{{ __('health.walkthrough.walk_this', ['item' => $suggestion]) }}" tap="walkSuggested('{{ $loop->index }}')" :offer="$this->offered(WhatToWalk::called($suggestion))" drawn="link" />
             @empty
                 <x-design::note>{{ __('health.walkthrough.nothing_suggested') }}</x-design::note>
             @endforelse
@@ -173,18 +174,18 @@
             />
             <x-design::note>{{ __('health.walkthrough.blank_picks') }}</x-design::note>
         </x-design::card>
-        <x-design::action label="{{ __('health.walkthrough.walk') }}" tap="walk()" />
+        <x-operator::offered-action label="{{ __('health.walkthrough.walk') }}" tap="walk()" :offer="$this->offered(WhatToWalk::called($this->looking))" />
     @endunless
 
     @if ($this->answer()->wasStarted)
-        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
     @endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

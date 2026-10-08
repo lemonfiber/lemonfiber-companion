@@ -8,6 +8,7 @@ use function array_key_exists;
 use function array_unique;
 use function array_values;
 use function count;
+use function in_array;
 use function mb_str_split;
 use function mb_strlen;
 use function mb_substr;
@@ -15,6 +16,8 @@ use function mb_substr;
 use Modules\Dx\Adapters\TheInstalledPackage;
 
 use function preg_match;
+use function preg_match_all;
+use function preg_replace_callback;
 use function sprintf;
 use function str_starts_with;
 use function trim;
@@ -55,26 +58,50 @@ final readonly class WhatTheContractDeclares
     private const string GENERATED = 'src/Generated';
 
     /**
-     * Where the generated envelopes are written.
-     *
-     * Public because the stand-in check reads the same directory for a
-     * different question — which envelope declares which kind — and a second
-     * spelling of the path would be a second thing to move the day the package
-     * is laid out differently, with only one of them raising when it was
-     * missed.
+     * The file under the generated tree that names every shape more than one
+     * kind carries, which an envelope imports rather than repeats.
      */
+    private const string SHARED = 'Shapes.php';
 
     /**
-     * The payload shape one envelope declares, as text.
+     * What a name stands for when spelling it out would never end.
      *
-     * The `@phpstan-type Data` line and nothing else, for the reason
-     * {@see \thePayloadShapeOf()} gives about the gap register: every docblock
-     * in that package quotes field names in prose, so anything wider reads an
+     * A shape that held itself would carry its own name inside its
+     * declaration, and following that name would never end. The level that is
+     * spelled out carries every field; below it the contract allows anything,
+     * which is what `mixed` says, and the word the package writes itself where
+     * one of its shapes would hold its own.
+     */
+    private const string ITSELF_AGAIN = 'mixed';
+
+    /**
+     * A quoted literal, or a name in a type: a word that starts in capitals and
+     * is not a field, because a field is followed by its colon.
+     */
+    private const string A_NAME_OR_A_LITERAL = '/\'[^\']*\'|\b[A-Z]\w*\b(?!\??:)/';
+
+    /**
+     * The payload shape one envelope declares, as text, with every name spelled out.
+     *
+     * The `@phpstan-type Data` line and nothing else: every docblock in that
+     * package quotes field names in prose, so anything wider reads an
      * explanation as a declaration.
+     *
+     * The package names a shape once and refers to it everywhere else — in
+     * `Shapes` for one more than one kind carries, beside the envelope for one
+     * only that kind carries — so the line says `Data StatusReport` and the
+     * fields are two hops away. Every reader of this answer walks brackets, and
+     * a name has none, so the names are replaced by what they stand for here,
+     * once, rather than taught to each reader.
      */
     public static function shapeOf(string $envelope): string
     {
-        return self::whatIsDeclared(sprintf('%s.php', $envelope), '/@phpstan-type\sData\s(.*)/');
+        $file = sprintf('%s.php', $envelope);
+
+        return self::spelledOut(
+            self::whatIsDeclared($file, '/@phpstan-type\sData\s(.*)/'),
+            [...self::namedIn(self::SHARED), ...self::namedIn($file)],
+        );
     }
 
     /**
@@ -254,6 +281,19 @@ final readonly class WhatTheContractDeclares
     }
 
     /**
+     * The words of a type that are names, spelled out with what they stand for.
+     *
+     * A quoted literal is matched too, and handed back as it was, so that a
+     * capital inside one is never read as a name.
+     *
+     * @param  array<string, string>  $named
+     */
+    public static function spelledOut(string $type, array $named): string
+    {
+        return self::spelledOutBelow($type, $named, []);
+    }
+
+    /**
      * The one thing a pattern picks out of a file under the generated tree.
      *
      * An envelope this repository does not vendor answers with nothing rather
@@ -265,6 +305,55 @@ final readonly class WhatTheContractDeclares
         preg_match($pattern, self::whatIsWrittenIn($file), $said);
 
         return array_key_exists(1, $said) ? trim($said[1]) : '';
+    }
+
+    /**
+     * Every shape one file under the generated tree names, by its name.
+     *
+     * @return array<string, string>
+     */
+    private static function namedIn(string $file): array
+    {
+        preg_match_all('/@phpstan-type\s(\w+)\s(.*)/', self::whatIsWrittenIn($file), $said, PREG_SET_ORDER);
+        $named = [];
+
+        foreach ($said as [, $name, $type]) {
+            $named[$name] = trim($type);
+        }
+
+        return $named;
+    }
+
+    /**
+     * {@see spelledOut()}, knowing which names are already being spelled out above.
+     *
+     * @param  array<string, string>  $named
+     * @param  list<string>  $within
+     */
+    private static function spelledOutBelow(string $type, array $named, array $within): string
+    {
+        return (string) preg_replace_callback(
+            self::A_NAME_OR_A_LITERAL,
+            static fn(array $word): string => self::whatItStandsFor($word[0], $named, $within),
+            $type,
+        );
+    }
+
+    /**
+     * One word of a type, spelled out where it is a name this envelope knows.
+     *
+     * @param  array<string, string>  $named
+     * @param  list<string>  $within
+     */
+    private static function whatItStandsFor(string $word, array $named, array $within): string
+    {
+        if (! array_key_exists($word, $named)) {
+            return $word;
+        }
+
+        return in_array($word, $within, strict: true)
+            ? self::ITSELF_AGAIN
+            : self::spelledOutBelow($named[$word], $named, [...$within, $word]);
     }
 
     /**

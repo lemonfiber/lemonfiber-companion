@@ -237,14 +237,41 @@ it('says an address the stack does not listen on is refused, and offers pairing 
         ->and($screen->mayPairAgain())->toBeTrue();
 });
 
-it('offers pairing again where the stack answered as some other machine or at some other address, and nowhere else', function (): void {
+it('offers pairing again where the stack answered as some other machine or at some other address, or was not found where it was paired, and nowhere else', function (): void {
+    $pairedAgain = [
+        HowTheSignInWent::TheMachineIsNotTheOnePaired,
+        HowTheSignInWent::TheAddressIsNotTheStacks,
+        HowTheSignInWent::NameWasNotFound,
+        HowTheSignInWent::NothingAtThePairedAddress,
+    ];
+
     foreach (HowTheSignInWent::cases() as $went) {
-        expect($went->asksForAnotherPairing())->toBe(
-            $went === HowTheSignInWent::TheMachineIsNotTheOnePaired || $went === HowTheSignInWent::TheAddressIsNotTheStacks,
-            $went->value,
-        );
+        expect($went->asksForAnotherPairing())->toBe(in_array($went, $pairedAgain, strict: true), $went->value);
     }
 });
+
+it('gives each way nothing answered its own state, sentence and remedy, with no address in either', function (KindOfObstacle $met, HowTheSignInWent $went, bool $offersTheWayBack): void {
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of($met)->whenTriedAt(aStackToSignInto()->at()))),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->went())->toBe($went)
+        ->and($screen->went()->said())->toBe($met->said())
+        ->and(__($screen->went()->said()))->not->toBe($screen->went()->said())
+        ->and(__($screen->went()->remedy()))->not->toBe($screen->went()->remedy())
+        ->and($screen->mayTry())->toBeFalse()
+        ->and($screen->mayStartOver())->toBe($offersTheWayBack)
+        ->and($screen->mayPairAgain())->toBe(! $offersTheWayBack);
+    // Members sign in on this screen too, and an address reaches no member.
+    expect(implode("\n", WhatTheDeviceWouldDraw::by($screen)->said()))->not->toContain('192.168.1.42');
+})->with([
+    'a name found nowhere' => [KindOfObstacle::NameWasNotFound, HowTheSignInWent::NameWasNotFound, false],
+    'nothing at the address' => [KindOfObstacle::NothingAtThePairedAddress, HowTheSignInWent::NothingAtThePairedAddress, false],
+    'a connection turned away' => [KindOfObstacle::ConnectionWasTurnedAway, HowTheSignInWent::ConnectionWasTurnedAway, true],
+]);
 
 it('a network the app is not allowed onto is not a stack that is off', function (): void {
     // The requirement says *distinct*, and this screen used to fold the two
@@ -325,6 +352,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::ThePairWasRefused, true, false],
         [HowTheSignInWent::TooManyAttempts, false, true],
         [HowTheSignInWent::StackDidNotAnswer, false, true],
+        [HowTheSignInWent::ConnectionWasTurnedAway, false, true],
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
         // No field and no way back: the remedy is in the phone's settings, so
@@ -333,6 +361,8 @@ it('offers the password field only where typing one could help', function (): vo
         // No field and no way back either: its button is pairing it again.
         [HowTheSignInWent::TheMachineIsNotTheOnePaired, false, false],
         [HowTheSignInWent::TheAddressIsNotTheStacks, false, false],
+        [HowTheSignInWent::NameWasNotFound, false, false],
+        [HowTheSignInWent::NothingAtThePairedAddress, false, false],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));

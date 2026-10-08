@@ -8,7 +8,7 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\SaysWhereItSits;
 
 /**
- * What the wire calls each field of the `bundle` envelope that no other envelope this module reads carries, and the `support` action's arguments.
+ * What the wire calls each field of the `bundle` envelope that no other envelope this module reads carries.
  *
  * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
  * carries; this holds the rest of this one's.
@@ -32,7 +32,7 @@ enum BundleField: string implements NamesAWireField
     /** How much of each service's logs it takes, in the stack's words. */
     case Window = 'window';
 
-    /** Whether media filenames are shown: stated in the terms, and asked for on the action. */
+    /** Whether media filenames are shown, as the terms state it. */
     case Filenames = 'filenames';
 
     /** The settings it shows as they are, by name. */
@@ -43,10 +43,4 @@ enum BundleField: string implements NamesAWireField
 
     /** Where it would be written, on a run that only described it. */
     case WouldGo = 'would_go';
-
-    /** Whether to write the bundle, rather than say what one would hold. */
-    case Write = 'write';
-
-    /** The settings to show as they are, named as the bundle names them. */
-    case Reveal = 'reveal';
 }

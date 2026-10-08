@@ -16,13 +16,15 @@ use Tests\Support\Template;
 // rather than left to be rediscovered.
 //
 //
-// A session, a credential and a stack's address are the three values, and the
-// one destination each has is never a screen.
+// A session, a credential and a stack's address are the three values, and no
+// template reads any of them.
 //
-// Each of the three publishes exactly one accessor, named for where its value
-// goes: a session goes in a header, a credential goes to the exchange, an
-// address goes to the client. `AValueWithOneDestinationTest` holds them to
-// publishing only that one. What it cannot see is who *calls* it.
+// Each of the three publishes an accessor named for where its value goes: a
+// session goes in a header, a credential goes to the exchange, an address goes
+// to the client. An address also goes to the operator's screen that says it was
+// not reached, and even that screen reaches it through the obstacle rather than
+// calling the accessor from a template. `AValueWithOneDestinationTest` holds
+// them to publishing only those. What it cannot see is who *calls* them.
 //
 // A template is where that matters and is the one place nothing else looks.
 // PHPStan does not read Blade; the architecture rules reflect over classes and a
@@ -50,12 +52,12 @@ foreach ($templates as $template) {
     it(sprintf('%s reads nothing that has one destination', $template->path), function () use ($template): void {
         $reached = [];
 
-        foreach (OneDestination::all() as [$type, $accessor, $rule, $why]) {
-            if (! str_contains($template->source, sprintf('%s(', $accessor))) {
-                continue;
+        foreach (OneDestination::all() as [$type, $accessors, $rule, $why]) {
+            foreach ($accessors as $accessor) {
+                if (str_contains($template->source, sprintf('%s(', $accessor))) {
+                    $reached[] = sprintf('%s calls %s::%s() — %s: %s', $template->path, $type, $accessor, $rule, $why);
+                }
             }
-
-            $reached[] = sprintf('%s calls %s::%s() — %s: %s', $template->path, $type, $accessor, $rule, $why);
         }
 
         expect($reached)->toBe([], sprintf(

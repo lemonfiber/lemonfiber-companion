@@ -1,0 +1,69 @@
+A chip is one choice to a screen reader.
+
+On Android a filter chip was three nodes: an unnamed, checkable outer node, a
+named node inside it, and the label's text with an empty checkbox beside it.
+Material draws a filter chip as a checkbox, and every chip here picks one choice
+of a row. A chip is said as one control on the node a finger chooses: its label
+and hint are its name, its role is a radio button, its selected state is said,
+a tap through the accessibility layer chooses it the way a finger does, and
+nothing under it is said, Material's checkbox included.
+
+On iOS a chip was already one button with the system's selected trait. The
+package's own "Selected" or "Not selected" after it, in English whatever the
+phone speaks, said the state twice and is left out.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt
+@@ -17,6 +17,9 @@
+ import com.nativephp.mobile.ui.MaterialIcon
+ import com.nativephp.mobile.ui.nativerender.NativeUIBridge
+ import com.nativephp.mobile.ui.nativerender.NativeUINode
++import com.nativephp.mobile.ui.nativerender.saidAsAControl
++import androidx.compose.ui.semantics.Role
++import androidx.compose.ui.semantics.selected
+ import com.nativephp.plugins.native_ui.NativeUITheme
+ 
+ /**
+@@ -65,11 +68,7 @@
+             selectedBorderColor = theme.primary,
+         )
+ 
+-        val chipModifier = modifier.nuiA11y(a11yLabel, a11yHint)
+-
+-        FilterChip(
+-            selected = isSelected,
+-            onClick = {
++        val chosen: () -> Unit = {
+                 if (onPressCb != 0) {
+                     // Server-driven: the press handler owns selection. Toggling
+                     // locally would make the chip fight the state it is handed
+@@ -83,7 +82,18 @@
+                         NativeUIBridge.sendToggleChangeEvent(onChangeCb, node.id, new)
+                     }
+                 }
+-            },
++        }
++        val chipModifier = modifier.saidAsAControl(
++            listOf(a11yLabel.ifEmpty { label }, a11yHint).filter { it.isNotEmpty() }.joinToString(". "),
++            Role.RadioButton,
++            pressable = !disabled,
++            state = { selected = isSelected },
++            onPress = chosen,
++        )
++
++        FilterChip(
++            selected = isSelected,
++            onClick = chosen,
+             label = { Text(label, fontFamily = nuiDefaultFontFamily()) },
+             modifier = chipModifier,
+             enabled = !disabled,
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIChipRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIChipRenderer.swift
+@@ -101,7 +101,6 @@
+             }
+         }
+         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+-        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+         .modifier(A11yLabelModifier(label: a11yLabel))
+         .modifier(A11yHintModifier(hint: a11yHint))
+     }

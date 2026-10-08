@@ -88,8 +88,8 @@
             @if ($mode->preselected)
                 <x-design::note>{{ __('stacks.already_here.preselected') }}</x-design::note>
             @endif
-            @if ($mode->askSaid !== '')
-                <x-design::action label="{{ __($mode->askSaid) }}" tap="wouldMoveIn('{{ $mode->mode }}')" tone="tonal" />
+            @if ($mode->by !== null)
+                <x-operator::offered-action label="{{ __($mode->askSaid) }}" tap="wouldMoveIn('{{ $mode->mode }}')" :offer="$this->offered($mode->by)" tone="tonal" />
             @endif
         </x-design::card>
     @empty
@@ -170,7 +170,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howTheMoveIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
         <x-operator::try-again :went="$this->howTheMoveIsGoing()->went" tap="tryAgain()" />
     @endif
@@ -178,13 +178,13 @@
     {{-- Looking again reads the survey, and asks after work still being
          followed. It is not a retry of anything the stack refused, and is
          named for what it does. --}}
-    <x-design::action label="{{ __('stacks.already_here.look_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('stacks.already_here.look_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

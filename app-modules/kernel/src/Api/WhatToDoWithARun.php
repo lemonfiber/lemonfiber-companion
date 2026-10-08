@@ -11,7 +11,7 @@ namespace Modules\Kernel\Api;
  * segment of its path, and a name spelled at the call site is this app able to
  * ask for any action a stack offers.
  */
-enum WhatToDoWithARun: string
+enum WhatToDoWithARun: string implements AnAction
 {
     /** Put the whole run back. */
     case PutBack = 'put_back';

@@ -352,7 +352,7 @@ it('asks for the walkthrough action, naming the item', function (): void {
 });
 
 it('names no item where none was typed, so the stack picks something likely to work', function (string $typed): void {
-    expect(whatAStartSent(WhatToWalk::called($typed))->body()?->all())->toBe([]);
+    expect(whatAStartSent(WhatToWalk::called($typed))->body()?->all())->toBe(['item' => null]);
 })->with(['nothing' => [''], 'only spaces' => ['   ']]);
 
 it('asks after the handle the start answered', function (): void {

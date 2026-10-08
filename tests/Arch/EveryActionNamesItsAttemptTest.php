@@ -27,7 +27,7 @@ function sendsWithoutAKey(string $source): array
     $unnamed = [];
 
     for ($at = 1, $last = count($tokens) - 1; $at < $last; $at++) {
-        $wants = ['act' => 3, 'repair' => 2][$tokens[$at]->text] ?? 0;
+        $wants = ['act' => 2, 'repair' => 2][$tokens[$at]->text] ?? 0;
         $isACall = $tokens[$at - 1]->text === '->' && $tokens[$at + 1]->text === '(';
         $given = $isACall ? argumentsAfter($tokens, $at + 1) : 0;
 
@@ -101,12 +101,12 @@ it('has every action name the attempt it is part of', function (): void {
 it('finds an action that names no attempt however its call is laid out', function (): void {
     // The judgement, handed each shape. A rule that read only one layout would
     // pass a call written the other way, which is how the seven went unseen.
-    expect(sendsWithoutAKey('<?php $client->act($endpoint, [1, 2]);'))->toBe([1])
-        ->and(sendsWithoutAKey("<?php \$client->act(\n    \$endpoint,\n    ['a' => f(1, 2)],\n);"))->toBe([1])
-        ->and(sendsWithoutAKey('<?php $client->act($endpoint);'))->toBe([1])
+    expect(sendsWithoutAKey('<?php $client->act(new UpAction(forms: [1, 2]));'))->toBe([1])
+        ->and(sendsWithoutAKey("<?php \$client->act(\n    new UpAction(\n        forms: [f(1, 2)],\n    ),\n);"))->toBe([1])
+        ->and(sendsWithoutAKey('<?php $client->act($action);'))->toBe([1])
         ->and(sendsWithoutAKey('<?php $client->repair(Asking::offer());'))->toBe([1])
-        ->and(sendsWithoutAKey('<?php $client->act($endpoint, [], $key);'))->toBe([])
-        ->and(sendsWithoutAKey("<?php \$client->act(\n    \$endpoint,\n    [],\n    \$key,\n);"))->toBe([])
+        ->and(sendsWithoutAKey('<?php $client->act(new UpAction(forms: [1, 2]), $key);'))->toBe([])
+        ->and(sendsWithoutAKey("<?php \$client->act(\n    new UpAction(\n        forms: [],\n    ),\n    \$key,\n);"))->toBe([])
         ->and(sendsWithoutAKey('<?php $client->repair($asked, $key);'))->toBe([])
         ->and(sendsWithoutAKey('<?php $confirmed->repair()->answers();'))->toBe([])
         ->and(sendsWithoutAKey('<?php function act($a) {} act(1);'))->toBe([]);

@@ -167,6 +167,31 @@ it('a stack that could not be asked names no version', function (): void {
         ->and($answer->changes)->toBe([]);
 });
 
+it('shows the operator the address a stack that met nothing was tried at, beside the sentence', function (KindOfObstacle $met): void {
+    // The one screen an address is drawn on. A stale or wrong address is what
+    // a reach that met nothing often is, and the operator cannot see that
+    // without seeing it.
+    $at = theStackWhoseVersionsAreRead()->at();
+    $drawn = WhatTheDeviceWouldDraw::by(theVersionsScreen(AStackThatNamesItsVersions::met(Obstacle::of($met)->whenTriedAt($at))))->said();
+
+    expect($drawn)->toContain(__($met->said()))
+        ->and($drawn)->toContain(__('connection.tried_at', ['address' => 'https://192.168.1.42:8443']));
+})->with([
+    'no answer' => [KindOfObstacle::StackDidNotAnswer],
+    'a name found nowhere' => [KindOfObstacle::NameWasNotFound],
+    'nothing at the address' => [KindOfObstacle::NothingAtThePairedAddress],
+    'a connection turned away' => [KindOfObstacle::ConnectionWasTurnedAway],
+]);
+
+it('draws no address where the stack was reached, or the phone stood in the way', function (Obstacle $met): void {
+    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theVersionsScreen(AStackThatNamesItsVersions::met($met)))->said());
+
+    expect($drawn)->not->toContain('192.168.1.42');
+})->with([
+    'the phone has no network' => [Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)->whenTriedAt(Address::of('https://192.168.1.42:8443'))],
+    'other work holds the stack' => [Obstacle::of(KindOfObstacle::StackIsBusy)->whenTriedAt(Address::of('https://192.168.1.42:8443'))],
+]);
+
 it('a session that has ended asks nothing', function (): void {
     $reading = AStackThatNamesItsVersions::with(versionsWithTheirNotes());
     $answer = theVersionsScreen($reading, signedIn: false)->answer();

@@ -91,7 +91,7 @@ it('asks what putting a copy back would do by naming it, under a key of its own'
     // No yes: without it the stack reads the copy and changes nothing. The
     // key is there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/restore')
-        ->and($sent->body()?->all())->toBe(['archive' => 'lemonfiber-20260924-0300-full'])
+        ->and($sent->body()?->all())->toBe(['archive' => 'lemonfiber-20260924-0300-full', 'repoint' => false, 'offer' => null, 'confirm' => false])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
@@ -106,9 +106,9 @@ it('puts the copy back against the listing it was shown, re-pointing only where 
     expect($sent->getUrl())->toEndWith('/api/actions/restore')
         ->and($sent->body()?->all())->toBe([
             'archive' => 'lemonfiber-20260924-0300-full',
-            'confirm' => true,
-            'offer' => 'restore-the-whole-stack-0.9.0',
             'repoint' => $repoint,
+            'offer' => 'restore-the-whole-stack-0.9.0',
+            'confirm' => true,
         ])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBe(SequencedEntropy::counting()->nonce()->shown());
 })->with([

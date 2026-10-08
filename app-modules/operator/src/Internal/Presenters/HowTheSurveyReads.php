@@ -116,18 +116,21 @@ final readonly class HowTheSurveyReads
      */
     private function mode(AMode $mode): AModeAsShown
     {
+        $by = MovingInBy::tryFrom($mode->mode());
+
         return new AModeAsShown(
             mode: $mode->mode(),
             what: $mode->what(),
             disturbsSaid: $mode->disturbs() ? 'stacks.already_here.disturbs' : 'stacks.already_here.disturbs_nothing',
             preselected: $mode->isPreselected(),
-            askSaid: match (MovingInBy::tryFrom($mode->mode())) {
+            askSaid: match ($by) {
                 MovingInBy::Adopting => 'stacks.moving_in.ask.adopt',
                 MovingInBy::Importing => 'stacks.moving_in.ask.import',
                 MovingInBy::StandingBeside => 'stacks.moving_in.ask.beside',
                 MovingInBy::Replacing => 'stacks.moving_in.ask.replace',
                 null => '',
             },
+            by: $by,
         );
     }
 

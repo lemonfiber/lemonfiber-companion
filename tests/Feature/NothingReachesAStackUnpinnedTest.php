@@ -136,6 +136,12 @@ const MAY_NAME_A_CLIENT = [
         . 'nothing. It asks `PinnedClients` for a client, which is therefore pinned before it '
         . 'arrives, and hands it straight on; what it adds is asking the phone why a stack was '
         . 'silent, which opens no connection to a stack.',
+    'app-modules/sdk/src/Api/ClientsThatAskWhatIsOffered.php' => 'ADR-0018, N1-R20 — it builds '
+        . 'nothing. It asks the clients it is put in front of for a client, which is therefore '
+        . 'pinned before it arrives, and hands it on once the stack has said it serves the path.',
+    'app-modules/sdk/src/Internal/WhatEachStackOffers.php' => 'ADR-0018, N1-R20 — it builds '
+        . 'nothing. It is handed a client the gate was given, so pinned before it arrives, and '
+        . 'reads the one declaration through it.',
     'app-modules/dx/src/Api/ClientsThatReachNothing.php' => 'ADR-0018, N1-R20, Q-R72 — it '
         . 'builds nothing. It asks `PinnedClients` for a client, which is therefore pinned '
         . 'before it arrives, and attaches a mock to the connector so no request reaches a '

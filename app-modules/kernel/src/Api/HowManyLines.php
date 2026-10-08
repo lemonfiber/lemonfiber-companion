@@ -40,6 +40,7 @@ final readonly class HowManyLines
      */
     public const int ON_A_PHONE = 200;
 
+    /** @param positive-int $lines */
     private function __construct(private int $lines) {}
 
     /** A window of this many lines. */
@@ -58,7 +59,11 @@ final readonly class HowManyLines
         return new self(self::ON_A_PHONE);
     }
 
-    /** The figure, for asking with and for saying on the screen. */
+    /**
+     * The figure, for asking with and for saying on the screen.
+     *
+     * @return positive-int
+     */
     public function figure(): int
     {
         return $this->lines;

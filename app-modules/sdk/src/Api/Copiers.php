@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\BackupAction;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
@@ -25,7 +25,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -46,11 +46,10 @@ final readonly class Copiers implements TakingCopies
 
     public function take(Stack $stack, Session $session, ACopyAsked $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoWithACopy::Take->asked()),
                 $this->narrowing($asked),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
@@ -58,7 +57,7 @@ final readonly class Copiers implements TakingCopies
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -76,19 +75,17 @@ final readonly class Copiers implements TakingCopies
 
     /**
      * The one argument asking takes: the service a copy is narrowed to, and
-     * nothing for the whole stack.
-     *
-     * @return array<string, string>
+     * none for the whole stack.
      */
-    private function narrowing(ACopyAsked $asked): array
+    private function narrowing(ACopyAsked $asked): BackupAction
     {
-        $named = '';
+        $named = null;
 
         foreach ($asked->narrowedTo() as $service) {
             $named = $service->named();
         }
 
-        return $named === '' ? [] : [WireField::Service->value => $named];
+        return new BackupAction(service: $named);
     }
 
     /**
@@ -98,7 +95,7 @@ final readonly class Copiers implements TakingCopies
     private function outcome(Stack $stack, Session $session, Job $job): HowTheCopyIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheCopyIsGoing => HowTheCopyIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheCopyIsGoing
                     => HowTheCopyIsGoing::done(TheCopyTaken::in($envelope)),

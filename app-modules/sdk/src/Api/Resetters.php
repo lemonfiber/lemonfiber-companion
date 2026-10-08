@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\ResetAction;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARevertCannotBeShown;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
@@ -25,8 +25,7 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatToChange;
-use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -58,34 +57,32 @@ final readonly class Resetters implements ResettingTheConfiguration
 
     public function wouldRevert(Stack $stack, Session $session): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToChange::BackToItsOwn->asked()),
-                [UpdateField::Confirm->value => false],
+                new ResetAction(confirm: false),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function revert(Stack $stack, Session $session, AResetAgreed $agreed): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToChange::BackToItsOwn->asked()),
-                [UpdateField::Confirm->value => true],
+                new ResetAction(confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -113,7 +110,7 @@ final readonly class Resetters implements ResettingTheConfiguration
     private function outcome(Stack $stack, Session $session, Job $job): HowTheResetIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheResetIsGoing => HowTheResetIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheResetIsGoing
                     => HowTheResetIsGoing::done(WhatAResetReverts::in($envelope)),

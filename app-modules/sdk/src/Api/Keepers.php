@@ -11,7 +11,10 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\HostingInstallAction;
+use Lemonfiber\Sdk\Generated\HostingRemoveAction;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowTheHandoverWent;
@@ -20,6 +23,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatKeepsRunning;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -67,7 +71,7 @@ final readonly class Keepers implements Hosting
 
     public function keptRunningOn(Stack $stack, Session $session): WhatKeepsRunning
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::HOSTING_ENDPOINT);
@@ -80,29 +84,28 @@ final readonly class Keepers implements Hosting
             return WhatKeepsRunning::keeps(Hosts::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatKeepsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
             return WhatKeepsRunning::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     public function handOver(Stack $stack, Session $session, HostingAgreed $agreed): HowTheHandoverWent
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action($agreed->doing()->asked()),
-                // Spelled here rather than through a field enum: `kept` is a
-                // word this app sends and never reads back, and the enums
-                // under `Fields` hold the words a reader reaches for.
-                ['kept' => $agreed->named()],
+                match ($agreed->doing()) {
+                    HandingOver::Install => new HostingInstallAction(kept: $agreed->named()),
+                    HandingOver::Remove => new HostingRemoveAction(kept: $agreed->named()),
+                },
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return HowTheHandoverWent::did(Handovers::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedWith($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HostingIsUnreadable $why) {
             return HowTheHandoverWent::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

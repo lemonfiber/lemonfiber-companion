@@ -8,7 +8,7 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\SaysWhereItSits;
 
 /**
- * What the wire calls each field of the `invitation` envelope, and each argument of the actions answering with one, that no other envelope this module reads carries.
+ * What the wire calls each field of the `invitation` envelope that no other envelope this module reads carries.
  *
  * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
  * carries; this holds the rest of this one's.
@@ -26,17 +26,14 @@ enum InvitationField: string implements NamesAWireField
     /** What a limit is and what it is not, in the stack's words. */
     case Filtering = 'filtering';
 
-    /** The libraries an invited member may open; on the way out, the ones asked for. */
+    /** The libraries an invited member may open. */
     case Libraries = 'libraries';
 
     /** Whether the request service was held to the same decision. */
     case Requesting = 'requesting';
 
-    /** What becomes of material with no rating; on the way out, `block` or `allow`. */
+    /** What becomes of material with no rating: `block` or `allow`. */
     case Unrated = 'unrated';
-
-    /** The age above which the media server holds things back, as an invitation is asked for. */
-    case AgeLimit = 'age_limit';
 
     /** Resets that lapsed, switched off on the way past and kept, by account name. */
     case Suspended = 'suspended';

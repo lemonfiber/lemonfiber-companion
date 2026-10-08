@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
@@ -12,6 +11,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\RefusalCode;
+use Lemonfiber\Sdk\Generated\WiringFillAction;
 use Modules\Kernel\Api\AFillAgreed;
 use Modules\Kernel\Api\AFillTurnedDown;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -25,10 +25,8 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
-use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
-use Modules\Sdk\Api\Fields\LifecycleField;
-use Modules\Sdk\Api\Fields\RestoreField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -37,8 +35,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * **One action, two calls, and the difference is the `offer`.** The core
  * reads `wiring-fill` without one as the reading — the whole choice worked
  * out, with the name it goes by, and nothing written — and with that name as
- * the choice made, where the reading worked out again still agrees. The
- * reading is also sent as a rehearsal, so nothing about it can write. Both
+ * the choice made, where the reading worked out again still agrees. Both
  * answer at once with the `substitution` envelope.
  *
  * **A refusal the stack names for a choice is read by its code**, never by
@@ -54,37 +51,30 @@ final readonly class Fillers implements ChoosingAFiller
 
     public function whatItWouldComeTo(Stack $stack, Session $session, Capability $capability, ServiceId $service): WhatBecameOfTheFill
     {
-        return $this->asking($stack, $session, [
-            WireField::Capability->value => $capability->named(),
-            WireField::Service->value => $service->named(),
-            LifecycleField::DryRun->value => true,
-        ]);
+        return $this->asking($stack, $session, new WiringFillAction(
+            service: $service->named(),
+            capability: $capability->named(),
+        ));
     }
 
     public function choose(Stack $stack, Session $session, AFillAgreed $agreed): WhatBecameOfTheFill
     {
-        $asked = [
-            WireField::Capability->value => $agreed->capability()->named(),
-            WireField::Service->value => $agreed->service()->named(),
-            RestoreField::Offer->value => $agreed->offer(),
-        ];
-
         // A blank reason is none, and the stack is not handed an empty one.
-        return $this->asking($stack, $session, $agreed->reason() === '' ? $asked : [...$asked, WireField::Reason->value => $agreed->reason()]);
+        return $this->asking($stack, $session, new WiringFillAction(
+            service: $agreed->service()->named(),
+            offer: $agreed->offer(),
+            reason: $agreed->reason() === '' ? null : $agreed->reason(),
+            capability: $agreed->capability()->named(),
+        ));
     }
 
-    /**
-     * The one call both methods make.
-     *
-     * @param array<string, bool|string> $asked
-     */
-    private function asking(Stack $stack, Session $session, array $asked): WhatBecameOfTheFill
+    /** The one call both methods make. */
+    private function asking(Stack $stack, Session $session, WiringFillAction $asked): WhatBecameOfTheFill
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoAboutWiring::Fill->asked()),
                 $asked,
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
@@ -95,7 +85,7 @@ final readonly class Fillers implements ChoosingAFiller
             return WhatBecameOfTheFill::fill(Substitutions::fillIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refused($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SubstitutionIsUnreadable|FillSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SubstitutionIsUnreadable|FillSaysNothing $why) {
             return WhatBecameOfTheFill::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

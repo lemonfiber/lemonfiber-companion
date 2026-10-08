@@ -1,0 +1,11 @@
+The bundled faces are licensed under the SIL Open Font License, which lets them
+ship inside the app on condition that each copy carries the licence. So the
+licence beside each family in `resources/fonts` is copied into each platform's
+bundle with the faces. The renderers look a face up by the extensions they
+know, so a licence is never taken for one.
+
+--- a/vendor/nativephp/mobile-ui/src/Console/CopyFontsCommand.php
++++ b/vendor/nativephp/mobile-ui/src/Console/CopyFontsCommand.php
+@@ -31 +31 @@
+-    protected array $fontExtensions = ['ttf', 'otf', 'ttc'];
++    protected array $fontExtensions = ['ttf', 'otf', 'ttc', 'txt'];

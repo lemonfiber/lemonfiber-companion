@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\HandingOver')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -10,7 +11,7 @@
     <x-design::title>{{ __($this->asking->doing()->askedOnTheScreen(), ['name' => $this->asking->named()]) }}</x-design::title>
     <x-design::body>{{ __($this->asking->doing()->meansOnTheScreen()) }}</x-design::body>
 
-    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-operator::offered-action label="{{ __('health.go_ahead') }}" tap="agree()" :offer="$this->offered($this->asking->doing())" />
     <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
 @else
     <x-design::title>{{ __('stacks.what_keeps_running') }}</x-design::title>
@@ -118,14 +119,16 @@
                      only a question until the operator says yes. A machine
                      with no manager draws neither: the stack has said it cannot
                      do this there. --}}
-                <x-design::action
+                <x-operator::offered-action
                     label="{{ __('stacks.handing_over.install', ['name' => $command->name]) }}"
                     tap="wouldInstall('{{ $command->name }}')"
+                    :offer="$this->offered(HandingOver::Install)"
                     tone="tonal"
                 />
-                <x-design::action
+                <x-operator::offered-action
                     label="{{ __('stacks.handing_over.remove', ['name' => $command->name]) }}"
                     tap="wouldRemove('{{ $command->name }}')"
+                    :offer="$this->offered(HandingOver::Remove)"
                     tone="tonal"
                 />
             @endif
@@ -144,7 +147,7 @@
          left and returned to. On both arms rather than the obstacle one, for
          the stuck screen's reason: somebody who has just started something at
          the machine is looking at a screen they want to ask again. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 
     {{-- A guard held by a screen of this app, apart from everything above:
          it outlives nothing, and it is never one of the hosted rows. --}}
@@ -156,7 +159,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

@@ -12,7 +12,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->answer()->askedNow"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                :goes="$this->goes()"
             />
         @endif
         <x-operator::stamp>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-operator::stamp>
@@ -120,18 +120,18 @@
 
     {{-- Words rather than a bar, because it is not the thing this frame wants
          anybody to do. The rows are. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 
 @if ($this->waitsForTheNextFrame())
-    <x-operator::the-next-frame />
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

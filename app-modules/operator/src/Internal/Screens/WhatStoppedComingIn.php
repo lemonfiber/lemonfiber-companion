@@ -26,6 +26,7 @@ use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -71,6 +72,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatStoppedComingIn extends NativeComponent
 {
+    use AsksTheStackAgain;
     use LooksAgainWhileItMoves;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

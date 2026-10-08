@@ -30,7 +30,6 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
 use RuntimeException;
@@ -217,9 +216,8 @@ it('a payload this side cannot read is an obstacle, not an exception', function 
 it('confirms the update and names no services the action would refuse', function (): void {
     // Unconfirmed, the stack's `update` action only says what would change, so
     // a yes that did not say `confirm` would start nothing. The action narrows
-    // to one `service` and refuses a `services` list, and confirmed with
-    // neither it moves every service it did not refuse — the ones the
-    // confirmation named.
+    // to one `service`, and confirmed with none it moves every service it did
+    // not refuse — the ones the confirmation named.
     MockClient::destroyGlobal();
     $mock = MockClient::global([aTakingWasStarted()]);
 
@@ -229,7 +227,7 @@ it('confirms the update and names no services the action would refuse', function
         theUpdateTheAdapterIsHanded(),
     );
 
-    expect(whatWasSentAgreeing($mock))->toBe([UpdateField::Confirm->value => true]);
+    expect(whatWasSentAgreeing($mock))->toBe(['wait' => false, 'service' => null, 'confirm' => true]);
 });
 
 it('carries the agreement through to the job the stack started', function (): void {

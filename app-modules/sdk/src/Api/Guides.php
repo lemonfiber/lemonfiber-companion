@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\WalkthroughAction;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -23,7 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
-use Modules\Sdk\Internal\WhatADecisionAsksWith;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -39,25 +39,24 @@ final readonly class Guides implements WalkingThrough
 
     public function walk(Stack $stack, Session $session, WhatToWalk $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             // The item where one was named and nothing where none was: the
             // stack reads a missing item as *suggest something likely to
             // work*, and says what it chose in the report.
             $envelope = $client->act(
-                Api::action($asked->asked()),
                 $asked->either(
-                    named: static fn(string $item): WhatADecisionAsksWith => new WhatADecisionAsksWith([WireField::Item->value => $item]),
-                    likeliest: static fn(): WhatADecisionAsksWith => new WhatADecisionAsksWith([]),
-                )->said,
+                    named: static fn(string $item): WalkthroughAction => new WalkthroughAction(item: $item),
+                    likeliest: static fn(): WalkthroughAction => new WalkthroughAction(),
+                ),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -84,7 +83,7 @@ final readonly class Guides implements WalkingThrough
     private function outcome(Stack $stack, Session $session, Job $job): HowTheWalkthroughIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheWalkthroughIsGoing => HowTheWalkthroughIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheWalkthroughIsGoing
                     => HowTheWalkthroughIsGoing::done(Walkthroughs::in($envelope)),

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasSaid;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -54,7 +55,7 @@ final readonly class Scrollbacks implements Saying
 
     public function saidBy(Stack $stack, Session $session, ServiceId $service, HowManyLines $lines): WhatWasSaid
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $window = $client->logs(Logs::ofService($service->named(), $lines->figure()));
@@ -66,7 +67,7 @@ final readonly class Scrollbacks implements Saying
             return WhatWasSaid::this(Lines::in($window));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasSaid::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ConfigurationProblem|LineIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ConfigurationProblem|LineIsUnreadable $why) {
             return WhatWasSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

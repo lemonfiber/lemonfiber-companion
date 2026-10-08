@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasMeasured;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -33,7 +34,7 @@ final readonly class Surveyors implements Measuring
 
     public function measuredOn(Stack $stack, Session $session): WhatWasMeasured
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::SPACE_ENDPOINT);
@@ -43,7 +44,7 @@ final readonly class Surveyors implements Measuring
             return WhatWasMeasured::measured(WhereTheRoomIs::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasMeasured::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SpaceIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SpaceIsUnreadable $why) {
             return WhatWasMeasured::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

@@ -1,0 +1,162 @@
+The bars' own buttons are one control each, and the screen is none.
+
+A screen reader landed first on an unnamed control the size of the window, on
+Home and on the menu: the root's click that puts the keyboard away. It is a tap
+gesture instead, which does the same and offers nothing to land on.
+
+The button that opens the menu was a clickable node with no name around a node
+named Menu, and the back arrows, the drawer's close button and an action in the
+top bar had the same shape. Each says its name, as a button, on the node that
+takes the press, and the glyph inside says nothing.
+
+Every control said this way, the markup's pressables and the tabs included,
+also says whether it holds the focus, so a switch, a keyboard and a screen
+reader all find it as focusable.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeNavRenderers.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeNavRenderers.kt
+@@ -13,6 +13,7 @@
+ import androidx.compose.runtime.*
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.semantics.Role
+ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.unit.dp
+ import com.nativephp.mobile.ui.MaterialIcon
+@@ -145,10 +146,10 @@
+             }
+ 
+             if (showCloseButton) {
+-                IconButton(onClick = { onCloseDrawer {} }) {
++                IconButton(onClick = { onCloseDrawer {} }, modifier = Modifier.saidAsAControl("Close drawer", Role.Button) { onCloseDrawer {} }) {
+                     MaterialIcon(
+                         name = "close",
+-                        contentDescription = "Close drawer",
++                        contentDescription = null,
+                         tint = MaterialTheme.colorScheme.onSurfaceVariant
+                     )
+                 }
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt
+@@ -46,6 +46,7 @@
+ import androidx.compose.runtime.snapshots.SnapshotStateList
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.semantics.Role
+ import androidx.compose.ui.draw.clip
+ import androidx.compose.ui.draw.scale
+ import androidx.compose.ui.graphics.Color
+@@ -221,7 +222,7 @@
+     }
+     val navIconContent: @Composable () -> Unit = {
+         if (showBack) {
+-            IconButton(onClick = {
++            val goBack: () -> Unit = {
+                 // Manual back chevron always defers to system back —
+                 // shrinks path if pushed, otherwise tells PHP.
+                 if (path.isNotEmpty()) {
+@@ -231,12 +232,13 @@
+                 } else {
+                     NativeElementBridge.sendSystemBackEvent()
+                 }
+-            }) {
++            }
++            IconButton(onClick = goBack, modifier = Modifier.saidAsAControl("Back", Role.Button, onPress = goBack)) {
+                 // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                 val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                 MaterialIcon(
+                     name = "arrow_back",
+-                    contentDescription = "Back",
++                    contentDescription = null,
+                     modifier = if (rtl) Modifier.scale(scaleX = -1f, scaleY = 1f) else Modifier
+                 )
+             }
+@@ -425,17 +427,18 @@
+     val subItems = action.children.filter { it.type == "top_bar_action" }
+ 
+     if (subItems.isEmpty()) {
+-        IconButton(onClick = {
++        val pressed: () -> Unit = {
+             if (action.onPress != 0) {
+                 NativeElementBridge.sendPressEvent(action.onPress, action.id)
+             }
+-        }) {
+-            MaterialIcon(name = icon, contentDescription = action.props.getString("label", ""))
++        }
++        IconButton(onClick = pressed, modifier = Modifier.saidAsAControl(action.props.getString("label", ""), Role.Button, onPress = pressed)) {
++            MaterialIcon(name = icon, contentDescription = null)
+         }
+     } else {
+         var expanded by remember { mutableStateOf(false) }
+-        IconButton(onClick = { expanded = true }) {
+-            MaterialIcon(name = icon, contentDescription = action.props.getString("label", ""))
++        IconButton(onClick = { expanded = true }, modifier = Modifier.saidAsAControl(action.props.getString("label", ""), Role.Button) { expanded = true }) {
++            MaterialIcon(name = icon, contentDescription = null)
+         }
+         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+             subItems.forEach { item ->
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -275,12 +275,15 @@
+                     },
+                     navigationIcon = {
+                         if (navBack) {
+-                            IconButton(onClick = { NativeElementBridge.sendSystemBackEvent() }) {
++                            IconButton(
++                                onClick = { NativeElementBridge.sendSystemBackEvent() },
++                                modifier = Modifier.saidAsAControl("Back", Role.Button) { NativeElementBridge.sendSystemBackEvent() },
++                            ) {
+                                 // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+                                 val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                                 MaterialIcon(
+                                     name = "arrow_back",
+-                                    contentDescription = "Back",
++                                    contentDescription = null,
+                                     modifier = if (rtl) Modifier.scale(scaleX = -1f, scaleY = 1f) else Modifier
+                                 )
+                             }
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeUIRenderer.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeUIRenderer.kt
+@@ -14,6 +14,8 @@
+ import androidx.compose.animation.slideOutVertically
+ import androidx.compose.animation.togetherWith
+ import androidx.compose.foundation.clickable
++import androidx.compose.foundation.gestures.detectTapGestures
++import androidx.compose.ui.input.pointer.pointerInput
+ import androidx.compose.foundation.interaction.MutableInteractionSource
+ import androidx.compose.foundation.layout.BoxWithConstraints
+ import androidx.compose.foundation.layout.fillMaxSize
+@@ -58,12 +60,9 @@
+         modifier = Modifier
+             .fillMaxSize()
+             .imePadding()
+-            .clickable(
+-                indication = null,
+-                interactionSource = remember { MutableInteractionSource() }
+-            ) {
++            .pointerInput(Unit) {
+                 // Tap outside any input dismisses keyboard
+-                focusManager.clearFocus()
++                detectTapGestures { focusManager.clearFocus() }
+             }
+     ) {
+         // Read safe area insets
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt
+@@ -23,6 +23,8 @@
+ import androidx.compose.runtime.rememberCoroutineScope
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.semantics.Role
++import com.nativephp.mobile.ui.nativerender.saidAsAControl
+ import androidx.compose.ui.unit.dp
+ import com.nativephp.mobile.ui.nativerender.NativeUINode
+ import com.nativephp.mobile.ui.nativerender.RenderNode
+@@ -94,6 +96,7 @@
+                         .align(Alignment.TopStart)
+                         .statusBarsPadding()
+                         .padding(start = 4.dp, top = 8.dp)
++                        .saidAsAControl(drawerNode.props.getString("a11y_label", "Open menu"), Role.Button) { scope.launch { drawerState.open() } }
+                 ) {
+                     Icon(Icons.Filled.Menu, contentDescription = null)
+                 }

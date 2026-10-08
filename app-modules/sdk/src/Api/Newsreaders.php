@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\VersionIsBlank;
 use Modules\Kernel\Api\WhatWasFoundOfTheNews;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -33,7 +34,7 @@ final readonly class Newsreaders implements ReadingNews
 
     public function newsOn(Stack $stack, Session $session): WhatWasFoundOfTheNews
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::NEWS_ENDPOINT);
@@ -43,7 +44,7 @@ final readonly class Newsreaders implements ReadingNews
             return WhatWasFoundOfTheNews::found(WhatIsListedAsNew::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheNews::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered|CheckIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered|CheckIsUnnamed $why) {
             return WhatWasFoundOfTheNews::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

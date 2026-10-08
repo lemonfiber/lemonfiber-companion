@@ -185,7 +185,7 @@ it('reads a reading nobody agreed to as described, and a removal as carried out'
         ->toBe('Anna|described|0|does not ask|nothing|');
 });
 
-it('sends the name alone for the cost and the name with a yes for the removal, each under a key of its own', function (): void {
+it('sends the name without a yes for the cost and with one for the removal, each under a key of its own', function (): void {
     $sent = [];
     MockClient::destroyGlobal();
     MockClient::global([
@@ -205,7 +205,7 @@ it('sends the name alone for the cost and the name with a yes for the removal, e
     $removing->remove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), ARemovalAgreed::after(whatTakingAnnaOutWouldCost()));
 
     expect($sent)->toBe([
-        ['/api/actions/remove', ['name' => 'anna'], true],
+        ['/api/actions/remove', ['name' => 'anna', 'confirm' => false], true],
         ['/api/actions/remove', ['name' => 'Anna', 'confirm' => true], true],
     ]);
 });

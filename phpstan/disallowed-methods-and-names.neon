@@ -1,0 +1,252 @@
+parameters:
+    disallowedStaticCalls:
+        # --- B1 ------------------------------------------------------------
+        -
+            method:
+                - 'Carbon\Carbon::now()'
+                - 'Carbon\CarbonImmutable::now()'
+                - 'Illuminate\Support\Carbon::now()'
+                - 'Carbon\Carbon::today()'
+                - 'Carbon\CarbonImmutable::today()'
+            message: "B1 — time arrives through the Clock port. Carbon::now() reads a global clock, and freezing it in a test changes global state that the next test inherits. Inject Modules\\Kernel\\Api\\Clock and hand a FrozenClock to the test instead (B1)."
+            allowIn:
+                - app-modules/device/src/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- B2 ------------------------------------------------------------
+        -
+            method:
+                - 'Illuminate\Support\Str::random()'
+                - 'Illuminate\Support\Str::uuid()'
+                - 'Illuminate\Support\Str::orderedUuid()'
+                - 'Illuminate\Support\Str::ulid()'
+                - 'Ramsey\Uuid\Uuid::uuid4()'
+                - 'Ramsey\Uuid\Uuid::uuid7()'
+                - 'Symfony\Component\Uid\Uuid::v4()'
+            message: "B2 — randomness arrives through the Entropy port. An id generated inline cannot be asserted on, and an IdempotencyKey that changes on every call is not an idempotency key. Inject Modules\\Kernel\\Api\\Entropy (B2)."
+            allowIn:
+                - app-modules/device/src/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- N4-R11 -------------------------------------------------------
+        #
+        # `Dialog::alert()` is the one call that raises an alert of the app's
+        # own: a modal the operator did not ask for, saying whatever the caller
+        # passed. N4-R11 refuses exactly that — every notification originates in
+        # the core's notification decisions, and `Notification` is the type that
+        # carries one, holding a `Code` the server declared and no prose at all.
+        #
+        # Scoped to `alert()` on purpose. `toast()` is in-app feedback on an
+        # action the operator just performed — "copied", "saved" — which is not
+        # an alert and which the requirement is not about. A rule that took the
+        # whole facade would be refusing a confirmation message under a
+        # requirement about notifications, and a rule that overreaches is a rule
+        # somebody switches off.
+        -
+            method:
+                - 'Native\Mobile\Facades\Dialog::alert()'
+            message: "N4-R11 — the app raises no alerts of its own. An alert here is a sentence this application wrote, shown to the operator as though the stack had said it. Every notification originates in the core's decisions: build a Modules\\Kernel\\Api\\Notification from the Code the server sent and let the translator supply the words (N4-R11, L1)."
+
+
+    disallowedNamespaces:
+        # --- A2: facades are global state wearing a class name --------------
+        -
+            class: 'Illuminate\Support\Facades\*'
+            # Storage has its own entry below: it is banned for being IO, in
+            # two more places than a facade is banned for being a facade.
+            # Schema has its own entry below too: it is the one facade a
+            # migration has, and a capability's own migration is allowed it.
+            exclude:
+                - 'Illuminate\Support\Facades\Storage'
+                - 'Illuminate\Support\Facades\Schema'
+            message: "A2 — no facades. A facade is a global lookup that no constructor mentions and no test can substitute without touching global state. Type the contract (Illuminate\\Contracts\\*) as a constructor parameter and bind it in bootstrap/Composition, or — inside a module — define a port in Modules\\Kernel\\Api and keep Illuminate out entirely (A2, A7)."
+            allowIn:
+                - bootstrap/Composition/*
+                - config/*
+                # routes/console.php is Artisan's own registration file: the
+                # facade there IS the composition, not a reach into one.
+                - routes/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- A2, for a migration: the schema is reached the one way it can be
+        #
+        # A migration is instantiated by the migrator and given nothing, so the
+        # schema builder reaches it through the facade or not at all. Allowed
+        # in a module's own migrations and wherever a facade already is.
+        -
+            class: 'Illuminate\Support\Facades\Schema'
+            message: "A2 — no facades. The Schema facade is how a migration reaches the schema builder, and a table is created only in its owning capability's own migrations, in app-modules/<owner>/database/migrations (A2, A10)."
+            allowIn:
+                - app-modules/*/database/migrations/*
+                - bootstrap/Composition/*
+                - config/*
+                - routes/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- A8: the platform's facades are facades too ---------------------
+        #
+        # A2 covers Illuminate, and the module kinds permit `Native` in design
+        # and surface modules — so this entry is what stops a screen calling
+        # SecureStorage::get() directly, bypassing the vault adapter, its port
+        # and every rule that makes a screen renderable off a device. The
+        # package ships sixteen of these; SecureStorage is the sharp one,
+        # because the session token lives there (N1-R23).
+        -
+            class: 'Native\Mobile\Facades\*'
+            message: "A8 — the platform is reached through a port, not a facade. Native\\Mobile\\Facades\\* is a static global lookup exactly as an Illuminate facade is: no constructor mentions it, no test can substitute it without touching global state, and a screen that calls one cannot be rendered off a device. Define the capability as a port in Modules\\Kernel\\Api and implement it once — app-modules/device/src for anything the platform owns, app-modules/vault/src for anything that must survive a restart. SecureStorage in particular is where the session token lives, and reaching it from a screen bypasses the one adapter that is allowed to hold it (A8, A2, N1-R23, N4-R5)."
+            allowIn:
+                - app-modules/device/src/*
+                - app-modules/vault/src/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- B3: Storage is the filesystem with a nicer name ----------------
+        -
+            class: 'Illuminate\Support\Facades\Storage'
+            message: "B3 — the filesystem belongs to an adapter. Storage writes to disk. Anything that must survive a restart on a phone belongs in the platform's secure storage via Modules\\Kernel\\Api\\SecureStore (app-modules/vault/src), never a file (N4-R5, B3)."
+            allowIn:
+                - app-modules/vault/src/*
+                - app-modules/device/src/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- P4: reflection is the analyser's blind spot ---------------------
+        -
+            class:
+                - 'Reflection*'
+                - 'ReflectionClass'
+                - 'ReflectionMethod'
+                - 'ReflectionProperty'
+            message: "P4 — production code does not reflect. Every rule in this repository depends on the analyser being able to see what a class does, and reflection is where that stops: a member reached by name is a member no rule can find. The tests are the exception and use it deliberately — the boundary rules ask PHP directly precisely because the analyser cannot be asked (P4)."
+            allowIn:
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+                - phpstan/*
+
+        # --- A3: the container, named directly ------------------------------
+        -
+            class:
+                - 'Illuminate\Container\*'
+                - 'Illuminate\Contracts\Container\Container'
+            message: "A3 — no service location. A class that reaches into the container hides what it needs. The composition root in bootstrap/Composition is the one place that is allowed to know how a port meets an adapter (A3)."
+            allowIn:
+                - bootstrap/Composition/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- B1: the clock, as a type ---------------------------------------
+        -
+            class:
+                - 'DateTime'
+                - 'DateTimeImmutable'
+            # A signature may still name the type; it is constructing one out of
+            # the ambient clock that is the problem.
+            allowInParamTypes: true
+            allowInReturnType: true
+            allowInUse: true
+            message: "B1 — time arrives through the Clock port. Constructing a DateTimeImmutable with no argument reads the system clock, which is the hidden input B1 exists to remove. Take an Instant from Modules\\Kernel\\Api\\Clock; the device adapter is the only place allowed to build one from the platform (B1)."
+            allowIn:
+                - app-modules/device/src/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+    disallowedSuperglobals:
+        # --- Q2: the runtime fills some of these in itself -------------------
+        -
+            superglobal:
+                - '$_GET'
+                - '$_POST'
+                - '$_REQUEST'
+                - '$_SERVER'
+                - '$_ENV'
+                - '$_COOKIE'
+                - '$_SESSION'
+                - '$_FILES'
+                - '$GLOBALS'
+            message: "Q2 — a module never reads a superglobal. This application answers nothing from the network, and the device runtime populates several of these itself while driving the application through the HTTP kernel — so what is in them describes the runtime's own plumbing rather than anything a screen should act on. $_ENV also routes around A5: configuration is read from config/, once (Q2, A5)."
+            allowIn:
+                - config/*
+                - bootstrap/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+    disallowedAttributes:
+        # --- P3: a property that exists only at runtime -----------------------
+        -
+            attribute: 'AllowDynamicProperties'
+            message: "P3 — a class's properties are declared. A dynamic property cannot be typed, cannot be found by any rule here, and turns a typo into a silent new field rather than an error (P3, A6)."
+
+    disallowedControlStructures:
+        # --- C5: `else`, which ergebnis's NoSwitchRule does not cover ---------
+        -
+            controlStructure:
+                - 'else'
+                - 'elseif'
+            message: "C5 — no `else`. Return from the condition that refuses and let the rest of the method carry on at one indent, so each guard states the one thing it rules out and the happy path reads top to bottom. Where the branches are both answers rather than a refusal and a path, that is a `match`, which is exhaustive and returns a value (C5)."
+
+    disallowedMethodCalls:
+        # --- N1-R21: verification is not turned off by a call either --------
+        #
+        # S3's rule reads array items, which catches `['verify' => false]` in
+        # every spelling an options array has. It cannot see a *call*, and the
+        # framework ships one: `Http::withoutVerifying()` is a single fluent
+        # method that does exactly what the array item does, reads as
+        # deliberate, and would have passed every gate in this repository.
+        #
+        # No `allowIn`. N1-R21 says verification must not be disabled in any
+        # build under any flag, and a test directory is a build — a fake that
+        # turns verification off is a fake of something this app cannot do, and
+        # the contract test that used it would be proving the wrong thing.
+        -
+            method:
+                - 'Illuminate\Http\Client\PendingRequest::withoutVerifying()'
+                - 'Illuminate\Http\Client\Factory::withoutVerifying()'
+            message: "N1-R21 — certificate verification is not turned off, in any build, under any flag. ADR-0018 pins a stack by a fingerprint from the pairing material rather than by a public authority, so this does not relax a check: it removes the only one there is, and leaves the pin being compared by code nothing reaches. If a certificate is being refused, the fingerprint is the thing to look at (N1-R21, S3)."
+
+        # --- C3: an exception that says nothing -----------------------------
+        #
+        # Matched on the constructor rather than on the class, so that naming
+        # the type still works: a module-owned exception may extend one of
+        # these, catch one, and name one in a signature. What it may not do is
+        # throw one, which is the only part that reaches a caller.
+        -
+            method:
+                - 'Exception::__construct()'
+                - 'RuntimeException::__construct()'
+                - 'LogicException::__construct()'
+                - 'InvalidArgumentException::__construct()'
+                - 'DomainException::__construct()'
+                - 'UnexpectedValueException::__construct()'
+                - 'ErrorException::__construct()'
+            # Everywhere that is not a module. Written as an allow-list rather
+            # than `allowExceptIn: [app-modules/*]` because `allowExceptIn`
+            # short-circuits every directive evaluated after it.
+            allowIn:
+                - bootstrap/Composition/*
+                - bootstrap/*
+                - config/*
+                - routes/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+            # A module-owned exception constructing itself is the cure, not the
+            # disease — and `new self(...)` inside a subclass of RuntimeException
+            # resolves to the parent's constructor. Ordinary module code is not
+            # a Throwable, so this widens nothing else.
+            allowInInstanceOf:
+                - 'Throwable'
+            message: "C3 — every thrown exception is module-owned. A bare throw tells a catch block nothing it can act on, and a module boundary should be returning an Outcome rather than throwing at all (C1). Where a throw is genuinely right, name it: an exception class owned by the module says which module refused, and why (C3)."

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheOriginsWere;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -37,7 +38,7 @@ final readonly class Archivists implements Provenance
 
     public function declaredOn(Stack $stack, Session $session): WhatTheOriginsWere
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::PROVENANCE_ENDPOINT);
@@ -47,7 +48,7 @@ final readonly class Archivists implements Provenance
             return WhatTheOriginsWere::origins(Origins::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheOriginsWere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ProvenanceIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ProvenanceIsUnreadable $why) {
             return WhatTheOriginsWere::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

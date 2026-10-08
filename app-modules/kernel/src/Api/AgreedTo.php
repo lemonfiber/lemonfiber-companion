@@ -47,9 +47,19 @@ final readonly class AgreedTo
         private ServiceId|Form $about,
     ) {}
 
-    /** The operator agreed to this, for one service. */
+    /**
+     * The operator agreed to this, for one service.
+     *
+     * A verb done only to a whole form is refused here, as
+     * {@see OnlyAFormIsFetched}, so no road to this value can ask the stack
+     * to fetch for one service.
+     */
     public static function theService(WhatToDoWithIt $doing, ServiceId $service): self
     {
+        if (! $doing->reachesAService()) {
+            throw OnlyAFormIsFetched::named($doing, $service);
+        }
+
         return new self($doing, $service);
     }
 

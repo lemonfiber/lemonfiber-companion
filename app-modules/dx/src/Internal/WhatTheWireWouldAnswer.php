@@ -20,11 +20,10 @@ use const JSON_THROW_ON_ERROR;
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Generated\RefusalCode;
+use Lemonfiber\Sdk\Generated\RestoreAction;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\WhatToChange;
-use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
-use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\WireField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -157,6 +156,9 @@ final readonly class WhatTheWireWouldAnswer
     /** The declaration a refusal is carried in. */
     private const string WHAT_A_REFUSAL_IS = 'ErrorEnvelope';
 
+    /** What a stack says it serves, which a stand-in says is everything. */
+    private const string WHAT_IT_SERVES = 'CapabilitiesEnvelope';
+
     /** The field a problem names the problem beneath it in. */
     private const string THE_PROBLEM_BENEATH = 'cause';
 
@@ -272,13 +274,21 @@ final readonly class WhatTheWireWouldAnswer
      * Whether this request is one a stack answers with its outcome rather than
      * with a name for the work: asking what putting a copy back would do, with
      * no yes.
+     *
+     * The yes is read off the arguments the action names as carrying one, so
+     * a rehearsal is a restore that carries none of them.
      */
     private static function answersAtOnce(PendingRequest $asked): bool
     {
+        $restoring = new RestoreAction();
         $body = $asked->body()?->all();
+        $said = is_array($body) ? $body : [];
+        $carried = array_filter(
+            $restoring->consent(),
+            static fn(string $yes): bool => array_key_exists($yes, $said) && $said[$yes] !== null && $said[$yes] !== false,
+        );
 
-        return $asked->getRequest()->resolveEndpoint() === Api::action(WhatToDoWithACopy::PutBack->asked())
-            && (!is_array($body) || !array_key_exists(UpdateField::Confirm->value, $body));
+        return $asked->getRequest()->resolveEndpoint() === $restoring->endpoint() && $carried === [];
     }
 
     /** Whether this request asks what stopping seeding would cost, or says yes to it. */
@@ -340,7 +350,7 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
-        // The four paths whose body is not one envelope built from the
+        // The paths whose body is not one envelope built from the
         // contract's declaration, the two answers work redeems into, and then
         // everything else. `match` rather than early returns, because what this
         // is doing is naming a path rather than deciding anything.
@@ -350,6 +360,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::NEWS_ENDPOINT => WhatIsNewAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('news-items')), self::WHEN_A_CHANGE_WAS_MADE),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
+            $endpoint === Api::CAPABILITIES_ENDPOINT => [...self::oneEnvelope(self::WHAT_IT_SERVES), 'data' => WhatAStandInServes::everything()],
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),

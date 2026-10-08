@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\WatchAction;
 use Lemonfiber\Sdk\JobStanding;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\Entropy;
@@ -25,6 +25,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -54,7 +55,7 @@ final readonly class Guards implements Guarding
 
     public function guard(Stack $stack, Session $session, AGuardAskedFor $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
         $forms = [];
 
         foreach ($asked->forms() as $form) {
@@ -63,15 +64,14 @@ final readonly class Guards implements Guarding
 
         try {
             $envelope = $client->act(
-                Api::action($asked->asked()),
-                [WireField::Forms->value => $forms],
+                new WatchAction(forms: $forms),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -79,7 +79,7 @@ final readonly class Guards implements Guarding
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheGuardIsGoing
     {
         try {
-            return $this->standing($this->clients->client($stack, $session)->whatBecameOf($job->shown()));
+            return $this->standing(GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {
@@ -94,7 +94,7 @@ final readonly class Guards implements Guarding
     public function letGo(Stack $stack, Session $session, Job $job): HowTheGuardIsGoing
     {
         try {
-            return $this->standing($this->clients->client($stack, $session)->letGoOf($job->shown()));
+            return $this->standing(GatedClient::of($this->clients, $stack, $session)->letGoOf($job->shown()));
         } catch (CertificateWasRefused|NoSuchJob|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|WatchIsUnreadable $why) {

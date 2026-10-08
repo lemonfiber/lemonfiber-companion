@@ -72,7 +72,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->answer()->askedNow"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                :goes="$this->goes()"
             />
         @endif
         <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -113,7 +113,7 @@
             {{-- Drawn whether or not it can be used, so a kept reading never
                  hides what a fresh one would offer; beside it, until then,
                  why it waits and how old the reading is. --}}
-            <x-design::action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" :disabled="$this->answer()->waitsForTheStack" />
+            <x-operator::offered-action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->waitsForTheStack" />
             @if ($this->answer()->waitsForTheStack)
                 <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
             @endif
@@ -206,7 +206,7 @@
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :went="$this->lastUpdate()->went"
                 ask-again=""
-                :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                :goes="$this->goes()"
             />
         @endif
         <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
@@ -275,14 +275,14 @@
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. Tonal,
          because taking an update is the screen's one way forward. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 @endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

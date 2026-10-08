@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasFoundToWatchOn;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -29,7 +30,7 @@ final readonly class Advisers implements Advising
 
     public function advisedBy(Stack $stack, Session $session): WhatWasFoundToWatchOn
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::CLIENTS_ENDPOINT);
@@ -39,7 +40,7 @@ final readonly class Advisers implements Advising
             return WhatWasFoundToWatchOn::found(WhatToWatchWith::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundToWatchOn::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ClientsIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ClientsIsUnreadable $why) {
             return WhatWasFoundToWatchOn::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

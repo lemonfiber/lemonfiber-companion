@@ -8,8 +8,15 @@ use Closure;
 
 use function is_string;
 
+use Lemonfiber\Sdk\Exception\Busy;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
+use Lemonfiber\Sdk\Exception\Declined;
+use Lemonfiber\Sdk\Exception\Failed;
+use Lemonfiber\Sdk\Exception\Misasked;
+use Lemonfiber\Sdk\Exception\Missing;
+use Lemonfiber\Sdk\Exception\NotAdmitted;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Exception\TooManyAttempts;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -68,33 +75,15 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 final readonly class WhatARefusalMeant
 {
     /**
-     * The status a stack without codes answers a session it will not accept with.
+     * The status a stack turns away a session it will not accept with.
      *
      * Named rather than written as `401` at the comparison: a bare number at a
-     * call site says nothing about which of the several statuses this
-     * application distinguishes it is.
+     * call site says nothing about which of the statuses a refusal is turned
+     * away with it is. The other is an account that may not ask, which never
+     * ends a session: of the readings it could have, it is the one that cannot
+     * sign somebody out by mistake.
      */
     private const int SESSION_IS_NOT_ACCEPTED = 401;
-
-    /**
-     * The status a stack without codes answers every other refusal of who is
-     * asking with.
-     *
-     * Read as an account that may not ask, which never ends a session: of the
-     * readings this status could have, it is the one that cannot sign somebody
-     * out by mistake.
-     */
-    private const int ACCOUNT_MAY_NOT_ASK = 403;
-
-    /**
-     * The status a stack answers with while other work holds it.
-     *
-     * The stack takes one piece of work at a time and refuses the next while
-     * one is running. Nothing was changed, and the same request succeeds once
-     * that work has finished, which is a remedy of its own and none of the
-     * others'.
-     */
-    private const int HELD_BY_OTHER_WORK = 409;
 
     /** The first status that is a refusal at all. */
     private const int A_REFUSAL = 400;
@@ -153,7 +142,7 @@ final readonly class WhatARefusalMeant
         $code = $why->code();
 
         if (! $code instanceof RefusalCode) {
-            return self::byStatus($why->status());
+            return self::byFamily($why);
         }
 
         return match ($code) {
@@ -185,6 +174,8 @@ final readonly class WhatARefusalMeant
             RefusalCode::NoEndpoint,
             RefusalCode::WrongMethod,
             RefusalCode::NotAKeyRequest,
+            RefusalCode::NotAnIdempotencyKey,
+            RefusalCode::IdempotencyKeyReused,
             RefusalCode::Unwanted,
             RefusalCode::Repeated,
             RefusalCode::NoSuchRead,
@@ -203,6 +194,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::MemberAndDefaults,
             RefusalCode::Unrenderable,
             RefusalCode::NoJobName,
+            RefusalCode::Unanswered,
             // An answer given for an offer or a listing that has since moved.
             // The stack's words say what moved, and the adapter following the
             // work it ended decides whether there is a fresh offer to read.
@@ -255,6 +247,11 @@ final readonly class WhatARefusalMeant
             RefusalCode::SchemeRefused,
             RefusalCode::AddressRefused,
             RefusalCode::HeaderNamed,
+            RefusalCode::InputUnmatched,
+            RefusalCode::CallRefused,
+            RefusalCode::StepFailed,
+            RefusalCode::PathNotPlain,
+            RefusalCode::ValueWithheld,
             RefusalCode::CatalogueReplaced,
             RefusalCode::NewestUnkept,
             RefusalCode::NoSuchFiller,
@@ -262,17 +259,35 @@ final readonly class WhatARefusalMeant
             RefusalCode::NothingAsks,
             RefusalCode::ChoiceUnwritable,
             RefusalCode::WiringMoved,
-            RefusalCode::Unreasonable => self::byStatus($why->status()),
+            RefusalCode::Unreasonable => self::byFamily($why),
         };
     }
 
-    /** What a refusal carrying no code this app knows means, read from its status. */
-    private static function byStatus(int $status): Obstacle
+    /**
+     * What a refusal carrying no code this app knows means, read from its family.
+     *
+     * Every family is named, and a test refuses one the SDK adds that is not,
+     * so each is decided here rather than swept into an answer written for
+     * another. A request turned away, for its credential or otherwise, is a
+     * session not accepted where it was answered 401 and an account that may
+     * not ask everywhere else; other work holding the stack is a remedy of its
+     * own; and the rest are a stack that did not answer what was asked.
+     */
+    private static function byFamily(RequestFailed $why): Obstacle
     {
-        return match ($status) {
-            self::SESSION_IS_NOT_ACCEPTED => Obstacle::of(KindOfObstacle::CredentialWasRefused),
-            self::ACCOUNT_MAY_NOT_ASK => Obstacle::of(KindOfObstacle::NotForThisAccount),
-            self::HELD_BY_OTHER_WORK => Obstacle::of(KindOfObstacle::StackIsBusy),
+        return match (true) {
+            $why instanceof NotAdmitted,
+            $why instanceof Declined => Obstacle::of(
+                $why->status() === self::SESSION_IS_NOT_ACCEPTED ? KindOfObstacle::CredentialWasRefused : KindOfObstacle::NotForThisAccount,
+            ),
+            $why instanceof Busy => Obstacle::of(KindOfObstacle::StackIsBusy),
+            $why instanceof TooManyAttempts,
+            $why instanceof Misasked,
+            $why instanceof Missing,
+            $why instanceof Failed => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            // The base is abstract and every family it has is named above, so
+            // nothing reaches this; `WhatARefusalMeantTest` refuses a family
+            // the SDK adds that is not named here.
             default => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }

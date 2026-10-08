@@ -11,21 +11,11 @@ use Modules\Sdk\Api\SaysWhereItSits;
  * What the wire calls each field of the `restore` envelope that no other envelope this module reads carries.
  *
  * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
- * carries; this holds the rest of this one's, and the words the `restore`
- * action is asked with.
+ * carries; this holds the rest of this one's.
  */
 enum RestoreField: string implements NamesAWireField
 {
     use SaysWhereItSits;
-
-    /** Which copy to put back, by the name the listing of copies gave it. */
-    case Archive = 'archive';
-
-    /** The listing a yes is given for, quoted back by its name; a replacement's yes quotes its offer by the same word. */
-    case Offer = 'offer';
-
-    /** The operator's yes to putting the copy's data somewhere other than where it came from. */
-    case Repoint = 'repoint';
 
     /** What putting the copy back would do, read before anything is overwritten. */
     case Would = 'would';

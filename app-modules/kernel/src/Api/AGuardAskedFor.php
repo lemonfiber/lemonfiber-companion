@@ -10,7 +10,7 @@ namespace Modules\Kernel\Api;
  * The forms are the ones the guard stops the moment the data location goes,
  * so they are what the operator is agreeing to have stopped.
  */
-final readonly class AGuardAskedFor
+final readonly class AGuardAskedFor implements AnAction
 {
     private function __construct(private Forms $forms) {}
 
@@ -27,6 +27,16 @@ final readonly class AGuardAskedFor
     }
 
     /**
+     * The action's name, for a caller that has to name it before there is one
+     * to ask for: what a stack says it serves is asked by name before a button
+     * is drawn.
+     */
+    public static function named(): string
+    {
+        return 'watch';
+    }
+
+    /**
      * lemonfiber's name for the action.
      *
      * Spelled here, once, for {@see TakingAnUpdate::asked()}'s reason: an
@@ -34,6 +44,6 @@ final readonly class AGuardAskedFor
      */
     public function asked(): string
     {
-        return 'watch';
+        return self::named();
     }
 }

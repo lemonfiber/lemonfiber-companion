@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoAboutQuality')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -17,7 +18,7 @@
                 <x-design::body>{{ __('quality.held_unexplained') }}</x-design::body>
             @endforelse
         </x-design::notice>
-        <x-design::action label="{{ __('quality.confirm') }}" tap="confirm()" />
+        <x-operator::offered-action label="{{ __('quality.confirm') }}" tap="confirm()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     @endif
 
     {{-- A hand-edit is respected, and putting the preset back over it is not
@@ -91,7 +92,7 @@
             label="{{ __('quality.choose.kind') }}"
             supporting="{{ __('quality.choose.kind_help') }}"
         />
-        <x-design::action label="{{ __('quality.choose.act') }}" tap="choose()" />
+        <x-operator::offered-action label="{{ __('quality.choose.act') }}" tap="choose()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     </x-design::card>
 
     {{-- Upgrading what is already here is its own act, described kind by
@@ -136,18 +137,18 @@
     @endif
 
     @if ($this->mayUpgrade())
-        <x-design::action label="{{ __('quality.upgrade.agree') }}" tap="upgrade()" />
+        <x-operator::offered-action label="{{ __('quality.upgrade.agree') }}" tap="upgrade()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" />
     @else
-        <x-design::action label="{{ __('quality.upgrade.describe') }}" tap="describe()" tone="tonal" />
+        <x-operator::offered-action label="{{ __('quality.upgrade.describe') }}" tap="describe()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" tone="tonal" />
     @endif
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

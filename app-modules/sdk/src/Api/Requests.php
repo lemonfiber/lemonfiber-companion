@@ -11,6 +11,8 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\HouseholdApproveAction;
+use Lemonfiber\Sdk\Generated\HouseholdDeclineAction;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -21,8 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\WhatWasWanted;
-use Modules\Sdk\Api\Fields\HouseholdField;
-use Modules\Sdk\Internal\WhatADecisionAsksWith;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
 
@@ -60,7 +61,7 @@ final readonly class Requests implements Wanting
 
     public function askedOf(Stack $stack, Session $session): WhatWasWanted
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::REQUESTS_ENDPOINT);
@@ -73,18 +74,17 @@ final readonly class Requests implements Wanting
             return WhatWasWanted::these(Households::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasWanted::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
             return WhatWasWanted::met(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }
 
     public function decided(Stack $stack, Session $session, Decided $decided): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action($decided->asked()),
                 $this->saying($decided),
                 // Built inline rather than into a variable, for
                 // {@see Supervisors::told()}'s reason: a key held for the
@@ -97,30 +97,28 @@ final readonly class Requests implements Wanting
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     /**
-     * What the action is asked with, which is the request and sometimes a
-     * sentence.
+     * The action a decision is sent as: an approval of the request, or its
+     * decline with the sentence the person who asked is owed.
      *
      * Read off the decision through its own pair of closures rather than by
      * comparing a reason against a blank: a stack sending nothing and an
      * approval carrying nothing would otherwise come away the same, and one of
-     * them is a fault.
-     *
-     * @return array<string, int|string>
+     * them is a fault. Only a decline carries a reason, which {@see Decided}
+     * holds to.
      */
-    private function saying(Decided $decided): array
+    private function saying(Decided $decided): HouseholdApproveAction|HouseholdDeclineAction
     {
-        $asking = [HouseholdField::Request->value => $decided->about()->number()];
+        $request = $decided->about()->number();
 
         return $decided->why(
-            was: static fn(string $because): WhatADecisionAsksWith
-                => new WhatADecisionAsksWith([...$asking, WireField::Reason->value => $because]),
-            wasNot: static fn(): WhatADecisionAsksWith => new WhatADecisionAsksWith($asking),
-        )->said;
+            was: static fn(string $because): HouseholdDeclineAction => new HouseholdDeclineAction(request: $request, reason: $because),
+            wasNot: static fn(): HouseholdApproveAction => new HouseholdApproveAction(request: $request),
+        );
     }
 }

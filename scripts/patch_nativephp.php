@@ -3,2189 +3,55 @@
 declare(strict_types=1);
 
 /*
- * Every step of a build must be asked the same question about development
- * dependencies.
+ * Applies the patches in `scripts/patch_nativephp/` to the NativePHP packages
+ * this tree installs.
  *
- * NativePHP assembles a bundle in three steps. Both platform lanes decide
- * whether to install development dependencies from the build type — debug keeps
- * them, release does not — and the dump that follows is not asked at all: it
- * passes no flag, so it always keeps `autoload-dev`.
+ * Each patch is a unified diff, and the text before its first file says what
+ * it changes and why. They are applied in the order of their names, since a
+ * later patch can rewrite a line an earlier one wrote.
  *
- * That disagreement is a fatal on a release build. The install has dropped the
- * development packages and the dump writes an authoritative classmap that
- * expects them, so package discovery registers a provider the classmap was
- * built without:
+ * A hunk is matched by its lines, never by the line numbers in its header: the
+ * numbers say where the lines sat in the version this tree locks, and they
+ * move whenever the package changes anything above them. Its lines are matched
+ * as whole lines, wherever they appear, and every place they appear is
+ * rewritten. A hunk whose result is already in the file is skipped, because
+ * `composer install` does not unpack a package again only because this script
+ * runs, so most runs find every patch applied.
  *
- *     Class "…\Collision\Adapters\Laravel\CollisionServiceProvider" not found
- *
- * `PHPBridge` then reports an empty response, so the first frame never renders
- * and the app returns to the launcher without saying anything. Every suite is
- * green when that happens, because no suite builds a bundle.
- *
- * So the dump is asked the same question the install was, from the same
- * variable, in the same method. A debug build keeps its development
- * dependencies through all three steps and a release build drops them through
- * all three — which is what lets a stand-in for a stack reach a handset while
- * being absent from anything shipped.
- *
- * **What the bundle removes is the other half of this, and it is not patched
- * here.** The cleanup drops `tests` at any depth, so an autoloader entry
- * pointing into it is a file that is gone by the time anything reads it. Only
- * `autoload-dev.files` is `require`d unconditionally at boot, so that is the
- * entry this application must not have — see {@see \Tests\Support\Rules},
- * which is a class for exactly that reason. A classmap entry naming a dropped
- * file is inert until something autoloads it, and on a device nothing does.
+ * `scripts/patch_nativephp/earlier/` holds what an earlier version of a hunk
+ * wrote, under the name of the patch the hunk is in. A package an earlier
+ * build patched carries that text, and is moved on to the hunk's current
+ * result rather than refused.
  *
  * Run from `post-install-cmd` and `post-update-cmd`, so it survives the next
  * `composer install` rather than being a thing somebody remembers. It refuses
  * to be a no-op: an edit that matches nothing is the failure this repository
- * keeps finding in its own rules, and a silent one here would mean the device
- * fatal came back with the patch still in the tree looking applied.
+ * keeps finding in its own rules, and a silent one here would mean a device
+ * fatal came back with the patch still in the tree looking applied. Every
+ * patch is read before any file is written, so a patch this cannot read
+ * leaves the packages as they were.
  */
 
-/**
- * Every line this rewrites, and what it becomes.
- *
- * A list rather than a map keyed by file, so that two edits to one file stay
- * expressible. Each entry names its own file for the same reason the refusal
- * does: a patch that cannot say *which* line moved sends the reader to search
- * a package for it.
- *
- * An entry whose rewrite has changed says what it wrote before, under `was`,
- * so a package an earlier build patched is moved on to the rewrite rather than
- * refused: `composer install` does not unpack a package again only because
- * this script changed.
- */
-const WHAT_THIS_REWRITES = [
-    [
-        // The navigation stack can start over at one screen. Removing a stack
-        // from the phone leaves every screen of it below the one the removal
-        // was asked on, and a stack that is gone cannot be drawn: going back
-        // into one would be a screen with nothing to draw. The package can
-        // push, pop and swap the top screen; this lets a screen replace the
-        // whole stack, which is the only way off every screen of a stack at
-        // once.
-        'in' => '/../vendor/nativephp/mobile/src/Edge/NavigationIntent.php',
-        'ships' => <<<'SHIPS'
-    const RESTART = 'restart';
+/** Where the patches are, from this script's directory. */
+const WHERE_THE_PATCHES_ARE = '/patch_nativephp';
 
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    const RESTART = 'restart';
+/** Where the earlier versions of their hunks are, from this script's directory. */
+const WHERE_EARLIER_HUNKS_ARE = '/patch_nativephp/earlier';
 
-    const RESET = 'reset';
+/** The only files a patch may name: NativePHP's, as composer installs them. */
+const WHAT_A_PATCH_MAY_REWRITE = 'vendor/nativephp/';
 
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/src/Edge/NativeComponent.php',
-        'ships' => <<<'SHIPS'
-        $this->flushDispatchedEvents();
-        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, $uri, $data);
-        $this->publishFinalState();
-        $this->stop();
-
-        return $this;
-    }
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        $this->flushDispatchedEvents();
-        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, $uri, $data);
-        $this->publishFinalState();
-        $this->stop();
-
-        return $this;
-    }
-
-    public function replaceTheWholeStack(string $uri, array $data = []): static
-    {
-        if ($this->nativeParentComponent !== null) {
-            $this->rootScreen()->replaceTheWholeStack($uri, $data);
-
-            return $this;
-        }
-
-        $this->flushDispatchedEvents();
-        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::RESET, $uri, $data);
-        $this->publishFinalState();
-        $this->stop();
-
-        return $this;
-    }
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/src/Edge/NativeRouter.php',
-        'ships' => <<<'SHIPS'
-                case NavigationIntent::EXIT_WEB:
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                case NavigationIntent::RESET:
-                    static::debugLog("RESET: resolving uri={$intent->uri}");
-                    try {
-                        $resolved = static::resolve($intent->uri);
-                    } catch (\Throwable $e) {
-                        static::debugLog('RESET binding FAILED: '.$e->getMessage());
-                        $component->renderErrorScreen($e);
-                        $freshPush = false;
-                        $reenterCurrentScreen = true;
-
-                        break;
-                    }
-
-                    if ($resolved === null) {
-                        $this->unmountComponent($component);
-                        $this->stack = [];
-
-                        return $intent->uri;
-                    }
-
-                    while (! empty($this->stack)) {
-                        $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
-                        array_pop($this->stack);
-                    }
-
-                    $this->deferredTransition = $intent->transition ?? Transition::Fade;
-
-                    try {
-                        $next = $this->createComponent($resolved['class'], $resolved['params'], $intent->data);
-                        if (! empty($resolved['layout'])) {
-                            $next->setLayout($resolved['layout']);
-                        }
-
-                        $this->stack[] = [
-                            'component' => $next,
-                            'uri' => $intent->uri,
-                            'params' => $resolved['params'],
-                        ];
-                    } catch (\Throwable $e) {
-                        static::debugLog('RESET FAILED: '.$e->getMessage());
-
-                        return null;
-                    }
-
-                    $freshPush = true;
-                    break;
-
-                case NavigationIntent::EXIT_WEB:
-BECOMES,
-    ],
-    [
-        // A bundle carrying development dependencies is a bigger bundle, and
-        // the copy that assembles it passes no timeout of its own — so it takes
-        // Laravel's default sixty seconds, which a debug build exceeds. Sixty
-        // seconds is a budget rather than a correctness property, and what it
-        // produces when it runs out is an rsync killed halfway: a partial tree,
-        // a build that fails somewhere later, and nothing saying the copy is
-        // what ended.
-        'in' => '/../vendor/nativephp/mobile/src/Support/BundleFileManager.php',
-        'ships' => <<<'SHIPS'
-        $result = Process::run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        $result = Process::timeout(600)->run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/src/Concerns/PreparesBuild.php',
-        // The closing marker sits at column zero so that nothing is stripped:
-        // PHP removes the marker's own indentation from every line of a
-        // heredoc, and these lines have to arrive with the twelve, sixteen and
-        // twenty spaces the package wrote them with or the match is a match
-        // against text that exists nowhere.
-        'ships' => <<<'SHIPS'
-            $this->components->task('Optimizing autoloader', function () use ($tempDir) {
-                $result = Process::path($tempDir)
-                    ->timeout(60)
-                    ->run('composer dump-autoload --optimize --classmap-authoritative');
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            $this->components->task('Optimizing autoloader', function () use ($tempDir, $excludeDevDependencies) {
-                $result = Process::path($tempDir)
-                    ->timeout(60)
-                    ->run('composer dump-autoload --optimize --classmap-authoritative'.($excludeDevDependencies ? ' --no-dev' : ''));
-BECOMES,
-    ],
-    [
-        // An agent's git worktree inside the project is a second checkout of
-        // this repository — a `vendor/` of its own, its own `app-modules`, its
-        // own lockfile — and the bundler copies it. Measured on 2026-09-16: a
-        // debug bundle came to 243 MB, of which 225 MB was one worktree under
-        // `.claude/`, carried onto a handset and unpacked there.
-        //
-        // `.git` is already excluded at any depth and this is the same fact
-        // wearing a different name: a directory a tool keeps its own state in,
-        // which no build has a use for. It sits beside `.git` rather than in
-        // `PROJECT` because a worktree can be nested anywhere, and a
-        // project-root rule would miss one a directory deeper.
-        //
-        // The alternative was asking every agent to put its worktree somewhere
-        // else, which is a convention — and a convention is what this
-        // repository calls the thing that holds until somebody new arrives.
-        'in' => '/../vendor/nativephp/mobile/src/Support/BundleExclusions.php',
-        'ships' => <<<'SHIPS'
-    public const ANY_DEPTH = [
-        '.git',
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    public const ANY_DEPTH = [
-        '.git',
-        '.claude',
-BECOMES,
-    ],
-    [
-        // The package registers two HTTP routes for pages it renders in a web
-        // view: `POST _native/api/events`, which builds whatever class the
-        // request names with whatever arguments it carries, and
-        // `POST _native/api/call`, which calls whatever bridge function it
-        // names. This application renders no web view, so neither is used, and
-        // each is a door: the first is object injection by design, and the
-        // second reaches every bridge function this plugin declares, the
-        // app lock's and the secure store's included. Anything that ever got a
-        // page into a web view here could walk through both. So the package
-        // registers neither.
-        'in' => '/../vendor/nativephp/mobile/src/NativeServiceProvider.php',
-        'ships' => <<<'SHIPS'
-            ->hasConfigFile('nativephp')
-            ->hasRoute('api')
-            ->hasCommands([
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            ->hasConfigFile('nativephp')
-            ->hasCommands([
-BECOMES,
-    ],
-    [
-        // `bridge/` is a path repository, so composer symlinks it into
-        // `vendor/lemonfiber/bridge` — and the bundler copies with
-        // `rsync -a --copy-links`, which follows the link and takes everything
-        // under it. That includes `.build`, where SwiftPM leaves its module
-        // caches and object files: 231 MB measured on 2026-09-19, growing every
-        // time `swift test` runs, and carried onto a handset.
-        //
-        // Size is the smaller half. A module cache holds absolute paths from
-        // the machine that built it and objects compiled from this checkout,
-        // and none of it is anything a device has a use for — so what ships is
-        // a copy of somebody's working tree inside the app.
-        //
-        // It already stops builds rather than merely bloating them: a debug
-        // build died with `rsync: .../.build/debug/ModuleCache/...: No space
-        // left on device` and succeeded unchanged once the directory was gone.
-        //
-        // Sits beside `.git` and `.claude` for their reason: a directory a tool
-        // keeps its own state in, which no build has a use for, and which can
-        // appear at any depth rather than only at the project root.
-        'in' => '/../vendor/nativephp/mobile/src/Support/BundleExclusions.php',
-        'ships' => <<<'SHIPS'
-        '.claude',
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        '.claude',
-        '.build',
-BECOMES,
-    ],
-    [
-        // A text field sends every keystroke to PHP and takes back whatever value
-        // PHP answers with, unless it equals the one value it sent last. Typing
-        // faster than PHP answers makes the answer to an earlier keystroke arrive
-        // after a later one was sent: "a" comes back while "ab" is out, differs
-        // from it, and is taken as PHP setting the field — so the "b" is gone.
-        // Measured on 2026-09-28 on a Galaxy A51: a pairing code typed at about
-        // eight characters a second lost one character in every thirty, and the
-        // code was refused as unreadable.
-        //
-        // So each field remembers everything it sent and PHP has not answered, and
-        // a value matching any of it is an answer rather than a change. Only a
-        // value this field never sent replaces what the person typed.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
-        'ships' => <<<'SHIPS'
-/**
- * Outbound dispatch state machine.
-SHIPS,
-        'becomes' => <<<'BECOMES'
-/**
- * What this field sent over the bridge that PHP has not answered yet, oldest
- * first. PHP answers in the order it was asked, so a server value matching one
- * of these is the answer to it — and to everything sent before it.
- */
-internal class InFlight {
-    private val waiting = ArrayDeque<String>()
-
-    fun sent(value: String) {
-        waiting.addLast(value)
-        while (waiting.size > 64) waiting.removeFirst()
-    }
-
-    /** Whether [value] answers something this field sent; forgets it and everything older. */
-    fun answers(value: String): Boolean {
-        val at = waiting.indexOf(value)
-        if (at < 0) return false
-        repeat(at + 1) { waiting.removeFirst() }
-        return true
-    }
-
-    fun forget() = waiting.clear()
-}
+/** A hunk: its header, the line counts each side leaves out when it is one, and its lines. */
+const A_HUNK = '/\A(@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@[^\n]*)\n(.*)\z/s';
 
 /**
- * Outbound dispatch state machine.
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-        val inFlight = remember { InFlight() }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-            if (props.serverValue != lastSentValue) {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                lastSentValue = props.serverValue
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                lastSentValue = props.serverValue
-                inFlight.forget()
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                setLastSent = { lastSentValue = it },
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                setLastSent = { lastSentValue = it; inFlight.sent(it) },
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-        val inFlight = remember { InFlight() }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-            if (props.serverValue != lastSentValue) {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                lastSentValue = props.serverValue
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                lastSentValue = props.serverValue
-                inFlight.forget()
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                setLastSent = { lastSentValue = it },
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                setLastSent = { lastSentValue = it; inFlight.sent(it) },
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        var lastSentValue by remember { mutableStateOf(props.serverValue) }
-        val inFlight = remember { InFlight() }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-            if (props.serverValue != lastSentValue) {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                lastSentValue = props.serverValue
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                lastSentValue = props.serverValue
-                inFlight.forget()
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
-        'ships' => <<<'SHIPS'
-                    lastSentValue = newValue.text
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                    lastSentValue = newValue.text
-                    inFlight.sent(newValue.text)
-BECOMES,
-    ],
-    [
-        // The theme store's `secondary` is the tonal button's fill, and
-        // Material draws a selected tab's label in its own `secondary`. One key
-        // cannot be both a quiet fill and a label that has to read on the bar,
-        // so Material's is the surface's text colour, and the store's stays the
-        // button's.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt',
-        'ships' => <<<'SHIPS'
-        secondary        = secondary,
-        onSecondary      = onSecondary,
-        tertiary         = accent,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        secondary        = onSurface,
-        onSecondary      = surface,
-        tertiary         = accent,
-BECOMES,
-    ],
-    [
-        // Material's container colours back the bottom bar's selected-item
-        // indicator and the tonal button. The package maps its surface family
-        // onto the theme store and leaves these at Material's baseline, a
-        // lavender no theme chose. Each is folded onto the store's token; the
-        // secondary container, behind a selected tab and a tonal button, onto
-        // the outline with the surface's text on it.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt',
-        'ships' => <<<'SHIPS'
-        inversePrimary          = primary,
-    )
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        inversePrimary          = primary,
-        primaryContainer        = primary,
-        onPrimaryContainer      = onPrimary,
-        secondaryContainer      = outline,
-        onSecondaryContainer    = onSurface,
-        tertiaryContainer       = accent,
-        onTertiaryContainer     = onAccent,
-        errorContainer          = destructive,
-        onErrorContainer        = onDestructive,
-        outlineVariant          = outlineVariant,
-    )
-BECOMES,
-    ],
-    [
-        // Text with no colour of its own is painted black, in dark mode too,
-        // where the ground is the theme's dark background. It takes the theme's
-        // text colour instead, which follows the mode.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.graphics.Color
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
-        'ships' => <<<'SHIPS'
-        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", 0xFF000000.toInt())
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb())
-BECOMES,
-    ],
-    [
-        // The same default for text drawn as inline runs.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
-        'ships' => <<<'SHIPS'
-        val ctx = LocalContext.current
-        val annotated = buildAnnotatedString {
-            appendTextRuns(node, RunCtx.Root, isDark, ctx)
-        }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        val ctx = LocalContext.current
-        val themeTextArgb = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb()
-        val annotated = buildAnnotatedString {
-            appendTextRuns(node, RunCtx.Root.copy(colorArgb = themeTextArgb), isDark, ctx)
-        }
-BECOMES,
-    ],
-    [
-        // An icon with no colour of its own takes the theme's text colour on
-        // its surface, for the reason text does.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.graphics.Color
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt',
-        'ships' => <<<'SHIPS'
-        val lightArgb = p.getColor("color", 0xFF000000.toInt())
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        val lightArgb = p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onSurface.toArgb())
-BECOMES,
-    ],
-    [
-        // A divider with no colour of its own is a fixed light grey in both
-        // modes. It takes the theme's hairline colour, which follows the mode.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt',
-        'ships' => <<<'SHIPS'
-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
-        HorizontalDivider(modifier = modifier, color = color)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
-        HorizontalDivider(modifier = modifier, color = color)
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt',
-        'ships' => <<<'SHIPS'
-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
-        val strokeWidth = node.style?.borderWidth ?: 1f
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
-        val strokeWidth = node.style?.borderWidth ?: 1f
-BECOMES,
-    ],
-    [
-        // The drawer names its ☰ and says whether the screen already has a
-        // back button in the leading slot. Both are the screen's to say: the
-        // label is text a person reads, so it comes from the translator, and
-        // only the screen knows whether it was pushed.
-        'in' => '/../vendor/nativephp/mobile-ui/src/Builders/Drawer.php',
-        'ships' => <<<'SHIPS'
-    public function getContent(): View|Element
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    private string $label = 'Open menu';
-
-    private bool $besideBack = false;
-
-    /** What a screen reader announces for the ☰ affordance. */
-    public function label(string $label): self
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
-    /** The screen has a back button in the leading slot, so the ☰ sits beside it. */
-    public function besideBack(bool $besideBack = true): self
-    {
-        $this->besideBack = $besideBack;
-
-        return $this;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->label;
-    }
-
-    public function isBesideBack(): bool
-    {
-        return $this->besideBack;
-    }
-
-    public function getContent(): View|Element
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/src/NativeUIServiceProvider.php',
-        'ships' => <<<'SHIPS'
-                'mode' => $builder->getMode(),
-                'width' => $builder->getWidth(),
-            ]);
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                'mode' => $builder->getMode(),
-                'width' => $builder->getWidth(),
-                'a11y-label' => $builder->getLabel(),
-                'beside_back' => $builder->isBesideBack(),
-            ]);
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/NativeDrawer.php',
-        'ships' => <<<'SHIPS'
-            $this->props['width'] = (int) $attrs['width'];
-        }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            $this->props['width'] = (int) $attrs['width'];
-        }
-        if (isset($attrs['beside_back'])) {
-            $this->props['beside_back'] = (bool) $attrs['beside_back'];
-        }
-BECOMES,
-    ],
-    [
-        // The host is told which screen it is drawn around, so a navigation
-        // that keeps the drawer — one screen with a menu to the next — closes it.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-        return AnyView(NativeDrawerHost(drawerNode: drawerNode) { content })
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        let uri = root.props.getString("current_uri", default: "")
-        return AnyView(NativeDrawerHost(drawerNode: drawerNode, uri: uri) { content })
-BECOMES,
-    ],
-    [
-        // The panel's colour is read from the theme store for the mode the
-        // phone is in. The environment's theme is not set this far out, so it
-        // answered the package's light fallback in dark mode too. The ☰ sits
-        // past the system's back button: a 44-point glass circle from iOS 26,
-        // a chevron and a word before it.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-    let drawerNode: NativeUINode?
-    @ViewBuilder var content: Content
-
-    @ObservedObject private var state = DrawerHostState.shared
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.nativeUITheme) private var theme
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    let drawerNode: NativeUINode?
-    var uri: String = ""
-    @ViewBuilder var content: Content
-
-    @ObservedObject private var state = DrawerHostState.shared
-    @ObservedObject private var themes = NativeUITheme.shared
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var besideTheBack: CGFloat {
-        if #available(iOS 26, *) { return 64 }
-        return 100
-    }
-BECOMES,
-    ],
-    [
-        // A level with a back button keeps the left-edge swipe for going back.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-                // Left-edge detector for swipe-to-open (both modes), when closed.
-                if !state.isOpen {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                // Left-edge detector for swipe-to-open (both modes), when closed.
-                if !state.isOpen && !drawerNode.props.getBool("beside_back") {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-                    .accessibilityLabel("Open menu")
-                    .padding(.leading, 12)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                    .accessibilityLabel(drawerNode.props.getString("a11y_label", default: "Open menu"))
-                    .padding(.leading, drawerNode.props.getBool("beside_back") ? besideTheBack : 12)
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-        .onChange(of: drawerNode.id) { _ in
-            if dragOffset != 0 { dragOffset = 0 }
-        }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        .onChange(of: drawerNode.id) { _ in
-            if dragOffset != 0 { dragOffset = 0 }
-        }
-        .onChange(of: uri) { _ in
-            if state.isOpen { animateClosed() }
-        }
-BECOMES,
-    ],
-    [
-        // A tap inside the panel is a choice made, so the panel closes. A drag
-        // is a scroll and leaves it open.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
-        'ships' => <<<'SHIPS'
-        .background(theme.background)
-    }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        .background(themes.resolve(for: colorScheme).background)
-        .simultaneousGesture(TapGesture().onEnded { animateClosed() })
-    }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUIChromeInit.kt',
-        'ships' => <<<'SHIPS'
-        NativeLayoutDrawerHost(drawerNode = drawerNode, content = content)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        NativeLayoutDrawerHost(drawerNode = drawerNode, uri = root.props.getString("current_uri", ""), content = content)
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-import kotlinx.coroutines.launch
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-    drawerNode: NativeUINode?,
-    content: @Composable () -> Unit,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    drawerNode: NativeUINode?,
-    uri: String = "",
-    content: @Composable () -> Unit,
-BECOMES,
-    ],
-    [
-        // Closed when the screen under it changes, and by a tap inside the
-        // panel — a tap is a choice made, and a drag past the touch slop is a
-        // scroll that leaves it open.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-    val scope = rememberCoroutineScope()
-
-    val sheetModifier = if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    val scope = rememberCoroutineScope()
-
-    androidx.compose.runtime.LaunchedEffect(uri) {
-        if (drawerState.isOpen) drawerState.close()
-    }
-
-    val sheetModifier = (if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier)
-        .pointerInput(drawerState) {
-            awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                var dragged = false
-                while (true) {
-                    val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
-                    if ((change.position - down.position).getDistance() > viewConfiguration.touchSlop) dragged = true
-                    if (!change.pressed) {
-                        if (!dragged) scope.launch { drawerState.close() }
-                        break
-                    }
-                }
-            }
-        }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-                    Icon(Icons.Filled.Menu, contentDescription = "Open menu")
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                    Icon(Icons.Filled.Menu, contentDescription = drawerNode.props.getString("a11y_label", "Open menu"))
-BECOMES,
-    ],
-    [
-        // Back closes an open drawer before it leaves the screen. Composed
-        // after the drawer, so it is registered after the screen's own back
-        // handlers and is asked first.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
-        'ships' => <<<'SHIPS'
-            content = wrappedContent
-        )
-    }
-}
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            content = wrappedContent
-        )
-    }
-
-    androidx.activity.compose.BackHandler(enabled = drawerState.isOpen) {
-        scope.launch { drawerState.close() }
-    }
-}
-BECOMES,
-    ],
-    [
-        // A tab carries its own name. The tab bar is laid out to the bottom
-        // edge and padded above the system navigation bar, and on a handset
-        // with three-button navigation the accessibility layer clips the
-        // window above where that padding ends. Each tab's label then falls
-        // outside the clip and is reported with no bounds at all, so the tab a
-        // screen reader focuses has no name of its own and nothing on it can
-        // be found by its label. The name goes on the tab, whose bounds start
-        // at the top of the bar, and the label beside the icon is left to the
-        // eye rather than said a second time.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.platform.LocalLayoutDirection
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-
-BECOMES,
-    ],
-    [
-        // A tab is one control to a screen reader: it says its name, or the
-        // mark's own sentence where it carries a mark, which names the tab and
-        // how many new items it holds, and it is a tab, selected or not, that
-        // a tap through the accessibility layer selects. Said on the item's
-        // own outermost node rather than beside the selectable inside it, so
-        // the name and the tap are one node, and nothing inside it is said
-        // again: the count drawn in the badge is a number to the eye.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-                        NavigationBarItem(
-                            selected = actualIdx == selection,
-                            onClick = {
-                                // Local selection updates instantly so
-                                // the ripple / selection indicator
-                                // responds; for the search tab, no PHP
-                                // navigation fires (it's an iOS-/Android-
-                                // side overlay). For regular tabs, the
-                                // BottomNavItem-auto-wired `replace`
-                                // press handler fires here. A tap back
-                                // to the active tab normally needs no
-                                // press — except while another tab's
-                                // navigation is in flight: PHP is
-                                // already navigating away and must be
-                                // told to come back.
-                                selection = actualIdx
-                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
-                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
-                                    if (tab.props.getString("url", "").isNotEmpty()) {
-                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
-                                        pendingTabId?.let { prev ->
-                                            if (prev != tappedId) supersededTabIds.add(prev)
-                                        }
-                                        pendingTabId = tappedId
-                                    }
-                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
-                                }
-                            },
-                            icon = {
-SHIPS,
-        'was' => <<<'WAS'
-                        NavigationBarItem(
-                            modifier = Modifier.semantics { contentDescription = tab.props.getString("badge_label", "").ifEmpty { label } },
-                            selected = actualIdx == selection,
-                            onClick = {
-                                // Local selection updates instantly so
-                                // the ripple / selection indicator
-                                // responds; for the search tab, no PHP
-                                // navigation fires (it's an iOS-/Android-
-                                // side overlay). For regular tabs, the
-                                // BottomNavItem-auto-wired `replace`
-                                // press handler fires here. A tap back
-                                // to the active tab normally needs no
-                                // press — except while another tab's
-                                // navigation is in flight: PHP is
-                                // already navigating away and must be
-                                // told to come back.
-                                selection = actualIdx
-                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
-                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
-                                    if (tab.props.getString("url", "").isNotEmpty()) {
-                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
-                                        pendingTabId?.let { prev ->
-                                            if (prev != tappedId) supersededTabIds.add(prev)
-                                        }
-                                        pendingTabId = tappedId
-                                    }
-                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
-                                }
-                            },
-                            icon = {
-WAS,
-        'becomes' => <<<'BECOMES'
-                        val tabTapped: () -> Unit = {
-                                // Local selection updates instantly so
-                                // the ripple / selection indicator
-                                // responds; for the search tab, no PHP
-                                // navigation fires (it's an iOS-/Android-
-                                // side overlay). For regular tabs, the
-                                // BottomNavItem-auto-wired `replace`
-                                // press handler fires here. A tap back
-                                // to the active tab normally needs no
-                                // press — except while another tab's
-                                // navigation is in flight: PHP is
-                                // already navigating away and must be
-                                // told to come back.
-                                selection = actualIdx
-                                val tapNavigates = actualIdx != activeTabIdx || pendingTabId != null
-                                if (!isSearchTab && tapNavigates && tab.onPress != 0) {
-                                    if (tab.props.getString("url", "").isNotEmpty()) {
-                                        val tappedId = tabIds.getOrElse(actualIdx) { "" }
-                                        pendingTabId?.let { prev ->
-                                            if (prev != tappedId) supersededTabIds.add(prev)
-                                        }
-                                        pendingTabId = tappedId
-                                    }
-                                    NativeElementBridge.sendPressEvent(tab.onPress, tab.id)
-                                }
-                        }
-                        NavigationBarItem(
-                            modifier = Modifier.clearAndSetSemantics {
-                                contentDescription = tab.props.getString("badge_label", "").ifEmpty { label }
-                                role = Role.Tab
-                                selected = actualIdx == selection
-                                onClick { tabTapped(); true }
-                            },
-                            selected = actualIdx == selection,
-                            onClick = tabTapped,
-                            icon = {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.semantics.semantics
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-                            label = { Text(label, fontFamily = chromeFontFamily) },
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                            label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },
-BECOMES,
-    ],
-    [
-        // A glyph is a word in an icon font, drawn by its ligature, so every
-        // icon is a line of text to the accessibility layer: a screen reader
-        // reads "chevron_right" and "error" aloud, and the label the markup
-        // gave the glyph is dropped, because the helper that draws it takes a
-        // description and never applies it. The ligature is hidden from the
-        // reader, and the glyph says its label where it was given one and
-        // nothing where it was not. One place, because every icon the app
-        // draws on Android goes through it: a glyph on its own, a row's
-        // leading and trailing icons, and a tab's.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.graphics.Color
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
-        'ships' => <<<'SHIPS'
-            text = getIconName(name),
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            text = getIconName(name),
-            modifier = Modifier.clearAndSetSemantics {},
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
-        'ships' => <<<'SHIPS'
-        modifier = modifier.size(24.dp),
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        modifier = modifier.size(24.dp).saidAs(contentDescription),
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
-        'ships' => <<<'SHIPS'
-        modifier = modifier.size(size),
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        modifier = modifier.size(size).saidAs(contentDescription),
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
-        'ships' => <<<'SHIPS'
-/**
- * Get the Material Icon ligature name for the given icon name.
-SHIPS,
-        'becomes' => <<<'BECOMES'
-/** The glyph's label for a screen reader, where it was given one. */
-private fun Modifier.saidAs(label: String?): Modifier =
-    if (label.isNullOrEmpty()) this else semantics { contentDescription = label }
-
-/**
- * Get the Material Icon ligature name for the given icon name.
-BECOMES,
-    ],
-    [
-        // Both themes are dark whatever the phone is set to, so the colour
-        // scheme behind the first frame is the dark one too. Before the app
-        // has painted its theme, the package's own palette is what the splash
-        // and the frame around it are drawn in, and on a phone set to light it
-        // would be the light one, a white flash before every launch.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt',
-        'ships' => <<<'SHIPS'
-            val isDark = isSystemInDarkTheme()
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            val isDark = true
-BECOMES,
-    ],
-    [
-        // The count in a tab's badge is said by the tab, in the mark's own
-        // sentence, so the digits drawn in the badge say nothing of their own:
-        // read as well, the count would be heard twice.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                                            if (badge.isNotEmpty()) Text(badge, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {})
-BECOMES,
-    ],
-    [
-        // The tab carries its name itself, so the glyph beside it says
-        // nothing: now that a glyph says its label, a tab's would be the
-        // same name read twice.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
-        'ships' => <<<'SHIPS'
-MaterialIcon(name = icon, contentDescription = label)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-MaterialIcon(name = icon, contentDescription = null)
-BECOMES,
-    ],
-    [
-        // A tappable area that was given a label is one element to a screen
-        // reader, as it is on iOS: its label is said, and the words drawn
-        // inside it are not said after it. A tappable area with something to
-        // press is said as a control on its click region, by
-        // `nodeSaidAsAControl` below; this is for one with nothing to press,
-        // such as a poster, which would otherwise be read as its label and
-        // then as each line on it.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
-        'ships' => <<<'SHIPS'
-internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
-    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
-    return if (merged.isEmpty()) this else semantics { contentDescription = merged }
-}
-SHIPS,
-        'becomes' => <<<'BECOMES'
-internal fun Modifier.nuiA11y(label: String, hint: String): Modifier {
-    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
-    return if (merged.isEmpty()) this else semantics { contentDescription = merged }
-}
-
-/** The label an area was given, said as the one element it and everything in it are. */
-internal fun Modifier.nuiSaidAsOne(label: String, hint: String): Modifier {
-    val merged = listOf(label, hint).filter { it.isNotEmpty() }.joinToString(". ")
-    return if (merged.isEmpty()) this else semantics(mergeDescendants = true) { contentDescription = merged }
-}
-BECOMES,
-    ],
-    [
-        // A tappable area and a list row say the label the markup gave them.
-        // Both drop it: neither renderer reads `a11y_label`, so a reader is
-        // given the words drawn inside instead, and a row or a link whose
-        // words are the same on every card cannot say which one it opens.
-        // A tappable area says it as one element, through the helper above.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt',
-        'ships' => <<<'SHIPS'
-object PressableRenderer {
-    @Composable
-    fun Render(node: NativeUINode, modifier: Modifier) {
-SHIPS,
-        'was' => <<<'WAS'
-object PressableRenderer {
-    @Composable
-    fun Render(node: NativeUINode, given: Modifier) {
-        val modifier = given.nuiA11y(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
-WAS,
-        'becomes' => <<<'BECOMES'
-object PressableRenderer {
-    @Composable
-    fun Render(node: NativeUINode, given: Modifier) {
-        val modifier = given.nuiSaidAsOne(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-            modifier = clickModifier,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            modifier = clickModifier.nuiA11y(p.getString("a11y_label"), p.getString("a11y_hint")),
-BECOMES,
-    ],
-    [
-        // A pressable the markup gave a label is one control to a screen
-        // reader, whatever draws it: a button, a list row, a tappable area. The
-        // press is put on the node by `nodeGestures`, and each renderer said
-        // its label on a node of its own inside that one, so the node a reader
-        // focuses was a tap with no name and no role, and the label and the
-        // words drawn under it were read after it, one by one. Said here, on
-        // the outermost node of the click region, the control says its label
-        // once, is a button, is pressed through the accessibility layer by the
-        // same press, and nothing inside it is said again. One place, because
-        // every node is drawn through `NodeView`.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.foundation.clickable
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeModifiers.kt',
-        'ships' => <<<'SHIPS'
-// MARK: - Gesture Modifier
-SHIPS,
-        'becomes' => <<<'BECOMES'
-// MARK: - Said as a control
-
-/**
- * A pressable node the markup gave a label, said as the one control it is.
- *
- * Its label, and its hint after it, are what a screen reader says; it is a
- * button; a tap through the accessibility layer sends the node's own press;
- * and nothing drawn inside it is said again. Where it cannot be pressed it
- * says so. A node with no label, or nothing to press, or a menu that takes
- * its tap, is left as it was.
- */
-fun Modifier.nodeSaidAsAControl(node: NativeUINode): Modifier {
-    val label = node.props.getString("a11y_label", "")
-    val press = node.props.getCallbackId("on_press").let { if (it != 0) it else node.onPress }
-
-    if (label.isEmpty() || press == 0 || node.props.getBool("has_menu")) {
-        return this
-    }
-
-    val said = listOf(label, node.props.getString("a11y_hint", "")).filter { it.isNotEmpty() }.joinToString(". ")
-    val pressable = !node.props.getBool("disabled") && !node.props.getBool("loading")
-    val nodeId = node.id
-
-    return clearAndSetSemantics {
-        contentDescription = said
-        role = Role.Button
-        if (pressable) {
-            onClick {
-                NativeElementBridge.sendPressEvent(press, nodeId)
-                true
-            }
-        } else {
-            disabled()
-        }
-    }
-}
-
-// MARK: - Gesture Modifier
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NodeView.kt',
-        'ships' => <<<'SHIPS'
-        modifier = modifier
-            .nodeGestures(node, interactionSource)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        modifier = modifier
-            .nodeSaidAsAControl(node)
-            .nodeGestures(node, interactionSource)
-BECOMES,
-    ],
-    [
-        // The same two on iOS, where neither renderer reads `a11y_label`
-        // either: a tappable area is read as the words inside it, one at a
-        // time, and a list row as its lines combined. Each becomes one
-        // element saying its label, a button where something handles its
-        // press. The modifier is shared by the two files, so it is not
-        // private to either.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift',
-        'ships' => <<<'SHIPS'
-        } else {
-            NativeUIColumnRenderer(node: node)
-        }
-    }
-}
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        } else {
-            NativeUIColumnRenderer(node: node)
-                .modifier(NativeUISaidAs(node: node))
-        }
-    }
-}
-
-/// The label the markup gave an element, said as one element, where it gave one.
-struct NativeUISaidAs: ViewModifier {
-    let node: NativeUINode
-
-    func body(content: Content) -> some View {
-        let label = node.props.getString("a11y_label", default: "")
-        let hint = node.props.getString("a11y_hint", default: "")
-        if label.isEmpty {
-            content
-        } else {
-            content
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(label)
-                .accessibilityHint(hint)
-                .accessibilityAddTraits(node.onPress != 0 ? .isButton : [])
-        }
-    }
-}
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-            .accessibilityElement(children: .combine)
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            .accessibilityElement(children: .combine)
-            .modifier(NativeUISaidAs(node: node))
-
-BECOMES,
-    ],
-    [
-        // The iOS half of the text field fix above. A field compares what PHP
-        // answers only with the last value it sent, so typing faster than PHP
-        // answers lets an earlier answer land after a later keystroke was
-        // sent, and it replaces what the person typed. Measured on 2026-09-30
-        // on an iPhone 12 mini: a pairing code typed at a few characters a
-        // second kept only its last character. Each field now remembers what
-        // it sent and PHP has not answered, as the Android fields do, and only
-        // a value it never sent replaces the text.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-    @State private var lastSentValue: String = ""
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    @State private var lastSentValue: String = ""
-    /// What this field sent that PHP has not answered yet, oldest first. PHP
-    /// answers in the order it was asked, so a server value matching one of
-    /// these answers it, and everything sent before it.
-    @State private var inFlight: [String] = []
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-            if newServerValue != lastSentValue {
-                text = newServerValue
-                lastSentValue = newServerValue
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            if let answered = inFlight.firstIndex(of: newServerValue) {
-                inFlight.removeFirst(answered + 1)
-                return
-            }
-            if newServerValue != lastSentValue {
-                text = newServerValue
-                lastSentValue = newServerValue
-                inFlight.removeAll()
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-    private func commit(_ value: String, onChangeCb: Int) {
-        lastSentValue = value
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    private func commit(_ value: String, onChangeCb: Int) {
-        lastSentValue = value
-        inFlight.append(value)
-        if inFlight.count > 64 { inFlight.removeFirst() }
-BECOMES,
-    ],
-    [
-        // A field whose error line appears loses the keyboard. The hint that
-        // announces the error is applied only while there is one, and a
-        // modifier that is there on one render and not the next makes SwiftUI
-        // build the field again, which drops its focus. So the first
-        // keystroke that makes a pairing code unreadable closes the keyboard.
-        // The hint is always applied now, empty when there is nothing to say,
-        // so the field is the same field before and after.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIOutlinedTextInputRenderer.swift',
-        'ships' => <<<'SHIPS'
-private struct A11yHintModifier: ViewModifier {
-    let hint: String
-    func body(content: Content) -> some View {
-        if hint.isEmpty { content }
-        else { content.accessibilityHint(hint) }
-    }
-}
-SHIPS,
-        'becomes' => <<<'BECOMES'
-private struct A11yHintModifier: ViewModifier {
-    let hint: String
-    func body(content: Content) -> some View {
-        content.accessibilityHint(hint)
-    }
-}
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIFilledTextInputRenderer.swift',
-        'ships' => <<<'SHIPS'
-private struct A11yHintModifier: ViewModifier {
-    let hint: String
-    func body(content: Content) -> some View {
-        if hint.isEmpty { content }
-        else { content.accessibilityHint(hint) }
-    }
-}
-SHIPS,
-        'becomes' => <<<'BECOMES'
-private struct A11yHintModifier: ViewModifier {
-    let hint: String
-    func body(content: Content) -> some View {
-        content.accessibilityHint(hint)
-    }
-}
-BECOMES,
-    ],
-    [
-        // A field can be told to keep what is typed exactly as typed. A
-        // pairing code typed on an iPhone was refused as no pairing code:
-        // Smart Punctuation had turned its straight quotation marks into
-        // curly ones, and the field had no way to say no. The field takes
-        // HTML's `autocorrect`, and off turns off every rewrite the platform
-        // makes as somebody types: autocorrect, spell checking, predictions,
-        // and iOS's smart quotes, dashes and spacing. Unset, each platform
-        // derives it from the keyboard type as it did.
-        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php',
-        'ships' => <<<'SHIPS'
-        if (! empty($attrs['secure'])) {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        $autocorrect = $attrs['autocorrect'] ?? $attrs['autoCorrect'] ?? $attrs['auto-correct'] ?? null;
-        if ($autocorrect !== null) {
-            $this->autocorrect(filter_var($autocorrect, FILTER_VALIDATE_BOOLEAN));
-        }
-        if (! empty($attrs['secure'])) {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php',
-        'ships' => <<<'SHIPS'
-    /**
-     * Mask the field's contents (password entry).
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    /**
-     * Whether the platform may rewrite what is typed, as HTML's `autocorrect`.
-     *
-     * Off turns off autocorrect, spell checking and predictions, and on iOS
-     * Smart Punctuation's quotes, dashes and spacing, so the field holds the
-     * characters that were typed. Unset, the field derives it from its
-     * `keyboard` type. Blade: `autocorrect="off"`.
-     */
-    public function autocorrect(bool $value = true): static
-    {
-        $this->inputProps['autocorrect'] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Mask the field's contents (password entry).
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-        let autocorrect   = allowsAutocorrection(secure: secure, keyboard: keyboardKind)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        let autocorrect   = allowsAutocorrection(
-            explicit: p.has("autocorrect") ? p.getBool("autocorrect") : nil,
-            secure: secure,
-            keyboard: keyboardKind
-        )
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-private func allowsAutocorrection(secure: Bool, keyboard: String) -> Bool {
-    if secure { return false }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-private func allowsAutocorrection(explicit: Bool?, secure: Bool, keyboard: String) -> Bool {
-    if secure { return false }
-    if let explicit { return explicit }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-            } else {
-                scrollIntoView()
-            }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            } else {
-                scrollIntoView()
-                // A runloop later, so a field focused from code is first
-                // responder by then, and only while this field still is.
-                if !autocorrect {
-                    DispatchQueue.main.async {
-                        if isFocused { NativeUIKeepsWhatIsTyped.inTheFocusedField() }
-                    }
-                }
-            }
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
-        'ships' => <<<'SHIPS'
-/// Places the reveal ("eye") control inside the field's own chrome, so it sits
-SHIPS,
-        'becomes' => <<<'BECOMES'
-/// The traits of a UIKit field that decide what iOS rewrites as somebody types.
-@MainActor
-private protocol NativeUIRewritesWhatIsTyped: UIResponder {
-    var autocorrectionType: UITextAutocorrectionType { get set }
-    var spellCheckingType: UITextSpellCheckingType { get set }
-    var smartQuotesType: UITextSmartQuotesType { get set }
-    var smartDashesType: UITextSmartDashesType { get set }
-    var smartInsertDeleteType: UITextSmartInsertDeleteType { get set }
-    var inlinePredictionType: UITextInlinePredictionType { get set }
-}
-
-extension UITextField: NativeUIRewritesWhatIsTyped {}
-extension UITextView: NativeUIRewritesWhatIsTyped {}
-
-/// Keeps what is typed into the focused field exactly as typed.
-///
-/// SwiftUI can turn autocorrect off and has no modifier for the rest of what
-/// iOS rewrites: spell checking, inline predictions, and Smart Punctuation,
-/// which turns a typed `"` into `“` and `--` into `—`. Those are traits of the
-/// UIKit field SwiftUI draws. They are set on that field while it is first
-/// responder, which is when it is known to be the focused field, and the
-/// keyboard is asked to read them again.
-@MainActor
-private enum NativeUIKeepsWhatIsTyped {
-    static weak var firstResponder: UIResponder?
-
-    static func inTheFocusedField() {
-        firstResponder = nil
-        defer { firstResponder = nil }
-        UIApplication.shared.sendAction(#selector(UIResponder.nativeUIIsTheFirstResponder), to: nil, from: nil, for: nil)
-        guard let field = firstResponder as? NativeUIRewritesWhatIsTyped else { return }
-        field.autocorrectionType = .no
-        field.spellCheckingType = .no
-        field.smartQuotesType = .no
-        field.smartDashesType = .no
-        field.smartInsertDeleteType = .no
-        field.inlinePredictionType = .no
-        field.reloadInputViews()
-    }
-}
-
-extension UIResponder {
-    /// Sent to no target, so it reaches the first responder, which names itself.
-    @objc fileprivate func nativeUIIsTheFirstResponder() {
-        NativeUIKeepsWhatIsTyped.firstResponder = self
-    }
-}
-
-/// Places the reveal ("eye") control inside the field's own chrome, so it sits
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
-        'ships' => <<<'SHIPS'
-    val capitalization: KeyboardCapitalization?,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    val capitalization: KeyboardCapitalization?,
-    /** The `autocorrect` prop; null leaves Compose's own default alone. */
-    val autocorrect: Boolean?,
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
-        'ships' => <<<'SHIPS'
-        capitalization = resolveCapitalization(p.getString("autocapitalize"), p.getBool("secure"), p.getString("keyboard")),
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        capitalization = resolveCapitalization(p.getString("autocapitalize"), p.getBool("secure"), p.getString("keyboard")),
-        autocorrect  = if (p.has("autocorrect")) p.getBool("autocorrect") else null,
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
-        'ships' => <<<'SHIPS'
-internal fun keyboardOptionsFor(props: TextInputProps): KeyboardOptions =
-    props.capitalization
-        ?.let { KeyboardOptions(keyboardType = props.keyboard, capitalization = it) }
-        ?: KeyboardOptions(keyboardType = props.keyboard)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-internal fun keyboardOptionsFor(props: TextInputProps): KeyboardOptions =
-    KeyboardOptions(
-        keyboardType = props.keyboard,
-        capitalization = props.capitalization ?: KeyboardCapitalization.Unspecified,
-        autoCorrectEnabled = props.autocorrect,
-    )
-BECOMES,
-    ],
-    [
-        // A row marked `flex-wrap` does not wrap on iOS. The layout that
-        // places a row's children takes the flag and never reads it, so every
-        // child is squeezed onto the one line: eight category chips each got
-        // a sliver of the width, and their words ran down the screen one
-        // letter at a time. Android wraps them. A wrapping row is laid out by
-        // a layout of its own, which puts each child at the width it asks for
-        // and starts a new line when the next one would not fit, the gap
-        // between them both ways.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIRowRenderer.swift',
-        'ships' => <<<'SHIPS'
-        if node.children.isEmpty {
-            Color.clear
-        } else {
-            FlexContainer(
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        if node.children.isEmpty {
-            Color.clear
-        } else if node.layout?.flexWrap == 1 {
-            NativeUIWrappingRow(gap: CGFloat(node.layout?.gap ?? 0)) {
-                ForEach(node.children) { child in
-                    NodeView(node: child)
-                        .equatable()
-                }
-            }
-        } else {
-            FlexContainer(
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIRowRenderer.swift',
-        'ships' => <<<'SHIPS'
-import SwiftUI
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import SwiftUI
-
-/// A row whose children start a new line when the next would not fit, as a CSS
-/// `flex-wrap: wrap` row does. Each child is as wide as it asks to be, no wider
-/// than the row, and centred on its line.
-struct NativeUIWrappingRow: Layout {
-    let gap: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let lines = arrange(subviews, within: proposal.width ?? .infinity)
-        let height = lines.reduce(0) { $0 + $1.height } + gap * CGFloat(max(lines.count - 1, 0))
-        let widest = lines.map(\.width).max() ?? 0
-
-        return CGSize(width: proposal.width ?? widest, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var y = bounds.minY
-
-        for line in arrange(subviews, within: bounds.width) {
-            var x = bounds.minX
-
-            for item in line.items {
-                subviews[item.index].place(
-                    at: CGPoint(x: x, y: y + (line.height - item.size.height) / 2),
-                    proposal: ProposedViewSize(item.size)
-                )
-                x += item.size.width + gap
-            }
-
-            y += line.height + gap
-        }
-    }
-
-    private struct Item {
-        let index: Int
-        let size: CGSize
-    }
-
-    private struct Line {
-        var items: [Item] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-    }
-
-    private func arrange(_ subviews: Subviews, within width: CGFloat) -> [Line] {
-        var lines: [Line] = []
-        var line = Line()
-
-        for index in subviews.indices {
-            var size = subviews[index].sizeThatFits(.unspecified)
-            if size.width > width {
-                size = subviews[index].sizeThatFits(ProposedViewSize(width: width, height: nil))
-            }
-
-            if !line.items.isEmpty && line.width + gap + size.width > width {
-                lines.append(line)
-                line = Line()
-            }
-
-            line.width = line.items.isEmpty ? size.width : line.width + gap + size.width
-            line.height = max(line.height, size.height)
-            line.items.append(Item(index: index, size: size))
-        }
-
-        if !line.items.isEmpty {
-            lines.append(line)
-        }
-
-        return lines
-    }
-}
-
-BECOMES,
-    ],
-    [
-        // The iOS half of the IconHelper.kt glyph entries. A list row's leading and
-        // trailing icons are SF Symbols drawn as images VoiceOver can reach,
-        // so a row is read as its symbol's name ("exclamationmark.octagon.fill")
-        // and a chevron as "Forward", each a stop of its own beside the row.
-        // They decorate a row whose words, and whose label, already say what
-        // it is, so they are hidden from VoiceOver, as the Android row's icons
-        // are and as the row's avatar, monogram and image already were.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-                    Image(systemName: getIconForName(value))
-                        .nuiScaledFont(size: 18, weight: .medium)
-                        .foregroundColor(.white)
-                }
-                .frame(width: 40, height: 40)
-            } else {
-                Image(systemName: getIconForName(value))
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.secondary)
-            }
-SHIPS,
-        'was' => <<<'WAS'
-                    Image(systemName: getIconForName(value))
-                        .nuiScaledFont(size: 18, weight: .medium)
-                        .foregroundColor(.white)
-                }
-                .frame(width: 40, height: 40)
-                .accessibilityHidden(true)
-            } else {
-                Image(systemName: getIconForName(value))
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.secondary)
-                    .accessibilityHidden(true)
-            }
-WAS,
-        'becomes' => <<<'BECOMES'
-                    Image(systemName: getIconForName(value))
-                        .nuiScaledFont(size: 18, weight: .medium)
-                        .foregroundColor(.white)
-                }
-                .frame(width: 40, height: 40)
-                .accessibilityHidden(true)
-            } else {
-                Image(systemName: getIconForName(value))
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
-                    .accessibilityHidden(true)
-            }
-BECOMES,
-    ],
-    [
-        // A list row's leading glyph in the colour the row hands it. Android's
-        // row reads `leading_icon_color`; iOS's reads it nowhere and draws the
-        // glyph in the system's secondary grey, so without this a service's
-        // state is drawn in its severity on Android and in grey on iOS. The
-        // colour is read here, handed to the leading content, and painted
-        // above where one was given; a row handed none keeps the grey.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-        let leadingIconBgColor = p.getColor("leading_icon_bg_color", default: 0)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        let leadingIconBgColor = p.getColor("leading_icon_bg_color", default: 0)
-        let leadingIconColor = p.getColor("leading_icon_color", default: 0)
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-                iconBgColor: leadingIconBgColor,
-                checked: leadingChecked,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                iconBgColor: leadingIconBgColor,
-                iconColor: leadingIconColor,
-                checked: leadingChecked,
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    private func buildLeadingContent(type: String, value: String, monogramColor: Int, iconBgColor: Int = 0, iconColor: Int = 0, checked: Bool = false, changeCb: Int = 0) -> some View {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-        case "icon":
-            Image(systemName: getIconForName(value))
-                .frame(width: 24, height: 24)
-                .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
-        case "text":
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        case "icon":
-            Image(systemName: getIconForName(value))
-                .frame(width: 24, height: 24)
-                .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
-                .accessibilityHidden(true)
-        case "text":
-BECOMES,
-    ],
-    [
-        // What a bridge call carries stays out of the device log. The bridge
-        // writes every call's parameters and result to logcat at INFO, in
-        // debug and release builds alike, and this app's storage calls carry
-        // the session token, the stack's address and its pinned fingerprint.
-        // Anything that can read the log reads them. The function's name is
-        // still logged; what it was handed and what it handed back are not.
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp',
-        'ships' => <<<'SHIPS'
-    if (parametersJSON) {
-        LOGI("📦 BridgeJNI: Parameters JSON: %s", parametersJSON);
-    } else {
-        LOGI("📦 BridgeJNI: Parameters JSON: NULL");
-    }
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    // What a call carries is not logged: this app's calls carry its session.
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp',
-        'ships' => <<<'SHIPS'
-    LOGI("📤 BridgeJNI: Result JSON: %s", resultStr);
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    // What a call returned is not logged, for the reason its parameters are not.
-BECOMES,
-    ],
-    [
-        // The same on iOS, where the router prints every call's parameters.
-        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/Bridge/BridgeRouter.swift',
-        'ships' => <<<'SHIPS'
-    print("🚀 NativePHPCall('\(functionName)') with parameters: \(parameters)")
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    print("🚀 NativePHPCall('\(functionName)')")
-BECOMES,
-    ],
-    [
-        // A screen at the root of its own stack draws its back chevron by hand,
-        // and a screen without a stack is one: it opens from a screen in the
-        // tabs, which is another stack. Pushed levels get the edge swipe from
-        // `NavigationStack`; this gives the hand-drawn chevron the same swipe,
-        // ending in the same call the chevron makes.
-        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift',
-        'ships' => <<<'SHIPS'
-            .modifier(HideNavBarModifier(hidden: hideNavBar))
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            .modifier(HideNavBarModifier(hidden: hideNavBar))
-            .modifier(EdgeSwipeBackModifier(enabled: showBack && isRoot))
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift',
-        'ships' => <<<'SHIPS'
-private struct StackBarBackgroundModifier: ViewModifier {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-/// The edge swipe back, for a level that draws its back chevron by hand.
-///
-/// A drag that starts at the leading edge and travels mostly sideways goes
-/// back, as the chevron does. Simultaneous, so a list beneath it still scrolls.
-private struct EdgeSwipeBackModifier: ViewModifier {
-    let enabled: Bool
-
-    /// How near the leading edge a drag must start, in points.
-    private static let edge: CGFloat = 24
-    /// How far it must travel before it counts, in points.
-    private static let travel: CGFloat = 80
-
-    func body(content: Content) -> some View {
-        if enabled {
-            content.simultaneousGesture(
-                DragGesture(minimumDistance: 10, coordinateSpace: .global)
-                    .onEnded { drag in
-                        let sideways = drag.translation.width
-                        if drag.startLocation.x < Self.edge, sideways > Self.travel, abs(drag.translation.height) < sideways {
-                            NativeElementBridge.sendSystemBackEvent()
-                        }
-                    }
-            )
-        } else {
-            content
-        }
-    }
-}
-
-private struct StackBarBackgroundModifier: ViewModifier {
-BECOMES,
-    ],
-    [
-        // A tab carries a mark a screen reader announces: its name and how
-        // many new items it holds, in a sentence of its own beside the count
-        // drawn in the badge. The package has no word for it, so the tab
-        // takes one, `badge-label`, which reaches each renderer as
-        // `badge_label`.
-        'in' => '/../vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php',
-        'ships' => <<<'SHIPS'
-            'badge-color' => 'badgeColor',
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            'badge-color' => 'badgeColor',
-            'badge-label' => 'badgeLabel',
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/src/Edge/Elements/BottomNavItem.php',
-        'ships' => <<<'SHIPS'
-        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor'] as $key) {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        foreach (['id', 'icon', 'material_variant', 'url', 'label', 'badge', 'badgeColor', 'badgeLabel'] as $key) {
-BECOMES,
-    ],
-    [
-        // On iOS the mark's sentence is the tab's name to a screen reader
-        // where the tab carries one, as it is on Android, so the tab is
-        // named once and the count is said with it.
-        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift',
-        'ships' => <<<'SHIPS'
-                .badge(badgeFor(tab))
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                .badge(badgeFor(tab))
-                .accessibilityLabel(markFor(tab), isEnabled: !markFor(tab).isEmpty)
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift',
-        'ships' => <<<'SHIPS'
-    private func badgeFor(_ tab: NativeUINode) -> Text? {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    /// What a screen reader says for a tab carrying a mark: its name and how
-    /// many new items it holds, or nothing where the tab carries none.
-    private func markFor(_ tab: NativeUINode) -> String {
-        tab.props.getString("badge_label", default: "")
-    }
-
-    private func badgeFor(_ tab: NativeUINode) -> Text? {
-BECOMES,
-    ],
-    [
-        // A list row that goes somewhere carries a count between its label
-        // and its chevron, as a tab carries its badge: what the menu counts
-        // beside What's new. The package has no word for it, so the row takes
-        // one, `badge`, which reaches each renderer as `badge`.
-        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/ListItem.php',
-        'ships' => <<<'SHIPS'
-        if (isset($attrs['trailingText'])) {
-            $this->trailingText($attrs['trailingText']);
-        }
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-        if (isset($attrs['trailingText'])) {
-            $this->trailingText($attrs['trailingText']);
-        }
-        if (isset($attrs['badge'])) {
-            $this->listItemProps['badge'] = (string) $attrs['badge'];
-        }
-
-BECOMES,
-    ],
-    [
-        // On Android the count is drawn in the platform's own badge before
-        // whatever ends the row. The digits are hidden from a screen reader,
-        // because the row's label says the count with its name.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-            trailingContent = run {
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            trailingContent = withBadge(p.getString("badge", ""), run {
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-            },
-            colors = colors,
-            tonalElevation = tonalElevation.dp,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            }),
-            colors = colors,
-            tonalElevation = tonalElevation.dp,
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-    @Composable
-    private fun buildLeadingContent(
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    /**
-     * What ends the row, with the row's count drawn in a badge before it
-     * where it carries one. The digits say nothing to a screen reader: the
-     * row's label says the count with its name.
-     */
-    private fun withBadge(badge: String, trailing: (@Composable () -> Unit)?): (@Composable () -> Unit)? {
-        if (badge.isEmpty()) return trailing
-        return {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Badge { Text(badge, fontFamily = nuiDefaultFontFamily(), modifier = Modifier.clearAndSetSemantics {}) }
-                trailing?.invoke()
-            }
-        }
-    }
-
-    @Composable
-    private fun buildLeadingContent(
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.foundation.layout.Box
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.material3.Checkbox
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Checkbox
-
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.ui.semantics.Role
-
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-
-BECOMES,
-    ],
-    [
-        // On iOS the count is drawn as the package's own badge is, in the
-        // theme's destructive colours, before whatever ends the row, and
-        // hidden from VoiceOver for the reason it is on Android.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
-        'ships' => <<<'SHIPS'
-            Spacer()
-
-            // Trailing — multi-badge stack wins over single trailingIcon.
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            Spacer()
-
-            let badge = p.getString("badge", default: "")
-            if !badge.isEmpty {
-                let theme = themeStore.resolve(for: colorScheme)
-                Text(badge)
-                    .nuiScaledFont(size: 12, weight: .bold)
-                    .foregroundColor(theme.onDestructive)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(theme.destructive))
-                    .accessibilityHidden(true)
-            }
-
-            // Trailing — multi-badge stack wins over single trailingIcon.
-BECOMES,
-    ],
-    [
-        // The bundled faces are licensed under the SIL Open Font License, which
-        // lets them ship inside the app on condition that each copy carries the
-        // licence. So the licence beside each family in `resources/fonts` is
-        // copied into each platform's bundle with the faces. The renderers look
-        // a face up by the extensions they know, so a licence is never taken
-        // for one.
-        'in' => '/../vendor/nativephp/mobile-ui/src/Console/CopyFontsCommand.php',
-        'ships' => <<<'SHIPS'
-    protected array $fontExtensions = ['ttf', 'otf', 'ttc'];
-SHIPS,
-        'becomes' => <<<'BECOMES'
-    protected array $fontExtensions = ['ttf', 'otf', 'ttc', 'txt'];
-BECOMES,
-    ],
-    [
-        // A chip is drawn as the pill on iOS, which the brand allows on a chip
-        // and a button alone, and as Material's default eight-point corner on
-        // Android, which is no radius of the brand's. So Android's chip takes
-        // the pill from the widget theme, which carries the brand's.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3Api
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ChipRenderer.kt',
-        'ships' => <<<'SHIPS'
-            colors = colors,
-            border = border,
-        )
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            colors = colors,
-            border = border,
-            shape = RoundedCornerShape(theme.radiusFull),
-        )
-BECOMES,
-    ],
-    [
-        // A sheet's top corners are the brand's `md`, from the widget theme,
-        // rather than each platform's own large sheet corner.
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt',
-        'ships' => <<<'SHIPS'
-import androidx.compose.foundation.layout.fillMaxHeight
-SHIPS,
-        'becomes' => <<<'BECOMES'
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BottomSheetRenderer.kt',
-        'ships' => <<<'SHIPS'
-            scrimColor = BottomSheetDefaults.ScrimColor,
-SHIPS,
-        'becomes' => <<<'BECOMES'
-            scrimColor = BottomSheetDefaults.ScrimColor,
-            shape = RoundedCornerShape(topStart = theme.radiusMd, topEnd = theme.radiusMd),
-BECOMES,
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIBottomSheetRenderer.swift',
-        'ships' => <<<'SHIPS'
-                .presentationDragIndicator(.visible)
-SHIPS,
-        'becomes' => <<<'BECOMES'
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(theme.radiusMd)
-BECOMES,
-    ],
-];
-
-/**
- * What to do when a line this patch rewrites is not where it was.
+ * What to do when a line a patch rewrites is not where it was.
  *
  * One literal rather than several joined, because a join between two literals
  * is three mutants — drop either, swap them — and nothing asserts this sentence
  * word for word.
  */
-const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites is not in %s.\n\nEither the package fixed it, in which case delete that entry — and if it was the last one, this script and the two `composer.json` hooks that call it — or it moved, in which case a build is fatalling on a device again and nothing said so. Do not ignore this.\n";
+const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the lines %2\$s rewrites are not in %1\$s.\n\nEither the package fixed it, in which case delete that hunk — and the patch, if it was its last, and this script, its patches and the two `composer.json` hooks that call it, if that was the last patch — or it moved, in which case a build is fatalling on a device again and nothing said so. Do not ignore this.\n";
 
 /**
  * What to do when the file a patch rewrites is not there at all.
@@ -2198,7 +64,7 @@ const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites i
  *
  * One literal for the reason the one above is one literal.
  */
-const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
+const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %1\$s, which %2\$s rewrites, is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point the patch at the new path, or it is gone, in which case delete that file's part of the patch — and the patch, if nothing is left of it, and this script, its patches and the two `composer.json` hooks that call it, if that was the last patch. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
 
 /**
  * What to do when the native project this tree builds from does not carry a line the package does.
@@ -2206,11 +72,20 @@ const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe pac
  * Its own sentence, because the remedy is not the other two's. The project
  * is a copy `native:install` took of the package, so a line missing from it
  * means the copy no longer matches the package this tree installed, and the
- * way out is to copy it again rather than to edit this script.
+ * way out is to copy it again rather than to edit a patch.
  *
  * One literal for the reason the ones above are one literal.
  */
-const WHEN_THE_INSTALLED_COPY_DIFFERS = "patch_nativephp: %s does not carry what the package ships.\n\nThat file belongs to the native project `native:install` copied out of the package, and the copy no longer matches the package this tree installed. Run `php artisan native:install --force` to copy it again from the patched package. Building from it as it is leaves the device on code this patch never reached. Do not ignore this.\n";
+const WHEN_THE_INSTALLED_COPY_DIFFERS = "patch_nativephp: %1\$s does not carry what the package ships.\n\nThat file belongs to the native project `native:install` copied out of the package, and the copy no longer matches the package this tree installed. Run `php artisan native:install --force` to copy it again from the patched package. Building from it as it is leaves the device on code this patch never reached. Do not ignore this.\n";
+
+/**
+ * What to do when a patch cannot be read as one.
+ *
+ * A patch read wrongly would apply less than it says, which is the quiet no-op
+ * the rest of this script refuses. One literal for the reason the ones above
+ * are one literal.
+ */
+const WHEN_A_PATCH_IS_NOT_ONE = "patch_nativephp: %1\$s is not a patch this can apply: %2\$s.\n\nEach patch is a unified diff of files under `vendor/nativephp/`, every hunk carrying exactly the lines its header counts. Nothing was written. Do not ignore this.\n";
 
 /**
  * The package directory the bundle leaves out, so its copy of this tree has none.
@@ -2221,7 +96,7 @@ const WHEN_THE_INSTALLED_COPY_DIFFERS = "patch_nativephp: %s does not carry what
  * there is nothing of it to patch. Where the directory is here and a file under
  * it is not, the file moved, and that is still refused.
  */
-const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
+const WHAT_THE_BUNDLE_LEAVES_OUT = 'vendor/nativephp/mobile/resources';
 
 /**
  * Where `native:install` copies a package template, which is what a build compiles.
@@ -2230,19 +105,166 @@ const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
  * into `nativephp/android` and `nativephp/ios` once, and every build after that
  * compiles the copy without reading the package again. A rewrite of the
  * template reaches a project installed after it and never one installed before
- * it, so an entry under the template is made to the installed copy as well. A
+ * it, so a hunk under the template is made to the installed copy as well. A
  * tree with no installed project has nothing there to patch: a fresh
  * checkout, whose install copies the template this run patched, and the
  * bundle's copy, which leaves `nativephp` out as `BundleExclusions::PROJECT`
  * says.
  */
 const WHERE_AN_INSTALL_COPIES_A_TEMPLATE = [
-    '/../vendor/nativephp/mobile/resources/androidstudio' => '/../nativephp/android',
-    '/../vendor/nativephp/mobile/resources/xcode' => '/../nativephp/ios',
+    'vendor/nativephp/mobile/resources/androidstudio' => 'nativephp/android',
+    'vendor/nativephp/mobile/resources/xcode' => 'nativephp/ios',
 ];
 
+/** Stops the run, saying why. */
+function refuse(string $message, string ...$arguments): never
+{
+    fwrite(STDERR, sprintf($message, ...$arguments));
+
+    exit(1);
+}
+
 /**
- * Each file an entry is made to, with what to say where the line is not in it.
+ * The patches a directory holds, in the order they are applied.
+ *
+ * @return list<string>
+ */
+function patchesIn(string $directory): array
+{
+    $patches = glob(sprintf('%s%s/*.patch', __DIR__, $directory));
+
+    return $patches === false ? [] : $patches;
+}
+
+/**
+ * Each hunk a patch makes: the file, the lines it matches and what they become.
+ *
+ * What the patch says before its first file is prose. Everything after it is
+ * a file's `---`/`+++` pair or a hunk, and a hunk carries exactly the lines its
+ * header counts, so a header that counts fewer is refused rather than read as
+ * a shorter hunk.
+ *
+ * @return list<array{path: string, ships: string, becomes: string}>
+ */
+function hunksIn(string $patch): array
+{
+    $text = file_get_contents($patch);
+
+    if (! is_string($text)) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, 'it could not be read');
+    }
+
+    $files = preg_split('/^(?=--- )/m', $text);
+    $hunks = [];
+
+    foreach (array_slice(is_array($files) ? $files : [], 1) as $file) {
+        $hunks = [...$hunks, ...hunksInFile($patch, $file)];
+    }
+
+    if ($hunks === []) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, 'it has no hunks');
+    }
+
+    return $hunks;
+}
+
+/**
+ * The hunks under one `---`/`+++` pair, refused unless both name one NativePHP file.
+ *
+ * @return list<array{path: string, ships: string, becomes: string}>
+ */
+function hunksInFile(string $patch, string $file): array
+{
+    $parts = preg_split('/^(?=@@ )/m', $file);
+    $parts = is_array($parts) ? $parts : [$file];
+    $pair = (string) array_shift($parts);
+
+    if (preg_match('~\A--- a/(\S+)\n\+\+\+ b/(\S+)\n\z~', $pair, $named) !== 1 || $named[1] !== $named[2]) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, sprintf('`%s` is not a `--- a/` and `+++ b/` pair naming one file', trim($pair)));
+    }
+
+    if (! str_starts_with($named[1], WHAT_A_PATCH_MAY_REWRITE) || str_contains($named[1], '..')) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, sprintf('`%s` is not a file under `%s`', $named[1], WHAT_A_PATCH_MAY_REWRITE));
+    }
+
+    $hunks = [];
+
+    foreach ($parts as $hunk) {
+        $hunks[] = ['path' => $named[1], ...hunk($patch, $hunk)];
+    }
+
+    return $hunks;
+}
+
+/**
+ * The lines one hunk matches and what they become.
+ *
+ * A blank line counts as an empty context line, as `patch` reads one, so an
+ * editor that strips the space from it leaves the patch as it was.
+ *
+ * @return array{ships: string, becomes: string}
+ */
+function hunk(string $patch, string $hunk): array
+{
+    if (preg_match(A_HUNK, $hunk, $parsed, PREG_UNMATCHED_AS_NULL) !== 1) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, sprintf('`%s` is not a hunk header', trim($hunk)));
+    }
+
+    [, $header, $shipsCounted, $becomesCounted, $lines] = $parsed;
+    $ships = [];
+    $becomes = [];
+
+    foreach (explode("\n", str_ends_with($lines, "\n") ? mb_substr($lines, 0, -1) : $lines) as $line) {
+        [$kind, $text] = lineIn($patch, $header, $line);
+        $ships = $kind === '+' ? $ships : [...$ships, $text];
+        $becomes = $kind === '-' ? $becomes : [...$becomes, $text];
+    }
+
+    $counted = count($ships) === (int) ($shipsCounted ?? '1') && count($becomes) === (int) ($becomesCounted ?? '1');
+
+    if (! $counted || $ships === [] || $ships === $becomes) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, sprintf('the hunk at `%s` does not carry the lines its header counts, or has none to match, or changes none', $header));
+    }
+
+    return ['ships' => implode('', $ships), 'becomes' => implode('', $becomes)];
+}
+
+/**
+ * Which side of a hunk a line is on, and the line it stands for.
+ *
+ * @return array{string, string}
+ */
+function lineIn(string $patch, string $header, string $line): array
+{
+    $kind = $line === '' ? ' ' : mb_substr($line, 0, 1);
+
+    if (! in_array($kind, [' ', '-', '+'], strict: true)) {
+        refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, sprintf('`%s`, in the hunk at `%s`, is on no side of it', $line, $header));
+    }
+
+    return [$kind, sprintf("%s\n", mb_substr($line, 1))];
+}
+
+/** Whether a file holds these lines as whole lines, so a match never starts mid-line. */
+function holds(string $source, string $lines): bool
+{
+    return str_contains(sprintf("\n%s", $source), sprintf("\n%s", $lines));
+}
+
+/** The file with every whole-line run of one set of lines replaced by another. */
+function rewrite(string $source, string $from, string $to): string
+{
+    return mb_substr(str_replace(sprintf("\n%s", $from), sprintf("\n%s", $to), sprintf("\n%s", $source)), 1);
+}
+
+/** What a hunk's result is known by: the file it is made to, and what it writes there. */
+function resultOf(string $where, string $becomes): string
+{
+    return sprintf("%s\n%s", $where, $becomes);
+}
+
+/**
+ * Each file a hunk is made to, with what to say where the line is not in it.
  *
  * The package's own file, unless this is the bundle's copy, and the installed
  * project's copy of it where there is one.
@@ -2254,11 +276,11 @@ function whereItIsMade(string $where): array
     $made = [];
 
     $leftOutOfThisCopy = str_starts_with($where, sprintf('%s/', WHAT_THE_BUNDLE_LEAVES_OUT))
-        && ! is_dir(sprintf('%s%s', __DIR__, WHAT_THE_BUNDLE_LEAVES_OUT));
+        && ! is_dir(sprintf('%s/../%s', __DIR__, WHAT_THE_BUNDLE_LEAVES_OUT));
 
     if (! $leftOutOfThisCopy) {
         $made[] = [
-            'path' => sprintf('%s%s', __DIR__, $where),
+            'path' => sprintf('%s/../%s', __DIR__, $where),
             'file_is_not_there' => WHEN_THE_FILE_IS_NOT_THERE,
             'line_has_moved' => WHEN_THE_LINE_HAS_MOVED,
         ];
@@ -2267,9 +289,9 @@ function whereItIsMade(string $where): array
     foreach (WHERE_AN_INSTALL_COPIES_A_TEMPLATE as $template => $installed) {
         $isUnderIt = str_starts_with($where, sprintf('%s/', $template));
 
-        if ($isUnderIt && is_dir(sprintf('%s%s', __DIR__, $installed))) {
+        if ($isUnderIt && is_dir(sprintf('%s/../%s', __DIR__, $installed))) {
             $made[] = [
-                'path' => sprintf('%s%s%s', __DIR__, $installed, mb_substr($where, mb_strlen($template))),
+                'path' => sprintf('%s/../%s%s', __DIR__, $installed, mb_substr($where, mb_strlen($template))),
                 'file_is_not_there' => WHEN_THE_INSTALLED_COPY_DIFFERS,
                 'line_has_moved' => WHEN_THE_INSTALLED_COPY_DIFFERS,
             ];
@@ -2279,40 +301,61 @@ function whereItIsMade(string $where): array
     return $made;
 }
 
+$patches = patchesIn(WHERE_THE_PATCHES_ARE);
+
+if ($patches === []) {
+    refuse(WHEN_A_PATCH_IS_NOT_ONE, sprintf('%s%s', __DIR__, WHERE_THE_PATCHES_ARE), 'it holds no patches');
+}
+
+$hunks = [];
+$results = [];
+
+foreach ($patches as $patch) {
+    foreach (hunksIn($patch) as $hunk) {
+        $hunks[] = [...$hunk, 'patch' => basename($patch)];
+        $results[resultOf($hunk['path'], $hunk['becomes'])] = true;
+    }
+}
+
+$earlier = [];
+
+foreach (patchesIn(WHERE_EARLIER_HUNKS_ARE) as $patch) {
+    foreach (hunksIn($patch) as ['path' => $where, 'ships' => $was, 'becomes' => $becomes]) {
+        if (! array_key_exists(resultOf($where, $becomes), $results)) {
+            refuse(WHEN_A_PATCH_IS_NOT_ONE, $patch, 'a hunk in it ends in lines no current hunk writes, so nothing moves a package on from it');
+        }
+
+        $earlier[resultOf($where, $becomes)] = $was;
+    }
+}
+
 $rewritten = 0;
 
-foreach (WHAT_THIS_REWRITES as $entry) {
-    ['in' => $where, 'ships' => $ships, 'becomes' => $becomes] = $entry;
-    $was = array_key_exists('was', $entry) ? $entry['was'] : $ships;
+foreach ($hunks as ['path' => $where, 'ships' => $ships, 'becomes' => $becomes, 'patch' => $patch]) {
+    $was = array_key_exists(resultOf($where, $becomes), $earlier) ? $earlier[resultOf($where, $becomes)] : $ships;
 
     foreach (whereItIsMade($where) as ['path' => $path, 'file_is_not_there' => $fileIsNotThere, 'line_has_moved' => $lineHasMoved]) {
         if (! file_exists($path)) {
-            fwrite(STDERR, sprintf($fileIsNotThere, $path));
-
-            exit(1);
+            refuse($fileIsNotThere, $path, $patch);
         }
 
         $source = file_get_contents($path);
 
         if (! is_string($source)) {
-            fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
-
-            exit(1);
+            refuse("patch_nativephp: could not read %s.\n", $path);
         }
 
-        if (str_contains($source, $becomes)) {
+        if (holds($source, $becomes)) {
             continue;
         }
 
-        $from = str_contains($source, $was) ? $was : $ships;
+        $from = holds($source, $was) ? $was : $ships;
 
-        if (! str_contains($source, $from)) {
-            fwrite(STDERR, sprintf($lineHasMoved, $path));
-
-            exit(1);
+        if (! holds($source, $from)) {
+            refuse($lineHasMoved, $path, $patch);
         }
 
-        file_put_contents($path, str_replace($from, $becomes, $source));
+        file_put_contents($path, rewrite($source, $from, $becomes));
 
         $rewritten++;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,7 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Modules\Kernel\Api\ConnectingADevice;
+use Lemonfiber\Sdk\Generated\HouseholdHandoffAction;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\HandoffSaysNothing;
@@ -26,16 +25,17 @@ use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheDoorSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
 /**
  * The one place this application asks a stack to hand one person's device over, and follows it.
  *
- * Built the way {@see Removers} is: the action is asked by the name
- * {@see ConnectingADevice} spells, with the person's name, and the stack
- * answers with a handle the hand-off arrives through. A name the stack turns
- * down is said in its own words and handed on as the refusal.
+ * Built the way {@see Removers} is: the action is asked as the SDK's
+ * `household-handoff`, with the person's name, and the stack answers with a
+ * handle the hand-off arrives through. A name the stack turns down is said in
+ * its own words and handed on as the refusal.
  *
  * **Each asking carries a key of its own**, for {@see HandingOverADevice}' reason.
  */
@@ -46,14 +46,13 @@ final readonly class Connectors implements HandingOverADevice
     public function handOver(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheHandoff
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
-                Api::action(ConnectingADevice::HandOver->asked()),
-                [WireField::Name->value => $who->name()],
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
+                new HouseholdHandoffAction(name: $who->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheHandoff::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -76,7 +75,7 @@ final readonly class Connectors implements HandingOverADevice
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheHandoff
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheHandoff => WhatBecameOfTheHandoff::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheHandoff
                     => WhatBecameOfTheHandoff::answered(Handoffs::in($envelope)),

@@ -22,6 +22,7 @@ use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatCameBack;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -70,7 +71,7 @@ final readonly class Questions implements Asking
 
     public function about(Stack $stack, Session $session): WhatCameBack
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->read(Api::CHECKS_ENDPOINT);
@@ -84,7 +85,7 @@ final readonly class Questions implements Asking
             return WhatCameBack::report(Reports::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatCameBack::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ReportIsUnreadable|CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ReportIsUnreadable|CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason $why) {
             return WhatCameBack::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

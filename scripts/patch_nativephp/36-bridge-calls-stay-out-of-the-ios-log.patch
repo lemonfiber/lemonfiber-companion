@@ -1,0 +1,8 @@
+What 35-bridge-calls-stay-out-of-logcat.patch keeps out of logcat, on iOS,
+where the router prints every call's parameters.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/Bridge/BridgeRouter.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/Bridge/BridgeRouter.swift
+@@ -209 +209 @@
+-    print("🚀 NativePHPCall('\(functionName)') with parameters: \(parameters)")
++    print("🚀 NativePHPCall('\(functionName)')")

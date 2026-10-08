@@ -475,14 +475,14 @@ it('asks the question without a yes and the yes with one, each under a key of it
     $asked = $mock->getLastPendingRequest();
 
     expect($asked?->getUrl())->toEndWith(sprintf('/api/actions/%s', $by->asked()))
-        ->and($asked?->body()?->all())->toBe(['confirm' => false])
+        ->and($asked?->body()?->all())->toBe($by === MovingInBy::Replacing ? ['offer' => null] : ['confirm' => false])
         ->and($asked?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 
     $scouts->moveIn(aStackToSurvey(), Session::of('a-session-not-a-secret'), AMoveAgreed::after(aMoveStagedBy($by)));
     $agreed = $mock->getLastPendingRequest();
 
     expect($agreed?->getUrl())->toEndWith(sprintf('/api/actions/%s', $by->asked()))
-        ->and($agreed?->body()?->all())->toBe(['confirm' => true])
+        ->and($agreed?->body()?->all())->toBe($by === MovingInBy::Replacing ? ['offer' => ''] : ['confirm' => true])
         ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull()
         ->and($agreed?->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBe($asked?->headers()->get(Api::IDEMPOTENCY_HEADER));
 })->with(MovingInBy::cases());

@@ -1,0 +1,29 @@
+A field whose error line appears loses the keyboard. The hint that announces
+the error is applied only while there is one, and a modifier that is there on
+one render and not the next makes SwiftUI build the field again, which drops
+its focus. So the first keystroke that makes a pairing code unreadable closes
+the keyboard. The hint is always applied now, empty when there is nothing to
+say, so the field is the same field before and after.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIOutlinedTextInputRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIOutlinedTextInputRenderer.swift
+@@ -200,7 +200,6 @@
+ private struct A11yHintModifier: ViewModifier {
+     let hint: String
+     func body(content: Content) -> some View {
+-        if hint.isEmpty { content }
+-        else { content.accessibilityHint(hint) }
++        content.accessibilityHint(hint)
+     }
+ }
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIFilledTextInputRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIFilledTextInputRenderer.swift
+@@ -169,7 +169,6 @@
+ private struct A11yHintModifier: ViewModifier {
+     let hint: String
+     func body(content: Content) -> some View {
+-        if hint.isEmpty { content }
+-        else { content.accessibilityHint(hint) }
++        content.accessibilityHint(hint)
+     }
+ }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\QualityUpgradeAction;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -19,8 +19,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
-use Modules\Kernel\Api\WhatToDoAboutQuality;
-use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -48,19 +47,18 @@ final readonly class Upgraders implements UpgradingTheLibrary
     /** The one call both methods make, the yes named at both call sites. */
     private function asking(Stack $stack, Session $session, bool $confirmed): WhatTheUpgradeCameTo
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToDoAboutQuality::Upgrade->asked()),
-                [UpdateField::Confirm->value => $confirmed],
+                new QualityUpgradeAction(confirm: $confirmed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
             return WhatTheUpgradeCameTo::said(WhatAnUpgradeComesTo::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheUpgradeCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing $why) {
             return WhatTheUpgradeCameTo::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

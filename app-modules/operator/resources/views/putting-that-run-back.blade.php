@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoWithARun')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -15,7 +16,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @elseif ($this->done()->isWorking)
         <x-operator::emphasis>{{ __('stacks.run_back.putting_back') }}</x-operator::emphasis>
@@ -89,14 +90,14 @@
     @endif
 
     @if ($this->done()->refused === null)
-        <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+        <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
     @endif
 @elseif (! $this->answer()->isOnTheRecord)
     {{-- The record holds nothing under this stamp: it may have fallen past
          the horizon, or been put back already. Nothing is offered. --}}
     <x-operator::emphasis>{{ __('stacks.run_back.not_on_the_record') }}</x-operator::emphasis>
     <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @else
     {{-- The agreement, drawn from the record's own rows. The stack puts the
          whole run back or none of it, so what goes with it is said before the
@@ -126,14 +127,14 @@
 
     @if ($this->answer()->goesBack)
         <x-design::body>{{ __('stacks.run_back.whole_or_nothing') }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.run_back.put_it_back') }}" tap="agree()" />
+        <x-operator::offered-action label="{{ __('stacks.run_back.put_it_back') }}" tap="agree()" :offer="$this->offered(WhatToDoWithARun::PutBack)" />
     @else
         {{-- A row says it cannot go back, and the stack judges every change
              before touching any, so it would put none of the run back. --}}
         <x-operator::emphasis>{{ __('stacks.run_back.cannot_go_back') }}</x-operator::emphasis>
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else
@@ -142,7 +143,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

@@ -1,0 +1,12 @@
+What a package patched by an earlier build carries where
+27-an-area-and-a-row-say-their-label.patch says a tappable area's label as one
+element: the label said through `nuiA11y`.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt
+@@ -113,4 +113,4 @@
+ object PressableRenderer {
+     @Composable
+     fun Render(node: NativeUINode, given: Modifier) {
+-        val modifier = given.nuiA11y(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
++        val modifier = given.nuiSaidAsOne(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))

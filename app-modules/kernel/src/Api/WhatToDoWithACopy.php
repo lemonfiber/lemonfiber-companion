@@ -11,7 +11,7 @@ namespace Modules\Kernel\Api;
  * segment of its path, and a name spelled at the call site is this app able to
  * ask for any action a stack offers.
  */
-enum WhatToDoWithACopy: string
+enum WhatToDoWithACopy: string implements AnAction
 {
     /** Take a copy. */
     case Take = 'take';

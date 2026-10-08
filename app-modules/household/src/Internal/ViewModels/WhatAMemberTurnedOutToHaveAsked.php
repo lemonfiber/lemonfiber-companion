@@ -78,8 +78,9 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
     /**
      * Something stood in the way, and this is what the member met.
      *
-     * Both keys come off the obstacle, which owns them, and whether a refusal
-     * means signed out is the obstacle's answer rather than this module's — so
+     * Both keys come off the obstacle, which owns them, in the house's words
+     * ({@see WhatAMemberIsTold}), and whether a refusal means signed out is the
+     * obstacle's answer rather than this module's — so
      * this screen cannot come to disagree with the ones beside it about whether
      * somebody is signed in.
      */
@@ -87,7 +88,7 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
     {
         return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: $why->said(), remedy: $why->remedy(), rows: [], why: $why);
+            : new self(isSignedIn: true, met: WhatAMemberIsTold::met($why), remedy: WhatAMemberIsTold::remedy($why), rows: [], why: $why);
     }
 
     /** Whether what stood in the way is put right on this app's page in the phone's settings. */

@@ -152,6 +152,12 @@
             "description": "Say whether the platform refuses this app the local network on the way to one address"
         },
         {
+            "name": "Lemonfiber.Resolve",
+            "android": "app.lemonfiber.native.ResolveFunctions.Resolve",
+            "ios": "ResolveFunctions.Resolve",
+            "description": "Look a machine's name up the way the phone itself does, and answer the addresses the app may send to; nothing resolved is kept or logged"
+        },
+        {
             "name": "Lemonfiber.Settings.Open",
             "android": "app.lemonfiber.native.SettingsFunctions.Open",
             "ios": "SettingsFunctions.Open",

@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * the four removals off the machine, against the reading of it the operator
  * was shown.
  */
-enum TakingItOff: string
+enum TakingItOff: string implements AnAction
 {
     /** Take one of the four removals off the machine. */
     case TakeItOff = 'take_it_off';

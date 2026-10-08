@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\ConfigSetAction;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -18,8 +18,8 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
-use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -61,16 +61,11 @@ final readonly class Adjustments implements Adjusting
         WhatToSet $asked,
         bool $agreed,
     ): WhatTheStackMadeOfIt {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action(WhatToChange::Setting->asked()),
-                [
-                    'key' => $asked->key,
-                    'value' => $asked->value,
-                    'agreed' => $agreed,
-                ],
+                new ConfigSetAction(key: $asked->key, value: $asked->value, confirm: $agreed),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
@@ -81,7 +76,7 @@ final readonly class Adjustments implements Adjusting
             return WhatTheStackMadeOfIt::said(Dials::reviewIn($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheStackMadeOfIt::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
             return WhatTheStackMadeOfIt::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

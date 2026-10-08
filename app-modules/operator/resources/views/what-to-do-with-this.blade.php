@@ -12,7 +12,7 @@
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->answer()->askedNow"
             ask-again=""
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @endif
     <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
@@ -134,7 +134,7 @@
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->whatItCameTo()->went"
                     ask-again=""
-                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                    :goes="$this->goes()"
                 />
                 <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
             @elseif ($this->whatItCameTo()->isWorking)
@@ -228,7 +228,7 @@
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->rehearsal()->went"
                     ask-again=""
-                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                    :goes="$this->goes()"
                 />
             @else
                 @if ($this->rehearsal()->runningUnread)
@@ -292,16 +292,12 @@
              one subject on this frame, so the label is the whole name a
              reader needs — which is the difference between a verb here and
              the same verb drawn once per row on the listing. --}}
-        @if ($this->answer()->waitsForTheStack)
-            {{-- Drawn and not usable while the listing drawn is one the
-                 phone kept, never hidden, and the note below says why. A
-                 line of words cannot be marked as not usable, so a waiting
-                 verb is the platform's quiet button, disabled, which a screen
-                 reader announces as such. --}}
-            <x-design::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" tone="tonal" :disabled="true" />
-        @else
-            <x-operator::quiet-action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" />
-        @endif
+        {{-- Drawn and not usable while the listing drawn is one the phone
+             kept, or while the stack does not offer the verb, never hidden,
+             and the note says why. A line of words cannot be marked as not
+             usable, so such a verb is the platform's quiet button, disabled,
+             which a screen reader announces as such. --}}
+        <x-operator::offered-action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" :offer="$this->offered($verb)" tone="tonal" drawn="quiet" :disabled="$this->answer()->waitsForTheStack" />
     @empty
         {{-- Said rather than left blank: a thing this stack runs and offers
              nothing for reads as a frame whose buttons failed to draw. --}}
@@ -331,19 +327,19 @@
         />
     @endunless
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 
 @if ($this->waitsForTheNextFrame())
-    <x-operator::the-next-frame />
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

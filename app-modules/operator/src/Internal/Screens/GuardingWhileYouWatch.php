@@ -30,6 +30,7 @@ use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
+use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -68,6 +69,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class GuardingWhileYouWatch extends NativeComponent
 {
+    use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatFormsItHas;
     use FindsItsWayAround;
@@ -134,13 +136,23 @@ final class GuardingWhileYouWatch extends NativeComponent
             : [...$this->naming, $form];
     }
 
+    /** Ask about a guard for the forms named, where any are. */
+    public function wouldGuard(): void
+    {
+        $guard = $this->theGuardNamed();
+
+        if ($guard->forms()->count() > 0) {
+            $this->asking = $guard;
+        }
+    }
+
     /**
-     * Ask about a guard for the forms named, where any are.
+     * The guard for the forms named so far, which its button asks the stack about before it is drawn.
      *
      * In the order the stack declares them, which is the order the question
      * names them in.
      */
-    public function wouldGuard(): void
+    public function theGuardNamed(): AGuardAskedFor
     {
         $forms = [];
 
@@ -150,11 +162,7 @@ final class GuardingWhileYouWatch extends NativeComponent
             }
         }
 
-        if ($forms === []) {
-            return;
-        }
-
-        $this->asking = AGuardAskedFor::of(Forms::these(...$forms));
+        return AGuardAskedFor::of(Forms::these(...$forms));
     }
 
     /** Start the guard that was asked about. */

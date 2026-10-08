@@ -1,0 +1,20 @@
+Material's container colours back the bottom bar's selected-item indicator and
+the tonal button. The package maps its surface family onto the theme store and
+leaves these at Material's baseline, a lavender no theme chose. Each is folded
+onto the store's token; the secondary container, behind a selected tab and a
+tonal button, onto the outline with the surface's text on it.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt
+@@ -272,2 +272,11 @@
+         inversePrimary          = primary,
++        primaryContainer        = primary,
++        onPrimaryContainer      = onPrimary,
++        secondaryContainer      = outline,
++        onSecondaryContainer    = onSurface,
++        tertiaryContainer       = accent,
++        onTertiaryContainer     = onAccent,
++        errorContainer          = destructive,
++        onErrorContainer        = onDestructive,
++        outlineVariant          = outlineVariant,
+     )

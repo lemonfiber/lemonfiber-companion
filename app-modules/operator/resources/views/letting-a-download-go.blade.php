@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoWithADownload')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -15,7 +16,7 @@
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->done()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @elseif ($this->done()->isWorking)
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
@@ -38,15 +39,15 @@
         <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @elseif ($this->answer()->isWorking)
     {{-- The stack answers the question as work, so the offer may not be
          in yet. Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @elseif ($this->answer()->hasEnded)
     <x-operator::emphasis>{{ __('stacks.let_go.offer_ended', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @else
     {{-- The offer: its own act, and what it costs, all of it before the yes.
          Nothing below has happened, and nothing is worded as though it had. --}}
@@ -69,8 +70,8 @@
 
     <x-design::body>{{ $this->answer()->goes }}</x-design::body>
 
-    <x-operator::action label="{{ __('stacks.let_go.stop_it') }}" tap="agree()" />
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-operator::offered-action label="{{ __('stacks.let_go.stop_it') }}" tap="agree()" :offer="$this->offered(WhatToDoWithADownload::StopSeeding)" />
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else
@@ -79,7 +80,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

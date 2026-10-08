@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\SupportAction;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFetched;
 use Modules\Kernel\Api\ABundleFile;
@@ -28,9 +28,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFilenamesShow;
-use Modules\Sdk\Api\Fields\BundleField;
-use Modules\Sdk\Api\Fields\UpdateField;
-use Modules\Sdk\Api\Fields\WalkthroughField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -58,11 +56,10 @@ final readonly class Bundlers implements AskingForHelp
 
     public function ask(Stack $stack, Session $session, ABundleAsked $asked): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             $envelope = $client->act(
-                Api::action($asked->asked()),
                 $this->arguments($asked),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
@@ -70,7 +67,7 @@ final readonly class Bundlers implements AskingForHelp
             return Underway::as(Handles::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (Unreachable|ApiVersionMismatch|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -100,7 +97,7 @@ final readonly class Bundlers implements AskingForHelp
     public function fetch(Stack $stack, Session $session, AWrittenBundle $written): ABundleFetched
     {
         try {
-            $file = $this->clients->client($stack, $session)->bundle($written->name());
+            $file = GatedClient::of($this->clients, $stack, $session)->bundle($written->name());
 
             return ABundleFetched::as(ABundleFile::fetched($written, $file->bytes()));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -117,10 +114,8 @@ final readonly class Bundlers implements AskingForHelp
      * holds a bundle revealing a setting back until it is confirmed, and one
      * revealing nothing needs no yes, so sending one there would be agreeing
      * to nothing.
-     *
-     * @return array<string, bool|int|list<string>>
      */
-    private function arguments(ABundleAsked $asked): array
+    private function arguments(ABundleAsked $asked): SupportAction
     {
         $revealing = [];
 
@@ -128,13 +123,13 @@ final readonly class Bundlers implements AskingForHelp
             $revealing[] = $setting->name();
         }
 
-        return [
-            BundleField::Write->value => $asked->writes(),
-            WalkthroughField::Logs->value => $asked->lines()->figure(),
-            BundleField::Filenames->value => $asked->filenames() === WhatFilenamesShow::Shown,
-            BundleField::Reveal->value => $revealing,
-            UpdateField::Confirm->value => $revealing !== [],
-        ];
+        return new SupportAction(
+            write: $asked->writes(),
+            logs: $asked->lines()->figure(),
+            filenames: $asked->filenames() === WhatFilenamesShow::Shown,
+            reveal: $revealing,
+            confirm: $revealing !== [],
+        );
     }
 
 
@@ -145,7 +140,7 @@ final readonly class Bundlers implements AskingForHelp
     private function outcome(Stack $stack, Session $session, Job $job): HowTheBundleIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheBundleIsGoing => HowTheBundleIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheBundleIsGoing
                     => HowTheBundleIsGoing::done(TheBundle::in($envelope)),

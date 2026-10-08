@@ -40,7 +40,7 @@ A line nobody measured is its own arm too, drawn as a sentence rather than as
 zeros. What a spent cap is doing, and what holding the upload back costs, are
 drawn where the stack says them and not otherwise. Each client's holding, the
 month's metering, the override and the household's hours are recorded as not
-read yet in `WhatTheContractCarriesThatNothingReadsTest`, each with its reason;
+read yet in `WhatThisAppDoesNotRead`, each with its reason;
 the structured limits are too, because the stack's one sentence per direction
 already carries them with the figure a share is a share of.
 
@@ -53,7 +53,7 @@ already carries them with the figure a share is a share of.
 
 The stack's answer also says whether the call that produced it changed the
 setting and whether it only rehearsed. This app makes no call that changes it,
-so both are recorded as unread in `WhatTheContractCarriesThatNothingReadsTest`
+so both are recorded as unread in `WhatThisAppDoesNotRead`
 rather than drawn: a rehearsal label on a plain reading would describe
 something that never happened.
 

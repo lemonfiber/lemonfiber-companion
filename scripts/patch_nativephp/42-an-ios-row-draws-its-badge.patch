@@ -1,0 +1,22 @@
+On iOS the count is drawn as the package's own badge is, in the theme's
+destructive colours, before whatever ends the row, and hidden from VoiceOver
+for the reason it is on Android.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift
+@@ -100,3 +100,15 @@
+             Spacer()
+ 
++            let badge = p.getString("badge", default: "")
++            if !badge.isEmpty {
++                let theme = themeStore.resolve(for: colorScheme)
++                Text(badge)
++                    .nuiScaledFont(size: 12, weight: .bold)
++                    .foregroundColor(theme.onDestructive)
++                    .padding(.horizontal, 6)
++                    .padding(.vertical, 2)
++                    .background(Capsule().fill(theme.destructive))
++                    .accessibilityHidden(true)
++            }
++
+             // Trailing — multi-badge stack wins over single trailingIcon.

@@ -37,10 +37,9 @@ envelope's shape, which the answer arriving changes.
 takes a name and a bare `confirm`, and the envelope names nothing a yes could
 quote, so nothing sent can say which reading was agreed to.
 
-`N13-R10` has no person's rehearsal to label yet. The `remove` action takes
-`dry_run` and the `removal` envelope says `rehearsed`, but the screen does not ask
-for a rehearsal; it draws `confirmed: false` as what taking them out would cost,
-and never as a rehearsal.
+`N13-R10` has no person's rehearsal to label. The `remove` action offers no
+rehearsal, though the `removal` envelope says `rehearsed`; the screen draws
+`confirmed: false` as what taking them out would cost, and never as a rehearsal.
 
 `N13-R19` is answered for the requests and the findings. Nothing on the wire
 says what taking somebody out does to their watch history, and the screen says

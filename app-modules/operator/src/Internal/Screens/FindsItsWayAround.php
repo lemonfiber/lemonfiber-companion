@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Modules\Kernel\Api\AnAction;
 use Modules\Kernel\Api\Stack;
 use Modules\Operator\Internal\HoldsItsStacksStream;
+use Modules\Operator\Internal\ViewModels\AnOffer;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhereTheTabsAreDrawn;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\FindsItsWayAroundAStack;
 use Modules\Wayfinding\Api\TheTabs;
 use Native\Mobile\Edge\Layouts\Builders\TabBarOptions;
@@ -66,6 +69,18 @@ trait FindsItsWayAround
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /**
+     * What a button for this action says, asked of the stack before it is drawn.
+     *
+     * One question for every button on every screen about a stack, so none
+     * works out for itself whether the stack is too old for it, or whether it
+     * is this account's to ask for.
+     */
+    public function offered(AnAction $action): AnOffer
+    {
+        return AnOffer::of($this->around->offers($this->stack(), $action), $this->goes()->to(AStacksScreen::Updates));
     }
 
     /** The tab this screen is drawn under, which the bar marks, or none. */

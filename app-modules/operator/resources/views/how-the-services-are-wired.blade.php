@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoAboutWiring')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -19,7 +20,7 @@
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :went="$this->choice->went"
-                    :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+                    :goes="$this->goes()"
                 />
             @elseif ($this->choice->refused !== null)
                 <x-design::body>{{ __('stacks.wiring.fills.not_chosen') }}</x-design::body>
@@ -51,7 +52,7 @@
             @endif
         </x-design::card>
         @if ($this->choice->reading !== null)
-            <x-design::action label="{{ __('stacks.wiring.fills.agree') }}" tap="agree()" />
+            <x-operator::offered-action label="{{ __('stacks.wiring.fills.agree') }}" tap="agree()" :offer="$this->offered(WhatToDoAboutWiring::Fill)" />
             <x-design::action label="{{ __('stacks.wiring.fills.never_mind') }}" tap="letGo()" tone="tonal" />
         @else
             <x-design::action label="{{ __('stacks.wiring.fills.close') }}" tap="letGo()" tone="tonal" />
@@ -60,14 +61,14 @@
     @if ($this->whatAnswersWhat() === null)
         {{-- This frame read the services, so what answers what is read on
              the next one. --}}
-        <x-operator::the-next-frame />
+        <x-design::the-next-frame />
     @elseif (! $this->whatAnswersWhat()->went->cameBack())
         <x-design::body>{{ __('stacks.wiring.fills.unreadable') }}</x-design::body>
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->whatAnswersWhat()->went"
             ask-again=""
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @elseif ($this->whatAnswersWhat()->refused !== null)
         {{-- A wiring the stack could not read is said through its own words,
@@ -86,7 +87,7 @@
                     <x-design::body>{{ __($link->settledSaid) }}</x-design::body>
                     <x-operator::claimed-by :claimants="$link->claimants" />
                 </x-design::notice>
-                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" />
+                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" :offer="$this->offered(WhatToDoAboutWiring::Fill)" />
             @else
                 <x-design::card>
                     <x-design::strong>{{ $link->asks === '' ? $link->by : __($link->asks, $link->asksWith) }}</x-design::strong>
@@ -96,7 +97,7 @@
                     @endif
                     <x-operator::claimed-by :claimants="$link->claimants" />
                 </x-design::card>
-                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" />
+                <x-operator::who-may-answer :by="$link->by" :capability="$link->capability" :choices="$link->choices" :offer="$this->offered(WhatToDoAboutWiring::Fill)" />
             @endif
         @empty
             <x-design::body>{{ __('stacks.wiring.fills.none') }}</x-design::body>
@@ -183,18 +184,18 @@
                  by hand, so it is offered as it is: the screen's one way
                  forward. --}}
             <x-design::note>{{ __('stacks.wiring.what_a_run_does') }}</x-design::note>
-            <x-design::action label="{{ __('stacks.wiring.wire') }}" tap="wire()" />
+            <x-operator::offered-action label="{{ __('stacks.wiring.wire') }}" tap="wire()" :offer="$this->offered(WhatToDoAboutWiring::Wire)" />
         @endif
 
         {{-- Asks for the services again, and after a run still being followed;
              what the stack said about a run stays. --}}
-        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
     @else
         {{-- Starting a run, or asking after one, met something in the way. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :went="$this->howItIsGoing()->went"
-            :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+            :goes="$this->goes()"
         />
     @endif
 </x-operator::content>
@@ -202,7 +203,7 @@
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

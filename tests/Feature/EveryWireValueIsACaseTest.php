@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Kernel\Api\AgainstThePins;
-use Modules\Kernel\Api\Awaiting;
+use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
@@ -12,7 +11,6 @@ use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
-use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowItStands;
@@ -26,9 +24,7 @@ use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
-use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
@@ -76,7 +72,8 @@ use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
-use Tests\Support\Tree;
+use Tests\Support\TheGeneratedEnvelopes;
+use Tests\Support\TheWireUnions;
 
 /**
  * The app reads every value the contract says a stack may send.
@@ -106,258 +103,6 @@ use Tests\Support\Tree;
  * nothing.
  */
 
-/** The generated envelope that carries a report, as text. */
-function theGeneratedDoctorEnvelope(): string
-{
-    return theGeneratedEnvelope('DoctorEnvelope');
-}
-
-/** The generated envelope that carries what a repair came to, as text. */
-function theGeneratedRepairEnvelope(): string
-{
-    return theGeneratedEnvelope('RepairEnvelope');
-}
-
-/** The generated envelope that carries what has stopped coming in, as text. */
-function theGeneratedStuckEnvelope(): string
-{
-    return theGeneratedEnvelope('StuckEnvelope');
-}
-
-/** The generated envelope that carries what reaches what, as text. */
-function theGeneratedWiringEnvelope(): string
-{
-    return theGeneratedEnvelope('WiringEnvelope');
-}
-
-/** The generated envelope that carries what a member may watch, as text. */
-function theGeneratedHeldEnvelope(): string
-{
-    return theGeneratedEnvelope('HeldEnvelope');
-}
-
-/** The generated envelope that carries a service's scrollback, as text. */
-function theGeneratedLogEnvelope(): string
-{
-    return theGeneratedEnvelope('LogEnvelope');
-}
-
-/**
- * The health summary inside the generated `dashboard` envelope, as text.
- *
- * Cut out of the envelope because the dashboard names `standing` twice, once
- * for the front door and once for the summary, and two unions under one name
- * are no union at all to the reading above.
- */
-function theGeneratedHealthSummary(): string
-{
-    $dashboard = theGeneratedEnvelope('DashboardEnvelope');
-    $from = (int) strpos($dashboard, 'health: array{');
-
-    return substr($dashboard, $from, (int) strpos($dashboard, 'household:', $from) - $from);
-}
-
-/** The generated envelope that carries what a stack is set to, as text. */
-function theGeneratedConfigEnvelope(): string
-{
-    return theGeneratedEnvelope('ConfigEnvelope');
-}
-
-/** The generated envelope that carries what the whole stack is doing, as text. */
-function theGeneratedStatusEnvelope(): string
-{
-    return theGeneratedEnvelope('StatusEnvelope');
-}
-
-/** The generated envelope that carries what the machine keeps running, as text. */
-function theGeneratedHostingEnvelope(): string
-{
-    return theGeneratedEnvelope('HostingEnvelope');
-}
-
-/** The generated `history` envelope, as text. */
-function theGeneratedHistoryEnvelope(): string
-{
-    return theGeneratedEnvelope('HistoryEnvelope');
-}
-
-/** The generated `bandwidth` envelope, as text. */
-function theGeneratedBandwidthEnvelope(): string
-{
-    return theGeneratedEnvelope('BandwidthEnvelope');
-}
-
-/** The generated `space` envelope, as text. */
-function theGeneratedSpaceEnvelope(): string
-{
-    return theGeneratedEnvelope('SpaceEnvelope');
-}
-
-/** The generated `trace` envelope, as text. */
-function theGeneratedTraceEnvelope(): string
-{
-    return theGeneratedEnvelope('TraceEnvelope');
-}
-
-/** The generated `self-update` envelope, as text. */
-function theGeneratedSelfUpdateEnvelope(): string
-{
-    return theGeneratedEnvelope('SelfUpdateEnvelope');
-}
-
-/**
- * Every literal one field is fixed to across the arms of an object union.
- *
- * `standing` on a download and `of` on a line are not literal unions: each arm
- * of the shape fixes the field to a literal of its own, the way `Conclusion`'s
- * `outcome` is. Read off the generated type as `field: 'word'`, once each.
- *
- * @return list<string>
- */
-function theArmsIn(string $envelope, string $field): array
-{
-    preg_match_all(sprintf("/\\b%s: '([a-z_-]+)'/", $field), $envelope, $found);
-    $words = array_values(array_unique($found[1]));
-    sort($words);
-
-    return $words;
-}
-
-/** The generated `outbound` envelope, as text. */
-function theGeneratedOutboundEnvelope(): string
-{
-    return theGeneratedEnvelope('OutboundEnvelope');
-}
-
-/**
- * One generated envelope, as text.
- *
- * Named rather than spelled at each caller once there were several: the path is
- * one fact about where the generator writes, and a copy per envelope would let a
- * regenerated tree move one and leave the others reading a file that is no longer
- * there — which returns `''`, and an empty source makes every union it is asked
- * about come back empty. The rules below assert they found something for exactly
- * that reason, but they would name the union rather than the path.
- */
-function theGeneratedEnvelope(string $called): string
-{
-    $said = file_get_contents(
-        Tree::at(sprintf('vendor/lemonfiber/sdk-php/src/Generated/%s.php', $called)),
-    );
-
-    return is_string($said) ? $said : '';
-}
-
-/**
- * The generated envelope that carries the household, as text.
- *
- * A second file rather than a search across `src/Generated`, and deliberately.
- * `state` is declared in both this envelope and the doctor one, with different
- * unions — a problem's standing and a request's — so a reader that swept every
- * generated file would find two occurrences that disagree and answer nothing,
- * which is `unionIn`'s honest refusal applied to a question that is not really
- * ambiguous. The ambiguity is in the wire's choice of name, not in the contract,
- * and naming the envelope is how this side says which `state` it means.
- */
-function theGeneratedHouseholdEnvelope(): string
-{
-    $said = file_get_contents(
-        Tree::at('vendor/lemonfiber/sdk-php/src/Generated/HouseholdEnvelope.php'),
-    );
-
-    return is_string($said) ? $said : '';
-}
-
-/**
- * The literals a named field of the envelope is declared as.
- *
- * Every occurrence is collected rather than the first, and two that disagree
- * make this answer nothing. A field name appearing twice with different unions
- * is a question this cannot answer, and answering it with whichever came first
- * would be the quiet half-right result these rules exist to refuse.
- *
- * @return list<string>
- */
-function wireUnion(string $field): array
-{
-    return unionIn(theGeneratedDoctorEnvelope(), $field);
-}
-
-/**
- * The same reading, over text it is handed rather than text it goes and finds.
- *
- * Split from `wireUnion` because this is the half that decides, and it had only
- * ever been asked about a generated file where every answer is the right one.
- * Every property the five rules below demonstrate in that state is equally true
- * of a reader that always answers with the enum it is being compared to — and
- * the `[]` two disagreeing unions produce is a shape nobody had watched it take.
- *
- * @return list<string>
- */
-function unionIn(string $source, string $field): array
-{
-    $pattern = sprintf("/\\b%s\\??: ((?:'[a-z_-]+'\\|)+'[a-z_-]+')/", preg_quote($field, '/'));
-
-    preg_match_all($pattern, $source, $found);
-
-    $unions = array_values(array_unique($found[1]));
-
-    if (count($unions) !== 1) {
-        return [];
-    }
-
-    preg_match_all("/'([a-z_-]+)'/", $unions[0], $literals);
-
-    sort($literals[1]);
-
-    return $literals[1];
-}
-
-/**
- * Every value a check's verdict may carry as its outcome.
- *
- * Read as single literals rather than as a union: the verdict is a union of
- * object shapes and each arm fixes `outcome` to one value of its own.
- *
- * @return list<string>
- */
-function wireOutcomes(): array
-{
-    return outcomesIn(theGeneratedDoctorEnvelope());
-}
-
-/**
- * The same reading, over text it is handed. Split for the reason `unionIn` is.
- *
- * @return list<string>
- */
-function outcomesIn(string $source): array
-{
-    preg_match_all("/outcome: '([a-z_-]+)'/", $source, $found);
-
-    $values = array_values(array_unique($found[1]));
-
-    sort($values);
-
-    return $values;
-}
-
-/**
- * An enum's values, sorted, for comparing as a set.
- *
- * @param list<BackedEnum> $cases
- *
- * @return list<string>
- */
-function valuesOf(array $cases): array
-{
-    $values = array_map(static fn(BackedEnum $case): string => (string) $case->value, $cases);
-
-    sort($values);
-
-    return $values;
-}
-
 it('the reading that decides all five can say something else', function (): void {
     // The five rules below have only ever asked this reader about a generated
     // file where every answer is the right one, and nothing can be planted for
@@ -373,39 +118,60 @@ it('the reading that decides all five can say something else', function (): void
          */
         PHP;
 
-    expect(unionIn($envelope, 'category'))->toBe(['network', 'storage', 'weather']);
+    expect(TheWireUnions::unionIn($envelope, 'category'))->toBe(['network', 'storage', 'weather']);
 
     // Sorted, because the comparison is on sets: the order the contract writes
     // them in is the generator's business and the order an enum declares them in
     // is a decision made for a reader.
-    expect(unionIn($envelope, 'severity'))->toBe(['note', 'warning']);
+    expect(TheWireUnions::unionIn($envelope, 'severity'))->toBe(['note', 'warning']);
 
     // A field the envelope does not mention is nothing found, not an empty union
     // — and the five rules below each assert that separately, which is what makes
     // a change to the generator's format fail rather than quietly match nothing.
-    expect(unionIn($envelope, 'nothing'))->toBe([]);
+    expect(TheWireUnions::unionIn($envelope, 'nothing'))->toBe([]);
 
     // A single literal is not a union. The pattern wants at least one `|`, so a
     // field the contract has narrowed to one value is reported as unreadable
     // rather than as a one-case enum.
-    expect(unionIn("state: 'settled',", 'state'))->toBe([]);
+    expect(TheWireUnions::unionIn("state: 'settled',", 'state'))->toBe([]);
 });
 
 it('a field declared twice with different unions is refused', function (): void {
-    // The path the comment above `unionIn` describes and nothing had taken. Two
+    // The path the comment on `TheWireUnions::unionIn()` describes and nothing had taken. Two
     // occurrences that disagree are a question this cannot answer, and answering
     // with whichever came first would be the quiet half-right result these rules
     // exist to refuse — it would compare the enum against half a contract and
     // pass.
     $disagreeing = "category: 'storage'|'network',\ncategory: 'storage'|'weather',";
 
-    expect(unionIn($disagreeing, 'category'))->toBe([]);
+    expect(TheWireUnions::unionIn($disagreeing, 'category'))->toBe([]);
 
     // And the same field twice saying the same thing is one answer, not none:
     // the generator repeats a shape wherever it is used.
     $agreeing = "category: 'storage'|'network',\ncategory: 'storage'|'network',";
 
-    expect(unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
+    expect(TheWireUnions::unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
+});
+
+it('every state a stack declares a capability in has a case', function (): void {
+    // Read from the capabilities envelope by name, and as the value of a map
+    // rather than a field: each path is a key, and the union is what any key
+    // may say. The reading below is `unionIn`'s, shaped for that one place.
+    preg_match_all(
+        "/\\bcapabilities: array<string, ((?:'[a-z_-]+'\\|)+'[a-z_-]+')>/",
+        TheGeneratedEnvelopes::theGeneratedEnvelope('CapabilitiesEnvelope'),
+        $found,
+    );
+    $union = [];
+
+    if (count(array_unique($found[1])) === 1) {
+        preg_match_all("/'([a-z_-]+)'/", $found[1][0], $literals);
+        $union = $literals[1];
+        sort($union);
+    }
+
+    expect($union)->not->toBe([], 'no capability state union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Availability::cases()))->toBe($union);
 });
 
 it('every request standing the contract describes has a case', function (): void {
@@ -414,10 +180,10 @@ it('every request standing the contract describes has a case', function (): void
     // household envelope by name rather than by sweeping the generated files,
     // because a sweep would find two occurrences that disagree and honestly
     // answer nothing about either.
-    $union = unionIn(theGeneratedHouseholdEnvelope(), 'state');
+    $union = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHouseholdEnvelope(), 'state');
 
     expect($union)->not->toBe([], 'no request state union was found in the generated envelope');
-    expect(valuesOf(Waiting::cases()))->toBe($union);
+    expect(TheWireUnions::valuesOf(Waiting::cases()))->toBe($union);
 });
 
 it('the verdict outcomes are collected across arms', function (): void {
@@ -426,18 +192,18 @@ it('the verdict outcomes are collected across arms', function (): void {
     // its own. Two arms is the case that distinguishes this from `unionIn`.
     $verdict = "array{outcome: 'passed', at: string}|array{outcome: 'failed', why: string}";
 
-    expect(outcomesIn($verdict))->toBe(['failed', 'passed']);
-    expect(outcomesIn('nothing here'))->toBe([]);
+    expect(TheWireUnions::outcomesIn($verdict))->toBe(['failed', 'passed']);
+    expect(TheWireUnions::outcomesIn('nothing here'))->toBe([]);
 });
 
 it('every health category the contract describes has a case', function (): void {
-    expect(wireUnion('category'))->not->toBe([], 'no category union was found in the generated envelope');
-    expect(valuesOf(Category::cases()))->toBe(wireUnion('category'));
+    expect(TheWireUnions::wireUnion('category'))->not->toBe([], 'no category union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Category::cases()))->toBe(TheWireUnions::wireUnion('category'));
 });
 
 it('every verdict the contract describes has a case', function (): void {
-    expect(wireOutcomes())->not->toBe([], 'no verdict outcome was found in the generated envelope');
-    expect(valuesOf(Conclusion::cases()))->toBe(wireOutcomes());
+    expect(TheWireUnions::wireOutcomes())->not->toBe([], 'no verdict outcome was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Conclusion::cases()))->toBe(TheWireUnions::wireOutcomes());
 });
 
 it('every repair outcome the contract describes has a case', function (): void {
@@ -445,27 +211,27 @@ it('every repair outcome the contract describes has a case', function (): void {
     // own, as a verdict is — so the literal-union rule below cannot see it, and
     // for as long as this rule did not exist the stack's `unmanaged` arrived
     // at an enum with no case for it and refused the whole answer.
-    $outcomes = outcomesIn(theGeneratedRepairEnvelope());
+    $outcomes = TheWireUnions::outcomesIn(TheGeneratedEnvelopes::theGeneratedRepairEnvelope());
 
     expect($outcomes)->not->toBe([], 'no repair outcome was found in the generated envelope');
-    expect(valuesOf(WhatBecameOfIt::cases()))->toBe($outcomes);
+    expect(TheWireUnions::valuesOf(WhatBecameOfIt::cases()))->toBe($outcomes);
 });
 
 it('every word the health summary may stand at has a case', function (): void {
-    $standings = unionIn(theGeneratedHealthSummary(), 'standing');
+    $standings = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHealthSummary(), 'standing');
 
     expect($standings)->not->toBe([], 'no standing union was found in the generated health summary');
-    expect(valuesOf(HowItStands::cases()))->toBe($standings);
+    expect(TheWireUnions::valuesOf(HowItStands::cases()))->toBe($standings);
 });
 
 it('every overall the contract describes has a case', function (): void {
-    expect(wireUnion('overall'))->not->toBe([], 'no overall union was found in the generated envelope');
-    expect(valuesOf(Overall::cases()))->toBe(wireUnion('overall'));
+    expect(TheWireUnions::wireUnion('overall'))->not->toBe([], 'no overall union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Overall::cases()))->toBe(TheWireUnions::wireUnion('overall'));
 });
 
 it('every severity the contract describes has a case', function (): void {
-    expect(wireUnion('severity'))->not->toBe([], 'no severity union was found in the generated envelope');
-    expect(valuesOf(Severity::cases()))->toBe(wireUnion('severity'));
+    expect(TheWireUnions::wireUnion('severity'))->not->toBe([], 'no severity union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Severity::cases()))->toBe(TheWireUnions::wireUnion('severity'));
 });
 
 it('every settler the contract describes has a case', function (): void {
@@ -473,10 +239,10 @@ it('every settler the contract describes has a case', function (): void {
     // which of the stack and the operator resolved a contested capability, and
     // the two may not be flattened — so an arm the contract grew that nothing
     // here has a case for must fail rather than render as the other one.
-    $settlers = unionIn(theGeneratedWiringEnvelope(), 'whose');
+    $settlers = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedWiringEnvelope(), 'whose');
 
     expect($settlers)->not->toBe([], 'no whose union was found in the generated envelope');
-    expect(valuesOf(WhoSettledIt::cases()))->toBe($settlers);
+    expect(TheWireUnions::valuesOf(WhoSettledIt::cases()))->toBe($settlers);
 });
 
 it('every settlement the contract describes has a case', function (): void {
@@ -484,30 +250,30 @@ it('every settlement the contract describes has a case', function (): void {
     // by tag. A word the contract adds and this does not have is the failure
     // that matters: `contested` is the core declining to choose, and an arm
     // nothing reads would render as whichever arm the reader fell through to.
-    $settlements = theSettlementsIn(theGeneratedWiringEnvelope());
+    $settlements = TheWireUnions::theSettlementsIn(TheGeneratedEnvelopes::theGeneratedWiringEnvelope());
 
     expect($settlements)->not->toBe([], 'no settlement tag was found in the generated envelope');
-    expect(valuesOf(HowItSettled::cases()))->toBe($settlements);
+    expect(TheWireUnions::valuesOf(HowItSettled::cases()))->toBe($settlements);
 });
 
 it('every way one service reaches another has a case', function (): void {
     // Whose decision it was: a capability the core resolved, or a name somebody
     // gave. A plugin may not create the second, so an arm the contract grew
     // that nothing here reads would render an instruction as a deduction.
-    $reaches = theReachesIn(theGeneratedWiringEnvelope());
+    $reaches = TheWireUnions::theReachesIn(TheGeneratedEnvelopes::theGeneratedWiringEnvelope());
 
     expect($reaches)->not->toBe([], 'no reach tag was found in the generated envelope');
-    expect(valuesOf(HowItWasReached::cases()))->toBe($reaches);
+    expect(TheWireUnions::valuesOf(HowItWasReached::cases()))->toBe($reaches);
 });
 
 it('every kind of stopped the dashboard describes has a case', function (): void {
     // Read from the dashboard, whose `stuck` rows carry it. The cases are the
     // stack's order as well as its words, worst first, so a kind added
     // anywhere but the end fails here too.
-    $stalls = unionIn(theGeneratedEnvelope('DashboardEnvelope'), 'stall');
+    $stalls = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('DashboardEnvelope'), 'stall');
 
     expect($stalls)->not->toBe([], 'no stall union was found in the generated dashboard');
-    expect(valuesOf(HowItStopped::cases()))->toBe($stalls);
+    expect(TheWireUnions::valuesOf(HowItStopped::cases()))->toBe($stalls);
 });
 
 it('every stage the contract describes has a case', function (): void {
@@ -516,10 +282,10 @@ it('every stage the contract describes has a case', function (): void {
     // declared where it is used, so asking the doctor envelope about `stage`
     // answers `[]` — which is the same answer a renamed field gives, and is why
     // the assertion below insists something was found before comparing.
-    $stages = unionIn(theGeneratedStuckEnvelope(), 'stage');
+    $stages = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedStuckEnvelope(), 'stage');
 
     expect($stages)->not->toBe([], 'no stage union was found in the generated envelope');
-    expect(valuesOf(Stage::cases()))->toBe($stages);
+    expect(TheWireUnions::valuesOf(Stage::cases()))->toBe($stages);
 });
 
 it('every medium the contract describes has a case', function (): void {
@@ -527,10 +293,10 @@ it('every medium the contract describes has a case', function (): void {
     // from theirs: a union is declared only where it is used, so asking any
     // other envelope about `medium` answers `[]` — the same answer a renamed
     // field gives, which is why something must be found before comparing.
-    $media = unionIn(theGeneratedHeldEnvelope(), 'medium');
+    $media = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHeldEnvelope(), 'medium');
 
     expect($media)->not->toBe([], 'no medium union was found in the generated envelope');
-    expect(valuesOf(Medium::cases()))->toBe($media);
+    expect(TheWireUnions::valuesOf(Medium::cases()))->toBe($media);
 });
 
 it('every stream the contract describes has a case', function (): void {
@@ -538,26 +304,26 @@ it('every stream the contract describes has a case', function (): void {
     // is only declared where it is used, so asking any other envelope about
     // `stream` answers `[]` — the same answer a renamed field gives, which is
     // why the assertion insists something was found before comparing.
-    $streams = unionIn(theGeneratedLogEnvelope(), 'stream');
+    $streams = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedLogEnvelope(), 'stream');
 
     expect($streams)->not->toBe([], 'no stream union was found in the generated envelope');
-    expect(valuesOf(Stream::cases()))->toBe($streams);
+    expect(TheWireUnions::valuesOf(Stream::cases()))->toBe($streams);
 });
 
 it('every severity a log line can declare has a case', function (): void {
     // Read off the log envelope, where the union is declared; the space
     // envelope's `level` is a different field under the same word.
-    $levels = unionIn(theGeneratedLogEnvelope(), 'level');
+    $levels = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedLogEnvelope(), 'level');
 
     expect($levels)->not->toBe([], 'no level union was found in the generated envelope');
-    expect(valuesOf(HowSeriousALineIs::cases()))->toBe($levels);
+    expect(TheWireUnions::valuesOf(HowSeriousALineIs::cases()))->toBe($levels);
 });
 
 it('every cost the contract describes has a case', function (): void {
-    $costs = unionIn(theGeneratedConfigEnvelope(), 'cost');
+    $costs = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedConfigEnvelope(), 'cost');
 
     expect($costs)->not->toBe([], 'no cost union was found in the generated envelope');
-    expect(valuesOf(Cost::cases()))->toBe($costs);
+    expect(TheWireUnions::valuesOf(Cost::cases()))->toBe($costs);
 });
 
 it('every stance the contract describes has a case', function (): void {
@@ -567,31 +333,31 @@ it('every stance the contract describes has a case', function (): void {
     // apart: `unchanged` and `applied` both mean the setting holds what was
     // asked for, and a contract that grew a third of those would need reading
     // rather than guessing at.
-    $stances = unionIn(theGeneratedConfigEnvelope(), 'stance');
+    $stances = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedConfigEnvelope(), 'stance');
 
     expect($stances)->not->toBe([], 'no stance union was found in the generated envelope');
-    expect(valuesOf(Stance::cases()))->toBe($stances);
+    expect(TheWireUnions::valuesOf(Stance::cases()))->toBe($stances);
 });
 
 it('every way a service can be running has a case', function (): void {
-    $states = unionIn(theGeneratedStatusEnvelope(), 'state');
+    $states = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedStatusEnvelope(), 'state');
 
     expect($states)->not->toBe([], 'no service state union was found in the generated envelope');
-    expect(valuesOf(HowAServiceRuns::cases()))->toBe($states);
+    expect(TheWireUnions::valuesOf(HowAServiceRuns::cases()))->toBe($states);
 });
 
 it('every criticality the contract describes has a case', function (): void {
-    $matters = unionIn(theGeneratedStatusEnvelope(), 'criticality');
+    $matters = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedStatusEnvelope(), 'criticality');
 
     expect($matters)->not->toBe([], 'no criticality union was found in the generated envelope');
-    expect(valuesOf(HowMuchItMatters::cases()))->toBe($matters);
+    expect(TheWireUnions::valuesOf(HowMuchItMatters::cases()))->toBe($matters);
 });
 
 it('every condition the whole stack can be in has a case', function (): void {
-    $conditions = unionIn(theGeneratedStatusEnvelope(), 'condition');
+    $conditions = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedStatusEnvelope(), 'condition');
 
     expect($conditions)->not->toBe([], 'no condition union was found in the generated envelope');
-    expect(valuesOf(HowTheStackIsRunning::cases()))->toBe($conditions);
+    expect(TheWireUnions::valuesOf(HowTheStackIsRunning::cases()))->toBe($conditions);
 });
 
 it('every way a command can be hosted has a case', function (): void {
@@ -599,536 +365,360 @@ it('every way a command can be hosted has a case', function (): void {
     // word for it and is a third union again — a problem's standing and a
     // household request's are already two, under the wire's `state`. Naming the
     // envelope here is what keeps the three from being read as one.
-    $hosted = unionIn(theGeneratedHostingEnvelope(), 'standing');
+    $hosted = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHostingEnvelope(), 'standing');
 
     expect($hosted)->not->toBe([], 'no hosting standing union was found in the generated envelope');
-    expect(valuesOf(HowItIsHosted::cases()))->toBe($hosted);
+    expect(TheWireUnions::valuesOf(HowItIsHosted::cases()))->toBe($hosted);
 });
 
 it('every way a change can be put back has a case', function (): void {
     // `reversal` became a named union in the contract, so the three words this
     // app reads are held to the wire rather than to a sentence describing it.
-    $reversals = unionIn(theGeneratedHistoryEnvelope(), 'reversal');
+    $reversals = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHistoryEnvelope(), 'reversal');
 
     expect($reversals)->not->toBe([], 'no reversal union was found in the generated envelope');
-    expect(valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
+    expect(TheWireUnions::valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
 });
 
 it('everything putting one change back can do has a case', function (): void {
     // `does` tags each arm of the action a reversal carries, so the words are
     // gathered by arm rather than read as one union.
-    $does = theArmsIn(theGeneratedEnvelope('UndoEnvelope'), 'does');
+    $does = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('UndoEnvelope'), 'does');
 
     expect($does)->not->toBe([], 'no reversal arm was found in the generated envelope');
-    expect(valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
+    expect(TheWireUnions::valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
 });
 
 it('every request lemonfiber makes on its own account has a case', function (): void {
     // `reach` on the wire, and the closed set is the stack's claim: an eighth
     // request is one somebody decided to add, and this is where the app hears
     // of it rather than drawing it under the nearest name.
-    $asks = unionIn(theGeneratedOutboundEnvelope(), 'reach');
+    $asks = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedOutboundEnvelope(), 'reach');
 
     expect($asks)->not->toBe([], 'no reach union was found in the generated envelope');
-    expect(valuesOf(WhatLemonfiberAsksFor::cases()))->toBe($asks);
+    expect(TheWireUnions::valuesOf(WhatLemonfiberAsksFor::cases()))->toBe($asks);
 });
 
 it('every state the shared line can be in has a case', function (): void {
-    $words = unionIn(theGeneratedBandwidthEnvelope(), 'restraint');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedBandwidthEnvelope(), 'restraint');
 
     expect($words)->not->toBe([], 'no restraint union was found in the generated envelope');
-    expect(valuesOf(WhereTheLineStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheLineStands::cases()))->toBe($words);
 });
 
 it('every way the line\'s capacity can have been arrived at has a case', function (): void {
-    $words = unionIn(theGeneratedBandwidthEnvelope(), 'source');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedBandwidthEnvelope(), 'source');
 
     expect($words)->not->toBe([], 'no source union was found in the generated envelope');
-    expect(valuesOf(HowTheLineWasMeasured::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowTheLineWasMeasured::cases()))->toBe($words);
 });
 
 it('everything reaching a cap can do has a case', function (): void {
-    $words = unionIn(theGeneratedBandwidthEnvelope(), 'exceeded');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedBandwidthEnvelope(), 'exceeded');
 
     expect($words)->not->toBe([], 'no exceeded union was found in the generated envelope');
-    expect(valuesOf(WhatACapDoes::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatACapDoes::cases()))->toBe($words);
 });
 
 it('everywhere a month can stand against its cap has a case', function (): void {
-    $words = unionIn(theGeneratedBandwidthEnvelope(), 'reached');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedBandwidthEnvelope(), 'reached');
 
     expect($words)->not->toBe([], 'no reached union was found in the generated envelope');
-    expect(valuesOf(WhereTheMonthStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheMonthStands::cases()))->toBe($words);
 });
 
 it('everywhere a machine or a volume can stand for room has a case', function (): void {
-    $words = unionIn(theGeneratedSpaceEnvelope(), 'level');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'level');
 
     expect($words)->not->toBe([], 'no level union was found in the generated envelope');
-    expect(valuesOf(WhereTheRoomStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheRoomStands::cases()))->toBe($words);
 });
 
 it('every volume the stack watches has a case', function (): void {
-    $words = unionIn(theGeneratedSpaceEnvelope(), 'role');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'role');
 
     expect($words)->not->toBe([], 'no role union was found in the generated envelope');
-    expect(valuesOf(WhatAVolumeHolds::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatAVolumeHolds::cases()))->toBe($words);
 });
 
 it('everything getting room back can cost has a case', function (): void {
-    $words = unionIn(theGeneratedSpaceEnvelope(), 'reclaim');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'reclaim');
 
     expect($words)->not->toBe([], 'no reclaim union was found in the generated envelope');
-    expect(valuesOf(WhatGettingItBackCosts::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatGettingItBackCosts::cases()))->toBe($words);
 });
 
 it('every category a line of the account can be has a case', function (): void {
-    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'of');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'of');
 
     expect($words)->not->toBe([], 'no category arm was found in the generated envelope');
-    expect(valuesOf(WhatALineIsAbout::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatALineIsAbout::cases()))->toBe($words);
 });
 
 it('everywhere a download can stand has a case', function (): void {
-    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'standing');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'standing');
 
     expect($words)->not->toBe([], 'no standing arm was found in the generated envelope');
-    expect(valuesOf(WhereADownloadStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereADownloadStands::cases()))->toBe($words);
 });
 
 it('every kind of reading a volume can have has a case', function (): void {
-    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'as');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedSpaceEnvelope(), 'as');
 
     expect($words)->not->toBe([], 'no reading arm was found in the generated envelope');
-    expect(valuesOf(HowAVolumeWasRead::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowAVolumeWasRead::cases()))->toBe($words);
 });
 
 it('everything a profile left out of a start can need has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('PreviewEnvelope'), 'needs');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PreviewEnvelope'), 'needs');
 
     expect($words)->not->toBe([], 'no needs union was found in the generated envelope');
-    expect(valuesOf(WhatItWouldNeed::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatItWouldNeed::cases()))->toBe($words);
 });
 
 it('every way a trace can be sure of its item has a case', function (): void {
-    $words = unionIn(theGeneratedTraceEnvelope(), 'confidence');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedTraceEnvelope(), 'confidence');
 
     expect($words)->not->toBe([], 'no confidence union was found in the generated envelope');
-    expect(valuesOf(HowSureTheTraceIs::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowSureTheTraceIs::cases()))->toBe($words);
 });
 
 it('everything a traced item\'s history can record has a case', function (): void {
-    $words = unionIn(theGeneratedTraceEnvelope(), 'outcome');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedTraceEnvelope(), 'outcome');
 
     expect($words)->not->toBe([], 'no outcome union was found in the generated envelope');
-    expect(valuesOf(WhatHappenedToIt::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatHappenedToIt::cases()))->toBe($words);
 });
 
 it('every step a walkthrough can narrate or stop at has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'step');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), 'step');
 
     expect($words)->not->toBe([], 'no step union was found in the generated envelope');
-    expect(valuesOf(WalkthroughStep::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WalkthroughStep::cases()))->toBe($words);
 });
 
 it('everywhere a walkthrough can end up has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'state');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), 'state');
 
     expect($words)->not->toBe([], 'no state union was found in the generated envelope');
-    expect(valuesOf(WhereTheWalkthroughIs::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheWalkthroughIs::cases()))->toBe($words);
 });
 
 it('every walk a stack can be offered has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'shape');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), 'shape');
 
     expect($words)->not->toBe([], 'no shape union was found in the generated envelope');
-    expect(valuesOf(WhichWalk::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhichWalk::cases()))->toBe($words);
 });
 
 it('everything an import can have done with the file has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'link');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), 'link');
 
     expect($words)->not->toBe([], 'no link union was found in the generated envelope');
-    expect(valuesOf(HowTheImportLinked::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowTheImportLinked::cases()))->toBe($words);
 });
 
 it('every reason a walkthrough can stop for has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'reason');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), 'reason');
 
     expect($words)->not->toBe([], 'no reason union was found in the generated envelope');
-    expect(valuesOf(WhyTheWalkthroughStopped::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhyTheWalkthroughStopped::cases()))->toBe($words);
 });
 
 it('everything a walkthrough can hand over to has a case', function (): void {
     // A list of the union rather than the union itself, which `unionIn` does
     // not read, so the list is matched here.
-    preg_match_all("/\\bnext: list<((?:'[a-z_-]+'\\|)+'[a-z_-]+')>/", theGeneratedEnvelope('WalkthroughEnvelope'), $found);
+    preg_match_all("/\\bnext: list<((?:'[a-z_-]+'\\|)+'[a-z_-]+')>/", TheGeneratedEnvelopes::theGeneratedEnvelope('WalkthroughEnvelope'), $found);
     preg_match_all("/'([a-z_-]+)'/", $found[1] === [] ? '' : $found[1][0], $literals);
     $words = $literals[1];
     sort($words);
 
     expect($words)->not->toBe([], 'no next union was found in the generated envelope');
-    expect(valuesOf(WhatToDoNext::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatToDoNext::cases()))->toBe($words);
 });
 
 it('every way lemonfiber can have been installed has a case', function (): void {
-    $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'installed');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedSelfUpdateEnvelope(), 'installed');
 
     expect($words)->not->toBe([], 'no installed union was found in the generated envelope');
-    expect(valuesOf(HowLemonfiberWasInstalled::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowLemonfiberWasInstalled::cases()))->toBe($words);
 });
 
 it('everywhere a copy of lemonfiber can stand has a case', function (): void {
-    $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'standing');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedSelfUpdateEnvelope(), 'standing');
 
     expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
-    expect(valuesOf(WhereThisCopyStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereThisCopyStands::cases()))->toBe($words);
 });
 
 it('every state a credential can be in has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('CredentialsEnvelope'), 'state');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('CredentialsEnvelope'), 'state');
 
     expect($words)->not->toBe([], 'no state union was found in the generated envelope');
-    expect(valuesOf(WhereACredentialStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereACredentialStands::cases()))->toBe($words);
 });
 
 it('everybody who can have produced a credential has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('CredentialsEnvelope'), 'origin');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('CredentialsEnvelope'), 'origin');
 
     expect($words)->not->toBe([], 'no origin union was found in the generated envelope');
-    expect(valuesOf(WhoMadeACredential::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhoMadeACredential::cases()))->toBe($words);
 });
 
 it('every rating a device can be given has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('ClientsEnvelope'), 'support');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('ClientsEnvelope'), 'support');
 
     expect($words)->not->toBe([], 'no support union was found in the generated envelope');
-    expect(valuesOf(HowWellADeviceIsServed::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowWellADeviceIsServed::cases()))->toBe($words);
 });
 
 it('everywhere a hand-off can stand has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('HandoffEnvelope'), 'state');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('HandoffEnvelope'), 'state');
 
     expect($words)->not->toBe([], 'no state union was found in the generated envelope');
-    expect(valuesOf(WhereTheHandoffStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheHandoffStands::cases()))->toBe($words);
 });
 
 it('every remedy a hand-off can name has a case, beside the one for naming none', function (): void {
-    $words = unionIn(theGeneratedEnvelope('HandoffEnvelope'), 'remedy');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('HandoffEnvelope'), 'remedy');
     $named = array_values(array_filter(WhatTheHandoffNeedsNext::cases(), static fn(WhatTheHandoffNeedsNext $next): bool => $next !== WhatTheHandoffNeedsNext::Nothing));
 
     expect($words)->not->toBe([], 'no remedy union was found in the generated envelope');
-    expect(valuesOf($named))->toBe($words);
+    expect(TheWireUnions::valuesOf($named))->toBe($words);
 });
 
 it('everywhere a front door can stand has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'standing');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('FrontDoorEnvelope'), 'standing');
 
     expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
-    expect(valuesOf(WhereTheFrontDoorStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheFrontDoorStands::cases()))->toBe($words);
 });
 
 it('everything a service can be to the household has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'facing');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('FrontDoorEnvelope'), 'facing');
 
     expect($words)->not->toBe([], 'no facing union was found in the generated envelope');
-    expect(valuesOf(WhatItFaces::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatItFaces::cases()))->toBe($words);
 });
 
 it('every way a wiring run can have judged drift has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('SeedEnvelope'), 'assessment');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SeedEnvelope'), 'assessment');
 
     expect($words)->not->toBe([], 'no assessment union was found in the generated envelope');
-    expect(valuesOf(HowDriftWasJudged::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowDriftWasJudged::cases()))->toBe($words);
 });
 
 it('every state a wired connection can end in has a case', function (): void {
     // Fourteen arms, several with hyphens, and each drawn in a sentence of its
     // own: a state this app did not know is refused rather than read as the
     // nearest, so a new one on the wire has to be met here first.
-    $words = theArmsIn(theGeneratedEnvelope('SeedEnvelope'), 'state');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SeedEnvelope'), 'state');
 
     expect($words)->toHaveCount(14);
-    expect(valuesOf(WhereAConnectionStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereAConnectionStands::cases()))->toBe($words);
 });
 
 it('every severity a wired connection can carry has a case', function (): void {
-    $words = theArmsIn(theGeneratedEnvelope('SeedEnvelope'), 'severity');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SeedEnvelope'), 'severity');
 
     expect($words)->not->toBe([], 'no severity arms were found in the generated envelope');
-    expect(valuesOf(HowSeriousAConnectionIs::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowSeriousAConnectionIs::cases()))->toBe($words);
 });
 
 it('every way a front door can have come to be has a case', function (): void {
-    $words = theArmsIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'chosen');
+    $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('FrontDoorEnvelope'), 'chosen');
 
     expect($words)->not->toBe([], 'no chosen arms were found in the generated envelope');
-    expect(valuesOf(HowTheDoorWasChosen::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowTheDoorWasChosen::cases()))->toBe($words);
 });
 
 it('everything an invitation can find where it was going has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'standing');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('InvitationEnvelope'), 'standing');
 
     expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
-    expect(valuesOf(WhereTheInvitationStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheInvitationStands::cases()))->toBe($words);
 });
 
 it('everything the request service can have been told has a case, on the invitation and on what it granted', function (): void {
-    $linked = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'linked');
-    $requesting = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'requesting');
+    $linked = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('InvitationEnvelope'), 'linked');
+    $requesting = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('InvitationEnvelope'), 'requesting');
 
     expect($linked)->not->toBe([], 'no linked union was found in the generated envelope');
-    expect(valuesOf(WhetherTheyCanAsk::cases()))->toBe($linked)
+    expect(TheWireUnions::valuesOf(WhetherTheyCanAsk::cases()))->toBe($linked)
         ->and($requesting)->toBe($linked);
 });
 
 it('everything that can become of unrated material has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'unrated');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('InvitationEnvelope'), 'unrated');
 
     expect($words)->not->toBe([], 'no unrated union was found in the generated envelope');
-    expect(valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
 });
 
 it('everywhere taking somebody out can have reached has a case', function (): void {
-    $words = unionIn(theGeneratedEnvelope('RemovalEnvelope'), 'revoked');
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('RemovalEnvelope'), 'revoked');
 
     expect($words)->not->toBe([], 'no revoked union was found in the generated envelope');
-    expect(valuesOf(HowFarTheRemovalReached::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(HowFarTheRemovalReached::cases()))->toBe($words);
 });
 
 it('every removal taking lemonfiber off can be, and every sort of thing it reaches, has a case', function (): void {
-    $tiers = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'tier');
-    $sorts = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'sort');
+    $tiers = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('UninstallEnvelope'), 'tier');
+    $sorts = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('UninstallEnvelope'), 'sort');
 
     expect($tiers)->not->toBe([], 'no tier union was found in the generated envelope')
         ->and($sorts)->not->toBe([], 'no sort union was found in the generated envelope');
-    expect(valuesOf(WhichRemoval::cases()))->toBe($tiers)
-        ->and(valuesOf(WhatSortItIs::cases()))->toBe($sorts);
+    expect(TheWireUnions::valuesOf(WhichRemoval::cases()))->toBe($tiers)
+        ->and(TheWireUnions::valuesOf(WhatSortItIs::cases()))->toBe($sorts);
 });
 
 it('everywhere taking lemonfiber off can have got has a case', function (): void {
     // Tags on objects of their own rather than a union joined by `|`, because
     // the four carry different fields, so they are gathered by tag.
-    preg_match_all("/\\bstate: '([a-z_-]+)'/", theGeneratedEnvelope('UninstallEnvelope'), $found);
+    preg_match_all("/\\bstate: '([a-z_-]+)'/", TheGeneratedEnvelopes::theGeneratedEnvelope('UninstallEnvelope'), $found);
     $states = array_values(array_unique($found[1]));
     sort($states);
 
     expect($states)->not->toBe([], 'no state tag was found in the generated envelope');
-    expect(valuesOf(WhereTheUninstallStands::cases()))->toBe($states);
+    expect(TheWireUnions::valuesOf(WhereTheUninstallStands::cases()))->toBe($states);
 });
 
 it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {
     // The one where a missing case would be worst: a disposition drawn as the
     // nearest one could call a held choice recorded, and nobody would be asked
     // to confirm it.
-    $quality = unionIn(theGeneratedEnvelope('QualityEnvelope'), 'disposition');
-    $music = unionIn(theGeneratedEnvelope('MusicEnvelope'), 'disposition');
+    $quality = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('QualityEnvelope'), 'disposition');
+    $music = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('MusicEnvelope'), 'disposition');
 
     expect($quality)->not->toBe([], 'no disposition union was found in the generated quality envelope');
-    expect(valuesOf(WhatBecameOfTheChoice::cases()))->toBe($quality)->toBe($music);
+    expect(TheWireUnions::valuesOf(WhatBecameOfTheChoice::cases()))->toBe($quality)->toBe($music);
 });
 
 it('everything asking a service about quality can come to has a case', function (): void {
     // Tags on objects of their own rather than a union, because the failing
     // one carries a detail beside it, so they are gathered by tag.
-    preg_match_all("/\\bstate: '([a-z_-]+)'/", theGeneratedEnvelope('UpgradeEnvelope'), $found);
+    preg_match_all("/\\bstate: '([a-z_-]+)'/", TheGeneratedEnvelopes::theGeneratedEnvelope('UpgradeEnvelope'), $found);
     $words = array_values(array_unique($found[1]));
     sort($words);
 
     expect($words)->not->toBe([], 'no outcome states were found in the generated upgrade envelope');
-    expect(valuesOf(WhereTheAskingStands::cases()))->toBe($words);
+    expect(TheWireUnions::valuesOf(WhereTheAskingStands::cases()))->toBe($words);
 });
 
 it('every service manager the contract describes has a case', function (): void {
-    $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
+    $managers = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHostingEnvelope(), 'manager');
 
     expect($managers)->not->toBe([], 'no manager union was found in the generated envelope');
-    expect(valuesOf(WhatKeepsItRunning::cases()))->toBe($managers);
+    expect(TheWireUnions::valuesOf(WhatKeepsItRunning::cases()))->toBe($managers);
 });
 
 it('every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
     // names are written down together here.
-    expect(wireUnion('state'))->not->toBe([], 'no state union was found in the generated envelope');
-    expect(valuesOf(Standing::cases()))->toBe(wireUnion('state'));
+    expect(TheWireUnions::wireUnion('state'))->not->toBe([], 'no state union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(Standing::cases()))->toBe(TheWireUnions::wireUnion('state'));
 });
-
-/**
- * An enum's backing values, sorted, for comparing as a set.
- *
- * Read off the class constants, which is where PHP puts an enum's cases. The
- * obvious `ReflectionEnum` wants a `class-string<UnitEnum>` where this has a
- * `class-string`, and its constructor throws a checked exception — which a Pest
- * body, being a closure, may not.
- *
- * @param ReflectionClass<object> $class
- *
- * @return list<string>
- */
-function backedValuesOf(ReflectionClass $class): array
-{
-    $values = [];
-
-    foreach ($class->getConstants() as $case) {
-        if ($case instanceof BackedEnum) {
-            $values[] = (string) $case->value;
-        }
-    }
-
-    sort($values);
-
-    return $values;
-}
-
-/**
- * The words a settlement can be, read from the tagged objects that carry them.
- *
- * Not `unionIn`, which reads a union of literals joined by `|`. These five are
- * each the tag of an object of its own — `array{settled: 'contested', ...}` —
- * because four of them carry different fields alongside. So the literals are
- * gathered from every occurrence of the tag rather than from one union, and the
- * count is asserted by the rule that uses this rather than here.
- *
- * @return list<string>
- */
-function theSettlementsIn(string $source): array
-{
-    preg_match_all("/\\bsettled: '([a-z_-]+)'/", $source, $found);
-
-    $words = array_values(array_unique($found[1]));
-
-    sort($words);
-
-    return $words;
-}
-
-/**
- * The words a reach can be, read the same way a settlement's are.
- *
- * `asked` and `by-name` are tags on objects of their own rather than a union
- * joined by `|`, because the two carry different fields — one a capability and
- * its claimants, the other a service and a reason. So they are gathered by tag,
- * exactly as `theSettlementsIn` gathers the five settlements.
- *
- * @return list<string>
- */
-function theReachesIn(string $source): array
-{
-    preg_match_all("/\\bhow: '([a-z_-]+)'/", $source, $found);
-
-    $words = array_values(array_unique($found[1]));
-
-    sort($words);
-
-    return $words;
-}
-
-/** The enums checked above, against the contract field each mirrors. */
-const CHECKED_AGAINST_THE_WIRE = [
-    Category::class => 'category',
-    Conclusion::class => 'outcome',
-    Overall::class => 'overall',
-    HowItStands::class => 'standing',
-    Severity::class => 'severity',
-    WhoSettledIt::class => 'whose',
-    HowItWasReached::class => 'how',
-    HowAServiceRuns::class => 'state',
-    HowMuchItMatters::class => 'criticality',
-    HowTheStackIsRunning::class => 'condition',
-    Stage::class => 'stage',
-    HowItStopped::class => 'stall',
-    AgainstThePins::class => 'state',
-    HowTheNotesStand::class => 'state',
-    HowItEnded::class => 'ending',
-    HowToUndoIt::class => 'reversal',
-    Awaiting::class => 'until',
-    Standing::class => 'state',
-    Stream::class => 'stream',
-    HowSeriousALineIs::class => 'level',
-    Medium::class => 'medium',
-    Cost::class => 'cost',
-    Stance::class => 'stance',
-
-    HowItIsHosted::class => 'standing',
-    WhatKeepsItRunning::class => 'manager',
-    HowFarItGoesBack::class => 'reversal',
-    WhatLemonfiberAsksFor::class => 'reach',
-    WhereTheLineStands::class => 'restraint',
-    HowTheLineWasMeasured::class => 'source',
-    WhatACapDoes::class => 'exceeded',
-    WhereTheMonthStands::class => 'reached',
-    WhereTheRoomStands::class => 'level',
-    WhatAVolumeHolds::class => 'role',
-    WhatGettingItBackCosts::class => 'reclaim',
-    HowLemonfiberWasInstalled::class => 'installed',
-    HowSureTheTraceIs::class => 'confidence',
-    WhatItWouldNeed::class => 'needs',
-    WhatHappenedToIt::class => 'outcome',
-    WhereThisCopyStands::class => 'standing',
-    WhereACredentialStands::class => 'state',
-    WhoMadeACredential::class => 'origin',
-    HowWellADeviceIsServed::class => 'support',
-    WhereTheFrontDoorStands::class => 'standing',
-    WhereTheHandoffStands::class => 'state',
-    WhatTheHandoffNeedsNext::class => 'remedy',
-    WhatItFaces::class => 'facing',
-    HowTheDoorWasChosen::class => 'chosen',
-    WhereTheInvitationStands::class => 'standing',
-    WhetherTheyCanAsk::class => 'linked',
-    WhatBecomesOfUnrated::class => 'unrated',
-    HowFarTheRemovalReached::class => 'revoked',
-    WhatBecameOfTheChoice::class => 'disposition',
-    WhichRemoval::class => 'tier',
-    WhatSortItIs::class => 'sort',
-    WhereTheAskingStands::class => 'state',
-    WalkthroughStep::class => 'step',
-    WhereTheWalkthroughIs::class => 'state',
-    WhichWalk::class => 'shape',
-    HowTheImportLinked::class => 'link',
-    WhyTheWalkthroughStopped::class => 'reason',
-    WhatToDoNext::class => 'next',
-    HowDriftWasJudged::class => 'assessment',
-    WhereAConnectionStands::class => 'state',
-    HowSeriousAConnectionIs::class => 'severity',
-    WhatGoingBackDoes::class => 'does',
-
-    // `state` twice, and that is the wire's name rather than a mistake here:
-    // a problem's standing and a household request's are different unions in
-    // different envelopes. Each has a rule above naming which envelope it reads.
-    Waiting::class => 'state',
-    WhatBecameOfIt::class => 'outcome',
-];
-
-/**
- * Every literal union any generated envelope declares, as a set of values.
- *
- * @return list<list<string>>
- */
-function everyWireUnion(): array
-{
-    $found = [];
-
-    foreach (Tree::filesUnder(Tree::at('vendor/lemonfiber/sdk-php/src/Generated'), '.php') as $path) {
-        $said = file_get_contents($path);
-
-        if (! is_string($said)) {
-            continue;
-        }
-
-        preg_match_all("/(?:'[a-z_-]+'\\|)+'[a-z_-]+'/", $said, $unions);
-
-        foreach ($unions[0] as $union) {
-            preg_match_all("/'([a-z_-]+)'/", $union, $literals);
-
-            sort($literals[1]);
-
-            $found[] = $literals[1];
-        }
-    }
-
-    return $found;
-}
 
 it('an enum that is a wire union is checked against it', function (): void {
     // The five above are the ones that mirror a union today, established by
@@ -1142,7 +732,7 @@ it('an enum that is a wire union is checked against it', function (): void {
     // it has `wireOutcomes()` instead, and the repair outcomes are the same
     // shape with a rule of their own. An enum written from a shape like that
     // would pass here: name the shape a rule can see, or add the rule.
-    $unions = everyWireUnion();
+    $unions = TheWireUnions::everyWireUnion();
 
     expect($unions)->not->toBe([], 'no literal union was found in any generated envelope');
 
@@ -1152,7 +742,7 @@ it('an enum that is a wire union is checked against it', function (): void {
         foreach ($module->classNames() as $name) {
             $class = ApiSurface::reflect($name);
 
-            if (! $class->isEnum() || array_key_exists($name, CHECKED_AGAINST_THE_WIRE)) {
+            if (! $class->isEnum() || array_key_exists($name, TheWireUnions::CHECKED_AGAINST_THE_WIRE)) {
                 continue;
             }
 
@@ -1160,7 +750,7 @@ it('an enum that is a wire union is checked against it', function (): void {
             // held in a variable is a set the analyser cannot see, which `P2`
             // refuses — and it is right: what the rule reads has to be something
             // a reader can follow to a declaration.
-            $values = backedValuesOf($class);
+            $values = TheWireUnions::backedValuesOf($class);
 
             if ($values !== [] && in_array($values, $unions, strict: true)) {
                 $unchecked[] = sprintf('%s is exactly a union the contract describes', $name);
@@ -1175,7 +765,7 @@ it('an enum that is a wire union is checked against it', function (): void {
         . 'An enum whose cases are exactly a union the contract describes is the wire '
         . 'written out by hand, and it goes out of date the way the five above would '
         . "have: silently, and correctly about a contract nobody speaks any more.\n"
-        . 'Add it to `CHECKED_AGAINST_THE_WIRE` with the field it mirrors, and give it '
+        . 'Add it to `TheWireUnions::CHECKED_AGAINST_THE_WIRE` with the field it mirrors, and give it '
         . 'a rule above (N1-R13).',
         implode("\n  ", $unchecked),
     ));

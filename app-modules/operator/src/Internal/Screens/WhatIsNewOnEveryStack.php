@@ -13,6 +13,7 @@ use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ReadingNews;
 use Modules\Kernel\Api\SecureStorage;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheNewsOfAStack;
+use Modules\Kernel\Api\TheReadingWaitsAFrame;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\KindOfNews;
@@ -92,11 +94,34 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
         private readonly Noticing $noticing,
         private readonly Standings $standings,
         private readonly Clock $clock,
+        private readonly KnowingWhatAStackOffers $offering,
     ) {}
 
-    /** Open on the stack a stack's menu opened this from, which the operator can widen to every stack. */
+    /**
+     * The operator's *ask again*: every stack shown is asked again what it offers, as well as for its news.
+     *
+     * Apart from {@see self::again()}, which the cadence calls too, for
+     * {@see \Modules\Wayfinding\Api\Screens\AsksTheStackAgain}'s reason.
+     */
+    public function askAgain(): void
+    {
+        foreach ($this->stacks->configured() as $stack) {
+            $this->offering->askAgain($stack->id());
+        }
+
+        $this->again();
+    }
+
+    /**
+     * Open on the stack a stack's menu opened this from, which the operator can widen to every stack.
+     *
+     * Opening is where what any stack said it serves longer ago than a break
+     * is let go of, so each is asked again before it is read.
+     */
     public function mount(): void
     {
+        $this->offering->aScreenOpens();
+
         $shows = $this->data(AScreenWithoutAStack::WHATS_NEW_SHOWS);
 
         if (is_string($shows)) {
@@ -203,8 +228,27 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
         return view('operator::what-is-new-on-every-stack');
     }
 
-    /** Read one stack, holding what it listed or that it could not be reached. */
+    /**
+     * Read one stack, holding what it listed or that it could not be reached.
+     *
+     * A stack this frame had to ask what it serves is not read on it: asking
+     * was the frame's one reading of it, so it is read on the next frame, as
+     * a stack whose turn has not come is, and every other stack keeps what it
+     * shows meanwhile.
+     */
     private function read(Stack $stack, WhatEachStackListed $listed): WhatEachStackListed
+    {
+        try {
+            return $this->readNow($stack, $listed);
+        } catch (TheReadingWaitsAFrame) {
+            $this->waitsThisFrame = true;
+
+            return $listed;
+        }
+    }
+
+    /** Read one stack now, holding what it listed or that it could not be reached. */
+    private function readNow(Stack $stack, WhatEachStackListed $listed): WhatEachStackListed
     {
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatEachStackListed => $this->reading->newsOn($stack, $session)->either(

@@ -32,6 +32,7 @@ let package = Package(
                 "StorageFunctions.swift",
                 "LinkFunctions.swift",
                 "LocalNetworkFunctions.swift",
+                "ResolveFunctions.swift",
                 "SettingsFunctions.swift",
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
@@ -92,6 +93,11 @@ let package = Package(
             name: "LocalNetworkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LocalNetworkRuleTests"
+        ),
+        .testTarget(
+            name: "ResolveRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ResolveRuleTests"
         ),
         .testTarget(
             name: "SettingsRuleTests",

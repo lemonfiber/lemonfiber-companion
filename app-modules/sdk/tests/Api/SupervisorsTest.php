@@ -230,7 +230,7 @@ it('names the attempt in the header, and not in what the action takes', function
     // so a key put there would turn every verb into a refusal.
     expect($sent->headers()->get(Api::IDEMPOTENCY_HEADER))
         ->toBe(SequencedEntropy::counting()->nonce()->shown())
-        ->and($sent->body()?->all())->toBe(['services' => ['sonarr']]);
+        ->and($sent->body()?->all())->toBe(['forms' => [], 'services' => ['sonarr'], 'wait' => false]);
 });
 
 it('a second attempt is a second name, through the same adapter', function (): void {
@@ -264,20 +264,20 @@ it('asks for a verb at the path the SDK composes for it', function (): void {
     expect($sent->getUrl())->toEndWith('/api/actions/down');
 });
 
-it('names one service under `services` and nothing else', function (): void {
+it('names one service under `services`, and no form', function (): void {
     $sent = whatWasSentSaying(AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr')));
 
-    expect($sent->body()?->all())->toBe(['services' => ['sonarr']]);
+    expect($sent->body()?->all())->toBe(['forms' => [], 'services' => ['sonarr'], 'wait' => false]);
 });
 
-it('names a whole form under `forms` and nothing else', function (): void {
+it('names a whole form under `forms`, and no service', function (): void {
     // The two are different requests on that surface rather than one with an
-    // option, so an empty list beside the one that applies would be a second,
-    // silent subject in every request.
+    // option, so a form's name sent as a service's would stop nothing and
+    // report that it had.
     $sent = whatWasSentSaying(AgreedTo::theForm(WhatToDoWithIt::Restart, Form::called('downloads')));
 
     expect($sent->getUrl())->toEndWith('/api/actions/restart');
-    expect($sent->body()?->all())->toBe(['forms' => ['downloads']]);
+    expect($sent->body()?->all())->toBe(['forms' => ['downloads'], 'services' => []]);
 });
 
 it('asks for a start at the same door as a stop', function (): void {

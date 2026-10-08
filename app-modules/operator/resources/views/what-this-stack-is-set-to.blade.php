@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToChange')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -130,10 +131,12 @@
                      control an operator would type into never appears beside
                      one — absent rather than disabled, because a disabled
                      control still says *this is a thing you could do*. --}}
-                <x-design::link
+                <x-operator::offered-action
                     label="{{ __('config.change_this') }}"
                     answers-to="{{ __('config.change_key', ['key' => $setting->key]) }}"
                     tap="change('{{ $setting->key }}')"
+                    :offer="$this->offered(WhatToChange::Setting)"
+                    drawn="link"
                 />
             @endif
 
@@ -178,13 +181,13 @@
          screen puts it there: somebody who has just changed something in the
          stack scrolls to the end of what they were reading, and that is where
          they want to ask whether it took. --}}
-    <x-design::action label="{{ __('config.ask_again') }}" tap="again()" tone="tonal" />
+    <x-design::action label="{{ __('config.ask_again') }}" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
         :went="$this->answer()->went"
-        :sign-in-goes-to="$this->goes()->to(AStacksScreen::SignIn)"
+        :goes="$this->goes()"
     />
 @endif
 

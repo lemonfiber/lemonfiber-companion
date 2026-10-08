@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\StopSeedingAction;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowLettingItGoIsGoing;
@@ -26,9 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
-use Modules\Kernel\Api\WhatToDoWithADownload;
-use Modules\Sdk\Api\Fields\RestoreField;
-use Modules\Sdk\Api\Fields\StopSeedingField;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -52,17 +50,16 @@ final readonly class Releasers implements StoppingSeeding
 
     public function whatItWouldCost(Stack $stack, Session $session, ADownloadHeld $download): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToDoWithADownload::StopSeeding->asked()),
-                [StopSeedingField::Download->value => $download->name()],
+                new StopSeedingAction(download: $download->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -80,20 +77,16 @@ final readonly class Releasers implements StoppingSeeding
 
     public function stop(Stack $stack, Session $session, WhatLettingItGoCosts $offer): Underway
     {
-        $client = $this->clients->client($stack, $session);
+        $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
             return Underway::as(Handles::in($client->act(
-                Api::action(WhatToDoWithADownload::StopSeeding->asked()),
-                [
-                    StopSeedingField::Download->value => $offer->download()->name(),
-                    RestoreField::Offer->value => $offer->agreement(),
-                ],
+                new StopSeedingAction(offer: $offer->agreement(), download: $offer->download()->name()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -116,7 +109,7 @@ final readonly class Releasers implements StoppingSeeding
     private function offer(Stack $stack, Session $session, Job $job): HowTheOfferToLetGoIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowTheOfferToLetGoIsGoing => HowTheOfferToLetGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheOfferToLetGoIsGoing
                     => HowTheOfferToLetGoIsGoing::offering(WhatLettingItGoComesTo::offerIn($envelope)),
@@ -134,7 +127,7 @@ final readonly class Releasers implements StoppingSeeding
     private function outcome(Stack $stack, Session $session, Job $job): HowLettingItGoIsGoing
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowLettingItGoIsGoing => HowLettingItGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowLettingItGoIsGoing
                     => HowLettingItGoIsGoing::done(WhatLettingItGoComesTo::goneIn($envelope)),

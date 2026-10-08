@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * configuration is not a case, because its whole effect is overwriting what
  * the operator changed.
  */
-enum WhatToDoAboutQuality: string
+enum WhatToDoAboutQuality: string implements AnAction
 {
     /** Choose a preset, for everything or one kind of media, and confirm one that was held. */
     case Choose = 'choose';

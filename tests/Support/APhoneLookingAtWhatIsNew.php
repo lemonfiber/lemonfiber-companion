@@ -18,6 +18,7 @@ use Modules\Vault\Api\PlatformStacks;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AStackThatListsWhatIsNew;
+use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -45,6 +46,8 @@ final readonly class APhoneLookingAtWhatIsNew
 
     public MarkingAsNew $marking;
 
+    public AStackThatOffers $offering;
+
     public function __construct(Stack ...$paired)
     {
         $store = APlatformStore::working();
@@ -55,6 +58,7 @@ final readonly class APhoneLookingAtWhatIsNew
         $news = new NewsOfAStack(ASealInMemory::working(), NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(self::NOW)), new WhatEachStackLastNamed());
         $this->noticing = new Noticing($news);
         $this->marking = new MarkingAsNew($news);
+        $this->offering = AStackThatOffers::everything();
 
         foreach ($paired as $stack) {
             $this->stacks->remember($stack);
@@ -74,6 +78,7 @@ final readonly class APhoneLookingAtWhatIsNew
             $this->noticing,
             $this->standings,
             $clock,
+            $this->offering,
         );
     }
 }

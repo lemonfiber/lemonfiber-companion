@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Lemonfiber\Sdk\Http\ActionRequest;
+use Lemonfiber\Sdk\Http\ActRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Kernel\Api\AFormatInForce;
@@ -278,7 +278,7 @@ function whatTheGradersSent(): array
 {
     $sent = MockClient::getGlobal()?->getLastRequest();
 
-    return $sent instanceof ActionRequest ? [$sent->resolveEndpoint(), $sent->body()->all()] : ['', null];
+    return $sent instanceof ActRequest ? [$sent->resolveEndpoint(), $sent->body()->all()] : ['', null];
 }
 
 /** A held answer about the choice asked, which is what a confirmation is made from. */
@@ -379,7 +379,7 @@ it('says the credential was refused when the stack refuses it', function (): voi
 it('chooses for everything without naming a kind, and without a yes', function (): void {
     aChoiceAnsweredWith(whatAStackSaysOfItsQuality(disposition: 'recorded'), APresetToChoose::named('balanced', ''));
 
-    expect(whatTheGradersSent())->toBe(['/api/actions/quality-set', ['preset' => 'balanced', 'confirm' => false]]);
+    expect(whatTheGradersSent())->toBe(['/api/actions/quality-set', ['preset' => 'balanced', 'media_type' => null, 'confirm' => false]]);
 });
 
 it('chooses for one kind of media by naming it, and without a yes', function (): void {

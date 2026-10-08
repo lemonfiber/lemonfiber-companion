@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
@@ -13,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\SeedAction;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
@@ -21,8 +21,8 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheWiringSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
-use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WiringTheServices;
+use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
 
@@ -42,14 +42,13 @@ final readonly class Wirers implements WiringTheServices
     public function wire(Stack $stack, Session $session): WhatBecameOfTheWiring
     {
         try {
-            return $this->underway($this->clients->client($stack, $session)->act(
-                Api::action(WhatToDoAboutWiring::Wire->asked()),
-                [],
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
+                new SeedAction(),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -72,7 +71,7 @@ final readonly class Wirers implements WiringTheServices
     private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheWiring
     {
         try {
-            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheWiring => WhatBecameOfTheWiring::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheWiring
                     => WhatBecameOfTheWiring::answered(WhatTheWiringCameTo::in($envelope)),

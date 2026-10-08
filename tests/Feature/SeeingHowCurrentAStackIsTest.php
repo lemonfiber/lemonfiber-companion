@@ -3,18 +3,14 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Envelope\Envelope;
-use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AStackEdit;
-use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\KindOfObstacle;
-use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
@@ -22,9 +18,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
-use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
@@ -39,6 +33,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheUpkeepScreenOfTheLoft;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
@@ -55,17 +50,6 @@ use Tests\Support\WhatThePhoneKeeps;
 // and rendering needs the application — `view()` and `__()` are not there in a
 // module suite.
 
-/** The machine whose upkeep this screen is about. */
-function theStackWhoseUpkeepIsRead(): Stack
-{
-    return Stack::of(
-        StackId::of(Nonce::of(str_repeat('g', Nonce::SHORTEST))),
-        StackName::of('The loft'),
-        Address::of('https://192.168.1.42:8443'),
-        Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS)),
-    );
-}
-
 /** The same evening, where one of the two services will not come back as it was. */
 function anEveningWithSomethingPermanentInIt(): Upkeep
 {
@@ -77,89 +61,14 @@ function anEveningWithSomethingPermanentInIt(): Upkeep
         // permanent would pass a screen that drew the warning over the whole
         // evening, which is the thing that must not happen.
         Services::these(ServiceId::called('sonarr')),
-        whatLastNightCameTo(),
+        TheUpkeepScreenOfTheLoft::whatLastNightCameTo(),
         HowTheNotesStand::Current,
         TheStackEdits::none(),
     )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()));
 }
 
-/**
- * An update waiting: two services behind their pins, and the release carrying
- * those pins one the household will notice. Its history holds that release and
- * one before it nobody noticed.
- */
-function anEveningWorthSpending(HowTheNotesStand $notes = HowTheNotesStand::Current): Upkeep
-{
-    return Upkeep::reported(
-        AgainstThePins::UpdatesAvailable,
-        Releases::these(
-            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
-            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
-        ),
-        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-        Services::none(),
-        whatLastNightCameTo(),
-        $notes,
-        TheStackEdits::none(),
-    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
-}
-
-/**
- * What became of the last update: one service back, one that would not start.
- *
- * Two endings and not one, because the rule is that they stay told
- * apart — and two ways back, because a rollback and a
- * restore are not one offer.
- */
-function whatLastNightCameTo(): HowServicesTookIt
-{
-    return HowServicesTookIt::these(
-        HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
-        HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
-    );
-}
-
-/**
- * The screen, with a stack it knows and a keychain holding whatever a test says.
- * Named for this file, since the root suites share one namespace (`G10`).
- */
-function theUpkeepScreen(
-    AStackThatKeepsCurrent $keeping,
-    ?AKeychainInMemory $keychain = null,
-    bool $signedIn = true,
-): HowCurrentThisStackIs {
-    $stack = theStackWhoseUpkeepIsRead();
-    $keychain ??= AKeychainInMemory::working();
-
-    if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    }
-
-    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
-    $screen->setParams(['stack' => $stack->id()->stored()]);
-
-    return $screen;
-}
-
-/** The update's own report, finished, saying this of each service it touched. */
-function aReportSaying(HowServicesTookIt $went): HowTheUpdateIsGoing
-{
-    return HowTheUpdateIsGoing::done(Upkeep::reported(AgainstThePins::Current, Releases::none(), Services::none(), Services::none(), $went, HowTheNotesStand::Current, TheStackEdits::none()));
-}
-
-/** The screen once 4.1.0 has been taken and the cadence has asked after it once. */
-function aScreenThatTookTheUpdate(AStackThatKeepsCurrent $keeping, ?AKeychainInMemory $keychain = null): HowCurrentThisStackIs
-{
-    $screen = theUpkeepScreen($keeping, $keychain);
-    $screen->wouldYouLike();
-    $screen->agree();
-    $screen->whileItRuns();
-
-    return $screen;
-}
-
 it('opens on the stack\'s own answer rather than on a version to compare', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
 
     expect($screen->answer()->pinsSaid)->toBe(AgainstThePins::UpdatesAvailable->saidOnTheScreen())
         ->and($screen->answer()->running)->toBe('4.1.0')
@@ -174,7 +83,7 @@ it('says which releases the household would notice', function (): void {
     // The distinction that makes this a decision rather than a chore. Both rows
     // are checked, because a screen that marked everything noticeable and one
     // that marked nothing would each pass a test that only looked at one.
-    $history = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->history;
+    $history = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()))->answer()->history;
 
     expect($history)->toHaveCount(2)
         ->and($history[0]->version)->toBe('4.1.0')
@@ -184,7 +93,7 @@ it('says which releases the household would notice', function (): void {
 });
 
 it('marks a withdrawn release in the history rather than dropping it', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::Current,
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
@@ -212,7 +121,7 @@ it('says so where the stack is running one that was taken back', function (): vo
     // would leave an operator reading a screen that says nothing is wrong.
     // And no update is offered onto the pins that release carries, though
     // the stack says a service would move: taking them is taking the release.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
         Releases::none(),
         Services::these(ServiceId::called('jellyfin')),
@@ -228,14 +137,14 @@ it('says so where the stack is running one that was taken back', function (): vo
 });
 
 it('offers nothing where the stack reported it is current', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
     expect($screen->answer()->offer)->toBeNull()
         ->and($screen->answer()->pinsSaid)->toBe(AgainstThePins::Current->saidOnTheScreen());
 });
 
 it('a session that has ended is a sign-in rather than an obstacle', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false);
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Neither of the obstacle's keys, because nothing was met: the app did
@@ -244,7 +153,7 @@ it('a session that has ended is a sign-in rather than an obstacle', function ():
 });
 
 it('an obstacle carries what stood in the way and what to do about it', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
@@ -252,8 +161,8 @@ it('an obstacle carries what stood in the way and what to do about it', function
 });
 
 it('asks once per frame, however many fields the template reads', function (): void {
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
 
     $screen->answer();
     $screen->answer();
@@ -263,8 +172,8 @@ it('asks once per frame, however many fields the template reads', function (): v
 });
 
 it('asking again is offered, and asks again', function (): void {
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
 
     $screen->answer();
     $screen->again();
@@ -274,7 +183,7 @@ it('asking again is offered, and asks again', function (): void {
 });
 
 it('asks before it takes one, and names what it would change', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
 
     $screen->wouldYouLike();
     $asking = $screen->asking();
@@ -287,8 +196,8 @@ it('asks before it takes one, and names what it would change', function (): void
 });
 
 it('asking again where nothing is offered leaves the update already being asked about as it was', function (): void {
-    $held = TakingAnUpdate::offeredBy(anEveningWorthSpending());
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $held = TakingAnUpdate::offeredBy(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::Current,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
@@ -305,7 +214,7 @@ it('asking again where nothing is offered leaves the update already being asked 
 });
 
 it('the confirmation names what taking it will not put back', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
     $screen->wouldYouLike();
     $asking = $screen->asking();
@@ -329,7 +238,7 @@ it('counts nothing permanent where nothing has been asked yet', function (): voi
     // it would not put back. Asserted rather than left to the accessor's
     // fall-through: a template asking this on every frame asks it first on the
     // frame where the answer is nobody's yet.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
     expect($screen->asking())->toBeNull()
         ->and($screen->cannotBePutBack())->toBe(0)
@@ -341,7 +250,7 @@ it('says so before the yes, and not after it', function (): void {
     // is what puts it in front of somebody who has not agreed yet. Asked of
     // the drawn screen, so a template that read the field and drew nothing
     // fails here rather than passing on the accessor alone.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
     $screen->wouldYouLike();
 
@@ -355,7 +264,7 @@ it('an evening that can be undone says nothing about permanence', function (): v
     // The ordinary case, and the one a warning must not leak into: a screen
     // drawing the sentence whenever there is a confirmation would teach an
     // operator to read past it by the third update.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
 
     $screen->wouldYouLike();
 
@@ -368,7 +277,7 @@ it('an evening that can be undone says nothing about permanence', function (): v
 it('asks nothing where the stack offered nothing', function (): void {
     // The offer comes from the reading, so a tap reaching this on a stack whose
     // services are on their pins has nothing to ask about.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
     $screen->wouldYouLike();
 
@@ -377,8 +286,8 @@ it('asks nothing where the stack offered nothing', function (): void {
 });
 
 it('sends what was agreed to, and nothing where nothing was', function (): void {
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
 
     // Nothing has been asked, so agreeing is not a yes to whatever is nearest.
     $screen->agree();
@@ -398,8 +307,8 @@ it('sends what was agreed to, and nothing where nothing was', function (): void 
 it('forgets what it read once an update is taken', function (): void {
     // The listing after an update is a different listing. A screen that kept
     // the old one would show an evening that has already happened.
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
 
     $screen->answer();
     $screen->wouldYouLike();
@@ -410,8 +319,8 @@ it('forgets what it read once an update is taken', function (): void {
 });
 
 it('leaving it sends nothing', function (): void {
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
 
     $screen->wouldYouLike();
     $screen->neverMind();
@@ -426,9 +335,9 @@ it('a yes on a phone whose session ended sends nothing', function (): void {
     // anyway would be the app using a credential it no longer holds, and a
     // screen that reported success would be reporting an evening that did not
     // happen.
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
+    $keeping = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
     $keychain = AKeychainInMemory::working();
-    $stack = theStackWhoseUpkeepIsRead();
+    $stack = TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
@@ -441,248 +350,18 @@ it('a yes on a phone whose session ended sends nothing', function (): void {
     expect($keeping->taken())->toBe([]);
 });
 
-it('says what became of each service the update taken here touched', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $applied = aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied;
-
-    // What did not arrive comes first, which is `NotArrivedFirst`'s doing and
-    // is asserted on its own beside the other ordering cases. Read here in the
-    // order the template draws them.
-    expect($applied)->toHaveCount(2)
-        ->and($applied[0]->service)->toBe('sonarr')
-        // Not a failure. The row says the image arrived and the service would
-        // not come back up on it, which sends somebody to its own log rather
-        // than to the machine.
-        ->and($applied[0]->endingSaid)->toBe(HowItEnded::NotStarted->saidOnTheScreen())
-        ->and($applied[1]->service)->toBe('jellyfin')
-        ->and($applied[1]->endingSaid)->toBe(HowItEnded::Updated->saidOnTheScreen())
-        ->and($keeping->followed())->toHaveCount(1)
-        ->and($keeping->followed()[0]->shown())->toBe(AStackThatKeepsCurrent::THE_JOB);
-});
-
-it('says which way back, and whether it brings the data with it', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $applied = aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied;
-
-    // A restore is the larger promise and the different conversation: it puts
-    // the snapshot back, and the evening's data with it. It leads because the
-    // service it belongs to is the one that did not arrive.
-    expect($applied[0]->undoSaid)->toBe(HowToUndoIt::Restore->saidOnTheScreen())
-        ->and($applied[0]->undoCarriesTheDataWithIt)->toBeTrue()
-        ->and($applied[1]->undoSaid)->toBe(HowToUndoIt::Rollback->saidOnTheScreen())
-        ->and($applied[1]->undoCarriesTheDataWithIt)->toBeFalse();
-});
-
-it('says the way back under every service the update moved, the one that arrived included', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $drawn = WhatTheDeviceWouldDraw::by(aScreenThatTookTheUpdate($keeping))->said();
-
-    $arrived = array_search('jellyfin', $drawn, strict: true);
-
-    expect(is_int($arrived))->toBeTrue()
-        ->and(array_slice($drawn, (int) $arrived + 1, 2))->toBe([
-            __(HowItEnded::Updated->saidOnTheScreen()),
-            __(HowToUndoIt::Rollback->saidOnTheScreen()),
-        ])
-        ->and($drawn)->toContain(__(HowToUndoIt::Restore->saidOnTheScreen()), __('updates.undo_carries_data'));
-});
-
-it('counts what is not where the operator wanted it, apart from what is unknown', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $last = aScreenThatTookTheUpdate($keeping)->lastUpdate();
-
-    expect($last->didNotArrive)->toBe(1)
-        // `not-started` is something the stack knows. Unanswered is something
-        // it does not, and a headline reading them as one would offer a remedy
-        // for a situation it is guessing at.
-        ->and($last->anythingUnanswered)->toBeFalse()
-        ->and($last->wasTaken)->toBeTrue()
-        ->and($last->isWorking)->toBeFalse()
-        ->and($last->hasEnded)->toBeFalse();
-});
-
-it('says when the stack cannot tell what a service is doing', function (): void {
-    $last = aScreenThatTookTheUpdate(AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(HowServicesTookIt::these(
-        HowAServiceTookIt::of(ServiceId::called('radarr'), HowItEnded::NotReached, HowToUndoIt::Rollback),
-    ))))->lastUpdate();
-
-    expect($last->anythingUnanswered)->toBeTrue()
-        ->and($last->didNotArrive)->toBe(1);
-});
-
-it('a screen that has taken no update says so, and asks after nothing', function (): void {
-    $keeping = AStackThatKeepsCurrent::withNothingWaiting();
-    $screen = theUpkeepScreen($keeping);
-    $last = $screen->lastUpdate();
-
-    expect($last->wasTaken)->toBeFalse()
-        ->and($last->went->cameBack())->toBeTrue()
-        ->and($last->applied)->toBe([])
-        ->and($keeping->followed())->toBe([])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.nothing_applied'));
-});
-
-it('an update just taken is running, and the screen says so', function (): void {
-    $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($keeping);
-    $screen->wouldYouLike();
-    $screen->agree();
-
-    expect($screen->lastUpdate()->isWorking)->toBeTrue()
-        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
-        ->and($keeping->followed())->toBe([])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())
-        ->toContain(__('updates.still_updating'));
-});
-
-it('asks after an update again only while it runs', function (): void {
-    $running = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    // Each tick while it runs forgets the answer, and the next one asks.
-    $screen = aScreenThatTookTheUpdate($running);
-    $screen->whileItRuns();
-    $screen->whileItRuns();
-
-    $finished = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $done = aScreenThatTookTheUpdate($finished);
-    $done->whileItRuns();
-    $done->whileItRuns();
-
-    expect($running->followed())->toHaveCount(2)
-        ->and($finished->followed())->toHaveCount(1);
-});
-
-it('reads what is behind again while it is open, and leaves an update it is following to its own cadence', function (): void {
-    $idle = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $screen = theUpkeepScreen($idle);
-    $screen->answer();
-    $screen->whileOpen();
-    $screen->answer();
-
-    $running = AStackThatKeepsCurrent::with(anEveningWorthSpending());
-    $following = aScreenThatTookTheUpdate($running);
-    WhatTheDeviceWouldDraw::by($following);
-    $askedBefore = $running->askings();
-    $followedBefore = count($running->followed());
-    $following->whileOpen();
-    WhatTheDeviceWouldDraw::by($following);
-
-    expect($idle->askings())->toBe(2)
-        ->and($running->askings())->toBe($askedBefore)
-        ->and($running->followed())->toHaveCount($followedBefore);
-});
-
-it('asking again asks after the update again', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $screen = aScreenThatTookTheUpdate($keeping);
-    $screen->lastUpdate();
-    $screen->again();
-    $screen->lastUpdate();
-
-    expect($keeping->followed())->toHaveCount(2);
-});
-
-it('draws the report of a finished update in place of the sentence saying none was taken', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(whatLastNightCameTo()));
-    $drawn = WhatTheDeviceWouldDraw::by(aScreenThatTookTheUpdate($keeping))->said();
-
-    expect($drawn)->toContain('sonarr')
-        ->toContain(__(HowItEnded::NotStarted->saidOnTheScreen()))
-        ->toContain(__(HowToUndoIt::Restore->saidOnTheScreen()))
-        ->toContain(trans_choice('updates.did_not_arrive', 1));
-    expect($drawn)->not->toContain(__('updates.nothing_applied'));
-    expect($drawn)->not->toContain(__('updates.still_updating'));
-});
-
-it('a finished update that touched no service says so', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(HowServicesTookIt::none()));
-
-    expect(WhatTheDeviceWouldDraw::by(aScreenThatTookTheUpdate($keeping))->said())->toContain(__('updates.touched_nothing'));
-});
-
-it('an update the stack has no outcome for is said to be that, not a failure', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::ended());
-    $screen = aScreenThatTookTheUpdate($keeping);
-
-    expect($screen->lastUpdate()->hasEnded)->toBeTrue()
-        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.no_outcome'));
-});
-
-it('a take the stack refused says what stood in the way, and follows nothing', function (): void {
-    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
-    $screen = aScreenThatTookTheUpdate($keeping);
-
-    expect($screen->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->lastUpdate()->isWorking)->toBeFalse()
-        ->and($keeping->taken())->toHaveCount(1)
-        ->and($keeping->followed())->toBe([])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
-});
-
-it('offers taking the same update again where other work held the stack, and takes it only when tapped', function (): void {
-    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackIsBusy));
-    $screen = aScreenThatTookTheUpdate($keeping);
-
-    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
-        ->and($keeping->taken())->toHaveCount(1);
-
-    $screen->tryAgain();
-
-    expect($keeping->taken())->toHaveCount(2)
-        ->and($keeping->taken()[1])->toEqual($keeping->taken()[0]);
-});
-
-it('does not offer an update again where anything but other work stood in its way', function (): void {
-    $keeping = AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
-    $screen = aScreenThatTookTheUpdate($keeping);
-    $screen->tryAgain();
-
-    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
-        ->and($keeping->taken())->toHaveCount(1);
-});
-
-it('asking after an update says what stood in the way', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
-
-    expect(aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
-});
-
-it('lets go of a session the stack refused while taking or following an update', function (): void {
-    $refusingTheTake = AKeychainInMemory::working();
-    aScreenThatTookTheUpdate(AStackThatKeepsCurrent::withButRefusing(anEveningWorthSpending(), Obstacle::of(KindOfObstacle::CredentialWasRefused)), $refusingTheTake);
-
-    $refusingTheQuestion = AKeychainInMemory::working();
-    aScreenThatTookTheUpdate(
-        AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
-        $refusingTheQuestion,
-    )->lastUpdate();
-
-    expect($refusingTheTake->isHolding(theStackWhoseUpkeepIsRead()->id()))->toBeFalse()
-        ->and($refusingTheQuestion->isHolding(theStackWhoseUpkeepIsRead()->id()))->toBeFalse();
-});
-
-it('an obstacle meaning the session ended renders the sign-in', function (): void {
-    // The fold's own branch rather than the screen's: *your session ended, sign
-    // in again* and *the stack refused that credential* send an operator to two
-    // different places, and only one of them offers a way back in.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
-
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->went->met)->toBe('');
-});
-
 it('reaches this machine\'s other screens', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
-    expect($screen->goes()->to(AStacksScreen::SignIn))->toContain(theStackWhoseUpkeepIsRead()->id()->stored());
+    expect($screen->goes()->to(AStacksScreen::SignIn))->toContain(TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead()->id()->stored());
 });
 
 it('offers taking one only where the stack said there is one', function (): void {
     // Asked of the reading rather than worked out from the history. Releases
     // are listed whatever the pins say, so a screen counting rows would offer
     // an update to every stack that has a history.
-    $waiting = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
-    $current = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $waiting = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
+    $current = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::Current,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::these(ServiceId::called('jellyfin')),
@@ -704,22 +383,21 @@ it('renders the template it is paired with', function (): void {
     // reads this pairing out of the source to check every method a template
     // calls; this runs the method, so a screen that named a view nobody wrote
     // fails here rather than on a phone.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
 
     expect($screen->render()->name())->toBe('operator::how-current-this-stack-is');
 });
-
 
 it('lets go of a session the stack refused', function (): void {
     // Not only reported. A phone holding a credential the stack has refused
     // would go on offering to ask again with it, and every ask would fail the
     // same way — so the session is dropped and the next frame offers a sign-in.
     $keychain = AKeychainInMemory::working();
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
     $screen->answer();
 
-    expect(WhatTheKeychainStillHolds::forThe($keychain, theStackWhoseUpkeepIsRead()->id())->held)->toBeFalse();
+    expect(WhatTheKeychainStillHolds::forThe($keychain, TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead()->id())->held)->toBeFalse();
 });
 
 it('keeps a session the stack merely could not answer with', function (): void {
@@ -727,11 +405,11 @@ it('keeps a session the stack merely could not answer with', function (): void {
     // obstacle*: a stack that is switched off has refused nothing, and dropping
     // the session would make somebody sign in again to fix a router.
     $keychain = AKeychainInMemory::working();
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
 
     $screen->answer();
 
-    expect(WhatTheKeychainStillHolds::forThe($keychain, theStackWhoseUpkeepIsRead()->id())->held)->toBeTrue();
+    expect(WhatTheKeychainStillHolds::forThe($keychain, TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead()->id())->held)->toBeTrue();
 });
 
 it('refuses a route that named no stack it can identify', function (): void {
@@ -742,12 +420,11 @@ it('refuses a route that named no stack it can identify', function (): void {
     //
     // Named rather than `Throwable`: both this and a placeholder that was not
     // blank would throw something, and only one of them says the right thing.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
     $screen->setParams(['stack' => ['not', 'a', 'name']]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
-
 
 it('a signed-out screen states nothing about the stack at all', function (): void {
     // Every field, not just the two the template branches on. A fold that left
@@ -755,7 +432,7 @@ it('a signed-out screen states nothing about the stack at all', function (): voi
     // ended report a house it can no longer see — and the one that matters most
     // is `offer`: a signed-out screen offering to apply an update is an offer
     // nothing can honour.
-    $answer = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false)->answer();
+    $answer = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
         ->and($answer->went->met)->toBe('')
@@ -772,7 +449,7 @@ it('an obstacle states what stood in the way and nothing about the stack', funct
     // The same completeness, one state over. An obstacle means nothing was
     // read, so anything this carried about the stack would be left over from a
     // reading that did not happen.
-    $answer = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
+    $answer = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->answer();
 
     expect($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
@@ -790,7 +467,7 @@ it('a stack that named no release in use says so rather than showing a blank', f
     // reading `running` in every state has something to draw. A screen silent
     // about the version teaches an operator to read silence, and silence is
     // also what a screen that forgot the field produces.
-    $answer = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $answer = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::Current,
         Releases::none(),
         Services::none(),
@@ -816,7 +493,7 @@ it('a stack that named no release in use says so rather than showing a blank', f
 it('reads what needs attention before what is fine', function (): void {
     // The ordering is the `updates` module's decision, made before the fold so
     // the template draws rows in the order they are read in.
-    $keeping = AStackThatKeepsCurrent::whichTook(anEveningWorthSpending(), aReportSaying(HowServicesTookIt::these(
+    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), TheUpkeepScreenOfTheLoft::aReportSaying(HowServicesTookIt::these(
         HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
         HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
         HowAServiceTookIt::of(ServiceId::called('radarr'), HowItEnded::Updated, HowToUndoIt::Rollback),
@@ -824,7 +501,7 @@ it('reads what needs attention before what is fine', function (): void {
 
     $named = [];
 
-    foreach (aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied as $took) {
+    foreach (TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied as $took) {
         $named[] = $took->service;
     }
 
@@ -832,8 +509,8 @@ it('reads what needs attention before what is fine', function (): void {
 });
 
 it('says whether the household will notice what the release carrying the pins changed', function (): void {
-    $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->inUse;
-    $chore = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+    $noticed = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()))->answer()->inUse;
+    $chore = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
         Releases::none(),
         Services::these(ServiceId::called('jellyfin')),
@@ -925,7 +602,7 @@ function theUpkeepScreenDrawnOver(array $payload): array
 {
     $upkeep = Standings::in(new Envelope(1, 'update', $payload));
 
-    return WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
+    return WhatTheDeviceWouldDraw::by(TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
 }
 
 it('does not say an update is waiting where the notes are pending and the services are on their pins', function (): void {
@@ -970,7 +647,7 @@ it('stands in for a stack with payloads the contract would accept', function ():
 });
 
 it('draws what the running release changed only where the notes describe it', function (HowTheNotesStand $notes, string $said, string $means): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending($notes)));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending($notes)));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->answer()->inUse)->toBeNull()
@@ -986,7 +663,7 @@ it('draws what the running release changed only where the notes describe it', fu
 ]);
 
 it('draws what the running release changed where the notes describe it, and withholds nothing', function (): void {
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->answer()->notesWithheld->said)->toBe('')
@@ -1001,12 +678,12 @@ it('says the files the operator edited are kept, with what the update would chan
         Releases::none(),
         Services::these(ServiceId::called('sonarr')),
         Services::none(),
-        whatLastNightCameTo(),
+        TheUpkeepScreenOfTheLoft::whatLastNightCameTo(),
         HowTheNotesStand::Current,
         TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n")),
     )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
 
-    $drawn = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
+    $drawn = WhatTheDeviceWouldDraw::by(TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
 
     expect($drawn)->toContain(
         __('stacks.edits.heading'),
@@ -1019,7 +696,7 @@ it('says the files the operator edited are kept, with what the update would chan
 });
 
 it('says nothing about edited files where the update leaves none', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending())))->said();
+    $drawn = WhatTheDeviceWouldDraw::by(TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending())))->said();
 
     expect($drawn)->not->toContain(__('stacks.edits.heading'));
 });
@@ -1030,13 +707,13 @@ it('offers nothing to put back a file the operator edited: the screen offers wha
         Releases::none(),
         Services::these(ServiceId::called('sonarr')),
         Services::none(),
-        whatLastNightCameTo(),
+        TheUpkeepScreenOfTheLoft::whatLastNightCameTo(),
         HowTheNotesStand::Current,
         $edits,
     )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
 
-    $edited = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"))))));
-    $untouched = WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::none()))));
+    $edited = WhatTheDeviceWouldDraw::by(TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"))))));
+    $untouched = WhatTheDeviceWouldDraw::by(TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with($leaving(TheStackEdits::none()))));
 
     expect($edited->said())->toContain(__('stacks.edits.kept', ['path' => 'compose.yaml']))
         ->and($edited->offers())->not->toBe([])->toBe($untouched->offers());
