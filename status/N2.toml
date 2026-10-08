@@ -1,0 +1,35 @@
+# What this app implements of N2, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N2-R1", state = "done", evidence = ["app-modules/kernel/src/Api/HowItStands.php", "app-modules/kernel/src/Api/Standings.php", "tests/Feature/SeeingHowAStackIsTest.php"] },
+  { id = "N2-R2", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowThisStackIs.php", "app-modules/health/src/Api/Queries/WorstFirst.php", "app-modules/health/tests/Api/Queries/WorstFirstTest.php", "tests/Feature/SeeingAStacksFindingsInOrderTest.php"] },
+  { id = "N2-R3", state = "done", evidence = ["app-modules/kernel/src/Api/CouldNotSay.php", "app-modules/sdk/src/Api/Reports.php", "app-modules/kernel/tests/Api/FindingTest.php", "app-modules/sdk/tests/Api/ReportsTest.php"] },
+  { id = "N2-R4", state = "done", evidence = ["app-modules/kernel/src/Api/EffectSaysNothing.php", "app-modules/sdk/src/Api/OfferIsUnreadable.php", "app-modules/kernel/tests/Api/ConfirmedTest.php", "app-modules/kernel/tests/Api/MendedTest.php"] },
+  { id = "N2-R5", state = "done", evidence = ["app-modules/kernel/src/Api/Confirmed.php", "app-modules/dx/src/Internal/WhatTheWireWouldAnswer.php", "app-modules/kernel/tests/Api/ConfirmedTest.php", "app-modules/kernel/tests/Api/MendedTest.php"] },
+  { id = "N2-R6", state = "done", evidence = ["app-modules/kernel/src/Api/HowTheRepairIsGoing.php", "app-modules/sdk/src/Api/Menders.php", "app-modules/kernel/tests/Api/ConfirmedTest.php", "app-modules/kernel/tests/Api/OfferTest.php"] },
+  { id = "N2-R7", state = "done", evidence = ["app-modules/kernel/src/Api/Daemon.php", "app-modules/kernel/src/Api/HowAServiceRuns.php", "app-modules/kernel/tests/Api/AgreedToTest.php", "app-modules/kernel/tests/Api/DaemonTest.php"] },
+  { id = "N2-R8", state = "done", evidence = ["app-modules/kernel/src/Api/AgreedTo.php", "app-modules/sdk/src/Internal/Costs.php", "app-modules/kernel/tests/Api/AgreedToTest.php", "app-modules/kernel/tests/Api/DaemonTest.php"] },
+  { id = "N2-R9", state = "done", evidence = ["app-modules/kernel/src/Api/Stage.php", "app-modules/sdk/src/Api/Stalls.php", "app-modules/kernel/tests/Api/HowMuchIsShownTest.php", "app-modules/kernel/tests/Api/StageTest.php"] },
+  { id = "N2-R10", state = "done", evidence = ["app-modules/kernel/src/Api/HowManyLines.php", "app-modules/sdk/src/Api/LineIsUnreadable.php", "app-modules/kernel/tests/Api/AboutWhatTest.php", "app-modules/kernel/tests/Api/HowManyLinesTest.php"] },
+  { id = "N2-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Decided.php", "app-modules/kernel/src/Api/HowARequestStands.php", "app-modules/kernel/tests/Api/DecidedTest.php", "app-modules/kernel/tests/Api/RequestedTest.php"] },
+  { id = "N2-R12", state = "done", evidence = ["app-modules/sdk/tests/Api/SupervisorsTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N2-R13", state = "done", evidence = ["app-modules/operator/src/Internal/Presenters/HowTheOneLineReads.php", "tests/Feature/AReadingCarriesItsAgeTest.php"] },
+  { id = "N2-R14", state = "done", evidence = ["app-modules/kernel/src/Api/Daemons.php", "app-modules/sdk/src/Api/Households.php", "app-modules/sdk/tests/Api/UpkeepersTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N2-R15", state = "done", evidence = ["app-modules/kernel/src/Api/AgainstThePins.php", "app-modules/kernel/src/Api/Standings.php", "app-modules/sdk/tests/Api/StandingsTest.php", "tests/Contract/KeepingCurrentContractTest.php"] },
+  { id = "N2-R16", state = "done", evidence = ["app-modules/kernel/src/Api/Release.php", "app-modules/kernel/src/Api/Standings.php", "app-modules/sdk/tests/Api/StandingsTest.php", "tests/Contract/KeepingCurrentContractTest.php"] },
+  { id = "N2-R17", state = "done", evidence = ["app-modules/kernel/src/Api/KeepingCurrent.php", "app-modules/operator/src/Internal/Screens/HowCurrentThisStackIs.php", "app-modules/sdk/tests/Api/StandingsTest.php", "app-modules/sdk/tests/Api/UpkeepersTest.php"] },
+  { id = "N2-R18", state = "done", evidence = ["app-modules/kernel/src/Api/HowItEnded.php", "app-modules/sdk/src/Api/Upkeepers.php", "app-modules/sdk/tests/Api/StandingsTest.php", "app-modules/sdk/tests/Internal/EndingsTest.php"] },
+  { id = "N2-R19", state = "done", evidence = ["app-modules/kernel/src/Api/HowAServiceTookIt.php", "app-modules/kernel/src/Api/Standings.php", "app-modules/sdk/tests/Internal/EndingsTest.php", "tests/Contract/KeepingCurrentContractTest.php"] },
+  { id = "N2-R20", state = "done", evidence = ["app-modules/kernel/src/Api/AgainstThePins.php", "app-modules/kernel/src/Api/Standings.php", "tests/Feature/SeeingHowCurrentAStackIsTest.php", "tests/Feature/TypesThatMustNotMeetTest.php"] },
+  { id = "N2-R21", state = "done", evidence = ["app-modules/kernel/src/Api/Daemon.php", "app-modules/kernel/src/Api/Daemons.php", "app-modules/sdk/tests/Api/RostersTest.php", "tests/Feature/SeeingWhatElseIsRunningTest.php"] },
+  { id = "N2-R22", state = "done", evidence = ["app-modules/kernel/src/Api/TakingAnUpdate.php", "app-modules/sdk/src/Internal/Changes.php", "app-modules/sdk/tests/Api/StandingsTest.php", "app-modules/sdk/tests/Internal/ChangesTest.php"] },
+  { id = "N2-R23", state = "done", evidence = ["app-modules/kernel/src/Api/HearingTheStart.php", "app-modules/kernel/src/Api/WhatAStartWaitsOn.php", "tests/Contract/HearingTheStartContractTest.php"] },
+  { id = "N2-R24", state = "done", evidence = ["app-modules/kernel/src/Api/Disturbances.php", "app-modules/kernel/src/Api/WhatToDoWithIt.php", "app-modules/kernel/tests/Api/DaemonsTest.php", "app-modules/kernel/tests/Api/WhatIsRunningTest.php"] },
+  { id = "N2-R25", state = "done", evidence = ["app-modules/kernel/src/Api/Owing.php", "app-modules/kernel/src/Api/Watching.php", "tests/Contract/DrawnAsAMemberSeesItContractTest.php", "tests/Contract/OwingContractTest.php"] },
+  { id = "N2-R26", state = "done", evidence = ["tests/Feature/PreviewingTheMembersSideTest.php"] },
+]

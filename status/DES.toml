@@ -1,0 +1,17 @@
+# What this app implements of DES, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "DES-R15", state = "partial", evidence = ["tests/Templates/ThemeColourIsNotSetAsTextTest.php"] },
+  { id = "DES-R18", state = "partial", evidence = ["app-modules/design/src/Api/ThemeToken.php", "tests/Feature/TheAccentIsTheBrandsTest.php"] },
+  { id = "DES-R28", state = "done", evidence = ["tests/Arch/NoSettingChoosesTheThemeTest.php", "tests/Contract/TakesTheThemeItOpensOverContractTest.php"] },
+  { id = "DES-R29", state = "done", evidence = ["app-modules/design/src/Api/ThemeToken.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
+  { id = "DES-R30", state = "done", evidence = ["app-modules/design/resources/views/components/marked-line.blade.php", "app-modules/design/resources/views/components/notice.blade.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "app-modules/design/tests/View/Components/MarkedLineTest.php"] },
+  { id = "DES-R32", state = "done", evidence = ["app-modules/design/src/Api/Typeface.php", "tests/Arch/EveryTextIsSetInABundledFaceTest.php", "tests/Arch/TheBundledFacesAreTheBrandsTest.php"] },
+  { id = "DES-R33", state = "done", evidence = ["app-modules/design/src/Api/Radius.php", "app-modules/design/src/Api/ThemeToken.php", "tests/Arch/BrandMeasuresParityTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
+  { id = "DES-R36", state = "partial", evidence = ["app-modules/design/src/Api/ThemeToken.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
+]

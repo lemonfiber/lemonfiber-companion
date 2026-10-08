@@ -1,0 +1,22 @@
+# What this app implements of N5, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N5-R1", state = "done", evidence = ["app-modules/kernel/src/Api/WhatSettledIt.php", "tests/Feature/ChoosingWhoAnswersTest.php", "tests/Feature/WiringTheServicesTest.php"] },
+  { id = "N5-R2", state = "done", evidence = ["app-modules/kernel/src/Api/AFill.php", "app-modules/sdk/src/Api/Substitutions.php", "tests/Contract/ChoosingAFillerContractTest.php", "tests/Feature/ChoosingWhoAnswersTest.php"] },
+  { id = "N5-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhoSettledIt.php", "app-modules/sdk/src/Api/Links.php", "tests/Contract/LinkingContractTest.php", "tests/Feature/WiringTheServicesTest.php"] },
+  { id = "N5-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AFill.php", "app-modules/kernel/src/Api/WhatNothingFills.php", "tests/Contract/ChoosingAFillerContractTest.php", "tests/Feature/ChoosingWhoAnswersTest.php"] },
+  { id = "N5-R5", state = "done", evidence = ["app-modules/kernel/src/Api/Unfilled.php", "app-modules/kernel/src/Api/WhatNothingFills.php", "tests/Feature/WiringTheServicesTest.php"] },
+  { id = "N5-R6", state = "done", evidence = ["app-modules/kernel/src/Api/HowItReaches.php", "tests/Feature/WiringTheServicesTest.php"] },
+  { id = "N5-R7", state = "done", evidence = ["app-modules/sdk/src/Api/Fillers.php", "tests/Feature/ChoosingWhoAnswersTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N5-R8", state = "done", evidence = ["app-modules/kernel/src/Api/WhatAServiceIsFor.php", "app-modules/sdk/src/Api/Catalogues.php", "tests/Feature/SeeingWhatEachServiceIsForTest.php"] },
+  { id = "N5-R9", state = "done", evidence = ["app-modules/kernel/src/Api/AServiceDropped.php", "app-modules/kernel/tests/Api/TheCatalogueTest.php", "tests/Feature/SeeingWhatEachServiceIsForTest.php"] },
+  { id = "N5-R10", state = "open" },
+  { id = "N5-R11", state = "open" },
+  { id = "N5-R12", state = "done", evidence = ["app-modules/kernel/src/Api/Capability.php", "app-modules/kernel/src/Api/HowItSettled.php", "tests/Contract/LinkingContractTest.php"] },
+  { id = "N5-R13", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheLinksSaid.php", "tests/Contract/EveryAdapterAnswersWhatItCannotReadTest.php", "tests/Feature/WiringTheServicesTest.php"] },
+]

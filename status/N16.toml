@@ -1,0 +1,15 @@
+# What this app implements of N16, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N16-R5", state = "done", evidence = ["app-modules/kernel/src/Api/WhatKeepsItRunning.php", "app-modules/kernel/src/Api/WhatRunsUnattended.php", "app-modules/kernel/tests/Api/UnattendedTest.php", "app-modules/kernel/tests/Api/WhatKeepsItRunningTest.php"] },
+  { id = "N16-R6", state = "done", evidence = ["app-modules/kernel/src/Api/HowAServiceRuns.php", "app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/kernel/tests/Api/HowItIsHostedTest.php", "app-modules/kernel/tests/Api/UnattendedTest.php"] },
+  { id = "N16-R10", state = "done", evidence = ["app-modules/kernel/src/Api/Stalled.php", "app-modules/kernel/src/Api/Unsupported.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/kernel/tests/Api/DaemonsTest.php"] },
+  { id = "N16-R12", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatKeepsRunningHere.php", "app-modules/operator/src/Internal/Screens/WhatStoppedComingIn.php", "tests/Arch/EveryCadenceIsDeclaredTest.php", "tests/Feature/SeeingWhatKeepsRunningTest.php"] },
+  { id = "N16-R13", state = "done", evidence = ["app-modules/kernel/src/Api/Stalled.php", "app-modules/kernel/src/Api/WhatIsStuck.php", "app-modules/kernel/tests/Api/HowItIsHostedTest.php", "tests/Contract/HostingContractTest.php"] },
+  { id = "N16-R14", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatStoppedComingIn.php", "tests/Arch/EveryCadenceIsDeclaredTest.php", "tests/Feature/EverythingN2R9NamesIsReachableTest.php"] },
+]

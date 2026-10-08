@@ -1,0 +1,30 @@
+# What this app implements of N3, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N3-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Resumed.php", "app-modules/kernel/tests/Api/WhoseTest.php", "tests/Contract/SecureStorageContractTest.php"] },
+  { id = "N3-R2", state = "done", evidence = ["tests/Contract/OwingContractTest.php", "tests/Feature/SeeingWhatYouAreOwedTest.php"] },
+  { id = "N3-R3", state = "done", evidence = ["app-modules/kernel/tests/Api/ObstacleTest.php", "app-modules/sdk/tests/Api/HouseholdsTest.php"] },
+  { id = "N3-R4", state = "done", evidence = ["app-modules/sdk/tests/Api/TellingsTest.php", "tests/Contract/OwingContractTest.php"] },
+  { id = "N3-R5", state = "done", evidence = ["tests/Contract/OwingContractTest.php", "tests/Feature/SeeingWhatYouAreOwedTest.php"] },
+  { id = "N3-R6", state = "done", evidence = ["app-modules/sdk/src/Api/Households.php", "tests/Contract/OwingContractTest.php", "tests/Feature/SeeingWhatYouAreOwedTest.php"] },
+  { id = "N3-R7", state = "done", evidence = ["app-modules/kernel/src/Api/TurnedDown.php", "app-modules/sdk/src/Api/Households.php", "app-modules/kernel/tests/Api/TurnedDownTest.php", "app-modules/kernel/tests/Api/WantedTest.php"] },
+  { id = "N3-R9", state = "done", evidence = ["app-modules/household/src/Internal/Screens/FindsItsWayAroundTheHouse.php", "app-modules/wayfinding/src/Internal/TheRowsOfTheMenu.php", "tests/Contract/OwingContractTest.php", "tests/Feature/AMemberNeverOpensTheOperatorsScreensTest.php"] },
+  { id = "N3-R10", state = "done", evidence = ["tests/Feature/WhatAMemberIsNeverShownTest.php"] },
+  { id = "N3-R11", state = "done", evidence = ["tests/Arch/NothingPlaysMediaHereTest.php"] },
+  { id = "N3-R12", state = "done", evidence = ["tests/Arch/AnActionIsNeverHeldTest.php", "tests/Feature/WhatAMemberIsNeverShownTest.php"] },
+  { id = "N3-R13", state = "done", evidence = ["app-modules/kernel/src/Api/Obstacle.php", "app-modules/connection/src/Api/LetsGoOfARefusedSession.php", "app-modules/operator/tests/Internal/ViewModels/HowTheReadingWentTest.php", "tests/Arch/ARefusedSessionIsLetGoOfTest.php"] },
+  { id = "N3-R14", state = "open" },
+  { id = "N3-R15", state = "open" },
+  { id = "N3-R16", state = "open" },
+  { id = "N3-R17", state = "open" },
+  { id = "N3-R18", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/SignIntoAStack.php", "app-modules/connection/src/Api/HowTheSignInWent.php", "tests/Feature/SigningIntoAStackTest.php", "app-modules/connection/tests/Api/HowTheSignInWentTest.php"] },
+  { id = "N3-R19", state = "done", evidence = ["app-modules/household/resources/views/components/screen-closes.blade.php", "app-modules/household/src/Internal/Screens/FindsItsWayAroundTheHouse.php", "app-modules/household/tests/View/Components/ScreenClosesTest.php", "app-modules/operator/tests/View/Components/ScreenClosesTest.php"] },
+  { id = "N3-R22", state = "done", evidence = ["app-modules/household/src/Internal/Screens/WhatThisTitleIs.php", "tests/Feature/OpeningATitleTest.php"] },
+  { id = "N3-R23", state = "done", evidence = ["app-modules/household/src/Internal/Presenters/HowTheirOwnTitlesRead.php", "app-modules/household/src/Internal/Screens/WhatYouCanWatch.php", "app-modules/household/tests/View/Components/ShelfRowTest.php", "tests/Feature/SeeingWhatYouCanWatchTest.php"] },
+  { id = "N3-R24", state = "done", evidence = ["app-modules/household/src/Internal/ViewModels/HowAPosterIsLettered.php", "app-modules/household/src/View/Components/Hero.php", "app-modules/household/tests/Internal/ViewModels/HowAPosterIsLetteredTest.php", "app-modules/household/tests/View/Components/HeroTest.php"] },
+]

@@ -1,0 +1,20 @@
+# What this app implements of N15, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N15-R1", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackIsSetTo.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
+  { id = "N15-R2", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackIsSetTo.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
+  { id = "N15-R3", state = "done", evidence = ["app-modules/operator/src/Internal/ShowsWhatItsWordsMean.php"] },
+  { id = "N15-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AWord.php", "app-modules/kernel/tests/Api/AWordTest.php", "app-modules/kernel/tests/Api/TheGlossaryTest.php"] },
+  { id = "N15-R5", state = "done", evidence = ["app-modules/sdk/src/Api/Narrators.php", "app-modules/sdk/src/Api/Walkthroughs.php", "tests/Arch/ModuleBoundariesTest.php", "tests/Contract/EveryAdapterAnswersWhatItCannotReadTest.php"] },
+  { id = "N15-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ALineItSaid.php", "app-modules/kernel/src/Api/TheLinesItSaid.php", "app-modules/health/tests/Api/WhatTheWalkSaidSoFarTest.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php"] },
+  { id = "N15-R7", state = "done", evidence = ["app-modules/kernel/src/Api/WhatComesNext.php", "app-modules/operator/src/Internal/Screens/WhichAppToWatchOn.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php"] },
+  { id = "N15-R8", state = "done", evidence = ["app-modules/kernel/src/Api/AWalkthrough.php", "app-modules/kernel/src/Api/WhyTheWalkthroughStopped.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/kernel/tests/Api/HowTheWalkthroughIsGoingTest.php"] },
+  { id = "N15-R9", state = "done", evidence = ["app-modules/kernel/src/Api/WalkthroughStep.php", "app-modules/sdk/src/Api/TheWordsExplained.php", "app-modules/kernel/tests/Api/StageTest.php", "tests/Feature/SeeingWhatStoppedComingInTest.php"] },
+  { id = "N15-R10", state = "done", evidence = ["app-modules/health/src/Api/WhatTheWalkSaidSoFar.php", "app-modules/health/tests/Api/WhatTheWalkSaidSoFarTest.php"] },
+  { id = "N15-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Explaining.php", "app-modules/kernel/src/Api/WhatWasSaidOfOneWord.php", "tests/Contract/ExplainingContractTest.php"] },
+]

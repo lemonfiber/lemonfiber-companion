@@ -1,0 +1,27 @@
+# What this app implements of N7, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N7-R1", state = "done", evidence = ["app-modules/kernel/src/Api/TheImport.php", "app-modules/kernel/src/Api/Unsupported.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "app-modules/kernel/tests/Api/AMoveTest.php"] },
+  { id = "N7-R2", state = "done", evidence = ["app-modules/kernel/src/Api/AMove.php", "app-modules/kernel/src/Api/Stance.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "app-modules/kernel/tests/Api/AMoveTest.php"] },
+  { id = "N7-R3", state = "done", evidence = ["app-modules/kernel/src/Api/AMove.php", "app-modules/kernel/src/Api/WhatBecameOfTheMove.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "app-modules/kernel/tests/Api/AMoveTest.php"] },
+  { id = "N7-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AMoveAgreed.php", "app-modules/kernel/src/Api/AServiceAdopted.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N7-R5", state = "done", evidence = ["app-modules/kernel/src/Api/APortHeld.php", "app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/kernel/tests/Api/TheSurveyTest.php", "app-modules/kernel/tests/Api/WhatTheVerbCameToTest.php"] },
+  { id = "N7-R6", state = "done", evidence = ["app-modules/kernel/src/Api/APortMoved.php", "app-modules/kernel/tests/Api/AMoveTest.php", "app-modules/kernel/tests/Api/TheSurveyTest.php"] },
+  { id = "N7-R7", state = "done", evidence = ["app-modules/kernel/src/Api/HowDriftWasJudged.php", "app-modules/sdk/src/Api/WhatTheWiringCameTo.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "app-modules/kernel/tests/Api/WhatBecameOfTheWiringTest.php"] },
+  { id = "N7-R8", state = "done", evidence = ["app-modules/kernel/src/Api/WhatItWouldBreak.php", "app-modules/sdk/src/Api/WhatTheWiringCameTo.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Contract/WiringTheServicesContractTest.php"] },
+  { id = "N7-R9", state = "done", evidence = ["app-modules/operator/src/Internal/Presenters/HowAMoveReads.php"] },
+  { id = "N7-R10", state = "done", evidence = ["app-modules/kernel/src/Api/TheWiring.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "app-modules/kernel/tests/Api/WhatBecameOfTheWiringTest.php"] },
+  { id = "N7-R11", state = "done", evidence = ["app-modules/kernel/src/Api/AProjectStanding.php", "app-modules/kernel/src/Api/AServiceStanding.php", "app-modules/kernel/tests/Api/TheSurveyTest.php", "tests/Contract/MovingInContractTest.php"] },
+  { id = "N7-R12", state = "done", evidence = ["app-modules/kernel/src/Api/AMode.php", "app-modules/kernel/src/Api/TheModes.php", "app-modules/kernel/tests/Api/TheSurveyTest.php", "tests/Contract/MovingInContractTest.php"] },
+  { id = "N7-R13", state = "done", evidence = ["app-modules/kernel/src/Api/WhatLinkingCosts.php", "app-modules/kernel/tests/Api/TheSurveyTest.php", "tests/Contract/MovingInContractTest.php"] },
+  { id = "N7-R14", state = "done", evidence = ["app-modules/kernel/src/Api/Unsupported.php", "app-modules/kernel/tests/Api/AMoveTest.php", "app-modules/kernel/tests/Api/TheWiringTest.php"] },
+  { id = "N7-R15", state = "done", evidence = ["app-modules/kernel/src/Api/WhereAConnectionStands.php", "app-modules/sdk/src/Api/WhatTheWiringCameTo.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Feature/EveryWireValueIsACaseTest.php"] },
+  { id = "N7-R16", state = "done", evidence = ["app-modules/kernel/src/Api/HowAConnectionEnded.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Contract/WiringTheServicesContractTest.php"] },
+  { id = "N7-R17", state = "done", evidence = ["app-modules/kernel/src/Api/HowAConnectionEnded.php", "app-modules/operator/src/Internal/ViewModels/AConnectionAsShown.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Contract/WiringTheServicesContractTest.php"] },
+  { id = "N7-R18", state = "done", evidence = ["app-modules/kernel/src/Api/AMoveAgreed.php", "app-modules/kernel/src/Api/TheReplacement.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+]

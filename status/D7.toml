@@ -1,0 +1,13 @@
+# What this app implements of D7, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "D7-R3", state = "partial", evidence = ["app-modules/kernel/src/Api/HowBig.php", "app-modules/sdk/src/Api/Households.php", "app-modules/kernel/tests/Api/HowBigTest.php", "app-modules/kernel/tests/Api/SizeTest.php"] },
+  { id = "D7-R4", state = "partial", evidence = ["app-modules/kernel/src/Api/HowBig.php", "app-modules/kernel/tests/Api/SizeTest.php", "app-modules/sdk/tests/Api/HouseholdsTest.php"] },
+  { id = "D7-R6", state = "partial", evidence = ["app-modules/operator/src/Internal/Screens/WhatTheHouseholdAsked.php", "tests/Arch/EveryCadenceIsDeclaredTest.php", "tests/Arch/ScreensDeclarePaintingTest.php"] },
+  { id = "D7-R7", state = "partial", evidence = ["app-modules/kernel/src/Api/Decided.php", "app-modules/sdk/src/Api/Households.php", "app-modules/kernel/tests/Api/DecidedTest.php", "app-modules/kernel/tests/Api/TurnedDownTest.php"] },
+]

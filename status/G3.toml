@@ -1,0 +1,16 @@
+# What this app implements of G3, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "G3-R1", state = "partial", evidence = ["app-modules/design/src/View/Tone.php", "app-modules/design/tests/View/ToneTest.php", "tests/Arch/NoClassDecidedAtRuntimeTest.php"] },
+  { id = "G3-R6", state = "partial", evidence = ["tests/Templates/NothingAScreenDoesToItsReaderTest.php"] },
+  { id = "G3-R8", state = "partial", evidence = ["tests/Templates/NothingAScreenDoesToItsReaderTest.php"] },
+  { id = "G3-R10", state = "partial", evidence = ["tests/Contract/SayingContractTest.php"] },
+  { id = "G3-R14", state = "partial", evidence = ["tests/Arch/NoClassDecidedAtRuntimeTest.php"] },
+  { id = "G3-R15", state = "partial", evidence = ["tests/Templates/NothingAStackSaidCanRedrawAScreenTest.php"] },
+  { id = "G3-R16", state = "partial", evidence = ["tests/Templates/EveryTargetIsBigEnoughToHitTest.php"] },
+]

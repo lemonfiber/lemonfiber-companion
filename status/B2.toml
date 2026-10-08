@@ -1,0 +1,12 @@
+# What this app implements of B2, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "B2-R10", state = "partial", evidence = ["app-modules/kernel/tests/Api/HowAServiceRunsTest.php"] },
+  { id = "B2-R15", state = "partial", evidence = ["app-modules/kernel/src/Api/HowAServiceRuns.php", "app-modules/kernel/tests/Api/DaemonTest.php", "app-modules/kernel/tests/Api/DaemonsTest.php"] },
+  { id = "B2-R16", state = "partial", evidence = ["app-modules/kernel/src/Api/AgreedTo.php", "app-modules/kernel/src/Api/Supervising.php", "app-modules/kernel/tests/Api/AgreedToTest.php", "app-modules/sdk/tests/Api/ClientsThatAskWhatIsOfferedTest.php"] },
+]

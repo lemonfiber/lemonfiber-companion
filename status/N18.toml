@@ -1,0 +1,18 @@
+# What this app implements of N18, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N18-R1", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackRuns.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Arch/EveryScreenFollowingWorkSaysSoTest.php"] },
+  { id = "N18-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/sdk/src/Internal/WhatWasLeftOut.php", "app-modules/kernel/tests/Api/HowTheVerbIsGoingTest.php", "app-modules/kernel/tests/Api/WhatTheVerbCameToTest.php"] },
+  { id = "N18-R4", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php"] },
+  { id = "N18-R5", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php", "tests/Contract/SupervisingContractTest.php"] },
+  { id = "N18-R6", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php", "tests/Contract/SupervisingContractTest.php"] },
+  { id = "N18-R7", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php", "tests/Contract/SupervisingContractTest.php"] },
+  { id = "N18-R8", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Contract/AwaitsAnOutcomeContractTest.php"] },
+  { id = "N18-R9", state = "done", evidence = ["tests/Contract/SupervisingContractTest.php"] },
+  { id = "N18-R10", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsals.php", "scripts/mutation/running.php", "app-modules/sdk/tests/Api/RehearsalsTest.php"] },
+]

@@ -1,0 +1,19 @@
+# What this app implements of N24, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N24-R1", state = "done", evidence = ["app-modules/kernel/src/Api/APresetToChoose.php", "app-modules/kernel/src/Api/ChoosingQuality.php", "app-modules/kernel/tests/Api/APresetToChooseTest.php", "tests/Contract/ChoosingQualityContractTest.php"] },
+  { id = "N24-R2", state = "done", evidence = ["app-modules/kernel/src/Api/AFormatInForce.php", "app-modules/sdk/src/Api/WhatMusicCameTo.php", "app-modules/kernel/tests/Api/APresetToChooseTest.php", "app-modules/kernel/tests/Api/TheQualityChosenTest.php"] },
+  { id = "N24-R3", state = "done", evidence = ["app-modules/kernel/src/Api/AHeldChoice.php", "app-modules/kernel/src/Api/ChoosingQuality.php", "app-modules/kernel/tests/Api/APresetToChooseTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N24-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AnUpgradeDescribed.php", "app-modules/kernel/src/Api/UpgradingTheLibrary.php", "app-modules/kernel/tests/Api/TheUpgradeTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N24-R5", state = "done", evidence = ["app-modules/kernel/src/Api/TheQualityChosen.php", "app-modules/kernel/src/Api/WhatToDoAboutQuality.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N24-R6", state = "done", evidence = ["app-modules/kernel/src/Api/WhatToWalk.php", "app-modules/kernel/src/Api/WhichWalk.php", "app-modules/kernel/tests/Api/WhatToWalkTest.php", "app-modules/sdk/tests/Api/GuidesTest.php"] },
+  { id = "N24-R7", state = "done", evidence = ["app-modules/kernel/src/Api/AWalkthrough.php", "app-modules/kernel/src/Api/KindOfWork.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/kernel/tests/Api/HowTheWalkthroughIsGoingTest.php"] },
+  { id = "N24-R8", state = "done", evidence = ["app-modules/kernel/src/Api/WhereItStopped.php", "app-modules/kernel/src/Api/WhyTheWalkthroughStopped.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/sdk/tests/Api/WalkthroughsTest.php"] },
+  { id = "N24-R9", state = "done", evidence = ["app-modules/kernel/src/Api/HowTheImportLinked.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/sdk/tests/Api/WalkthroughsTest.php"] },
+  { id = "N24-R10", state = "done", evidence = ["app-modules/kernel/src/Api/WhatBecameOfTheChoice.php", "app-modules/kernel/tests/Api/APresetToChooseTest.php", "app-modules/kernel/tests/Api/TheQualityChosenTest.php"] },
+]

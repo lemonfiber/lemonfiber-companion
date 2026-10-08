@@ -1,0 +1,19 @@
+# What this app implements of N22, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N22-R1", state = "done", evidence = ["app-modules/kernel/src/Api/ABundleAsked.php", "app-modules/sdk/src/Api/Bundlers.php", "app-modules/kernel/tests/Api/ABundleAskedTest.php", "app-modules/sdk/tests/Api/BundlersTest.php"] },
+  { id = "N22-R2", state = "done", evidence = ["app-modules/kernel/src/Api/ABundleAsked.php", "app-modules/operator/src/Internal/Screens/AskingForHelpHere.php", "app-modules/kernel/tests/Api/ABundleAskedTest.php", "app-modules/sdk/tests/Api/BundlersTest.php"] },
+  { id = "N22-R3", state = "done", evidence = ["app-modules/kernel/src/Api/ASettingToReveal.php", "app-modules/kernel/src/Api/SettingsToReveal.php", "app-modules/kernel/tests/Api/ABundleAskedTest.php", "app-modules/kernel/tests/Api/ASettingToRevealTest.php"] },
+  { id = "N22-R4", state = "done", evidence = ["app-modules/kernel/src/Api/TheTermsOfABundle.php", "app-modules/kernel/tests/Api/HowTheBundleIsGoingTest.php", "tests/Feature/AskingForHelpTest.php"] },
+  { id = "N22-R5", state = "done", evidence = ["app-modules/kernel/src/Api/APieceOfABundle.php", "app-modules/sdk/src/Api/TheBundle.php", "app-modules/kernel/tests/Api/ThePiecesOfABundleTest.php"] },
+  { id = "N22-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ABundle.php", "app-modules/sdk/src/Api/TheBundle.php", "app-modules/kernel/tests/Api/HowTheBundleIsGoingTest.php", "app-modules/sdk/tests/Api/BundlersTest.php"] },
+  { id = "N22-R7", state = "done", evidence = ["app-modules/kernel/src/Api/WhenABundleWasTaken.php", "app-modules/kernel/tests/Api/HowTheBundleIsGoingTest.php", "tests/Feature/AskingForHelpTest.php"] },
+  { id = "N22-R8", state = "done", evidence = ["app-modules/kernel/src/Api/ARefusalInItsWords.php", "app-modules/kernel/src/Api/HowTheBundleIsGoing.php", "app-modules/kernel/tests/Api/ARefusalInItsWordsTest.php", "app-modules/kernel/tests/Api/ARunPutBackTest.php"] },
+  { id = "N22-R9", state = "done", evidence = ["app-modules/kernel/src/Api/ABundleFile.php", "app-modules/kernel/src/Api/AWrittenBundle.php", "app-modules/kernel/tests/Api/ABundleFetchedTest.php", "app-modules/kernel/tests/Api/ABundleFileTest.php"] },
+  { id = "N22-R10", state = "done", evidence = ["app-modules/sdk/src/Api/Bundlers.php", "app-modules/operator/src/Internal/ViewModels/ABundleAsShown.php", "app-modules/sdk/tests/Api/BundlersTest.php", "tests/Contract/AskingForHelpContractTest.php"] },
+]

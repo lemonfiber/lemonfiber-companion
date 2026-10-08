@@ -1,0 +1,18 @@
+# What this app implements of N11, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N11-R1", state = "done", evidence = ["app-modules/kernel/src/Api/TheRecord.php", "app-modules/kernel/src/Api/TheRecordHasNoHorizon.php", "app-modules/kernel/tests/Api/TheRecordTest.php", "app-modules/sdk/tests/Api/RecordsTest.php"] },
+  { id = "N11-R2", state = "done", evidence = ["app-modules/kernel/src/Api/ARun.php", "app-modules/kernel/src/Api/Change.php", "app-modules/kernel/tests/Api/ChangeTest.php", "app-modules/kernel/tests/Api/HowFarItGoesBackTest.php"] },
+  { id = "N11-R3", state = "done", evidence = ["app-modules/kernel/src/Api/Change.php", "app-modules/kernel/tests/Api/ChangeTest.php", "app-modules/sdk/tests/Api/RecordsTest.php"] },
+  { id = "N11-R5", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatWasChangedHere.php", "tests/Arch/EveryCadenceIsDeclaredTest.php", "tests/Feature/SeeingWhatWasChangedTest.php"] },
+  { id = "N11-R6", state = "done", evidence = ["app-modules/kernel/src/Api/ImageDigest.php", "app-modules/kernel/src/Api/OriginSaysNothing.php", "app-modules/kernel/tests/Api/WhereItComesFromTest.php", "app-modules/sdk/tests/Api/OriginsTest.php"] },
+  { id = "N11-R7", state = "done", evidence = ["app-modules/kernel/src/Api/WhereItComesFrom.php", "app-modules/operator/src/Internal/Screens/WhereThisComesFrom.php", "app-modules/kernel/tests/Api/WhereItComesFromTest.php", "app-modules/sdk/tests/Api/OriginsTest.php"] },
+  { id = "N11-R8", state = "done", evidence = ["app-modules/kernel/src/Api/Provenance.php", "tests/Feature/SeeingWhereItComesFromTest.php"] },
+  { id = "N11-R9", state = "done", evidence = ["app-modules/kernel/src/Api/TheRecord.php", "app-modules/kernel/src/Api/WhatWasRecorded.php", "app-modules/kernel/tests/Api/TheRecordTest.php", "app-modules/sdk/tests/Api/RecordsTest.php"] },
+  { id = "N11-R10", state = "done", evidence = ["app-modules/kernel/src/Api/WhenItWasMade.php", "app-modules/operator/src/Internal/Presenters/HowTheRecordReads.php", "app-modules/kernel/tests/Api/TheRecordTest.php", "app-modules/kernel/tests/Api/WhenItWasMadeTest.php"] },
+]

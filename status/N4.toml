@@ -1,0 +1,33 @@
+# What this app implements of N4, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N4-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Notifier.php", "app-modules/kernel/tests/Api/PermissionTest.php", "tests/Contract/NotifierContractTest.php"] },
+  { id = "N4-R2", state = "done", evidence = ["app-modules/kernel/src/Api/Asked.php", "app-modules/kernel/src/Api/Permission.php", "app-modules/kernel/tests/Api/AskedTest.php", "tests/Arch/PermissionsAreExplainedTest.php"] },
+  { id = "N4-R3", state = "done", evidence = ["app-modules/kernel/src/Api/HowItWasRead.php", "app-modules/operator/src/Internal/Screens/PairByTyping.php", "app-modules/kernel/tests/Api/PermissionTest.php", "tests/Arch/PermissionsAreExplainedTest.php"] },
+  { id = "N4-R4", state = "done", evidence = ["app-modules/kernel/src/Api/Asked.php", "app-modules/kernel/tests/Api/AskedTest.php", "tests/Contract/NotifierContractTest.php"] },
+  { id = "N4-R5", state = "done", evidence = ["app-modules/kernel/src/Api/Configured.php", "tests/Contract/SecureStorageContractTest.php"] },
+  { id = "N4-R6", state = "done", evidence = ["app-modules/kernel/src/Api/Kept.php", "app-modules/dx/src/Api/ASessionThisRunKeeps.php", "app-modules/kernel/tests/Api/WhySessionCannotBeKeptTest.php", "tests/Contract/KeepsContractTest.php"] },
+  { id = "N4-R7", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "bootstrap/Composition/NativePHP/WhenTheLockMoves.php", "app-modules/kernel/tests/Api/LockTest.php"] },
+  { id = "N4-R8", state = "done", evidence = ["app-modules/kernel/src/Api/Authenticated.php", "app-modules/device/src/Api/PlatformAuth.php", "app-modules/kernel/tests/Api/LockTest.php"] },
+  { id = "N4-R9", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "bridge/resources/android/CaptureRule.kt", "tests/Contract/CaptureContractTest.php"] },
+  { id = "N4-R10", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/kernel/tests/Api/NotificationTest.php"] },
+  { id = "N4-R11", state = "done", evidence = ["app-modules/kernel/tests/Api/NotificationTest.php", "app-modules/kernel/tests/Api/WhatTheCoreDecidedTest.php"] },
+  { id = "N4-R12", state = "done", evidence = ["app-modules/kernel/src/Api/Assembled.php", "tests/Arch/NothingLeavesThisDeviceTest.php"] },
+  { id = "N4-R13", state = "done", evidence = ["app-modules/kernel/src/Api/Assembled.php", "app-modules/kernel/src/Api/Concealed.php", "app-modules/kernel/tests/Api/DiagnosticsTest.php", "tests/Arch/ADiagnosticReportSaysNothingSecretTest.php"] },
+  { id = "N4-R14", state = "done", evidence = ["tests/Templates/ThePlatformOwnsAccessibilityTest.php"] },
+  { id = "N4-R15", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/kernel/src/Api/StackId.php", "app-modules/kernel/tests/Api/NotificationTest.php"] },
+  { id = "N4-R16", state = "done", evidence = ["tests/Arch/PermissionsAreExplainedTest.php"] },
+  { id = "N4-R17", state = "done", evidence = ["app-modules/kernel/src/Api/Obstacle.php", "app-modules/kernel/src/Api/TheAppsSettings.php", "tests/Contract/TheAppsSettingsContractTest.php", "tests/Contract/TheLocalNetworkContractTest.php"] },
+  { id = "N4-R18", state = "done", evidence = ["app-modules/kernel/src/Api/Capture.php", "bridge/resources/android/CaptureRule.kt", "app-modules/kernel/tests/Api/ConcealedTest.php", "tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php"] },
+  { id = "N4-R19", state = "done", evidence = ["app-modules/kernel/src/Api/DeviceAuth.php", "app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/tests/Api/LockTest.php"] },
+  { id = "N4-R20", state = "done", evidence = ["app-modules/device/src/Api/PlatformNotifier.php", "app-modules/kernel/tests/Api/NotificationTest.php"] },
+  { id = "N4-R21", state = "done", evidence = ["tests/Templates/ScreensSpeakToTheOperatorTest.php"] },
+  { id = "N4-R22", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
+  { id = "N4-R23", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
+  { id = "N4-R24", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "bootstrap/Composition/NativePHP/TheLockIsOnTheGlass.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
+]

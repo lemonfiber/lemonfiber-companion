@@ -1,0 +1,16 @@
+# What this app implements of G4, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "G4-R1", state = "partial", evidence = ["tests/Feature/EveryObstacleSaysSomethingOfItsOwnTest.php"] },
+  { id = "G4-R2", state = "partial", evidence = ["app-modules/kernel/tests/Api/SeverityTest.php"] },
+  { id = "G4-R3", state = "partial", evidence = ["app-modules/health/tests/Api/Queries/TheCauseBeforeItsSymptomsTest.php"] },
+  { id = "G4-R4", state = "partial", evidence = ["app-modules/kernel/src/Api/WentWrong.php", "app-modules/sdk/src/Api/Reports.php", "app-modules/kernel/tests/Api/FindingTest.php", "app-modules/sdk/tests/Api/ReportsTest.php"] },
+  { id = "G4-R6", state = "partial", evidence = ["app-modules/kernel/tests/Api/ObstacleTest.php"] },
+  { id = "G4-R7", state = "partial", evidence = ["app-modules/operator/src/View/Components/SomebodyToAsk.php"] },
+  { id = "G4-R8", state = "partial", evidence = ["tests/Templates/NothingSecretReachesAScreenTest.php"] },
+]

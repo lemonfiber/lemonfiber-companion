@@ -1,0 +1,12 @@
+# What this app implements of Q, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "Q-R64", state = "partial", evidence = ["tests/Arch/ModuleApiTest.php"] },
+  { id = "Q-R66", state = "partial", evidence = [".docs/architecture/tests.md", "tests/Arch/EveryRuleHasSubjectsFindsThemTest.php", "tests/Guards/TheReadingRefusesWhatItCannotFollowTest.php"] },
+  { id = "Q-R72", state = "partial", evidence = ["app-modules/dx/src/Api/AStandInStack.php", "tests/Arch/EveryStandInReplacesItsOwnPortTest.php", "tests/Arch/NoStandInCanReachAReleaseTest.php"] },
+]
