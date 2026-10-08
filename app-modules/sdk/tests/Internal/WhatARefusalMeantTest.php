@@ -231,6 +231,20 @@ it('signs out on the one code that says the session is not admitted, and on no o
     expect($signedOut)->toBe([RefusalCode::NotAdmitted]);
 });
 
+it('signs nobody out on a code it knows that is not the session\'s, though it came with the status a session is refused with', function (): void {
+    $signedOut = [];
+
+    foreach (RefusalCode::cases() as $code) {
+        $met = WhatARefusalMeant::obstacle(aProblemTheStackSent(401, ['code' => $code->value, 'summary' => 'The stack said no.']));
+
+        if ($met->meansWeAreSignedOut()) {
+            $signedOut[] = $code;
+        }
+    }
+
+    expect($signedOut)->toBe([RefusalCode::NotAdmitted]);
+});
+
 it('reads a refusal of what was asked in the stack\'s own words, whatever its status', function (): void {
     expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::NoTerm)))
         ->toBe('refused: The stack said no. | It is refused rather than half-applied. Nothing was touched. | ')
