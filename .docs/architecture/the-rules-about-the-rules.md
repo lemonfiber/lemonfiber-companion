@@ -171,9 +171,9 @@ argument is the same one K1 makes about recollections: an identifier gestures at
 a page rather than saying anything, and it rots the moment that page is
 superseded, silently, because nothing reads a comment.
 
-So the sentence stays and the number moves, to a page under
-[`.docs/requirements/`](../requirements/README.md) that says what the
-requirement asks and what in this repository keeps it. A citation belongs in a
+So the sentence stays and the number moves, to the requirement's row under
+[`status/`](../../status/), which names the code and the test in this
+repository that hold it. A citation belongs in a
 commit trailer and a pull request body, which is where the gate reads it.
 
 This repository holds none. `NoRequirementIdInACommentTest` is what keeps it

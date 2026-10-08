@@ -39,6 +39,15 @@ use Native\Mobile\Edge\NativeComponent;
  * cadence. {@see WhatWasHeardSoFar} decides both; this carries out what it
  * decides.
  *
+ * **It is held on the screen because nowhere else can hold it.** A task on the
+ * background lane runs to completion and cannot be stopped once started, so a
+ * subscription there could not be let go of when the operator stops looking. A
+ * native WebSocket client speaks another protocol than the stack's server-sent
+ * events, and would be a second HTTP client and a second enforcement of the
+ * certificate pin. The screen's own runloop stays alive between wakes, and each
+ * wake reads the stream through the SDK with a wait of a millisecond, so a wake
+ * with nothing to take costs about that and never waits on the stack.
+ *
  * **Every summary it hears is kept**, through {@see \Modules\Wayfinding\Api\WhatItListensWith::kept()}:
  * the word for the list of stacks, and the whole summary, sealed, for the next
  * time the stack's Health screen opens.

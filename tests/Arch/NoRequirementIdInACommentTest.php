@@ -10,17 +10,17 @@ use Tests\Support\Tree;
 //
 // Every implementation repository in the org carries none: `sdk-php`, `sdk-ts`
 // and `lemonfiber-web` have zero identifiers in source, and the Rust stack keeps
-// a middle layer so that its code needs none. This one keeps `.docs/requirements/`
-// for the same purpose.
+// a middle layer so that its code needs none. This one keeps its tracker under
+// `status/` for the same purpose.
 //
 // **The argument is not about tidiness.** An identifier in a comment gestures at
 // a page rather than saying anything, and it rots the moment that page is
 // superseded — silently, because nothing reads a comment and no gate resolved
 // one. What is worth keeping is the sentence around it, which says why the code
 // is the way it is, and that stays exactly where it is. What the number does is
-// move to `.docs/requirements/`, where a page can be revised, a link can reach
-// it, and a reader can find the requirement from the code and the code from the
-// requirement.
+// move to the requirement's row under `status/`, which names the code and the
+// test that hold it, so a reader can find the requirement from the code and the
+// code from the requirement.
 //
 // **It exempts itself**, which `Rules::THAT_ONLY_NAME_THEM` already does for the
 // three files that can only speak about rules by naming them. A rule against
@@ -121,9 +121,8 @@ it('no comment names a requirement', function (): void {
         "These comments name a requirement:\n  %s\n\n"
         . 'An identifier in a comment gestures at a page rather than saying anything, and rots '
         . 'the moment that page is superseded — silently, because nothing reads a comment. Keep '
-        . 'the sentence, which says why the code is the way it is, and put the number on a page '
-        . 'under `.docs/requirements/` that says what the requirement asks and what keeps it '
-        . 'here (GOV-R6).',
+        . 'the sentence, which says why the code is the way it is, and put the number in the '
+        . 'requirement\'s row under `status/`, which names the code and the test that hold it (GOV-R6).',
         implode("\n  ", $found),
     ));
 });
@@ -155,7 +154,7 @@ it('no PHP test title names a requirement', function (): void {
     expect(everyTitleNamingARequirement())->toBe([], sprintf(
         "These test titles name a requirement:\n  %s\n\n"
         . 'Say what the test shows in words, and name the test file in the requirement\'s row '
-        . 'under `.docs/requirements/`, which is where a requirement leads to what keeps it (G13).',
+        . 'under `status/`, which is where a requirement leads to what keeps it (G13).',
         implode("\n  ", everyTitleNamingARequirement()),
     ));
 });

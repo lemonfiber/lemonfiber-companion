@@ -61,6 +61,11 @@ use function trim;
  * listing offers the copies; a refused yes offers reading what putting it back
  * would do now, which is a new question.
  *
+ * **A restore is never drawn as partial.** It either answers with what it did
+ * or is refused, and the answer carries no part left undone; a restore refused
+ * part of the way through is drawn in the stack's words, which say where it
+ * stopped.
+ *
  * `Concealed` for the reason every stack-facing screen here is.
  */
 #[Lazy]

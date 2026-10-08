@@ -18,10 +18,10 @@ chosen elsewhere is a capability whose answers the app has to guess behind.
 | [ios.md](ios.md) | Swift: layout, the harness, the same question answered differently |
 | [capabilities/](capabilities/) | One page per capability: what it answers, and the states it keeps apart |
 
-The requirements each capability serves are named on its page and live in
-[`.docs/requirements/`](../requirements/). The spec is canonical; where a page
-here and a requirement disagree, the requirement is right and the page is a
-defect.
+The requirements each capability serves are named on its page, and each is
+recorded under [`status/`](../../status/) with the code and the test that hold
+it. The spec is canonical; where a page here and a requirement disagree, the
+requirement is right and the page is a defect.
 
 ## What is ours and what is not
 
