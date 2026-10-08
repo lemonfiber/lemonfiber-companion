@@ -118,9 +118,9 @@ final readonly class Catalogues
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, CatalogueField::Removed) as $row) {
+        foreach (self::rows($data, WireField::Removed) as $row) {
             if (! is_array($row)) {
-                throw CatalogueIsUnreadable::entry(CatalogueField::Removed, WireField::Id, $position);
+                throw CatalogueIsUnreadable::entry(WireField::Removed, WireField::Id, $position);
             }
 
             $found[] = self::one($row, $position);
@@ -137,15 +137,15 @@ final readonly class Catalogues
      */
     private static function one(array $row, int $position): AServiceDropped
     {
-        $service = ServiceId::called(self::text($row, CatalogueField::Removed, WireField::Id, $position));
-        $removedIn = self::text($row, CatalogueField::Removed, CatalogueField::RemovedIn, $position);
-        $reason = self::text($row, CatalogueField::Removed, WireField::Reason, $position);
+        $service = ServiceId::called(self::text($row, WireField::Removed, WireField::Id, $position));
+        $removedIn = self::text($row, WireField::Removed, CatalogueField::RemovedIn, $position);
+        $reason = self::text($row, WireField::Removed, WireField::Reason, $position);
 
         if (! array_key_exists(CatalogueField::ReplacedBy->value, $row) || $row[CatalogueField::ReplacedBy->value] === null) {
             return AServiceDropped::went($service, $removedIn, $reason);
         }
 
-        return AServiceDropped::replaced($service, $removedIn, $reason, self::text($row, CatalogueField::Removed, CatalogueField::ReplacedBy, $position));
+        return AServiceDropped::replaced($service, $removedIn, $reason, self::text($row, WireField::Removed, CatalogueField::ReplacedBy, $position));
     }
 
     /**

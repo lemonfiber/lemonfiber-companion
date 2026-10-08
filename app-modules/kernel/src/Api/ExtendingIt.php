@@ -16,6 +16,12 @@ enum ExtendingIt: string implements AnAction
     /** Install a plugin, rehearsed first and agreed to against the rehearsal. */
     case Install = 'install';
 
+    /** Move an installed plugin to the version its source serves now, rehearsed first. */
+    case Update = 'update';
+
+    /** Take an installed plugin off the machine, rehearsed first. */
+    case Remove = 'remove';
+
     /**
      * lemonfiber's word for it.
      *
@@ -26,6 +32,8 @@ enum ExtendingIt: string implements AnAction
     {
         return match ($this) {
             self::Install => 'plugin-install',
+            self::Update => 'plugin-update',
+            self::Remove => 'plugin-remove',
         };
     }
 }

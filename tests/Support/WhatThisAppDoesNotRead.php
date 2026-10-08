@@ -29,6 +29,6 @@ final readonly class WhatThisAppDoesNotRead
      */
     public static function rows(): array
     {
-        return [...UnreadOnEnvelopesAToL::ROWS, ...UnreadOnEnvelopesMToZ::ROWS];
+        return [...UnreadOnEnvelopesAToL::ROWS, ...UnreadOnEnvelopesMToZ::ROWS, ...UnreadOnThePluginsEnvelope::ROWS];
     }
 }

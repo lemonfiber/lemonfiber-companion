@@ -60,6 +60,12 @@ final readonly class APlugin
         return $this->vouched;
     }
 
+    /** Whether it can be updated: its record names the source it came from, which an update fetches again. */
+    public function canBeUpdated(): bool
+    {
+        return $this->vouched->source() !== '';
+    }
+
     /** Every recipe, in the manifest's order. */
     public function recipes(): TheRecipes
     {

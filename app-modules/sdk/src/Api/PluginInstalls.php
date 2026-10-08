@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Internal\PluginInstallReports;
 use Modules\Sdk\Internal\PluginRecords;
+use Modules\Sdk\Internal\PluginUpdatesAndRemovals;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -31,8 +32,9 @@ use function trim;
  * refusing rather than salvaging. One reading for the listing, a rehearsal and
  * an install, because the stack answers all three with this one envelope.
  *
- * The install an answer is about is read by {@see PluginInstallReports}, and
- * each plugin, listed or about to be installed, by {@see PluginRecords}.
+ * The install an answer is about is read by {@see PluginInstallReports}, an
+ * update or a removal by {@see PluginUpdatesAndRemovals}, and each plugin,
+ * listed or about to be installed, by {@see PluginRecords}.
  */
 final readonly class PluginInstalls
 {
@@ -52,15 +54,39 @@ final readonly class PluginInstalls
         $installed = TheInstalledPlugins::these(...self::installed($data));
         $sources = self::sources($data);
 
-        if (! array_key_exists(PluginsField::Install->value, $data) || $data[PluginsField::Install->value] === null) {
-            return ThePlugins::listed($installed, $sources);
+        $agreement = self::agreement($data);
+
+        return match (true) {
+            self::carries($data, PluginsField::Install) => ThePlugins::aboutAnInstall($installed, $sources, $agreement, PluginInstallReports::in(self::table($data, PluginsField::Install))),
+            self::carries($data, PluginsField::Update) => ThePlugins::aboutAnUpdate($installed, $sources, $agreement, PluginUpdatesAndRemovals::update(self::table($data, PluginsField::Update))),
+            self::carries($data, WireField::Removal) => ThePlugins::aboutAPluginRemoval($installed, $sources, $agreement, PluginUpdatesAndRemovals::removal(self::table($data, WireField::Removal))),
+            default => ThePlugins::listed($installed, $sources),
+        };
+    }
+
+    /**
+     * Whether the answer carries this account at all: absent and null are the same.
+     *
+     * @param array<mixed> $data
+     */
+    private static function carries(array $data, NamesAWireField $account): bool
+    {
+        return array_key_exists($account->value, $data) && $data[$account->value] !== null;
+    }
+
+    /**
+     * One account the answer carries, which has to be a table.
+     *
+     * @param  array<mixed> $data
+     * @return array<mixed>
+     */
+    private static function table(array $data, NamesAWireField $account): array
+    {
+        if (! is_array($data[$account->value])) {
+            throw PluginsAreUnreadable::missing($account);
         }
 
-        if (! is_array($data[PluginsField::Install->value])) {
-            throw PluginsAreUnreadable::missing(PluginsField::Install);
-        }
-
-        return ThePlugins::aboutAnInstall($installed, $sources, self::agreement($data), PluginInstallReports::in($data[PluginsField::Install->value]));
+        return $data[$account->value];
     }
 
     /**

@@ -66,7 +66,7 @@ final readonly class Uninstalls
 
         return AnUninstall::of(
             self::manifest(self::table($data, WireField::Manifest)),
-            self::removal(self::table($data, UninstallField::Removal)),
+            self::removal(self::table($data, WireField::Removal)),
         );
     }
 

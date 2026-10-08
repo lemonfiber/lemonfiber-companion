@@ -8,12 +8,16 @@ use function array_shift;
 use function array_values;
 use function implode;
 
+use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
+use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\ThePlugins;
@@ -31,7 +35,7 @@ use function sprintf;
  */
 final class AStackThatExtendsItself implements ExtendingTheStack
 {
-    /** @var list<string> each thing asked, in order: `list`, `rehearse:<source>`, `install:<source>:<agreement>:<approved>` or `after:<job>` */
+    /** @var list<string> each thing asked, in order, as the method that was asked and what it was asked with */
     private array $asked = [];
 
     /** @param list<HowExtendingItIsGoing> $answers */
@@ -71,13 +75,35 @@ final class AStackThatExtendsItself implements ExtendingTheStack
 
     public function install(Stack $stack, Session $session, APluginInstallAgreed $agreed): HowExtendingItIsGoing
     {
-        $approved = [];
+        $this->asked[] = sprintf('install:%s:%s:%s', $agreed->source()->said(), $agreed->agreement(), $this->joined($agreed->approved()));
 
-        foreach ($agreed->approved() as $approval) {
-            $approved[] = $approval;
-        }
+        return $this->next();
+    }
 
-        $this->asked[] = sprintf('install:%s:%s:%s', $agreed->source()->said(), $agreed->agreement(), implode(',', $approved));
+    public function rehearseUpdating(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('rehearse update:%s:%s', $plugin->id(), $plugin->vouched()->source());
+
+        return $this->next();
+    }
+
+    public function update(Stack $stack, Session $session, APluginUpdateAgreed $agreed): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('update:%s:%s:%s:%s', $agreed->plugin(), $agreed->source()->said(), $agreed->agreement(), $this->joined($agreed->approved()));
+
+        return $this->next();
+    }
+
+    public function rehearseRemoving(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('rehearse removal:%s', $plugin->id());
+
+        return $this->next();
+    }
+
+    public function remove(Stack $stack, Session $session, APluginRemovalAgreed $agreed): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('remove:%s:%s', $agreed->plugin(), $agreed->agreement());
 
         return $this->next();
     }
@@ -87,6 +113,18 @@ final class AStackThatExtendsItself implements ExtendingTheStack
         $this->asked[] = sprintf('after:%s', $job->shown());
 
         return $this->next();
+    }
+
+    /** Every value approved, joined. */
+    private function joined(PluginLines $approved): string
+    {
+        $listed = [];
+
+        foreach ($approved as $approval) {
+            $listed[] = $approval;
+        }
+
+        return implode(',', $listed);
     }
 
     /** The next answer in line, or the stack having no outcome once they have all been given. */

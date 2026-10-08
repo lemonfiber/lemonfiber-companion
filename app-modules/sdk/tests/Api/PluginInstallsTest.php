@@ -12,6 +12,7 @@ use function is_array;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\WhatAProofSays;
@@ -108,6 +109,8 @@ function howTheProofsCameOut(ThePlugins $plugins): string
 
             return new TheWordCarriedOut(implode('|', $said));
         },
+        update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
+        removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
     )->said;
 }
 
@@ -149,6 +152,84 @@ it('reads a listing that asked no source, and a record that keeps no recipe, as 
             ->and($plugin->vouched()->wasReviewed())->toBeFalse()
             ->and($plugin->shown())->toBe('tdarr')
             ->and($plugins->sourceOf($plugin)->standing())->toBe(WhereItsSourceStands::NotSaid);
+    }
+});
+
+/**
+ * The answer about Tdarr's update, with one change made to the update.
+ *
+ * @param Closure(array<mixed>): array<mixed> $change
+ *
+ * @return Envelope<mixed>
+ */
+function anUpdateAnswerWith(Closure $change): Envelope
+{
+    $answer = APluginAsItArrives::theAnswerAbout('update', $change(APluginAsItArrives::anUpdateNotHeldOnTheWire()));
+
+    return pluginsSaying($answer['data']);
+}
+
+/**
+ * The answer about Tdarr's removal, with one change made to the removal.
+ *
+ * @param Closure(array<mixed>): array<mixed> $change
+ *
+ * @return Envelope<mixed>
+ */
+function aRemovalAnswerWith(Closure $change): Envelope
+{
+    $answer = APluginAsItArrives::theAnswerAbout('removal', $change(APluginAsItArrives::aRemovalReadingOnTheWire()));
+
+    return pluginsSaying($answer['data']);
+}
+
+/**
+ * Every answer about an update or a removal that cannot be read.
+ *
+ * @return array<string, Envelope<mixed>>
+ */
+function everyUpdateOrRemovalThatCannotBeRead(): array
+{
+    return [
+        'an update that is not a table' => anInstallAnswerWith(static fn(array $data): array => [...$data, 'install' => null, 'update' => 'yes']),
+        'an update with no install' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'install' => null]),
+        'an update with no version it came from' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'from' => ' ']),
+        'interrupts that are not a list' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'interrupts' => 'tdarr']),
+        'a blank service it stops' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'interrupts' => ['']]),
+        'no word on going back' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'went_back' => null]),
+        'a reason it stopped that is not text' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'stopped' => 3]),
+        'a restore that is not a table' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'restored' => 'yes']),
+        'a restore with no word on running' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'restored' => ['version' => '2.1.0', 'placed' => true]]),
+        'a restore with no word on placing' => anUpdateAnswerWith(static fn(array $update): array => [...$update, 'restored' => ['version' => '2.1.0', 'running' => true]]),
+        'a removal with no word on whether it was removed' => aRemovalAnswerWith(static fn(array $removal): array => [...$removal, 'removed' => 'yes']),
+        'a removal with no plugin' => aRemovalAnswerWith(static fn(array $removal): array => [...$removal, 'plugin' => null]),
+        'capabilities left that are not a list' => aRemovalAnswerWith(static fn(array $removal): array => [...$removal, 'leaves' => 'transcode']),
+        'a capability left that is not a table' => aRemovalAnswerWith(static fn(array $removal): array => [...$removal, 'leaves' => ['transcode']]),
+        'a capability left with nothing filling it now' => aRemovalAnswerWith(static fn(array $removal): array => [...$removal, 'leaves' => [['capability' => 'transcode']]]),
+    ];
+}
+
+it('refuses every update or removal it cannot read, rather than salvaging it', function (): void {
+    foreach (everyUpdateOrRemovalThatCannotBeRead() as $which => $answer) {
+        expect(static fn(): ThePlugins => PluginInstalls::in($answer))->toThrow(PluginsAreUnreadable::class, null, $which);
+    }
+});
+
+it('reads an update whose old version needed no putting back, sent as null or left out, as nothing to restore', function (): void {
+    foreach ([['restored' => null, 'stopped' => null], []] as $which => $said) {
+        $plugins = PluginInstalls::in(anUpdateAnswerWith(static function (array $update) use ($said): array {
+            unset($update['restored'], $update['stopped']);
+
+            return [...$update, ...$said];
+        }));
+        $read = $plugins->either(
+            listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+            install: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an install'),
+            update: static fn(AnUpdate $update): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s [%s]', $update->restored()->wasNeeded() ? 'restored' : 'nothing to restore', $update->stopped())),
+            removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+        )->said;
+
+        expect($read)->toBe('nothing to restore []', (string) $which);
     }
 });
 
@@ -220,6 +301,8 @@ it('reads an adapter that is not a table as no adapter', function (): void {
 
             return new TheWordCarriedOut('no step');
         },
+        update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
+        removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
     )->said;
 
     expect($adapters)->toBe('[]');
@@ -257,6 +340,8 @@ it('reads every check an install broke or left unsettled by its title, an agreem
 
             return new TheWordCarriedOut(implode('|', $lines));
         },
+        update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
+        removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
     )->said;
 
     expect($read)->toBe('broke Sonarr answers|unsettled The VPN is up|not reviewed|not held')

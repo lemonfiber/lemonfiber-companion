@@ -20,8 +20,8 @@ final readonly class APluginInstallAgreed
     /** Agreed against that reading, with these values approved as it spells each; an answer that was not a reading is refused. */
     public static function after(ThePlugins $reading, APluginSource $source, PluginLines $approved): self
     {
-        if ($reading->agreement() === '') {
-            throw PluginInstallWasNotRehearsed::becauseNothingWasRead();
+        if (! $reading->readsAnInstall() || $reading->agreement() === '') {
+            throw APluginActWasNotRehearsed::before(ExtendingIt::Install);
         }
 
         return new self($source, $reading->agreement(), $approved->alsoIn($reading->approvals()));

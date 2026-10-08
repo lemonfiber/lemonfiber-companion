@@ -28,7 +28,9 @@ use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
+use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
@@ -240,6 +242,14 @@ final readonly class EveryAdapterCallThatReads
                 => new Extenders($clients, $entropy)->rehearseInstalling($stack, $session, APluginSource::typed('tdarr')),
             'Extenders::install' => static fn(): object
                 => new Extenders($clients, $entropy)->install($stack, $session, APluginInstallAgreed::after(APluginAsItArrives::theReading(), APluginSource::typed('tdarr'), PluginLines::none())),
+            'Extenders::rehearseUpdating' => static fn(): object
+                => new Extenders($clients, $entropy)->rehearseUpdating($stack, $session, APluginAsItArrives::held()),
+            'Extenders::update' => static fn(): object
+                => new Extenders($clients, $entropy)->update($stack, $session, APluginUpdateAgreed::after(APluginAsItArrives::theUpdateReading(), APluginAsItArrives::held(), PluginLines::none())),
+            'Extenders::rehearseRemoving' => static fn(): object
+                => new Extenders($clients, $entropy)->rehearseRemoving($stack, $session, APluginAsItArrives::held()),
+            'Extenders::remove' => static fn(): object
+                => new Extenders($clients, $entropy)->remove($stack, $session, APluginRemovalAgreed::after(APluginAsItArrives::theRemovalReading(), APluginAsItArrives::held())),
             'Extenders::whatBecameOf' => static fn(): object
                 => new Extenders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Followers::tracedOn' => static fn(): object

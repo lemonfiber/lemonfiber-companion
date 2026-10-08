@@ -20,9 +20,6 @@ enum CatalogueField: string implements NamesAWireField
     /** What going without one service costs the house. */
     case WithoutIt = 'without_it';
 
-    /** The services the stack has dropped. */
-    case Removed = 'removed';
-
     /** The stack version whose catalogue stopped carrying one. */
     case RemovedIn = 'removed_in';
 

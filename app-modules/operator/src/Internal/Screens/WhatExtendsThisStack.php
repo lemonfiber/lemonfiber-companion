@@ -14,10 +14,14 @@ use function in_array;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
+use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
@@ -47,24 +51,22 @@ use Native\Mobile\Edge\NativeComponent;
 use function trim;
 
 /**
- * The plugins on this machine, and installing one: rehearsed, agreed to in two parts, and followed.
+ * The plugins on this machine, and installing, updating or removing one: each rehearsed, agreed to, and followed.
  *
  * **It opens on what is installed**, each plugin with where it came from and
  * whether anybody reviewed it, and how its source stands now. A record that
  * cannot be read is said as that, never as a machine with no plugins.
  *
- * **Installing begins with a source and a rehearsal.** The operator types where
- * the plugin comes from, and the stack says what installing it would do,
- * writing nothing: every change, every proof, every setting it overrides,
- * everything it would leave contested, and every recipe in full. A plugin the
- * stack refuses, a native one among them, is its refusal in its own words,
- * and nothing is offered to install.
+ * **Every act begins with a rehearsal.** Installing begins with a source the
+ * operator types; updating and removing begin from a plugin's row. The stack
+ * says what the act would do, writing nothing, and a plugin it refuses, a
+ * native one among them, is its refusal in its own words with nothing
+ * offered to do.
  *
- * **Two agreements, never one.** Each value a recipe would carry elsewhere has
- * a switch of its own, all off; Install agrees to the install. Install is
- * offered with no value approved, and what that comes to is the stack's
- * answer. Changing the source lets go of the rehearsal and every approval
- * given against it.
+ * **Two agreements where a value would leave.** Each value an install's or
+ * an update's recipes would carry elsewhere has a switch of its own, all off;
+ * the yes agrees to the act. Choosing another act lets go of the rehearsal
+ * and every approval given against it.
  *
  * **No inputs are taken.** A recipe that asks the operator for a value is
  * shown in full like any other, and installing it is for the web console or
@@ -91,10 +93,19 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** Whether a source is being typed, rather than what is installed being shown. */
     public bool $typing = false;
 
+    /** What is installed, as last read, which updating and removing choose a plugin from. */
+    public ?ThePlugins $listing = null;
+
+    /** The act in hand, as its own word, or empty where none is. */
+    public string $act = '';
+
+    /** The plugin an update or a removal is about, while one is in hand. */
+    public ?APlugin $subject = null;
+
     /** The rehearsal, while it is in front of the operator to be agreed to. */
     public ?ThePlugins $rehearsal = null;
 
-    /** The source the rehearsal was asked about, which the yes names again. */
+    /** The source an install's rehearsal was asked about, which the yes names again. */
     public string $rehearsedFrom = '';
 
     /** @var list<string> every value approved against the rehearsal, as it spells each */
@@ -103,8 +114,8 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** The handle of the work being followed, while there is one. Not shown and never kept past this screen. */
     public ?string $following = null;
 
-    /** Whether the work asked about is the install rather than its rehearsal. */
-    public bool $installing = false;
+    /** Whether the work asked about is the act agreed to rather than its rehearsal. */
+    public bool $agreed = false;
 
     /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?WhatExtendsItTurnedOutToBe $answered = null;
@@ -137,6 +148,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         }
 
         $this->letGoOfTheRehearsal();
+        $this->act = ExtendingIt::Install->value;
         $this->typing = true;
     }
 
@@ -149,11 +161,24 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
 
         $source = APluginSource::typed($this->source);
         $this->letGoOfTheRehearsal();
+        $this->act = ExtendingIt::Install->value;
         $this->rehearsedFrom = $source->said();
 
         $this->answered = $this->put(
             fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->rehearseInstalling($stack, $session, $source),
         );
+    }
+
+    /** Ask what updating the plugin in that row would do. A row it does not have, or a plugin with no source to fetch, asks nothing. */
+    public function updateOne(int $which): void
+    {
+        $this->rehearseOnTheRow($which, ExtendingIt::Update);
+    }
+
+    /** Ask what removing the plugin in that row would do. A row it does not have asks nothing. */
+    public function removeOne(int $which): void
+    {
+        $this->rehearseOnTheRow($which, ExtendingIt::Remove);
     }
 
     /**
@@ -189,25 +214,24 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     }
 
     /**
-     * Install it, against the rehearsal on the screen and the values approved.
+     * Agree to the act in hand, against the rehearsal on the screen and the values approved.
      *
      * Silent where no rehearsal is held: there is nothing to agree to.
      */
-    public function install(): void
+    public function agree(): void
     {
         $rehearsal = $this->rehearsal;
+        $act = ExtendingIt::tryFrom($this->act);
 
-        if (! $rehearsal instanceof ThePlugins || $rehearsal->agreement() === '') {
+        if (! $rehearsal instanceof ThePlugins || $rehearsal->agreement() === '' || ! $act instanceof ExtendingIt) {
             return;
         }
 
-        $agreed = APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), PluginLines::under('approved', ...$this->approved));
-        $this->letGoOfTheRehearsal();
-        $this->installing = true;
-
-        $this->answered = $this->put(
-            fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->install($stack, $session, $agreed),
-        );
+        $asking = $this->theYes($rehearsal, $act);
+        $this->rehearsal = null;
+        $this->approved = [];
+        $this->agreed = true;
+        $this->answered = $this->put($asking);
     }
 
     /** Back to what is installed, letting go of any source, rehearsal and approval. */
@@ -252,6 +276,67 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         }
     }
 
+    /**
+     * The yes to the act in hand, as the stack is asked it.
+     *
+     * Built before anything is let go of, so it quotes the rehearsal on the
+     * screen and nothing else.
+     *
+     * @return Closure(Stack, Session): HowExtendingItIsGoing
+     */
+    private function theYes(ThePlugins $rehearsal, ExtendingIt $act): Closure
+    {
+        $approved = PluginLines::under('approved', ...$this->approved);
+        $subject = $this->subject;
+
+        if ($act === ExtendingIt::Install || ! $subject instanceof APlugin) {
+            $agreed = APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), $approved);
+
+            return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->install($stack, $session, $agreed);
+        }
+
+        if ($act === ExtendingIt::Update) {
+            $agreed = APluginUpdateAgreed::after($rehearsal, $subject, $approved);
+
+            return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->update($stack, $session, $agreed);
+        }
+
+        $removal = APluginRemovalAgreed::after($rehearsal, $subject);
+
+        return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->remove($stack, $session, $removal);
+    }
+
+    /**
+     * Rehearse updating or removing the plugin in that row of the listing last read.
+     *
+     * Nothing is asked while other work is followed, for a row the listing
+     * does not have, or for an update of a plugin whose record names no
+     * source to fetch again.
+     */
+    private function rehearseOnTheRow(int $which, ExtendingIt $act): void
+    {
+        $chosen = null;
+        $at = 0;
+
+        foreach ($this->listing?->installed() ?? [] as $plugin) {
+            $chosen = $at === $which ? $plugin : $chosen;
+            $at++;
+        }
+
+        if (is_string($this->following) || ! $chosen instanceof APlugin || ($act === ExtendingIt::Update && ! $chosen->canBeUpdated())) {
+            return;
+        }
+
+        $this->letGoOfTheRehearsal();
+        $this->act = $act->value;
+        $this->subject = $chosen;
+        $this->answered = $this->put(
+            fn(Stack $stack, Session $session): HowExtendingItIsGoing => $act === ExtendingIt::Update
+                ? $this->extending->rehearseUpdating($stack, $session, $chosen)
+                : $this->extending->rehearseRemoving($stack, $session, $chosen),
+        );
+    }
+
     /** What the stack is asked this frame: after the work, the rehearsal held, or what is installed. */
     private function asked(): WhatExtendsItTurnedOutToBe
     {
@@ -266,7 +351,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $rehearsal = $this->rehearsal;
 
         return match (true) {
-            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved, installing: false),
+            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved, agreed: false),
             $this->typing => new HowExtendingItReads()->typing(),
             default => $this->installedNow(),
         };
@@ -287,8 +372,12 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     private function listed(WhatWasFoundOfThePlugins $found, Stack $stack): WhatExtendsItTurnedOutToBe
     {
         return $found->either(
-            found: static fn(ThePlugins $plugins): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->answered($plugins, [], installing: false),
-            met: $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why, installing: false)),
+            found: function (ThePlugins $plugins): WhatExtendsItTurnedOutToBe {
+                $this->listing = $plugins;
+
+                return new HowExtendingItReads()->answered($plugins, [], agreed: false);
+            },
+            met: $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why, agreed: false)),
         );
     }
 
@@ -310,34 +399,35 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** What the stack said of the work, as the screen draws it, holding what to follow and the rehearsal to agree to. */
     private function shown(HowExtendingItIsGoing $going, Stack $stack): WhatExtendsItTurnedOutToBe
     {
-        $installing = $this->installing;
+        $agreed = $this->agreed;
+        $act = ExtendingIt::tryFrom($this->act) ?? ExtendingIt::Install;
 
         return $going->either(
-            underway: function (Job $job) use ($installing): WhatExtendsItTurnedOutToBe {
+            underway: function (Job $job) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = $job->shown();
 
-                return new HowExtendingItReads()->running($installing);
+                return new HowExtendingItReads()->running($act, $agreed);
             },
-            done: function (ThePlugins $plugins) use ($installing): WhatExtendsItTurnedOutToBe {
+            done: function (ThePlugins $plugins) use ($agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
-                $this->rehearsal = ! $installing && $plugins->agreement() !== '' ? $plugins : null;
+                $this->rehearsal = ! $agreed && $plugins->agreement() !== '' ? $plugins : null;
 
-                return new HowExtendingItReads()->answered($plugins, $this->approved, $installing);
+                return new HowExtendingItReads()->answered($plugins, $this->approved, $agreed);
             },
-            refused: function (ARefusalInItsWords $why) use ($installing): WhatExtendsItTurnedOutToBe {
-                $this->following = null;
-
-                return new HowExtendingItReads()->refused($why, $installing);
-            },
-            ended: function () use ($installing): WhatExtendsItTurnedOutToBe {
+            refused: function (ARefusalInItsWords $why) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
 
-                return new HowExtendingItReads()->ended($installing);
+                return new HowExtendingItReads()->refused($why, $act, $agreed);
             },
-            met: function (Obstacle $why) use ($stack, $installing): WhatExtendsItTurnedOutToBe {
+            ended: function () use ($agreed): WhatExtendsItTurnedOutToBe {
+                $this->following = null;
+
+                return new HowExtendingItReads()->ended($agreed);
+            },
+            met: function (Obstacle $why) use ($stack, $agreed): WhatExtendsItTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return new HowExtendingItReads()->met($why, $installing);
+                return new HowExtendingItReads()->met($why, $agreed);
             },
         );
     }
@@ -348,7 +438,9 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->rehearsal = null;
         $this->rehearsedFrom = '';
         $this->approved = [];
-        $this->installing = false;
+        $this->act = '';
+        $this->subject = null;
+        $this->agreed = false;
         $this->typing = false;
         $this->answered = null;
     }
