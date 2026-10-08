@@ -207,8 +207,8 @@ final readonly class WhatARefusalMeant
             // The stack unable to read what it holds — its own description, or
             // the record of what is installed — and refusing a choice of what
             // fills a capability, which `Fillers` also reads by its code. Its
-            // words say what stood in the way; the status it arrived at still
-            // says whether the session or the account was what did.
+            // words say what stood in the way, and turned away it is an
+            // account that may not ask: a known code ends no session.
             RefusalCode::StackUnreadable,
             RefusalCode::StackUnusable,
             RefusalCode::StackNotEmbedded,
@@ -218,6 +218,7 @@ final readonly class WhatARefusalMeant
             RefusalCode::StackMalformed,
             RefusalCode::StackUnrecognised,
             RefusalCode::StackNeedsNewer,
+            RefusalCode::StackUnassembled,
             RefusalCode::Unrecorded,
             RefusalCode::Unreadable,
             RefusalCode::Refused,
