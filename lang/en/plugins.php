@@ -42,6 +42,7 @@ return [
     'puts' => [
         'directory' => 'A directory',
         'document' => 'A whole file',
+        'key' => 'A key lemonfiber makes for the plugin',
         'region' => 'A part of a file',
     ],
     'proofs' => 'Proofs',
