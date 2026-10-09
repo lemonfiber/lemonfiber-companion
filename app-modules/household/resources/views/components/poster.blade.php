@@ -2,9 +2,12 @@
 {{-- A pressable whether or not it opens anything, because it is the
      platform's one element that reads as one: its label is said, and the
      words drawn inside it are not said again. A title opens its own screen,
-     which reads it in full; a request opens nothing. Each
-     step's lettering is written out, so every class on it can be read. --}}
-@if ($poster->goes !== '')
+     which reads it in full; something part-way through plays on from where
+     it was left; a request opens nothing. Each step's lettering is written
+     out, so every class on it can be read. --}}
+@if ($poster->tap !== '')
+<native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}" :press-opacity="0.6" @press="{{ $poster->tap }}">
+@elseif ($poster->goes !== '')
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}" :press-opacity="0.6" @navigate="$poster->goes">
 @else
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}">

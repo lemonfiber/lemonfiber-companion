@@ -42,16 +42,34 @@ final readonly class ATitleAsItReads
             $episodes = [];
 
             foreach (self::fieldsOf(self::at($fields, TitleField::Episodes->value)) as $episode) {
-                $episodes[] = self::undoored(self::fieldsOf($episode));
+                $episodes[] = self::unlocated(self::fieldsOf($episode));
             }
 
             $seasons[] = [...$fields, TitleField::Episodes->value => $episodes];
         }
 
-        $report[WireField::Title->value] = [...self::undoored($title), TitleField::Released->value => null, WireField::Seasons->value => $seasons];
+        $report[WireField::Title->value] = [...self::unlocated($title), TitleField::Released->value => null, WireField::Seasons->value => $seasons];
         $envelope['data'] = $report;
 
         return $envelope;
+    }
+
+    /**
+     * An item with no location, and a reason in its place: a title, an
+     * episode, or something part-way through.
+     *
+     * @param array<array-key, mixed> $item
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function unlocated(array $item): array
+    {
+        return [
+            ...$item,
+            WireField::StreamFrom->value => null,
+            WireField::Door->value => null,
+            WireField::Unlocated->value => WireField::Unlocated->value,
+        ];
     }
 
     /**
@@ -72,22 +90,5 @@ final readonly class ATitleAsItReads
         }
 
         return $fields[$field];
-    }
-
-    /**
-     * An item with no location, and a reason in its place.
-     *
-     * @param array<array-key, mixed> $item
-     *
-     * @return array<array-key, mixed>
-     */
-    private static function undoored(array $item): array
-    {
-        return [
-            ...$item,
-            TitleField::StreamFrom->value => null,
-            WireField::Door->value => null,
-            TitleField::Unlocated->value => TitleField::Unlocated->value,
-        ];
     }
 }

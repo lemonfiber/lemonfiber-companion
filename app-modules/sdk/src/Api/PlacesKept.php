@@ -35,7 +35,7 @@ final readonly class PlacesKept
         }
 
         $in = HoldingId::called(Required::text($data, WireField::Id, PlaceIsUnreadable::missing(WireField::Id)));
-        $howFarIn = HowFarIn::at(Required::number($data, WatchedField::Position, PlaceIsUnreadable::missing(WatchedField::Position)));
+        $howFarIn = HowFarIn::at(Required::number($data, WireField::Position, PlaceIsUnreadable::missing(WireField::Position)));
 
         return Required::flag($data, WatchedField::Ended, PlaceIsUnreadable::missing(WatchedField::Ended))
             ? ThePlace::atTheEndOf($in, $howFarIn)

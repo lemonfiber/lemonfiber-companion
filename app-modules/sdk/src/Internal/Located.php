@@ -11,7 +11,6 @@ use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\LocationIsUnfit;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\WhereItPlays;
-use Modules\Sdk\Api\Fields\TitleField;
 use Modules\Sdk\Api\WireField;
 
 /**
@@ -28,13 +27,13 @@ final readonly class Located
     /** @param array<mixed> $item */
     public static function in(array $item, InvalidArgumentException $refused): WhereItPlays
     {
-        $why = Optional::text($item, TitleField::Unlocated, $refused);
+        $why = Optional::text($item, WireField::Unlocated, $refused);
 
         if ($why !== '') {
             return WhereItPlays::cannot(Sentence::of($why));
         }
 
-        $from = Optional::text($item, TitleField::StreamFrom, $refused);
+        $from = Optional::text($item, WireField::StreamFrom, $refused);
 
         if ($from === '') {
             return WhereItPlays::doesNotStream();

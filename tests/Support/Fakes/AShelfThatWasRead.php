@@ -6,12 +6,14 @@ namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatTheTitleIs;
+use Modules\Kernel\Api\WhatTheyArePartWayThrough;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
 use Override;
@@ -41,6 +43,9 @@ final class AShelfThatWasRead implements Watching
         private int $askingsForTheDefaults = 0,
         private ?WhatTheTitleIs $title = null,
         private array $titlesAskedFor = [],
+        private ?PartWays $partWay = null,
+        private int $partWayAskings = 0,
+        private ?Obstacle $partWayWhy = null,
     ) {}
 
     /** A member with things on their shelf. */
@@ -73,6 +78,28 @@ final class AShelfThatWasRead implements Watching
         $this->title = $title;
 
         return $this;
+    }
+
+    /** The same shelf, answering what the member was part-way through with this. */
+    public function answeringPartWay(PartWays $partWay): self
+    {
+        $this->partWay = $partWay;
+
+        return $this;
+    }
+
+    /** The same shelf, refusing only what the member was part-way through, for this reason. */
+    public function refusingPartWay(Obstacle $why): self
+    {
+        $this->partWayWhy = $why;
+
+        return $this;
+    }
+
+    /** How many times what the member was part-way through was asked. */
+    public function partWayAskings(): int
+    {
+        return $this->partWayAskings;
     }
 
     /**
@@ -131,6 +158,20 @@ final class AShelfThatWasRead implements Watching
         }
 
         return $this->title ?? WhatTheTitleIs::absent();
+    }
+
+    /** What it was told the member was part-way through, or the shelf's obstacle, or nothing. */
+    #[Override]
+    public function partWayThrough(Stack $stack, Session $session, Whose $whose): WhatTheyArePartWayThrough
+    {
+        $this->partWayAskings++;
+        $why = $this->partWayWhy ?? $this->why;
+
+        if ($why instanceof Obstacle) {
+            return WhatTheyArePartWayThrough::refused($why);
+        }
+
+        return WhatTheyArePartWayThrough::told($this->partWay ?? PartWays::of());
     }
 
     #[Override]

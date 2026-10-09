@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEpisode;
+use Modules\Kernel\Api\APartWay;
 use Modules\Kernel\Api\ASeason;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\Episodes;
@@ -11,6 +12,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\HowLongItRuns;
 use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -19,6 +21,7 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Seasons;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
@@ -471,4 +474,128 @@ it('asks for the title the shelf lists, as the member', function (): void {
 it('stands in for a stack with a title the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('TitleEnvelope', whatAStackSendsAboutATitle(aSeriesOnTheWire())))->toBe([])
         ->and(WhatTheContractAccepts::complaintsAbout('TitleEnvelope', whatAStackSendsAboutATitle(null)))->toBe([]);
+});
+
+/**
+ * What a stack sends about what a member was part-way through.
+ *
+ * @param  array<array-key, mixed> $partWay
+ * @return array<string, mixed>
+ */
+function whatAStackSendsAboutWhereTheyLeftOff(array $partWay): array
+{
+    return ['api_version' => 1, 'kind' => 'part-way', 'data' => [
+        'available' => true, 'findings' => [], 'id' => 'ada-id', 'member' => 'ada', 'rehearsed' => false, 'part_way' => $partWay,
+    ]];
+}
+
+/**
+ * Two things a member was part-way through, as a stack sends them: a film located, whose length the server knows, and an episode not.
+ *
+ * @return list<array<string, mixed>>
+ */
+function twoThingsPartWayOnTheWire(): array
+{
+    return [
+        ['id' => 'a1', 'title' => 'Alien', 'medium' => 'film', 'year' => 1979, 'position' => 1_200, 'length' => 7_020,
+            'stream_from' => 'https://192.168.1.42:8920/Videos/a1/master.m3u8', 'door' => ['fingerprint' => str_repeat('d', 64)]],
+        ['id' => 'e1', 'title' => 'Failure\'s Contagious', 'medium' => 'episode', 'position' => 61, 'unlocated' => 'The front door has no certificate yet.'],
+    ];
+}
+
+/** The same two, as the fake is handed them. */
+function theSameTwoPartWay(): PartWays
+{
+    return PartWays::of(
+        APartWay::of(
+            Holding::of(HoldingId::called('a1'), 'Alien', Medium::Film, WhenItCameOut::in(1979)),
+            HowFarIn::at(1_200),
+            7_020,
+            WhereItPlays::at(Location::of('https://192.168.1.42:8920/Videos/a1/master.m3u8'), Fingerprint::of(str_repeat('d', 64))),
+        ),
+        APartWay::ofUnknownLength(
+            Holding::of(HoldingId::called('e1'), 'Failure\'s Contagious', Medium::Episode, WhenItCameOut::unstated()),
+            HowFarIn::at(61),
+            WhereItPlays::cannot(Sentence::of('The front door has no certificate yet.')),
+        ),
+    );
+}
+
+/** What the core said a member was part-way through, as one line, whichever arm it took. */
+function whereTheyLeftOffWasSaid(Watching $watching, ?Whose $whose = null): string
+{
+    return $watching->partWayThrough(theHouseAShelfBelongsTo(), theSessionAShelfIsAskedUnder(), $whose ?? theMemberWhoseShelfItIs())->either(
+        told: static function (PartWays $partWay): TheWordCarriedOut {
+            $said = [];
+
+            foreach ($partWay as $one) {
+                $said[] = sprintf('%s at %d, %s left, %s', $one->holding()->titled(), $one->reached()->seconds(), $one->left()->either(
+                    minutes: static fn(int $minutes): TheWordCarriedOut => new TheWordCarriedOut((string) $minutes),
+                    unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unknown'),
+                )->said, $one->plays()->either(
+                    at: static fn(Location $at): TheWordCarriedOut => new TheWordCarriedOut($at->forThePlayer()),
+                    cannot: static fn(Sentence $why): TheWordCarriedOut => new TheWordCarriedOut($why->shown()),
+                    doesNotStream: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+                )->said);
+            }
+
+            return new TheWordCarriedOut(implode('|', $said));
+        },
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
+    )->said;
+}
+
+it('hands over what a member was part-way through, how far and how long is left', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutWhereTheyLeftOff(twoThingsPartWayOnTheWire())));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::holdingNothing()->answeringPartWay(theSameTwoPartWay())) as $which => $build) {
+        expect(whereTheyLeftOffWasSaid($build()))->toBe(
+            'Alien at 1200, 97 left, https://192.168.1.42:8920/Videos/a1/master.m3u8|Failure\'s Contagious at 61, unknown left, The front door has no certificate yet.',
+            $which,
+        );
+    }
+});
+
+it('hands over nothing part-way through as nothing', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutWhereTheyLeftOff([])));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::holdingNothing()) as $which => $build) {
+        expect(whereTheyLeftOffWasSaid($build()))->toBe('', $which);
+    }
+});
+
+it('says the stack did not answer where what they were part-way through cannot be read', function (array $partWay): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutWhereTheyLeftOff($partWay)));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
+        expect(whereTheyLeftOffWasSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::StackDidNotAnswer->value), $which);
+    }
+})->with([
+    'an item that is not one' => [['a1']],
+    'no position' => [[[...twoThingsPartWayOnTheWire()[0], 'position' => null]]],
+    'a length that is not a number' => [[[...twoThingsPartWayOnTheWire()[0], 'length' => 'long']]],
+    'a medium this build does not know' => [[[...twoThingsPartWayOnTheWire()[0], 'medium' => 'podcast']]],
+    'a location with no door' => [[[...twoThingsPartWayOnTheWire()[0], 'door' => null]]],
+]);
+
+it('answers the operator, who watches nothing here, as not theirs to ask', function (): void {
+    expect(whereTheyLeftOffWasSaid(new Shelves(new PinnedClients()), Whose::theOperator()))->toBe(sprintf('refused:%s', KindOfObstacle::NotForThisAccount->value));
+});
+
+it('asks what the member was part-way through, as the member', function (): void {
+    $asked = null;
+    MockClient::destroyGlobal();
+    MockClient::global(['*' => static function (PendingRequest $request) use (&$asked): MockResponse {
+        $asked = [$request->getRequest()->resolveEndpoint(), $request->query()->all()];
+
+        return MockResponse::make((string) json_encode(whatAStackSendsAboutWhereTheyLeftOff([])));
+    }]);
+
+    whereTheyLeftOffWasSaid(new Shelves(new PinnedClients()));
+
+    expect($asked)->toBe(['/api/watching', ['member' => 'ada']]);
+});
+
+it('stands in for a stack with what a member was part-way through as the contract would accept it', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('PartWayEnvelope', whatAStackSendsAboutWhereTheyLeftOff(twoThingsPartWayOnTheWire())))->toBe([]);
 });

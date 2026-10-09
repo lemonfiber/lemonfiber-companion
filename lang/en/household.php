@@ -131,6 +131,7 @@ return [
     // The rows a shelf is drawn in: what came into the house most recently,
     // then one row for each kind it holds.
     'shelf' => [
+        'carry_on' => 'Carry on watching',
         'new' => 'New in the house',
         'ready_for_you' => 'Ready for you',
         'on_its_way' => 'On its way',
@@ -143,6 +144,9 @@ return [
     // A poster on the shelf: the line at the top of its tile, and what a
     // screen reader says for it, which carries the whole title.
     'poster' => [
+        'left' => ':minutes min left',
+        'part_way' => 'Part-way through',
+        'reads_part_way' => ':title, part-way through',
         'above' => ':year · :kind',
         'above_undated' => ':kind',
         'reads' => ':title, :kind, :year',

@@ -117,6 +117,7 @@ return [
     ],
 
     'shelf' => [
+        'carry_on' => 'Verder kijken',
         'new' => 'Nieuw in huis',
         'ready_for_you' => 'Klaar voor jou',
         'on_its_way' => 'Onderweg',
@@ -127,6 +128,9 @@ return [
     ],
 
     'poster' => [
+        'left' => 'Nog :minutes min',
+        'part_way' => 'Halverwege',
+        'reads_part_way' => ':title, halverwege',
         'above' => ':year · :kind',
         'above_undated' => ':kind',
         'reads' => ':title, :kind, :year',

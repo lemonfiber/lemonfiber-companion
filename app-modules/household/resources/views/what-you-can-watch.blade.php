@@ -2,10 +2,27 @@
 
 <x-operator::content>
 
-{{-- Home leads with what is theirs: what they asked for that has arrived, and
-     what is on its way, each row drawn only where it holds something. Where
-     those could not be asked for and the shelf answered, the space says so
-     rather than reading as nothing asked. --}}
+{{-- Home leads with what is theirs: what they were part-way through, what
+     they asked for that has arrived, and what is on its way, each row drawn
+     only where it holds something. Where those could not be asked for and the
+     shelf answered, the space says so rather than reading as nothing there. --}}
+@if ($this->whereTheyLeftOff()->cameBack)
+    @forelse ($this->whereTheyLeftOff()->rows as $row)
+        <x-household::shelf-row :row="$row" />
+    @empty
+        {{-- Nothing part-way through, which is said by drawing nothing. --}}
+    @endforelse
+@elseif ($this->leftOffWasStopped())
+    <x-design::notice tone="quiet">
+        <x-household::what-stood-in-the-way :met="$this->whereTheyLeftOff()->met" :remedy="$this->whereTheyLeftOff()->remedy" :filling="$this->whereTheyLeftOff()->filling()" :in-the-stacks-words="$this->whereTheyLeftOff()->isInTheStacksWords()" />
+    </x-design::notice>
+    @if (! $this->theirOwnWereStopped())
+        {{-- Offered once: where their requests could not be asked for either,
+             the Ask again below them asks for both. --}}
+        <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
+    @endif
+@endif
+
 @if ($this->theirOwn()->cameBack)
     @forelse ($this->theirOwn()->rows as $row)
         <x-household::shelf-row :row="$row" />

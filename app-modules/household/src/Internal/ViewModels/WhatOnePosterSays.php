@@ -34,6 +34,9 @@ final readonly class WhatOnePosterSays
     /** What an undated title's tile says to a screen reader. */
     private const string READS_UNDATED = 'household.poster.reads_undated';
 
+    /** What something they were part-way through says to a screen reader. */
+    private const string READS_PART_WAY = 'household.poster.reads_part_way';
+
     /** What one of their own requests says to a screen reader: its name and where it stands. */
     private const string READS_STANDING = 'household.poster.reads_standing';
 
@@ -50,6 +53,7 @@ final readonly class WhatOnePosterSays
         public array $keyed,
         public string $goes,
         public string $plays,
+        public string $tap = '',
     ) {}
 
     /**
@@ -74,6 +78,30 @@ final readonly class WhatOnePosterSays
             keyed: ['kind' => $medium],
             goes: $goes,
             plays: $plays,
+        );
+    }
+
+    /**
+     * Something they were part-way through: how long is left at the top, and
+     * its name and that they are part-way through it to a screen reader.
+     * Pressing it plays it from where they left off.
+     *
+     * @param string                $above   the line at the top, as a catalogue key
+     * @param array<string, string> $filling what that line is filled with, as written
+     * @param string                $tap     what pressing it does on the screen drawing it
+     */
+    public static function ofSomethingPartWay(string $titled, string $above, array $filling, string $tap): self
+    {
+        return new self(
+            titled: $titled,
+            lettered: HowAPosterIsLettered::for($titled),
+            above: $above,
+            reads: self::READS_PART_WAY,
+            filling: ['title' => $titled, ...$filling],
+            keyed: [],
+            goes: '',
+            plays: '',
+            tap: $tap,
         );
     }
 

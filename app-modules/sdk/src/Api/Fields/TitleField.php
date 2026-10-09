@@ -34,10 +34,4 @@ enum TitleField: string implements NamesAWireField
 
     /** One season's episodes. */
     case Episodes = 'episodes';
-
-    /** Where it streams from at the household's door. */
-    case StreamFrom = 'stream_from';
-
-    /** Why no location is stated, where none is. */
-    case Unlocated = 'unlocated';
 }

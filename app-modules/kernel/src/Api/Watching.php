@@ -51,4 +51,12 @@ interface Watching
      * same answer as one the household does not hold.
      */
     public function theTitle(Stack $stack, Session $session, Whose $whose, HoldingId $title): WhatTheTitleIs;
+
+    /**
+     * What this member was part-way through and how far, most recent first, or
+     * why the core would not say.
+     *
+     * Read as the member, as the shelf is, and located as a title is.
+     */
+    public function partWayThrough(Stack $stack, Session $session, Whose $whose): WhatTheyArePartWayThrough;
 }
