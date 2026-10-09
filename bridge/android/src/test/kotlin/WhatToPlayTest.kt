@@ -15,7 +15,7 @@ class WhatToPlayTest {
         mapOf(
             "location" to "https://door.home:8443/library/1/main.m3u8",
             "fingerprint" to theFingerprint,
-            "grant" to "a-grant-not-a-secret",
+            "grant" to "0123456789abcdef0123456789abcdef",
             "start_at" to 0,
             "title" to "Arrival",
             "audio" to "en",
@@ -32,7 +32,7 @@ class WhatToPlayTest {
 
         assertEquals("https://door.home:8443/library/1/main.m3u8", asked?.location)
         assertEquals("door.home", asked?.door?.host)
-        assertEquals("a-grant-not-a-secret", asked?.grant)
+        assertEquals("0123456789abcdef0123456789abcdef", asked?.grant)
         assertEquals(61.5, asked?.startAt)
         assertEquals("Arrival", asked?.shown?.title)
         assertEquals("en", asked?.shown?.audio)
@@ -66,8 +66,23 @@ class WhatToPlayTest {
     }
 
     @Test
-    fun `a grant that is missing or that a header cannot carry is refused`() {
-        for (grant in listOf<Any>("", 7, "a grant", "a-grant\r\nX-Other: 1", "a-grant-é")) {
+    fun `a grant that is not 32 lowercase hexadecimal digits is refused`() {
+        val notAsIssued =
+            listOf<Any>(
+                "",
+                7,
+                "a grant",
+                "a-grant\r\nX-Other: 1",
+                "a-grant-é",
+                "0123456789ABCDEF0123456789ABCDEF",
+                "0123456789abcdef0123456789abcde",
+                "0123456789abcdef0123456789abcdef0",
+                "\"0123456789abcdef0123456789abcde\"",
+                "0123456789abcdef%30123456789abcdef",
+                "0123456789abcdeg0123456789abcdef",
+            )
+
+        for (grant in notAsIssued) {
             assertEquals(
                 WhatToPlay.WhyNot.NO_GRANT,
                 whyNot(WhatToPlay.read(aRequest(mapOf("grant" to grant)))),
@@ -76,8 +91,16 @@ class WhatToPlayTest {
     }
 
     @Test
+    fun `the grant is sent exactly as issued, after Bearer, in the Authorization header`() {
+        val asked = toPlay(WhatToPlay.read(aRequest(emptyMap())))
+
+        assertEquals("Authorization", WhatToPlay.GRANT_HEADER)
+        assertEquals("Bearer 0123456789abcdef0123456789abcdef", asked?.grantHeaderValue)
+    }
+
+    @Test
     fun `a grant written into the address is refused`() {
-        val location = "https://door.home:8443/library/1/main.m3u8?api_key=a-grant-not-a-secret"
+        val location = "https://door.home:8443/library/1/0123456789abcdef0123456789abcdef/main.m3u8"
 
         assertEquals(
             WhatToPlay.WhyNot.GRANT_IN_THE_ADDRESS,

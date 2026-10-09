@@ -214,6 +214,31 @@ it('only this app and the system connect to the player', function (): void {
         ->and($service)->toContain('ControllerRule.admits(');
 });
 
+it('the player carries the grant as a bearer token and names no media server', function (): void {
+    // The door accepts `Authorization: Bearer <grant>` and nothing else, and
+    // turns it into what the media server reads. A media server's own header,
+    // token form or query key on the player's side would tie the app to one
+    // server, and a key in a query is a grant in an address.
+    $named = [];
+
+    foreach (platformSources() as $path => $source) {
+        foreach (['X-Emby-Token', 'MediaBrowser', 'api_key', 'ApiKey', 'X-Plex-Token'] as $word) {
+            if (stripos($source, $word) !== false) {
+                $named[] = sprintf('%s names %s', $path, $word);
+            }
+        }
+    }
+
+    $ios = (string) file_get_contents(Tree::at('bridge/resources/ios/WhatToPlay.swift'));
+    $android = (string) file_get_contents(Tree::at('bridge/resources/android/WhatToPlay.kt'));
+
+    expect($named)->toBe([])
+        ->and($ios)->toContain('public static let grantHeader = "Authorization"')
+        ->and($ios)->toContain('"Bearer " + grant')
+        ->and($android)->toContain('public const val GRANT_HEADER: String = "Authorization"')
+        ->and($android)->toContain('get() = "Bearer $grant"');
+});
+
 it('nothing in the app opens the player while the contract says nowhere to stream from', function (): void {
     // The half of this rule that waits on the core. The player plays what it is
     // handed; until a holding carries where it streams from and the member's

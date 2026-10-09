@@ -29,12 +29,6 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
     /// The private scheme every address is handed to AVPlayer under.
     static let scheme = "lfdoor"
 
-    /// The header the grant is carried in.
-    private static let grantHeader = "Authorization"
-
-    /// How the grant is written in it.
-    private static let grantPrefix = "Bearer "
-
     /// The playlist type, read off the address or the answer's type.
     private static let playlistTypes: Set<String> = [
         "application/vnd.apple.mpegurl", "application/x-mpegurl", "audio/mpegurl", "audio/x-mpegurl",
@@ -149,7 +143,7 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
         }
 
         var request = URLRequest(url: url)
-        request.setValue(Self.grantPrefix + asked.grant, forHTTPHeaderField: Self.grantHeader)
+        request.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
 
         let range = Self.range(of: loadingRequest)
 
@@ -220,7 +214,7 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
 
         var followed = request
         followed.url = admitted
-        followed.setValue(Self.grantPrefix + asked.grant, forHTTPHeaderField: Self.grantHeader)
+        followed.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
         completionHandler(followed)
     }
 

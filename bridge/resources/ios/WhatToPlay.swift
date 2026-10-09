@@ -9,9 +9,11 @@
 ///
 /// **The grant travels in a header and never in an address.** One that is
 /// already written into the location is refused rather than used, because an
-/// address is what ends up in a log, a cache or a crash report. A grant with
-/// anything in it a header cannot safely carry is refused for the same reason
-/// a header with a line break in it is never sent.
+/// address is what ends up in a log, a cache or a crash report. **A grant is
+/// 32 lowercase hexadecimal digits**, as the media server issues one, and it
+/// is sent exactly so, as `Authorization: Bearer <grant>`: the door accepts
+/// that form and nothing else, and turns it into what the media server reads.
+/// The player names no media server's own header, token form or query key.
 ///
 /// Nothing here is ever logged. A refusal is one of the closed words below.
 ///
@@ -28,6 +30,14 @@ public struct WhatToPlay: Sendable {
 
     /// The member's grant, sent with every request and kept nowhere else.
     public let grant: String
+
+    /// The header every request carries the grant in.
+    public static let grantHeader = "Authorization"
+
+    /// How the grant is written in it: exactly as it was issued, after one fixed word.
+    public var grantHeaderValue: String {
+        "Bearer " + grant
+    }
 
     /// Where to start, in seconds from the beginning.
     public let startAt: Double
@@ -104,7 +114,7 @@ public struct WhatToPlay: Sendable {
             return .refused(.unpinned)
         }
 
-        guard isCarriable(grant) else {
+        guard isAGrant(grant) else {
             return .refused(.noGrant)
         }
 
@@ -125,9 +135,10 @@ public struct WhatToPlay: Sendable {
                     subtitle: parameters["subtitle"] as? String ?? "")))
     }
 
-    /// Whether a grant is one a header can carry: something, and only visible ASCII.
-    private static func isCarriable(_ grant: String) -> Bool {
-        !grant.isEmpty && grant.utf8.allSatisfy { (0x21...0x7E).contains($0) }
+    /// Whether a grant is one as the media server issues it: 32 lowercase hexadecimal digits.
+    private static func isAGrant(_ grant: String) -> Bool {
+        grant.utf8.count == 32
+            && grant.utf8.allSatisfy { (0x30...0x39).contains($0) || (0x61...0x66).contains($0) }
     }
 
     /// A number of seconds, whichever kind of number the bridge carried it as, or nil.

@@ -12,7 +12,7 @@ private func aRequest(_ changed: [String: Any] = [:]) -> [String: Any] {
     [
         "location": "https://door.home:8443/library/1/main.m3u8",
         "fingerprint": theFingerprint,
-        "grant": "a-grant-not-a-secret",
+        "grant": "0123456789abcdef0123456789abcdef",
         "start_at": 0,
         "title": "Arrival",
         "audio": "en",
@@ -42,7 +42,7 @@ func aRequestThatHoldsIsRead() {
 
     #expect(asked?.location == "https://door.home:8443/library/1/main.m3u8")
     #expect(asked?.door.host == "door.home")
-    #expect(asked?.grant == "a-grant-not-a-secret")
+    #expect(asked?.grant == "0123456789abcdef0123456789abcdef")
     #expect(asked?.startAt == 61.5)
     #expect(asked?.shown.title == "Arrival")
     #expect(asked?.shown.audio == "en")
@@ -68,18 +68,32 @@ func aFingerprintThatIsNotOneIsRefused() {
     #expect(whyNot(WhatToPlay.read(aRequest(["fingerprint": 7]))) == .unpinned)
 }
 
-@Test("a grant that is missing or that a header cannot carry is refused")
-func anUncarriableGrantIsRefused() {
+@Test("a grant that is not 32 lowercase hexadecimal digits is refused")
+func aGrantNotAsIssuedIsRefused() {
     #expect(whyNot(WhatToPlay.read(aRequest(["grant": ""]))) == .noGrant)
     #expect(whyNot(WhatToPlay.read(aRequest(["grant": 7]))) == .noGrant)
     #expect(whyNot(WhatToPlay.read(aRequest(["grant": "a grant"]))) == .noGrant)
     #expect(whyNot(WhatToPlay.read(aRequest(["grant": "a-grant\r\nX-Other: 1"]))) == .noGrant)
     #expect(whyNot(WhatToPlay.read(aRequest(["grant": "a-grant-é"]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "0123456789ABCDEF0123456789ABCDEF"]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "0123456789abcdef0123456789abcde"]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "0123456789abcdef0123456789abcdef0"]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "\"0123456789abcdef0123456789abcde\""]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "0123456789abcdef%30123456789abcdef"]))) == .noGrant)
+    #expect(whyNot(WhatToPlay.read(aRequest(["grant": "0123456789abcdeg0123456789abcdef"]))) == .noGrant)
+}
+
+@Test("the grant is sent exactly as issued, after Bearer, in the Authorization header")
+func theGrantIsSentAsIssued() {
+    let asked = toPlay(WhatToPlay.read(aRequest([:])))
+
+    #expect(WhatToPlay.grantHeader == "Authorization")
+    #expect(asked?.grantHeaderValue == "Bearer 0123456789abcdef0123456789abcdef")
 }
 
 @Test("a grant written into the address is refused")
 func aGrantInTheAddressIsRefused() {
-    let location = "https://door.home:8443/library/1/main.m3u8?api_key=a-grant-not-a-secret"
+    let location = "https://door.home:8443/library/1/0123456789abcdef0123456789abcdef/main.m3u8"
 
     #expect(whyNot(WhatToPlay.read(aRequest(["location": location]))) == .grantInTheAddress)
 }
