@@ -91,6 +91,18 @@ return [
     'keep_it' => 'Laten staan',
     'remove_house_refused' => 'De telefoon kon :house niet weghalen. Er is niets weggehaald.',
 
+    // Welke taal een lid wil horen en lezen. Bewaard op deze telefoon, voor
+    // hen, en nooit naar het huis gestuurd.
+    'languages' => [
+        'hear' => 'Geluid',
+        'read' => 'Ondertiteling',
+        'hear_original' => 'Zoals het gemaakt is',
+        'no_subtitles' => 'Uit',
+        'dutch' => 'Nederlands',
+        'english' => 'Engels',
+        'kept_on_this_phone' => 'Bewaard op deze telefoon. Een titel zonder jouw taal speelt zijn eigen geluid, zonder ondertiteling.',
+    ],
+
     // Wat de machine zegt dat dit lid kan kijken. Een lege plank en een
     // bibliotheek die niet bereikt kon worden zijn twee verschillende
     // antwoorden, en de tweede wordt nooit als de eerste getoond.

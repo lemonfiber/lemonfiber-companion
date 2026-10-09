@@ -42,6 +42,7 @@
         "modules/store-kit": "dev-main",
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
+        "modules/watching": "dev-main",
         "modules/wayfinding": "dev-main",
         "nativephp/mobile": "^4.4",
         "nativephp/mobile-ui": "^0.6",

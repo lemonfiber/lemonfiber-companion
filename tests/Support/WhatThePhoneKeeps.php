@@ -12,13 +12,16 @@ use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
+use Modules\Watching\Api\KeepingTheirLanguages;
 
 use function str_repeat;
 
+use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
@@ -58,6 +61,12 @@ final readonly class WhatThePhoneKeeps
     public static function noRequestsYet(): KeepingWhatWasAsked
     {
         return new KeepingWhatWasAsked(ASealInMemory::working(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)));
+    }
+
+    /** Nothing chosen by any member about the languages titles play in, for whoever this keychain holds signed in. */
+    public static function noLanguagesYet(?SecureStorage $signedIn = null): KeepingTheirLanguages
+    {
+        return new KeepingTheirLanguages(ASealInMemory::working(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)), $signedIn ?? AKeychainInMemory::working());
     }
 
     /** Letting go of readings older than they are kept for, with none kept to let go of. */

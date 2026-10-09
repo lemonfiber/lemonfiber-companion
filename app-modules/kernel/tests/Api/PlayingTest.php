@@ -17,6 +17,7 @@ use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\Episodes;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Genres;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowFarIn;
@@ -29,8 +30,10 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PlaybackIs;
+use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\Seasons;
 use Modules\Kernel\Api\Sentence;
+use Modules\Kernel\Api\TheirLanguages;
 use Modules\Kernel\Api\ThePlace;
 use Modules\Kernel\Api\WhatOpeningCameTo;
 use Modules\Kernel\Api\WhatPlayPlays;
@@ -112,13 +115,14 @@ it('plays an episode it holds by its id, and nothing by an id it does not', func
 
 it('hands a title to play over as it was given', function (): void {
     $grant = AGrant::of(str_repeat('a', 32), Instant::atEpochSeconds(1));
-    $title = ATitleToPlay::of(Location::of('https://door.example/a1'), Fingerprint::of(str_repeat('d', 64)), $grant, HowFarIn::at(61), 'Alien');
+    $title = ATitleToPlay::of(Location::of('https://door.example/a1'), Fingerprint::of(str_repeat('d', 64)), $grant, HowFarIn::at(61), 'Alien', TheirLanguages::of(HearIn::English, ReadIn::Nothing));
 
     expect($title->location()->forThePlayer())->toBe('https://door.example/a1')
         ->and($title->door()->forThePlayer())->toBe(str_repeat('d', 64))
         ->and($title->grant())->toBe($grant)
         ->and($title->startAt()->seconds())->toBe(61)
-        ->and($title->named())->toBe('Alien');
+        ->and($title->named())->toBe('Alien')
+        ->and($title->languages())->toEqual(TheirLanguages::of(HearIn::English, ReadIn::Nothing));
 });
 
 it('says where the player stands and how far in', function (): void {

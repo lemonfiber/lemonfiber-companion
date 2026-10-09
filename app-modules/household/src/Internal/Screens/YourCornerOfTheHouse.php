@@ -6,12 +6,17 @@ namespace Modules\Household\Internal\Screens;
 
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
+use Modules\Household\Internal\Presenters\HowTheirLanguagesRead;
 use Modules\Household\Internal\ViewModels\AHouseToChooseAsShown;
+use Modules\Household\Internal\ViewModels\TheirLanguagesAsShown;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Watching\Api\KeepingTheirLanguages;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -20,14 +25,15 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The member's Profile tab: changing house, App settings, and taking this
- * house off the phone.
+ * The member's Profile tab: changing house, App settings, the languages
+ * titles play in, and taking this house off the phone.
  *
  * Changing house opens the houses this phone holds, by name and nothing else,
  * as a sheet over the tab. App settings is the same screen everybody reaches,
- * spoken in household words. Taking the house off the phone is asked here,
- * where the question can say that nothing changes at the house, and then
- * lands where the app goes once a stack is gone.
+ * spoken in household words. The languages are the member's own, kept on this
+ * phone by `watching` and never sent to the house. Taking the house off the
+ * phone is asked here, where the question can say that nothing changes at the
+ * house, and then lands where the app goes once a stack is gone.
  */
 #[Lazy]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
@@ -53,10 +59,14 @@ final class YourCornerOfTheHouse extends NativeComponent
     /** Whether the phone would not take the house off, the last time it was asked. */
     public bool $removalRefused = false;
 
+    /** The languages as last read, so the frame that draws both rows of chips asks the phone once. */
+    public ?TheirLanguagesAsShown $languagesRead = null;
+
     public function __construct(
         private readonly TheWayAround $around,
         private readonly Stacks $stacks,
         private readonly RemovingAStack $removing,
+        private readonly KeepingTheirLanguages $languages,
     ) {}
 
     /** The house this screen is about, read once from the route and held. */
@@ -128,6 +138,34 @@ final class YourCornerOfTheHouse extends NativeComponent
     public function appSettingsSpeakTo(): array
     {
         return [AScreenWithoutAStack::SETTINGS_SPEAK_TO => WhoTheSettingsSpeakTo::AMember->value];
+    }
+
+    /** What the member chose to hear and read titles in on this house, as the chips that offer each language. */
+    public function languages(): TheirLanguagesAsShown
+    {
+        return $this->languagesRead ??= new HowTheirLanguagesRead()->chosen($this->languages->chosenOn($this->stack()->id()));
+    }
+
+    /** Hear titles in this language from now on; a word that is no language changes nothing. */
+    public function hearIn(string $word): void
+    {
+        $hear = HearIn::tryFrom($word);
+
+        if ($hear instanceof HearIn) {
+            $this->languagesRead = null;
+            $this->languages->hearIn($this->stack()->id(), $hear);
+        }
+    }
+
+    /** Read subtitles in this language from now on, or none; a word that is neither changes nothing. */
+    public function readIn(string $word): void
+    {
+        $read = ReadIn::tryFrom($word);
+
+        if ($read instanceof ReadIn) {
+            $this->languagesRead = null;
+            $this->languages->readIn($this->stack()->id(), $read);
+        }
     }
 
     /** The member asked to take this house off the phone; they are asked whether they mean it, on this screen. */

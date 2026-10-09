@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use Lemonfiber\Native\Player\Player;
+use Lemonfiber\Native\Player\TitleAtTheDoor;
 use Modules\Device\Api\PlatformPlayer;
 use Modules\Kernel\Api\AGrant;
 use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\PlaybackIs;
+use Modules\Kernel\Api\ReadIn;
+use Modules\Kernel\Api\TheirLanguages;
 use Modules\Kernel\Api\WhatOpeningCameTo;
 use Modules\Kernel\Api\WherePlayingStands;
 use Modules\Kernel\Api\WhyPlayingDidNotStart;
@@ -41,8 +45,8 @@ function aPlayerOverABridgeThatSays(string $call, array $answer): PlatformPlayer
     return new PlatformPlayer(new Player());
 }
 
-/** One title as the core states it, under a grant. */
-function aTitleTheCoreStated(): ATitleToPlay
+/** One title as the core states it, under a grant, in the languages a member chose. */
+function aTitleTheCoreStated(?TheirLanguages $languages = null): ATitleToPlay
 {
     return ATitleToPlay::of(
         Location::of('https://door.example:8443/videos/a1/master.m3u8'),
@@ -50,6 +54,7 @@ function aTitleTheCoreStated(): ATitleToPlay
         AGrant::of(str_repeat('0c', 16), Instant::atEpochSeconds(2_000_000_000)),
         HowFarIn::at(61),
         'Alien',
+        $languages ?? TheirLanguages::of(HearIn::Dutch, ReadIn::English),
     );
 }
 
@@ -68,7 +73,7 @@ function whereItStood(WherePlayingStands $stands): string
     return sprintf('%s at %d', $stands->is()->name, $stands->howFarIn()->seconds());
 }
 
-it('puts the player on screen with exactly what the core stated, and no language', function (): void {
+it('puts the player on screen with exactly what the core stated, and the languages the member chose', function (): void {
     $adapter = aPlayerOverABridgeThatSays('Lemonfiber.Player.Open', ['outcome' => 'showing']);
 
     foreach (['the fake' => APlayerOnAHandset::working(), 'the adapter' => $adapter] as $which => $playing) {
@@ -81,9 +86,16 @@ it('puts the player on screen with exactly what the core stated, and no language
         'grant' => str_repeat('0c', 16),
         'start_at' => 61,
         'title' => 'Alien',
-        'audio' => '',
-        'subtitle' => '',
+        'audio' => 'nl',
+        'subtitle' => 'en',
     ]]);
+});
+
+it('hands a member who chose nothing the title as it comes: its own sound, and no subtitles', function (): void {
+    aPlayerOverABridgeThatSays('Lemonfiber.Player.Open', ['outcome' => 'showing'])->open(aTitleTheCoreStated(TheirLanguages::asTheTitleComes()));
+
+    expect(array_column(FakeBridge::enable()->callsTo('Lemonfiber.Player.Open'), 'params')[0])
+        ->toMatchArray(['audio' => TitleAtTheDoor::NO_LANGUAGE, 'subtitle' => TitleAtTheDoor::NO_LANGUAGE]);
 });
 
 it('tells a device with no player from one that would not play what the core stated', function (string $because, WhyPlayingDidNotStart $why): void {

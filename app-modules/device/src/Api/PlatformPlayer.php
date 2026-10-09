@@ -12,9 +12,11 @@ use Lemonfiber\Native\Player\WherePlaybackStands;
 use Lemonfiber\Native\Player\WhyPlaybackStopped;
 use Lemonfiber\Native\Player\WhyThePlayerDidNotOpen;
 use Modules\Kernel\Api\ATitleToPlay;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\PlaybackIs;
 use Modules\Kernel\Api\Playing;
+use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\WhatOpeningCameTo;
 use Modules\Kernel\Api\WherePlayingStands;
 use Modules\Kernel\Api\WhyPlayingDidNotStart;
@@ -24,8 +26,9 @@ use Modules\Kernel\Api\WhyPlayingDidNotStart;
  *
  * Nothing about the door is decided here: the native half reads every field
  * again and refuses what does not hold, pins the door's certificate, and
- * carries the grant in a header and nowhere else. No language is handed over,
- * so the stream's own default tracks play.
+ * carries the grant in a header and nowhere else. The languages the member
+ * chose are handed over as the player's own words for them, and the player
+ * matches them against the tracks it finds.
  */
 final readonly class PlatformPlayer implements Playing
 {
@@ -39,6 +42,8 @@ final readonly class PlatformPlayer implements Playing
             grant: $title->grant()->forTheDoor(),
             startAt: $title->startAt()->seconds(),
             title: $title->named(),
+            audio: $this->heard($title->languages()->hear()),
+            subtitle: $this->read($title->languages()->read()),
         ))->either(
             opened: static fn(): WhatOpeningCameTo => WhatOpeningCameTo::opened(),
             refused: static fn(WhyThePlayerDidNotOpen $why): WhatOpeningCameTo => WhatOpeningCameTo::refused(
@@ -84,6 +89,24 @@ final readonly class PlatformPlayer implements Playing
                 // reach, which is the one whose remedy is to try again.
                 WhyPlaybackStopped::Unreachable, null => PlaybackIs::StoppedOutOfReach,
             },
+        };
+    }
+
+    /** The language to hear, in the player's words: a tag, or no preference for the title's own. */
+    private function heard(HearIn $hear): string
+    {
+        return match ($hear) {
+            HearIn::TheOriginal => TitleAtTheDoor::NO_LANGUAGE,
+            HearIn::Dutch, HearIn::English => $hear->value,
+        };
+    }
+
+    /** The language to read, in the player's words: a tag, or none. */
+    private function read(ReadIn $read): string
+    {
+        return match ($read) {
+            ReadIn::Nothing => TitleAtTheDoor::NO_LANGUAGE,
+            ReadIn::Dutch, ReadIn::English => $read->value,
         };
     }
 }

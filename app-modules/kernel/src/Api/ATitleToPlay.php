@@ -6,7 +6,8 @@ namespace Modules\Kernel\Api;
 
 /**
  * One title as the player is handed it: where the core said it streams from,
- * the door's certificate, the member's grant, where to start and what to call it.
+ * the door's certificate, the member's grant, where to start, what to call it,
+ * and the languages the member chose to hear and read it in.
  *
  * Every part that reaches the door is the core's. The location and the
  * certificate are what the core stated for this title, and the grant is what
@@ -24,12 +25,13 @@ final readonly class ATitleToPlay
         private AGrant $grant,
         private HowFarIn $startAt,
         private string $named,
+        private TheirLanguages $languages,
     ) {}
 
     /** A title, at the location and door the core stated, under the grant it answered. */
-    public static function of(Location $location, Fingerprint $door, AGrant $grant, HowFarIn $startAt, string $named): self
+    public static function of(Location $location, Fingerprint $door, AGrant $grant, HowFarIn $startAt, string $named, TheirLanguages $languages): self
     {
-        return new self($location, $door, $grant, $startAt, $named);
+        return new self($location, $door, $grant, $startAt, $named, $languages);
     }
 
     public function location(): Location
@@ -56,5 +58,11 @@ final readonly class ATitleToPlay
     public function named(): string
     {
         return $this->named;
+    }
+
+    /** What the member chose to hear and read it in, which is handed to the player every time. */
+    public function languages(): TheirLanguages
+    {
+        return $this->languages;
     }
 }

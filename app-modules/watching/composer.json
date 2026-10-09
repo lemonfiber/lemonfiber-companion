@@ -1,0 +1,27 @@
+{
+    "name": "modules/watching",
+    "description": "How a member chose titles to play on this phone: the languages they hear and read them in.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "illuminate/database": "^13.17",
+        "modules/kernel": "dev-main",
+        "modules/store-kit": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Watching\\": "src/",
+            "Modules\\Watching\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            },
+            "kind": "capability"
+        }
+    }
+}

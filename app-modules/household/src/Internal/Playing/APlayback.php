@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheirLanguages;
 use Modules\Kernel\Api\Whose;
 
 /**
@@ -49,10 +50,10 @@ final readonly class APlayback
         return new self($this->stack, $this->whose, $this->page, $this->played, $this->named, $this->location, $this->door, wasGrantedAgain: true);
     }
 
-    /** What the player is handed for it, under a grant and from a place. */
-    public function toPlay(AGrant $grant, HowFarIn $from): ATitleToPlay
+    /** What the player is handed for it, under a grant, from a place, in the languages the member chose. */
+    public function toPlay(AGrant $grant, HowFarIn $from, TheirLanguages $languages): ATitleToPlay
     {
-        return ATitleToPlay::of($this->location, $this->door, $grant, $from, $this->named);
+        return ATitleToPlay::of($this->location, $this->door, $grant, $from, $this->named, $languages);
     }
 
     public function stack(): Stack

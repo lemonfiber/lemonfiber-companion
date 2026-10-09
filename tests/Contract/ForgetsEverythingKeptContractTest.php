@@ -36,6 +36,7 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Modules\Watching\Internal\Store\LanguagesInTheDatabase;
 use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
@@ -107,6 +108,7 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the updates adapter' => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => new ListingsInTheDatabase(AKeptDatabase::migrated()),
         'the requests adapter' => new RequestsInTheDatabase(AKeptDatabase::migrated()),
+        'the languages adapter' => new LanguagesInTheDatabase(AKeptDatabase::migrated()),
         'every store together' => new EveryStoreThePhoneKeeps(ReadingsInMemory::empty(), ReadingsInMemory::empty()),
         'no store at all' => new EveryStoreThePhoneKeeps(),
     ];
@@ -116,11 +118,12 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
     }
 });
 
-it('forgets the readings an updates, services or requests store keeps of every stack, and says how much that was', function (): void {
+it('forgets the readings an updates, services, requests or languages store keeps of every stack, and says how much that was', function (): void {
     foreach ([
         'the updates adapter' => static fn(): UpkeepReadingsInTheDatabase => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => static fn(): ListingsInTheDatabase => new ListingsInTheDatabase(AKeptDatabase::migrated()),
         'the requests adapter' => static fn(): RequestsInTheDatabase => new RequestsInTheDatabase(AKeptDatabase::migrated()),
+        'the languages adapter' => static fn(): LanguagesInTheDatabase => new LanguagesInTheDatabase(AKeptDatabase::migrated()),
         'the fake' => static fn(): ReadingsInMemory => ReadingsInMemory::empty(),
     ] as $which => $made) {
         $store = $made();

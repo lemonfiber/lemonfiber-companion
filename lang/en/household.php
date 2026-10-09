@@ -99,6 +99,18 @@ return [
     'keep_it' => 'Keep it',
     'remove_house_refused' => 'The phone could not remove :house. Nothing was removed.',
 
+    // What a member chose to hear and read titles in. Kept on this phone for
+    // them, and never sent to the house.
+    'languages' => [
+        'hear' => 'Sound',
+        'read' => 'Subtitles',
+        'hear_original' => 'As it was made',
+        'no_subtitles' => 'Off',
+        'dutch' => 'Dutch',
+        'english' => 'English',
+        'kept_on_this_phone' => 'Kept on this phone. A title without your language plays its own sound, and no subtitles.',
+    ],
+
     // What the house says this member may watch. The shelf itself is the
     // core's answer; these are the frame around it and the two answers that
     // are not a list — nothing on it, and a library that could not be reached.

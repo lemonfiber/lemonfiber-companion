@@ -8,7 +8,7 @@ Profile, in a bottom bar, and no side menu.
 | Home | `WhatYouCanWatch` | what is theirs, then the newest title and the shelf as rows of posters, which is where a member lands |
 | Search | `LookingForATitle` | that searching from the phone is coming, in household words |
 | Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
-| Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, and taking the house off the phone |
+| Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, the languages titles play in (kept by `watching`), and taking the house off the phone |
 
 Every member screen draws its way around through `FindsItsWayAroundTheHouse`:
 the platform's top bar with the screen's title, and the bar the household's

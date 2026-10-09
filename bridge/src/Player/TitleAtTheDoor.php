@@ -21,6 +21,14 @@ use SensitiveParameter;
 final readonly class TitleAtTheDoor
 {
     /**
+     * No language: for sound, the stream's own track plays; for subtitles, none show.
+     *
+     * `TrackRule` on each platform never forces subtitles on, so no language
+     * to read in is no subtitles.
+     */
+    public const string NO_LANGUAGE = '';
+
+    /**
      * @param string $location    where the core said the title streams from.
      * @param string $fingerprint the door's certificate, as 64 hex characters.
      * @param string $grant       what lets this member through the door.
