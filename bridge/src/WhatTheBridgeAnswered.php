@@ -6,6 +6,8 @@ namespace Lemonfiber\Native;
 
 use function array_key_exists;
 use function is_array;
+use function is_float;
+use function is_int;
 use function is_string;
 use function json_decode;
 use function json_encode;
@@ -32,7 +34,7 @@ final readonly class WhatTheBridgeAnswered
     /**
      * One call, carrying what it was handed.
      *
-     * @param array<string, int|string|bool> $with
+     * @param array<string, int|float|string|bool> $with
      */
     public static function to(Call $function, array $with = []): self
     {
@@ -83,6 +85,14 @@ final readonly class WhatTheBridgeAnswered
     public function says(WhatAnAnswerHolds $key): bool
     {
         return $this->under($key) === true;
+    }
+
+    /** The number under this key, whole or not, or nothing where there is no number there. */
+    public function number(WhatAnAnswerHolds $key): ?float
+    {
+        $said = $this->under($key);
+
+        return is_int($said) || is_float($said) ? $said : null;
     }
 
     /**

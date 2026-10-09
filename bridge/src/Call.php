@@ -182,6 +182,26 @@ enum Call: string
     case Zone = 'Lemonfiber.Clock.Zone';
 
     /**
+     * Put the player on screen for a title the core stated, or say why not.
+     *
+     * Carries the grant, which neither native half writes to a log line.
+     */
+    case PlayerOpen = 'Lemonfiber.Player.Open';
+
+    /** Play, pause, seek, or change the sound or the subtitles of the player on screen. */
+    case PlayerCommand = 'Lemonfiber.Player.Command';
+
+    /** Take the player off screen. */
+    case PlayerClose = 'Lemonfiber.Player.Close';
+
+    /**
+     * Where the player stands, which is how the app learns anything about playback.
+     *
+     * The player's event carries nothing; this is what whoever heard it asks.
+     */
+    case PlayerState = 'Lemonfiber.Player.State';
+
+    /**
      * The payload of a call that carries nothing.
      *
      * On a handset `nativephp_call` is a C extension that takes exactly two

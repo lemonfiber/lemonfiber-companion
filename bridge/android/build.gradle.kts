@@ -94,6 +94,12 @@ sourceSets {
             "HandoverFunctions.kt",
             "ClockFunctions.kt",
             "ReorderableRenderer.kt",
+            "PinnedConnection.kt",
+            "DoorDataSource.kt",
+            "PlayerSession.kt",
+            "PlaybackService.kt",
+            "PlayerActivity.kt",
+            "PlayerFunctions.kt",
         )
     }
     test {

@@ -15,7 +15,7 @@ requirement = [
   { id = "N3-R7", state = "done", evidence = ["app-modules/kernel/src/Api/TurnedDown.php", "app-modules/sdk/src/Api/Households.php", "app-modules/kernel/tests/Api/TurnedDownTest.php", "app-modules/kernel/tests/Api/WantedTest.php"] },
   { id = "N3-R9", state = "done", evidence = ["app-modules/household/src/Internal/Screens/FindsItsWayAroundTheHouse.php", "app-modules/wayfinding/src/Internal/TheRowsOfTheMenu.php", "tests/Contract/OwingContractTest.php", "tests/Feature/AMemberNeverOpensTheOperatorsScreensTest.php"] },
   { id = "N3-R10", state = "done", evidence = ["tests/Feature/WhatAMemberIsNeverShownTest.php"] },
-  { id = "N3-R11", state = "done", evidence = ["tests/Arch/NothingPlaysMediaHereTest.php"] },
+  { id = "N3-R11", state = "done", evidence = ["tests/Arch/OnlyThePlayerPlaysMediaTest.php"] },
   { id = "N3-R12", state = "done", evidence = ["tests/Arch/AnActionIsNeverHeldTest.php", "tests/Feature/WhatAMemberIsNeverShownTest.php"] },
   { id = "N3-R13", state = "done", evidence = ["app-modules/kernel/src/Api/Obstacle.php", "app-modules/connection/src/Api/LetsGoOfARefusedSession.php", "app-modules/operator/tests/Internal/ViewModels/HowTheReadingWentTest.php", "tests/Arch/ARefusedSessionIsLetGoOfTest.php"] },
   { id = "N3-R14", state = "open" },

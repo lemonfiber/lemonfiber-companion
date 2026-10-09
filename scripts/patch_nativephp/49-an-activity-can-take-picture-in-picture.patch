@@ -1,0 +1,15 @@
+An activity a plugin declares cannot say it supports picture-in-picture: the
+compiler writes a fixed set of attributes and `supportsPictureInPicture` is
+not among them, so a player declared by a plugin would be refused the window
+by the platform however it asked. The attribute is written where the
+declaration names it, and nowhere else.
+
+--- a/vendor/nativephp/mobile/src/Plugins/Compilers/AndroidPluginCompiler.php
++++ b/vendor/nativephp/mobile/src/Plugins/Compilers/AndroidPluginCompiler.php
+@@ -1151,3 +1151,6 @@
+         if (isset($activity['configChanges'])) {
+             $attrs[] = "android:configChanges=\"{$activity['configChanges']}\"";
+         }
++        if (isset($activity['supportsPictureInPicture'])) {
++            $attrs[] = 'android:supportsPictureInPicture="'.($activity['supportsPictureInPicture'] ? 'true' : 'false').'"';
++        }
