@@ -22,7 +22,10 @@ use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+
+use function trim;
 
 /**
  * What the operator met, given what the far end refused with.
@@ -111,6 +114,24 @@ final readonly class WhatARefusalMeant
     }
 
     /**
+     * The obstacle a refusal is, carrying what the core wrote for the household where it sent a problem document.
+     *
+     * A member is told the core's sentence and remedy in place of this app's
+     * lines, carried as text and never read. A refusal
+     * with no document, and a certificate refused before anything was sent,
+     * carry none, and are said in this app's words.
+     */
+    public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
+    {
+        $met = self::met($why);
+        $problem = $why instanceof RequestFailed ? $why->refusal() : null;
+
+        return $problem instanceof Refusal && trim($problem->summary()) !== ''
+            ? $met->withWhatTheHouseholdWasTold(WhatTheHouseholdWasTold::said($problem->summary(), self::firstRemedy($problem)))
+            : $met;
+    }
+
+    /**
      * The stack's refusal in its own words where it sent a problem document
      * with a sentence in it, and the obstacle everywhere else.
      *
@@ -133,7 +154,18 @@ final readonly class WhatARefusalMeant
             : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
     }
 
-    public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
+    /** What the first remedy a problem document gives says to do, or nothing where it gives none. */
+    private static function firstRemedy(Refusal $problem): string
+    {
+        foreach ($problem->remedies() as $remedy) {
+            return $remedy->action();
+        }
+
+        return '';
+    }
+
+    /** Which obstacle a refusal is, by its code where it has one this app knows, and by its status everywhere else. */
+    private static function met(CertificateWasRefused|RequestFailed $why): Obstacle
     {
         if ($why instanceof CertificateWasRefused) {
             return Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired);

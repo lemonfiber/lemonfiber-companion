@@ -21,7 +21,7 @@ requirement = [
   { id = "N3-R14", state = "open" },
   { id = "N3-R15", state = "open" },
   { id = "N3-R16", state = "open" },
-  { id = "N3-R17", state = "open" },
+  { id = "N3-R17", state = "done", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/household/src/Internal/ViewModels/WhatAMemberIsTold.php", "app-modules/household/src/View/Components/WhatStoodInTheWay.php", "tests/Feature/SeeingWhatYouCanWatchTest.php"] },
   { id = "N3-R18", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/SignIntoAStack.php", "app-modules/connection/src/Api/HowTheSignInWent.php", "tests/Feature/SigningIntoAStackTest.php", "app-modules/connection/tests/Api/HowTheSignInWentTest.php"] },
   { id = "N3-R19", state = "done", evidence = ["app-modules/household/resources/views/components/screen-closes.blade.php", "app-modules/household/src/Internal/Screens/FindsItsWayAroundTheHouse.php", "app-modules/household/tests/View/Components/ScreenClosesTest.php", "app-modules/operator/tests/View/Components/ScreenClosesTest.php"] },
   { id = "N3-R22", state = "done", evidence = ["app-modules/household/src/Internal/Screens/WhatThisTitleIs.php", "tests/Feature/OpeningATitleTest.php"] },

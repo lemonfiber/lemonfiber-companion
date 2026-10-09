@@ -27,6 +27,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
@@ -491,6 +492,24 @@ it('an obstacle that is not a refused credential leaves the session alone', func
     expect($met->answer()->isSignedIn)->toBeTrue()
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)
         ->toBeTrue();
+});
+
+it('tells a member whose household could not be asked the core\'s own sentence and remedy, as written, and keeps them signed in', function (): void {
+    // ADMIT-7: the media server could not vouch for the account. The core
+    // wrote the member a sentence and a remedy, and those are what they read,
+    // drawn as text even where a line of the core's reads like a key of this
+    // app's.
+    $keychain = AKeychainInMemory::working();
+    $told = WhatTheHouseholdWasTold::said('Your library is not answering right now.', 'household.needs_an_update');
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer)->withWhatTheHouseholdWasTold($told)), keychain: $keychain);
+    $drawn = WhatTheDeviceWouldDraw::by($met)->said();
+
+    expect($drawn)->toContain('Your library is not answering right now.')
+        ->and($drawn)->toContain('household.needs_an_update')
+        ->and($drawn)->not->toContain(__(KindOfObstacle::MediaServerDidNotAnswer->saidToTheHousehold()))
+        ->and($drawn)->not->toContain(__(KindOfObstacle::NotForThisAccount->saidToTheHousehold()))
+        ->and($met->answer()->isSignedIn)->toBeTrue()
+        ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)->toBeTrue();
 });
 
 it('reads a route parameter that is not a word as naming no machine', function (): void {

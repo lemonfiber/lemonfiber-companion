@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Household\Internal\ViewModels\WhatAMemberIsTold;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Tests\TestCase;
 
 // The catalogue is read, so the application is booted.
@@ -33,3 +34,15 @@ it('never names the software or a version to a member', function (): void {
     expect(__(WhatAMemberIsTold::met($why)))->not->toContain('lemonfiber')
         ->and(__(WhatAMemberIsTold::remedy($why)))->not->toContain('lemonfiber');
 });
+
+it('tells a member the core\'s own sentence and remedy wherever it wrote them, a house too old included', function (KindOfObstacle $kind): void {
+    $why = Obstacle::of($kind)->withWhatTheHouseholdWasTold(WhatTheHouseholdWasTold::said('Your library is not answering right now.', 'Try again in a little while'));
+
+    expect(WhatAMemberIsTold::met($why))->toBe('Your library is not answering right now.')
+        ->and(WhatAMemberIsTold::remedy($why))->toBe('Try again in a little while')
+        ->and(WhatAMemberIsTold::isInTheStacksWords($why))->toBeTrue()
+        ->and(WhatAMemberIsTold::isInTheStacksWords(Obstacle::of($kind)))->toBeFalse();
+})->with([
+    'the household could not be asked' => [KindOfObstacle::MediaServerDidNotAnswer],
+    'a house too old' => [KindOfObstacle::NotOnThisStack],
+]);
