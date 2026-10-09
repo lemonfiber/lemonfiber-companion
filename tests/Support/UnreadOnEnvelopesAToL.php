@@ -223,6 +223,25 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'and nothing here asks for one, so no answer this app receives carries it.',
         ],
         [
+            'path' => 'CapabilitiesEnvelope.scope',
+            'because' => 'Whose credential asked. The admission that opened the session names the member, or '
+                . 'nobody for the operator, and that decides which application a person is given (`N3-R1`); '
+                . 'nothing here is inferred from which reads came back permitted. A second answer to the same '
+                . 'question on every declaration could only disagree with the first.',
+        ],
+        [
+            'path' => 'CapabilitiesEnvelope.stack',
+            'because' => 'The stack\'s own identifier, the one pairing material carries. This app learns it '
+                . 'from the pairing (`N1-R63`) and asks over a connection pinned to that stack\'s certificate, '
+                . 'so the answer\'s copy is the same value come back, for `HeldEnvelope.id`\'s reason.',
+        ],
+        [
+            'path' => 'DashboardEnvelope.downloaders',
+            'because' => 'Every download client and whether it is paused, the reading that pausing and '
+                . 'resuming downloads act on. This app offers neither (`Pausing` is under `NOT_YET` in '
+                . '`EveryActionTheStackOffersTest`), and the reading goes with the action.',
+        ],
+        [
             'path' => 'DashboardEnvelope.alerts',
             'because' => 'Alerts as they start and resolve, each with its remedies. What a stack will wake somebody for is read from `AlertsEnvelope`, and every condition standing now reaches this app as an affected item of the health summary, with its remedies. A feed of onsets and resolutions is a log, and no companion requirement asks for one.',
         ],
@@ -338,6 +357,12 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'Whether a form can run alongside another. This app starts one form per tap, and a '
                 . 'combination the stack cannot compose is refused by the stack in its own words, which is '
                 . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.offer',
+            'because' => 'The offer a restart\'s rehearsal answers. A restart carrying no offer acts as it '
+                . 'does without one (`ARCH-R164`), and this app sends none: no companion requirement asks a '
+                . 'restart to be refused where the services it named have moved.',
         ],
         [
             'path' => 'LifecycleEnvelope.action',
@@ -467,12 +492,10 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].media',
-            'because' => 'The library\'s own handle for the thing asked for. `N2-R11` asks for enough to decide '
-                . 'on, and the words a person recognises are the title beside it. Nothing here reaches the thing '
-                . 'itself: this app plays nothing, because the contract names no location to stream a holding '
-                . 'from and no authorisation for a member to stream it, so there is no door an identifier would '
-                . 'open. A thing to play is exactly what a handle is for, so the `stream_from` row in '
-                . '`WhatTheContractDoesNotCarryTest` names this one to read beside it.',
+            'because' => 'The library\'s own handle for the thing asked for, the id `/api/held` lists it under. '
+                . '`N2-R11` asks for enough to decide on, and the words a person recognises are the title beside '
+                . 'it. Where a title streams from is answered on the shelf and on the title itself, and no '
+                . 'screen opens a request\'s title by this handle.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',
@@ -553,6 +576,31 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'is the same value returning; trusting the answer\'s copy over the one it sent would let a '
                 . 'stack decide who is looking, which is the decision the signed-in identity makes. A screen '
                 . 'showing a member their own name is not what a shelf is for.',
+        ],
+        [
+            'path' => 'HeldEnvelope.holdings[].poster',
+            'because' => 'Where a holding\'s poster is served at the door. An image there is fetched with '
+                . 'the member\'s grant over the door\'s pin, and nothing in this app fetches one: it issues no '
+                . 'request of its own and the bridge fetches only what the player plays. Every poster is '
+                . 'lettered with its name (`N3-R24`).',
+        ],
+        [
+            'path' => 'HeldEnvelope.holdings[].backdrop',
+            'because' => 'Where a holding\'s backdrop is served at the door, for `holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'HeldEnvelope.holdings[].stream_from',
+            'because' => 'Where a holding streams from. Play is drawn on the title\'s own page (`N3-R22`), '
+                . 'and `/api/held/{id}` answers the same location for that one title as the member opens it; '
+                . 'the shelf\'s copy would be a second, older answer to the question that page asks.',
+        ],
+        [
+            'path' => 'HeldEnvelope.holdings[].door',
+            'because' => 'The door\'s fingerprint beside a holding\'s location, for `holdings[].stream_from`\'s reason.',
+        ],
+        [
+            'path' => 'HeldEnvelope.holdings[].unlocated',
+            'because' => 'Why a holding has no location, for `holdings[].stream_from`\'s reason.',
         ],
         [
             'path' => 'HouseholdEnvelope.allows',

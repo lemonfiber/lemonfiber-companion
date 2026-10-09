@@ -156,9 +156,6 @@ final readonly class WhatTheWireWouldAnswer
     /** The declaration a refusal is carried in. */
     private const string WHAT_A_REFUSAL_IS = 'ErrorEnvelope';
 
-    /** What a stack says it serves, which a stand-in says is everything. */
-    private const string WHAT_IT_SERVES = 'CapabilitiesEnvelope';
-
     /** The field a problem names the problem beneath it in. */
     private const string THE_PROBLEM_BENEATH = 'cause';
 
@@ -360,7 +357,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::NEWS_ENDPOINT => WhatIsNewAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('news-items')), self::WHEN_A_CHANGE_WAS_MADE),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
-            $endpoint === Api::CAPABILITIES_ENDPOINT => [...self::oneEnvelope(self::WHAT_IT_SERVES), 'data' => WhatAStandInServes::everything()],
+            $endpoint === Api::CAPABILITIES_ENDPOINT => [...self::oneEnvelope(WhatAStandInServes::DECLARED_IN), 'data' => WhatAStandInServes::declaration()],
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),

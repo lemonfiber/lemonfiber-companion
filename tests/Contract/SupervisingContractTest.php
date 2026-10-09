@@ -498,8 +498,8 @@ it('asks for a rehearsal as the same verb with `dry_run`, under a key of its own
     $supervising->told(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed);
 
     expect($sent)->toBe([
-        ['/api/actions/restart', ['forms' => [], 'services' => ['sonarr'], 'dry_run' => true], true],
-        ['/api/actions/restart', ['forms' => [], 'services' => ['sonarr']], true],
+        ['/api/actions/restart', ['forms' => [], 'services' => ['sonarr'], 'offer' => null, 'dry_run' => true], true],
+        ['/api/actions/restart', ['forms' => [], 'services' => ['sonarr'], 'offer' => null], true],
     ]);
 });
 

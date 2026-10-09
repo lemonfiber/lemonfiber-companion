@@ -124,6 +124,7 @@ return [
     'medium' => [
         'film' => 'Film',
         'series' => 'Series',
+        'episode' => 'Episode',
         'other' => 'Other',
     ],
 
@@ -135,6 +136,7 @@ return [
         'on_its_way' => 'On its way',
         'film' => 'Films',
         'series' => 'Series',
+        'episode' => 'Episodes',
         'other' => 'Other',
     ],
 

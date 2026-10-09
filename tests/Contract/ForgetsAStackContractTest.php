@@ -73,7 +73,7 @@ afterEach(function (): void {
  */
 function aStackThatDeclaresNothing(): array
 {
-    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => []]];
+    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => []]];
 }
 
 /** A stack a keeper holds something for. Named for this file. */

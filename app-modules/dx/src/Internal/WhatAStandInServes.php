@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use function is_array;
+
 use Modules\Kernel\Api\Availability;
 use Modules\Sdk\Api\EveryRequestThisAppSends;
 use Modules\Sdk\Api\Fields\CapabilitiesField;
@@ -18,6 +20,21 @@ use Modules\Sdk\Api\Fields\CapabilitiesField;
  */
 final readonly class WhatAStandInServes
 {
+    /** What a stack says it serves in. */
+    public const string DECLARED_IN = 'CapabilitiesEnvelope';
+
+    /**
+     * The whole `capabilities` payload: the declaration's own fields, with every path available.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function declaration(): array
+    {
+        $said = WhatAStackWouldSay::inside(self::DECLARED_IN);
+
+        return [...is_array($said) ? $said : [], ...self::everything()];
+    }
+
     /**
      * The `capabilities` payload, every path available.
      *

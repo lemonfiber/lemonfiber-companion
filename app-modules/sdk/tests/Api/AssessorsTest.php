@@ -115,7 +115,7 @@ function everyStackAnswering(Closure $answering): ArrayObject
  */
 function whatAStackServesSaying(array $capabilities): array
 {
-    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => $capabilities]];
+    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => $capabilities]];
 }
 
 /**
@@ -243,7 +243,7 @@ it('offers everything of a stack it could not ask, and of one whose answer it co
     'a state nobody can read' => [aDeclarationOf(['/api/status' => 'perhaps'])],
     // `status` is stood in for and not judged: the case is an answer of the wrong kind, which is refused before anything in it is read.
     'an answer of another kind' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'status', 'data' => []]))],
-    'an answer in another version' => [MockResponse::make((string) json_encode(['api_version' => 2, 'kind' => 'capabilities', 'data' => ['capabilities' => []]]))],
+    'an answer in another version' => [MockResponse::make((string) json_encode(['api_version' => 2, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => []]]))],
     'nothing that reads as an envelope' => [MockResponse::make('not an envelope')],
 ]);
 

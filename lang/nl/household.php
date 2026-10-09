@@ -112,6 +112,7 @@ return [
     'medium' => [
         'film' => 'Film',
         'series' => 'Serie',
+        'episode' => 'Aflevering',
         'other' => 'Overig',
     ],
 
@@ -121,6 +122,7 @@ return [
         'on_its_way' => 'Onderweg',
         'film' => 'Films',
         'series' => 'Series',
+        'episode' => 'Afleveringen',
         'other' => 'Overig',
     ],
 

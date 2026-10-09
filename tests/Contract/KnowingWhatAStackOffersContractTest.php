@@ -68,7 +68,7 @@ function theShedThatOffers(): Stack
  */
 function whatTheLoftDeclares(): array
 {
-    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => [
+    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => [
         Api::action(WhatToDoWithIt::Restart->asked()) => 'available',
         Api::action(WhatToDoWithACopy::Take->asked()) => 'unconfigured',
         Api::action(TakingThemOut::TakeThemOut->asked()) => 'unpermitted',
@@ -94,7 +94,7 @@ function everyWayOfKnowingWhatAStackOffers(): array
             MockClient::destroyGlobal();
             MockClient::global(['*' => static fn(PendingRequest $asked): MockResponse => match (true) {
                 str_starts_with($asked->getUrl(), theLoftThatOffers()->at()->forTheClient()) => MockResponse::make((string) json_encode(whatTheLoftDeclares())),
-                str_starts_with($asked->getUrl(), theShedThatOffers()->at()->forTheClient()) => MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => []]])),
+                str_starts_with($asked->getUrl(), theShedThatOffers()->at()->forTheClient()) => MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => []]])),
                 default => MockResponse::make()->throw(static fn(PendingRequest $request): Unreachable => Unreachable::whenAsking($request->getRequest()->resolveEndpoint(), 'Connection refused')),
             }]);
 
