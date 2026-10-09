@@ -16,7 +16,7 @@ return [
     'camera_reason' => 'The camera is used once, to read the pairing code on your stack.',
     'camera_alternative' => 'You can type the pairing code instead.',
     'unlock' => 'Unlock',
-    'unlock_reason' => 'Unlock lemonfiber to see your stacks.',
+    'unlock_reason' => 'Unlock lemonfiber to carry on.',
     'permission_refused' => 'That permission was refused, and this screen still works without it.',
     'nothing_to_hand_over' => 'The report could not be prepared.',
     'nothing_to_hand_over_action' => 'Try asking for it again.',

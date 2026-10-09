@@ -18,16 +18,12 @@ namespace Modules\Household\Internal\ViewModels;
  * is true is the failure this screen exists around.
  *
  * @param list<WhatAShelfRowSays> $rows
- * @param list<string>             $reasons
  */
 use Modules\Kernel\Api\Obstacle;
 
 final readonly class WhatAMemberTurnedOutToBeAbleToWatch
 {
-    /**
-     * @param list<WhatAShelfRowSays> $rows
-     * @param list<string>             $reasons
-     */
+    /** @param list<WhatAShelfRowSays> $rows */
     private function __construct(
         public bool $isSignedIn,
         public string $met,
@@ -35,7 +31,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
         public bool $isOutOfReach,
         public ?WhatOnePosterSays $hero,
         public array $rows,
-        public array $reasons,
         private ?Obstacle $why = null,
     ) {}
 
@@ -57,20 +52,16 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             isOutOfReach: false,
             hero: $hero,
             rows: $rows,
-            reasons: [],
         );
     }
 
     /**
      * The core answered and the library was not its to give.
      *
-     * The sentences are the core's own, carried rather than rewritten — which
-     * is what keeps this screen from inventing a reason for a route it has no
-     * view of.
-     *
-     * @param list<string> $reasons
+     * Said in the house's own sentence. Why it could not be read is the
+     * core's finding for the operator, and a member is never shown one.
      */
-    public static function outOfReach(array $reasons): self
+    public static function outOfReach(): self
     {
         return new self(
             isSignedIn: true,
@@ -79,7 +70,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             isOutOfReach: true,
             hero: null,
             rows: [],
-            reasons: $reasons,
         );
     }
 
@@ -93,7 +83,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             isOutOfReach: false,
             hero: null,
             rows: [],
-            reasons: [],
         );
     }
 
@@ -109,7 +98,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
                 isOutOfReach: false,
                 hero: null,
                 rows: [],
-                reasons: [],
                 why: $why,
             );
     }

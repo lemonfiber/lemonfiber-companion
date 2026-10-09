@@ -8,7 +8,7 @@ return [
     'camera_reason' => 'De camera wordt één keer gebruikt, om de koppelingscode op je stack te lezen.',
     'camera_alternative' => 'Je kunt de koppelingscode ook intypen.',
     'unlock' => 'Ontgrendelen',
-    'unlock_reason' => 'Ontgrendel lemonfiber om je stacks te zien.',
+    'unlock_reason' => 'Ontgrendel lemonfiber om verder te gaan.',
     'permission_refused' => 'Die toestemming is geweigerd, en dit scherm werkt ook zonder.',
     'nothing_to_hand_over' => 'Het rapport kon niet worden opgesteld.',
     'nothing_to_hand_over_action' => 'Vraag het opnieuw op.',

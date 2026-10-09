@@ -21,7 +21,7 @@ return [
     'not_put_back' => 'De voorinstelling terugzetten over je bewerkingen wordt hier niet aangeboden.',
 
     'for' => 'Voor :scope',
-    'per_hour' => 'Ongeveer :size per uur',
+    'per_hour' => 'Omvang: :size',
     'transcodes_here' => 'Deze machine zou dit in software moeten transcoderen',
     'no_presets' => 'De stack meldt geen voorinstelling.',
 

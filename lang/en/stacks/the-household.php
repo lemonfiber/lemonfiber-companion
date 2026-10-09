@@ -6,7 +6,7 @@ return [
     // The credentials the machine holds to let services in. No line here
     // offers to set, change or show a value.
     'credentials' => [
-        'heading' => 'Credentials',
+        'heading' => 'Passwords',
         'state' => [
             'absent' => 'Missing: something here needs it and it was never supplied',
             'active' => 'Working',
@@ -18,20 +18,20 @@ return [
             'superseded' => 'Replaced; the old one is waiting to be destroyed',
         ],
         'origin' => [
-            'operator' => 'You supplied it, from an account elsewhere',
+            'operator' => 'Yours to supply, from an account elsewhere',
             'service' => 'The service made it for itself',
             'lemonfiber' => 'lemonfiber made it',
         ],
         'used_by' => 'Used by',
         'used_by_nothing' => 'Nothing uses it',
-        'none' => 'This machine holds no credentials',
+        'none' => 'This machine holds no passwords',
         'protection' => [
             'heading' => 'How they are kept',
             'against' => 'This protects against:',
             'not_against' => 'This does not protect against:',
             'nothing_listed' => 'Nothing listed',
         ],
-        'at_the_machine' => 'A credential is set or replaced at the machine, not from here.',
+        'at_the_machine' => 'A password is set or replaced at the machine, not from here.',
     ],
 
     // Which app to watch on, device by device.

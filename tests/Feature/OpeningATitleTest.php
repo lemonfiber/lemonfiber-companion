@@ -199,7 +199,7 @@ it('asks nothing and offers to sign in where no session is held', function (): v
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen($watching, signedIn: false));
 
     expect($watching->titlesAskedFor())->toBe([])
-        ->and($drawn->said())->toContain(__('connection.session_has_ended'))
+        ->and($drawn->said())->toContain(__('household.signed_out'))
         ->and($drawn->offers())->toBe([__('connection.sign_in')]);
 });
 
@@ -228,6 +228,6 @@ it('says a title is not on their shelf where the route names none, and asks noth
 it('offers to sign in again where the core refused the session', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
 
-    expect($drawn->said())->toContain(__('connection.session_has_ended'))
+    expect($drawn->said())->toContain(__('household.signed_out'))
         ->and($drawn->offers())->toBe([__('connection.sign_in')]);
 });
