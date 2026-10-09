@@ -25,11 +25,6 @@ final readonly class Episodes implements IteratorAggregate
         return new self(array_values($each));
     }
 
-    public static function none(): self
-    {
-        return new self([]);
-    }
-
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->each);

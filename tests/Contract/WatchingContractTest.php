@@ -408,7 +408,7 @@ function theSameSeries(): ATitle
         '16',
         WhenItWasReleased::on(2022, 4, 1),
         WhereItPlays::doesNotStream(),
-        Seasons::of(ASeason::of('Season 1', NumberedAs::number(1), Episodes::of(
+        Seasons::of(ASeason::of('Season 1', Episodes::of(
             AnEpisode::of(HoldingId::called('e1'), 'Failure\'s Contagious', NumberedAs::number(1), HowLongItRuns::minutes(49), 'Lamb.', WhereItPlays::at(Location::of('https://192.168.1.42:8920/Videos/e1/master.m3u8'), $door)),
             AnEpisode::of(HoldingId::called('e2'), 'A special', NumberedAs::none(), HowLongItRuns::unstated(), '', WhereItPlays::cannot(Sentence::of('The front door has no certificate yet.'))),
         ))),

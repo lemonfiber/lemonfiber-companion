@@ -261,6 +261,11 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'and nothing here asks for one season on its own.',
         ],
         [
+            'path' => 'TitleEnvelope.title.seasons[].number',
+            'because' => 'Where a season falls in the series. A season is drawn by its name, which the media server '
+                . 'writes with its number in it, in the core\'s order.',
+        ],
+        [
             'path' => 'TitleEnvelope.title.seasons[].episodes[].poster',
             'because' => 'Where an episode\'s picture is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
         ],

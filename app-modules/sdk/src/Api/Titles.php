@@ -174,7 +174,7 @@ final readonly class Titles
             $episodes[] = is_array($episode) ? self::episode($episode, TitleIsUnreadable::episode($at, (int) $nth)) : throw TitleIsUnreadable::episode($at, (int) $nth);
         }
 
-        return ASeason::of(Required::text($season, WireField::Name, $refused), self::numbered($season, $refused), Episodes::of(...$episodes));
+        return ASeason::of(Required::text($season, WireField::Name, $refused), Episodes::of(...$episodes));
     }
 
     /** @param array<mixed> $episode */

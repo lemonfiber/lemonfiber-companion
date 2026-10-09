@@ -90,7 +90,7 @@ function aSeriesInFull(): ATitle
         '',
         WhenItWasReleased::unstated(),
         WhereItPlays::doesNotStream(),
-        Seasons::of(ASeason::of('Season 1', NumberedAs::number(1), Episodes::of(
+        Seasons::of(ASeason::of('Season 1', Episodes::of(
             AnEpisode::of(HoldingId::called('e1'), 'Failure\'s Contagious', NumberedAs::number(1), HowLongItRuns::minutes(49), 'Jackson Lamb runs Slough House.', streamingAtTheDoor('e1')),
             AnEpisode::of(HoldingId::called('e2'), 'A special', NumberedAs::none(), HowLongItRuns::unstated(), '', WhereItPlays::cannot(Sentence::of('The front door has no certificate yet.'))),
         ))),
@@ -225,4 +225,20 @@ it('is the screen the router opens at a title\'s path', function (): void {
     $resolved = NativeRouter::resolve(AStacksScreen::Title->forTheStacksTitle(theStackATitleIsOn()->id(), HoldingId::called('a1')));
 
     expect($resolved['class'] ?? null)->toBe(WhatThisTitleIs::class);
+});
+
+it('says a title is not on their shelf where the route names none, and asks nothing', function (): void {
+    $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
+    $screen = theTitleScreen($watching);
+    $screen->setParams(['stack' => theStackATitleIsOn()->id()->stored()]);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.title.absent'))
+        ->and($watching->titlesAskedFor())->toBe([]);
+});
+
+it('offers to sign in again where the core refused the session', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
+
+    expect($drawn->said())->toContain(__('connection.session_has_ended'))
+        ->and($drawn->offers())->toBe([__('connection.sign_in')]);
 });

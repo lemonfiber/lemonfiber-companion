@@ -63,12 +63,6 @@ final readonly class WhatThisTitleTurnedOutToBe
         return $this->title instanceof WhatTheTitleSays ? $this->title->poster->titled : '';
     }
 
-    /** Whether something stood in the way. */
-    public function wasStopped(): bool
-    {
-        return $this->why instanceof Obstacle;
-    }
-
     /** Whether what stood in the way is put right on this app's page in the phone's settings. */
     public function isPutRightInTheAppsSettings(): bool
     {
