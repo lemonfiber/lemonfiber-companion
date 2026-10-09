@@ -41,11 +41,17 @@ returned, with nothing leading on to a longer list.
 **Every title is a lettered poster.** A `Poster` is a raised 2:3 tile with a
 line at the top and the name lettered at the bottom, at the step
 `HowAPosterIsLettered` reads off the name's length, with nothing under the
-tile. A screen reader hears its label once. The core serves the app no
-artwork, so every title is drawn lettered. A title's poster opens
-`WhatThisTitleIs`, handed the name, kind and year the shelf said, since the
-core answers no reading for one title: it draws the poster and Play, drawn and
-not usable, with its reason.
+tile. A screen reader hears its label once. Nothing in the app fetches
+artwork from the door, so every title is drawn lettered.
+
+**A title's screen reads the title in full.** A poster opens
+`WhatThisTitleIs` at the title's id, which reads it as the member through
+`Watching::theTitle()`: its overview, runtime, certificate, release day,
+genres, and a series' seasons and episodes. Play is drawn on the title and on
+each episode and is not usable yet; where the core states no location, the
+reason beside it is the core's own words. A series' Play is its first
+episode's. A title outside the member's limits is answered as absent, as one
+the house does not hold is.
 
 **The operator previews the member's side here too.** `WhatAMemberWouldSee`,
 opened from *View as member* in the operator's menu, draws Home, with the hero

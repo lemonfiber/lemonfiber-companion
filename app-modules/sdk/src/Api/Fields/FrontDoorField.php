@@ -28,7 +28,4 @@ enum FrontDoorField: string implements NamesAWireField
      * field that carries it.
      */
     case Chosen = 'chosen';
-
-    /** What the operator named as the door: an id where it stands, a table where it was refused. */
-    case Door = 'door';
 }

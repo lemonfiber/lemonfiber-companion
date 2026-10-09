@@ -105,7 +105,7 @@ final readonly class WhereTheDoorIs
 
         return match ($how) {
             HowTheDoorWasChosen::Derived => HowTheDoorCameToBe::derived(),
-            HowTheDoorWasChosen::Named => HowTheDoorCameToBe::byTheOperator(self::text($chosen, FrontDoorField::Door)),
+            HowTheDoorWasChosen::Named => HowTheDoorCameToBe::byTheOperator(self::text($chosen, WireField::Door)),
             HowTheDoorWasChosen::Refused => self::refused($chosen),
         };
     }
@@ -117,15 +117,15 @@ final readonly class WhereTheDoorIs
      */
     private static function refused(array $chosen): HowTheDoorCameToBe
     {
-        if (! array_key_exists(FrontDoorField::Door->value, $chosen) || ! is_array($chosen[FrontDoorField::Door->value])) {
-            throw FrontDoorIsUnreadable::under(FrontDoorField::Chosen, FrontDoorField::Door);
+        if (! array_key_exists(WireField::Door->value, $chosen) || ! is_array($chosen[WireField::Door->value])) {
+            throw FrontDoorIsUnreadable::under(FrontDoorField::Chosen, WireField::Door);
         }
 
-        $door = $chosen[FrontDoorField::Door->value];
+        $door = $chosen[WireField::Door->value];
 
         return HowTheDoorCameToBe::refused(
-            self::under($door, FrontDoorField::Door, WireField::Named),
-            self::under($door, FrontDoorField::Door, WireField::Because),
+            self::under($door, WireField::Door, WireField::Named),
+            self::under($door, WireField::Door, WireField::Because),
         );
     }
 

@@ -50,6 +50,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
@@ -348,6 +349,8 @@ final readonly class EveryAdapterCallThatReads
             'Shelves::theShelfOf' => static fn(): object
                 => new Shelves($clients)->theShelfOf($stack, $session, Whose::member('robin')),
             'Shelves::theDefaultShelf' => static fn(): object => new Shelves($clients)->theDefaultShelf($stack, $session),
+            'Shelves::theTitle' => static fn(): object
+                => new Shelves($clients)->theTitle($stack, $session, Whose::member('robin'), HoldingId::called('a1')),
             'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
             'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
             'Supervisors::formsOn' => static fn(): object => new Supervisors($clients, $entropy)->formsOn($stack, $session),

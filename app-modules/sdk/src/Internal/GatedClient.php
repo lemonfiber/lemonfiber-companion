@@ -75,6 +75,24 @@ final readonly class GatedClient
     }
 
     /**
+     * One of a read the stack declares once for all of them, such as one title on a shelf.
+     *
+     * @param array<string, scalar|list<scalar>|null> $query
+     *
+     * @return Envelope<mixed>
+     *
+     * @throws ApiVersionMismatch
+     * @throws RequestFailed
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function readOneOf(string $declared, string $endpoint, array $query = []): Envelope
+    {
+        return $this->clients->towards($this->stack, $this->session, Ability::of($declared))->read($endpoint, $query);
+    }
+
+    /**
      * @return Envelope<mixed>
      *
      * @throws ApiVersionMismatch

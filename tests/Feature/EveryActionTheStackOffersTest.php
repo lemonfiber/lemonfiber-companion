@@ -41,7 +41,7 @@ const OFFERED = [
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Plugins', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
-    'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
+    'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 
@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Alert', 'Certificate', 'Keys', 'MintedKey', 'PartWay', 'Pausing', 'Playing', 'Title', 'Watched',
+    'Alert', 'Certificate', 'Keys', 'MintedKey', 'PartWay', 'Pausing', 'Playing', 'Watched',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

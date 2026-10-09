@@ -3,13 +3,23 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnEpisode;
+use Modules\Kernel\Api\ASeason;
+use Modules\Kernel\Api\ATitle;
+use Modules\Kernel\Api\Episodes;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\HowLongItRuns;
+use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Seasons;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -18,12 +28,16 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Watching;
+use Modules\Kernel\Api\WhatTheTitleIs;
 use Modules\Kernel\Api\WhenItCameOut;
+use Modules\Kernel\Api\WhenItWasReleased;
+use Modules\Kernel\Api\WhereItPlays;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Shelves;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -320,4 +334,141 @@ it('counts which of the two shelves the fake was asked for', function (): void {
 
     expect($watching->askingsForTheDefaults())->toBe(1)
         ->and($watching->askings())->toBe(2);
+});
+
+/**
+ * What a stack sends about one title, with the title changed where a case says, or none where it is absent.
+ *
+ * @param  array<array-key, mixed>|null $title
+ * @return array<string, mixed>
+ */
+function whatAStackSendsAboutATitle(?array $title): array
+{
+    return ['api_version' => 1, 'kind' => 'title', 'data' => ['id' => 'ada-id', 'member' => 'ada', 'rehearsed' => false, 'title' => $title]];
+}
+
+/**
+ * A series, as a stack sends it: its door known, an episode located and one not.
+ *
+ * @return array<string, mixed>
+ */
+function aSeriesOnTheWire(): array
+{
+    $door = ['fingerprint' => str_repeat('d', 64)];
+
+    return [
+        'id' => 's1', 'title' => 'Slow Horses', 'medium' => 'series', 'year' => 2022,
+        'overview' => 'Spies who failed.', 'minutes' => null, 'genres' => ['Thriller', 'Drama'],
+        'certificate' => '16', 'released' => '2022-04-01', 'door' => $door,
+        'seasons' => [[
+            'id' => 'season-1', 'name' => 'Season 1', 'number' => 1,
+            'episodes' => [
+                ['id' => 'e1', 'title' => 'Failure\'s Contagious', 'medium' => 'episode', 'number' => 1, 'minutes' => 49,
+                    'overview' => 'Lamb.', 'stream_from' => 'https://192.168.1.42:8920/Videos/e1/master.m3u8', 'door' => $door],
+                ['id' => 'e2', 'title' => 'A special', 'medium' => 'episode', 'unlocated' => 'The front door has no certificate yet.'],
+            ],
+        ]],
+    ];
+}
+
+/** What the core said about a title, as one line, whichever arm it took. */
+function whatATitleSaid(Watching $watching, ?Whose $whose = null): string
+{
+    return $watching->theTitle(theHouseAShelfBelongsTo(), theSessionAShelfIsAskedUnder(), $whose ?? theMemberWhoseShelfItIs(), HoldingId::called('s1'))->either(
+        told: static function (ATitle $title): TheWordCarriedOut {
+            $said = [$title->holding()->titled(), $title->about(), implode('+', array_map(strval(...), [...$title->genres()])), $title->certificate()];
+            $said[] = $title->released()->either(on: static fn(int $y, int $m, int $d): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d-%d-%d', $y, $m, $d)), unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('undated'))->said;
+
+            foreach ($title->seasons() as $season) {
+                foreach ($season->episodes() as $episode) {
+                    $said[] = sprintf('%s/%s/%s', $season->named(), $episode->titled(), $episode->plays()->either(
+                        at: static fn(Location $at): TheWordCarriedOut => new TheWordCarriedOut($at->forThePlayer()),
+                        cannot: static fn(Sentence $why): TheWordCarriedOut => new TheWordCarriedOut($why->shown()),
+                        doesNotStream: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+                    )->said);
+                }
+            }
+
+            return new TheWordCarriedOut(implode('|', $said));
+        },
+        absent: static fn(): TheWordCarriedOut => new TheWordCarriedOut('absent'),
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
+    )->said;
+}
+
+/** The series that payload stands for, as the fake is handed it. */
+function theSameSeries(): ATitle
+{
+    $door = Fingerprint::of(str_repeat('d', 64));
+
+    return ATitle::of(
+        Holding::of(HoldingId::called('s1'), 'Slow Horses', Medium::Series, WhenItCameOut::in(2022)),
+        ItsDetails::of('Spies who failed.', HowLongItRuns::unstated(), Genres::of('Thriller', 'Drama'), '16', WhenItWasReleased::on(2022, 4, 1)),
+        WhereItPlays::doesNotStream(),
+        Seasons::of(ASeason::of('Season 1', Episodes::of(
+            AnEpisode::of(HoldingId::called('e1'), 'Failure\'s Contagious', NumberedAs::number(1), HowLongItRuns::minutes(49), 'Lamb.', WhereItPlays::at(Location::of('https://192.168.1.42:8920/Videos/e1/master.m3u8'), $door)),
+            AnEpisode::of(HoldingId::called('e2'), 'A special', NumberedAs::none(), HowLongItRuns::unstated(), '', WhereItPlays::cannot(Sentence::of('The front door has no certificate yet.'))),
+        ))),
+    );
+}
+
+it('hands over one title in full, each episode with where it streams from or why not', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutATitle(aSeriesOnTheWire())));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::holdingNothing()->answeringTheTitle(WhatTheTitleIs::told(theSameSeries()))) as $which => $build) {
+        expect(whatATitleSaid($build()))->toBe(
+            'Slow Horses|Spies who failed.|Thriller+Drama|16|2022-4-1|Season 1/Failure\'s Contagious/https://192.168.1.42:8920/Videos/e1/master.m3u8|Season 1/A special/The front door has no certificate yet.',
+            $which,
+        );
+    }
+});
+
+it('answers a title the core did not hand over as absent', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutATitle(null)));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::holdingNothing()) as $which => $build) {
+        expect(whatATitleSaid($build()))->toBe('absent', $which);
+    }
+});
+
+it('says the stack did not answer where a title cannot be read', function (array $title): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutATitle($title)));
+
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
+        expect(whatATitleSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::StackDidNotAnswer->value), $which);
+    }
+})->with([
+    'a location with no door' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'door' => null, 'stream_from' => 'https://192.168.1.42:8920/Videos/s1/master.m3u8']],
+    'a location that is not at the door' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'stream_from' => 'http://192.168.1.42:8096/Videos/s1']],
+    'a door that is no fingerprint' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'door' => ['fingerprint' => 'abc'], 'stream_from' => 'https://192.168.1.42:8920/Videos/s1/master.m3u8']],
+    'a release day the calendar does not have' => [[...aSeriesOnTheWire(), 'released' => '2022-02-30']],
+    'a release that is no day' => [[...aSeriesOnTheWire(), 'released' => 'spring']],
+    'a genre that is not words' => [[...aSeriesOnTheWire(), 'genres' => [7]]],
+    'a medium this build does not know' => [[...aSeriesOnTheWire(), 'medium' => 'podcast']],
+    'a season that is not one' => [[...aSeriesOnTheWire(), 'seasons' => ['season']]],
+    'an episode that is not one' => [[...aSeriesOnTheWire(), 'seasons' => [['id' => 'x', 'name' => 'Season 1', 'episodes' => ['e']]]]],
+    'a runtime that is not a number' => [[...aSeriesOnTheWire(), 'minutes' => 'long']],
+]);
+
+it('answers the operator, who has no shelf, as not theirs to ask', function (): void {
+    expect(whatATitleSaid(new Shelves(new PinnedClients()), Whose::theOperator()))->toBe(sprintf('refused:%s', KindOfObstacle::NotForThisAccount->value));
+});
+
+it('asks for the title the shelf lists, as the member', function (): void {
+    $asked = null;
+    MockClient::destroyGlobal();
+    MockClient::global(['*' => static function (PendingRequest $request) use (&$asked): MockResponse {
+        $asked = [$request->getRequest()->resolveEndpoint(), $request->query()->all()];
+
+        return MockResponse::make((string) json_encode(whatAStackSendsAboutATitle(null)));
+    }]);
+
+    whatATitleSaid(new Shelves(new PinnedClients()));
+
+    expect($asked)->toBe(['/api/held/s1', ['member' => 'ada']]);
+});
+
+it('stands in for a stack with a title the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('TitleEnvelope', whatAStackSendsAboutATitle(aSeriesOnTheWire())))->toBe([])
+        ->and(WhatTheContractAccepts::complaintsAbout('TitleEnvelope', whatAStackSendsAboutATitle(null)))->toBe([]);
 });

@@ -25,7 +25,7 @@ uses(TestCase::class);
 /** The newest title, as the presenter hands it over, opening its own screen. */
 function theNewestTitle(string $titled = 'Alien'): WhatOnePosterSays
 {
-    return WhatOnePosterSays::ofATitle($titled, 'household.medium.film', '1979', '/titles/a1', ['titled' => $titled]);
+    return WhatOnePosterSays::ofATitle($titled, 'household.medium.film', '1979', '/titles/a1');
 }
 
 it('draws a raised 16:9 tile, said as one element, then Play that waits, its reason, and More', function (): void {
@@ -46,12 +46,11 @@ it('draws a raised 16:9 tile, said as one element, then Play that waits, its rea
         ->and(data_get($drawn, 'children.3.props.a11y_label'))->toBe(__('household.hero.more_named', ['title' => 'Alien']));
 });
 
-it('opens the title from More, handing over what it carries', function (): void {
+it('opens the title from More', function (): void {
     $roads = WhatMarkupDraws::roads('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle()]);
 
     expect($roads)->toHaveCount(1)
-        ->and(data_get($roads, '0.uri'))->toBe('/titles/a1')
-        ->and(data_get($roads, '0.data'))->toBe(['titled' => 'Alien']);
+        ->and(data_get($roads, '0.uri'))->toBe('/titles/a1');
 });
 
 it('draws More that waits where the title opens nothing', function (): void {

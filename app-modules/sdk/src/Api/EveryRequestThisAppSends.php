@@ -32,6 +32,7 @@ use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
+use Modules\Sdk\Internal\OneTitle;
 use Traversable;
 
 /**
@@ -84,7 +85,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
             Api::NEWS_ENDPOINT, Api::OUTBOUND_ENDPOINT, Api::PLUGINS_ENDPOINT, Api::PROVENANCE_ENDPOINT, Api::QUALITY_ENDPOINT,
             Api::REQUESTS_ENDPOINT, Api::SPACE_ENDPOINT, Api::STATUS_ENDPOINT, Api::STORED_ENDPOINT,
             Api::STUCK_ENDPOINT, Api::TRACE_ENDPOINT, Api::UNINSTALL_ENDPOINT, Api::UPDATE_ENDPOINT,
-            Api::VERSION_ENDPOINT, Api::WIRING_ENDPOINT,
+            Api::VERSION_ENDPOINT, Api::WIRING_ENDPOINT, OneTitle::asDeclared(),
         ];
     }
 

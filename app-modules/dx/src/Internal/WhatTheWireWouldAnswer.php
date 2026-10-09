@@ -154,6 +154,9 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const string WHAT_A_DOOR_ANSWERS = 'AdmissionEnvelope';
 
+    /** What one title on a shelf is answered with. */
+    private const string WHAT_ONE_TITLE_IS = 'TitleEnvelope';
+
     /** The declaration a refusal is carried in. */
     private const string WHAT_A_REFUSAL_IS = 'ErrorEnvelope';
 
@@ -359,6 +362,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::NEWS_ENDPOINT => WhatIsNewAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('news-items')), self::WHEN_A_CHANGE_WAS_MADE),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
+            str_starts_with($endpoint, sprintf('%s/', Api::HELD_ENDPOINT)) => ATitleAsItReads::from(self::oneEnvelope(self::WHAT_ONE_TITLE_IS)),
             $endpoint === Api::CAPABILITIES_ENDPOINT => [...self::oneEnvelope(WhatAStandInServes::DECLARED_IN), 'data' => WhatAStandInServes::declaration()],
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),

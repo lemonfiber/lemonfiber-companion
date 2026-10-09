@@ -42,4 +42,13 @@ interface Watching
      * operator previews the member's side with.
      */
     public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch;
+
+    /**
+     * One title on this member's shelf in full, or that it is absent, or why
+     * the core would not say.
+     *
+     * Read as the member, so a title outside their limits is absent, the
+     * same answer as one the household does not hold.
+     */
+    public function theTitle(Stack $stack, Session $session, Whose $whose, HoldingId $title): WhatTheTitleIs;
 }

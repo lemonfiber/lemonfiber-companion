@@ -8,6 +8,7 @@ use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Sdk\Api\EveryRequestThisAppSends;
+use Modules\Sdk\Internal\OneTitle;
 use Modules\Wayfinding\Api\Screens\WaitsAFrameForWhatTheStackServes;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
@@ -93,6 +94,13 @@ it('declares every reading an adapter sends in the registry of every request, an
 
     // Logs are read through their own door, which names the endpoint inside the SDK.
     $sent[] = Api::LOGS_ENDPOINT;
+
+    // One title is read under the read the stack declares once for every title.
+    foreach (theAdaptersSources() as $source) {
+        if (str_contains($source, 'OneTitle::asDeclared()')) {
+            $sent[] = OneTitle::asDeclared();
+        }
+    }
     $declared = [];
 
     foreach (EveryRequestThisAppSends::listed() as $path) {

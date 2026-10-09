@@ -235,6 +235,54 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'reading it, which is `N1-R17`.',
         ],
         [
+            'path' => 'TitleEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'TitleEnvelope.id',
+            'because' => 'The member the title was read for, by the media server\'s id, echoed back, for `HeldEnvelope.member`\'s reason: the app named the member in the request.',
+        ],
+        [
+            'path' => 'TitleEnvelope.member',
+            'because' => 'The member the title was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.poster',
+            'because' => 'Where the title\'s poster is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason: '
+                . 'the title\'s page letters its poster with its name (`N3-R24`).',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.backdrop',
+            'because' => 'Where the title\'s backdrop is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].id',
+            'because' => 'What the media server tells a season apart by. A season is drawn by its name, in the core\'s order, '
+                . 'and nothing here asks for one season on its own.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].number',
+            'because' => 'Where a season falls in the series. A season is drawn by its name, which the media server '
+                . 'writes with its number in it, in the core\'s order.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].poster',
+            'because' => 'Where an episode\'s picture is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].backdrop',
+            'because' => 'Where an episode\'s backdrop is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].medium',
+            'because' => 'What kind of thing an episode is, which is always an episode: it is listed under its season.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].year',
+            'because' => 'The year an episode came out. The title\'s page dates the title, and an episode is drawn by its '
+                . 'number, its name and how long it runs; no companion requirement asks for an episode\'s year.',
+        ],
+        [
             'path' => 'UpdateEnvelope.offer',
             'because' => 'The offer an update answers, built from each step it would take. An update '
                 . 'carrying no offer acts as it does without one (`ARCH-R164`), and this app sends none: no '

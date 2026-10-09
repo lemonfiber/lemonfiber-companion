@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HoldingIsUnnamed;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -18,10 +19,12 @@ use Modules\Kernel\Api\SentenceSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Watching;
+use Modules\Kernel\Api\WhatTheTitleIs;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
 use Modules\Sdk\Internal\GatedClient;
+use Modules\Sdk\Internal\OneTitle;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
 
@@ -53,9 +56,32 @@ final readonly class Shelves implements Watching
     }
 
     #[Override]
+    public function theTitle(Stack $stack, Session $session, Whose $whose, HoldingId $title): WhatTheTitleIs
+    {
+        return $whose->either(
+            operator: static fn(): WhatTheTitleIs => WhatTheTitleIs::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
+            member: fn(string $member): WhatTheTitleIs => $this->readTheTitle($stack, $session, $title, $member),
+        );
+    }
+
+    #[Override]
     public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch
     {
         return $this->read($stack, $session, AsTheHouseholdsDefaults::QUERY);
+    }
+
+    /** One title as that member's account reads it, or why it could not be had. */
+    private function readTheTitle(Stack $stack, Session $session, HoldingId $title, string $member): WhatTheTitleIs
+    {
+        $client = GatedClient::of($this->clients, $stack, $session);
+
+        try {
+            return Titles::in($client->readOneOf(OneTitle::asDeclared(), Api::title($title->named()), ['member' => $member]));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatTheTitleIs::refused(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|TitleIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing $why) {
+            return WhatTheTitleIs::refused($this->clients->whatStoodInTheWay($stack, $why));
+        }
     }
 
     /**

@@ -80,13 +80,12 @@ it('draws one of their requests with where it stands at the top, and says its na
         ->and(data_get($drawn, 'on_press'))->toBeNull();
 });
 
-it('opens its title, handing over what it carries, where it has somewhere to go', function (): void {
-    $poster = WhatOnePosterSays::ofATitle('Alien', 'household.medium.film', '1979', '/titles/a1', ['titled' => 'Alien']);
+it('opens its title where it has somewhere to go', function (): void {
+    $poster = WhatOnePosterSays::ofATitle('Alien', 'household.medium.film', '1979', '/titles/a1');
     $roads = WhatMarkupDraws::roads('<x-household::poster :poster="$poster" />', ['poster' => $poster]);
 
     expect($roads)->toHaveCount(1)
-        ->and(data_get($roads, '0.uri'))->toBe('/titles/a1')
-        ->and(data_get($roads, '0.data'))->toBe(['titled' => 'Alien']);
+        ->and(data_get($roads, '0.uri'))->toBe('/titles/a1');
 });
 
 it('opens nothing where it has nowhere to go', function (): void {

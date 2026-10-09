@@ -19,10 +19,4 @@ enum HeldField: string implements NamesAWireField
 
     /** What one member may watch, as the media server answered it. */
     case Holdings = 'holdings';
-
-    /** What kind of thing one holding is. */
-    case Medium = 'medium';
-
-    /** When a holding came out. Absent where the core could not date it. */
-    case Year = 'year';
 }
