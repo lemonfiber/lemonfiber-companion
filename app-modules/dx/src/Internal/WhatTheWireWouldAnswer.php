@@ -22,6 +22,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
 use Modules\Dx\Api\AStandInStack;
+use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Sdk\Api\WireField;
@@ -348,9 +349,10 @@ final readonly class WhatTheWireWouldAnswer
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
         // The paths whose body is not one envelope built from the
-        // contract's declaration, the two answers work redeems into, and then
-        // everything else. `match` rather than early returns, because what this
-        // is doing is naming a path rather than deciding anything.
+        // contract's declaration, the two answers work redeems into, the grant,
+        // which answers at once, and then everything else. `match` rather than
+        // early returns, because what this is doing is naming a path rather
+        // than deciding anything.
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
@@ -361,6 +363,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
+            $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('grant'))),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };

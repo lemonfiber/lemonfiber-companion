@@ -11,11 +11,14 @@ use Modules\Dx\Internal\LongAfterAnyRun;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Instant;
 
-it('spells one moment both ways', function (): void {
+use function sprintf;
+
+it('spells one moment every way', function (): void {
     $read = AMomentAsWritten::of(LongAfterAnyRun::WRITTEN)->read(
         static fn(Instant $moment): Instant => $moment,
         static fn(): Instant => Instant::atEpochSeconds(0),
     );
 
-    expect($read->epochSeconds())->toBe(LongAfterAnyRun::IN_SECONDS);
+    expect($read->epochSeconds())->toBe(LongAfterAnyRun::IN_SECONDS)
+        ->and(LongAfterAnyRun::WRITTEN)->toStartWith(sprintf('%sT', LongAfterAnyRun::DAY));
 });

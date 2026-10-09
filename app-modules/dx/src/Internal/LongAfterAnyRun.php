@@ -13,10 +13,10 @@ namespace Modules\Dx\Internal;
  * time is behind a port, and material assembled from the moment it was read
  * would make two runs of the same stand-in answer differently.
  *
- * Two spellings of the one moment, because a pairing code carries seconds
- * since the epoch and the wire carries an RFC 3339 stamp. They sit together
- * so that one is not changed without the other, and a test holds them to the
- * same moment.
+ * Three spellings of the one moment, because a pairing code carries seconds
+ * since the epoch, the wire carries an RFC 3339 stamp, and a grant carries the
+ * day it lasts until. They sit together so that one is not changed without the
+ * others, and a test holds them to the same moment.
  */
 final readonly class LongAfterAnyRun
 {
@@ -25,4 +25,7 @@ final readonly class LongAfterAnyRun
 
     /** The same moment, as the wire writes a stamp. */
     public const string WRITTEN = '2099-01-01T00:00:00Z';
+
+    /** The day that moment begins, as the wire writes a day. */
+    public const string DAY = '2099-01-01';
 }
