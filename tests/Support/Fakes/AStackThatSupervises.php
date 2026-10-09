@@ -10,7 +10,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Forms;
-use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatTheVerbCameTo;
 
 /**
  * A stack where a test says what is running, and which remembers what it was
@@ -75,13 +76,13 @@ final class AStackThatSupervises implements Supervising
     /**
      * @param Closure(): WhatIsRunning $answer
      * @param Closure(): Underway      $acting
-     * @param ?HowTheVerbIsGoing       $becoming what asking after a verb answers, where a test said; still running where none did
+     * @param ?HowAgreedWorkIsGoing<WhatTheVerbCameTo> $becoming what asking after a verb answers, where a test said; still running where none did
      * @param ?WhatFormsThereAre       $declares what asking for its forms answers, where a test said; none where nobody did, or the obstacle {@see met()} meets
      */
     private function __construct(
         private readonly Closure $answer,
         private readonly Closure $acting,
-        private readonly ?HowTheVerbIsGoing $becoming = null,
+        private readonly ?HowAgreedWorkIsGoing $becoming = null,
         private readonly ?WhatFormsThereAre $declares = null,
     ) {}
 
@@ -132,7 +133,7 @@ final class AStackThatSupervises implements Supervising
         return new self(
             static fn(): WhatIsRunning => WhatIsRunning::met($why),
             static fn(): Underway => Underway::met($why),
-            HowTheVerbIsGoing::met($why),
+            HowAgreedWorkIsGoing::met($why),
             WhatFormsThereAre::met($why),
         );
     }
@@ -220,8 +221,10 @@ final class AStackThatSupervises implements Supervising
      * A wither rather than a constructor per outcome, because what a verb
      * came to is independent of what the stack lists and every listing above
      * wants to be followable.
+     *
+     * @param HowAgreedWorkIsGoing<WhatTheVerbCameTo> $became
      */
-    public function whichCameTo(HowTheVerbIsGoing $became): self
+    public function whichCameTo(HowAgreedWorkIsGoing $became): self
     {
         return new self($this->answer, $this->acting, $became, $this->declares);
     }
@@ -346,16 +349,17 @@ final class AStackThatSupervises implements Supervising
     /**
      * Not counted among {@see askings()}, which count readings of the listing
      * and verbs: following is its own question, asked on its own cadence.
+     * @return HowAgreedWorkIsGoing<WhatTheVerbCameTo>
      */
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         $this->followed[] = $job;
 
         if ($this->lastWasAYes && $this->yesMoved instanceof ARefusalInItsWords) {
-            return HowTheVerbIsGoing::moved($this->yesMoved);
+            return HowAgreedWorkIsGoing::moved($this->yesMoved);
         }
 
-        return $this->becoming ?? HowTheVerbIsGoing::stillRunning();
+        return $this->becoming ?? HowAgreedWorkIsGoing::stillRunning();
     }
 
     /**

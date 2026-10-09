@@ -95,6 +95,9 @@ trait FollowsWhatTheVerbCameTo
         $this->tellIt($sent);
     }
 
+    /** Put a yes the stack refused because what it was given for has moved back as a question. */
+    abstract protected function offerAgain(AgreedTo $sent): void;
+
     /** Whether this frame may take another reading of the stack, which taking it promises. */
     abstract private function mayReadItsStack(): bool;
 
@@ -156,7 +159,4 @@ trait FollowsWhatTheVerbCameTo
             notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
         );
     }
-
-    /** Put a yes the stack refused because what it was given for has moved back as a question. */
-    abstract protected function offerAgain(AgreedTo $sent): void;
 }

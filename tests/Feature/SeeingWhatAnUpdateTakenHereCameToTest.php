@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -186,7 +186,7 @@ it('a finished update that touched no service says so', function (): void {
 });
 
 it('an update the stack has no outcome for is said to be that, not a failure', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowTheUpdateIsGoing::ended());
+    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::ended());
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
     expect($screen->lastUpdate()->hasEnded)->toBeTrue()
@@ -228,7 +228,7 @@ it('does not offer an update again where anything but other work stood in its wa
 });
 
 it('asking after an update says what stood in the way', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
     expect(TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
@@ -239,7 +239,7 @@ it('lets go of a session the stack refused while taking or following an update',
 
     $refusingTheQuestion = AKeychainInMemory::working();
     TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate(
-        AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowTheUpdateIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
+        AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
         $refusingTheQuestion,
     )->lastUpdate();
 
@@ -266,7 +266,7 @@ function anEveningOfferedByName(): Upkeep
 /** A stack offering that update, which refuses the yes because what it would apply moved. */
 function aStackWhoseUpdateMoved(): AStackThatKeepsCurrent
 {
-    return AStackThatKeepsCurrent::whichTook(anEveningOfferedByName(), HowTheUpdateIsGoing::moved(
+    return AStackThatKeepsCurrent::whichTook(anEveningOfferedByName(), HowAgreedWorkIsGoing::moved(
         ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()),
     ));
 }

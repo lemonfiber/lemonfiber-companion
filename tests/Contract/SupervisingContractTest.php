@@ -15,10 +15,10 @@ use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -720,9 +720,11 @@ function theSameRestartReported(): WhatTheVerbCameTo
 /**
  * Both ways of following a verb, each set up to say the same.
  *
+ * @param HowAgreedWorkIsGoing<WhatTheVerbCameTo> $became
+ *
  * @return array<string, Closure(): Supervising>
  */
-function everyWayOfFollowingAVerb(MockResponse $answered, HowTheVerbIsGoing $became): array
+function everyWayOfFollowingAVerb(MockResponse $answered, HowAgreedWorkIsGoing $became): array
 {
     return [
         'the fake' => static fn(): Supervising => AStackThatSupervises::with(theSameRunning())->whichCameTo($became),
@@ -792,14 +794,14 @@ function aVerbStillRunning(): MockResponse
 it('reads every part of what a finished verb came to', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackReportsOfARestart()));
 
-    foreach (everyWayOfFollowingAVerb($finished, HowTheVerbIsGoing::done(theSameRestartReported())) as $which => $build) {
+    foreach (everyWayOfFollowingAVerb($finished, HowAgreedWorkIsGoing::done(theSameRestartReported())) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))
             ->toBe('carried_out|partial|not back Sonarr:failed|left out qBittorrent:torrent|ports 8096:jellyfin:media-server|ran: docker compose --profile media restart', $which);
     }
 });
 
 it('reads a restart refused because what it would restart moved as that, in the stack\'s own words', function (): void {
-    $moved = HowTheVerbIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
+    $moved = HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
 
     foreach (everyWayOfFollowingAVerb(WhatAMovedOfferSays::endedOn(RefusalCode::RestartMoved), $moved) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))->toBe(sprintf('moved: %s', WhatAMovedOfferSays::SUMMARY), $which);
@@ -825,7 +827,7 @@ it('comes away from a rehearsal with the name the stack gave what it would resta
         TheCommandLine::of('docker', 'compose', 'restart'),
     )->offering(AnOffer::named(THE_RESTART_OFFERED));
 
-    foreach (everyWayOfFollowingAVerb($rehearsed, HowTheVerbIsGoing::done($reported)) as $which => $build) {
+    foreach (everyWayOfFollowingAVerb($rehearsed, HowAgreedWorkIsGoing::done($reported)) as $which => $build) {
         $offer = $build()->whatBecameOf(aStackWithServices(), theSessionTheStackIsSupervisedWith(), Job::named(AStackThatSupervises::THE_JOB))->either(
             stillRunning: static fn(): AnOffer => AnOffer::none(),
             done: static fn(WhatTheVerbCameTo $report): AnOffer => $report->offer(),
@@ -856,13 +858,13 @@ it('carries the offer the rehearsal named back with the restart agreed to', func
 });
 
 it('a verb still being carried out is its own answer', function (): void {
-    foreach (everyWayOfFollowingAVerb(aVerbStillRunning(), HowTheVerbIsGoing::stillRunning()) as $which => $build) {
+    foreach (everyWayOfFollowingAVerb(aVerbStillRunning(), HowAgreedWorkIsGoing::stillRunning()) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))->toBe('still running', $which);
     }
 });
 
 it('a verb the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfFollowingAVerb($forgotten, HowTheVerbIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfFollowingAVerb($forgotten, HowAgreedWorkIsGoing::ended()) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))->toBe('ended', $which);
     }
 })->with([
@@ -878,7 +880,7 @@ it('asking after a verb tells a refused session from a stack that is not answeri
     ];
 
     foreach ($table as [$answered, $why]) {
-        foreach (everyWayOfFollowingAVerb($answered, HowTheVerbIsGoing::met($why)) as $which => $build) {
+        foreach (everyWayOfFollowingAVerb($answered, HowAgreedWorkIsGoing::met($why)) as $which => $build) {
             expect(whatBecameOfTheVerb($build()))->toBe($why->kind()->value, $which);
         }
     }
@@ -899,7 +901,7 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
 ]);
 
 it('asking after a verb names the handle telling it answered', function (): void {
-    $supervising = AStackThatSupervises::with(theSameRunning())->whichCameTo(HowTheVerbIsGoing::stillRunning());
+    $supervising = AStackThatSupervises::with(theSameRunning())->whichCameTo(HowAgreedWorkIsGoing::stillRunning());
     whatBecameOfTheVerb($supervising);
 
     expect($supervising->followed())->toHaveCount(1)

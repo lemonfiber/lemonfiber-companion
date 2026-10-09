@@ -23,7 +23,7 @@ use Traversable;
  *
  * Empty is a legitimate value and not a happy one. An agreement the stack
  * carried out nothing for is a real answer, and it is told apart from a job
- * that ended by {@see HowTheRepairIsGoing} rather than by the count here.
+ * that ended by {@see HowAgreedWorkIsGoing} rather than by the count here.
  *
  * @implements IteratorAggregate<int, Mended>
  */

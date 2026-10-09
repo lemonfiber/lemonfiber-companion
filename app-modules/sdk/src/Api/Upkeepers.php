@@ -17,7 +17,7 @@ use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\UpdateAction;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatIsCurrent;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\Quoted;
@@ -96,14 +97,15 @@ final readonly class Upkeepers implements KeepingCurrent
         }
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    /** @return HowAgreedWorkIsGoing<Upkeep> */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatARefusalMeant::whereItMoved(RefusalCode::UpdateMoved, $why, HowTheUpdateIsGoing::moved(...), HowTheUpdateIsGoing::met(...));
+            return WhatARefusalMeant::whereItMoved(RefusalCode::UpdateMoved, $why, HowAgreedWorkIsGoing::moved(...), HowAgreedWorkIsGoing::met(...));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
-            return HowTheUpdateIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
+            return HowAgreedWorkIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -114,18 +116,19 @@ final readonly class Upkeepers implements KeepingCurrent
      * no outcome for that update, which is one of the states the reading
      * returns rather than a failure to reach the machine; {@see Menders} draws
      * the same line for the same reason.
+     * @return HowAgreedWorkIsGoing<Upkeep>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    private function outcome(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::stillRunning(),
-                finished: static fn(Envelope $envelope): HowTheUpdateIsGoing
-                    => HowTheUpdateIsGoing::done(Standings::in($envelope)),
-                ended: static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::ended(),
+                stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
+                    => HowAgreedWorkIsGoing::done(Standings::in($envelope)),
+                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
             );
         } catch (NoSuchJob) {
-            return HowTheUpdateIsGoing::ended();
+            return HowAgreedWorkIsGoing::ended();
         }
     }
 }

@@ -10,7 +10,7 @@ use Closure;
  * What became of a copy the operator asked for.
  *
  * Taking a copy answers a handle, and this is the reading of it. Shaped as
- * {@see HowTheUpdateIsGoing} is, and its third arm means the same: a job the
+ * {@see HowAgreedWorkIsGoing} is, and its third arm means the same: a job the
  * stack no longer has an outcome for leaves the operator not knowing whether
  * the copy exists, which is said as that rather than as a failure.
  */

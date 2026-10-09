@@ -362,6 +362,26 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         return view('operator::what-to-do-with-this');
     }
 
+    /** The question on the screen takes the name the stack gave what its rehearsal offers, which the yes carries back. */
+    protected function rehearsalOffered(AnOffer $offer): void
+    {
+        if ($this->asking instanceof AgreedTo) {
+            $this->asking = $this->asking->quoting($offer);
+        }
+    }
+
+    /**
+     * A yes the stack refused because what it was given for has moved: the
+     * verb is asked about again, under nothing it was offered before, and
+     * rehearsed afresh, so what it would do now is what is agreed to next.
+     */
+    protected function offerAgain(AgreedTo $sent): void
+    {
+        $this->sent = null;
+        $this->asking = $sent->quoting(AnOffer::none());
+        $this->rehearseTheQuestion($this->asking);
+    }
+
     /**
      * The agreement a verb amounts to, against what was read.
      *
@@ -405,25 +425,5 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
             ),
             notHeld: static fn(): WhatStartingItWouldShow => new HowARehearsalReads()->signedOut(),
         );
-    }
-
-    /** The question on the screen takes the name the stack gave what its rehearsal offers, which the yes carries back. */
-    protected function rehearsalOffered(AnOffer $offer): void
-    {
-        if ($this->asking instanceof AgreedTo) {
-            $this->asking = $this->asking->quoting($offer);
-        }
-    }
-
-    /**
-     * A yes the stack refused because what it was given for has moved: the
-     * verb is asked about again, under nothing it was offered before, and
-     * rehearsed afresh, so what it would do now is what is agreed to next.
-     */
-    protected function offerAgain(AgreedTo $sent): void
-    {
-        $this->sent = null;
-        $this->asking = $sent->quoting(AnOffer::none());
-        $this->rehearseTheQuestion($this->asking);
     }
 }

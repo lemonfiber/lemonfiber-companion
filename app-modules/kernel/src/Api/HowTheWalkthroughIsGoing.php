@@ -13,7 +13,7 @@ use Closure;
  * arm carries the walkthrough's own report, which is the only place its lines
  * arrive: while it runs, the handle says only that it is running.
  *
- * Shaped as {@see HowTheUpdateIsGoing} is, and its third arm means the same: a
+ * Shaped as {@see HowAgreedWorkIsGoing} is, and its third arm means the same: a
  * job the stack no longer knows ended with no outcome to give, which is not
  * the same as failing — it may well have worked.
  */

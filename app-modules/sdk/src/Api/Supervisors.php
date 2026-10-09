@@ -21,7 +21,7 @@ use Lemonfiber\Sdk\Generated\UpAction;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
-use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -31,6 +31,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
+use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\Quoted;
@@ -162,32 +163,34 @@ final readonly class Supervisors implements Supervising
         }
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    /** @return HowAgreedWorkIsGoing<WhatTheVerbCameTo> */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatARefusalMeant::whereItMoved(RefusalCode::RestartMoved, $why, HowTheVerbIsGoing::moved(...), HowTheVerbIsGoing::met(...));
+            return WhatARefusalMeant::whereItMoved(RefusalCode::RestartMoved, $why, HowAgreedWorkIsGoing::moved(...), HowAgreedWorkIsGoing::met(...));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
-            return HowTheVerbIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
+            return HowAgreedWorkIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     /**
      * What the stack says about the verb, with only `NoSuchJob` caught, for
      * {@see Upkeepers::outcome()}'s reason.
+     * @return HowAgreedWorkIsGoing<WhatTheVerbCameTo>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    private function outcome(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::stillRunning(),
-                finished: static fn(Envelope $envelope): HowTheVerbIsGoing
-                    => HowTheVerbIsGoing::done(Lifecycles::in($envelope)),
-                ended: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::ended(),
+                stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
+                    => HowAgreedWorkIsGoing::done(Lifecycles::in($envelope)),
+                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
             );
         } catch (NoSuchJob) {
-            return HowTheVerbIsGoing::ended();
+            return HowAgreedWorkIsGoing::ended();
         }
     }
 

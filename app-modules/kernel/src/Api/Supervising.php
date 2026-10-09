@@ -77,6 +77,8 @@ interface Supervising
      *
      * A read: it asks after work the stack already named, and asking twice
      * changes nothing, so it carries no key.
+     *
+     * @return HowAgreedWorkIsGoing<WhatTheVerbCameTo>
      */
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing;
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing;
 }

@@ -76,6 +76,7 @@ interface Mending
      * do, the other a record of what it *did*. A single method answering either
      * would hand a screen a value it has to narrow before it can render it, and
      * the narrowing is where an offer gets shown as an outcome.
+     * @return HowAgreedWorkIsGoing<WhatWasMended>
      */
-    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing;
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing;
 }

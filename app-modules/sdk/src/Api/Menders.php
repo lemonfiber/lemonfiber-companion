@@ -17,8 +17,8 @@ use Lemonfiber\Sdk\Repair as Asking;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\EffectSaysNothing;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
-use Modules\Kernel\Api\HowTheRepairIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -27,6 +27,7 @@ use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -110,14 +111,15 @@ final readonly class Menders implements Mending
         }
     }
 
-    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    /** @return HowAgreedWorkIsGoing<WhatWasMended> */
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatARefusalMeant::whereItMoved(RefusalCode::Stale, $why, HowTheRepairIsGoing::moved(...), HowTheRepairIsGoing::met(...));
+            return WhatARefusalMeant::whereItMoved(RefusalCode::Stale, $why, HowAgreedWorkIsGoing::moved(...), HowAgreedWorkIsGoing::met(...));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing $why) {
-            return HowTheRepairIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
+            return HowAgreedWorkIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -161,18 +163,19 @@ final readonly class Menders implements Mending
      * matters more on this side: a job that ended after an agreement means the
      * operator does not know what happened to their machine, which is a thing
      * to say rather than a failure to report.
+     * @return HowAgreedWorkIsGoing<WhatWasMended>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    private function outcome(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
-                finished: static fn(Envelope $envelope): HowTheRepairIsGoing
-                    => HowTheRepairIsGoing::done(Offers::mendedIn($envelope)),
-                ended: static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::ended(),
+                stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
+                    => HowAgreedWorkIsGoing::done(Offers::mendedIn($envelope)),
+                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
             );
         } catch (NoSuchJob) {
-            return HowTheRepairIsGoing::ended();
+            return HowAgreedWorkIsGoing::ended();
         }
     }
 

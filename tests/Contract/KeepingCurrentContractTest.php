@@ -10,11 +10,11 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -554,9 +554,11 @@ it('the contract still names a way back on every service', function (): void {
 /**
  * Both ways of asking after an update taken, each set up to say the same.
  *
+ * @param HowAgreedWorkIsGoing<Upkeep> $became
+ *
  * @return array<string, Closure(): KeepingCurrent>
  */
-function everyWayOfFollowingAnUpdate(MockResponse $answered, HowTheUpdateIsGoing $became): array
+function everyWayOfFollowingAnUpdate(MockResponse $answered, HowAgreedWorkIsGoing $became): array
 {
     return [
         'the fake' => static fn(): KeepingCurrent => AStackThatKeepsCurrent::whichTook(theSameStanding(), $became),
@@ -602,13 +604,13 @@ it('a finished update reports each service apart from the others', function (): 
     // four endings off the wire and keep them four. A `not-started` flattened
     // into a failure sends an operator to the machine when the answer is in the
     // service's own log.
-    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowTheUpdateIsGoing::done(theSameStanding())) as $which => $build) {
+    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowAgreedWorkIsGoing::done(theSameStanding())) as $which => $build) {
         expect(whatTheTakingSaid($build()))->toBe('jellyfin:updated:rollback sonarr:not-started:restore', $which);
     }
 });
 
 it('leads with the services that are not where the operator wanted them', function (): void {
-    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowTheUpdateIsGoing::done(theSameStanding())) as $which => $build) {
+    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowAgreedWorkIsGoing::done(theSameStanding())) as $which => $build) {
         $went = $build()
             ->whatBecameOf(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), Job::named(AStackThatKeepsCurrent::THE_JOB))
             ->either(
@@ -639,7 +641,7 @@ it('an update still running is its own answer', function (): void {
         'data' => ['action' => 'update', 'job' => AStackThatKeepsCurrent::THE_JOB],
     ]), 202);
 
-    foreach (everyWayOfFollowingAnUpdate($running, HowTheUpdateIsGoing::stillRunning()) as $which => $build) {
+    foreach (everyWayOfFollowingAnUpdate($running, HowAgreedWorkIsGoing::stillRunning()) as $which => $build) {
         expect(whatTheTakingSaid($build()))->toBe('still running', $which);
     }
 });
@@ -650,7 +652,7 @@ it('an update the stack no longer has a job for is ended, not unreachable and no
     // machine that said clearly that it has no outcome to give.
     $forgotten = MockResponse::make('{"error":"no such job"}', 404);
 
-    foreach (everyWayOfFollowingAnUpdate($forgotten, HowTheUpdateIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfFollowingAnUpdate($forgotten, HowAgreedWorkIsGoing::ended()) as $which => $build) {
         expect(whatTheTakingSaid($build()))->toBe('ended', $which);
     }
 });
@@ -663,14 +665,14 @@ it('asking after an update tells a refused session from a stack that is not answ
     ];
 
     foreach ($table as [$answered, $why]) {
-        foreach (everyWayOfFollowingAnUpdate($answered, HowTheUpdateIsGoing::met($why)) as $which => $build) {
+        foreach (everyWayOfFollowingAnUpdate($answered, HowAgreedWorkIsGoing::met($why)) as $which => $build) {
             expect(whatTheTakingSaid($build()))->toBe($why->kind()->name, $which);
         }
     }
 });
 
 it('reads an update refused because what it would apply moved as that, in the stack\'s own words', function (): void {
-    $moved = HowTheUpdateIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
+    $moved = HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
 
     foreach (everyWayOfFollowingAnUpdate(WhatAMovedOfferSays::endedOn(RefusalCode::UpdateMoved), $moved) as $which => $build) {
         expect(whatTheTakingSaid($build()))->toBe(sprintf('moved: %s', WhatAMovedOfferSays::SUMMARY), $which);
@@ -719,7 +721,7 @@ it('carries the offer the operator read back with the update taken', function ()
 });
 
 it('asking after an update names the handle the take answered', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(theSameStanding(), HowTheUpdateIsGoing::stillRunning());
+    $keeping = AStackThatKeepsCurrent::whichTook(theSameStanding(), HowAgreedWorkIsGoing::stillRunning());
     whatTheTakingSaid($keeping);
 
     expect($keeping->followed())->toHaveCount(1)
