@@ -408,7 +408,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     }
 
     /** The question on the screen takes the name the stack gave what its rehearsal offers, which the yes carries back. */
-    private function rehearsalOffered(AnOffer $offer): void
+    protected function rehearsalOffered(AnOffer $offer): void
     {
         if ($this->asking instanceof AgreedTo) {
             $this->asking = $this->asking->quoting($offer);
@@ -420,7 +420,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * verb is asked about again, under nothing it was offered before, and
      * rehearsed afresh, so what it would do now is what is agreed to next.
      */
-    private function offerAgain(AgreedTo $sent): void
+    protected function offerAgain(AgreedTo $sent): void
     {
         $this->sent = null;
         $this->asking = $sent->quoting(AnOffer::none());

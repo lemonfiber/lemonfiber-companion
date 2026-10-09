@@ -125,7 +125,7 @@ trait ShowsWhatTheYesWillRun
     }
 
     /** The question on the screen takes the name the stack gave what its rehearsal offers. */
-    abstract private function rehearsalOffered(AnOffer $offer): void;
+    abstract protected function rehearsalOffered(AnOffer $offer): void;
 
     /** The rehearsal could not be read: no line, and that said. */
     private function unread(): AsText

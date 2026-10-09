@@ -158,5 +158,5 @@ trait FollowsWhatTheVerbCameTo
     }
 
     /** Put a yes the stack refused because what it was given for has moved back as a question. */
-    abstract private function offerAgain(AgreedTo $sent): void;
+    abstract protected function offerAgain(AgreedTo $sent): void;
 }
