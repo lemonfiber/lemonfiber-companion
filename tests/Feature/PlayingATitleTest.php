@@ -13,6 +13,7 @@ use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\Episodes;
 use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Granting;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowFarIn;
@@ -23,12 +24,16 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PartWays;
+use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\Seasons;
+use Modules\Kernel\Api\TheirLanguages;
 use Modules\Kernel\Api\WhatTheTitleIs;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhenItWasReleased;
 use Modules\Kernel\Api\WhereItPlays;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyPlayingDidNotStart;
+use Modules\Watching\Api\KeepingTheirLanguages;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ATitleThatPlays;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -40,6 +45,7 @@ use Tests\Support\Fakes\AStackThatGrants;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // Pressing Play, on a title's page and across Home.
 //
@@ -48,14 +54,14 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 // the grant the core answered for this member on this device.
 
 /** The title's page for `a1`, over these. */
-function aPageToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $player, ?AKeychainInMemory $keychain = null, ?Granting $core = null): WhatThisTitleIs
+function aPageToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $player, ?AKeychainInMemory $keychain = null, ?Granting $core = null, ?KeepingTheirLanguages $languages = null): WhatThisTitleIs
 {
     $stack = ATitleThatPlays::theStack();
     $keychain ??= ATitleThatPlays::signedIn();
     $page = new WhatThisTitleIs(
         $watching,
         $keychain,
-        TheTitlesOnScreen::over($watching, $keychain, $player, new WhatIsPlaying(), $core),
+        TheTitlesOnScreen::over($watching, $keychain, $player, new WhatIsPlaying(), $core, $languages),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );
@@ -105,6 +111,21 @@ it('hands the player the location and door the core states, the grant it answere
         TheTitlesOnScreen::aGrant()->forTheDoor(),
     )])
         ->and($watching->titlesAskedFor())->toBe(['a1']);
+});
+
+it('hands the player the languages the member chose on this phone, read afresh on every open', function (): void {
+    $player = APlayerOnAHandset::working();
+    $languages = WhatThePhoneKeeps::noLanguagesYet();
+    $page = aPageToPressPlayOn(ATitleThatPlays::onTheShelf(), $player, languages: $languages);
+
+    $page->play();
+    $languages->choose(ATitleThatPlays::theStack()->id(), Whose::member('ada'), TheirLanguages::of(HearIn::Dutch, ReadIn::English));
+    $page->play();
+
+    expect(array_map(static fn(ATitleToPlay $title): TheirLanguages => $title->languages(), $player->opened()))->toEqual([
+        TheirLanguages::asTheTitleComes(),
+        TheirLanguages::of(HearIn::Dutch, ReadIn::English),
+    ]);
 });
 
 it('plays a series\' first episode from its own Play, and the episode pressed from the episode\'s', function (): void {

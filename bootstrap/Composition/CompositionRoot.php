@@ -103,6 +103,9 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Modules\Watching\Api\KeepingTheirLanguages;
+use Modules\Watching\Internal\LanguagesKept;
+use Modules\Watching\Internal\Store\LanguagesInTheDatabase;
 use Native\Mobile\Edge\TreeObservers;
 
 /**
@@ -462,6 +465,10 @@ final class CompositionRoot extends ServiceProvider
         // health readings are.
         $this->app->bind(RequestsKept::class, RequestsInTheDatabase::class);
 
+        // The languages each member chose on this phone, `household`'s own
+        // port and the store walled inside it, sealed by `household` first.
+        $this->app->bind(LanguagesKept::class, LanguagesInTheDatabase::class);
+
         // `connection`'s settings — how long the app may be away before the
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
@@ -505,7 +512,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -518,7 +525,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

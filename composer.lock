@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c1f77851f0cdf1a05ec41801e1f16761",
+    "content-hash": "9bf3041f1ebe4a7d145a059005acfd2f",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3488,7 +3488,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "6ba0c3d4f48c97c14530ad7566b7f186efde414e"
+                "reference": "d3deb09d05b8bb85eace4c5188003b84f485d10e"
             },
             "require": {
                 "ext-sodium": "*",
@@ -3502,7 +3502,7 @@
                     "floors": {
                         "coverage": 100,
                         "mutation": 0,
-                        "mutation-is-zero-because": "Eight adapters over the bridge and one word table. Each adapter is held by its port's contract — Scanning, DeviceAuth, Networking, Sharing, Capture, Notifier, Clock and Entropy — which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
+                        "mutation-is-zero-because": "Adapters over the bridge and one word table. Each adapter is held by its port's contract, which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
                     },
                     "kind": "adapter"
                 }
@@ -3567,13 +3567,14 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "c3e474de54687d75e8a57ab56b8950b8941e27d1"
+                "reference": "80a4ac5ecfc67c8c429e7a0c871800e7b57b0b8c"
             },
             "require": {
                 "modules/connection": "dev-main",
                 "modules/design": "dev-main",
                 "modules/kernel": "dev-main",
                 "modules/stacks": "dev-main",
+                "modules/watching": "dev-main",
                 "modules/wayfinding": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
@@ -4040,6 +4041,45 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "Secure storage and the app lock.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/watching",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/watching",
+                "reference": "1dd50c6d983fd7aaa89f4143a2a159eada0998f7"
+            },
+            "require": {
+                "illuminate/database": "^13.17",
+                "modules/kernel": "dev-main",
+                "modules/store-kit": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "capability"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Watching\\": "src/",
+                    "Modules\\Watching\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "How a member chose titles to play on this phone: the languages they hear and read them in.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14925,6 +14965,7 @@
         "modules/store-kit": 20,
         "modules/updates": 20,
         "modules/vault": 20,
+        "modules/watching": 20,
         "modules/wayfinding": 20,
         "roave/security-advisories": 20
     },

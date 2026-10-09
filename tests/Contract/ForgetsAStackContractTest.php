@@ -8,18 +8,21 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AGrant;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsAStack;
+use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
+use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGrantIsFor;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\TheirLanguages;
 use Modules\Kernel\Api\TheReadingWaitsAFrame;
 use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\WhatStoppedMoving;
@@ -44,6 +47,7 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Modules\Watching\Api\KeepingTheirLanguages;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -111,6 +115,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the upkeep' => new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty()),
         'what it runs' => WhatThePhoneKeeps::noListingYet(),
         'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
+        'the languages members chose' => WhatThePhoneKeeps::noLanguagesYet(),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
@@ -166,6 +171,12 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
 
     if ($keeper instanceof KeepingTheLastReading || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns || $keeper instanceof KeepingWhatWasAsked) {
         keepAReadingFor($keeper, $stack);
+
+        return;
+    }
+
+    if ($keeper instanceof KeepingTheirLanguages) {
+        $keeper->choose($stack->id(), Whose::member('robin'), TheirLanguages::of(HearIn::Dutch, ReadIn::English));
 
         return;
     }
@@ -249,6 +260,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'what it runs, whose keys cannot be read' => new KeepingWhatItRuns(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
         'what the household asked for, whose keys cannot be read' => new KeepingWhatWasAsked(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        'the languages members chose, whose keys cannot be read' => new KeepingTheirLanguages(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)), AKeychainInMemory::working()),
         'news whose keys cannot be read' => whatNoticesNewsOver(ASealInMemory::thatWillNotOpen()),
     ] as $which => $keeper) {
         expect($keeper->keepsAnythingOf($stack))->toBeTrue($which);

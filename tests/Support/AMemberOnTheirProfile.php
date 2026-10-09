@@ -12,10 +12,11 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Whose;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Modules\Watching\Api\KeepingTheirLanguages;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\RemovalsUnderWayInMemory;
 
-/** A phone holding a member's session for each of these houses, its pairings and sessions in one platform store. */
+/** A phone holding a member's session for each of these houses, its pairings and sessions in one platform store, and the languages each chose. */
 final readonly class AMemberOnTheirProfile
 {
     public APlatformStore $store;
@@ -24,11 +25,14 @@ final readonly class AMemberOnTheirProfile
 
     public PlatformKeychain $keychain;
 
+    public KeepingTheirLanguages $languages;
+
     public function __construct(Stack ...$paired)
     {
         $this->store = APlatformStore::working();
         $this->stacks = new PlatformStacks($this->store);
         $this->keychain = new PlatformKeychain($this->store);
+        $this->languages = WhatThePhoneKeeps::noLanguagesYet($this->keychain);
 
         foreach ($paired as $stack) {
             $this->stacks->remember($stack);
@@ -43,7 +47,8 @@ final readonly class AMemberOnTheirProfile
         $screen = new YourCornerOfTheHouse(
             AroundThePhone::holding($this->stacks, storage: $this->keychain),
             $this->stacks,
-            new RemovingAStack($journal, new EveryKeeperOfAStack($this->stacks, $this->keychain)),
+            new RemovingAStack($journal, new EveryKeeperOfAStack($this->stacks, $this->keychain, $this->languages)),
+            $this->languages,
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

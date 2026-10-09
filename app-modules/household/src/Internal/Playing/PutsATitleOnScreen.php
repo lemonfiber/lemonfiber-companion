@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhatPlayPlays;
 use Modules\Kernel\Api\WhereItPlays;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyPlayingDidNotStart;
+use Modules\Watching\Api\KeepingTheirLanguages;
 
 /**
  * Pressing Play: the one place the player is handed anything.
@@ -33,6 +34,8 @@ use Modules\Kernel\Api\WhyPlayingDidNotStart;
  * a title the member may no longer watch, or one that no longer streams,
  * plays nothing. The location and the door are the ones the core states for
  * it, and the grant is the one it answered for this member on this device.
+ * The languages are the ones the member chose on this phone, read afresh on
+ * every open, so a choice changed between two titles is the one the next plays in.
  *
  * A session the stack refused, asking for the title or for the grant, is let
  * go of here, where the refusal is in hand.
@@ -47,6 +50,7 @@ final readonly class PutsATitleOnScreen
         private TheGrantForThisDevice $grants,
         private Playing $player,
         private WhatIsPlaying $playing,
+        private KeepingTheirLanguages $languages,
     ) {}
 
     /** Play a title from its start, as whoever is signed in to the stack: itself, or the episode its own Play plays. */
@@ -166,7 +170,9 @@ final readonly class PutsATitleOnScreen
 
     private function open(APlayback $playback, AGrant $grant, HowFarIn $from): WhatPressingPlayCameTo
     {
-        return $this->player->open($playback->toPlay($grant, $from))->either(
+        $languages = $this->languages->of($playback->stack()->id(), $playback->whose());
+
+        return $this->player->open($playback->toPlay($grant, $from, $languages))->either(
             opened: function () use ($playback): WhatPressingPlayCameTo {
                 $this->playing->began($playback);
 

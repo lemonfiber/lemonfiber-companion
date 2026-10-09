@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Playing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Watching;
+use Modules\Watching\Api\KeepingTheirLanguages;
 
 use function str_repeat;
 
@@ -41,6 +42,7 @@ final readonly class TheTitlesOnScreen
         ?Playing $player = null,
         ?WhatIsPlaying $playing = null,
         ?Granting $core = null,
+        ?KeepingTheirLanguages $languages = null,
     ): PutsATitleOnScreen {
         return new PutsATitleOnScreen(
             $storage,
@@ -53,6 +55,7 @@ final readonly class TheTitlesOnScreen
             ),
             $player ?? APlayerOnAHandset::working(),
             $playing ?? new WhatIsPlaying(),
+            $languages ?? WhatThePhoneKeeps::noLanguagesYet(),
         );
     }
 }

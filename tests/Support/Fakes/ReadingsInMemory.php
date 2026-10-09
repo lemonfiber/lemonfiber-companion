@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Shape;
 use Modules\Requests\Internal\RequestsKept;
 use Modules\Services\Internal\ListingsKept;
 use Modules\Updates\Internal\UpkeepReadingsKept;
+use Modules\Watching\Internal\LanguagesKept;
 
 /**
  * The readings the phone keeps, held for as long as a test runs.
@@ -38,7 +39,7 @@ use Modules\Updates\Internal\UpkeepReadingsKept;
  * Written by hand rather than mocked, so a change to either port fails to
  * compile here rather than drifting.
  */
-final class ReadingsInMemory implements HealthReadingsKept, ListingsKept, RequestsKept, UpkeepReadingsKept
+final class ReadingsInMemory implements HealthReadingsKept, LanguagesKept, ListingsKept, RequestsKept, UpkeepReadingsKept
 {
     /** @var array<string, SealedReading> the stack's hash => its reading */
     private array $readings = [];

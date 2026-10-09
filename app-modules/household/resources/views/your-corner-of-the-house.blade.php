@@ -7,6 +7,27 @@
         <x-design::row :headline="__('household.remove_house')" tap="askToRemove()" />
     </x-design::section>
 
+    {{-- The member's own languages, kept on this phone. Every language is
+         offered as a chip, the one chosen now marked. --}}
+    <x-design::heading>{{ __('household.languages.hear') }}</x-design::heading>
+    <x-design::chips>
+        @forelse ($this->languages()->hear as $language)
+            <x-design::chip label="{{ __($language->said) }}" tap="hearIn('{{ $language->word }}')" :chosen="$language->chosen" />
+        @empty
+            {{-- Nothing: every language is always offered. --}}
+        @endforelse
+    </x-design::chips>
+
+    <x-design::heading>{{ __('household.languages.read') }}</x-design::heading>
+    <x-design::chips>
+        @forelse ($this->languages()->read as $language)
+            <x-design::chip label="{{ __($language->said) }}" tap="readIn('{{ $language->word }}')" :chosen="$language->chosen" />
+        @empty
+            {{-- Nothing: every language, and none, is always offered. --}}
+        @endforelse
+    </x-design::chips>
+    <x-design::note>{{ __('household.languages.kept_on_this_phone') }}</x-design::note>
+
     {{-- Asked on this screen, where the question can say the member can add
          the house again and that nothing changes at the house. --}}
     @if ($this->confirmingTheRemoval)

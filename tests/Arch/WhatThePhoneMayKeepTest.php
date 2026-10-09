@@ -36,6 +36,7 @@ use Modules\Requests\Internal\TheRequestsAsKept;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Services\Internal\TheListingAsKept;
 use Modules\Updates\Internal\TheUpkeepAsKept;
+use Modules\Watching\Internal\TheirLanguagesAsKept;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -75,6 +76,7 @@ const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheUpkeepAsKept::class,
     TheListingAsKept::class,
     TheRequestsAsKept::class,
+    TheirLanguagesAsKept::class,
 ];
 
 /** The one other class that makes a value to seal: the seal, handing back what it opened. */
