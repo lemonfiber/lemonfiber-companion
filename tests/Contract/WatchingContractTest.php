@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowLongItRuns;
+use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\Medium;
@@ -402,11 +403,7 @@ function theSameSeries(): ATitle
 
     return ATitle::of(
         Holding::of(HoldingId::called('s1'), 'Slow Horses', Medium::Series, WhenItCameOut::in(2022)),
-        'Spies who failed.',
-        HowLongItRuns::unstated(),
-        Genres::of('Thriller', 'Drama'),
-        '16',
-        WhenItWasReleased::on(2022, 4, 1),
+        ItsDetails::of('Spies who failed.', HowLongItRuns::unstated(), Genres::of('Thriller', 'Drama'), '16', WhenItWasReleased::on(2022, 4, 1)),
         WhereItPlays::doesNotStream(),
         Seasons::of(ASeason::of('Season 1', Episodes::of(
             AnEpisode::of(HoldingId::called('e1'), 'Failure\'s Contagious', NumberedAs::number(1), HowLongItRuns::minutes(49), 'Lamb.', WhereItPlays::at(Location::of('https://192.168.1.42:8920/Videos/e1/master.m3u8'), $door)),

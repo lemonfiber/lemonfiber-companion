@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowLongItRuns;
+use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\ReleaseIsNoDay;
@@ -87,11 +88,13 @@ final readonly class Titles
 
         return ATitle::of(
             self::holding($title),
-            Optional::text($title, TitleField::Overview, TitleIsUnreadable::missing(TitleField::Overview)),
-            self::runs($title, TitleIsUnreadable::missing(TitleField::Minutes)),
-            self::genres($title),
-            Optional::text($title, TitleField::Certificate, TitleIsUnreadable::missing(TitleField::Certificate)),
-            self::released($title),
+            ItsDetails::of(
+                Optional::text($title, TitleField::Overview, TitleIsUnreadable::missing(TitleField::Overview)),
+                self::runs($title, TitleIsUnreadable::missing(TitleField::Minutes)),
+                self::genres($title),
+                Optional::text($title, TitleField::Certificate, TitleIsUnreadable::missing(TitleField::Certificate)),
+                self::released($title),
+            ),
             Located::in($title, $refused),
             self::seasons($title),
         );

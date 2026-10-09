@@ -16,30 +16,14 @@ final readonly class ATitle
 {
     private function __construct(
         private Holding $holding,
-        private string $about,
-        private HowLongItRuns $runs,
-        private Genres $genres,
-        private string $certificate,
-        private WhenItWasReleased $released,
+        private ItsDetails $details,
         private WhereItPlays $plays,
         private Seasons $seasons,
     ) {}
 
-    /**
-     * @param string $about       what it is about, or empty where the server holds no description
-     * @param string $certificate the certificate it carries, or empty where it carries none
-     */
-    public static function of(
-        Holding $holding,
-        string $about,
-        HowLongItRuns $runs,
-        Genres $genres,
-        string $certificate,
-        WhenItWasReleased $released,
-        WhereItPlays $plays,
-        Seasons $seasons,
-    ): self {
-        return new self($holding, $about, $runs, $genres, $certificate, $released, $plays, $seasons);
+    public static function of(Holding $holding, ItsDetails $details, WhereItPlays $plays, Seasons $seasons): self
+    {
+        return new self($holding, $details, $plays, $seasons);
     }
 
     /** Its id, its name, its kind and its year, as the shelf lists it. */
@@ -51,28 +35,28 @@ final readonly class ATitle
     /** What it is about, or empty where the server holds no description. */
     public function about(): string
     {
-        return $this->about;
+        return $this->details->about();
     }
 
     public function runs(): HowLongItRuns
     {
-        return $this->runs;
+        return $this->details->runs();
     }
 
     public function genres(): Genres
     {
-        return $this->genres;
+        return $this->details->genres();
     }
 
     /** The certificate it carries where the operator lives, or empty where it carries none. */
     public function certificate(): string
     {
-        return $this->certificate;
+        return $this->details->certificate();
     }
 
     public function released(): WhenItWasReleased
     {
-        return $this->released;
+        return $this->details->released();
     }
 
     public function plays(): WhereItPlays

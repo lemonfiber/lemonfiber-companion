@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowLongItRuns;
+use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\Medium;
@@ -69,11 +70,7 @@ function alienInFull(WhereItPlays $plays): ATitle
 {
     return ATitle::of(
         Holding::of(HoldingId::called('a1'), 'Alien', Medium::Film, WhenItCameOut::in(1979)),
-        'A crew meets something on the way home.',
-        HowLongItRuns::minutes(117),
-        Genres::of('Horror', 'Science Fiction'),
-        '16',
-        WhenItWasReleased::on(1979, 5, 25),
+        ItsDetails::of('A crew meets something on the way home.', HowLongItRuns::minutes(117), Genres::of('Horror', 'Science Fiction'), '16', WhenItWasReleased::on(1979, 5, 25)),
         $plays,
         Seasons::none(),
     );
@@ -84,11 +81,7 @@ function aSeriesInFull(): ATitle
 {
     return ATitle::of(
         Holding::of(HoldingId::called('s1'), 'Slow Horses', Medium::Series, WhenItCameOut::in(2022)),
-        '',
-        HowLongItRuns::unstated(),
-        Genres::of(),
-        '',
-        WhenItWasReleased::unstated(),
+        ItsDetails::of('', HowLongItRuns::unstated(), Genres::of(), '', WhenItWasReleased::unstated()),
         WhereItPlays::doesNotStream(),
         Seasons::of(ASeason::of('Season 1', Episodes::of(
             AnEpisode::of(HoldingId::called('e1'), 'Failure\'s Contagious', NumberedAs::number(1), HowLongItRuns::minutes(49), 'Jackson Lamb runs Slough House.', streamingAtTheDoor('e1')),
@@ -168,11 +161,7 @@ it('draws a series with its seasons, each episode with its own Play, and Play as
 it('says there is nothing to play in a series with no episodes', function (): void {
     $empty = ATitle::of(
         Holding::of(HoldingId::called('s2'), 'Coming soon', Medium::Series, WhenItCameOut::unstated()),
-        '',
-        HowLongItRuns::unstated(),
-        Genres::of(),
-        '',
-        WhenItWasReleased::unstated(),
+        ItsDetails::of('', HowLongItRuns::unstated(), Genres::of(), '', WhenItWasReleased::unstated()),
         WhereItPlays::doesNotStream(),
         Seasons::none(),
     );
