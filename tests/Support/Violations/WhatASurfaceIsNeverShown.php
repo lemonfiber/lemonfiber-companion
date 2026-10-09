@@ -94,9 +94,8 @@ final readonly class WhatASurfaceIsNeverShown
                 }
                 PHP, 'nothing holds a collection of actions', 'HoldsUndelivered'),
 
-            // What the rule reads for is every player, which is stronger than
-            // the row it is filed under asks, and is held while nothing on the
-            // wire says where to play a holding.
+            // A player outside the player's own files: a second way past the
+            // door and the pin, planted beside them.
             Fixture::suite('N3-R14', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
@@ -105,7 +104,7 @@ final readonly class WhatASurfaceIsNeverShown
                         val player = ExoPlayer.Builder(context).build()
                     }
                 }
-                KOTLIN, 'no platform source reaches for a media player'),
+                KOTLIN, 'no platform source but the player reaches for a media player'),
 
             // A test's own title, in the Kotlin harness, which is the half of
             // that rule the ratchet over the PHP deliberately does not hold: a
