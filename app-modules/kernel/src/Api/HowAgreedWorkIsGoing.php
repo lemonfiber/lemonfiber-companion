@@ -28,7 +28,7 @@ use Closure;
  * Every field defaults, and each constructor says only its own state: a value
  * {@see self::either()} never reads is one no test can hold to being right.
  *
- * @template-covariant TDone of object
+ * @template-covariant TDone of object = never
  */
 final readonly class HowAgreedWorkIsGoing
 {
@@ -47,7 +47,7 @@ final readonly class HowAgreedWorkIsGoing
      */
     public static function stillRunning(): self
     {
-        return self::unfinished(running: true);
+        return new self(running: true);
     }
 
     /**
@@ -71,7 +71,7 @@ final readonly class HowAgreedWorkIsGoing
      */
     public static function ended(): self
     {
-        return self::unfinished();
+        return new self();
     }
 
     /**
@@ -81,7 +81,7 @@ final readonly class HowAgreedWorkIsGoing
      */
     public static function met(Obstacle $why): self
     {
-        return self::unfinished(met: $why);
+        return new self(met: $why);
     }
 
     /**
@@ -91,7 +91,7 @@ final readonly class HowAgreedWorkIsGoing
      */
     public static function moved(ARefusalInItsWords $why): self
     {
-        return self::unfinished(moved: $why);
+        return new self(moved: $why);
     }
 
     /**
@@ -124,18 +124,5 @@ final readonly class HowAgreedWorkIsGoing
             $this->done !== null => $done($this->done),
             default => $ended(),
         };
-    }
-
-    /**
-     * Work that carries no report, which is every state but the finished one.
-     *
-     * @return self<never>
-     */
-    private static function unfinished(?Obstacle $met = null, bool $running = false, ?ARefusalInItsWords $moved = null): self
-    {
-        /** @var self<never> $going nothing finished, so no report is carried */
-        $going = new self(null, $met, $running, $moved);
-
-        return $going;
     }
 }
