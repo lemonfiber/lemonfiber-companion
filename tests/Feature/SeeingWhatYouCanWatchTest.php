@@ -38,6 +38,7 @@ use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
@@ -95,7 +96,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatYouCanWatch($watching, $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -156,7 +157,7 @@ it('cuts the first row at the newest few and leaves every holding of a kind in i
         ->and($screen->answer()->rows)->toHaveCount(2);
 });
 
-it('offers each title as a control that opens it, and Play as one that waits', function (): void {
+it('offers each title as a control that opens it, and Play', function (): void {
     $screen = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())));
 
     expect($screen->offers())->toBe([
@@ -166,7 +167,7 @@ it('offers each title as a control that opens it, and Play as one that waits', f
         'A film, Film, 1999', 'A series, Series', 'Something else, Other, 2012',
         __('household.ask_again'),
     ])
-        ->and($screen->offersThatWait())->toBe([__('household.title.play')]);
+        ->and($screen->offersThatWait())->toBe([]);
 });
 
 it('opens each title on its own screen on this machine', function (): void {
@@ -175,19 +176,18 @@ it('opens each title on its own screen on this machine', function (): void {
     expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacksTitle(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')));
 });
 
-it('draws the newest title in the house across the screen, with Play that waits and its reason, and More', function (): void {
+it('draws the newest title in the house across the screen, with Play and More', function (): void {
     $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $hero = array_search(__('household.hero.reads', ['reads' => 'A film, Film, 1999']), $drawn, strict: true);
 
     expect($screen->answer()->hero)->toBe($screen->answer()->rows[0]->posters[0])
         ->and($hero)->toBeInt()
-        ->and(array_slice($drawn, (int) $hero, 6))->toBe([
+        ->and(array_slice($drawn, (int) $hero, 5))->toBe([
             __('household.hero.reads', ['reads' => 'A film, Film, 1999']),
             __('household.hero.above', ['line' => '1999 · Film']),
             'A film',
             __('household.title.play'),
-            __('household.title.cannot_play'),
             __('household.hero.more'),
         ]);
 });
@@ -514,6 +514,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
         AShelfThatWasRead::holding(aShelfOfThree()),
         AMemberWhoIsOwed::owedNothing(),
         AKeychainInMemory::working(),
+        TheTitlesOnScreen::over(AShelfThatWasRead::holding(aShelfOfThree()), AKeychainInMemory::working()),
         AroundThePhone::holding(StacksInMemory::holding(theStackAShelfIsReadFrom())),
         new AppsSettingsThatOpen(),
     );

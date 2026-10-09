@@ -21,9 +21,10 @@ use function view;
  *
  * The core hands the app no artwork, so the name is the picture, a step
  * larger than on its poster.
- * Play is drawn and cannot be used: the core hands the app no way to play a
- * title, and the reason is said beside it in the app's own words. More opens
- * the title's own screen where the poster would.
+ * Play plays it, where the screen drawing it says what pressing it does; a
+ * preview says nothing of the kind, and its Play is drawn with the reason it
+ * cannot be pressed beside it. More opens the title's own screen where the
+ * poster would.
  */
 final class Hero extends Component
 {
@@ -54,9 +55,13 @@ final class Hero extends Component
     /** What a screen reader says for More, naming the title it opens. */
     public readonly string $moreNamed;
 
+    /**
+     * @param string $tap what pressing Play does on the screen drawing it, or empty where it cannot be pressed
+     */
     public function __construct(
         Translator $catalogue,
         public readonly WhatOnePosterSays $poster,
+        public readonly string $tap = '',
     ) {
         $said = WhatAPosterIsFilledWith::by($catalogue, $poster);
         $named = $catalogue->get(self::READS, ['reads' => $said->line($poster->reads, $poster->titled)]);

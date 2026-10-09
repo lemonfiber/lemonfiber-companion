@@ -52,6 +52,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HostingAgreed;
+use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowManyLines;
@@ -81,6 +82,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheLibraries;
+use Modules\Kernel\Api\ThePlace;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheRecord;
@@ -153,6 +155,7 @@ use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
@@ -263,6 +266,7 @@ final readonly class EveryAdapterCallThatReads
             'Graders::confirm' => static fn(): object
                 => new Graders($clients, $entropy)->confirm($stack, $session, self::aHeldChoiceToSpoilTheAnswerTo()),
             'Grantors::aGrantFor' => static fn(): object => new Grantors($clients, $entropy)->aGrantFor($stack, $session, ThisDevice::named('this-device')),
+            'PlaceKeepers::keep' => static fn(): object => new PlaceKeepers($clients, $entropy)->keep($stack, $session, ThePlace::in(HoldingId::called('a1'), HowFarIn::at(61))),
             'Guards::guard' => static fn(): object
                 => new Guards($clients, $entropy)->guard($stack, $session, AGuardAskedFor::of(Forms::these(Form::called('media')))),
             'Guards::whatBecameOf' => static fn(): object

@@ -16,6 +16,9 @@ enum WhatThePlayerAsks: string implements AnAction
     /** A grant to play on the member's own account, for this device. */
     case Grant = 'grant';
 
+    /** Where the member is in what they are watching, so the core keeps their place. */
+    case Watched = 'watched';
+
     public function asked(): string
     {
         return $this->value;

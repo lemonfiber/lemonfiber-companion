@@ -29,9 +29,8 @@ answered, Home says so in their place with Ask again.
 
 **Then the house's own.** The hero comes next: the shelf's first title, which
 is the newest in the house by the core's own order, lettered across a 16:9
-tile, with Play and More. Play is drawn and cannot be used, with the app's own
-sentence beside it, because the core hands the app no way to play a title.
-More opens the title's screen. A member with nothing of their own sees the hero
+tile, with Play and More. Play plays it, as the title's own Play does; More
+opens the title's screen. A member with nothing of their own sees the hero
 first. After it, `HowAShelfReads` draws the shelf as rows: *New in the house*,
 the first `HowAShelfReads::NEW_IN_THE_HOUSE` titles in the core's order, and
 then one row for each kind the shelf holds, in the order `Medium` declares the
@@ -48,10 +47,27 @@ artwork from the door, so every title is drawn lettered.
 `WhatThisTitleIs` at the title's id, which reads it as the member through
 `Watching::theTitle()`: its overview, runtime, certificate, release day,
 genres, and a series' seasons and episodes. Play is drawn on the title and on
-each episode and is not usable yet; where the core states no location, the
+each episode; where the core states no location, it cannot be pressed and the
 reason beside it is the core's own words. A series' Play is its first
 episode's. A title outside the member's limits is answered as absent, as one
 the house does not hold is.
+
+**Play hands the device's player only what the core states.**
+`PutsATitleOnScreen` asks the core for the title again as Play is pressed, and
+hands the player the location and door the core states for it then and the
+grant the core answered for this member on this device
+(`TheGrantForThisDevice`). No language is handed over, so the stream's own
+default tracks play. Where the device would not play it, the line beside Play
+says so in the household's words.
+
+**The member's place is the core's to keep.** The device says the player moved
+every ten seconds while it plays and at once on a pause, a seek, the end or a
+close, and `KeepsTheMembersPlace` reads where it stands and tells the core
+(`watched`), under the session the member still holds there. Nothing is
+queued: a place the core could not be told is dropped. Where playback stopped
+and cannot go on, the player is closed and the page it was played from says
+why; a grant the door refused is asked for again once, and the title put back
+where it stopped.
 
 **The operator previews the member's side here too.** `WhatAMemberWouldSee`,
 opened from *View as member* in the operator's menu, draws Home, with the hero

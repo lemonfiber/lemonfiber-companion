@@ -49,6 +49,7 @@ final readonly class WhatOnePosterSays
         public array $filling,
         public array $keyed,
         public string $goes,
+        public string $plays,
     ) {}
 
     /**
@@ -57,9 +58,10 @@ final readonly class WhatOnePosterSays
      *
      * @param string                $medium  the kind, as a catalogue key
      * @param string                $year    the year, or empty where the core could not date it
-     * @param string $goes the path its title opens at, or empty where it opens nothing
+     * @param string $goes  the path its title opens at, or empty where it opens nothing
+     * @param string $plays the title as the core names it, which Play asks for, or empty where it plays nothing
      */
-    public static function ofATitle(string $titled, string $medium, string $year, string $goes = ''): self
+    public static function ofATitle(string $titled, string $medium, string $year, string $goes = '', string $plays = ''): self
     {
         $isDated = $year !== '';
 
@@ -71,6 +73,7 @@ final readonly class WhatOnePosterSays
             filling: ['title' => $titled, 'year' => $year],
             keyed: ['kind' => $medium],
             goes: $goes,
+            plays: $plays,
         );
     }
 
@@ -91,6 +94,7 @@ final readonly class WhatOnePosterSays
             filling: ['title' => $titled],
             keyed: ['standing' => $standing],
             goes: '',
+            plays: '',
         );
     }
 }

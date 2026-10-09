@@ -74,7 +74,11 @@ it('offers no way to show one to a person', function (): void {
     //
     // The two live apart so that the ability to display a fingerprint cannot be
     // reached *from* a fingerprint — getting one is an explicit act naming
-    // `AtAGlance`, which is a line a reviewer sees. Adding a second reader here
-    // fails this test, which is the point of pinning the list.
-    expect(get_class_methods(Fingerprint::class))->toBe(['of', 'forComparingByEye', 'is']);
+    // `AtAGlance`, which is a line a reviewer sees.
+    //
+    // `forThePlayer()` is the other reader, and not a display accessor either:
+    // it hands the digest to the device's player, which pins the door's
+    // certificate to it natively. Adding a third reader here fails this test,
+    // which is the point of pinning the list.
+    expect(get_class_methods(Fingerprint::class))->toBe(['of', 'forComparingByEye', 'forThePlayer', 'is']);
 });

@@ -16,11 +16,16 @@
     @endif
 </native:column>
 </native:pressable>
-{{-- Drawn and not usable, with the reason beside it in the app's own words:
-     the core hands the app no way to play a title, and a Play that is not
-     there would hide the one action this tile is for. --}}
+{{-- Play plays it where the screen says what pressing it does. Where it
+     cannot, as on a preview, it is drawn and not usable, with the reason
+     beside it: a Play that is not there would hide the one action this tile
+     is for. --}}
+@if ($tap !== '')
+<x-design::action label="{{ __('household.title.play') }}" :answersTo="$playNamed" :tap="$tap" />
+@else
 <x-design::action label="{{ __('household.title.play') }}" :answersTo="$playNamed" :disabled="true" />
-<x-design::note>{{ __('household.title.cannot_play') }}</x-design::note>
+<x-design::note>{{ __('household.preview.cannot_play') }}</x-design::note>
+@endif
 @if ($poster->goes !== '')
 <x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" />
 @else

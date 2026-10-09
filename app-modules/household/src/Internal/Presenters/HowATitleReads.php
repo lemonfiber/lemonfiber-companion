@@ -16,11 +16,13 @@ use Modules\Household\Internal\ViewModels\WhatThisTitleTurnedOutToBe;
 use Modules\Kernel\Api\AnEpisode;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\Genres;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowLongItRuns;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Seasons;
 use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Sentence;
+use Modules\Kernel\Api\WhatPlayPlays;
 use Modules\Kernel\Api\WhenItWasReleased;
 use Modules\Kernel\Api\WhereItPlays;
 
@@ -28,8 +30,8 @@ use Modules\Kernel\Api\WhereItPlays;
  * One title's screen, from the core's answer for it.
  *
  * Pure. Every part is the core's; a part it did not state is left empty, and
- * nothing here works one out. Play on a title that does not stream itself, as
- * a series does not, is its first episode's: the one the core lists first.
+ * nothing here works one out. What the title's own Play plays is the title's
+ * to say ({@see ATitle::whatPlayPlays()}).
  */
 final readonly class HowATitleReads
 {
@@ -68,7 +70,7 @@ final readonly class HowATitleReads
             released: $released,
             releasedFilling: $releasedFilling,
             releasedIn: $releasedIn,
-            playing: $this->playing($title->plays(), $title->seasons()),
+            playing: $this->playing($title->whatPlayPlays()),
             seasons: $this->seasons($title->seasons()),
         ));
     }
@@ -88,34 +90,19 @@ final readonly class HowATitleReads
         return WhatThisTitleTurnedOutToBe::theSessionEnded();
     }
 
-    /**
-     * Play for the title: its own where it streams, and its first episode's where it does not.
-     */
-    private function playing(WhereItPlays $plays, Seasons $seasons): WhatPlayingSays
+    /** Play for the title: whatever its own Play plays, or nothing to play. */
+    private function playing(WhatPlayPlays $plays): WhatPlayingSays
     {
         return $plays->either(
-            at: static fn(): WhatPlayingSays => WhatPlayingSays::waits(),
-            cannot: static fn(Sentence $why): WhatPlayingSays => WhatPlayingSays::cannot($why->shown()),
-            doesNotStream: fn(): WhatPlayingSays => $this->firstEpisodesPlay($seasons),
+            one: fn(HoldingId $id, string $titled, WhereItPlays $where): WhatPlayingSays => $this->playingWhere($where),
+            nothing: static fn(): WhatPlayingSays => WhatPlayingSays::nothingPlays(),
         );
     }
 
-    /** Play for the first episode the core lists, or nothing to play where it lists none. */
-    private function firstEpisodesPlay(Seasons $seasons): WhatPlayingSays
-    {
-        foreach ($seasons as $season) {
-            foreach ($season->episodes() as $episode) {
-                return $this->episodesPlay($episode->plays());
-            }
-        }
-
-        return WhatPlayingSays::nothingPlays();
-    }
-
-    private function episodesPlay(WhereItPlays $plays): WhatPlayingSays
+    private function playingWhere(WhereItPlays $plays): WhatPlayingSays
     {
         return $plays->either(
-            at: static fn(): WhatPlayingSays => WhatPlayingSays::waits(),
+            at: static fn(): WhatPlayingSays => WhatPlayingSays::plays(),
             cannot: static fn(Sentence $why): WhatPlayingSays => WhatPlayingSays::cannot($why->shown()),
             doesNotStream: static fn(): WhatPlayingSays => WhatPlayingSays::nothingPlays(),
         );
@@ -150,13 +137,14 @@ final readonly class HowATitleReads
         )->asDrawn();
 
         return new WhatOneEpisodeSays(
+            id: $episode->id()->named(),
             titled: $titled,
             headed: $headed,
             headedFilling: $headedFilling,
             runs: $runs,
             runsFilling: $runsFilling,
             about: $episode->about(),
-            playing: $this->episodesPlay($episode->plays()),
+            playing: $this->playingWhere($episode->plays()),
         );
     }
 

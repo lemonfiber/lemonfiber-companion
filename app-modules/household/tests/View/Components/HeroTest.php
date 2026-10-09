@@ -28,8 +28,8 @@ function theNewestTitle(string $titled = 'Alien'): WhatOnePosterSays
     return WhatOnePosterSays::ofATitle($titled, 'household.medium.film', '1979', '/titles/a1');
 }
 
-it('draws a raised 16:9 tile, said as one element, then Play that waits, its reason, and More', function (): void {
-    $drawn = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle()]);
+it('draws a raised 16:9 tile, said as one element, then Play and More', function (): void {
+    $drawn = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" tap="play(\'a1\')" />', ['poster' => theNewestTitle()]);
     $tile = data_get($drawn, 'children.0.children.0');
 
     expect(data_get($drawn, 'children.0.type'))->toBe('pressable')
@@ -41,9 +41,16 @@ it('draws a raised 16:9 tile, said as one element, then Play that waits, its rea
         ->and(data_get($tile, 'children.1.props.text'))->toBe('Alien')
         ->and(data_get($drawn, 'children.1.props.label'))->toBe(__('household.title.play'))
         ->and(data_get($drawn, 'children.1.props.a11y_label'))->toBe(__('household.title.play_named', ['title' => 'Alien']))
-        ->and(data_get($drawn, 'children.1.props.disabled'))->toBeTrue()
-        ->and(data_get($drawn, 'children.2.props.text'))->toBe(__('household.title.cannot_play'))
-        ->and(data_get($drawn, 'children.3.props.a11y_label'))->toBe(__('household.hero.more_named', ['title' => 'Alien']));
+        ->and(data_get($drawn, 'children.1.props.disabled'))->not->toBeTrue()
+        ->and(data_get($drawn, 'children.1.props.on_press'))->toBeInt()
+        ->and(data_get($drawn, 'children.2.props.a11y_label'))->toBe(__('household.hero.more_named', ['title' => 'Alien']));
+});
+
+it('draws Play that waits, with the reason beside it, where the screen says nothing of pressing it', function (): void {
+    $drawn = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle()]);
+
+    expect(data_get($drawn, 'children.1.props.disabled'))->toBeTrue()
+        ->and(data_get($drawn, 'children.2.props.text'))->toBe(__('household.preview.cannot_play'));
 });
 
 it('opens the title from More', function (): void {

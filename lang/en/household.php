@@ -163,7 +163,6 @@ return [
     'title' => [
         'play' => 'Play',
         'play_named' => 'Play :title',
-        'cannot_play' => 'Playing isn\'t possible in this app. Watch it on your television or another screen in the house.',
         'nothing_to_play' => 'Nothing in this series can be played yet.',
         'absent' => 'This title isn\'t on your shelf. It may have left the house, or it isn\'t one you can watch.',
         'to_home' => 'Go to Home',
@@ -175,6 +174,17 @@ return [
         'episode_unnumbered' => ':title',
         'between_genres' => ', ',
         'no_episodes' => 'There are no episodes in this season yet.',
+    ],
+
+    // Why Play did not play, or stopped where it could not go on, said as what
+    // a member can do about it.
+    'play' => [
+        'cannot_be_played' => 'This can\'t be played right now. Let whoever looks after the house know.',
+        'no_player' => 'Playing isn\'t possible on this device.',
+        'out_of_reach' => 'The house can\'t be reached from here. Playing works when you\'re at home.',
+        'not_the_house' => 'This stopped because something other than the house answered. Let whoever looks after the house know.',
+        'not_on_this_device' => 'This device can\'t play this one.',
+        'not_let_in' => 'This stopped because the house wouldn\'t let it play here. Press Play to try again.',
     ],
 
     // The months, by number, for when a title came out.
@@ -201,5 +211,6 @@ return [
         'back' => 'Back to Switchboard',
         'ask' => 'Ask for something',
         'cannot_ask' => 'A preview cannot ask for anything.',
+        'cannot_play' => 'A preview cannot play anything.',
     ],
 ];

@@ -15,7 +15,7 @@ use Modules\Household\Internal\ViewModels\WhatPlayingSays;
 use function view;
 
 /**
- * Why Play cannot be pressed, as the line beside it.
+ * Why Play cannot be pressed, as the line beside it, or nothing where it can.
  *
  * {@see WhatStoodInTheWay}'s one decision, for Play: the core's own words are
  * drawn as they were written, and only this app's keys go through the
@@ -28,7 +28,7 @@ final class WhyPlayWaits extends Component
 
     public function __construct(Translator $catalogue, WhatPlayingSays $playing)
     {
-        $looked = $catalogue->get($playing->why);
+        $looked = $playing->why === '' ? '' : $catalogue->get($playing->why);
         $this->said = $playing->isInTheCoresWords || ! is_string($looked) ? $playing->why : $looked;
     }
 

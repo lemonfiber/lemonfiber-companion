@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Sdk\Api\Fields;
+
+use Modules\Sdk\Api\NamesAWireField;
+use Modules\Sdk\Api\SaysWhereItSits;
+
+/**
+ * What the wire calls each field of the `watched` envelope that no other envelope this module reads carries.
+ *
+ * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
+ * carries; this holds the rest of this one's.
+ */
+enum WatchedField: string implements NamesAWireField
+{
+    use SaysWhereItSits;
+
+    /** How far in the member is, in whole seconds. */
+    case Position = 'position';
+
+    /** Whether the member finished it. */
+    case Ended = 'ended';
+}

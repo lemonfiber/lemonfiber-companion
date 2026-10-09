@@ -6,11 +6,13 @@ namespace Modules\Household\Internal\Screens;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
+use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Presenters\HowTheirOwnTitlesRead;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -49,8 +51,8 @@ use Native\Mobile\Edge\NativeComponent;
  * allowed.
  *
  * **Nothing here composes an address.** A holding arrives as a name and a kind
- * and is drawn as one. What it takes to actually play it is the core's to hand
- * over, and this screen does not have it — building one out of a stack's
+ * and is drawn as one. The hero's Play asks the core for the title again and
+ * plays where the core says it plays — building an address out of a stack's
  * address and a holding's id would be this app holding a second copy of how
  * the library works, and would be wrong the first time the route to it is not
  * the one it assumed.
@@ -63,8 +65,9 @@ use Native\Mobile\Edge\NativeComponent;
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
-final class WhatYouCanWatch extends NativeComponent
+final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
 {
+    use PlaysTitles;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
@@ -91,6 +94,7 @@ final class WhatYouCanWatch extends NativeComponent
         private readonly Watching $watching,
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
+        private readonly PutsATitleOnScreen $titles,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
@@ -132,10 +136,36 @@ final class WhatYouCanWatch extends NativeComponent
         $this->theirs = null;
     }
 
+    /** Play the title across the screen, by the id the core lists it under. */
+    public function play(string $title): void
+    {
+        if ($title !== '') {
+            $held = HoldingId::called($title);
+            $this->pressed($held, $this->titles->theTitle($this->stack(), $held));
+        }
+    }
+
     /** Where a session that has ended is renewed. */
     public function signIn(): string
     {
         return AStacksScreen::SignIn->forTheStack($this->stack()->id());
+    }
+
+    protected function titlesOnScreen(): PutsATitleOnScreen
+    {
+        return $this->titles;
+    }
+
+    /** The core's answer changed under Home: the title's own page says what it is now. */
+    protected function playsNothingNow(HoldingId $title): void
+    {
+        $this->navigate($this->goes()->title($title));
+    }
+
+    /** Asking met this: Home says what stood in the way. */
+    protected function metOnPlay(Obstacle $why): void
+    {
+        $this->answered = new HowAShelfReads()->met($why);
     }
 
     /**

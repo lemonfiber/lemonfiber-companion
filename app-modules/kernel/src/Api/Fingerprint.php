@@ -82,6 +82,18 @@ final readonly class Fingerprint
     }
 
     /**
+     * The digest, for the player to pin the door's certificate to.
+     *
+     * The player opens its own connections to the door, natively, and checks
+     * every one against this before a byte is fetched. Handed over as the core
+     * stated it, as {@see Location::forThePlayer()} is.
+     */
+    public function forThePlayer(): string
+    {
+        return $this->digest;
+    }
+
+    /**
      * Whether this is the certificate that was promised, compared in constant
      * time.
      *

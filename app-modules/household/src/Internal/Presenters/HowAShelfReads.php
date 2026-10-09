@@ -148,6 +148,7 @@ final readonly class HowAShelfReads
             medium: $holding->medium()->saidOnTheScreen(),
             year: $year,
             goes: WhereTheHouseIs::of($opensOn)->title($holding->id()),
+            plays: $holding->id()->named(),
         );
     }
 }

@@ -12,18 +12,15 @@ namespace Modules\Household\Internal\ViewModels;
  */
 final readonly class WhatPlayingSays
 {
-    /** Why a title that streams cannot be played here. */
-    private const string WAITS = 'household.title.cannot_play';
-
     /** Why a series with no episode to play has nothing to press. */
     private const string NOTHING_TO_PLAY = 'household.title.nothing_to_play';
 
     private function __construct(public bool $canPlay, public string $why, public bool $isInTheCoresWords) {}
 
-    /** It streams, and this app does not play it yet. */
-    public static function waits(): self
+    /** The core says where it plays, so Play plays it. */
+    public static function plays(): self
     {
-        return new self(canPlay: false, why: self::WAITS, isInTheCoresWords: false);
+        return new self(canPlay: true, why: '', isInTheCoresWords: false);
     }
 
     /** The core states no location for it, and this is why, in its words. */

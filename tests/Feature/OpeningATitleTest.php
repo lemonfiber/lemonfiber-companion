@@ -39,6 +39,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -100,7 +101,7 @@ function theTitleScreen(AShelfThatWasRead $watching, bool $signedIn = true): Wha
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::member('ada'));
     }
 
-    $screen = new WhatThisTitleIs($watching, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new WhatThisTitleIs($watching, $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
 
     return $screen;
@@ -120,29 +121,28 @@ it('asks for the title the route names', function (): void {
     expect($watching->titlesAskedFor())->toBe(['a1']);
 });
 
-it('draws the title in full, with Play that waits and the reason beside it', function (): void {
+it('draws the title in full, with Play', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))))));
     $poster = array_search('Alien, Film, 1979', $drawn->said(), strict: true);
 
     expect($poster)->toBeInt()
-        ->and(array_slice($drawn->said(), (int) $poster, 10))->toBe([
+        ->and(array_slice($drawn->said(), (int) $poster, 9))->toBe([
             'Alien, Film, 1979', '1979 · Film', 'Alien',
             __('household.title.play'),
-            __('household.title.cannot_play'),
             'A crew meets something on the way home.',
             __('household.title.runs_hours', ['hours' => 1, 'minutes' => 57]),
             __('household.title.certificate', ['certificate' => '16']),
             __('household.title.released', ['day' => 25, 'month' => WhatMarkupDraws::words('household.month.may'), 'year' => 1979]),
             'Horror, Science Fiction',
         ])
-        ->and($drawn->offersThatWait())->toBe([__('household.title.play')]);
+        ->and($drawn->offers())->toContain(__('household.title.play'))
+        ->and($drawn->offersThatWait())->toBe([]);
 });
 
 it('says why it cannot play in the core\'s own words where no location is stated', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(WhereItPlays::cannot(Sentence::of('This machine\'s household address is not known.')))))));
 
     expect($drawn->said())->toContain('This machine\'s household address is not known.')
-        ->and($drawn->said())->not->toContain(__('household.title.cannot_play'))
         ->and($drawn->offersThatWait())->toBe([__('household.title.play')]);
 });
 
@@ -155,7 +155,7 @@ it('draws a series with its seasons, each episode with its own Play, and Play as
         ->and($drawn->said())->toContain('Jackson Lamb runs Slough House.')
         ->and($drawn->said())->toContain(__('household.title.episode_unnumbered', ['title' => 'A special']))
         ->and($drawn->said())->toContain('The front door has no certificate yet.')
-        ->and($drawn->offersThatWait())->toBe(array_fill(0, 3, __('household.title.play')));
+        ->and($drawn->offersThatWait())->toBe([__('household.title.play')]);
 });
 
 it('says there is nothing to play in a series with no episodes', function (): void {
