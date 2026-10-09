@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Imports;
 use Tests\Support\Tree;
 
 // The player is built in one place, plays only what it is handed, and is
@@ -333,4 +334,54 @@ it('each word is one these rules would recognise', function (): void {
     }
 
     expect(wordsIn('class CaptureRule { fun protect() {} }', [...PLAYS_MEDIA, ...FETCHES_PAST_THE_DOOR]))->toBe([]);
+});
+
+/**
+ * Where the player's side of the app lives: the bridge's player, the device's adapter, and the household's playback.
+ *
+ * @var list<string>
+ */
+const WHERE_PLAYING_LIVES = [
+    'bridge/src/Player',
+    'app-modules/device/src/Api/PlatformPlayer.php',
+    'app-modules/household/src/Internal/Playing',
+];
+
+/**
+ * What asking, approving and allowance are, by the names that reach them.
+ *
+ * @var list<string>
+ */
+const ASKING_APPROVING_AND_ALLOWANCE = [
+    'Modules\\Kernel\\Api\\Wanting',
+    'Modules\\Kernel\\Api\\Owing',
+    'Modules\\Requests',
+];
+
+it('the player implements no asking, approving or allowance of its own', function (): void {
+    $sources = [];
+
+    foreach (WHERE_PLAYING_LIVES as $where) {
+        $at = Tree::at($where);
+        $sources = [...$sources, ...(is_dir($at) ? Tree::filesUnder($at, '.php') : [$at])];
+    }
+
+    expect($sources)->not->toBe([], 'no source of the player was found, so this rule read nothing');
+
+    $reaching = [];
+
+    foreach ($sources as $source) {
+        foreach (ASKING_APPROVING_AND_ALLOWANCE as $name) {
+            if (Imports::anyUnder(Imports::of($source), $name)) {
+                $reaching[] = sprintf('%s names %s', str_replace(sprintf('%s/', Tree::root()), '', $source), $name);
+            }
+        }
+    }
+
+    expect($reaching)->toBe([], sprintf(
+        "These reach asking, approving or allowance from the player:\n  %s\n\n"
+        . 'What a member may ask for, what waits for approval and what they are owed are the '
+        . "core's answers, read where a member asks; the player plays and decides none of them (N3-R16).\n",
+        implode("\n  ", $reaching),
+    ));
 });
