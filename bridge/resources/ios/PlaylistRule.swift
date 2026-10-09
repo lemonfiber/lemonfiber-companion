@@ -55,13 +55,13 @@ public struct PlaylistRule: Sendable {
     /// The door every address must be at.
     public let door: Door
 
-    /// The scheme addresses are handed to the player under.
-    public let scheme: String
+    /// Where an address at the door is handed to the player, or nil where it cannot be.
+    public let handing: @Sendable (String) -> String?
 
-    /// A rule for one door, writing addresses under one scheme.
-    public init(door: Door, scheme: String) {
+    /// A rule for one door, handing each address to the player as `handing` says.
+    public init(door: Door, handing: @escaping @Sendable (String) -> String?) {
         self.door = door
-        self.scheme = scheme
+        self.handing = handing
     }
 
     /// The playlist with every address made absolute and at the door, or nil where one is not.
@@ -160,11 +160,7 @@ public struct PlaylistRule: Sendable {
     ///
     /// An empty address resolves to nothing here, so it is refused as `PlaylistRule.kt` refuses it.
     private func handed(_ reference: String, at address: String) -> String? {
-        guard let absolute = door.resolve(reference, against: address) else {
-            return nil
-        }
-
-        return scheme + absolute.dropFirst(Door.scheme.count)
+        door.resolve(reference, against: address).flatMap(handing)
     }
 
     /// A tag's value split at the commas outside quoted strings, or nil where a quote is left open.

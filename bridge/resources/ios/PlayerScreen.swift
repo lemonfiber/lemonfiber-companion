@@ -21,7 +21,7 @@ final class PlayerScreen: AVPlayerViewController {
     private let extensions: PlayerExtensions
 
     /// What fetches every byte from the door.
-    private let loader: DoorLoader
+    private let relay: DoorRelay
 
     /// Where the stream plays from, as the extensions resolved it, or nil where nothing could play it.
     private let source: PlayableSource?
@@ -44,6 +44,8 @@ final class PlayerScreen: AVPlayerViewController {
     /// The seek observer, kept so it can be removed.
     private var watchingSeeks: NSObjectProtocol?
 
+    private var watchingFailures: NSObjectProtocol?
+
     /// When the picture last stopped for want of data, or nil while it is not stalled.
     private var stalledSince: Date?
 
@@ -61,7 +63,7 @@ final class PlayerScreen: AVPlayerViewController {
         self.extensions = extensions
         let source = extensions.source(for: asked)
         self.source = source
-        self.loader = DoorLoader(
+        self.relay = DoorRelay(
             asked: asked, top: source?.address, extras: ExtraSubtitles(extensions.extraTracks(for: asked)))
         self.moved = moved
         super.init(nibName: nil, bundle: nil)
@@ -76,17 +78,13 @@ final class PlayerScreen: AVPlayerViewController {
     ///
     /// - Returns: whether there was anything to open.
     func open() -> Bool {
-        guard let source, let handed = DoorLoader.handed(source.address)
-        else {
+        guard let source, let handed = relay.open(source.address) else {
             return false
         }
 
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
 
-        let asset = AVURLAsset(url: handed)
-        asset.resourceLoader.setDelegate(loader, queue: loader.queue)
-
-        let item = AVPlayerItem(asset: asset)
+        let item = AVPlayerItem(asset: AVURLAsset(url: handed))
         item.externalMetadata = [Self.titled(asked.shown.title)]
 
         let player = AVPlayer(playerItem: item)
@@ -97,6 +95,9 @@ final class PlayerScreen: AVPlayerViewController {
 
         settle(.opening, position: asked.startAt)
         watch(item, on: player)
+        DispatchQueue.main.asyncAfter(deadline: .now() + PlaybackRule.patienceWhileOpening) { [weak self] in
+            self?.openingTookTooLong()
+        }
 
         return true
     }
@@ -134,7 +135,7 @@ final class PlayerScreen: AVPlayerViewController {
         extensions.tell(.closed(position: position.isFinite ? position : 0))
         player?.pause()
         unwatch()
-        loader.close()
+        relay.close()
         player = nil
         settle(.closed, position: position)
     }
@@ -164,6 +165,12 @@ final class PlayerScreen: AVPlayerViewController {
             self?.report(moved: true)
         }
 
+        watchingFailures = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.failedToPlayToEndTimeNotification, object: item, queue: .main
+        ) { [weak self] _ in
+            self?.stop(self?.relay.why ?? .unreachable)
+        }
+
         looking = player.addPeriodicTimeObserver(forInterval: Self.lookEvery, queue: .main) { [weak self] _ in
             self?.tick()
         }
@@ -178,8 +185,13 @@ final class PlayerScreen: AVPlayerViewController {
             NotificationCenter.default.removeObserver(watchingSeeks)
         }
 
+        if let watchingFailures {
+            NotificationCenter.default.removeObserver(watchingFailures)
+        }
+
         looking = nil
         watchingSeeks = nil
+        watchingFailures = nil
         watchingStatus = nil
         watchingControl = nil
     }
@@ -193,9 +205,15 @@ final class PlayerScreen: AVPlayerViewController {
                 self?.player?.play()
             }
         case .failed:
-            stop(loader.why ?? .unsupportedFormat)
+            stop(relay.why ?? .unsupportedFormat)
         default:
             return
+        }
+    }
+
+    private func openingTookTooLong() {
+        if state.stands == .opening {
+            stop(relay.why ?? .unreachable)
         }
     }
 
@@ -222,7 +240,7 @@ final class PlayerScreen: AVPlayerViewController {
 
     private func tick() {
         if let stalledSince, PlaybackRule.givesUp(stalledFor: Date().timeIntervalSince(stalledSince)) {
-            stop(loader.why ?? .unreachable)
+            stop(relay.why ?? .unreachable)
 
             return
         }
