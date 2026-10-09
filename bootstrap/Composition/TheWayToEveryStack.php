@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ExtendingTheStack;
+use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
@@ -92,6 +93,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
@@ -247,6 +249,10 @@ final class TheWayToEveryStack extends ServiceProvider
         // member's read is nothing but the member.
         $this->app->bind(Owing::class, TheirOwn::class);
         $this->app->bind(Watching::class, Shelves::class);
+
+        // A grant for this device to play a member's titles, asked of the core
+        // under the member's own session.
+        $this->app->bind(Granting::class, Grantors::class);
 
         // What a stack would put right, asked without changing anything.
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two

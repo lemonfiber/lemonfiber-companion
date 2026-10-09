@@ -86,6 +86,7 @@ use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\TheUpgrade;
+use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
@@ -136,6 +137,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
@@ -259,6 +261,7 @@ final readonly class EveryAdapterCallThatReads
                 => new Graders($clients, $entropy)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
             'Graders::confirm' => static fn(): object
                 => new Graders($clients, $entropy)->confirm($stack, $session, self::aHeldChoiceToSpoilTheAnswerTo()),
+            'Grantors::aGrantFor' => static fn(): object => new Grantors($clients, $entropy)->aGrantFor($stack, $session, ThisDevice::named('this-device')),
             'Guards::guard' => static fn(): object
                 => new Guards($clients, $entropy)->guard($stack, $session, AGuardAskedFor::of(Forms::these(Form::called('media')))),
             'Guards::whatBecameOf' => static fn(): object

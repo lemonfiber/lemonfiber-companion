@@ -35,6 +35,9 @@ enum KeptUnder: string
     /** The stack the operator was last on, and the tab they last used on each. */
     case WhereTheOperatorWas = 'lemonfiber.where-left-off';
 
+    /** The grant this device holds on a stack, to play through its door. */
+    case Grant = 'lemonfiber.grant';
+
     /** The key for one record beneath this one: the names in order, after a dot each. */
     public function beneath(string ...$names): string
     {

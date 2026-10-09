@@ -27,6 +27,7 @@ use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutPairing;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
@@ -59,7 +60,7 @@ function everyActionNamed(): array
         ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
         ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
-        ...WhatToDoWithADownload::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(),
+        ...WhatToDoWithADownload::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none()),
         AGuardAskedFor::of(Forms::these(Form::called('library'))),
         TakingAnUpdate::offeredBy(Upkeep::reported(

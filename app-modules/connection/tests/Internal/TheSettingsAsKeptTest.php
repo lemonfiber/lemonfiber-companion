@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Unsealed;
 
 /** How long readings are kept, as one word. */
@@ -71,3 +72,21 @@ it('reads a row an earlier build wrote with the lock alone', function (): void {
     expect($read->lockAfter)->toBe(LockAfter::FiveMinutes)
         ->and(howLongTheSettingsKeepReadings($read))->toBe('30');
 });
+
+it('reads the id this install plays under back, beside the settings', function (): void {
+    $settings = ThePhonesSettings::standard()->lockingAfter(LockAfter::OneHour)->playingAs(ThisDevice::named('device-one'));
+    $read = TheSettingsAsKept::read(Shape::One, TheSettingsAsKept::written($settings));
+
+    expect($read->device?->shown())->toBe('device-one')
+        ->and($read->lockAfter)->toBe(LockAfter::OneHour)
+        ->and($read->lockingAfter(LockAfter::FiveMinutes)->keepingReadingsFor(HowLongReadingsAreKept::untilRemoved())->device?->shown())->toBe('device-one');
+});
+
+it('reads no id where none was drawn or the core would not accept it', function (string $written): void {
+    expect(TheSettingsAsKept::read(Shape::One, Unsealed::of($written))->device)->toBeNull();
+})->with([
+    'no id' => ['{"lock_after":"OneHour"}'],
+    'none written' => ['{"plays_as":null}'],
+    'a number' => ['{"plays_as":12345678}'],
+    'too short' => ['{"plays_as":"short"}'],
+]);

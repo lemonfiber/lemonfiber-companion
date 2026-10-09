@@ -17,6 +17,7 @@ use Modules\Sdk\Api\Fields\DashboardField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
+use Modules\Sdk\Api\Fields\GrantField;
 use Modules\Sdk\Api\Fields\HandoffField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
@@ -89,6 +90,7 @@ function everyFieldNamedOnTheWire(): array
         ...DoctorField::cases(),
         ...GlossaryField::cases(),
         ...HandoffField::cases(),
+        ...GrantField::cases(),
         ...HeldField::cases(),
         ...FrontDoorField::cases(),
         ...InvitationField::cases(),

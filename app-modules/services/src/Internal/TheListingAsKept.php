@@ -54,7 +54,7 @@ final readonly class TheListingAsKept
     /** A verb whose length the stack bounded in seconds, written as the count; one it left open is written as what it awaits. */
     private const string BOUNDED = 'at_most';
 
-    private const string OPEN_ENDED = 'lasts_until';
+    private const string OPEN_ENDED = 'waits_on';
 
     /**
      * The listing as a value to seal, or nothing where it cannot be written.

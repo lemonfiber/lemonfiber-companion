@@ -21,6 +21,7 @@ use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
+use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutPairing;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
@@ -100,7 +101,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
             ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),
-            ...WhatWasDecided::cases(),
+            ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ];
 
         return [
