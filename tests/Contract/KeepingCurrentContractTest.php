@@ -140,6 +140,7 @@ function whatAStackWithUpdatesSends(): array
             'confirmed' => true,
             'rehearsed' => false,
             'in_flight' => [],
+            'offer' => '5f3a9c1e',
             'stack_edits' => [],
             'applied' => [
                 [
@@ -203,6 +204,7 @@ function whatAStackWithAnUpdateAvailableSends(): array
             'confirmed' => false,
             'rehearsed' => false,
             'in_flight' => [],
+            'offer' => '5f3a9c1e',
             'stack_edits' => [],
             'applied' => [],
             'changes' => [aChangeTo('jellyfin', refused: false), aChangeTo('sonarr', refused: true)],
@@ -263,6 +265,7 @@ function whatAStackWithPendingNotesSends(): array
             'confirmed' => false,
             'rehearsed' => false,
             'in_flight' => [],
+            'offer' => '5f3a9c1e',
             'stack_edits' => [],
             'applied' => [],
             'changes' => [],
@@ -683,6 +686,7 @@ function aStackWhoseRecordHolds(array $release): array
         'confirmed' => false,
         'rehearsed' => false,
         'in_flight' => [],
+        'offer' => '5f3a9c1e',
         'stack_edits' => [],
         'applied' => [],
         'changes' => [],

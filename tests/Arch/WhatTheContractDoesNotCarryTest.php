@@ -64,54 +64,6 @@ use Tests\Support\Tree;
  */
 const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     [
-        'requirement' => 'N3-R15',
-        'asks' => 'to decline playback with the reason where the media server cannot be reached',
-        // Unnamed on purpose, and this is the row the register's own warning
-        // was written about. A location could land on `held` beside the
-        // holding it is about, or on a read of its own asked for one holding
-        // at a time — the second is the likelier shape for something that
-        // expires, and naming the first would be a guess about *where* an
-        // answer arrives becoming a condition for noticing that it has.
-        'envelope' => null,
-        // `stream` and `source` are both spent on this wire already — one on a
-        // log's two streams and one elsewhere — so a row watching either would
-        // fire today and go on firing. `stream_from` is free, and it is the
-        // plainest name for the thing that is missing: where this holding can
-        // be streamed from, said by whoever knows.
-        //
-        // A field that closes this gap under another name is a row to update
-        // rather than a silence to live with. That is the cost of naming one
-        // at all, and it is smaller than the cost of naming none: a row with
-        // no field is a row nothing can ever fire on.
-        'field' => 'stream_from',
-        'shape' => null,
-        'raised' => 'The shelf is read and nothing can be played from it. `HeldEnvelope.holdings[]` '
-            . 'carries `id`, `medium`, `title` and `year`, and nothing that turns an identifier into '
-            . 'something a player can open. The app must not compose one: an address built here out '
-            . 'of a stack\'s address and a holding\'s id is a second copy of how the library works, '
-            . 'which is the one thing `N3-R14` says a player may not hold, and it is server-specific '
-            . 'besides — the path a Jellyfin library serves is not the path a Plex one does, so the '
-            . 'app would be deciding which media server the household runs. It is also the assumption '
-            . 'that breaks first: the route to a library is a local wire today and will not always be '
-            . 'one, and an app that built the address is an app that built the wrong one the day it '
-            . 'is reached from somewhere else. So the location belongs to whoever already knows both '
-            . 'the library and the route, which is the core. A location is half of it. The other half '
-            . 'is the member\'s authorisation to stream that holding: the media server applies an '
-            . 'account\'s age limit and library access to whoever the stream is authorised as, so a '
-            . 'stream opened with the stack\'s own credential is one no limit applies to, and this app '
-            . 'holds no credential of the member\'s for the media server at all. What closes this row '
-            . 'is a location per holding and the member\'s authorisation for it, issued by the core '
-            . 'for the member who asked and saying when it stops standing — one address the core '
-            . 'signed, or an address and a grant beside it. Until both are carried, `N3-R15` cannot be '
-            . 'answered at all — playback cannot be declined for a reason by an app that has no way '
-            . 'to attempt it. The bridge has a player that plays only what it is handed, through the '
-            . 'door and over the pin, and `OnlyThePlayerPlaysMediaTest` refuses anything in the app '
-            . 'that hands it an address for as long as this row stands. '
-            . '`HouseholdEnvelope.members[].requests[].media` is the other '
-            . 'handle on this wire, and its row in `WhatThisAppDoesNotRead` is '
-            . 'read beside this one.',
-    ],
-    [
         'requirement' => 'N9-R7',
         'asks' => 'to tell an invitation that lapsed unaccepted from one the invitee declined',
         // Named, and watched as a whole payload: the distinction is two words

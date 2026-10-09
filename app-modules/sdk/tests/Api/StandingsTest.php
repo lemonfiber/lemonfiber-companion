@@ -84,6 +84,7 @@ function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently 
         'changes' => [],
         'confirmed' => false,
         'in_flight' => [],
+        'offer' => '5f3a9c1e',
         'stack_edits' => [],
         'changelog' => [
             'state' => 'pending',

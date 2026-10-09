@@ -109,6 +109,9 @@ final readonly class Fillers implements ChoosingAFiller
     {
         return match ($why->code()) {
             RefusalCode::NoSuchFiller => WhyTheFillWasTurnedDown::NoSuchService,
+            RefusalCode::AlreadyFills => WhyTheFillWasTurnedDown::AlreadyFills,
+            // A stack older than the code of its own says *already fills* as
+            // an advisory `CannotFill`.
             RefusalCode::CannotFill => Severity::tryFrom((string) $why->refusal()?->severity()) === Severity::Advisory
                 ? WhyTheFillWasTurnedDown::AlreadyFills
                 : WhyTheFillWasTurnedDown::CannotFill,

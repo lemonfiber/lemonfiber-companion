@@ -239,13 +239,11 @@ it('the player carries the grant as a bearer token and names no media server', f
         ->and($android)->toContain('get() = "Bearer $grant"');
 });
 
-it('nothing in the app opens the player while the contract says nowhere to stream from', function (): void {
-    // The half of this rule that waits on the core. The player plays what it is
-    // handed; until a holding carries where it streams from and the member's
-    // grant for it, anything handing the player an address composed it, which is
-    // the second copy of the library this refuses. The gap is the stream_from row
-    // in WhatTheContractDoesNotCarryTest, and the day it closes this test is the
-    // one to replace with the household's own player screen.
+it('nothing in the app opens the player', function (): void {
+    // The player plays what it is handed: where a title streams from and the
+    // door's fingerprint, as the core states them, and the member's grant. No
+    // screen here hands those over, so anything handing the player an address
+    // composed it, which is the second copy of the library this refuses.
     $found = [];
 
     foreach (['app', 'app-modules', 'bootstrap', 'routes'] as $tree) {
@@ -260,8 +258,8 @@ it('nothing in the app opens the player while the contract says nowhere to strea
 
     expect($found)->toBe([], sprintf(
         "These open the player:\n  %s\n\n"
-        . 'Nothing on the wire says where a holding is streamed from or authorises the member '
-        . 'to stream it, so whatever these hand the player was composed here (N3-R14, N3-R11).',
+        . 'No screen hands the player the core\'s location, the door\'s fingerprint and the member\'s '
+        . 'grant, so whatever these hand it was composed here (N3-R14, N3-R11).',
         implode("\n  ", $found),
     ));
 });

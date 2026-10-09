@@ -235,6 +235,9 @@ final readonly class WhatARefusalMeant
             RefusalCode::OfferMoved,
             RefusalCode::AnotherOffer,
             RefusalCode::PluginOfferMoved,
+            RefusalCode::RestartMoved,
+            RefusalCode::UpdateMoved,
+            RefusalCode::PausingMoved,
             RefusalCode::AnotherReading => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
             // The stack unable to read what it holds — its own description, or
             // the record of what is installed — and refusing a choice of what
@@ -292,7 +295,8 @@ final readonly class WhatARefusalMeant
             RefusalCode::NothingAsks,
             RefusalCode::ChoiceUnwritable,
             RefusalCode::WiringMoved,
-            RefusalCode::Unreasonable => self::byFamily($why),
+            RefusalCode::Unreasonable,
+            RefusalCode::AlreadyFills => self::byFamily($why),
         };
     }
 

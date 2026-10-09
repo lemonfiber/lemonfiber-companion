@@ -235,7 +235,8 @@ it('reads each refusal of a choice by its code, in words of its own', function (
 })->with([
     'no such service' => ['WIRE-1', 404, 'error', WhyTheFillWasTurnedDown::NoSuchService],
     'a service that cannot fill it' => ['WIRE-2', 400, 'error', WhyTheFillWasTurnedDown::CannotFill],
-    'a service that fills it already' => ['WIRE-2', 400, 'advisory', WhyTheFillWasTurnedDown::AlreadyFills],
+    'a service that fills it already' => ['WIRE-7', 400, 'advisory', WhyTheFillWasTurnedDown::AlreadyFills],
+    'a service that fills it already, said by an older stack' => ['WIRE-2', 400, 'advisory', WhyTheFillWasTurnedDown::AlreadyFills],
     'nothing asking for it' => ['WIRE-3', 400, 'warning', WhyTheFillWasTurnedDown::NothingAsks],
     'nowhere to keep it' => ['WIRE-4', 500, 'error', WhyTheFillWasTurnedDown::NowhereToKeepIt],
     'a reading that moved' => ['WIRE-5', 400, 'error', WhyTheFillWasTurnedDown::Moved],

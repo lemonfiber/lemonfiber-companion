@@ -543,6 +543,7 @@ function aStackJustUpdatedWithItsNotesPending(): array
         'state' => 'current',
         'confirmed' => false,
         'in_flight' => [],
+        'offer' => '5f3a9c1e',
         'stack_edits' => [],
         'applied' => [],
         'changes' => [],
@@ -569,6 +570,7 @@ function aStackWithOneServiceBehindItsPin(): array
         'state' => 'updates-available',
         'confirmed' => false,
         'in_flight' => [],
+        'offer' => '5f3a9c1e',
         'stack_edits' => [],
         'applied' => [],
         'changes' => [[

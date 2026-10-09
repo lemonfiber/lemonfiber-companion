@@ -102,7 +102,7 @@ it('refuses an answer in a wire version this app does not read', function (): vo
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {
-    $payload = ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => [
+    $payload = ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => [
         '/api/status' => 'available',
         '/api/actions/backup' => 'unconfigured',
         '/api/actions/invite' => 'unpermitted',

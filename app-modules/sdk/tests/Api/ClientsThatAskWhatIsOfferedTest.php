@@ -91,7 +91,7 @@ function theSessionAtTheGate(): Session
  */
 function whatTheStackAtTheGateDeclares(array $capabilities): MockResponse
 {
-    return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => $capabilities]]));
+    return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => $capabilities]]));
 }
 
 /** A stack older than the declaration. */
@@ -262,7 +262,7 @@ it('never sends an adapter\'s action to a stack too old for it, and says why on 
 });
 
 it('stands in for a stack with a declaration and a refusal the contract would accept', function (): void {
-    $declaration = ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['capabilities' => [
+    $declaration = ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => [
         Api::action(WhatToDoWithIt::Restart->asked()) => 'unpermitted',
     ]]];
     $refusal = ['api_version' => 1, 'kind' => 'error', 'data' => aRefusalOfAPathNobodyServes()];

@@ -227,7 +227,7 @@ it('confirms the update and names no services the action would refuse', function
         theUpdateTheAdapterIsHanded(),
     );
 
-    expect(whatWasSentAgreeing($mock))->toBe(['wait' => false, 'service' => null, 'confirm' => true]);
+    expect(whatWasSentAgreeing($mock))->toBe(['wait' => false, 'service' => null, 'offer' => null, 'confirm' => true]);
 });
 
 it('carries the agreement through to the job the stack started', function (): void {

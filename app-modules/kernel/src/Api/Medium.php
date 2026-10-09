@@ -12,7 +12,7 @@ use function sprintf;
  * The core's own list and the whole of it, which is what makes an enum right
  * here rather than {@see ServiceId}'s value object: the media a household keeps
  * is a closed set this product decides, not a set each machine declares. A
- * fourth kind arriving from a stack is a stack this build does not understand,
+ * kind arriving that this list does not name is a stack this build does not understand,
  * and it says so by name rather than by silently rendering as something else.
  *
  * No label. What a screen calls a film is text a person reads, so it comes from
@@ -26,6 +26,9 @@ enum Medium: string
 
     /** Episodes, which a shelf counts as one row rather than as many. */
     case Series = 'series';
+
+    /** One part of a series, as a member is part-way through it. */
+    case Episode = 'episode';
 
     /**
      * Something the core holds and this list has no better word for.

@@ -277,7 +277,7 @@ it('names a whole form under `forms`, and no service', function (): void {
     $sent = whatWasSentSaying(AgreedTo::theForm(WhatToDoWithIt::Restart, Form::called('downloads')));
 
     expect($sent->getUrl())->toEndWith('/api/actions/restart');
-    expect($sent->body()?->all())->toBe(['forms' => ['downloads'], 'services' => []]);
+    expect($sent->body()?->all())->toBe(['forms' => ['downloads'], 'services' => [], 'offer' => null]);
 });
 
 it('asks for a start at the same door as a stop', function (): void {

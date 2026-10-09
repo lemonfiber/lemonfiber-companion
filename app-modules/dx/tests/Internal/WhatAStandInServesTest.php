@@ -27,6 +27,6 @@ it('serves every request this app sends, each available', function (): void {
 });
 
 it('says so in a declaration the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('CapabilitiesEnvelope', ['api_version' => 1, 'kind' => 'capabilities', 'data' => WhatAStandInServes::everything()]))
+    expect(WhatTheContractAccepts::complaintsAbout('CapabilitiesEnvelope', ['api_version' => 1, 'kind' => 'capabilities', 'data' => WhatAStandInServes::declaration()]))
         ->toBe([]);
 });
