@@ -172,5 +172,10 @@ let package = Package(
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/ControllerRuleTests"
         ),
+        .testTarget(
+            name: "ExtraSubtitlesTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ExtraSubtitlesTests"
+        ),
     ]
 )

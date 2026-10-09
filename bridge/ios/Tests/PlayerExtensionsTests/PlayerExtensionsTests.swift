@@ -10,7 +10,8 @@ private let theFingerprint = "13ee3a6685a324f7ebbfebb922980ba07a74c0e54cf2243b2f
 
 private func asked(_ location: String = "https://door.home:8443/library/1/main.m3u8") -> WhatToPlay? {
     let request: [String: Any] = [
-        "location": location, "fingerprint": theFingerprint, "grant": "a-grant", "start_at": 0,
+        "location": location, "fingerprint": theFingerprint, "grant": "0123456789abcdef0123456789abcdef",
+        "start_at": 0,
     ]
 
     if case .toPlay(let asked) = WhatToPlay.read(request) {

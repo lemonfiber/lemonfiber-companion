@@ -160,7 +160,7 @@ public class DoorDataSource(
         one.useCaches = false
         one.connectTimeout = TIMEOUT_MS
         one.readTimeout = TIMEOUT_MS
-        one.setRequestProperty(GRANT_HEADER, GRANT_PREFIX + asked.grant)
+        one.setRequestProperty(WhatToPlay.GRANT_HEADER, asked.grantHeaderValue)
         range?.let { one.setRequestProperty("Range", it) }
 
         try {
@@ -206,12 +206,6 @@ public class DoorDataSource(
     }
 
     private companion object {
-        /** The header the grant is carried in. */
-        const val GRANT_HEADER = "Authorization"
-
-        /** How the grant is written in it. */
-        const val GRANT_PREFIX = "Bearer "
-
         /** How many redirects are followed before giving up. */
         const val REDIRECTS_FOLLOWED = 5
 

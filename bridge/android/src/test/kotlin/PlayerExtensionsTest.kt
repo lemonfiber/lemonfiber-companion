@@ -19,7 +19,7 @@ class PlayerExtensionsTest {
                 mapOf(
                     "location" to location,
                     "fingerprint" to theFingerprint,
-                    "grant" to "a-grant",
+                    "grant" to "0123456789abcdef0123456789abcdef",
                     "start_at" to 0,
                 ),
             )

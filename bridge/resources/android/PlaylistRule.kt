@@ -147,7 +147,7 @@ public class PlaylistRule(
         return scheme + absolute.substring(Door.SCHEME.length)
     }
 
-    private companion object {
+    internal companion object {
         /** What marks a variable in use, in a line or a value. */
         const val VARIABLE = "{$"
 

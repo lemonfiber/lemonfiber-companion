@@ -19,17 +19,15 @@ import UniformTypeIdentifiers
 /// nothing: no cache, no cookies, no credential store. A redirect is followed
 /// only to the same door.
 ///
+/// Subtitles an extension offers beside an HLS stream are joined to its master
+/// playlist (`ExtraSubtitles`) under a second private scheme, whose playlists
+/// this answers itself; the subtitle files are fetched like everything else.
+///
 /// What went wrong is kept for the screen to say: the pin refused, an address
 /// off the door, or the door's status.
 final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataDelegate {
     /// The private scheme every address is handed to AVPlayer under.
     static let scheme = "lfdoor"
-
-    /// The header the grant is carried in.
-    private static let grantHeader = "Authorization"
-
-    /// How the grant is written in it.
-    private static let grantPrefix = "Bearer "
 
     /// The playlist type, read off the address or the answer's type.
     private static let playlistTypes: Set<String> = [
@@ -44,6 +42,12 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
 
     /// How a playlist is rewritten before AVPlayer reads it.
     private let playlists: PlaylistRule
+
+    /// The address the stream itself is played from, whose playlist the extra subtitles are joined to.
+    private let top: String?
+
+    /// The subtitles extensions offer beside the stream.
+    private let extras: ExtraSubtitles
 
     /// The queue every callback here runs on, and the one the loader is handed.
     let queue = DispatchQueue(label: "app.lemonfiber.player.door")
@@ -89,10 +93,12 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
         }
     }
 
-    init(asked: WhatToPlay) {
+    init(asked: WhatToPlay, top: String?, extras: ExtraSubtitles) {
         self.asked = asked
         self.trust = DoorTrust(door: asked.door, pin: asked.pin)
         self.playlists = PlaylistRule(door: asked.door, scheme: Self.scheme)
+        self.top = top
+        self.extras = extras
     }
 
     /// An address at the door, as AVPlayer is handed it.
@@ -112,9 +118,17 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
         _ resourceLoader: AVAssetResourceLoader,
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
-        guard let handed = loadingRequest.request.url?.absoluteString,
-            handed.hasPrefix(Self.scheme + ":")
-        else {
+        guard let handed = loadingRequest.request.url?.absoluteString else {
+            return false
+        }
+
+        if handed.hasPrefix(ExtraSubtitles.scheme + ":") {
+            answerExtra(loadingRequest, at: handed)
+
+            return true
+        }
+
+        guard handed.hasPrefix(Self.scheme + ":") else {
             return false
         }
 
@@ -129,7 +143,7 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
         }
 
         var request = URLRequest(url: url)
-        request.setValue(Self.grantPrefix + asked.grant, forHTTPHeaderField: Self.grantHeader)
+        request.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
 
         let range = Self.range(of: loadingRequest)
 
@@ -200,7 +214,7 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
 
         var followed = request
         followed.url = admitted
-        followed.setValue(Self.grantPrefix + asked.grant, forHTTPHeaderField: Self.grantHeader)
+        followed.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
         completionHandler(followed)
     }
 
@@ -275,8 +289,31 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
             return
         }
 
-        one.request.dataRequest?.respond(with: Data(rewritten.utf8))
+        let joined = one.address == top ? extras.join(rewritten) : rewritten
+
+        one.request.dataRequest?.respond(with: Data(joined.utf8))
         one.request.finishLoading()
+    }
+
+    /// Answer the playlist of one joined subtitle rendition, written here rather than fetched.
+    private func answerExtra(_ loadingRequest: AVAssetResourceLoadingRequest, at handed: String) {
+        guard let track = extras.track(at: handed), let file = Self.handed(track.address)?.absoluteString
+        else {
+            refuse(loadingRequest, because: .refused)
+
+            return
+        }
+
+        let playlist = Data(ExtraSubtitles.playlist(playing: file).utf8)
+
+        if let information = loadingRequest.contentInformationRequest {
+            information.contentType = UTType.m3uPlaylist.identifier
+            information.contentLength = Int64(playlist.count)
+            information.isByteRangeAccessSupported = false
+        }
+
+        loadingRequest.dataRequest?.respond(with: playlist)
+        loadingRequest.finishLoading()
     }
 
     // MARK: - Helpers

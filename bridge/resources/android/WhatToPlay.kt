@@ -12,9 +12,11 @@ package app.lemonfiber.native
  *
  * **The grant travels in a header and never in an address.** One that is
  * already written into the location is refused rather than used, because an
- * address is what ends up in a log, a cache or a crash report. A grant with
- * anything in it a header cannot safely carry is refused for the same reason
- * a header with a line break in it is never sent.
+ * address is what ends up in a log, a cache or a crash report. **A grant is
+ * 32 lowercase hexadecimal digits**, as the media server issues one, and it
+ * is sent exactly so, as `Authorization: Bearer <grant>`: the door accepts
+ * that form and nothing else, and turns it into what the media server reads.
+ * The player names no media server's own header, token form or query key.
  *
  * Nothing here is ever logged. A refusal is one of the closed words below.
  *
@@ -34,6 +36,10 @@ public class WhatToPlay private constructor(
     /** What the member is shown and heard while it plays. */
     public val shown: HowToShowIt,
 ) {
+    /** How the grant is written in its header: exactly as it was issued, after one fixed word. */
+    public val grantHeaderValue: String
+        get() = "Bearer $grant"
+
     /** What the member is shown and heard while it plays. */
     public data class HowToShowIt(
         /** What the title is called, for the lock screen and the picture-in-picture window. */
@@ -82,11 +88,11 @@ public class WhatToPlay private constructor(
 
     /** How a request is read. */
     public companion object {
-        /** The lowest byte a header can carry: the first visible character. */
-        private const val FIRST_VISIBLE = 0x21
+        /** The header every request carries the grant in. */
+        public const val GRANT_HEADER: String = "Authorization"
 
-        /** The highest. */
-        private const val LAST_VISIBLE = 0x7E
+        /** How many digits a grant is, as the media server issues one. */
+        private const val GRANT_DIGITS = 32
 
         /**
          * The request the bridge carried, checked.
@@ -135,7 +141,7 @@ public class WhatToPlay private constructor(
             when {
                 door == null -> WhyNot.NOT_AT_A_DOOR
                 pin == null -> WhyNot.UNPINNED
-                !isCarriable(grant) -> WhyNot.NO_GRANT
+                !isAGrant(grant) -> WhyNot.NO_GRANT
                 location.contains(grant) -> WhyNot.GRANT_IN_THE_ADDRESS
                 startAt == null -> WhyNot.NO_STARTING_POINT
                 else -> null
@@ -147,8 +153,8 @@ public class WhatToPlay private constructor(
             key: String,
         ): String = parameters[key] as? String ?: ""
 
-        /** Whether a grant is one a header can carry: something, and only visible ASCII. */
-        private fun isCarriable(grant: String): Boolean =
-            grant.isNotEmpty() && grant.all { it.code in FIRST_VISIBLE..LAST_VISIBLE }
+        /** Whether a grant is one as the media server issues it: 32 lowercase hexadecimal digits. */
+        private fun isAGrant(grant: String): Boolean =
+            grant.length == GRANT_DIGITS && grant.all { it in '0'..'9' || it in 'a'..'f' }
     }
 }
