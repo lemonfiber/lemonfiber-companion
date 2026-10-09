@@ -84,6 +84,37 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'PartWayEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'PartWayEnvelope.id',
+            'because' => 'The member it was read for, by the media server\'s id, echoed back, for `HeldEnvelope.member`\'s reason: the app named the member in the request.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.member',
+            'because' => 'The member it was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.available',
+            'because' => 'Whether the library could be reached when it was read. Home reads that off the shelf, '
+                . 'asked beside this, and says it there once; a row of what the member was part-way through '
+                . 'that the library could not answer has nothing in it, and a row with nothing in it is not drawn.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.findings',
+            'because' => 'What the core found while reading it, for `PartWayEnvelope.available`\'s reason: the '
+                . 'shelf\'s own findings are what Home says.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.part_way[].poster',
+            'because' => 'Where its poster is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.part_way[].backdrop',
+            'because' => 'Where its backdrop is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
             'path' => 'PairingEnvelope.material.stack',
             'because' => 'The stack\'s own identifier, carried inside the pairing line for the other phone to know this stack by. Nothing on the screen that makes the code names it, and no requirement asks it to.',
         ],

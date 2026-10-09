@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\WhatTheTitleIs;
+use Modules\Kernel\Api\WhatTheyArePartWayThrough;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
@@ -65,9 +66,32 @@ final readonly class Shelves implements Watching
     }
 
     #[Override]
+    public function partWayThrough(Stack $stack, Session $session, Whose $whose): WhatTheyArePartWayThrough
+    {
+        return $whose->either(
+            operator: static fn(): WhatTheyArePartWayThrough => WhatTheyArePartWayThrough::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
+            member: fn(string $member): WhatTheyArePartWayThrough => $this->readWhereTheyLeftOff($stack, $session, $member),
+        );
+    }
+
+    #[Override]
     public function theDefaultShelf(Stack $stack, Session $session): WhatTheyMayWatch
     {
         return $this->read($stack, $session, AsTheHouseholdsDefaults::QUERY);
+    }
+
+    /** What that member's account was part-way through, or why it could not be had. */
+    private function readWhereTheyLeftOff(Stack $stack, Session $session, string $member): WhatTheyArePartWayThrough
+    {
+        $client = GatedClient::of($this->clients, $stack, $session);
+
+        try {
+            return WhatTheyArePartWayThrough::told(WhereTheyLeftOff::in($client->read(Api::WATCHING_ENDPOINT, ['member' => $member])));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatTheyArePartWayThrough::refused(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|PartWayIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing $why) {
+            return WhatTheyArePartWayThrough::refused($this->clients->whatStoodInTheWay($stack, $why));
+        }
     }
 
     /** One title as that member's account reads it, or why it could not be had. */

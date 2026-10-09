@@ -18,8 +18,11 @@ because how a house's machine stands is the operator's to read. The operator's
 screens are never built for a member's session: the composition root builds
 Home in their place.
 
-**Home leads with what is theirs.** `WhatYouCanWatch` asks for two things: the
-member's own requests and their shelf. `HowTheirOwnTitlesRead` turns the
+**Home leads with what is theirs.** `WhatYouCanWatch` asks for three things:
+what the member was part-way through, their own requests and their shelf.
+`HowWhereTheyLeftOffReads` turns the first into *Carry on watching*, most
+recent first, each poster saying how long is left; pressing one plays it on
+from where they left off, as the core answers it again. `HowTheirOwnTitlesRead` turns the
 requests into *Ready for you*, what has arrived in whole or in part, and *On
 its way*, what is waiting for a yes, being fetched or partly here. Which
 standing belongs to which row is `Waiting`'s to say. A request is a poster

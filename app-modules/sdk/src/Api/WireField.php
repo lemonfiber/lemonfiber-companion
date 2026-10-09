@@ -814,6 +814,15 @@ enum WireField: string implements NamesAWireField
     /** A certificate's fingerprint: in pairing material, and on the door a title's location is pinned to. */
     case Fingerprint = 'fingerprint';
 
+    /** How far into a title a member is, in whole seconds: told by the player, and answered of what they were part-way through. */
+    case Position = 'position';
+
+    /** Where a title, an episode or something part-way through streams from at the household's door. */
+    case StreamFrom = 'stream_from';
+
+    /** Why no location is stated beside a title, an episode or something part-way through, where none is. */
+    case Unlocated = 'unlocated';
+
     /** What kind of thing a holding is: on the shelf, and on a title read in full. */
     case Medium = 'medium';
 

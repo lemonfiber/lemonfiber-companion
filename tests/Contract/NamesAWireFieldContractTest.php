@@ -32,6 +32,7 @@ use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PairingField;
+use Modules\Sdk\Api\Fields\PartWayField;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
@@ -94,6 +95,7 @@ function everyFieldNamedOnTheWire(): array
         ...HandoffField::cases(),
         ...GrantField::cases(),
         ...WatchedField::cases(),
+        ...PartWayField::cases(),
         ...HeldField::cases(),
         ...TitleField::cases(),
         ...FrontDoorField::cases(),

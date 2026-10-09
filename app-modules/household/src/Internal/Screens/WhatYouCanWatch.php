@@ -9,6 +9,7 @@ use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Presenters\HowTheirOwnTitlesRead;
+use Modules\Household\Internal\Presenters\HowWhereTheyLeftOffReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sentences;
@@ -38,7 +40,9 @@ use Native\Mobile\Edge\NativeComponent;
  * what is theirs.
  *
  * The member's Home tab, where a member lands. It leads with their own
- * titles, what they asked for that has arrived and what is on its way, and
+ * titles: what they were part-way through, which plays on from where they
+ * left off when pressed, what they asked for that has arrived and what is on
+ * its way, and
  * then draws their shelf: the newest title in the house across the screen,
  * and the rows. Which libraries they reach, what their age limit allows and
  * what they are entitled to were decided by the core before the list
@@ -90,6 +94,9 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
     /** What came back when their own requests were asked for, once the frame has asked. */
     public ?WhatTheirOwnTitlesTurnedOutToBe $theirs = null;
 
+    /** What came back when what they were part-way through was asked for, once the frame has asked. */
+    public ?WhatTheirOwnTitlesTurnedOutToBe $leftOff = null;
+
     public function __construct(
         private readonly Watching $watching,
         private readonly Owing $owing,
@@ -109,6 +116,18 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
     public function theirOwn(): WhatTheirOwnTitlesTurnedOutToBe
     {
         return $this->theirs ??= $this->askForTheirOwn();
+    }
+
+    /** What they were part-way through, asked once per frame. */
+    public function whereTheyLeftOff(): WhatTheirOwnTitlesTurnedOutToBe
+    {
+        return $this->leftOff ??= $this->askWhereTheyLeftOff();
+    }
+
+    /** Whether what they were part-way through could not be asked for while the shelf answered, for {@see theirOwnWereStopped()}'s reason. */
+    public function leftOffWasStopped(): bool
+    {
+        return $this->answer()->cameBack() && $this->whereTheyLeftOff()->wasStopped();
     }
 
     /**
@@ -134,6 +153,7 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
     {
         $this->answered = null;
         $this->theirs = null;
+        $this->leftOff = null;
     }
 
     /** Play the title across the screen, by the id the core lists it under. */
@@ -142,6 +162,15 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         if ($title !== '') {
             $held = HoldingId::called($title);
             $this->pressed($held, $this->titles->theTitle($this->stack(), $held));
+        }
+    }
+
+    /** Play on something they were part-way through from where they left off, by the id the core lists it under. */
+    public function resume(string $partWay): void
+    {
+        if ($partWay !== '') {
+            $held = HoldingId::called($partWay);
+            $this->pressed($held, $this->titles->whereTheyLeftOff($this->stack(), $held));
         }
     }
 
@@ -210,6 +239,21 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
                 },
             ),
             notHeld: static fn(): WhatTheirOwnTitlesTurnedOutToBe => new HowTheirOwnTitlesRead()->signedOut(),
+        );
+    }
+
+    /** Resume the session and ask what they were part-way through, or say the session has ended. */
+    private function askWhereTheyLeftOff(): WhatTheirOwnTitlesTurnedOutToBe
+    {
+        $stack = $this->stack();
+        $reads = new HowWhereTheyLeftOffReads();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session, Whose $whose): WhatTheirOwnTitlesTurnedOutToBe => $this->watching->partWayThrough($stack, $session, $whose)->either(
+                told: static fn(PartWays $partWay): WhatTheirOwnTitlesTurnedOutToBe => $reads->these($partWay),
+                refused: $this->lettingGoIfRefused($stack, $reads->met(...)),
+            ),
+            notHeld: static fn(): WhatTheirOwnTitlesTurnedOutToBe => $reads->signedOut(),
         );
     }
 

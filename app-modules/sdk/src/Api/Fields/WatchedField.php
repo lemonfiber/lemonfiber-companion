@@ -17,9 +17,6 @@ enum WatchedField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** How far in the member is, in whole seconds. */
-    case Position = 'position';
-
     /** Whether the member finished it. */
     case Ended = 'ended';
 }

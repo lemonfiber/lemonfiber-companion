@@ -6,6 +6,7 @@ use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\AnEpisode;
+use Modules\Kernel\Api\APartWay;
 use Modules\Kernel\Api\ASeason;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\ATitleToPlay;
@@ -14,12 +15,14 @@ use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\HowLongItRuns;
 use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\NumberedAs;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Seasons;
 use Modules\Kernel\Api\WhatTheTitleIs;
 use Modules\Kernel\Api\WhenItCameOut;
@@ -181,6 +184,12 @@ function aHomeToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $play
     return $home;
 }
 
+/** Alien, twenty minutes into its 117, where the core says it plays. */
+function alienPartWay(): PartWays
+{
+    return PartWays::of(APartWay::of(ATitleThatPlays::alien()->holding(), HowFarIn::at(1_200), 7_020, ATitleThatPlays::streamingAtTheDoor('a1')));
+}
+
 it('plays the title across Home from its Play', function (): void {
     $player = APlayerOnAHandset::working();
     $home = aHomeToPressPlayOn(ATitleThatPlays::onTheShelf(), $player);
@@ -209,4 +218,48 @@ it('says on Home what stood in the way of asking for the title', function (): vo
 
     expect($player->opened())->toBe([])
         ->and($home->answer()->cameBack())->toBeFalse();
+});
+
+it('leads Home with what the member was part-way through, and how long is left', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(aHomeToPressPlayOn(ATitleThatPlays::onTheShelf()->answeringPartWay(alienPartWay()), APlayerOnAHandset::working()));
+
+    $row = array_search(__('household.shelf.carry_on'), $drawn->said(), strict: true);
+
+    expect($row)->toBeInt()
+        ->and($drawn->said()[(int) $row + 1])->toBe(__('household.poster.reads_part_way', ['title' => 'Alien']))
+        ->and($drawn->said())->toContain(__('household.poster.left', ['minutes' => '97']))
+        ->and($drawn->offers())->toContain(__('household.poster.reads_part_way', ['title' => 'Alien']));
+});
+
+it('plays something part-way through on from where the member left off, as the core answers it again', function (): void {
+    $watching = ATitleThatPlays::onTheShelf()->answeringPartWay(alienPartWay());
+    $player = APlayerOnAHandset::working();
+    $home = aHomeToPressPlayOn($watching, $player);
+
+    $home->resume('a1');
+    $home->resume('');
+    $home->resume('not-part-way');
+
+    expect(whatThePlayerWasGiven($player))->toBe([sprintf(
+        'https://192.168.1.42:8920/Videos/a1/master.m3u8 | %s | %s | 1200 | Alien',
+        str_repeat('d', 64),
+        TheTitlesOnScreen::aGrant()->forTheDoor(),
+    )])
+        ->and($watching->partWayAskings())->toBe(2);
+});
+
+it('draws no row where the member was part-way through nothing', function (): void {
+    $home = aHomeToPressPlayOn(ATitleThatPlays::onTheShelf(), APlayerOnAHandset::working());
+    $drawn = WhatTheDeviceWouldDraw::by($home);
+
+    expect($home->whereTheyLeftOff()->cameBack)->toBeTrue()
+        ->and($drawn->said())->not->toContain(__('household.shelf.carry_on'));
+});
+
+it('says what stood in the way where only what they were part-way through could not be asked for, and offers to ask again', function (): void {
+    $home = aHomeToPressPlayOn(ATitleThatPlays::onTheShelf()->refusingPartWay(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), APlayerOnAHandset::working());
+    $drawn = WhatTheDeviceWouldDraw::by($home);
+
+    expect($home->leftOffWasStopped())->toBeTrue()
+        ->and($drawn->offers())->toContain(__('household.ask_again'));
 });

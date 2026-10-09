@@ -355,6 +355,8 @@ final readonly class EveryAdapterCallThatReads
             'Shelves::theDefaultShelf' => static fn(): object => new Shelves($clients)->theDefaultShelf($stack, $session),
             'Shelves::theTitle' => static fn(): object
                 => new Shelves($clients)->theTitle($stack, $session, Whose::member('robin'), HoldingId::called('a1')),
+            'Shelves::partWayThrough' => static fn(): object
+                => new Shelves($clients)->partWayThrough($stack, $session, Whose::member('robin')),
             'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
             'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
             'Supervisors::formsOn' => static fn(): object => new Supervisors($clients, $entropy)->formsOn($stack, $session),
