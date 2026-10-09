@@ -7,6 +7,8 @@ namespace Modules\Wayfinding\Api;
 use Modules\Kernel\Api\WhichTab;
 use Modules\Stacks\Api\AStacksScreen;
 
+use function sprintf;
+
 /**
  * The four tabs of the operator's bottom bar, in the order it draws them.
  *
@@ -41,6 +43,34 @@ enum TheTabs: string
             self::Services => AStacksScreen::Services,
             self::Updates => AStacksScreen::Updates,
             self::Repairs => AStacksScreen::Repairs,
+        };
+    }
+
+    /** The catalogue key of the tab's label. */
+    public function said(): string
+    {
+        return sprintf('navigation.%s', $this->value);
+    }
+
+    /** The Material icon Android draws above the label. */
+    public function glyph(): string
+    {
+        return match ($this) {
+            self::Health => 'home',
+            self::Services => 'apps',
+            self::Updates => 'download',
+            self::Repairs => 'build',
+        };
+    }
+
+    /** The SF Symbol iOS draws above the label. */
+    public function iosGlyph(): string
+    {
+        return match ($this) {
+            self::Health => 'house',
+            self::Services => 'square.grid.2x2',
+            self::Updates => 'arrow.down.circle',
+            self::Repairs => 'wrench.and.screwdriver',
         };
     }
 }

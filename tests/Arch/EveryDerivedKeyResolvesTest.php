@@ -90,6 +90,7 @@ use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
+use Modules\Wayfinding\Api\TheTabs;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
@@ -494,6 +495,10 @@ function everyDerivedKey(): array
         TheHouseholdsTabs::class => aPairPerCase(
             TheHouseholdsTabs::cases(),
             static fn(TheHouseholdsTabs $tab): array => [$tab->said()],
+        ),
+        TheTabs::class => aPairPerCase(
+            TheTabs::cases(),
+            static fn(TheTabs $tab): array => [$tab->said()],
         ),
         WhoTheSettingsSpeakTo::class => aPairPerCase(
             WhoTheSettingsSpeakTo::cases(),
