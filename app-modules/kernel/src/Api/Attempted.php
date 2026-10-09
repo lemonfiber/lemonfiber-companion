@@ -9,10 +9,9 @@ use Closure;
 /**
  * What became of an action the operator asked for.
  *
- * `ADR-0020` is the design, and the requirement is this: an action the app
- * could not deliver is **refused rather than retained**. The obvious kindness —
- * hold it and send it when the stack comes back — is the thing the ADR spends
- * its length rejecting, because an action queued on a phone is an action the
+ * An action the app could not deliver is **refused rather than retained**.
+ * The obvious kindness — hold it and send it when the stack comes back — is
+ * the thing this refuses, because an action queued on a phone is an action the
  * operator believes has happened, applied at a moment nobody chose, against a
  * stack whose state has moved on.
  *

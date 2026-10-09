@@ -78,7 +78,7 @@ function whenItIsRead(int $at = NOW): FrozenClock
 }
 
 it('carries the fingerprint the stack will present', function (): void {
-    // `ADR-0018`: the fingerprint comes from this material and never from the
+    // The fingerprint comes from this material and never from the
     // network. A fingerprint learned from the connection it is meant to
     // validate proves nothing — somebody carried this across the gap, and the
     // gap is what makes it worth anything.

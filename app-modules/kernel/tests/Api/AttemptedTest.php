@@ -62,8 +62,8 @@ it('says the stack received it', function (): void {
 });
 
 it('refuses an action it could not deliver', function (): void {
-    // Refused rather than retained. ADR-0020 spends its length rejecting the
-    // obvious kindness of holding it until the stack comes back.
+    // Refused rather than retained: holding it until the stack comes back is
+    // the obvious kindness this app refuses.
     expect(howItWent(Attempted::refused(theStackAskedOf(), itNeverArrived())))->toBe(sprintf('COMPANION-UNREACHABLE on %s', THE_STACK_ASKED));
 });
 

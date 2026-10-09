@@ -22,7 +22,7 @@ use function strtolower;
 /**
  * S3 — certificate verification is never turned off.
  *
- * ADR-0018 pins a stack's certificate by a fingerprint taken from the pairing
+ * The app pins a stack's certificate by a fingerprint taken from the pairing
  * material, which is what makes a self-hosted stack on a home network safe to
  * talk to without a public certificate authority. A global verify-off switch
  * defeats that silently: the pin is still there, still compared, and no longer

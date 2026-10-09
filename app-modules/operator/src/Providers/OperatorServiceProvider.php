@@ -138,7 +138,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // of another screen.
             //
             // Two screens rather than one with a switch, because they are not
-            // the same flow with a different input widget. ADR-0018 puts a
+            // the same flow with a different input widget. The pairing design puts a
             // software comparison on the scanned road and a person
             // on the typed one, so one of them has a confirmation step and the
             // other must not be able to reach one.

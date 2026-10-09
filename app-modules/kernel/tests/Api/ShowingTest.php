@@ -49,7 +49,7 @@ it('a retained reading is shown rather than covered by a spinner', function (): 
     // being cautious — it throws away the only thing it had, and the operator
     // watches an empty screen for as long as a stack takes to answer.
     //
-    // ADR-0019 publishes the frame before the read is issued, so the value is
+    // A screen publishes its frame before the read is issued, so the value is
     // there at paint time: the spinner is a decision, not a consequence.
     $remembered = Reading::retained(Findings::none(), Instant::atEpochSeconds(WHEN_IT_WAS_READ));
 

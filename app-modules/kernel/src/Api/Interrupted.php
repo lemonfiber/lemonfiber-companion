@@ -32,7 +32,7 @@ use Closure;
  * collapse is silent.
  *
  * **The pairing survives.** A credential expiring is not the machine
- * changing, which `ADR-0018` is explicit about, and re-pairing on a session
+ * changing, and re-pairing on a session
  * ending would throw away a pinned fingerprint that is still correct — and then
  * ask the operator to accept a new one, which is a habit an attacker would like
  * them to have. This type names its stack with a {@see StackId} and touches

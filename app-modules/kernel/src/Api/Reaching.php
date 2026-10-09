@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * A way to reach one stack, built for that stack and nothing else.
  *
- * The port `ADR-0018` makes necessary. A client that could be built from an
+ * The port pinning makes necessary. A client that could be built from an
  * address alone is a client that can be built for a machine nobody pinned, and
  * the whole trust model is that no such client exists: a stack is reached under
  * the certificate its pairing material promised, or it is not reached.

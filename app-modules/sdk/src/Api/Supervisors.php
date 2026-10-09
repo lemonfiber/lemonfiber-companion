@@ -73,8 +73,8 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * the attempt it was made for, so this asks {@see Entropy} for a fresh one at
  * the moment of sending and keeps nothing. {@see Supervising} deliberately
  * does not take one — a port that accepted a key is a port a caller can hand
- * the same key to twice, which is the replay `ADR-0020` argues at length
- * against, arriving through the one door built to prevent it.
+ * the same key to twice, which is the replay an action held for later
+ * would be, arriving through the one door built to prevent it.
  *
  * **Following a verb carries no key**, for {@see Copiers}' reason: it asks
  * after work already named and changes nothing. What the verb came to is read

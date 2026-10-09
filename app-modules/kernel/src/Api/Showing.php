@@ -18,7 +18,7 @@ use Closure;
  * one.** A screen that has a number from yesterday and paints a spinner over it
  * while refreshing is not being cautious — it is throwing away the only thing it
  * had, and the operator watches an empty screen for as long as a stack takes to
- * answer. `ADR-0019` has the frame published before the read is issued, which
+ * answer. A screen's frame is published before the read is issued, which
  * means the value is there at paint time: the spinner is a decision, not a
  * consequence.
  *

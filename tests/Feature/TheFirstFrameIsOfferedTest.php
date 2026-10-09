@@ -355,7 +355,7 @@ it('both roads into pairing are registered, and each is its own screen', functio
     // scanning screen would satisfy a count and leave a device with no camera
     // unable to pair at all, which is the case the alternative is about.
     //
-    // They are separate screens rather than one with a switch because ADR-0018
+    // They are separate screens rather than one with a switch because pairing
     // puts a software comparison on the scanned road and a person on
     // the typed one — so one of them has a confirmation step and the other must
     // not be able to reach one.

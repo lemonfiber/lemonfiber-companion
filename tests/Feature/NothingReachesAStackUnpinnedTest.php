@@ -12,7 +12,7 @@ use Tests\Support\Tree;
 /**
  * Nothing connects to a stack without pinning.
  *
- * `ADR-0018` is the whole trust model: the fingerprint comes from the pairing
+ * This is the whole trust model: the fingerprint comes from the pairing
  * material and never from the network, the app pins it against the stack, and
  * every later connection is checked against it **whether or not the platform's
  * trust store would accept the certificate**. A connection that skips the check
@@ -31,18 +31,18 @@ use Tests\Support\Tree;
  * Both were questions for the specification rather than patches to write here —
  * [spec#332](https://github.com/lemonfiber/spec/issues/332) for the seam,
  * [spec#337](https://github.com/lemonfiber/spec/issues/337) for the address —
- * and `ADR-0025` answered them together, because neither closes alone: a seam
+ * and one decision answered them together, because neither closes alone: a seam
  * above an address check that refuses first is never reached, and a relaxed
- * address with no pin is the thing `ADR-0018` exists to prevent.
+ * address with no pin is the thing pinning exists to prevent.
  *
  * The decision that came back is not the one that was proposed. Pinning the
  * public key instead of the certificate would survive renewal, which sounds
- * like an argument for it — and is the argument against, because `ADR-0018`
+ * like an argument for it — and is the argument against, because the trust model
  * decided deliberately that rotation must be *loud*. What settled it was
  * measurement rather than reasoning: both digests can be enforced during the
  * handshake, so the certificate digest gives up nothing, and the option that
  * would have carried the public key is deprecated in the transport while the
- * one matching `ADR-0018` is supported.
+ * one matching the certificate pin is supported.
  *
  * So the value is unchanged and its written form is fixed — SHA-256 over the
  * DER encoding, lower-case hex — which is the half of that confusion no type

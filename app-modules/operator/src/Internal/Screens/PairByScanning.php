@@ -33,7 +33,7 @@ use function trim;
 /**
  * Pairing a stack by pointing the camera at the code on its screen.
  *
- * The first road, and the one `ADR-0018` built the design around: the
+ * The first road, and the one the pairing design was built around: the
  * digest arrives in the payload rather than being read off a screen by a
  * person, so the comparison happens in software and **nobody compares hex**.
  * That is why this screen has no confirmation step and {@see PairByTyping} does

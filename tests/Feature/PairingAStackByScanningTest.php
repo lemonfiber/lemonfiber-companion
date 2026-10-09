@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 
-// Pairing with a camera, where nobody compares hex (`ADR-0018`).
+// Pairing with a camera, where nobody compares hex.
 //
 // The road the design was built around. The digest arrives in the payload, so
 // the comparison happens in software and there is no confirmation step — which
@@ -128,7 +128,7 @@ it('says nothing about the camera before anybody has opened it', function (): vo
 });
 
 it('pairs the stack from what the camera read, with nothing to confirm', function (): void {
-    // ADR-0018's whole point. The digest came in the payload, so there is no
+    // The whole point of pairing by camera. The digest came in the payload, so there is no
     // fingerprint on the glass and no operator answer — `Introducing::stack()`
     // is the scanned road and this screen cannot reach the other one.
     $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));

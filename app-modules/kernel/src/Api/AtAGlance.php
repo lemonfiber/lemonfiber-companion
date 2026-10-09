@@ -15,7 +15,7 @@ use function mb_str_split;
  * A fingerprint in a form a person can actually check.
  *
  * The confirmation needs this and `Fingerprint` deliberately refuses to provide it, and
- * the tension between those two is the whole design. `ADR-0018` rejects the
+ * the tension between those two is the whole design. The pairing design refuses the
  * human-read fingerprint by name — it "asks a person to compare sixty-four hex
  * characters across two screens. People check the first four and the last four,
  * or they press accept." That is why `Fingerprint` has no `shown()`.

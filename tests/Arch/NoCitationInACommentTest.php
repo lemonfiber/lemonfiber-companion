@@ -6,7 +6,8 @@ use Tests\Support\OurCode;
 use Tests\Support\TestTitles;
 use Tests\Support\Tree;
 
-// GOV-R6 — a requirement identifier does not belong in a code comment.
+// GOV-R6 — a citation does not belong in a code comment: neither a requirement
+// identifier nor the number of a decision record.
 //
 // Every implementation repository in the org carries none: `sdk-php`, `sdk-ts`
 // and `lemonfiber-web` have zero identifiers in source, and the Rust stack keeps
@@ -28,14 +29,19 @@ use Tests\Support\Tree;
 // which rule it is.
 
 /**
- * How a requirement identifier is spelled, wherever one is looked for.
+ * How a citation is spelled, wherever one is looked for: a requirement
+ * identifier, or a decision record's number.
+ *
+ * A decision record is superseded the way a requirement is, and a number in a
+ * comment rots with it just as silently. What the record decided is said in
+ * the comment's own words instead.
  *
  * One pattern rather than one per reader. The two rules below ask the same
  * question of two languages, and a spelling that drifted would make one of them
  * quietly narrower than the other — which is the shape of a rule that reports
  * nothing because it is looking for something nobody writes.
  */
-const A_REQUIREMENT_IDENTIFIER = '/\b[A-Z]+\d*-R\d+\b/';
+const A_CITATION = '/\b(?:[A-Z]+\d*-R\d+|ADR-\d+)\b/';
 
 /**
  * Whether a line is a comment, by the four markers this repository writes one
@@ -73,7 +79,7 @@ function whatOneFileStillNames(string $path): array
         // compile, and this one is a literal — but the analyser cannot know
         // that, and a cast would be a claim rather than a check.
         $matched = aCommentRatherThanCode($line)
-            ? preg_match_all(A_REQUIREMENT_IDENTIFIER, $line, $named)
+            ? preg_match_all(A_CITATION, $line, $named)
             : 0;
 
         if (is_int($matched) && $matched > 0) {
@@ -102,7 +108,7 @@ function whatStillNamesARequirement(): array
         // This file has to name the rule it keeps in order to say which rule it
         // is, which `Rules::THAT_ONLY_NAME_THEM` already allows for the three
         // files that can only speak about rules by naming them.
-        if ($path === Tree::at('tests/Arch/NoRequirementIdInACommentTest.php')) {
+        if ($path === Tree::at('tests/Arch/NoCitationInACommentTest.php')) {
             continue;
         }
 
@@ -118,7 +124,7 @@ it('no comment names a requirement', function (): void {
     sort($found);
 
     expect($found)->toBe([], sprintf(
-        "These comments name a requirement:\n  %s\n\n"
+        "These comments cite a requirement or a decision record:\n  %s\n\n"
         . 'An identifier in a comment gestures at a page rather than saying anything, and rots '
         . 'the moment that page is superseded — silently, because nothing reads a comment. Keep '
         . 'the sentence, which says why the code is the way it is, and put the number in the '
@@ -137,7 +143,7 @@ function everyTitleNamingARequirement(): array
     $found = [];
 
     foreach (TestTitles::everyOne() as $where => $title) {
-        if (preg_match(A_REQUIREMENT_IDENTIFIER, $title) === 1) {
+        if (preg_match(A_CITATION, $title) === 1) {
             $found[] = sprintf('%s: %s', $where, $title);
         }
     }
@@ -248,7 +254,7 @@ function whereANativeSourceNamesOne(string $path, string $source): array
     $found = [];
 
     foreach (explode("\n", $source) as $offset => $line) {
-        if (preg_match(A_REQUIREMENT_IDENTIFIER, $line) === 1) {
+        if (preg_match(A_CITATION, $line) === 1) {
             $found[] = sprintf('%s:%d: %s', $path, $offset + 1, trim($line));
         }
     }

@@ -19,7 +19,7 @@ use function trim;
  *
  * Where the stack is and which certificate it will present, and the pairing of
  * those two is the whole point; with them, which stack it is, in its own
- * words, so a second code for the same machine names the same machine. `ADR-0018` is the design —
+ * words, so a second code for the same machine names the same machine. The design is this —
  * **the fingerprint comes from this material and never from the network**,
  * because a fingerprint learned from the connection it is meant to
  * validate proves nothing at all. Somebody carries it across the gap by eye or

@@ -48,7 +48,7 @@ function aSession(): Session
 it('builds a client for a stack on the network, held to its certificate', function (): void {
     // The whole point of the adapter, and both halves of it are asked for
     // rather than the return type. A client for `192.168.1.42` is what the SDK
-    // refused outright before ADR-0025 and now permits only where a pin was
+    // once refused outright and now permits only where a pin was
     // supplied — so the address it carries is the stack's, and the digest the
     // handshake compares the peer against is the one the stack presents rather
     // than a default, an empty one, or a digest from somewhere else.
