@@ -29,6 +29,7 @@ use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\TheLock;
+use Modules\Connection\Api\ThisDeviceKept;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
@@ -56,7 +57,9 @@ use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\ForgetsOldReadings;
 use Modules\Kernel\Api\HoldsTheSealKeys;
+use Modules\Kernel\Api\KeepingTheGrant;
 use Modules\Kernel\Api\KeepsReadingsFor;
+use Modules\Kernel\Api\KnowingThisDevice;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
@@ -87,6 +90,7 @@ use Modules\Services\Internal\Store\ListingsInTheDatabase;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Updates\Internal\UpkeepReadingsKept;
+use Modules\Vault\Api\PlatformGrants;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
@@ -389,6 +393,14 @@ final class CompositionRoot extends ServiceProvider
             static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore(), new PlatformStacks(new PlatformStore())),
         );
 
+        // The grant this device plays a member's titles with on each stack, in
+        // the same store and bound the same way. A keeper of the stack, so
+        // Remove from phone lets it go.
+        $this->app->bind(
+            KeepingTheGrant::class,
+            static fn(): KeepingTheGrant => new PlatformGrants(new PlatformStore()),
+        );
+
         // Where the operator was: the stack last on view and the tab last used
         // on each, in the same store and bound the same way. A marker, so it
         // goes with Clear saved data and with Remove from phone.
@@ -443,6 +455,9 @@ final class CompositionRoot extends ServiceProvider
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
 
+        // The id this install plays under, kept sealed with those settings.
+        $this->app->bind(KnowingThisDevice::class, ThisDeviceKept::class);
+
         // What `news` keeps of each stack: the kinds marked as new and the
         // newest of each seen, sealed by `news` before they reach it.
         $this->app->bind(NewsKept::class, NewsInTheDatabase::class);
@@ -486,7 +501,7 @@ final class CompositionRoot extends ServiceProvider
         // once, then the session, the readings and the markers. What was begun
         // is recorded in the same secure store as the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

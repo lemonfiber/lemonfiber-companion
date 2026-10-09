@@ -145,6 +145,11 @@ function theEnvelopesBuiltFor(string $which, string $endpoint, string ...$asked)
     return match ($which) {
         'Guides::whatBecameOf' => [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()],
         'Resetters::whatBecameOf' => [WhatAResetSays::envelope(confirmed: false)],
+        // A grant the door would take: a synthesised token is a word, which is
+        // refused as a token, so the call would never read an answer to spoil.
+        'Grantors::aGrantFor' => [['api_version' => 1, 'kind' => 'grant', 'data' => [
+            'member' => 'ada', 'granted' => true, 'token' => str_repeat('0a', 16), 'lasts_until' => '2099-01-01', 'rehearsed' => false,
+        ]]],
         default => theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked),
     };
 }
@@ -369,7 +374,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf'], strict: true)
+            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf', 'Grantors::aGrantFor'], strict: true)
                 ? MockResponse::make($sent[0])
                 : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },

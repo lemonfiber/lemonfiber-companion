@@ -12,9 +12,11 @@ use function json_decode;
 use function json_encode;
 
 use Modules\Kernel\Api\DaysAsked;
+use Modules\Kernel\Api\DeviceIdIsUnfit;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Unsealed;
 
 /**
@@ -36,6 +38,9 @@ final readonly class TheSettingsAsKept
     /** Written in place of a count where readings are kept until they are removed. */
     private const string UNTIL_REMOVED = 'until_removed';
 
+    /** Where the id this install plays under is written. */
+    private const string DEVICE = 'plays_as';
+
     public static function written(ThePhonesSettings $settings): Unsealed
     {
         return Unsealed::of((string) json_encode([
@@ -44,6 +49,7 @@ final readonly class TheSettingsAsKept
                 days: static fn(int $days): WrittenAs => new WrittenAs($days),
                 untilRemoved: static fn(): WrittenAs => new WrittenAs(self::UNTIL_REMOVED),
             )->value,
+            self::DEVICE => $settings->device instanceof ThisDevice ? $settings->device->shown() : null,
         ]));
     }
 
@@ -63,6 +69,7 @@ final readonly class TheSettingsAsKept
         return new ThePhonesSettings(
             self::lockAfterIn(self::fieldIn($written, self::LOCK_AFTER)),
             self::readingsKeptIn(self::fieldIn($written, self::KEEP_READINGS)),
+            self::deviceIn(self::fieldIn($written, self::DEVICE)),
         );
     }
 
@@ -83,6 +90,20 @@ final readonly class TheSettingsAsKept
     private static function lockAfterIn(mixed $written): LockAfter
     {
         return is_string($written) ? LockAfter::named($written, otherwise: LockAfter::standard()) : LockAfter::standard();
+    }
+
+    /** The id this install plays under, or none where none was drawn or it is not one the core accepts. */
+    private static function deviceIn(mixed $written): ?ThisDevice
+    {
+        if (! is_string($written)) {
+            return null;
+        }
+
+        try {
+            return ThisDevice::named($written);
+        } catch (DeviceIdIsUnfit) {
+            return null;
+        }
     }
 
     private static function readingsKeptIn(mixed $written): HowLongReadingsAreKept

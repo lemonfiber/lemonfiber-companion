@@ -26,6 +26,7 @@ use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutPairing;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
@@ -169,6 +170,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     // A stop that means to come back, and still a gap the household
     // is in — so it is asked about as the stop is.
     'restart' => 'stops and starts it again',
+
+    // The household's player asking for a grant to play on the member's own
+    // account, for this device. It changes nothing on the machine; the core
+    // opens a session on the media server and answers its token once.
+    'grant' => 'asks for a grant for this device to play the member\'s titles',
 
     // The household's two, which are not verbs about a machine at all. They settle
     // one thing somebody in the house already asked for, and they are here
@@ -559,6 +565,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(HandingOver $over): string => $over->asked(), HandingOver::cases()),
         ...array_map(static fn(ExtendingIt $extending): string => $extending->asked(), ExtendingIt::cases()),
+        ...array_map(static fn(WhatThePlayerAsks $player): string => $player->asked(), WhatThePlayerAsks::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

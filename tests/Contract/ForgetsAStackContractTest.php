@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AGrant;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\HowItStands;
@@ -17,8 +18,10 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheGrantIsFor;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheReadingWaitsAFrame;
+use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhichTab;
@@ -35,6 +38,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Internal\WhatEachStackOffers;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
+use Modules\Vault\Api\PlatformGrants;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
@@ -46,6 +50,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\GrantsKeptInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -113,6 +118,8 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake work' => WorkLeftRunningInMemory::working(),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::working()),
         'the fake place' => WhereTheOperatorWasInMemory::nowhere(),
+        'the platform grants' => new PlatformGrants(APlatformStore::working()),
+        'the fake grants' => GrantsKeptInMemory::working(),
         'what each stack offers' => new Assessors(new PinnedClients(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackOffers()),
     ];
 
@@ -169,21 +176,7 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
         return;
     }
 
-    if ($keeper instanceof PlatformStandings || $keeper instanceof StandingsInMemory) {
-        $keeper->remember($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(1));
-
-        return;
-    }
-
-    if ($keeper instanceof PlatformWhereTheOperatorWas || $keeper instanceof WhereTheOperatorWasInMemory) {
-        $keeper->wasOn($stack->id(), WhichTab::Services);
-
-        return;
-    }
-
-    if ($keeper instanceof PlatformWorkLeftRunning || $keeper instanceof WorkLeftRunningInMemory) {
-        $keeper->remember($stack->id(), KindOfWork::Walkthrough, Job::named('a-walk'));
-
+    if (keepAMarkerFor($keeper, $stack)) {
         return;
     }
 
@@ -194,6 +187,22 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
     }
 
     throw new LogicException(sprintf('No way to have %s keep something.', $keeper::class));
+}
+
+/** Have a keeper of what the phone notes about a stack hold one note for it, answering whether it was one. */
+function keepAMarkerFor(ForgetsAStack $keeper, Stack $stack): bool
+{
+    $kept = $stack->id();
+
+    $noted = match (true) {
+        $keeper instanceof PlatformStandings, $keeper instanceof StandingsInMemory => $keeper->remember($kept, HowItStands::Healthy, Instant::atEpochSeconds(1)),
+        $keeper instanceof PlatformWhereTheOperatorWas, $keeper instanceof WhereTheOperatorWasInMemory => $keeper->wasOn($kept, WhichTab::Services),
+        $keeper instanceof PlatformWorkLeftRunning, $keeper instanceof WorkLeftRunningInMemory => $keeper->remember($kept, KindOfWork::Walkthrough, Job::named('a-walk')),
+        $keeper instanceof PlatformGrants, $keeper instanceof GrantsKeptInMemory => $keeper->keepTheGrant($kept, TheGrantIsFor::of(Whose::member('ada'), ThisDevice::named('this-device')), AGrant::of(str_repeat('0', 32), Instant::atEpochSeconds(1))),
+        default => null,
+    };
+
+    return $noted !== null;
 }
 
 /** Have what this stack offers held, by asking it on a frame of its own. */
@@ -235,6 +244,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform words' => new PlatformStandings(APlatformStore::refusing()),
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
+        'the platform grants' => new PlatformGrants(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'what it runs, whose keys cannot be read' => new KeepingWhatItRuns(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),

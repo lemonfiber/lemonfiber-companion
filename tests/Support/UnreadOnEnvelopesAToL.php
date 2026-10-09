@@ -38,6 +38,21 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'GrantEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'GrantEnvelope.granted',
+            'because' => 'Whether a session was opened, which only a rehearsal answers no to. This app asks for '
+                . 'none, and an answer carrying no token is refused as unreadable rather than kept as a grant '
+                . 'of nothing.',
+        ],
+        [
+            'path' => 'GrantEnvelope.member',
+            'because' => 'Whose account the device now plays as, echoed back. The session that asked is the '
+                . 'member\'s own and the core narrowed the grant to them, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
             'path' => 'HeldEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

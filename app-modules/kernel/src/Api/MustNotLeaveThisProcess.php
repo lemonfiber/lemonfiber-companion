@@ -56,6 +56,11 @@ final class MustNotLeaveThisProcess extends LogicException
         return new self('A session may not be serialised. It is a credential, and serialising one writes it in full wherever the result is kept — a cache entry, a queued payload, a session file. Pass the Session itself, or take the header off it at the edge.');
     }
 
+    public static function aGrant(): self
+    {
+        return new self('A grant may not be serialised. It plays a member\'s titles through the household\'s door, and it is kept in the platform\'s secure storage and nowhere else.');
+    }
+
     /**
      * A key the phone's kept values are sealed under.
      *

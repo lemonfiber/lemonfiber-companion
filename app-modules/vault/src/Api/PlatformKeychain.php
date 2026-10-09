@@ -18,8 +18,8 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whose;
-use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Vault\Internal\KeptUnder;
+use Modules\Vault\Internal\WhatARefusalToKeepMeans;
 use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 use function sprintf;
@@ -66,7 +66,7 @@ final readonly class PlatformKeychain implements SecureStorage
             ->keep($this->keyFor($stack), $this->written($session, $whose), WhenAValueMayBeRead::WhileUnlocked)
             ->either(
                 done: static fn(): Kept => Kept::safely(),
-                refused: static fn(WhyNothingWasKept $why): Kept => Kept::refused(self::meaning($why)),
+                refused: static fn(WhyNothingWasKept $why): Kept => Kept::refused(WhatARefusalToKeepMeans::of($why)),
             );
     }
 
@@ -172,15 +172,6 @@ final readonly class PlatformKeychain implements SecureStorage
         }
 
         return Resumed::with(Session::of($token), Whose::member(mb_substr($written, 0, $at)));
-    }
-
-    /** What one of the bridge's refusals means in the terms this application reasons in. */
-    private static function meaning(WhyNothingWasKept $why): WhySessionCannotBeKept
-    {
-        return match ($why) {
-            WhyNothingWasKept::NoStoreOnThisDevice => WhySessionCannotBeKept::DeviceHasNoSecureStorage,
-            WhyNothingWasKept::StoreWouldNotOpen => WhySessionCannotBeKept::StoreWouldNotOpen,
-        };
     }
 
     /** One key per stack, so two paired stacks never share a session. */
