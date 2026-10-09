@@ -3,9 +3,14 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnUpdate;
+use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginRemoval;
+use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
+use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ExtendingTheStack;
@@ -127,6 +132,57 @@ function everythingTheInstallSays(APluginInstall $install): string
     return implode("\n", $lines);
 }
 
+/** What putting the installed version back would come to, or came to, folded to one line. */
+function whatGoingBackSays(ARunPutBack $report): string
+{
+    $went = [];
+
+    foreach ($report->reversed() as $change) {
+        $went[] = sprintf('%s/%s', $change->target(), $change->does()->value);
+    }
+
+    $left = [];
+
+    foreach ($report->left() as $change) {
+        $left[] = sprintf('%s/%s', $change->target(), $change->because());
+    }
+
+    return sprintf('went back %s %s left %s', $report->rehearsed()->value, implode(',', $went), implode(',', $left));
+}
+
+/** Everything an update's account says, folded to lines. */
+function everythingTheUpdateSays(AnUpdate $update): string
+{
+    $restored = $update->restored();
+
+    return implode("\n", [
+        sprintf('update %s %s>%s interrupts %s', $update->plugin(), $update->versions()->from(), $update->versions()->to(), joinedPluginLines($update->interrupts())),
+        everythingTheInstallSays($update->install()),
+        whatGoingBackSays($update->wentBack()),
+        sprintf('stopped %s', $update->stopped()),
+        $restored->wasNeeded()
+            ? sprintf('restored %s %s %s', $restored->version(), $restored->isPlaced() ? 'placed' : 'not placed', $restored->isRunning() ? 'running' : 'not running')
+            : 'nothing to restore',
+        sprintf('%s %s', $update->isAReading() ? 'a reading' : 'not a reading', $update->held() ? 'held' : 'not held'),
+    ]);
+}
+
+/** Everything a removal's account says, folded to lines. */
+function everythingAPluginRemovalSays(APluginRemoval $removal): string
+{
+    $leaves = [];
+
+    foreach ($removal->leaves() as $left) {
+        $leaves[] = sprintf('%s/%s', $left->capability(), $left->filledBy());
+    }
+
+    return implode("\n", [
+        sprintf('removal %s interrupts %s leaves %s', $removal->plugin(), joinedPluginLines($removal->interrupts()), implode(',', $leaves)),
+        whatGoingBackSays($removal->wentBack()),
+        sprintf('%s %s %s', $removal->isAReading() ? 'a reading' : 'not a reading', $removal->wasRemoved() ? 'removed' : 'not removed', $removal->isPartial() ? 'partly' : 'not partly'),
+    ]);
+}
+
 /** Everything the stack says of its plugins, folded to lines, so two answers can be compared. */
 function everythingThePluginsSay(ThePlugins $plugins): string
 {
@@ -167,6 +223,8 @@ function everythingThePluginsSay(ThePlugins $plugins): string
     $lines[] = $plugins->either(
         listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('the listing alone'),
         install: static fn(APluginInstall $install): TheWordCarriedOut => new TheWordCarriedOut(everythingTheInstallSays($install)),
+        update: static fn(AnUpdate $update): TheWordCarriedOut => new TheWordCarriedOut(everythingTheUpdateSays($update)),
+        removal: static fn(APluginRemoval $removal): TheWordCarriedOut => new TheWordCarriedOut(everythingAPluginRemovalSays($removal)),
     )->said;
 
     return implode("\n", $lines);
@@ -197,6 +255,22 @@ function everythingTheListingSays(WhatWasFoundOfThePlugins $found): string
 function aYesToInstallingTdarr(): APluginInstallAgreed
 {
     return APluginInstallAgreed::after(APluginAsItArrives::theReading(), APluginSource::typed('tdarr'), PluginLines::under('approved', APluginAsItArrives::APPROVAL));
+}
+
+/** Tdarr as the record holds it, with the source an update takes it from. */
+function aTdarrThatCanBeUpdated(): APlugin
+{
+    foreach (APluginAsItArrives::theListing()->installed() as $plugin) {
+        return $plugin;
+    }
+
+    throw new LogicException('The listing holds Tdarr.');
+}
+
+/** The yes to the update's reading, the one value approved. */
+function aYesToUpdatingTdarr(): APluginUpdateAgreed
+{
+    return APluginUpdateAgreed::after(APluginAsItArrives::theUpdateReading(), aTdarrThatCanBeUpdated(), PluginLines::under('approved', APluginAsItArrives::APPROVAL));
 }
 
 /** The handle the stack answers an install with. */
@@ -311,6 +385,118 @@ it('installs, and follows the work to an install that held', function (): void {
     }
 });
 
+it('rehearses an update, and follows it to the reading of the install it carries and of going back', function (): void {
+    $read = MockResponse::make((string) json_encode(APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateReadingOnTheWire())));
+
+    foreach (everyWayOfExtendingIt(APluginAsItArrives::theUpdateReading(), aPluginJob(), $read) as $which => $make) {
+        $extending = $make();
+
+        expect(everythingExtendingItSays($extending->rehearseUpdating(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated())))->toBe('underway j-1', $which)
+            ->and(everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1'))))->toEndWith(implode("\n", [
+                sprintf('agreement %s', APluginAsItArrives::AGREEMENT),
+                'update tdarr 2.1.0>2.2.0 interrupts tdarr',
+                'change /srv/lemonfiber/plugins/tdarr/plugin.toml/document',
+                'proof answers/It answers on its port/GET /api/status/A service that does not answer is not running/not_asked/',
+                'contest transcode/sonarr/tdarr,unmanic',
+                'override sonarr.rename/Tdarr renames what it transcodes',
+                'checks not asked /',
+                'not put back',
+                'a reading not held',
+                'went back rehearsed tdarr/delete left /srv/lemonfiber/config/tdarr/What the service wrote stays for the new version',
+                'stopped ',
+                'nothing to restore',
+                'a reading not held',
+            ]), $which);
+    }
+});
+
+it('updates, and follows the work to a new version that did not hold and the old one placed but not running', function (): void {
+    $done = MockResponse::make((string) json_encode(APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateNotHeldOnTheWire())));
+
+    foreach (everyWayOfExtendingIt(APluginAsItArrives::theUpdateNotHeld(), aPluginJob(), $done) as $which => $make) {
+        $extending = $make();
+
+        expect(everythingExtendingItSays($extending->update(aStackToExtend(), theSessionPluginsAreAskedOn(), aYesToUpdatingTdarr())))->toBe('underway j-1', $which)
+            ->and(everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1'))))->toEndWith(implode("\n", [
+                'agreement ',
+                'update tdarr 2.1.0>2.2.0 interrupts tdarr',
+                'change /srv/lemonfiber/plugins/tdarr/plugin.toml/document',
+                'proof answers/It answers on its port/GET /api/status/A service that does not answer is not running/failed/It answered 502',
+                'contest transcode/sonarr/tdarr,unmanic',
+                'override sonarr.rename/Tdarr renames what it transcodes',
+                'checks not asked /',
+                'put back tdarr/delete left tdarr-data/The volume was in use',
+                'not a reading not held',
+                'went back carried_out tdarr/delete left /srv/lemonfiber/config/tdarr/What the service wrote stays for the new version',
+                'stopped The container would not start',
+                'restored 2.1.0 placed not running',
+                'not a reading not held',
+            ]), $which);
+    }
+});
+
+it('rehearses a removal, and follows it to what it would leave unfilled', function (): void {
+    $read = MockResponse::make((string) json_encode(APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aRemovalReadingOnTheWire())));
+
+    foreach (everyWayOfExtendingIt(APluginAsItArrives::theRemovalReading(), aPluginJob(), $read) as $which => $make) {
+        $extending = $make();
+
+        expect(everythingExtendingItSays($extending->rehearseRemoving(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated())))->toBe('underway j-1', $which)
+            ->and(everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1'))))->toEndWith(implode("\n", [
+                sprintf('agreement %s', APluginAsItArrives::AGREEMENT),
+                'removal tdarr interrupts tdarr leaves transcode/tdarr',
+                'went back rehearsed tdarr/delete left /srv/lemonfiber/config/tdarr/What the service wrote stays for the new version',
+                'a reading not removed not partly',
+            ]), $which);
+    }
+});
+
+it('removes, and follows the work to a removal that went only part of the way, or all of it', function (): void {
+    foreach ([
+        'partly' => [APluginAsItArrives::thePartialRemoval(), APluginAsItArrives::aPartialRemovalOnTheWire(), 'not a reading not removed partly'],
+        'all of it' => [APluginAsItArrives::theRemoval(), APluginAsItArrives::aRemovalOnTheWire(), 'not a reading removed not partly'],
+    ] as $case => [$came, $onTheWire, $said]) {
+        $done = MockResponse::make((string) json_encode(APluginAsItArrives::theAnswerAbout('removal', $onTheWire)));
+
+        foreach (everyWayOfExtendingIt($came, aPluginJob(), $done) as $which => $make) {
+            $extending = $make();
+
+            expect(everythingExtendingItSays($extending->remove(aStackToExtend(), theSessionPluginsAreAskedOn(), APluginRemovalAgreed::after(APluginAsItArrives::theRemovalReading(), aTdarrThatCanBeUpdated()))))->toBe('underway j-1', $which)
+                ->and(everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1'))))->toEndWith(implode("\n", [
+                    'agreement ',
+                    'removal tdarr interrupts tdarr leaves transcode/tdarr',
+                    'went back carried_out tdarr/delete left /srv/lemonfiber/config/tdarr/What the service wrote stays for the new version',
+                    $said,
+                ]), sprintf('%s / %s', $case, $which));
+        }
+    }
+});
+
+it('asks an update with the plugin and the source it came from, and a removal with the plugin alone, each act under a key', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = [$asked->getRequest()->resolveEndpoint(), $asked->body()?->all(), $asked->headers()->get('Idempotency-Key') !== null];
+
+            return aPluginJob();
+        },
+    ]);
+
+    $extending = new Extenders(new PinnedClients(), SequencedEntropy::counting());
+    $extending->rehearseUpdating(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated());
+    $extending->update(aStackToExtend(), theSessionPluginsAreAskedOn(), aYesToUpdatingTdarr());
+    $extending->rehearseRemoving(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated());
+    $extending->remove(aStackToExtend(), theSessionPluginsAreAskedOn(), APluginRemovalAgreed::after(APluginAsItArrives::theRemovalReading(), aTdarrThatCanBeUpdated()));
+
+    expect($sent)->toBe([
+        ['/api/actions/plugin-update', ['offer' => null, 'plugin' => 'tdarr', 'source' => 'tdarr', 'approved' => [], 'inputs' => []], true],
+        ['/api/actions/plugin-update', ['offer' => APluginAsItArrives::AGREEMENT, 'plugin' => 'tdarr', 'source' => 'tdarr', 'approved' => [APluginAsItArrives::APPROVAL], 'inputs' => []], true],
+        ['/api/actions/plugin-remove', ['offer' => null, 'plugin' => 'tdarr'], true],
+        ['/api/actions/plugin-remove', ['offer' => APluginAsItArrives::AGREEMENT, 'plugin' => 'tdarr'], true],
+    ]);
+});
+
 it('asks the listing at its endpoint, the rehearsal with the source alone, and the install with the reading and each approval, each act under a key', function (): void {
     $sent = [];
     MockClient::destroyGlobal();
@@ -422,6 +608,11 @@ it('stands in for a stack with payloads the contract would accept', function ():
         APluginAsItArrives::theAnswer(APluginAsItArrives::aReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::putBackOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::installedOnTheWire(), APluginAsItArrives::AGREEMENT),
+        APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateReadingOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateNotHeldOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aRemovalReadingOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aPartialRemovalOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aRemovalOnTheWire()),
     ] as $answer) {
         expect(WhatTheContractAccepts::complaintsAbout('PluginsEnvelope', $answer))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");

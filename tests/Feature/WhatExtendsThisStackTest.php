@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
@@ -17,7 +18,9 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
+use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
@@ -146,7 +149,7 @@ it('rehearses an install and draws all of it as a rehearsal, every proof not ask
     $drawn = WhatTheDeviceWouldDraw::by($screen);
     $said = $drawn->said();
 
-    expect($running->said())->toContain(aPluginsLine('plugins.rehearsing'))
+    expect($running->said())->toContain(aPluginsLine('plugins.working.rehearse'))
         ->and($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1'])
         ->and($said)->toContain(aPluginsLine('plugins.rehearsal'))
         ->and($said)->toContain('/srv/lemonfiber/plugins/tdarr/plugin.toml')
@@ -177,14 +180,14 @@ it('approves each value apart from the install, and sends only what was approved
     $screen->approve(0);
     $screen->approve(0);
     $approved = WhatTheDeviceWouldDraw::by($screen);
-    $screen->install();
-    $screen->install();
+    $screen->agree();
+    $screen->agree();
 
     expect($screen->approved)->toBe([])
         ->and($approved->said())->toContain(aPluginsLine('plugins.approvals_apart'))
         ->and($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL)])
         ->and($screen->following)->toBe('j-2')
-        ->and($screen->installing)->toBeTrue();
+        ->and($screen->agreed)->toBeTrue();
 });
 
 it('sends an install with nothing approved, and draws what the stack makes of it in its words', function (): void {
@@ -194,11 +197,11 @@ it('sends an install with nothing approved, and draws what the stack makes of it
         aPluginRefusal('library@hooks.example.com was not approved'),
     );
     $screen = tdarrRehearsed($extending);
-    $screen->install();
+    $screen->agree();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:', APluginAsItArrives::AGREEMENT)])
-        ->and($drawn->said())->toContain(aPluginsLine('plugins.install_refused'))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.refused.install'))
         ->and($drawn->said())->toContain('library@hooks.example.com was not approved')
         ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'));
 });
@@ -211,7 +214,7 @@ it('draws a plugin the stack refuses to rehearse as its refusal, with nothing to
     $screen->rehearse();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($drawn->said())->toContain(aPluginsLine('plugins.rehearsal_refused'))
+    expect($drawn->said())->toContain(aPluginsLine('plugins.refused.rehearse'))
         ->and($drawn->said())->toContain('This plugin declares native content, which this build refuses')
         ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'))
         ->and($drawn->offers())->toContain(aPluginsLine('plugins.back'));
@@ -226,12 +229,12 @@ it('says installed only where the record was written, its proofs held and nothin
     );
     $screen = tdarrRehearsed($extending);
     $screen->approve(0);
-    $screen->install();
+    $screen->agree();
     $installing = WhatTheDeviceWouldDraw::by($screen);
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($installing->said())->toContain(aPluginsLine('plugins.installing'))
+    expect($installing->said())->toContain(aPluginsLine('plugins.working.install'))
         ->and($drawn->said())->toContain(aPluginsLine('plugins.installed_it'))
         ->and($drawn->said())->toContain(aPluginsLine('plugins.proof.passed'))
         ->and($drawn->said())->toContain(aPluginsLine('plugins.broke_nothing'))
@@ -247,7 +250,7 @@ it('says an install that did not hold was put back, with what went back and what
         HowExtendingItIsGoing::done(APluginAsItArrives::thePutBack()),
     );
     $screen = tdarrRehearsed($extending);
-    $screen->install();
+    $screen->agree();
     $said = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($said)->toContain(aPluginsLine('plugins.put_back'))
@@ -267,7 +270,7 @@ it('says whether it was installed could not be read where following the install 
         HowExtendingItIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
     );
     $screen = tdarrRehearsed($extending);
-    $screen->install();
+    $screen->agree();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(aPluginsLine('plugins.unread_after_yes'))
@@ -303,7 +306,7 @@ it('lets go of the rehearsal and every approval when it goes back, and asks afte
     expect($screen->rehearsal)->toBeNull()
         ->and($screen->approved)->toBe([]);
 
-    $screen->install();
+    $screen->agree();
     $screen->installOne();
     $screen->source = 'tdarr';
     $screen->rehearse();
@@ -336,6 +339,142 @@ it('approves nothing before a rehearsal, and asks what is installed again when a
 
     expect($screen->approved)->toBe([])
         ->and($extending->asked())->toBe(['list', 'list']);
+});
+
+/** The screen with the listing read, so a row can be chosen. */
+function thePluginsListed(AStackThatExtendsItself $extending): WhatExtendsThisStack
+{
+    $screen = thePluginsScreen($extending);
+    $screen->answer();
+
+    return $screen;
+}
+
+it('offers to update and to remove each plugin by its name, and says where one cannot be updated', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(thePluginsListed(aStackWithTdarr()));
+    $sourceless = APlugin::named('tdarr', '2.1.0', 'Tdarr', WhatVouchesForAPlugin::recorded('', '', '', reviewed: false, upstream: '', licence: ''), TheRecipes::these());
+    $extending = AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these($sourceless), ThePluginSources::these()));
+    $screen = thePluginsListed($extending);
+    $cannot = WhatTheDeviceWouldDraw::by($screen);
+    $screen->updateOne(0);
+    $screen->updateOne(4);
+    $screen->removeOne(4);
+
+    expect($drawn->offers())->toContain(aPluginsLine('plugins.update_it', ['name' => 'Tdarr']))
+        ->and($drawn->offers())->toContain(aPluginsLine('plugins.remove_it', ['name' => 'Tdarr']))
+        ->and($drawn->said())->not->toContain(aPluginsLine('plugins.no_source_to_update'))
+        ->and($cannot->offers())->not->toContain(aPluginsLine('plugins.update_it', ['name' => 'Tdarr']))
+        ->and($cannot->offers())->toContain(aPluginsLine('plugins.remove_it', ['name' => 'Tdarr']))
+        ->and($cannot->said())->toContain(aPluginsLine('plugins.no_source_to_update'))
+        ->and($extending->asked())->toBe(['list']);
+});
+
+it('rehearses an update and draws it as a rehearsal: from and to, what stops, what comes off, and the new version', function (): void {
+    $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateReading()));
+    $screen = thePluginsListed($extending);
+    $screen->updateOne(0);
+    $running = WhatTheDeviceWouldDraw::by($screen);
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $said = $drawn->said();
+
+    expect($running->said())->toContain(aPluginsLine('plugins.working.rehearse'))
+        ->and($extending->asked())->toBe(['list', 'rehearse update:tdarr:tdarr', 'after:j-1'])
+        ->and($said)->toContain(aPluginsLine('plugins.rehearsal'))
+        ->and($said)->toContain(aPluginsLine('plugins.from_to', ['from' => '2.1.0', 'to' => '2.2.0']))
+        ->and($said)->toContain(aPluginsLine('plugins.what_goes_back'))
+        ->and($said)->toContain(__('stacks.run_back.a_rehearsal'))
+        ->and($said)->toContain('What the service wrote stays for the new version')
+        ->and($said)->toContain(aPluginsLine('plugins.new_version'))
+        ->and($said)->toContain(aPluginsLine('plugins.proof.not_asked'))
+        ->and($said)->not->toContain(aPluginsLine('plugins.not_updated'))
+        ->and($drawn->offers())->toContain(aPluginsLine('plugins.update'))
+        ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'));
+});
+
+it('sends the update with the reading\'s name and each approval, and says a new version that did not hold was not updated and how far the old one came back', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateNotHeld()),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->updateOne(0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->approve(0);
+    $screen->agree();
+    $updating = WhatTheDeviceWouldDraw::by($screen);
+    $screen->whileItRuns();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($extending->asked())->toBe(['list', 'rehearse update:tdarr:tdarr', 'after:j-1', sprintf('update:tdarr:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL), 'after:j-2'])
+        ->and($updating->said())->toContain(aPluginsLine('plugins.working.update'))
+        ->and($said)->toContain(aPluginsLine('plugins.not_updated'))
+        ->and($said)->toContain(aPluginsLine('plugins.stopped', ['why' => 'The container would not start']))
+        ->and($said)->toContain(aPluginsLine('plugins.restored.not_running', ['version' => '2.1.0']))
+        ->and($said)->toContain('The volume was in use')
+        ->and($said)->not->toContain(aPluginsLine('plugins.rehearsal'));
+});
+
+it('rehearses a removal with what it would leave unfilled, and says one whose record was not written is partial and not removed', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+        HowExtendingItIsGoing::done(APluginAsItArrives::thePartialRemoval()),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->removeOne(0);
+    $screen->whileItRuns();
+    $reading = WhatTheDeviceWouldDraw::by($screen);
+    $screen->agree();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($reading->said())->toContain(aPluginsLine('plugins.rehearsal'))
+        ->and($reading->said())->toContain(aPluginsLine('plugins.unfilled_line', ['capability' => 'transcode', 'plugin' => 'tdarr']))
+        ->and($reading->offers())->toContain(aPluginsLine('plugins.remove'))
+        ->and($extending->asked())->toBe(['list', 'rehearse removal:tdarr', 'after:j-1', sprintf('remove:tdarr:%s', APluginAsItArrives::AGREEMENT)])
+        ->and($said)->toContain(aPluginsLine('plugins.partly_removed'))
+        ->and($said)->not->toContain(aPluginsLine('plugins.removed_it'))
+        ->and($said)->toContain('What the service wrote stays for the new version')
+        ->and($said)->not->toContain(aPluginsLine('plugins.rehearsal'));
+});
+
+it('says removed only where the record was written, with what stayed on the machine and why', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemoval()),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->removeOne(0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->agree();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(aPluginsLine('plugins.removed_it'))
+        ->and($said)->not->toContain(aPluginsLine('plugins.partly_removed'))
+        ->and($said)->toContain(__('stacks.run_back.did.not_all'))
+        ->and($said)->toContain('/srv/lemonfiber/config/tdarr');
+});
+
+it('draws a removal the stack refuses after the yes as its refusal, said as a removal', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+        aPluginRefusal('The offer moved on'),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->removeOne(0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->agree();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(aPluginsLine('plugins.refused.remove'))
+        ->and($said)->toContain('The offer moved on');
 });
 
 it('is in the menu beside Connections, and opens on its own path', function (): void {

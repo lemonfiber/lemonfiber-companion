@@ -801,4 +801,10 @@ enum WireField: string implements NamesAWireField
 
     /** What going back means beyond the changes themselves, where a run or a plugin install was put back; absent where nothing does. */
     case Noted = 'noted';
+
+    /** What was taken away: the services the stack has dropped, and whether a plugin removal wrote the record without the plugin. */
+    case Removed = 'removed';
+
+    /** A removal's own account: what taking lemonfiber off did, and what taking a plugin off would do or did. */
+    case Removal = 'removal';
 }

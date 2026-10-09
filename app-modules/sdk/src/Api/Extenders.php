@@ -14,14 +14,20 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\PluginInstallAction;
+use Lemonfiber\Sdk\Generated\PluginRemoveAction;
+use Lemonfiber\Sdk\Generated\PluginUpdateAction;
+use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
+use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
+use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\PluginSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -31,15 +37,17 @@ use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
- * The one place this application asks a stack about its plugins, and to install one.
+ * The one place this application asks a stack about its plugins, and to install, update or remove one.
  *
  * **The listing is a read.** `/api/plugins` answers at once with what the
  * record holds and how each source stands.
  *
- * **The rehearsal and the install are the same action, told apart by the
- * offer.** `plugin-install` asked with a source and no offer is the reading:
- * the stack says what it would do, under a name, and writes nothing. Asked
- * again with that name and the values approved, it installs. Each answers a
+ * **Each rehearsal and its act are the same action, told apart by the
+ * offer.** `plugin-install`, `plugin-update` and `plugin-remove` asked with no
+ * offer are each the reading: the stack says what it would do, under a name,
+ * and writes nothing. Asked again with that name, and for an install or an
+ * update the values approved, it acts. An update names the source the plugin
+ * was installed from. Each answers a
  * handle {@see self::whatBecameOf()} follows, and each carries a key of its
  * own, for {@see Supervisors::rehearsed()}'s reason.
  *
@@ -81,19 +89,36 @@ final readonly class Extenders implements ExtendingTheStack
 
     public function install(Stack $stack, Session $session, APluginInstallAgreed $agreed): HowExtendingItIsGoing
     {
-        // Collected by hand into the list the action takes: each value
-        // approved, as the reading spells it, and nothing else.
-        $approved = [];
-
-        foreach ($agreed->approved() as $approval) {
-            $approved[] = $approval;
-        }
-
         return $this->asked($stack, $session, new PluginInstallAction(
             offer: $agreed->agreement(),
             source: $agreed->source()->said(),
-            approved: $approved,
+            approved: $this->listed($agreed->approved()),
         ));
+    }
+
+    public function rehearseUpdating(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginUpdateAction(plugin: $plugin->id(), source: $plugin->vouched()->source()));
+    }
+
+    public function update(Stack $stack, Session $session, APluginUpdateAgreed $agreed): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginUpdateAction(
+            offer: $agreed->agreement(),
+            plugin: $agreed->plugin(),
+            source: $agreed->source()->said(),
+            approved: $this->listed($agreed->approved()),
+        ));
+    }
+
+    public function rehearseRemoving(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginRemoveAction(plugin: $plugin->id()));
+    }
+
+    public function remove(Stack $stack, Session $session, APluginRemovalAgreed $agreed): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginRemoveAction(offer: $agreed->agreement(), plugin: $agreed->plugin()));
     }
 
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowExtendingItIsGoing
@@ -117,7 +142,7 @@ final readonly class Extenders implements ExtendingTheStack
      * A refusal of the asking itself is the stack's answer about the plugin,
      * kept in its words as one of the work would be.
      */
-    private function asked(Stack $stack, Session $session, PluginInstallAction $action): HowExtendingItIsGoing
+    private function asked(Stack $stack, Session $session, PluginInstallAction|PluginUpdateAction|PluginRemoveAction $action): HowExtendingItIsGoing
     {
         try {
             $envelope = GatedClient::of($this->clients, $stack, $session)->act(
@@ -135,6 +160,22 @@ final readonly class Extenders implements ExtendingTheStack
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
             return HowExtendingItIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
+    }
+
+    /**
+     * Every value approved, collected by hand into the list an action takes, as the reading spells each.
+     *
+     * @return list<string>
+     */
+    private function listed(PluginLines $approved): array
+    {
+        $listed = [];
+
+        foreach ($approved as $approval) {
+            $listed[] = $approval;
+        }
+
+        return $listed;
     }
 
     /**

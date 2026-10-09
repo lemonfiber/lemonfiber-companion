@@ -16,7 +16,7 @@ use Modules\Sdk\Api\WireField;
 use Tests\Support\WhatTheContractAccepts;
 
 it('names the list a catalogue left out', function (): void {
-    expect(CatalogueIsUnreadable::missing(CatalogueField::Removed)->getMessage())
+    expect(CatalogueIsUnreadable::missing(WireField::Removed)->getMessage())
         ->toBe('The catalogue envelope has no `removed`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.');
 });
 

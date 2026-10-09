@@ -60,9 +60,6 @@ enum UninstallField: string implements NamesAWireField
     /** Which of the four sorts of thing one line is. */
     case Sort = 'sort';
 
-    /** Whether anything was removed on this run, and what became of it. */
-    case Removal = 'removal';
-
     /** The credentials a removal destroyed, said rather than left to be inferred. */
     case Credentials = 'credentials';
 }

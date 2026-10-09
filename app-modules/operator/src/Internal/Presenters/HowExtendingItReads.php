@@ -4,40 +4,31 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function array_search;
-use function in_array;
-use function is_int;
-
-use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
-use Modules\Kernel\Api\ARecipe;
+use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\ARunPutBack;
-use Modules\Kernel\Api\HowItsSourceStands;
+use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Operator\Internal\AsText;
-use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
-use Modules\Operator\Internal\ViewModels\AContestAsShown;
-use Modules\Operator\Internal\ViewModels\APluginAsShown;
-use Modules\Operator\Internal\ViewModels\APluginChangeAsShown;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
-use Modules\Operator\Internal\ViewModels\AProofAsShown;
-use Modules\Operator\Internal\ViewModels\ARecipeAsShown;
-use Modules\Operator\Internal\ViewModels\ARecipeStepAsShown;
-use Modules\Operator\Internal\ViewModels\AValueCarriedAsShown;
-use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
+use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
+use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
 
 /**
- * The plugins on a stack, and installing one, as the fields a screen draws.
+ * The plugins on a stack, and installing, updating or removing one, as the fields a screen draws.
  *
  * `F2`: data in, view model out. One method per state, each saying only its
- * own, so a template never offers Install beneath an account that is not a
- * reading, and never draws an install as installed short of all three things
- * that make it one.
+ * own, so a template never offers a yes beneath an account that is not a
+ * reading, and never draws an act as done short of all of what makes it so.
+ * What each account holds is {@see HowAPluginAccountReads}'s.
+ *
+ * **What the stack is at, and what it would not do, is said by the act.** A
+ * rehearsal of any of the three reads as a rehearsal; after the yes, the act
+ * agreed to names itself.
  */
 final readonly class HowExtendingItReads
 {
@@ -48,9 +39,9 @@ final readonly class HowExtendingItReads
     }
 
     /** Asking met this instead. */
-    public function met(Obstacle $why, bool $installing): WhatExtendsItTurnedOutToBe
+    public function met(Obstacle $why, bool $agreed): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why), installing: $installing);
+        return $this->without(HowTheReadingWent::somethingStopped($why), afterTheYes: $agreed);
     }
 
     /** A source is being typed, and nothing has been asked. */
@@ -59,212 +50,101 @@ final readonly class HowExtendingItReads
         return $this->without(HowTheReadingWent::itCameBack(), typing: true);
     }
 
-    /** The stack is at work on the rehearsal, or on the install. */
-    public function running(bool $installing): WhatExtendsItTurnedOutToBe
+    /** The stack is at work on the rehearsal, or on the act agreed to. */
+    public function running(ExtendingIt $act, bool $agreed): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true, installing: $installing);
+        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true, afterTheYes: $agreed, workingSaid: $this->working($act, $agreed));
     }
 
     /** The stack has no outcome for the work any more, which is not the same as it not having happened. */
-    public function ended(bool $installing): WhatExtendsItTurnedOutToBe
+    public function ended(bool $agreed): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), installing: $installing, hasEnded: true);
+        return $this->without(HowTheReadingWent::itCameBack(), afterTheYes: $agreed, hasEnded: true);
     }
 
     /** The stack refused, and this is what it said and named. */
-    public function refused(ARefusalInItsWords $why, bool $installing): WhatExtendsItTurnedOutToBe
+    public function refused(ARefusalInItsWords $why, ExtendingIt $act, bool $agreed): WhatExtendsItTurnedOutToBe
     {
         return new WhatExtendsItTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             typing: false,
             isWorking: false,
-            installing: $installing,
+            afterTheYes: $agreed,
+            workingSaid: '',
             hasEnded: false,
+            refusedSaid: $this->refusal($act, $agreed),
             refused: new HowARefusalReads()->inItsWords($why),
             installed: [],
             install: null,
+            update: null,
+            removal: null,
         );
     }
 
     /**
-     * What the stack said of its plugins: the listing, and the install's account where it is about one.
+     * What the stack said of its plugins: the listing, and the account of the act it is about.
      *
      * @param list<string> $approved every value the operator has approved so far, as the reading spells each
      */
-    public function answered(ThePlugins $plugins, array $approved, bool $installing): WhatExtendsItTurnedOutToBe
+    public function answered(ThePlugins $plugins, array $approved, bool $agreed): WhatExtendsItTurnedOutToBe
     {
+        $rows = new HowAPluginAccountReads();
         $installed = [];
 
         foreach ($plugins->installed() as $plugin) {
-            $installed[] = $this->plugin($plugin, $plugins->sourceOf($plugin), $approved);
+            $installed[] = $rows->plugin($plugin, $plugins->sourceOf($plugin), $approved);
         }
 
-        $install = $plugins->either(
+        $agreeable = $plugins->agreement() !== '';
+        $account = $plugins->either(
             listed: static fn(): AsText => AsText::nothing(),
-            install: fn(APluginInstall $install): APluginInstallAsShown => $this->install($install, $approved, agreeable: $plugins->agreement() !== ''),
+            install: static fn(APluginInstall $install): APluginInstallAsShown => $rows->install($install, $approved, $agreeable),
+            update: static fn(AnUpdate $update): APluginUpdateAsShown => $rows->update($update, $approved, $agreeable),
+            removal: static fn(APluginRemoval $removal): APluginRemovalAsShown => $rows->removal($removal, $agreeable),
         );
 
         return new WhatExtendsItTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             typing: false,
             isWorking: false,
-            installing: $installing,
+            afterTheYes: $agreed,
+            workingSaid: '',
             hasEnded: false,
+            refusedSaid: '',
             refused: null,
             installed: $installed,
-            install: $install instanceof APluginInstallAsShown ? $install : null,
+            install: $account instanceof APluginInstallAsShown ? $account : null,
+            update: $account instanceof APluginUpdateAsShown ? $account : null,
+            removal: $account instanceof APluginRemovalAsShown ? $account : null,
         );
     }
 
-    /**
-     * An install's account.
-     *
-     * @param list<string> $approved
-     */
-    private function install(APluginInstall $install, array $approved, bool $agreeable): APluginInstallAsShown
+    /** The catalogue key for what the stack is at: a rehearsal before the yes, the act itself after it. */
+    private function working(ExtendingIt $act, bool $agreed): string
     {
-        $changes = [];
-
-        foreach ($install->changes() as $change) {
-            $changes[] = new APluginChangeAsShown(path: $change->path(), putsSaid: $change->puts()->saidOnTheScreen());
+        if (! $agreed) {
+            return 'plugins.working.rehearse';
         }
 
-        $proofs = [];
-
-        foreach ($install->proofs() as $proof) {
-            $proofs[] = new AProofAsShown(
-                establishes: $proof->establishes(),
-                asks: $proof->asks(),
-                why: $proof->why(),
-                cameToSaid: $proof->cameTo()->says()->saidOnTheScreen(),
-                said: $this->lines($proof->cameTo()->said()),
-            );
-        }
-
-        $overrides = [];
-
-        foreach ($install->overrides() as $override) {
-            $overrides[] = new AChangeAndWhyAsShown(target: $override->setting(), because: $override->why());
-        }
-
-        $contests = [];
-
-        foreach ($install->contests() as $contest) {
-            $contests[] = new AContestAsShown(capability: $contest->capability(), by: $contest->by(), claimants: $this->lines($contest->claimants()));
-        }
-
-        $checks = $install->checks();
-        $putBack = $install->wasItPutBack(
-            putBack: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
-            notPutBack: static fn(): AsText => AsText::nothing(),
-        );
-
-        return new APluginInstallAsShown(
-            plugin: $this->plugin($install->would(), HowItsSourceStands::notSaid(), $approved),
-            isAReading: $install->isAReading(),
-            agreeable: $agreeable,
-            headline: $this->headline($install),
-            changes: $changes,
-            proofs: $proofs,
-            overrides: $overrides,
-            contests: $contests,
-            checked: $checks->wereAsked(),
-            broke: $this->lines($checks->broke()),
-            unsettled: $this->lines($checks->unsettled()),
-            putBack: $putBack instanceof HowPuttingARunBackWent ? $putBack : null,
-        );
-    }
-
-    /** How an install ended, as a catalogue key, or empty for a reading. */
-    private function headline(APluginInstall $install): string
-    {
-        return match (true) {
-            $install->isAReading() => '',
-            $install->held() => 'plugins.installed_it',
-            default => $install->wasItPutBack(
-                putBack: static fn(): AsText => AsText::of('plugins.put_back'),
-                notPutBack: static fn(): AsText => AsText::of('plugins.not_installed'),
-            )->said,
+        return match ($act) {
+            ExtendingIt::Install => 'plugins.working.install',
+            ExtendingIt::Update => 'plugins.working.update',
+            ExtendingIt::Remove => 'plugins.working.remove',
         };
     }
 
-    /**
-     * One plugin, with every recipe in full.
-     *
-     * @param list<string> $approved
-     */
-    private function plugin(APlugin $plugin, HowItsSourceStands $standing, array $approved): APluginAsShown
+    /** The catalogue key for what the stack would not do: rehearse before the yes, the act itself after it. */
+    private function refusal(ExtendingIt $act, bool $agreed): string
     {
-        $vouched = $plugin->vouched();
-        $recipes = [];
-
-        foreach ($plugin->recipes() as $recipe) {
-            $recipes[] = $this->recipe($recipe, $this->lines($plugin->approvals()), $approved);
+        if (! $agreed) {
+            return 'plugins.refused.rehearse';
         }
 
-        return new APluginAsShown(
-            name: $plugin->shown(),
-            id: $plugin->id(),
-            version: $plugin->version(),
-            reviewed: $vouched->wasReviewed(),
-            source: $vouched->source(),
-            revision: $vouched->revision(),
-            signed: $vouched->signed(),
-            upstream: $vouched->upstream(),
-            licence: $vouched->licence(),
-            standingSaid: $standing->standing()->saidOnTheScreen(),
-            standingWhy: $standing->why(),
-            recipes: $recipes,
-        );
-    }
-
-    /**
-     * One recipe, each pair with its switch where it asks for an approval.
-     *
-     * @param list<string> $approvals every approval the plugin's recipes ask for
-     * @param list<string> $approved  the ones the operator has given
-     */
-    private function recipe(ARecipe $recipe, array $approvals, array $approved): ARecipeAsShown
-    {
-        $steps = [];
-
-        foreach ($recipe->steps() as $step) {
-            $steps[] = new ARecipeStepAsShown(method: $step->method(), to: $step->to(), path: $step->path(), adapter: $step->adapter());
-        }
-
-        $pairs = [];
-
-        foreach ($recipe->pairs() as $pair) {
-            $place = $pair->asksForApproval() ? array_search($pair->approval(), $approvals, strict: true) : false;
-
-            $pairs[] = new AValueCarriedAsShown(
-                value: $pair->value(),
-                origin: $pair->origin(),
-                to: $pair->to(),
-                release: $pair->release(),
-                from: $pair->from(),
-                approval: is_int($place) ? $place : null,
-                approved: $pair->asksForApproval() && in_array($pair->approval(), $approved, strict: true),
-            );
-        }
-
-        return new ARecipeAsShown(title: $recipe->title(), why: $recipe->why(), steps: $steps, pairs: $pairs);
-    }
-
-    /**
-     * Lines the stack said, collected by hand into the list a template reads.
-     *
-     * @return list<string>
-     */
-    private function lines(PluginLines $lines): array
-    {
-        $listed = [];
-
-        foreach ($lines as $line) {
-            $listed[] = $line;
-        }
-
-        return $listed;
+        return match ($act) {
+            ExtendingIt::Install => 'plugins.refused.install',
+            ExtendingIt::Update => 'plugins.refused.update',
+            ExtendingIt::Remove => 'plugins.refused.remove',
+        };
     }
 
     /** A state with neither a listing nor an account in it. */
@@ -272,18 +152,23 @@ final readonly class HowExtendingItReads
         HowTheReadingWent $went,
         bool $typing = false,
         bool $isWorking = false,
-        bool $installing = false,
+        bool $afterTheYes = false,
+        string $workingSaid = '',
         bool $hasEnded = false,
     ): WhatExtendsItTurnedOutToBe {
         return new WhatExtendsItTurnedOutToBe(
             went: $went,
             typing: $typing,
             isWorking: $isWorking,
-            installing: $installing,
+            afterTheYes: $afterTheYes,
+            workingSaid: $workingSaid,
             hasEnded: $hasEnded,
+            refusedSaid: '',
             refused: null,
             installed: [],
             install: null,
+            update: null,
+            removal: null,
         );
     }
 }

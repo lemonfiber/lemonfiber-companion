@@ -255,6 +255,13 @@ const VERBS_THE_APP_ASKS_FOR = [
     // puts the install back where either does not hold.
     'plugin-install' => 'rehearses installing one plugin, and installs the one rehearsed on a second yes with each value it sends approved',
 
+    // The same two parts for a plugin already installed. An update fetches
+    // the source the record names again, takes the installed version's
+    // changes off, and puts it back on where the new one does not hold; a
+    // removal takes the plugin's changes off and writes the record last.
+    'plugin-update' => 'rehearses updating one installed plugin from the source its record names, and updates it on a second yes with each value it sends approved',
+    'plugin-remove' => 'rehearses removing one installed plugin, naming every service it stops and every capability it leaves unfilled, and removes it on a second yes',
+
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
     // refuses to grab outside the tunnel and never re-fetches what is

@@ -39,52 +39,7 @@
         <x-design::body>{{ __('stacks.run_back.no_outcome_action') }}</x-design::body>
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @else
-        @if ($this->done()->rehearsed)
-            {{-- A rehearsal, and said to be one before anything else: nothing
-                 below has happened, and nothing is worded as though it had. --}}
-            <x-operator::heading>{{ __('stacks.run_back.a_rehearsal') }}</x-operator::heading>
-        @endif
-
-        {{-- What was left leads, because it is the part worth reading: an
-             operator who believes a run went back and finds half of it still
-             standing has been told something false. --}}
-        <x-operator::emphasis>{{ __($this->done()->headline) }}</x-operator::emphasis>
-
-        @forelse ($this->done()->left as $left)
-            <x-operator::entry>
-                <x-operator::emphasis>{{ $left->target }}</x-operator::emphasis>
-                <x-design::body>{{ $left->because }}</x-design::body>
-            </x-operator::entry>
-        @empty
-            {{-- Nothing was left, which the line above says. --}}
-        @endforelse
-
-        @forelse ($this->done()->noted as $noted)
-            @if ($loop->first)
-                {{-- It went back and still leaves something behind: a setting
-                     that re-pointed where data lives goes back while the data
-                     stays where it was moved. --}}
-                <x-operator::emphasis>{{ __('stacks.run_back.noted') }}</x-operator::emphasis>
-            @endif
-
-            <x-operator::entry>
-                <x-operator::emphasis>{{ $noted->target }}</x-operator::emphasis>
-                <x-design::body>{{ $noted->because }}</x-design::body>
-            </x-operator::entry>
-        @empty
-            {{-- Nothing about going back needed saying. --}}
-        @endforelse
-
-        <x-operator::emphasis>{{ __($this->done()->reversedSaid) }}</x-operator::emphasis>
-
-        @forelse ($this->done()->reversed as $reversed)
-            <x-operator::entry>
-                <x-design::body>{{ $reversed->target }}</x-design::body>
-                <x-operator::note>{{ __($reversed->doesSaid) }}</x-operator::note>
-            </x-operator::entry>
-        @empty
-            <x-operator::note>{{ __($this->done()->noneReversed) }}</x-operator::note>
-        @endforelse
+        <x-operator::what-going-back-came-to :report="$this->done()" />
 
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @endif

@@ -25,6 +25,7 @@ final readonly class APluginAsShown
      * @param string               $standingSaid how its source stands, as a catalogue key, or empty where the stack did not say
      * @param string               $standingWhy  the stack's reason for how it stands, or empty
      * @param list<ARecipeAsShown> $recipes      its recipes, each in full
+     * @param bool                 $updatable    whether its record names a source an update can fetch again
      */
     public function __construct(
         public string $name,
@@ -39,5 +40,6 @@ final readonly class APluginAsShown
         public string $standingSaid,
         public string $standingWhy,
         public array $recipes,
+        public bool $updatable,
     ) {}
 }

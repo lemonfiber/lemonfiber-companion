@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function is_array;
+
 use Modules\Kernel\Api\ACapabilityLeftContested;
+use Modules\Kernel\Api\ACapabilityLeftUnfilled;
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
+use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
 use Modules\Kernel\Api\APluginInstall;
+use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
@@ -20,6 +25,7 @@ use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\TheCapabilitiesLeftUnfilled;
 use Modules\Kernel\Api\TheContestsLeft;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePluginChanges;
@@ -30,9 +36,11 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheValuesItCarries;
+use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAProofCameTo;
 use Modules\Kernel\Api\WhatGoingBackDoes;
+use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\WhatWentBack;
@@ -188,6 +196,142 @@ final readonly class APluginAsItArrives
         ];
     }
 
+    /**
+     * What the stack says of its plugins, with an update's or a removal's account.
+     *
+     * @param  array<mixed>         $account
+     * @return array<string, mixed>
+     */
+    public static function theAnswerAbout(string $which, array $account): array
+    {
+        $answer = self::theAnswer(null);
+        $data = $answer['data'];
+        $data = is_array($data) ? $data : [];
+        $data[$which] = $account;
+        $data['agreement'] = self::AGREEMENT;
+        $data['sources'] = [];
+
+        return [...$answer, 'data' => $data];
+    }
+
+    /**
+     * What putting the installed version back would come to, or came to.
+     *
+     * @return array<string, mixed>
+     */
+    public static function wentBackOnTheWire(bool $rehearsed): array
+    {
+        return [
+            'rehearsed' => $rehearsed,
+            'reversed' => [['target' => 'tdarr', 'action' => ['does' => 'delete', 'path' => '/srv/lemonfiber/plugins/tdarr/plugin.toml']]],
+            'left' => [['target' => '/srv/lemonfiber/config/tdarr', 'because' => 'What the service wrote stays for the new version']],
+        ];
+    }
+
+    /**
+     * Updating Tdarr from 2.1.0 to 2.2.0, before anything is written.
+     *
+     * @return array<string, mixed>
+     */
+    public static function anUpdateReadingOnTheWire(): array
+    {
+        return [
+            'plugin' => 'tdarr',
+            'from' => '2.1.0',
+            'to' => '2.2.0',
+            'interrupts' => ['tdarr'],
+            'install' => self::aReadingOnTheWire(),
+            'went_back' => self::wentBackOnTheWire(rehearsed: true),
+        ];
+    }
+
+    /**
+     * The update after the yes, where the new version did not hold and 2.1.0 went back.
+     *
+     * @return array<string, mixed>
+     */
+    public static function anUpdateNotHeldOnTheWire(): array
+    {
+        return [
+            ...self::anUpdateReadingOnTheWire(),
+            'install' => self::putBackOnTheWire(),
+            'went_back' => self::wentBackOnTheWire(rehearsed: false),
+            'stopped' => 'The container would not start',
+            'restored' => ['version' => '2.1.0', 'placed' => true, 'running' => false],
+        ];
+    }
+
+    /**
+     * Removing Tdarr, before anything is taken.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aRemovalReadingOnTheWire(): array
+    {
+        return [
+            'plugin' => 'tdarr',
+            'interrupts' => ['tdarr'],
+            'leaves' => [['capability' => 'transcode', 'filled_by' => 'tdarr']],
+            'removed' => false,
+            'went_back' => self::wentBackOnTheWire(rehearsed: true),
+        ];
+    }
+
+    /**
+     * The removal after the yes, where the files went back and the record was not written.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aPartialRemovalOnTheWire(): array
+    {
+        return [...self::aRemovalReadingOnTheWire(), 'went_back' => self::wentBackOnTheWire(rehearsed: false)];
+    }
+
+    /**
+     * The removal after the yes: out of the record, with what the service wrote left on the machine.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aRemovalOnTheWire(): array
+    {
+        return [...self::aRemovalReadingOnTheWire(), 'removed' => true, 'went_back' => self::wentBackOnTheWire(rehearsed: false)];
+    }
+
+    /** The update's reading, as this app holds it. */
+    public static function theUpdateReading(): ThePlugins
+    {
+        return self::anUpdate(self::theReadingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded());
+    }
+
+    /** The update that did not hold, as this app holds it. */
+    public static function theUpdateNotHeld(): ThePlugins
+    {
+        return self::anUpdate(
+            self::thePutBackInstall(),
+            self::wentBack(WhetherItWasRehearsed::CarriedOut),
+            'The container would not start',
+            WhatPuttingTheOldVersionBackCameTo::of('2.1.0', placed: true, running: false),
+        );
+    }
+
+    /** The removal's reading, as this app holds it. */
+    public static function theRemovalReading(): ThePlugins
+    {
+        return self::aRemoval(self::wentBack(WhetherItWasRehearsed::Rehearsed), removed: false);
+    }
+
+    /** The removal that went only part of the way, as this app holds it. */
+    public static function thePartialRemoval(): ThePlugins
+    {
+        return self::aRemoval(self::wentBack(WhetherItWasRehearsed::CarriedOut), removed: false);
+    }
+
+    /** The removal, recorded, with what the service wrote left on the machine, as this app holds it. */
+    public static function theRemoval(): ThePlugins
+    {
+        return self::aRemoval(self::wentBack(WhetherItWasRehearsed::CarriedOut), removed: true);
+    }
+
     /** What is installed, as this app holds the listing. */
     public static function theListing(): ThePlugins
     {
@@ -204,15 +348,7 @@ final readonly class APluginAsItArrives
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
-            APluginInstall::reported(
-                self::held(),
-                recorded: false,
-                changes: self::changes(),
-                proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
-                contests: self::contests(),
-                overrides: self::overrides(),
-                checks: WhatTheChecksMade::notAsked(),
-            ),
+            self::theReadingInstall(),
         );
     }
 
@@ -223,20 +359,7 @@ final readonly class APluginAsItArrives
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
-            APluginInstall::putBack(
-                self::held(),
-                self::changes(),
-                TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
-                self::contests(),
-                self::overrides(),
-                WhatTheChecksMade::notAsked(),
-                ARunPutBack::reported(
-                    WhetherItWasRehearsed::CarriedOut,
-                    WhatWentBack::these(AChangePutBack::against('tdarr', WhatGoingBackDoes::Delete)),
-                    ChangesAndWhy::these(AChangeAndWhy::said('tdarr-data', 'The volume was in use')),
-                    ChangesAndWhy::these(),
-                ),
-            ),
+            self::thePutBackInstall(),
         );
     }
 
@@ -255,6 +378,73 @@ final readonly class APluginAsItArrives
                 contests: self::contests(),
                 overrides: self::overrides(),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
+            ),
+        );
+    }
+
+    private static function anUpdate(APluginInstall $install, ARunPutBack $wentBack, string $stopped, WhatPuttingTheOldVersionBackCameTo $restored): ThePlugins
+    {
+        return ThePlugins::aboutAnUpdate(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            AnUpdate::reported('tdarr', TheVersionsItMovesBetween::of('2.1.0', '2.2.0'), PluginLines::under('interrupts', 'tdarr'), $install, $wentBack, $stopped, $restored),
+        );
+    }
+
+    private static function aRemoval(ARunPutBack $wentBack, bool $removed): ThePlugins
+    {
+        return ThePlugins::aboutAPluginRemoval(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            APluginRemoval::reported(
+                'tdarr',
+                PluginLines::under('interrupts', 'tdarr'),
+                TheCapabilitiesLeftUnfilled::these(ACapabilityLeftUnfilled::of('transcode', 'tdarr')),
+                removed: $removed,
+                wentBack: $wentBack,
+            ),
+        );
+    }
+
+    private static function wentBack(WhetherItWasRehearsed $rehearsed): ARunPutBack
+    {
+        return ARunPutBack::reported(
+            $rehearsed,
+            WhatWentBack::these(AChangePutBack::against('tdarr', WhatGoingBackDoes::Delete)),
+            ChangesAndWhy::these(AChangeAndWhy::said('/srv/lemonfiber/config/tdarr', 'What the service wrote stays for the new version')),
+            ChangesAndWhy::these(),
+        );
+    }
+
+    private static function theReadingInstall(): APluginInstall
+    {
+        return APluginInstall::reported(
+            self::held(),
+            recorded: false,
+            changes: self::changes(),
+            proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+            contests: self::contests(),
+            overrides: self::overrides(),
+            checks: WhatTheChecksMade::notAsked(),
+        );
+    }
+
+    private static function thePutBackInstall(): APluginInstall
+    {
+        return APluginInstall::putBack(
+            self::held(),
+            self::changes(),
+            TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
+            self::contests(),
+            self::overrides(),
+            WhatTheChecksMade::notAsked(),
+            ARunPutBack::reported(
+                WhetherItWasRehearsed::CarriedOut,
+                WhatWentBack::these(AChangePutBack::against('tdarr', WhatGoingBackDoes::Delete)),
+                ChangesAndWhy::these(AChangeAndWhy::said('tdarr-data', 'The volume was in use')),
+                ChangesAndWhy::these(),
             ),
         );
     }

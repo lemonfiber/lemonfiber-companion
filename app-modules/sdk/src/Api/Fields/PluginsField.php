@@ -94,4 +94,25 @@ enum PluginsField: string implements NamesAWireField
 
     /** How each installed plugin's source stands, asked now. */
     case Sources = 'sources';
+
+    /** An update's own account, where the answer is about one. */
+    case Update = 'update';
+
+    /** Every service that stops for an update or a removal, named before any does. */
+    case Interrupts = 'interrupts';
+
+    /** What putting the installed version's changes back came to, or would. */
+    case WentBack = 'went_back';
+
+    /** Where an update did not hold, what putting the version it replaced back came to. */
+    case Restored = 'restored';
+
+    /** Whether everything the version put back placed is on the machine again. */
+    case Placed = 'placed';
+
+    /** Every capability a removal would leave with nothing filling it. */
+    case Leaves = 'leaves';
+
+    /** The plugin filling a capability now, which is the one going. */
+    case FilledBy = 'filled_by';
 }
