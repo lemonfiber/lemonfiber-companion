@@ -23,6 +23,9 @@ final class PlayerScreen: AVPlayerViewController {
     /// What fetches every byte from the door.
     private let loader: DoorLoader
 
+    /// Where the stream plays from, as the extensions resolved it, or nil where nothing could play it.
+    private let source: PlayableSource?
+
     /// Called whenever the state moves, so the app can be told to ask again.
     private let moved: () -> Void
 
@@ -56,7 +59,10 @@ final class PlayerScreen: AVPlayerViewController {
     init(asked: WhatToPlay, extensions: PlayerExtensions, moved: @escaping () -> Void) {
         self.asked = asked
         self.extensions = extensions
-        self.loader = DoorLoader(asked: asked)
+        let source = extensions.source(for: asked)
+        self.source = source
+        self.loader = DoorLoader(
+            asked: asked, top: source?.address, extras: ExtraSubtitles(extensions.extraTracks(for: asked)))
         self.moved = moved
         super.init(nibName: nil, bundle: nil)
     }
@@ -70,7 +76,7 @@ final class PlayerScreen: AVPlayerViewController {
     ///
     /// - Returns: whether there was anything to open.
     func open() -> Bool {
-        guard let source = extensions.source(for: asked), let handed = DoorLoader.handed(source.address)
+        guard let source, let handed = DoorLoader.handed(source.address)
         else {
             return false
         }

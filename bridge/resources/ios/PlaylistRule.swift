@@ -168,7 +168,7 @@ public struct PlaylistRule: Sendable {
     }
 
     /// A tag's value split at the commas outside quoted strings, or nil where a quote is left open.
-    private static func split(_ value: Substring) -> [String]? {
+    static func split(_ value: Substring) -> [String]? {
         var attributes: [String] = []
         var current = ""
         var quoted = false
