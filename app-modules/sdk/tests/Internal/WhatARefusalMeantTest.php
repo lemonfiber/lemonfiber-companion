@@ -207,12 +207,12 @@ it('reads a session the stack no longer admits as signed out, though it answered
     // the code is what says signing in again is the remedy.
     $obstacle = WhatARefusalMeant::obstacle(refusedFor(RefusalCode::NotAdmitted));
 
-    expect($obstacle)->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused))
+    expect($obstacle->kind())->toBe(KindOfObstacle::CredentialWasRefused)
         ->and($obstacle->meansWeAreSignedOut())->toBeTrue();
 });
 
 it('reads each refusal of who is asking as its own obstacle', function (RefusalCode $code, Obstacle $met): void {
-    expect(WhatARefusalMeant::obstacle(refusedFor($code)))->toEqual($met);
+    expect(WhatARefusalMeant::obstacle(refusedFor($code))->kind())->toBe($met->kind());
 })->with([
     'an account asking for what is not its own' => [RefusalCode::NotYours, Obstacle::of(KindOfObstacle::NotForThisAccount)],
     'an account the media server could not vouch for' => [RefusalCode::Unconfirmed, Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer)],
@@ -258,10 +258,26 @@ it('reads a code it does not know by the status it came with', function (): void
         aProblemTheStackSent($status, ['code' => 'NEWER-1']),
     );
 
-    expect($unknown(401))->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused))
-        ->and($unknown(403))->toEqual(Obstacle::of(KindOfObstacle::NotForThisAccount))
-        ->and($unknown(409))->toEqual(Obstacle::of(KindOfObstacle::StackIsBusy))
-        ->and($unknown(400))->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    expect($unknown(401)->kind())->toBe(KindOfObstacle::CredentialWasRefused)
+        ->and($unknown(403)->kind())->toBe(KindOfObstacle::NotForThisAccount)
+        ->and($unknown(409)->kind())->toBe(KindOfObstacle::StackIsBusy)
+        ->and($unknown(400)->kind())->toBe(KindOfObstacle::StackDidNotAnswer);
+});
+
+it('carries what the core wrote for the household beside the obstacle, as it wrote it, and nothing where it wrote nothing', function (): void {
+    $unconfirmed = WhatARefusalMeant::obstacle(aProblemTheStackSent(403, [
+        'code' => RefusalCode::Unconfirmed->value,
+        'summary' => '  Your library is not answering right now.  ',
+        'remedies' => [['action' => 'Try again in a little while'], ['action' => 'Ask whoever runs it']],
+    ]))->whatTheHouseholdWasTold();
+    $withNoRemedy = WhatARefusalMeant::obstacle(aProblemTheStackSent(403, ['code' => RefusalCode::NotYours->value, 'remedies' => []]))->whatTheHouseholdWasTold();
+    $noDocument = WhatARefusalMeant::obstacle(RequestFailed::from('/api/actions/restore', 403, 'not json'))->whatTheHouseholdWasTold();
+    $theWrongMachine = WhatARefusalMeant::obstacle(CertificateWasRefused::whenAsking('/api/status', str_repeat('b', 64), str_repeat('a', 64)))->whatTheHouseholdWasTold();
+
+    expect([$unconfirmed->wasSaid(), $unconfirmed->sentence(), $unconfirmed->remedy()])->toBe([true, 'Your library is not answering right now.', 'Try again in a little while'])
+        ->and([$withNoRemedy->sentence(), $withNoRemedy->remedy()])->toBe(['This backup is from a newer lemonfiber', ''])
+        ->and($noDocument->wasSaid())->toBeFalse()
+        ->and($theWrongMachine->wasSaid())->toBeFalse();
 });
 
 it('reads a media server that could not vouch for an account as met rather than in the stack\'s words', function (): void {

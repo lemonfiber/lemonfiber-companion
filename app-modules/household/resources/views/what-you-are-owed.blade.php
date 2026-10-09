@@ -58,7 +58,7 @@
              would otherwise leave this section silently empty — which reads as
              having asked for nothing. --}}
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->requests()->met, $this->requests()->filling()) }}</x-design::strong>
+            <x-household::what-stood-in-the-way :met="$this->requests()->met" :filling="$this->requests()->filling()" :in-the-stacks-words="$this->requests()->isInTheStacksWords()" />
         </x-design::notice>
     @endif
 
@@ -71,8 +71,7 @@
          beside it. A refusal is drawn as a refusal here: an account that may
          not ask for something is told so, rather than shown an empty list. --}}
     <x-design::notice tone="unknown">
-        <x-design::strong>{{ __($this->answer()->met, $this->answer()->filling()) }}</x-design::strong>
-        <x-design::body>{{ __($this->answer()->remedy, $this->answer()->filling()) }}</x-design::body>
+        <x-household::what-stood-in-the-way :met="$this->answer()->met" :remedy="$this->answer()->remedy" :filling="$this->answer()->filling()" :in-the-stacks-words="$this->answer()->isInTheStacksWords()" />
     </x-design::notice>
 
     {{-- The action is offered and the failure reported, rather than taken away

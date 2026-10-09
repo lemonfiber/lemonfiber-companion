@@ -107,6 +107,12 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
         return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
     }
 
+    /** Whether {@see $met} and {@see $remedy} are the core's own text, drawn as written, rather than catalogue keys. */
+    public function isInTheStacksWords(): bool
+    {
+        return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
+    }
+
     /**
      * Whether the screen has its own content to draw.
      *

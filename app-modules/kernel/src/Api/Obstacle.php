@@ -22,6 +22,11 @@ namespace Modules\Kernel\Api;
  * tried, for the one screen that shows it: the operator's, beside the
  * sentence. It is never part of what fills a sentence, and it goes nowhere
  * else, for {@see Address}'s reason.
+ *
+ * An obstacle the core answered may carry what it wrote for the household,
+ * {@see WhatTheHouseholdWasTold}, which a member is told in place of this
+ * app's lines. The operator's screens keep this app's lines, which name what
+ * to look at.
  */
 final readonly class Obstacle
 {
@@ -32,6 +37,7 @@ final readonly class Obstacle
         private KindOfObstacle $kind,
         private ?TheVersionsSpoken $versions,
         private ?Address $triedAt = null,
+        private ?WhatTheHouseholdWasTold $told = null,
     ) {}
 
     /** A kind met with nothing beyond itself; a kind that carries facts is refused here. */
@@ -56,7 +62,24 @@ final readonly class Obstacle
      */
     public function whenTriedAt(Address $tried): self
     {
-        return $this->kind->isMetOnTheWayToTheStack() ? new self($this->kind, $this->versions, $tried) : $this;
+        return $this->kind->isMetOnTheWayToTheStack() ? new self($this->kind, $this->versions, $tried, $this->told) : $this;
+    }
+
+    /**
+     * The same obstacle, with what the core wrote for the household.
+     *
+     * Given only where the core answered with a problem document: an obstacle
+     * met before it answered has no words of the core's to carry.
+     */
+    public function withWhatTheHouseholdWasTold(WhatTheHouseholdWasTold $told): self
+    {
+        return new self($this->kind, $this->versions, $this->triedAt, $told);
+    }
+
+    /** What the core wrote for the household, or {@see WhatTheHouseholdWasTold::nothing()}. */
+    public function whatTheHouseholdWasTold(): WhatTheHouseholdWasTold
+    {
+        return $this->told ?? WhatTheHouseholdWasTold::nothing();
     }
 
     /**

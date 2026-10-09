@@ -15,8 +15,7 @@
     @endforelse
 @elseif ($this->theirOwnWereStopped())
     <x-design::notice tone="quiet">
-        <x-design::strong>{{ __($this->theirOwn()->met, $this->theirOwn()->filling()) }}</x-design::strong>
-        <x-design::body>{{ __($this->theirOwn()->remedy, $this->theirOwn()->filling()) }}</x-design::body>
+        <x-household::what-stood-in-the-way :met="$this->theirOwn()->met" :remedy="$this->theirOwn()->remedy" :filling="$this->theirOwn()->filling()" :in-the-stacks-words="$this->theirOwn()->isInTheStacksWords()" />
     </x-design::notice>
     <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
 @endif
@@ -67,8 +66,7 @@
          so this screen cannot describe a condition differently from the one
          beside it. --}}
     <x-design::notice tone="unknown">
-        <x-design::strong>{{ __($this->answer()->met, $this->answer()->filling()) }}</x-design::strong>
-        <x-design::body>{{ __($this->answer()->remedy, $this->answer()->filling()) }}</x-design::body>
+        <x-household::what-stood-in-the-way :met="$this->answer()->met" :remedy="$this->answer()->remedy" :filling="$this->answer()->filling()" :in-the-stacks-words="$this->answer()->isInTheStacksWords()" />
     </x-design::notice>
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />

@@ -215,8 +215,8 @@ it('a machine that is not answering reaches the obstacle for it', function (): v
     }
 
     expect($met[AStandInStack::Answering->value])->toBeNull()
-        ->and($met[AStandInStack::NotAnswering->value])->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer))
-        ->and($met[AStandInStack::RefusingTheSession->value])->toEqual(Obstacle::of(KindOfObstacle::CredentialWasRefused));
+        ->and($met[AStandInStack::NotAnswering->value]?->kind())->toBe(KindOfObstacle::StackDidNotAnswer)
+        ->and($met[AStandInStack::RefusingTheSession->value]?->kind())->toBe(KindOfObstacle::CredentialWasRefused);
 });
 
 it('finds endpoints to ask about', function (): void {

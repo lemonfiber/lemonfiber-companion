@@ -130,6 +130,12 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
         return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
     }
 
+    /** Whether {@see $met} and {@see $remedy} are the core's own text, drawn as written, rather than catalogue keys. */
+    public function isInTheStacksWords(): bool
+    {
+        return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
+    }
+
     /** Whether there is a title to draw across the screen: an empty shelf has none. */
     public function hasAHero(): bool
     {

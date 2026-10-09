@@ -43,8 +43,7 @@
         <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
     @elseif ($this->shelf()->isSignedIn)
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->shelf()->met, $this->shelf()->filling()) }}</x-design::strong>
-            <x-design::body>{{ __($this->shelf()->remedy, $this->shelf()->filling()) }}</x-design::body>
+            <x-household::what-stood-in-the-way :met="$this->shelf()->met" :remedy="$this->shelf()->remedy" :filling="$this->shelf()->filling()" :in-the-stacks-words="$this->shelf()->isInTheStacksWords()" />
         </x-design::notice>
 
         <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
@@ -79,8 +78,7 @@
     <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
 @elseif ($this->allowance()->isSignedIn)
     <x-design::notice tone="unknown">
-        <x-design::strong>{{ __($this->allowance()->met, $this->allowance()->filling()) }}</x-design::strong>
-        <x-design::body>{{ __($this->allowance()->remedy, $this->allowance()->filling()) }}</x-design::body>
+        <x-household::what-stood-in-the-way :met="$this->allowance()->met" :remedy="$this->allowance()->remedy" :filling="$this->allowance()->filling()" :in-the-stacks-words="$this->allowance()->isInTheStacksWords()" />
     </x-design::notice>
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
