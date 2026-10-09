@@ -37,16 +37,7 @@ public struct Door: Equatable, Sendable {
     /// - Parameter location: where the core said a title streams from.
     /// - Returns: the door, or nil.
     public static func of(_ location: String) -> Door? {
-        guard let parts = URLComponents(string: location),
-            parts.scheme?.lowercased() == scheme,
-            parts.user == nil,
-            parts.password == nil,
-            let host = parts.host, !host.isEmpty
-        else {
-            return nil
-        }
-
-        return Door(host: host.lowercased(), port: parts.port ?? defaultPort)
+        parsed(location)?.door
     }
 
     /// Whether an address is at this door.
@@ -54,7 +45,96 @@ public struct Door: Equatable, Sendable {
     /// - Parameter address: an absolute address.
     /// - Returns: whether its scheme, host and port are the door's.
     public func holds(_ address: String) -> Bool {
-        Door.of(address) == self
+        admitted(address) != nil
+    }
+
+    /// An address at this door, parsed as the platform fetches it, or nil where it is not at the door.
+    ///
+    /// What is fetched is the very address that was checked: the caller hands
+    /// the platform this, never the text it came from parsed a second time.
+    ///
+    /// - Parameter address: an absolute address.
+    /// - Returns: the address, or nil.
+    public func admitted(_ address: String) -> URL? {
+        guard let parsed = Door.parsed(address), parsed.door == self else {
+            return nil
+        }
+
+        return parsed.url
+    }
+
+    /// An address read twice, by this rule and by the platform, and kept only where the two agree.
+    ///
+    /// Two readers of one address are two chances to disagree about where it
+    /// goes, and a disagreement is how a check passes on one host while the
+    /// fetch goes to another. So the authority is read here by a grammar with
+    /// no corners — `https://`, a host of plain letters, digits, hyphens and
+    /// dots, and an optional port written as a plain number — and the
+    /// platform's reading must name the same host and port with no name or
+    /// password. Everything the grammar has no place for is refused rather
+    /// than interpreted: a name or password before the host, a percent escape
+    /// or a letter outside ASCII in it, a trailing dot, a bare IPv6 address, a
+    /// backslash, a space or a control character anywhere.
+    private static func parsed(_ address: String) -> (door: Door, url: URL)? {
+        guard let written = authority(of: address), let url = URL(string: address), agrees(url, with: written)
+        else {
+            return nil
+        }
+
+        return (Door(host: written.host, port: written.port ?? defaultPort), url)
+    }
+
+    /// Whether the platform's reading names the host and port the grammar read, and nothing else.
+    ///
+    /// Any name or password before the host gives the platform a user, even an
+    /// empty one, so asking for none asks for both.
+    static func agrees(_ url: URL, with written: (host: String, port: Int?)) -> Bool {
+        url.scheme?.lowercased() == scheme && url.user == nil && url.host?.lowercased() == written.host
+            && url.port == written.port
+    }
+
+    /// The host and port an address names, by the grammar above, or nil where it falls outside it.
+    static func authority(of address: String) -> (host: String, port: Int?)? {
+        guard address.unicodeScalars.allSatisfy({ (0x21...0x7E).contains($0.value) && $0 != "\\" }),
+            address.lowercased().hasPrefix(scheme + "://")
+        else {
+            return nil
+        }
+
+        let rest = address.dropFirst(scheme.count + 3)
+        let named = rest.prefix { !"/?#".contains($0) }.lowercased()
+        let parts = named.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
+
+        guard parts.count <= 2, isAHost(parts[0]) else {
+            return nil
+        }
+
+        guard parts.count == 2 else {
+            return (parts[0], nil)
+        }
+
+        return port(parts[1]).map { (parts[0], $0) }
+    }
+
+    /// Whether a name is dot-separated labels of letters, digits and inner hyphens.
+    private static func isAHost(_ name: String) -> Bool {
+        let labels = name.split(separator: ".", omittingEmptySubsequences: false)
+
+        return labels.allSatisfy { label in
+            !label.isEmpty && label.first != "-" && label.last != "-"
+                && label.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "-" }
+        }
+    }
+
+    /// A port written as a plain number a connection can use, or nil.
+    private static func port(_ written: String) -> Int? {
+        guard written.first != "0", written.allSatisfy({ ("0"..."9").contains($0) }),
+            let number = Int(written), (1...65_535).contains(number)
+        else {
+            return nil
+        }
+
+        return number
     }
 
     /// An address a document at the door names, made absolute, or nil where it is not at the door.

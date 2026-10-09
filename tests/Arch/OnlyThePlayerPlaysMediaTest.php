@@ -96,6 +96,27 @@ function wordsIn(string $source, array $words): array
     return array_values(array_filter($words, static fn(string $word): bool => str_contains($source, $word)));
 }
 
+/**
+ * The Android services the plugin's manifest declares.
+ *
+ * A function rather than a line in the test, because `json_decode` with
+ * `JSON_THROW_ON_ERROR` throws a checked exception, and one raised inside a
+ * Pest closure is one nothing declares.
+ *
+ * @return list<array{name: string, exported?: bool}>
+ */
+function theServicesTheBridgeDeclares(): array
+{
+    /** @var array{android: array{services: list<array{name: string, exported?: bool}>}} $said */
+    $said = json_decode(
+        (string) file_get_contents(Tree::at('bridge/nativephp.json')),
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+
+    return $said['android']['services'];
+}
+
 it('no platform source but the player reaches for a media player', function (): void {
     // Assert the reading before what it says: a rule whose subjects are
     // discovered has a state in which it examines nothing, and that state looks
@@ -157,6 +178,40 @@ it('every source the player builds reads through the door', function (): void {
         ->toBeGreaterThan(0)
         ->toBe(substr_count($ios, 'AVURLAsset(url: handed)'))
         ->and($ios)->toContain('resourceLoader.setDelegate(loader');
+});
+
+it('the player fetches the address the door admitted, and nothing parsed a second time', function (): void {
+    // The door reads an address twice — by its own grammar and as the platform
+    // does — and hands back the platform's reading only where the two agree.
+    // Fetching anything else, the text re-parsed or a redirect followed as the
+    // session found it, reopens the gap between what was checked and what is
+    // fetched.
+    $ios = (string) file_get_contents(Tree::at('bridge/resources/ios/DoorLoader.swift'));
+    $android = (string) file_get_contents(Tree::at('bridge/resources/android/DoorDataSource.kt'));
+
+    expect($ios)->toContain('guard let url = asked.door.admitted(address)')
+        ->and($ios)->toContain('let admitted = asked.door.admitted(next.absoluteString)')
+        ->and($ios)->toContain('followed.url = admitted')
+        ->and($ios)->not->toContain('URL(string: address)')
+        ->and($android)->toContain('val admitted = asked.door.admitted(address) ?: refuse(dataSpec)')
+        ->and($android)->toContain('admitted.toURL().openConnection()')
+        ->and($android)->not->toContain('URL(address)');
+});
+
+it('only this app and the system connect to the player', function (): void {
+    // Any app on the phone may ask to connect to a media session. The service
+    // is not exported, and every connection is put to the controller rule.
+    $service = (string) file_get_contents(Tree::at('bridge/resources/android/PlaybackService.kt'));
+    $exported = array_map(
+        static fn(array $declared): array => [$declared['name'], $declared['exported'] ?? null],
+        theServicesTheBridgeDeclares(),
+    );
+
+    expect($exported)->toContain(['app.lemonfiber.native.PlaybackService', false])
+        ->and($service)->toContain('.setCallback(OnlyTheAppAndTheSystem())')
+        ->and($service)->toContain('session?.takeIf { admits(this, controllerInfo) }')
+        ->and($service)->toContain('MediaSession.ConnectionResult.reject()')
+        ->and($service)->toContain('ControllerRule.admits(');
 });
 
 it('nothing in the app opens the player while the contract says nowhere to stream from', function (): void {

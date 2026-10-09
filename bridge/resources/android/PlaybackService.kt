@@ -1,5 +1,8 @@
 package app.lemonfiber.native
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -28,6 +31,12 @@ import androidx.media3.session.MediaSessionService
  * screen and the notification. What is decided here is what the platform does
  * not decide: which tracks to start with ([TrackRule]), when to report how far
  * it got and when to stop waiting ([PlaybackRule]), and why it stopped.
+ *
+ * **Only this app and the system connect to it.** The session is how the lock
+ * screen and a headset's buttons reach the player, and any app may ask to
+ * connect to one; [ControllerRule] lets in this app and the system and
+ * refuses every other app, so none can control playback or read what plays.
+ * The service is not exported, so no other app can bind to it either.
  *
  * **It never waits on a spinner.** A stall is waited out for as long as the
  * rule allows, and then playback stops and says the library is out of reach;
@@ -62,12 +71,13 @@ public class PlaybackService : MediaSessionService() {
 
         playing.addListener(Listening())
         player = playing
-        session = MediaSession.Builder(this, playing).build()
+        session = MediaSession.Builder(this, playing).setCallback(OnlyTheAppAndTheSystem()).build()
         PlayerSession.service = this
         PlayerSession.asked?.let(::play)
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
+        session?.takeIf { admits(this, controllerInfo) }
 
     override fun onDestroy() {
         val position = player?.let { seconds(it.currentPosition) } ?: 0.0
@@ -214,6 +224,19 @@ public class PlaybackService : MediaSessionService() {
         )
     }
 
+    /** Every connection to the session, let in only for this app and the system ([ControllerRule]). */
+    private inner class OnlyTheAppAndTheSystem : MediaSession.Callback {
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+        ): MediaSession.ConnectionResult =
+            if (admits(this@PlaybackService, controller)) {
+                super.onConnect(session, controller)
+            } else {
+                MediaSession.ConnectionResult.reject()
+            }
+    }
+
     /** What the player does when Media3 tells it something. */
     private inner class Listening : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -344,6 +367,21 @@ public class PlaybackService : MediaSessionService() {
                 .setMediaMetadata(MediaMetadata.Builder().setTitle(request.shown.title).build())
                 .build()
         }
+
+        /** Whether a controller asking to connect is this app or the system. */
+        fun admits(
+            context: Context,
+            controller: MediaSession.ControllerInfo,
+        ): Boolean =
+            ControllerRule.admits(
+                asker = controller.packageName,
+                own = context.packageName,
+                holdsMediaControl =
+                    context.packageManager.checkPermission(
+                        Manifest.permission.MEDIA_CONTENT_CONTROL,
+                        controller.packageName,
+                    ) == PackageManager.PERMISSION_GRANTED,
+            )
 
         /** Now, in seconds since boot, which no clock change moves. */
         fun now(): Double = SystemClock.elapsedRealtime() / MILLIS_PER_SECOND

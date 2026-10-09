@@ -270,7 +270,7 @@
         "services": [
             {
                 "name": "app.lemonfiber.native.PlaybackService",
-                "exported": true,
+                "exported": false,
                 "foregroundServiceType": "mediaPlayback",
                 "intent_filters": [
                     {

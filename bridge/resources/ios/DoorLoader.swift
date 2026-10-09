@@ -120,7 +120,9 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
 
         let address = Door.scheme + handed.dropFirst(Self.scheme.count)
 
-        guard asked.door.holds(address), let url = URL(string: address) else {
+        // The address fetched is the one the door admitted, parsed once, so the
+        // connection cannot go anywhere the check did not look.
+        guard let url = asked.door.admitted(address) else {
             refuse(loadingRequest, because: .refused)
 
             return true
@@ -185,14 +187,21 @@ final class DoorLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataD
         _ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
         newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void
     ) {
-        guard let next = request.url?.absoluteString, asked.door.holds(next) else {
+        // Checked on the address the session would follow, read the way the
+        // door reads it, and followed only as the door admitted it.
+        guard let next = request.url, let admitted = asked.door.admitted(next.absoluteString),
+            admitted.host == next.host, admitted.port == next.port, next.user == nil, next.password == nil
+        else {
             whyItStopped = .refused
             completionHandler(nil)
 
             return
         }
 
-        completionHandler(request)
+        var followed = request
+        followed.url = admitted
+        followed.setValue(Self.grantPrefix + asked.grant, forHTTPHeaderField: Self.grantHeader)
+        completionHandler(followed)
     }
 
     func urlSession(

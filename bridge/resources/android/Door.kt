@@ -32,7 +32,18 @@ public data class Door private constructor(
      * @param address an absolute address.
      * @return whether its scheme, host and port are the door's.
      */
-    public fun holds(address: String): Boolean = of(address) == this
+    public fun holds(address: String): Boolean = admitted(address) != null
+
+    /**
+     * An address at this door, parsed as the platform fetches it, or null where it is not at the door.
+     *
+     * What is fetched is the very address that was checked: the caller hands
+     * the platform this, never the text it came from parsed a second time.
+     *
+     * @param address an absolute address.
+     * @return the address, or null.
+     */
+    public fun admitted(address: String): URI? = parsed(address)?.takeIf { it.first == this }?.second
 
     /**
      * An address a document at the door names, made absolute, or null where it is not at the door.
@@ -45,12 +56,7 @@ public data class Door private constructor(
         reference: String,
         base: String,
     ): String? {
-        val resolved =
-            try {
-                URI(base).resolve(URI(reference)).toString()
-            } catch (_: URISyntaxException) {
-                null
-            }
+        val resolved = uri(base)?.let { from -> uri(reference)?.let { from.resolve(it).toString() } }
 
         return resolved?.takeIf { holds(it) }
     }
@@ -66,27 +72,89 @@ public data class Door private constructor(
         /** What `URI` answers for a port the address does not name. */
         private const val NO_PORT = -1
 
+        /** The highest port a connection can be made to. */
+        private const val HIGHEST_PORT = 65_535
+
+        /** The characters an address may hold at all: visible ASCII. */
+        private val VISIBLE = '!'..'~'
+
+        /** What a separator after `//` begins: the path, the query or the fragment. */
+        private const val AUTHORITY_ENDS = "/?#"
+
         /**
          * The door a location the core stated names, or null where it names none.
          *
          * @param location where the core said a title streams from.
          * @return the door, or null.
          */
-        public fun of(location: String): Door? {
-            val parts =
-                try {
-                    URI(location)
-                } catch (_: URISyntaxException) {
-                    null
-                }
+        public fun of(location: String): Door? = parsed(location)?.first
 
-            return parts
-                ?.takeIf { isADoor(it) }
-                ?.let { Door(it.host.lowercase(), if (it.port == NO_PORT) DEFAULT_PORT else it.port) }
+        /**
+         * An address read twice, by this rule and by the platform, and kept only where the two agree.
+         *
+         * Two readers of one address are two chances to disagree about where it
+         * goes, and a disagreement is how a check passes on one host while the
+         * fetch goes to another. So the authority is read here by a grammar with
+         * no corners — `https://`, a host of plain letters, digits, hyphens and
+         * dots, and an optional port written as a plain number — and the
+         * platform's reading must name the same host and port with no name or
+         * password. Everything the grammar has no place for is refused rather
+         * than interpreted: a name or password before the host, a percent escape
+         * or a letter outside ASCII in it, a trailing dot, a bare IPv6 address, a
+         * backslash, a space or a control character anywhere.
+         */
+        private fun parsed(address: String): Pair<Door, URI>? {
+            val written = authority(address) ?: return null
+
+            return uri(address)
+                ?.takeIf { agrees(it, written) }
+                ?.let { Pair(Door(written.first, written.second ?: DEFAULT_PORT), it) }
         }
 
-        /** Whether a parsed address is an `https` one with a host and no credentials. */
-        private fun isADoor(parts: URI): Boolean =
-            parts.scheme?.lowercase() == SCHEME && parts.rawUserInfo == null && !parts.host.isNullOrEmpty()
+        /** An address as the platform reads it, or null where it cannot. */
+        private fun uri(text: String): URI? =
+            try {
+                URI(text)
+            } catch (_: URISyntaxException) {
+                null
+            }
+
+        /** Whether the platform's reading names the host and port the grammar read, and nothing else. */
+        internal fun agrees(
+            read: URI,
+            written: Pair<String, Int?>,
+        ): Boolean =
+            read.scheme?.lowercase() == SCHEME &&
+                read.rawUserInfo == null &&
+                read.host?.lowercase() == written.first &&
+                read.port == (written.second ?: NO_PORT)
+
+        /** The host and port an address names, by the grammar above, or null where it falls outside it. */
+        internal fun authority(address: String): Pair<String, Int?>? {
+            val visible = address.all { it in VISIBLE && it != '\\' }
+            val clean = visible && address.lowercase().startsWith("$SCHEME://")
+            val named = address.drop("$SCHEME://".length).takeWhile { it !in AUTHORITY_ENDS }.lowercase()
+            val parts = named.split(":")
+            val port = parts.getOrNull(1)?.let(::port)
+            val portHolds = parts.size == 1 || port != null
+
+            return Pair(parts[0], port).takeIf { clean && parts.size <= 2 && isAHost(parts[0]) && portHolds }
+        }
+
+        /** Whether a name is dot-separated labels of letters, digits and inner hyphens. */
+        private fun isAHost(name: String): Boolean =
+            name.split(".").all { label ->
+                label.isNotEmpty() &&
+                    label.first() != '-' &&
+                    label.last() != '-' &&
+                    label.all { it in 'a'..'z' || it in '0'..'9' || it == '-' }
+            }
+
+        /** A port written as a plain number a connection can use, or null. */
+        private fun port(written: String): Int? =
+            written
+                .takeIf { !it.startsWith("0") && it.all { c -> c in '0'..'9' } }
+                ?.toIntOrNull()
+                ?.takeIf { it in 1..HIGHEST_PORT }
     }
 }

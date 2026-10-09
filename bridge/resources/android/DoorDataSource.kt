@@ -12,7 +12,6 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
 /**
@@ -151,11 +150,10 @@ public class DoorDataSource(
         range: String?,
         dataSpec: DataSpec,
     ): HttpsURLConnection {
-        if (!asked.door.holds(address)) {
-            refuse(dataSpec)
-        }
-
-        val one = URL(address).openConnection() as HttpsURLConnection
+        // The address fetched is the one the door admitted, parsed once, so the
+        // connection cannot go anywhere the check did not look.
+        val admitted = asked.door.admitted(address) ?: refuse(dataSpec)
+        val one = admitted.toURL().openConnection() as HttpsURLConnection
         one.sslSocketFactory = pinned.sockets
         one.hostnameVerifier = pinned.hosts
         one.instanceFollowRedirects = false

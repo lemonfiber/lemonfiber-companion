@@ -167,5 +167,10 @@ let package = Package(
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/PlayerStateTests"
         ),
+        .testTarget(
+            name: "ControllerRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ControllerRuleTests"
+        ),
     ]
 )
