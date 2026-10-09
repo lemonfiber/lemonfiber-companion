@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Household\Internal\Month;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
@@ -193,6 +194,10 @@ function everyDerivedKey(): array
         AgainstThePins::class => aPairPerCase(
             AgainstThePins::cases(),
             static fn(AgainstThePins $pins): array => [$pins->saidOnTheScreen()],
+        ),
+        Month::class => aPairPerCase(
+            Month::cases(),
+            static fn(Month $month): array => [$month->saidOnTheScreen()],
         ),
         Medium::class => aPairPerCase(
             Medium::cases(),

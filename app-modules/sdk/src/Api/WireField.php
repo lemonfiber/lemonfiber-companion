@@ -807,4 +807,19 @@ enum WireField: string implements NamesAWireField
 
     /** A removal's own account: what taking lemonfiber off did, and what taking a plugin off would do or did. */
     case Removal = 'removal';
+
+    /** The household's door: what the operator named as it, and the certificate it presents beside a title's location. */
+    case Door = 'door';
+
+    /** A certificate's fingerprint: in pairing material, and on the door a title's location is pinned to. */
+    case Fingerprint = 'fingerprint';
+
+    /** What kind of thing a holding is: on the shelf, and on a title read in full. */
+    case Medium = 'medium';
+
+    /** When a holding came out, where the core could date it: on the shelf, and on a title read in full. */
+    case Year = 'year';
+
+    /** A series' seasons in order: on a trace, and on a title read in full. */
+    case Seasons = 'seasons';
 }

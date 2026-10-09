@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Watching;
+use Modules\Kernel\Api\WhatTheTitleIs;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\Whose;
 use Override;
@@ -28,6 +30,7 @@ use Override;
  */
 final class AShelfThatWasRead implements Watching
 {
+    /** @param list<string> $titlesAskedFor */
     private function __construct(
         private readonly Shelf $shelf,
         private readonly Sentences $said,
@@ -36,6 +39,8 @@ final class AShelfThatWasRead implements Watching
         private ?Stack $asked = null,
         private int $askings = 0,
         private int $askingsForTheDefaults = 0,
+        private ?WhatTheTitleIs $title = null,
+        private array $titlesAskedFor = [],
     ) {}
 
     /** A member with things on their shelf. */
@@ -60,6 +65,24 @@ final class AShelfThatWasRead implements Watching
     public static function met(Obstacle $why): self
     {
         return new self(shelf: Shelf::none(), said: Sentences::none(), why: $why, outOfReach: false);
+    }
+
+    /** The same shelf, answering a title with this. */
+    public function answeringTheTitle(WhatTheTitleIs $title): self
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * Each title asked for, by its id, in order.
+     *
+     * @return list<string>
+     */
+    public function titlesAskedFor(): array
+    {
+        return $this->titlesAskedFor;
     }
 
     /** Which stack was asked, for a test that cares that the right one was. */
@@ -94,6 +117,20 @@ final class AShelfThatWasRead implements Watching
     public function theShelfOf(Stack $stack, Session $session, Whose $whose): WhatTheyMayWatch
     {
         return $this->answer($stack);
+    }
+
+    /** The title it was told to answer with, or the shelf's obstacle, or absent. */
+    #[Override]
+    public function theTitle(Stack $stack, Session $session, Whose $whose, HoldingId $title): WhatTheTitleIs
+    {
+        $this->asked = $stack;
+        $this->titlesAskedFor[] = $title->named();
+
+        if ($this->why instanceof Obstacle) {
+            return WhatTheTitleIs::refused($this->why);
+        }
+
+        return $this->title ?? WhatTheTitleIs::absent();
     }
 
     #[Override]

@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
-use Modules\Household\Internal\WhatATitleIsOpenedWith;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
@@ -170,15 +169,10 @@ it('offers each title as a control that opens it, and Play as one that waits', f
         ->and($screen->offersThatWait())->toBe([__('household.title.play')]);
 });
 
-it('opens each title on its own screen on this machine, handed what the shelf said of it', function (): void {
+it('opens each title on its own screen on this machine', function (): void {
     $poster = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()))->answer()->rows[0]->posters[1];
 
-    expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacksTitle(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')))
-        ->and($poster->carries)->toBe([
-            WhatATitleIsOpenedWith::Titled->value => 'A series',
-            WhatATitleIsOpenedWith::Medium->value => Medium::Series->value,
-            WhatATitleIsOpenedWith::Year->value => '',
-        ]);
+    expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacksTitle(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')));
 });
 
 it('draws the newest title in the house across the screen, with Play that waits and its reason, and More', function (): void {

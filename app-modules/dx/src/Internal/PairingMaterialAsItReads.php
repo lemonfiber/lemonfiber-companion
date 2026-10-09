@@ -11,6 +11,7 @@ use function is_array;
 use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Sdk\Api\Fields\PairingField;
+use Modules\Sdk\Api\WireField;
 
 use function str_repeat;
 
@@ -39,7 +40,7 @@ final readonly class PairingMaterialAsItReads
 
         return [
             ...$data,
-            $under => [...$data[$under], PairingField::Fingerprint->value => $pin],
+            $under => [...$data[$under], WireField::Fingerprint->value => $pin],
             PairingField::Compare->value => AtAGlance::of(Fingerprint::of($pin))->shown(),
         ];
     }

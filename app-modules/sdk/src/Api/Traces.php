@@ -160,8 +160,8 @@ final readonly class Traces
         $coverage = self::table($data[TraceField::Coverage->value], TraceField::Coverage);
         $seasons = [];
 
-        foreach (self::rows($coverage, TraceField::Seasons) as $row) {
-            $season = self::table($row, TraceField::Seasons);
+        foreach (self::rows($coverage, WireField::Seasons) as $row) {
+            $season = self::table($row, WireField::Seasons);
             $outstanding = [];
 
             foreach (self::rows($season, TraceField::Outstanding) as $part) {

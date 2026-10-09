@@ -17,9 +17,8 @@ namespace Modules\Household\Internal\ViewModels;
  *
  * **Nothing here is an address to the media server.** A poster that opens
  * its title carries the path of the title's screen in this app, which names
- * the title by the core's identifier inside the app's own route, and the
- * facts the poster already shows. A template is handed the path whole and
- * builds nothing out of it.
+ * the title by the core's identifier inside the app's own route. A template
+ * is handed the path whole and builds nothing out of it.
  */
 final readonly class WhatOnePosterSays
 {
@@ -41,7 +40,6 @@ final readonly class WhatOnePosterSays
     /**
      * @param array<string, string> $filling what the two lines are filled with, as written
      * @param array<string, string> $keyed   what the two lines are filled with that is a catalogue key
-     * @param array<string, string> $carries what opening it hands the screen it opens, besides the route
      */
     private function __construct(
         public string $titled,
@@ -51,7 +49,6 @@ final readonly class WhatOnePosterSays
         public array $filling,
         public array $keyed,
         public string $goes,
-        public array $carries,
     ) {}
 
     /**
@@ -60,10 +57,9 @@ final readonly class WhatOnePosterSays
      *
      * @param string                $medium  the kind, as a catalogue key
      * @param string                $year    the year, or empty where the core could not date it
-     * @param string                $goes    the path its title opens at, or empty where it opens nothing
-     * @param array<string, string> $carries what opening it hands its title's screen
+     * @param string $goes the path its title opens at, or empty where it opens nothing
      */
-    public static function ofATitle(string $titled, string $medium, string $year, string $goes = '', array $carries = []): self
+    public static function ofATitle(string $titled, string $medium, string $year, string $goes = ''): self
     {
         $isDated = $year !== '';
 
@@ -75,7 +71,6 @@ final readonly class WhatOnePosterSays
             filling: ['title' => $titled, 'year' => $year],
             keyed: ['kind' => $medium],
             goes: $goes,
-            carries: $carries,
         );
     }
 
@@ -96,7 +91,6 @@ final readonly class WhatOnePosterSays
             filling: ['title' => $titled],
             keyed: ['standing' => $standing],
             goes: '',
-            carries: [],
         );
     }
 }

@@ -10,7 +10,6 @@ use function array_slice;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
-use Modules\Household\Internal\WhatATitleIsOpenedWith;
 use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\Medium;
@@ -149,11 +148,6 @@ final readonly class HowAShelfReads
             medium: $holding->medium()->saidOnTheScreen(),
             year: $year,
             goes: WhereTheHouseIs::of($opensOn)->title($holding->id()),
-            carries: [
-                WhatATitleIsOpenedWith::Titled->value => $holding->titled(),
-                WhatATitleIsOpenedWith::Medium->value => $holding->medium()->value,
-                WhatATitleIsOpenedWith::Year->value => $year,
-            ],
         );
     }
 }

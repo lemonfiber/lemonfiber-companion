@@ -48,7 +48,7 @@ final readonly class PairingCodes
 
         return APairingCode::made(
             APairingLine::asWritten(self::text($data, WireField::Written)),
-            Fingerprint::of(self::text($material, PairingField::Fingerprint)),
+            Fingerprint::of(self::text($material, WireField::Fingerprint)),
             self::text($data, PairingField::Compare),
             Instant::atEpochSeconds(self::expires($material)),
             self::text($material, WireField::Address),

@@ -197,11 +197,11 @@ final readonly class Holdings
      */
     private static function medium(array $said, int $position): Medium
     {
-        if (! array_key_exists(HeldField::Medium->value, $said)) {
+        if (! array_key_exists(WireField::Medium->value, $said)) {
             throw ShelfIsUnreadable::holding($position);
         }
 
-        $medium = $said[HeldField::Medium->value];
+        $medium = $said[WireField::Medium->value];
 
         if (! is_string($medium)) {
             throw ShelfIsUnreadable::holding($position);
@@ -222,11 +222,11 @@ final readonly class Holdings
      */
     private static function year(array $said, int $position): WhenItCameOut
     {
-        if (! array_key_exists(HeldField::Year->value, $said)) {
+        if (! array_key_exists(WireField::Year->value, $said)) {
             return WhenItCameOut::unstated();
         }
 
-        $year = $said[HeldField::Year->value];
+        $year = $said[WireField::Year->value];
 
         if ($year === null) {
             return WhenItCameOut::unstated();

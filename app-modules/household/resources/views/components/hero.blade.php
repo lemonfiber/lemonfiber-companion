@@ -22,7 +22,7 @@
 <x-design::action label="{{ __('household.title.play') }}" :answersTo="$playNamed" :disabled="true" />
 <x-design::note>{{ __('household.title.cannot_play') }}</x-design::note>
 @if ($poster->goes !== '')
-<x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" :carries="$poster->carries" />
+<x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" />
 @else
 <x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :disabled="true" />
 @endif

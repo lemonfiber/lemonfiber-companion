@@ -49,6 +49,7 @@ use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\SubstitutionField;
+use Modules\Sdk\Api\Fields\TitleField;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
@@ -92,6 +93,7 @@ function everyFieldNamedOnTheWire(): array
         ...HandoffField::cases(),
         ...GrantField::cases(),
         ...HeldField::cases(),
+        ...TitleField::cases(),
         ...FrontDoorField::cases(),
         ...InvitationField::cases(),
         ...HistoryField::cases(),
