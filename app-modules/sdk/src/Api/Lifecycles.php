@@ -10,6 +10,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\LifecycleEnvelope;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\LifecycleField;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\WhatWasLeftOut;
@@ -66,7 +68,8 @@ final readonly class Lifecycles
             ? WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)), $edits)
             : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits, self::command($data));
 
-        return self::condition($data, $report);
+        return self::condition($data, $report)
+            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, LifecycleIsUnreadable::missing(WireField::Offer))));
     }
 
     /**

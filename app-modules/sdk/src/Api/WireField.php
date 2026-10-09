@@ -823,6 +823,9 @@ enum WireField: string implements NamesAWireField
     /** Why no location is stated beside a title, an episode or something part-way through, where none is. */
     case Unlocated = 'unlocated';
 
+    /** The name a stack gives what it showed before a yes: an update's reading, a restart's rehearsal. */
+    case Offer = 'offer';
+
     /** What kind of thing a holding is: on the shelf, and on a title read in full. */
     case Medium = 'medium';
 

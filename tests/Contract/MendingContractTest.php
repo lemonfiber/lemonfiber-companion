@@ -35,6 +35,7 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatAMovedOfferSays;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Mending contract, run against the adapter and against the fake.
@@ -629,41 +630,24 @@ it('stands in for a stack with payloads the contract would accept', function ():
     }
 });
 
-/** What a stack answers when work ended on a refusal carrying `$code`, in its own words. */
-function aJobThatEndedRefused(RefusalCode $code): MockResponse
-{
-    return MockResponse::make((string) json_encode([
-        'api_version' => 1,
-        'kind' => 'error',
-        'data' => [
-            'code' => $code->value,
-            'severity' => 'warning',
-            'state' => 'guided',
-            'summary' => 'What you agreed to is not what is offered now',
-            'meaning' => 'The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.',
-            'remedies' => [],
-        ],
-    ]), $code->status());
-}
-
 it('reads a yes refused because its offer moved as that, in the stack\'s own words', function (): void {
     $ways = everyWayOfMending(
-        aJobThatEndedRefused(RefusalCode::Stale),
+        WhatAMovedOfferSays::endedOn(RefusalCode::Stale),
         static fn(): Mending => AStackThatWouldMend::whoseOfferMoved(theSameOffer(), ARefusalInItsWords::said(
-            'What you agreed to is not what is offered now',
-            'The offer you answered was a1b2c3d4, and a fresh look offers e5f6a7b8.',
+            WhatAMovedOfferSays::SUMMARY,
+            WhatAMovedOfferSays::MEANING,
             WhatTheRefusalNamed::nothing(),
         )),
     );
 
     foreach ($ways as $which => $make) {
-        expect(whatWasDone($make()))->toBe('moved: What you agreed to is not what is offered now', $which);
+        expect(whatWasDone($make()))->toBe(sprintf('moved: %s', WhatAMovedOfferSays::SUMMARY), $which);
     }
 });
 
 it('reads any other refusal that ends a repair as what was met, not as a moved offer', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([aJobThatEndedRefused(RefusalCode::MovedOn)]);
+    MockClient::global([WhatAMovedOfferSays::endedOn(RefusalCode::MovedOn)]);
 
     expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(KindOfObstacle::StackDidNotAnswer->value);

@@ -31,6 +31,7 @@ final readonly class Upkeep
         private HowTheNotesStand $notes,
         private TheStackEdits $edits,
         private ?Release $inUse,
+        private AnOffer $offer,
     ) {}
 
     /**
@@ -50,13 +51,25 @@ final readonly class Upkeep
         HowTheNotesStand $notes,
         TheStackEdits $edits,
     ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $edits, null);
+        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $edits, null, AnOffer::none());
     }
 
     /** The same reading, where the stack named the release that is running. */
     public function runningOn(Release $inUse): self
     {
-        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $inUse);
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $inUse, $this->offer);
+    }
+
+    /** The same reading, under the name the stack gave what it offers, which a yes to it carries back. */
+    public function offering(AnOffer $offer): self
+    {
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $this->inUse, $offer);
+    }
+
+    /** The name the stack gave what it offers, or none. */
+    public function offer(): AnOffer
+    {
+        return $this->offer;
     }
 
     public function againstThePins(): AgainstThePins

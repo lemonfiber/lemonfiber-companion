@@ -7,11 +7,11 @@ namespace Tests\Support;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Release;
@@ -111,10 +111,14 @@ final readonly class TheUpkeepScreenOfTheLoft
         return $screen;
     }
 
-    /** The update's own report, finished, saying this of each service it touched. */
-    public static function aReportSaying(HowServicesTookIt $went): HowTheUpdateIsGoing
+    /**
+     * The update's own report, finished, saying this of each service it touched.
+     *
+     * @return HowAgreedWorkIsGoing<Upkeep>
+     */
+    public static function aReportSaying(HowServicesTookIt $went): HowAgreedWorkIsGoing
     {
-        return HowTheUpdateIsGoing::done(Upkeep::reported(AgainstThePins::Current, Releases::none(), Services::none(), Services::none(), $went, HowTheNotesStand::Current, TheStackEdits::none()));
+        return HowAgreedWorkIsGoing::done(Upkeep::reported(AgainstThePins::Current, Releases::none(), Services::none(), Services::none(), $went, HowTheNotesStand::Current, TheStackEdits::none()));
     }
 
     /** The screen once 4.1.0 has been taken and the cadence has asked after it once. */

@@ -6,9 +6,9 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
-use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
@@ -34,6 +34,9 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
 {
     public const string THE_JOB = 'an-update-a-test-can-name';
 
+    /** The name a reading gives what it offers, where a test has it name one. */
+    public const string THE_OFFER = '5f3a9c1e';
+
     private int $askings = 0;
 
     private ?Stack $askedAbout = null;
@@ -47,7 +50,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     /**
      * @param Closure(): WhatIsCurrent       $answer
      * @param Closure(): Underway            $taking
-     * @param Closure(): HowTheUpdateIsGoing $becoming
+     * @param Closure(): HowAgreedWorkIsGoing<Upkeep> $becoming
      */
     private function __construct(
         private readonly Closure $answer,
@@ -58,16 +61,17 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     /** A stack whose update, once taken, is still running whenever it is asked after. */
     public static function with(Upkeep $upkeep): self
     {
-        return self::whichTook($upkeep, HowTheUpdateIsGoing::stillRunning());
+        return self::whichTook($upkeep, HowAgreedWorkIsGoing::stillRunning());
     }
 
     /** A stack that reads as `$upkeep` and, asked after the update it took, says `$became`. */
-    public static function whichTook(Upkeep $upkeep, HowTheUpdateIsGoing $became): self
+    /** @param HowAgreedWorkIsGoing<Upkeep> $became */
+    public static function whichTook(Upkeep $upkeep, HowAgreedWorkIsGoing $became): self
     {
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::stands($upkeep),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
-            static fn(): HowTheUpdateIsGoing => $became,
+            static fn(): HowAgreedWorkIsGoing => $became,
         );
     }
 
@@ -90,7 +94,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::met($why),
             static fn(): Underway => Underway::met($why),
-            static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::met($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::met($why),
         );
     }
 
@@ -107,7 +111,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::stands($upkeep),
             static fn(): Underway => Underway::met($why),
-            static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::met($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::met($why),
         );
     }
 
@@ -126,7 +130,8 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return ($this->taking)();
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    /** @return HowAgreedWorkIsGoing<Upkeep> */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         $this->followed[] = $job;
 

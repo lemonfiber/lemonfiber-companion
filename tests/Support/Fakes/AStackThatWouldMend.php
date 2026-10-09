@@ -7,8 +7,8 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
-use Modules\Kernel\Api\HowTheRepairIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -63,7 +63,7 @@ final class AStackThatWouldMend implements Mending
     /**
      * @param Closure(): Underway            $started
      * @param Closure(): HowTheOfferIsGoing  $became
-     * @param Closure(): HowTheRepairIsGoing $did
+     * @param Closure(): HowAgreedWorkIsGoing<WhatWasMended> $did
      * @param ?Closure(): Underway           $agreeing what a yes is answered with, where it is not what the question was
      */
     private function __construct(
@@ -79,7 +79,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::done(WhatWasMended::none()),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::done(WhatWasMended::none()),
         );
     }
 
@@ -89,7 +89,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::stillRunning(),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
         );
     }
 
@@ -105,7 +105,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::ended(),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::ended(),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
         );
     }
 
@@ -115,7 +115,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::met($why),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::met($why),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::met($why),
         );
     }
 
@@ -131,7 +131,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::met($why),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::met($why),
         );
     }
 
@@ -147,7 +147,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::done($mended),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::done($mended),
         );
     }
 
@@ -165,7 +165,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
         );
     }
 
@@ -182,7 +182,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::met($why),
         );
     }
 
@@ -198,7 +198,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::moved($why),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::moved($why),
         );
     }
 
@@ -244,7 +244,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
-            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
             static fn(): Underway => Underway::met($why),
         );
     }
@@ -286,7 +286,8 @@ final class AStackThatWouldMend implements Mending
         return ($this->agreeing ?? $this->started)();
     }
 
-    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    /** @return HowAgreedWorkIsGoing<WhatWasMended> */
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         $this->askedAbout = $stack;
         $this->askedAfter = $job;

@@ -7,7 +7,7 @@
 
 requirement = [
   { id = "N18-R1", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackRuns.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Arch/EveryScreenFollowingWorkSaysSoTest.php"] },
-  { id = "N18-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/sdk/src/Internal/WhatWasLeftOut.php", "app-modules/kernel/tests/Api/HowTheVerbIsGoingTest.php", "app-modules/kernel/tests/Api/WhatTheVerbCameToTest.php"] },
+  { id = "N18-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/sdk/src/Internal/WhatWasLeftOut.php", "app-modules/kernel/tests/Api/HowAgreedWorkIsGoingTest.php", "app-modules/kernel/tests/Api/WhatTheVerbCameToTest.php"] },
   { id = "N18-R4", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php"] },
   { id = "N18-R5", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php", "tests/Contract/SupervisingContractTest.php"] },
   { id = "N18-R6", state = "done", evidence = ["app-modules/sdk/src/Api/Rehearsers.php", "app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "tests/Contract/RehearsingContractTest.php", "tests/Contract/SupervisingContractTest.php"] },

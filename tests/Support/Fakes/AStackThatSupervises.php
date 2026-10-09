@@ -6,10 +6,11 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Forms;
-use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatTheVerbCameTo;
 
 /**
  * A stack where a test says what is running, and which remembers what it was
@@ -61,6 +63,12 @@ final class AStackThatSupervises implements Supervising
     /** @var list<Job> Every handle it was asked after, in the order it was asked. */
     private array $followed = [];
 
+    /** What it says of a yes it was told, where a test has what that yes was given for move; nothing where none did. */
+    private ?ARefusalInItsWords $yesMoved = null;
+
+    /** Whether the last thing it was handed was a yes rather than a rehearsal, which is what a moved offer answers. */
+    private bool $lastWasAYes = false;
+
     /**
     /** How many times it was asked for its forms, which are counted apart from {@see askings()}. */
     private int $formsAskings = 0;
@@ -68,13 +76,13 @@ final class AStackThatSupervises implements Supervising
     /**
      * @param Closure(): WhatIsRunning $answer
      * @param Closure(): Underway      $acting
-     * @param ?HowTheVerbIsGoing       $becoming what asking after a verb answers, where a test said; still running where none did
+     * @param ?HowAgreedWorkIsGoing<WhatTheVerbCameTo> $becoming what asking after a verb answers, where a test said; still running where none did
      * @param ?WhatFormsThereAre       $declares what asking for its forms answers, where a test said; none where nobody did, or the obstacle {@see met()} meets
      */
     private function __construct(
         private readonly Closure $answer,
         private readonly Closure $acting,
-        private readonly ?HowTheVerbIsGoing $becoming = null,
+        private readonly ?HowAgreedWorkIsGoing $becoming = null,
         private readonly ?WhatFormsThereAre $declares = null,
     ) {}
 
@@ -125,7 +133,7 @@ final class AStackThatSupervises implements Supervising
         return new self(
             static fn(): WhatIsRunning => WhatIsRunning::met($why),
             static fn(): Underway => Underway::met($why),
-            HowTheVerbIsGoing::met($why),
+            HowAgreedWorkIsGoing::met($why),
             WhatFormsThereAre::met($why),
         );
     }
@@ -213,10 +221,26 @@ final class AStackThatSupervises implements Supervising
      * A wither rather than a constructor per outcome, because what a verb
      * came to is independent of what the stack lists and every listing above
      * wants to be followable.
+     *
+     * @param HowAgreedWorkIsGoing<WhatTheVerbCameTo> $became
      */
-    public function whichCameTo(HowTheVerbIsGoing $became): self
+    public function whichCameTo(HowAgreedWorkIsGoing $became): self
     {
         return new self($this->answer, $this->acting, $became, $this->declares);
+    }
+
+    /**
+     * The same stack, which refuses every yes it is told because what it was given for moved.
+     *
+     * Rehearsals are still answered as {@see whichCameTo()} said: the stack
+     * refuses the yes, not the question, and offering again rehearses afresh.
+     */
+    public function whoseYesMoved(ARefusalInItsWords $why): self
+    {
+        $moving = new self($this->answer, $this->acting, $this->becoming, $this->declares);
+        $moving->yesMoved = $why;
+
+        return $moving;
     }
 
     /**
@@ -283,6 +307,7 @@ final class AStackThatSupervises implements Supervising
         $this->remember($stack, $session);
         $this->askings++;
         $this->told[] = $agreed;
+        $this->lastWasAYes = true;
 
         return ($this->acting)();
     }
@@ -298,6 +323,7 @@ final class AStackThatSupervises implements Supervising
     {
         $this->remember($stack, $session);
         $this->rehearsed[] = $agreed;
+        $this->lastWasAYes = false;
 
         return ($this->acting)();
     }
@@ -323,12 +349,17 @@ final class AStackThatSupervises implements Supervising
     /**
      * Not counted among {@see askings()}, which count readings of the listing
      * and verbs: following is its own question, asked on its own cadence.
+     * @return HowAgreedWorkIsGoing<WhatTheVerbCameTo>
      */
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
     {
         $this->followed[] = $job;
 
-        return $this->becoming ?? HowTheVerbIsGoing::stillRunning();
+        if ($this->lastWasAYes && $this->yesMoved instanceof ARefusalInItsWords) {
+            return HowAgreedWorkIsGoing::moved($this->yesMoved);
+        }
+
+        return $this->becoming ?? HowAgreedWorkIsGoing::stillRunning();
     }
 
     /**

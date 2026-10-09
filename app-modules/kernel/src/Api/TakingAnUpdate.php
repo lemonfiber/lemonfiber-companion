@@ -25,6 +25,7 @@ final readonly class TakingAnUpdate implements AnAction
     private function __construct(
         private Services $changing,
         private Services $cannotBePutBack,
+        private AnOffer $offer,
     ) {}
 
     /**
@@ -40,7 +41,7 @@ final readonly class TakingAnUpdate implements AnAction
             throw NothingToTake::from($upkeep->againstThePins());
         }
 
-        return new self($upkeep->changing(), $upkeep->cannotBePutBack());
+        return new self($upkeep->changing(), $upkeep->cannotBePutBack(), $upkeep->offer());
     }
 
     /**
@@ -70,6 +71,12 @@ final readonly class TakingAnUpdate implements AnAction
     public function asked(): string
     {
         return self::named();
+    }
+
+    /** The name the stack gave what it offered, carried back with the yes so a moved offer is refused. */
+    public function offer(): AnOffer
+    {
+        return $this->offer;
     }
 
     /**

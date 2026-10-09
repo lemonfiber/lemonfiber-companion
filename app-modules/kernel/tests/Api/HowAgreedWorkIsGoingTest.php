@@ -8,7 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowTheRepairIsGoing;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -18,8 +18,12 @@ use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
 
-/** Which arm following an agreed repair takes, and what it carried there. */
-function howTheRepairIsGoingReads(HowTheRepairIsGoing $going): string
+/**
+ * Which arm following agreed work takes, and what it carried there.
+ *
+ * @param HowAgreedWorkIsGoing<WhatWasMended> $going
+ */
+function howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing $going): string
 {
     return $going->either(
         stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('running'),
@@ -33,9 +37,9 @@ function howTheRepairIsGoingReads(HowTheRepairIsGoing $going): string
 it('takes the arm for each state, and carries what each one has', function (): void {
     $moved = ARefusalInItsWords::said('What you agreed to is not what is offered now', '', WhatTheRefusalNamed::nothing());
 
-    expect(howTheRepairIsGoingReads(HowTheRepairIsGoing::stillRunning()))->toBe('running')
-        ->and(howTheRepairIsGoingReads(HowTheRepairIsGoing::done(WhatWasMended::none())))->toBe('done:0')
-        ->and(howTheRepairIsGoingReads(HowTheRepairIsGoing::ended()))->toBe('ended')
-        ->and(howTheRepairIsGoingReads(HowTheRepairIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value))
-        ->and(howTheRepairIsGoingReads(HowTheRepairIsGoing::moved($moved)))->toBe('moved:What you agreed to is not what is offered now');
+    expect(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::stillRunning()))->toBe('running')
+        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::done(WhatWasMended::none())))->toBe('done:0')
+        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::ended()))->toBe('ended')
+        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value))
+        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::moved($moved)))->toBe('moved:What you agreed to is not what is offered now');
 });

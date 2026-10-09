@@ -41,8 +41,9 @@ interface KeepingCurrent
     /**
      * What became of an update taken, by the handle taking it answered.
      *
-     * Answers {@see HowTheUpdateIsGoing}, whose finished arm is the update's
+     * Answers {@see HowAgreedWorkIsGoing}, whose finished arm is the update's
      * own report: the one answer that says how each service took it.
+     * @return HowAgreedWorkIsGoing<Upkeep>
      */
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing;
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing;
 }

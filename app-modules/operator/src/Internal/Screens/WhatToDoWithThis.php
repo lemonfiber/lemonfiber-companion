@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
@@ -240,6 +241,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         }
 
         $this->asking = null;
+        $this->movedOn = null;
         $this->forgetTheRehearsal();
 
         $this->send($agreed);
@@ -249,6 +251,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     public function neverMind(): void
     {
         $this->asking = null;
+        $this->movedOn = null;
         $this->forgetTheRehearsal();
     }
 
@@ -357,6 +360,26 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->aFrameBegins();
 
         return view('operator::what-to-do-with-this');
+    }
+
+    /** The question on the screen takes the name the stack gave what its rehearsal offers, which the yes carries back. */
+    protected function rehearsalOffered(AnOffer $offer): void
+    {
+        if ($this->asking instanceof AgreedTo) {
+            $this->asking = $this->asking->quoting($offer);
+        }
+    }
+
+    /**
+     * A yes the stack refused because what it was given for has moved: the
+     * verb is asked about again, under nothing it was offered before, and
+     * rehearsed afresh, so what it would do now is what is agreed to next.
+     */
+    protected function offerAgain(AgreedTo $sent): void
+    {
+        $this->sent = null;
+        $this->asking = $sent->quoting(AnOffer::none());
+        $this->rehearseTheQuestion($this->asking);
     }
 
     /**

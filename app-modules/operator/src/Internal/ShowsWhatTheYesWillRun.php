@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\AgreedTo;
-use Modules\Kernel\Api\HowTheVerbIsGoing;
+use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -45,6 +46,9 @@ trait ShowsWhatTheYesWillRun
 
     abstract public function stack(): Stack;
 
+    /** The question on the screen takes the name the stack gave what its rehearsal offers. */
+    abstract protected function rehearsalOffered(AnOffer $offer): void;
+
     /** Ask the stack to rehearse the verb now being asked about, and take its answer if it is already there. */
     private function rehearseTheQuestion(AgreedTo $agreed): void
     {
@@ -78,8 +82,8 @@ trait ShowsWhatTheYesWillRun
 
         $stack = $this->stack();
         $became = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheVerbIsGoing => $this->supervising->whatBecameOf($stack, $session, Job::named($asked)),
-            notHeld: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::ended(),
+            held: fn(Session $session): HowAgreedWorkIsGoing => $this->supervising->whatBecameOf($stack, $session, Job::named($asked)),
+            notHeld: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
         );
 
         // Held only while the stack is still working it out: a rehearsal that
@@ -95,7 +99,7 @@ trait ShowsWhatTheYesWillRun
             // whatever it ran has already run, and saying it before the yes would
             // be saying it about the wrong thing.
             done: fn(WhatTheVerbCameTo $report): AsText => $report->was() === WhetherItWasRehearsed::Rehearsed
-                ? $report->whetherItRan(
+                ? $this->rehearsed($report)->whetherItRan(
                     ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
                     declined: static fn(): AsText => AsText::nothing(),
                 )
@@ -106,7 +110,21 @@ trait ShowsWhatTheYesWillRun
 
                 return $this->unread();
             },
+            // A rehearsal answers no yes, so nothing it was given for can move;
+            // a stack saying otherwise has said nothing readable.
+            moved: fn(): AsText => $this->unread(),
         )->said;
+    }
+
+    /**
+     * A rehearsal that answered: the question takes the name the stack gave what
+     * it offers, so the yes carries it back.
+     */
+    private function rehearsed(WhatTheVerbCameTo $report): WhatTheVerbCameTo
+    {
+        $this->rehearsalOffered($report->offer());
+
+        return $report;
     }
 
     /** The rehearsal could not be read: no line, and that said. */

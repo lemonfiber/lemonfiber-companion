@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -39,6 +42,9 @@ trait FollowsTheUpdateItTook
 
     /** The update last sent, so a request other work held can be sent again as it was agreed to. */
     public ?TakingAnUpdate $taken = null;
+
+    /** What the stack said where it refused the last update because what it would apply has moved, or nothing. */
+    public ?ARefusalAsShown $movedOn = null;
 
     /** What became of the update taken here, or that none was. */
     public function lastUpdate(): HowTheLastUpdateWent
@@ -70,6 +76,9 @@ trait FollowsTheUpdateItTook
 
     abstract public function stack(): Stack;
 
+    /** Read again what the stack would do, on the next frame. */
+    abstract public function again(): void;
+
     /**
      * Take the update that was agreed to again, where other work held the stack.
      *
@@ -97,6 +106,7 @@ trait FollowsTheUpdateItTook
     {
         $stack = $this->stack();
         $this->took = null;
+        $this->movedOn = null;
         $this->taken = $taking;
 
         $this->lastUpdated = $this->storage->resume($stack->id())->either(
@@ -129,6 +139,18 @@ trait FollowsTheUpdateItTook
                 done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
                 ended: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended(),
                 met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
+                // Refused and offered again, as a repair is: nothing was
+                // applied, the yes was given for what has since moved, so what
+                // the stack said is kept and what it would do now is read
+                // again for a fresh yes.
+                moved: function (ARefusalInItsWords $why): HowTheLastUpdateWent {
+                    $this->took = null;
+                    $this->taken = null;
+                    $this->movedOn = new HowARefusalReads()->inItsWords($why);
+                    $this->again();
+
+                    return new HowTheLastUpdateReads()->notTaken();
+                },
             ),
             notHeld: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->signedOut(),
         );

@@ -19,6 +19,14 @@
 @endif
 
 @if ($this->asking() !== null)
+    @if ($this->movedOn !== null)
+        {{-- The last yes was refused because what it was given for moved:
+             what the stack said comes first, then the question as it stands
+             now, rehearsed afresh. --}}
+        <x-design::card>
+            <x-operator::refused-in-its-words :refused="$this->movedOn" />
+        </x-design::card>
+    @endif
     {{-- What this will take away, stated before the yes and not
          after it. A confirmation an operator can tap past without reading
          is the same as no confirmation. --}}

@@ -7,11 +7,10 @@ namespace Modules\Operator\Internal\ViewModels;
 /**
  * What carrying out an agreement came to, flattened for a template.
  *
- * The sibling of {@see WhatTheStackWouldPutRight}, and separate from it for the
- * reason {@see \Modules\Kernel\Api\HowTheRepairIsGoing} is separate from
- * {@see \Modules\Kernel\Api\HowTheOfferIsGoing}: one is a listing of what a
- * machine *would* do and the other a record of what it *did*, and a type
- * holding either would be one a template has to ask which it is looking at.
+ * The sibling of {@see WhatTheStackWouldPutRight}, and separate from it: one
+ * is a listing of what a machine *would* do and the other a record of what it
+ * *did*, and a type holding either would be one a template has to ask which it
+ * is looking at.
  *
  * The reading it belongs to comes first and does not default: a fold saying
  * nothing about whether the stack answered is a fold whose state a template
