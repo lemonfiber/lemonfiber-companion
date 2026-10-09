@@ -33,7 +33,7 @@ function glanceAt(string $digest): string
 
 it('is short enough to check at a glance', function (): void {
     // Sixteen characters in four groups. Thirty-two is not a glance, and
-    // sixty-four is what ADR-0018 rejects by name — the version where people
+    // sixty-four is what the pairing design refuses by name — the version where people
     // check the first four and the last four and then press accept.
     $shown = glanceAt(ONE_CERTIFICATE);
 

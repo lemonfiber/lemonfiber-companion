@@ -36,7 +36,7 @@ final readonly class Timeout
      * The longest any call may wait, in seconds.
      *
      * Ten, and the number is arguable — what is not arguable is that it is a
-     * ceiling rather than a suggestion. `ADR-0019` has a screen painting before
+     * ceiling rather than a suggestion. A screen paints before
      * it reaches the stack, so the operator is already looking at something
      * while this runs; ten seconds of a spinner over a frame that already says
      * something is the far end of what a person reads as "working" rather than

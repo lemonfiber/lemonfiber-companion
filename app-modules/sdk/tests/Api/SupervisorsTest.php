@@ -246,7 +246,7 @@ it('an attempt that was refused is not tried again under its own name', function
     // The reconnection case, which is where holding a key looks kindest. The
     // first attempt does not reach the stack; the operator presses again, and
     // that is a new attempt rather than a replay of one nobody can see the
-    // moment of any more (ADR-0020).
+    // moment of any more.
     [$refused, $again] = theKeysOfAttemptsAnswered([
         MockResponse::make('the stack could not be reached', 503),
         anAcknowledgement(),

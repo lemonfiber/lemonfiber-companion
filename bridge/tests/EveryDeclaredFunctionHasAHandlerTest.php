@@ -24,7 +24,7 @@ declare(strict_types=1);
 // would be two more things able to go quiet.
 //
 // It also reads what the manifest *says*, because it is the only thing that
-// reads the manifest at all. `NoRequirementIdInACommentTest` walks PHP and
+// reads the manifest at all. `NoCitationInACommentTest` walks PHP and
 // matches the four markers this repository writes a comment with; JSON has
 // none of them, so a description carrying a requirement identifier sat outside
 // every rule there is. A description is read by people — and by anybody who

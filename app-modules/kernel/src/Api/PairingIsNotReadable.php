@@ -58,7 +58,7 @@ final class PairingIsNotReadable extends InvalidArgumentException
     }
 
     /**
-     * It named an address that presents no certificate (`ADR-0018`).
+     * It named an address that presents no certificate, so there is nothing to pin.
      *
      * Material carrying a fingerprint for an `http://` address contradicts
      * itself: the fingerprint is "the certificate **that address

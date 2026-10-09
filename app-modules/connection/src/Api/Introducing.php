@@ -32,8 +32,8 @@ use Modules\Kernel\Api\StackName;
  * held for it instead of adding a second.
  *
  * **Two roads, and they are not equally safe.** A
- * camera comparing a digest is the software comparison `ADR-0018` chose the
- * whole design around; a person typing one is the route required to
+ * camera comparing a digest is the software comparison the pairing design
+ * was built around; a person typing one is the route required to
  * exist on a device whose operator declined the camera, and it has no software
  * comparison in it. So {@see Stack()} is the scanned road and refuses typed
  * material outright, and {@see confirmed()} is the road that takes the

@@ -33,7 +33,7 @@ use function in_array;
  * accident; a case cannot, and a `match` over it stops compiling the moment
  * another is added.
  *
- * `ADR-0018` adds the fifth, and it is the only one of them that may not be an
+ * Pinning adds the fifth, and it is the only one of them that may not be an
  * accident: a connection presenting a certificate that does not match the
  * fingerprint pairing material carried is refused rather than warned about, and
  * the operator is told that this is not the machine the app was introduced to.
@@ -124,7 +124,7 @@ enum KindOfObstacle: string
      * Something answered, and it is not the machine this app was paired with.
      *
      * The certificate does not match the fingerprint pairing material carried,
-     * so the connection is refused rather than warned about (`ADR-0018`).
+     * so the connection is refused rather than warned about.
      * Critical rather than an error: every other case here is a machine that is
      * off, a network that is down, or a credential that expired, and this one
      * is the only one that may mean somebody else is answering.

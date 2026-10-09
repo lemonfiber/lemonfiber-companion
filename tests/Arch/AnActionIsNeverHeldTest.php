@@ -27,7 +27,7 @@ use Tests\Support\Module;
 // that, and has no third arm to fall through to.
 // as pending.
 //
-// `ADR-0020` spends its length rejecting the obvious kindness: hold the action
+// This refuses the obvious kindness: hold the action
 // and send it when the stack comes back. An action queued on a phone is an
 // action the operator believes has happened, applied at a moment nobody chose,
 // against a stack whose state has moved on — and the operator is not there to
@@ -174,7 +174,7 @@ it('nothing holds the key that names one attempt', function (): void {
     //
     // A key serves the retry *inside* one attempt. Across a reconnection the
     // stack has moved on and the operator is not there to see what lands, which
-    // is the whole of what `ADR-0020` spends its length on.
+    // is the whole of why no action is held.
     //
     // `IdempotencyKey::__serialize()` already refuses to write one down, which
     // closes the way out of this process. This closes the one inside it: a key

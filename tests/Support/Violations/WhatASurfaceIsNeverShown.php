@@ -58,7 +58,7 @@ final readonly class WhatASurfaceIsNeverShown
                 }
                 PHP, 'nothing on a member surface can be handed'),
 
-            // The queue `ADR-0020` spends its length rejecting, written the way
+            // The queue of held actions this app refuses, written the way
             // every collection in this repository is written: a promoted
             // constructor parameter with its shape on the constructor's
             // `@param`, and the element type led with by an `@implements`.

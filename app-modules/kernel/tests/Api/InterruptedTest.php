@@ -140,9 +140,9 @@ it('names its stack on both arms', function (): void {
 });
 
 it('names its stack and nothing that could re-pin a certificate', function (): void {
-    // A credential expiring is not the machine changing — ADR-0018 is explicit
-    // — so re-pairing when a session ends would throw away a pinned certificate
-    // that is still correct, and then ask the operator to accept a new one.
+    // A credential expiring is not the machine changing, so re-pairing when a
+    // session ends would throw away a pinned certificate that is still
+    // correct, and then ask the operator to accept a new one.
     // That is a habit an attacker would like them to have.
     //
     // The signatures are checked in `TypesThatMustNotMeetTest`, with the other

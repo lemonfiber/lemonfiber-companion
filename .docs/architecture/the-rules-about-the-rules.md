@@ -176,7 +176,7 @@ So the sentence stays and the number moves, to the requirement's row under
 repository that hold it. A citation belongs in a
 commit trailer and a pull request body, which is where the gate reads it.
 
-This repository holds none. `NoRequirementIdInACommentTest` is what keeps it
+This repository holds none. `NoCitationInACommentTest` is what keeps it
 that way, and it is a flat refusal rather than a ratchet: a floor that has
 reached the ground is a rule rather than a promise.
 

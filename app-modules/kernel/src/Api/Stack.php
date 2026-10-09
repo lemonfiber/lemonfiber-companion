@@ -18,7 +18,7 @@ namespace Modules\Kernel\Api;
  * "192.168.1.43" are not two names. The address is where to dial and is treated
  * as private. The fingerprint is the certificate that machine
  * promised, checked on every connection whether or not the platform would
- * accept it (`ADR-0018`).
+ * accept it.
  *
  * **The session is deliberately not here.** Each stack's session is kept
  * separate and this would be the obvious place to keep it — which is exactly
@@ -67,7 +67,7 @@ final readonly class Stack
      * Whether the machine that just answered is this one.
      *
      * The pinned fingerprint came from pairing material somebody carried across
-     * a gap (`ADR-0018`), and this is where it earns its keep: **every**
+     * a gap, and this is where it earns its keep: **every**
      * subsequent connection is checked against it, whether or not the platform's
      * trust store would accept the certificate. A certificate the platform likes
      * is not evidence that this is the machine the operator paired with — a

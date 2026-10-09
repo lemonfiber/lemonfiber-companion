@@ -17,7 +17,7 @@ use Throwable;
  * The one place in this application that opens a connection to a stack.
  *
  * Every call to a stack goes through the SDK, and this app issues no request
- * of its own; `ADR-0018` says every connection is checked against the
+ * of its own, and every connection is checked against the
  * certificate pairing material promised, whether or not the platform's trust
  * store would accept it. Both are structural here rather than remembered:
  * `tests/Feature/NothingReachesAStackUnpinnedTest.php` refuses any file outside

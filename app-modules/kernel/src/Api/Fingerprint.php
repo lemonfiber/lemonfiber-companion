@@ -12,7 +12,7 @@ use function preg_match;
 /**
  * The certificate a stack promised to present, as pairing material carried it.
  *
- * `ADR-0018` is the whole design: the fingerprint comes from the same
+ * This is the whole design: the fingerprint comes from the same
  * out-of-band payload as the address, never from the network, and the app pins
  * it against that stack and checks every later connection against it — whether
  * or not the platform trust store would accept the certificate. Trust is pinned
@@ -64,7 +64,7 @@ final readonly class Fingerprint
      * The digest, for folding into a form a person can check.
      *
      * The one reader this type has, and named for the single thing it is for.
-     * `ADR-0018` rejects the human-read fingerprint — sixty-four hex characters
+     * The design refuses the human-read fingerprint — sixty-four hex characters
      * across two screens, where people check the first four and the last four —
      * so there is deliberately no `shown()`, and this is not it. What it feeds
      * is {@see AtAGlance}, which folds every byte of the digest into sixteen

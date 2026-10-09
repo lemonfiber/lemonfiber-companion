@@ -125,7 +125,7 @@ final readonly class WhatTheCodeSaysSoFar
      * {@see confirmedByTheOperator()} for the reason that method exists at all:
      * that one *mints* a {@see FingerprintWasConfirmed}, which may only exist
      * where a person compared something. A scanned code had nothing compared by
-     * a person — `ADR-0018`'s whole point is that the digest arrived in the
+     * a person — the whole point of pairing by camera is that the digest arrived in the
      * payload, so the comparison happens in software — and reaching for the
      * confirming arm to get at the material would conjure the one value this
      * module is built to make unconjurable.

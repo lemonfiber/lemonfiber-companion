@@ -58,7 +58,7 @@ it('says nothing about what arrived when it refuses', function (): void {
 });
 
 it('offers no way to show one to a person', function (): void {
-    // `ADR-0018` rejects a human-read fingerprint by name: it asks somebody to
+    // A human-read fingerprint is refused by design: it asks somebody to
     // compare sixty-four hex characters across two screens, and they check the
     // first four and the last four. The comparison belongs in `is()`, and a
     // display accessor here would be the beginning of that screen.

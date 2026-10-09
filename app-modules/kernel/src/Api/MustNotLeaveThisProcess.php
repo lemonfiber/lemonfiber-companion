@@ -43,8 +43,8 @@ final class MustNotLeaveThisProcess extends LogicException
      * replay an action across a reconnection. A serialised key is precisely a
      * key that outlived its attempt: whatever reads it back sends the operator's
      * earlier action again, at a moment nobody chose, against a stack whose
-     * state has moved on. That is the failure `ADR-0020` spends its length
-     * rejecting, arriving through the one door the ADR does not name.
+     * state has moved on. That is the held action this app refuses to keep,
+     * arriving through a door the rule against holding one does not name.
      */
     public static function anIdempotencyKey(): self
     {

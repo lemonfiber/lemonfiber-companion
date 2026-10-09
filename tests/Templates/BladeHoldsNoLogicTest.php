@@ -54,7 +54,7 @@ foreach ($templates as $template) {
     });
 
     // F3 — Blade holds no logic
-    it(sprintf('%s opens no web view (ADR-0017)', $template->path), function () use ($template): void {
+    it(sprintf('%s opens no web view', $template->path), function () use ($template): void {
         $found = array_values(array_filter(
             $template->nativeTags(),
             static fn(string $tag): bool => $tag === 'webview',

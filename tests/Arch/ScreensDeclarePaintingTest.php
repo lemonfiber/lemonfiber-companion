@@ -13,7 +13,7 @@ use Native\Mobile\Attributes\Locked;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Module;
 
-// F4 — a screen says how it paints (`ADR-0019`).
+// F4 — a screen says how it paints.
 //
 // A NativeComponent that reaches a port during setup cannot draw until the
 // answer arrives, and the answer is coming from a machine that may be asleep on

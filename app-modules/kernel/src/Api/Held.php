@@ -19,7 +19,7 @@ use Closure;
  * from correct. What it actually does is discard the operator's half-finished
  * work — the text they had typed, the rows they had picked — and replace it with
  * whatever the stack says now, which is a different thing and arrives after a
- * wait. `ADR-0020` makes the same argument about actions; this is the reading
+ * wait. An action is never held for the same reason; this is the reading
  * side of it.
  *
  * So the state travels rather than being rebuilt, and the two arms are the two

@@ -297,7 +297,7 @@ function reachesOutsideItsKind(Module $module): array
 // first.
 //
 // Parity is the same fact from the other side: the app speaks the published web
-// API contract and does not implement a second client of its own (`ADR-0013`).
+// API contract and does not implement a second client of its own.
 // One module naming the SDK is what makes a second client impossible to write
 // without this failing.
 // Every call to lemonfiber goes through the SDK, and one module makes
