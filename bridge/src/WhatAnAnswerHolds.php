@@ -54,4 +54,28 @@ enum WhatAnAnswerHolds: string
 
     /** Whether the app lock is open. Anything but a plain yes is held. */
     case Open = 'open';
+
+    /** Where playback stands, in the player's own word. */
+    case Stands = 'stands';
+
+    /** How far into the title the player is, in seconds. */
+    case Position = 'position';
+
+    /** How long the title is, in seconds, or nought before the player knows. */
+    case Duration = 'duration';
+
+    /** The sound tracks the title offers. */
+    case Audio = 'audio';
+
+    /** The subtitle tracks the title offers. */
+    case Subtitles = 'subtitles';
+
+    /** The sound track playing, or empty. */
+    case ChosenAudio = 'chosen_audio';
+
+    /** The subtitles showing, or empty for none. */
+    case ChosenSubtitle = 'chosen_subtitle';
+
+    /** Why playback stopped, or empty while it has not. */
+    case Why = 'why';
 }

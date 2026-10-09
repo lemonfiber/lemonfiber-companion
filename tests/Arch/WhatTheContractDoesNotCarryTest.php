@@ -104,10 +104,10 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'for the member who asked and saying when it stops standing — one address the core '
             . 'signed, or an address and a grant beside it. Until both are carried, `N3-R15` cannot be '
             . 'answered at all — playback cannot be declined for a reason by an app that has no way '
-            . 'to attempt it — and `N3-R16` is answered only by there being no player to implement '
-            . 'anything in. `NothingPlaysMediaHereTest` refuses every player for as long as this row '
-            . 'stands, and is the rule to replace with ones holding the player to `N3-R14` and '
-            . '`N3-R16` when it goes. `HouseholdEnvelope.members[].requests[].media` is the other '
+            . 'to attempt it. The bridge has a player that plays only what it is handed, through the '
+            . 'door and over the pin, and `OnlyThePlayerPlaysMediaTest` refuses anything in the app '
+            . 'that hands it an address for as long as this row stands. '
+            . '`HouseholdEnvelope.members[].requests[].media` is the other '
             . 'handle on this wire, and its row in `WhatThisAppDoesNotRead` is '
             . 'read beside this one.',
     ],

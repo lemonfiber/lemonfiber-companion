@@ -37,6 +37,9 @@ let package = Package(
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
                 "ReorderableRenderer.swift",
+                "DoorLoader.swift",
+                "PlayerScreen.swift",
+                "PlayerFunctions.swift",
             ]
         ),
         .testTarget(
@@ -113,6 +116,56 @@ let package = Package(
             name: "ReorderingTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/ReorderingTests"
+        ),
+        .testTarget(
+            name: "DoorPinTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/DoorPinTests"
+        ),
+        .testTarget(
+            name: "DoorTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/DoorTests"
+        ),
+        .testTarget(
+            name: "PlaylistRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PlaylistRuleTests"
+        ),
+        .testTarget(
+            name: "RangeRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/RangeRuleTests"
+        ),
+        .testTarget(
+            name: "PlaybackRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PlaybackRuleTests"
+        ),
+        .testTarget(
+            name: "WhatToPlayTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/WhatToPlayTests"
+        ),
+        .testTarget(
+            name: "TrackRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/TrackRuleTests"
+        ),
+        .testTarget(
+            name: "PlayerExtensionsTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PlayerExtensionsTests"
+        ),
+        .testTarget(
+            name: "DoorTrustTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/DoorTrustTests"
+        ),
+        .testTarget(
+            name: "PlayerStateTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PlayerStateTests"
         ),
     ]
 )
