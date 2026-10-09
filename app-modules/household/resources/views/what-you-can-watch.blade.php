@@ -26,7 +26,10 @@
          kind it holds. A poster carries its title, its kind and its year, and
          says all three to a screen reader at once. --}}
     @if ($this->answer()->hasAHero())
-        <x-household::hero :poster="$this->answer()->hero" />
+        <x-household::hero :poster="$this->answer()->hero" tap="play('{{ $this->answer()->hero->plays }}')" />
+        @if ($this->playingSaid !== '')
+            <x-design::note>{{ __($this->playingSaid) }}</x-design::note>
+        @endif
     @endif
     @forelse ($this->answer()->rows as $row)
         <x-household::shelf-row :row="$row" />

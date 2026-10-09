@@ -80,6 +80,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'WatchedEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
             'path' => 'PairingEnvelope.material.stack',
             'because' => 'The stack\'s own identifier, carried inside the pairing line for the other phone to know this stack by. Nothing on the screen that makes the code names it, and no requirement asks it to.',
         ],

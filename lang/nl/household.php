@@ -144,7 +144,6 @@ return [
     'title' => [
         'play' => 'Afspelen',
         'play_named' => ':title afspelen',
-        'cannot_play' => 'Afspelen kan niet in deze app. Kijk het op je tv of op een ander scherm in huis.',
         'nothing_to_play' => 'Er is in deze serie nog niets af te spelen.',
         'absent' => 'Deze titel staat niet op je plank. Misschien is hij het huis uit, of is het er geen die jij kunt kijken.',
         'to_home' => 'Naar Thuis',
@@ -156,6 +155,17 @@ return [
         'episode_unnumbered' => ':title',
         'between_genres' => ', ',
         'no_episodes' => 'Er zijn nog geen afleveringen in dit seizoen.',
+    ],
+
+    // Waarom Afspelen niet afspeelde, of stopte waar het niet verder kon,
+    // gezegd als wat een lid eraan kan doen.
+    'play' => [
+        'cannot_be_played' => 'Dit kan nu niet worden afgespeeld. Laat het weten aan wie het huis beheert.',
+        'no_player' => 'Afspelen kan niet op dit apparaat.',
+        'out_of_reach' => 'Het huis is van hieruit niet te bereiken. Afspelen werkt als je thuis bent.',
+        'not_the_house' => 'Dit is gestopt omdat iets anders dan het huis antwoordde. Laat het weten aan wie het huis beheert.',
+        'not_on_this_device' => 'Dit apparaat kan deze niet afspelen.',
+        'not_let_in' => 'Dit is gestopt omdat het huis het hier niet liet afspelen. Druk op Afspelen om het opnieuw te proberen.',
     ],
 
     'month' => [
@@ -179,5 +189,6 @@ return [
         'back' => 'Terug naar Switchboard',
         'ask' => 'Iets aanvragen',
         'cannot_ask' => 'Een voorbeeld kan niets aanvragen.',
+        'cannot_play' => 'Een voorbeeld kan niets afspelen.',
     ],
 ];

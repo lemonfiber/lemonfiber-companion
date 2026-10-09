@@ -13,6 +13,7 @@ use Bootstrap\Composition\NativePHP\TheOperatorIsHere;
 use Bootstrap\Composition\NativePHP\TheRunloop;
 use Bootstrap\Composition\NativePHP\TheTheme;
 use Bootstrap\Composition\NativePHP\WhenTheLockMoves;
+use Bootstrap\Composition\NativePHP\WhenThePlayerMoves;
 
 use function config;
 
@@ -21,9 +22,11 @@ use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\AppsSettings as TheAppsSettingsPage;
 use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
+use Lemonfiber\Native\Events\ThePlayerMoved;
 use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\LocalNetwork as TheLocalNetworkProbe;
+use Lemonfiber\Native\Player\Player as ThePlayer;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
@@ -39,6 +42,7 @@ use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\PlatformPlayer;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\PlatformShare;
@@ -49,6 +53,7 @@ use Modules\Device\Internal\Words;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
@@ -63,6 +68,7 @@ use Modules\Kernel\Api\KnowingThisDevice;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Playing;
 use Modules\Kernel\Api\RemovalsUnderWay;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\Sealed;
@@ -261,6 +267,11 @@ final class CompositionRoot extends ServiceProvider
         // of a long-running app is a handle to a platform state that has since
         // moved on.
         $this->app->bind(Sharing::class, static fn(): Sharing => new PlatformShare(new TheSheet()));
+
+        // The device's own player, handed only what the core stated. Bound
+        // rather than a singleton, for the share sheet's reason: the player is
+        // a handle to something outside this process.
+        $this->app->bind(Playing::class, static fn(): Playing => new PlatformPlayer(new ThePlayer()));
 
         // Whether this device is on a network at all, which is the one question
         // about reaching a stack that can be answered without sending anything.
@@ -468,6 +479,12 @@ final class CompositionRoot extends ServiceProvider
         // keeps one process, and so one container, across every screen.
         $this->app->singleton(WhatEachStackLastNamed::class);
 
+        // What is on the player, held in memory for the life of the process
+        // and never kept, and a singleton for the same reason: the player
+        // plays on over whichever screen is under it, and what the page that
+        // put it there pressed is what each move of it is told against.
+        $this->app->singleton(WhatIsPlaying::class);
+
         // How long readings are kept is one of the phone's settings, kept in
         // `connection`'s row beside the lock's time away, and asked for through
         // the kernel by what lets go of readings older than it.
@@ -544,7 +561,8 @@ final class CompositionRoot extends ServiceProvider
     }
 
     /**
-     * Hear the device's lock move, and tell it when the lock screen is drawn.
+     * Hear the device's lock move, and tell it when the lock screen is drawn;
+     * and hear the player move, wherever it plays.
      *
      * A method rather than a closure, because `make()` raises a checked
      * exception and a closure's caller cannot see what it throws.
@@ -553,6 +571,7 @@ final class CompositionRoot extends ServiceProvider
     {
         TreeObservers::register(new TheLockIsOnTheGlass());
         $this->app->make(Dispatcher::class)->listen(TheLockMoved::class, WhenTheLockMoves::class);
+        $this->app->make(Dispatcher::class)->listen(ThePlayerMoved::class, WhenThePlayerMoves::class);
     }
 
     /**

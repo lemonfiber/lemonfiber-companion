@@ -32,6 +32,7 @@ use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Asking a stack what it offers before a button is drawn: a button for each
@@ -193,6 +194,7 @@ it('tells a member the house needs an update, never which software or version', 
         AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::NotOnThisStack)),
         AMemberWhoIsOwed::owedNothing(),
         $keychain,
+        TheTitlesOnScreen::over(AShelfThatWasRead::holdingNothing(), $keychain),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );

@@ -176,6 +176,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     // opens a session on the media server and answers its token once.
     'grant' => 'asks for a grant for this device to play the member\'s titles',
 
+    // The player telling the core where the member is, so the core keeps their
+    // place. It changes nothing on the machine but that member's place.
+    'watched' => 'tells the core where the member is in what they are watching',
+
     // The household's two, which are not verbs about a machine at all. They settle
     // one thing somebody in the house already asked for, and they are here
     // because this list is about what may go through `act()` rather

@@ -239,29 +239,84 @@ it('the player carries the grant as a bearer token and names no media server', f
         ->and($android)->toContain('get() = "Bearer $grant"');
 });
 
-it('nothing in the app opens the player', function (): void {
-    // The player plays what it is handed: where a title streams from and the
-    // door's fingerprint, as the core states them, and the member's grant. No
-    // screen here hands those over, so anything handing the player an address
-    // composed it, which is the second copy of the library this refuses.
+/**
+ * Who may write each of the things the player is handed, by the words that write one.
+ *
+ * The bridge's player is reached by the device's adapter alone, and built where
+ * the composition root binds it. A title is put together for it in one place,
+ * the household's playback, and handed over only by Play. What it is put
+ * together from is the core's: a location only the SDK reads off the wire, and
+ * a grant only the SDK reads off the wire or the vault reads back from where it
+ * kept one.
+ */
+const WHO_HANDS_THE_PLAYER_ANYTHING = [
+    'Lemonfiber\\Native\\Player\\' => [
+        'app-modules/device/src/Api/PlatformPlayer.php',
+        'bootstrap/Composition/CompositionRoot.php',
+    ],
+    'ATitleToPlay::of(' => ['app-modules/household/src/Internal/Playing/APlayback.php'],
+    '->toPlay(' => ['app-modules/household/src/Internal/Playing/PutsATitleOnScreen.php'],
+    'Location::of(' => ['app-modules/sdk/src/Internal/Located.php'],
+    'AGrant::of(' => ['app-modules/sdk/src/Api/Grants.php', 'app-modules/vault/src/Internal/TheGrantAsWritten.php'],
+];
+
+/**
+ * Every application source, against its contents, tests left out.
+ *
+ * @return array<string, string> path => contents
+ */
+function everyApplicationSource(): array
+{
     $found = [];
 
     foreach (['app', 'app-modules', 'bootstrap', 'routes'] as $tree) {
         foreach (Tree::filesUnder(Tree::at($tree), '.php') as $path) {
-            if (str_contains((string) file_get_contents($path), 'Lemonfiber\\Native\\Player\\')) {
-                $found[] = str_replace(sprintf('%s/', Tree::root()), '', $path);
+            if (! str_contains($path, '/tests/')) {
+                $found[str_replace(sprintf('%s/', Tree::root()), '', $path)] = (string) file_get_contents($path);
             }
         }
     }
 
-    sort($found);
+    return $found;
+}
 
-    expect($found)->toBe([], sprintf(
-        "These open the player:\n  %s\n\n"
-        . 'No screen hands the player the core\'s location, the door\'s fingerprint and the member\'s '
-        . 'grant, so whatever these hand it was composed here (N3-R14, N3-R11).',
-        implode("\n  ", $found),
-    ));
+/**
+ * Every application source that writes one of those words, by the word.
+ *
+ * @return array<string, list<string>>
+ */
+function whoWritesWhatThePlayerIsHanded(): array
+{
+    $sources = everyApplicationSource();
+    $found = [];
+
+    foreach (array_keys(WHO_HANDS_THE_PLAYER_ANYTHING) as $word) {
+        $writers = array_keys(array_filter($sources, static fn(string $source): bool => str_contains($source, $word)));
+        sort($writers);
+        $found[$word] = $writers;
+    }
+
+    return $found;
+}
+
+it('only Play hands the player a title, and only the core\'s location, door and grant', function (): void {
+    // The player plays what it is handed: where a title streams from and the
+    // door's fingerprint, as the core states them, and the member's grant as
+    // the core answered it. Anything else handing the player an address
+    // composed it, which is the second copy of the library this refuses.
+    $found = whoWritesWhatThePlayerIsHanded();
+
+    foreach (WHO_HANDS_THE_PLAYER_ANYTHING as $word => $allowed) {
+        expect($found[$word])->not->toBe([], sprintf('nothing writes %s, so this rule proved nothing about it', $word))
+            ->and($found[$word])->toBe($allowed, sprintf(
+                "These write %s:\n  %s\n\n"
+                . 'Only Play hands the player a title, put together from the location and door the core '
+                . 'stated and the grant it answered. Anywhere else, what reaches the player was composed '
+                . 'here (N3-R14, N3-R11).',
+                $word,
+                implode("\n  ", $found[$word]),
+            ));
+    }
 });
 
 it('each word is one these rules would recognise', function (): void {

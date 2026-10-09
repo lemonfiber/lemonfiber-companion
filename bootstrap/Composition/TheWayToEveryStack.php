@@ -35,6 +35,7 @@ use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\KeepingThePlace;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\MakingPairingCodes;
@@ -108,6 +109,7 @@ use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedDoors;
+use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
@@ -253,6 +255,10 @@ final class TheWayToEveryStack extends ServiceProvider
         // A grant for this device to play a member's titles, asked of the core
         // under the member's own session.
         $this->app->bind(Granting::class, Grantors::class);
+
+        // Where a member is in what they watch, told to the core under their
+        // own session, so it keeps their place.
+        $this->app->bind(KeepingThePlace::class, PlaceKeepers::class);
 
         // What a stack would put right, asked without changing anything.
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two

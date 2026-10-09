@@ -605,9 +605,9 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'HeldEnvelope.holdings[].stream_from',
-            'because' => 'Where a holding streams from. Play is drawn on the title\'s own page (`N3-R22`), '
-                . 'and `/api/held/{id}` answers the same location for that one title as the member opens it; '
-                . 'the shelf\'s copy would be a second, older answer to the question that page asks.',
+            'because' => 'Where a holding streams from. Play, on the title\'s own page (`N3-R22`) and across '
+                . 'Home, asks `/api/held/{id}` for that one title as it is pressed; the shelf\'s copy would be a '
+                . 'second, older answer to the question Play asks.',
         ],
         [
             'path' => 'HeldEnvelope.holdings[].door',

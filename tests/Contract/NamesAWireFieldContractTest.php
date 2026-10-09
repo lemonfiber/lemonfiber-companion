@@ -56,6 +56,7 @@ use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Api\Fields\VersionField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
+use Modules\Sdk\Api\Fields\WatchedField;
 use Modules\Sdk\Api\Fields\WiringField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
@@ -92,6 +93,7 @@ function everyFieldNamedOnTheWire(): array
         ...GlossaryField::cases(),
         ...HandoffField::cases(),
         ...GrantField::cases(),
+        ...WatchedField::cases(),
         ...HeldField::cases(),
         ...TitleField::cases(),
         ...FrontDoorField::cases(),

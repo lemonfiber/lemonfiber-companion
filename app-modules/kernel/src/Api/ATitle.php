@@ -59,14 +59,56 @@ final readonly class ATitle
         return $this->details->released();
     }
 
-    public function plays(): WhereItPlays
-    {
-        return $this->plays;
-    }
-
     /** A series' seasons in order; none for anything else. */
     public function seasons(): Seasons
     {
         return $this->seasons;
+    }
+
+    /**
+     * What its own Play plays: itself where the core says where it plays or
+     * why it cannot, and the first episode the core lists where it does not
+     * stream itself, as a series does not.
+     */
+    public function whatPlayPlays(): WhatPlayPlays
+    {
+        $itself = fn(): WhatPlayPlays => WhatPlayPlays::one($this->holding->id(), $this->holding->titled(), $this->plays);
+
+        return $this->plays->either(
+            at: $itself,
+            cannot: $itself,
+            doesNotStream: fn(): WhatPlayPlays => $this->theFirstEpisode(),
+        );
+    }
+
+    /** What one of its episodes' Play plays, or nothing where it holds no episode by that id. */
+    public function theEpisode(HoldingId $id): WhatPlayPlays
+    {
+        foreach ($this->seasons as $season) {
+            foreach ($season->episodes() as $episode) {
+                if ($episode->id()->named() === $id->named()) {
+                    return $this->playing($episode);
+                }
+            }
+        }
+
+        return WhatPlayPlays::nothing();
+    }
+
+    /** The first episode the core lists, or nothing where it lists none. */
+    private function theFirstEpisode(): WhatPlayPlays
+    {
+        foreach ($this->seasons as $season) {
+            foreach ($season->episodes() as $episode) {
+                return $this->playing($episode);
+            }
+        }
+
+        return WhatPlayPlays::nothing();
+    }
+
+    private function playing(AnEpisode $episode): WhatPlayPlays
+    {
+        return WhatPlayPlays::one($episode->id(), $episode->titled(), $episode->plays());
     }
 }

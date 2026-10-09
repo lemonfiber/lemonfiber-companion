@@ -7,10 +7,14 @@
     {{-- The title as the core answered it for this member: its poster, Play,
          and what it is. A part the core did not state is not drawn. Play is
          never hidden; where it cannot be pressed, the reason is beside it, in
-         the core's words where the core gave one. --}}
+         the core's words where the core gave one; where it was pressed and
+         did not play, or stopped, the household's words say why. --}}
     <x-household::poster :poster="$this->title()->title->poster" />
-    <x-design::action label="{{ __('household.title.play') }}" :answersTo="__('household.title.play_named', ['title' => $this->title()->title->poster->titled])" :disabled="! $this->title()->title->playing->canPlay" />
+    <x-design::action label="{{ __('household.title.play') }}" :answersTo="__('household.title.play_named', ['title' => $this->title()->title->poster->titled])" tap="play()" :disabled="! $this->title()->title->playing->canPlay" />
     <x-household::why-play-waits :playing="$this->title()->title->playing" />
+    @if ($this->playingSaid !== '')
+        <x-design::note>{{ __($this->playingSaid) }}</x-design::note>
+    @endif
     @if ($this->title()->title->about !== '')
         <x-design::body>{{ $this->title()->title->about }}</x-design::body>
     @endif
@@ -36,7 +40,7 @@
             @if ($episode->about !== '')
                 <x-design::body>{{ $episode->about }}</x-design::body>
             @endif
-            <x-design::action label="{{ __('household.title.play') }}" :answers-to="__('household.title.play_named', ['title' => $episode->titled])" :disabled="! $episode->playing->canPlay" tone="tonal" />
+            <x-design::action label="{{ __('household.title.play') }}" :answers-to="__('household.title.play_named', ['title' => $episode->titled])" tap="playTheEpisode('{{ $episode->id }}')" :disabled="! $episode->playing->canPlay" tone="tonal" />
             <x-household::why-play-waits :playing="$episode->playing" />
         @empty
             {{-- A season the core lists with no episodes in it says so. --}}

@@ -42,7 +42,7 @@ const OFFERED = [
     'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'Plugins', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
-    'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
+    'Version', 'Walkthrough', 'Watch', 'Watched', 'Wiring', 'Word',
 ];
 
 /**
@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Alert', 'Certificate', 'Keys', 'MintedKey', 'PartWay', 'Pausing', 'Playing', 'Watched',
+    'Alert', 'Certificate', 'Keys', 'MintedKey', 'PartWay', 'Pausing', 'Playing',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {
