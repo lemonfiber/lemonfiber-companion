@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
@@ -10,9 +12,12 @@ use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\TheUpkeepScreenOfTheLoft;
+use Tests\Support\WhatAMovedOfferSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What became of an update taken here is reachable: each service it touched, the
@@ -251,3 +256,60 @@ it('an obstacle meaning the session ended renders the sign-in', function (): voi
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->went->met)->toBe('');
 });
+
+/** The evening's update, offered under the name the reading gave it. */
+function anEveningOfferedByName(): Upkeep
+{
+    return TheUpkeepScreenOfTheLoft::anEveningWorthSpending()->offering(AnOffer::named(AStackThatKeepsCurrent::THE_OFFER));
+}
+
+/** A stack offering that update, which refuses the yes because what it would apply moved. */
+function aStackWhoseUpdateMoved(): AStackThatKeepsCurrent
+{
+    return AStackThatKeepsCurrent::whichTook(anEveningOfferedByName(), HowTheUpdateIsGoing::moved(
+        ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()),
+    ));
+}
+
+it('carries the name the reading gave its offer back with the update taken', function (): void {
+    $keeping = AStackThatKeepsCurrent::with(anEveningOfferedByName());
+
+    TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
+
+    expect($keeping->taken())->toHaveCount(1)
+        ->and($keeping->taken()[0]->offer())->toEqual(AnOffer::named(AStackThatKeepsCurrent::THE_OFFER));
+});
+
+it('says the stack\'s own words and reads again where the update agreed to was refused because what it would apply moved', function (): void {
+    $keeping = aStackWhoseUpdateMoved();
+    $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
+    $askedBefore = $keeping->askings();
+    // The frame that heard the refusal read the offer again; the screen's
+    // cadence draws what the stack said on the next.
+    WhatTheDeviceWouldDraw::by($screen);
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->wouldYouLike();
+
+    expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
+        ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
+        ->and($drawn)->toContain(__('updates.nothing_applied'))
+        // Nothing is followed any more, what the stack would do now was read
+        // again, and it can be agreed to afresh.
+        ->and($screen->took)->toBeNull()
+        ->and($keeping->askings())->toBeGreaterThan($askedBefore)
+        ->and($screen->asking())->not->toBeNull()
+        ->and($keeping->taken())->toHaveCount(1);
+});
+
+it('puts what the stack said about a moved update away once the fresh offer is answered', function (string $answer): void {
+    $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate(aStackWhoseUpdateMoved());
+    WhatTheDeviceWouldDraw::by($screen);
+    $before = $screen->movedOn;
+
+    $screen->wouldYouLike();
+    $answer === 'agreeing' ? $screen->agree() : $screen->neverMind();
+
+    expect($before)->not->toBeNull()
+        ->and($screen->movedOn)->toBeNull();
+})->with(['agreeing', 'never minding']);

@@ -34,6 +34,7 @@ final readonly class WhatTheVerbCameTo
         private TheStackEdits $edits,
         private TheCommandLine|string $ranOrWhyNot,
         private ?HowTheStackIsRunning $condition = null,
+        private ?AnOffer $offer = null,
     ) {}
 
     /** What the stack reported of a verb it ran, with the command it ran it with. */
@@ -67,7 +68,19 @@ final readonly class WhatTheVerbCameTo
     /** The same report, with what the stack says those services amount to. */
     public function amountingTo(HowTheStackIsRunning $condition): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition, $this->offer);
+    }
+
+    /** The same report, under the name the stack gave what a rehearsal of it offers, which a yes carries back. */
+    public function offering(AnOffer $offer): self
+    {
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $offer);
+    }
+
+    /** The name the stack gave what a rehearsal of it offers, or none. */
+    public function offer(): AnOffer
+    {
+        return $this->offer ?? AnOffer::none();
     }
 
     /** Whether it was a rehearsal, which changed nothing, or the verb itself. */

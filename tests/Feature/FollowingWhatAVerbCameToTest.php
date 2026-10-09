@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APortHeld;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\Fingerprint;
@@ -32,6 +34,7 @@ use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereAServiceEndedUp;
@@ -48,6 +51,7 @@ use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatAMovedOfferSays;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -886,6 +890,76 @@ it('rehearses nothing for a start, which asks no question', function (): void {
 
     expect($supervising->whatItWasAskedToRehearse())->toBe([]);
 });
+
+/** The name the stack's rehearsal gives the restart it would carry out. */
+const THE_RESTART_OFFERED_HERE = '9b1e4f20';
+
+/** A stopped Sonarr whose rehearsal of a restart names what it offers, and which refuses the yes because that moved. */
+function aSonarrWhoseRestartMoved(): AStackThatSupervises
+{
+    return aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))))
+        ->whoseYesMoved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
+}
+
+/**
+ * Agree to the restart asked about, and draw what following it came to.
+ *
+ * @return list<string>
+ */
+function whatAgreeingToRestartSonarrDrew(WhatToDoWithThis $screen): array
+{
+    $screen->agree();
+    $screen->whileItSettles();
+
+    return WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+}
+
+it('carries the name the rehearsal gave what it offers back with the yes', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    whatAskingToRestartSonarrDrew($screen);
+    $screen->agree();
+
+    expect($supervising->whatItWasToldToDo())->toEqual([
+        AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))->quoting(AnOffer::named(THE_RESTART_OFFERED_HERE)),
+    ]);
+});
+
+it('asks again, under the stack\'s own words, where the restart agreed to was refused because what it would restart moved', function (): void {
+    $supervising = aSonarrWhoseRestartMoved();
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    whatAskingToRestartSonarrDrew($screen);
+    whatAgreeingToRestartSonarrDrew($screen);
+    // The frame that heard the refusal put the question back; the screen's
+    // cadence draws it on the next.
+    $screen->whileItSettles();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
+        ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
+        ->and($drawn)->toContain(whatTheCatalogueSays('health.about_to', ['what' => 'sonarr']))
+        // The question as it stands now was rehearsed afresh, under no name
+        // the first rehearsal gave, and the yes was sent once.
+        ->and($supervising->whatItWasAskedToRehearse())->toEqual([
+            AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr')),
+            AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr')),
+        ])
+        ->and($supervising->whatItWasToldToDo())->toHaveCount(1);
+});
+
+it('puts what the stack said about a moved restart away once the question is answered again', function (string $answer): void {
+    $screen = theScreenAVerbIsFollowedFrom(aSonarrWhoseRestartMoved());
+    whatAskingToRestartSonarrDrew($screen);
+    whatAgreeingToRestartSonarrDrew($screen);
+    $before = $screen->movedOn;
+
+    $answer === 'agreeing' ? $screen->agree() : $screen->neverMind();
+
+    expect($before)->not->toBeNull()
+        ->and($screen->movedOn)->toBeNull();
+})->with(['agreeing', 'never minding']);
 
 it('offers nothing to put back a file the operator edited: the outcome offers what it would with no edit at all', function (): void {
     $starting = static fn(TheStackEdits $edits): WhatTheVerbCameTo => WhatTheVerbCameTo::reported(

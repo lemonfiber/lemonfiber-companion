@@ -21,6 +21,7 @@ final readonly class HowTheVerbIsGoing
         private ?WhatTheVerbCameTo $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?ARefusalInItsWords $moved = null,
     ) {}
 
     /** The stack is still carrying it out. */
@@ -48,6 +49,19 @@ final readonly class HowTheVerbIsGoing
     }
 
     /**
+     * The stack refused the yes because what it was given for has moved.
+     *
+     * An answer rather than a failure, as a repair's is
+     * ({@see HowTheRepairIsGoing::moved()}): nothing was carried out, and the
+     * restart agreed to no longer stands. The stack's words say what moved, and
+     * what is owed next is what it would do now, offered again.
+     */
+    public static function moved(ARefusalInItsWords $why): self
+    {
+        return new self(moved: $why);
+    }
+
+    /**
      * Say what happens in each case, and get back what you built.
      *
      * Being unable to reach the stack outranks anything believed about the job.
@@ -58,13 +72,15 @@ final readonly class HowTheVerbIsGoing
      * @param Closure(WhatTheVerbCameTo): T $done
      * @param Closure(): T                  $ended
      * @param Closure(Obstacle): T          $met
+     * @param Closure(ARefusalInItsWords): T $moved
      *
      * @return T
      */
-    public function either(Closure $stillRunning, Closure $done, Closure $ended, Closure $met): object
+    public function either(Closure $stillRunning, Closure $done, Closure $ended, Closure $met, Closure $moved): object
     {
         return match (true) {
             $this->met instanceof Obstacle => $met($this->met),
+            $this->moved instanceof ARefusalInItsWords => $moved($this->moved),
             $this->running => $stillRunning(),
             $this->done instanceof WhatTheVerbCameTo => $done($this->done),
             default => $ended(),

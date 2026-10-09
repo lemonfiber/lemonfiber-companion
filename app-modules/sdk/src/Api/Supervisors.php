@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DownAction;
 use Lemonfiber\Sdk\Generated\PullAction;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestartAction;
 use Lemonfiber\Sdk\Generated\UpAction;
 use Modules\Kernel\Api\AgreedTo;
@@ -32,6 +33,7 @@ use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Internal\GatedClient;
+use Modules\Sdk\Internal\Quoted;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -165,7 +167,7 @@ final readonly class Supervisors implements Supervising
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return HowTheVerbIsGoing::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::whereItMoved(RefusalCode::RestartMoved, $why, HowTheVerbIsGoing::moved(...), HowTheVerbIsGoing::met(...));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
             return HowTheVerbIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }
@@ -204,7 +206,7 @@ final readonly class Supervisors implements Supervising
         return match ($agreed->doing()) {
             WhatToDoWithIt::Start => new UpAction(forms: $forms, services: $services),
             WhatToDoWithIt::Stop => new DownAction(forms: $forms, services: $services),
-            WhatToDoWithIt::Restart => new RestartAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Restart => new RestartAction(forms: $forms, services: $services, offer: Quoted::offer($agreed->offer())),
             WhatToDoWithIt::Pull => new PullAction(forms: $forms),
         };
     }

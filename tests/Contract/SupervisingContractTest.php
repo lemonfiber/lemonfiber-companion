@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APortHeld;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
@@ -33,6 +36,7 @@ use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereAServiceEndedUp;
@@ -46,7 +50,11 @@ use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatAMovedOfferSays;
 use Tests\Support\WhatTheContractAccepts;
+
+/** The name a rehearsal gives the restart it would carry out, as the stack sends it. */
+const THE_RESTART_OFFERED = '9b1e4f20';
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
 function whatTheSupervisedVerbsCost(): Disturbances
@@ -771,6 +779,7 @@ function whatBecameOfTheVerb(Supervising $supervising): string
         done: static fn(WhatTheVerbCameTo $report): TheWordCarriedOut => new TheWordCarriedOut(everyPartOfWhatTheVerbCameTo($report)),
         ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+        moved: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('moved: %s', $why->summary())),
     )->said;
 }
 
@@ -787,6 +796,63 @@ it('reads every part of what a finished verb came to', function (): void {
         expect(whatBecameOfTheVerb($build()))
             ->toBe('carried_out|partial|not back Sonarr:failed|left out qBittorrent:torrent|ports 8096:jellyfin:media-server|ran: docker compose --profile media restart', $which);
     }
+});
+
+it('reads a restart refused because what it would restart moved as that, in the stack\'s own words', function (): void {
+    $moved = HowTheVerbIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
+
+    foreach (everyWayOfFollowingAVerb(WhatAMovedOfferSays::endedOn(RefusalCode::RestartMoved), $moved) as $which => $build) {
+        expect(whatBecameOfTheVerb($build()))->toBe(sprintf('moved: %s', WhatAMovedOfferSays::SUMMARY), $which);
+    }
+});
+
+it('reads any other refusal that ends a verb as what was met, not as a moved offer', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([WhatAMovedOfferSays::endedOn(RefusalCode::UpdateMoved)]);
+
+    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))
+        ->toBe(KindOfObstacle::StackDidNotAnswer->value);
+});
+
+it('comes away from a rehearsal with the name the stack gave what it would restart', function (): void {
+    $rehearsed = MockResponse::make((string) json_encode(whatAStackReportsOfARestart(['rehearsed' => true, 'offer' => THE_RESTART_OFFERED])));
+    $reported = WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::Rehearsed,
+        WhereTheServicesEndedUp::of(),
+        TheServicesLeftOut::of(),
+        ThePortsHeld::of(),
+        TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'restart'),
+    )->offering(AnOffer::named(THE_RESTART_OFFERED));
+
+    foreach (everyWayOfFollowingAVerb($rehearsed, HowTheVerbIsGoing::done($reported)) as $which => $build) {
+        $offer = $build()->whatBecameOf(aStackWithServices(), theSessionTheStackIsSupervisedWith(), Job::named(AStackThatSupervises::THE_JOB))->either(
+            stillRunning: static fn(): AnOffer => AnOffer::none(),
+            done: static fn(WhatTheVerbCameTo $report): AnOffer => $report->offer(),
+            ended: static fn(): AnOffer => AnOffer::none(),
+            met: static fn(): AnOffer => AnOffer::none(),
+            moved: static fn(): AnOffer => AnOffer::none(),
+        );
+
+        expect($offer)->toEqual(AnOffer::named(THE_RESTART_OFFERED), $which);
+    }
+});
+
+it('carries the offer the rehearsal named back with the restart agreed to', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = $asked->body()?->all();
+
+            return aStartedAnswer();
+        },
+    ]);
+
+    $agreed = AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))->quoting(AnOffer::named(THE_RESTART_OFFERED));
+    new Supervisors(new PinnedClients(), SequencedEntropy::counting())->told(aStackWithServices(), theSessionTheStackIsSupervisedWith(), $agreed);
+
+    expect($sent)->toBe([['forms' => [], 'services' => ['sonarr'], 'offer' => THE_RESTART_OFFERED]]);
 });
 
 it('a verb still being carried out is its own answer', function (): void {

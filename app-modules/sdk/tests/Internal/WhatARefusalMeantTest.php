@@ -307,3 +307,21 @@ it('names every family of refusal the SDK raises', function (): void {
         expect($reading)->toContain(sprintf('$why instanceof %s', $family), $family);
     }
 });
+
+/** What a refusal comes to when it is read for a yes that moved, as a line. */
+function whatTheRefusalOfAMovedYesSaid(RefusalCode $moved, CertificateWasRefused|RequestFailed $why): string
+{
+    return WhatARefusalMeant::whereItMoved(
+        $moved,
+        $why,
+        refused: static fn(ARefusalInItsWords $words): TheWordCarriedOut => new TheWordCarriedOut(sprintf('moved: %s', $words->summary())),
+        met: static fn(Obstacle $obstacle): TheWordCarriedOut => new TheWordCarriedOut($obstacle->kind()->name),
+    )->said;
+}
+
+it('reads a yes refused with the code it is told means moved in the stack\'s words, and any other as what was met', function (): void {
+    expect(whatTheRefusalOfAMovedYesSaid(RefusalCode::UpdateMoved, refusedFor(RefusalCode::UpdateMoved)))->toBe('moved: The stack said no.')
+        ->and(whatTheRefusalOfAMovedYesSaid(RefusalCode::UpdateMoved, refusedFor(RefusalCode::RestartMoved)))->toBe(KindOfObstacle::StackDidNotAnswer->name)
+        ->and(whatTheRefusalOfAMovedYesSaid(RefusalCode::UpdateMoved, CertificateWasRefused::whenAsking('/api/actions/update', str_repeat('b', 64), str_repeat('a', 64))))
+        ->toBe(KindOfObstacle::StackIsNotTheOnePaired->name);
+});

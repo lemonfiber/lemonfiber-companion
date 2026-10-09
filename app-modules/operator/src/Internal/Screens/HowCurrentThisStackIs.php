@@ -199,10 +199,11 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         $this->takeIt($taking);
     }
 
-    /** Leave it. */
+    /** Leave it, and what the stack said of an update it refused with it. */
     public function neverMind(): void
     {
         $this->asking = null;
+        $this->movedOn = null;
     }
 
     /**

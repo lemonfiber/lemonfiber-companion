@@ -318,12 +318,6 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'number, its name and how long it runs; no companion requirement asks for an episode\'s year.',
         ],
         [
-            'path' => 'UpdateEnvelope.offer',
-            'because' => 'The offer an update answers, built from each step it would take. An update '
-                . 'carrying no offer acts as it does without one (`ARCH-R164`), and this app sends none: no '
-                . 'companion requirement asks an update to be refused where the releases it named have moved.',
-        ],
-        [
             'path' => 'UpdateEnvelope.applied[].detail',
             'because' => 'What went wrong for one service, in the core\'s words. `N2-R18` has the app report '
                 . 'how the update ended for each service and tell the four endings apart, which the row does. '

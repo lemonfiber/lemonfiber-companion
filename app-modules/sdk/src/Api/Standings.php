@@ -11,11 +11,13 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\UpdateEnvelope;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Internal\Changelogs;
 use Modules\Sdk\Internal\Changes;
 use Modules\Sdk\Internal\Endings;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
 
@@ -55,7 +57,8 @@ final readonly class Standings
         $notes = Changelogs::standing($changelog);
         $edits = StackEditsSent::in($data, WireField::StackEdits);
 
-        $upkeep = Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes, $edits);
+        $upkeep = Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes, $edits)
+            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, UpkeepIsUnreadable::missing(WireField::Offer))));
 
         return $inUse instanceof Release ? $upkeep->runningOn($inUse) : $upkeep;
     }

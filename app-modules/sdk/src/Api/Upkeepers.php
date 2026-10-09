@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\UpdateAction;
 use Modules\Kernel\Api\AStackEditCannotBeShown;
 use Modules\Kernel\Api\Entropy;
@@ -28,6 +29,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsCurrent;
 use Modules\Sdk\Internal\GatedClient;
+use Modules\Sdk\Internal\Quoted;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhichUpdate;
 
@@ -73,14 +75,16 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // `confirm` and nothing else. Unconfirmed, the stack's `update`
-            // action only says what would change; confirmed, it moves every
-            // service it listed and did not refuse, which is the list
-            // `TakingAnUpdate::changing()` holds and the confirmation named.
-            // The action narrows to one `service` and takes no list, so none
-            // is named: one would narrow the run.
+            // `confirm`, and the offer the reading named. Unconfirmed, the
+            // stack's `update` action only says what would change; confirmed,
+            // it moves every service it listed and did not refuse, which is
+            // the list `TakingAnUpdate::changing()` holds and the confirmation
+            // named. The offer is carried back so the stack refuses the yes
+            // where what it would apply has moved since. The action narrows
+            // to one `service` and takes no list, so none is named: one would
+            // narrow the run.
             $envelope = $client->act(
-                new UpdateAction(confirm: true),
+                new UpdateAction(offer: Quoted::offer($agreed->offer()), confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 
@@ -97,7 +101,7 @@ final readonly class Upkeepers implements KeepingCurrent
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return HowTheUpdateIsGoing::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::whereItMoved(RefusalCode::UpdateMoved, $why, HowTheUpdateIsGoing::moved(...), HowTheUpdateIsGoing::met(...));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed|StackEditsAreUnreadable|AStackEditCannotBeShown $why) {
             return HowTheUpdateIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
         }

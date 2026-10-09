@@ -154,6 +154,28 @@ final readonly class WhatARefusalMeant
             : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
     }
 
+    /**
+     * A yes the stack turned down, read as moved where the refusal is `$moved`.
+     *
+     * A yes refused because what it was given for has moved is an answer to
+     * offer again on, so it is read in the stack's words; every other refusal
+     * is what was met.
+     *
+     * @template TMoved of object
+     * @template TMet of object
+     *
+     * @param Closure(ARefusalInItsWords): TMoved $refused
+     * @param Closure(Obstacle): TMet             $met
+     *
+     * @return TMoved|TMet
+     */
+    public static function whereItMoved(RefusalCode $moved, CertificateWasRefused|RequestFailed $why, Closure $refused, Closure $met): object
+    {
+        return $why instanceof RequestFailed && $why->code() === $moved
+            ? self::inItsWords($why, $refused, $met)
+            : $met(self::obstacle($why));
+    }
+
     /** What the first remedy a problem document gives says to do, or nothing where it gives none. */
     private static function firstRemedy(Refusal $problem): string
     {

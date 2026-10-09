@@ -45,6 +45,7 @@ final readonly class AgreedTo
     private function __construct(
         private WhatToDoWithIt $doing,
         private ServiceId|Form $about,
+        private AnOffer $offer,
     ) {}
 
     /**
@@ -60,13 +61,30 @@ final readonly class AgreedTo
             throw OnlyAFormIsFetched::named($doing, $service);
         }
 
-        return new self($doing, $service);
+        return new self($doing, $service, AnOffer::none());
     }
 
     /** The operator agreed to this, for a whole form. */
     public static function theForm(WhatToDoWithIt $doing, Form $form): self
     {
-        return new self($doing, $form);
+        return new self($doing, $form, AnOffer::none());
+    }
+
+    /**
+     * The same agreement, given to what the stack offered under this name.
+     *
+     * A restart's rehearsal names what it would restart, and the yes carries
+     * that name back so the stack refuses it where the services have moved.
+     */
+    public function quoting(AnOffer $offer): self
+    {
+        return new self($this->doing, $this->about, $offer);
+    }
+
+    /** The name of what was agreed to, as the stack offered it, or none. */
+    public function offer(): AnOffer
+    {
+        return $this->offer;
     }
 
     /** Which verb was agreed to. */

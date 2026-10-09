@@ -105,6 +105,15 @@
         </x-design::notice>
     @endif
 
+    @if ($this->movedOn !== null)
+        {{-- The last update was refused because what it would apply moved
+             after the yes: what the stack said, above the update it offers
+             now, which is read afresh and asks again. --}}
+        <x-design::card>
+            <x-operator::refused-in-its-words :refused="$this->movedOn" />
+        </x-design::card>
+    @endif
+
     @if ($this->answer()->offer !== null)
         {{-- One offer, for the stack: it moves each service onto the version
              its build pins, and the confirmation names which services. --}}

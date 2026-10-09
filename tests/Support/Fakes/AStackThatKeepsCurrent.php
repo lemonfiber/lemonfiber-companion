@@ -34,6 +34,9 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
 {
     public const string THE_JOB = 'an-update-a-test-can-name';
 
+    /** The name a reading gives what it offers, where a test has it name one. */
+    public const string THE_OFFER = '5f3a9c1e';
+
     private int $askings = 0;
 
     private ?Stack $askedAbout = null;

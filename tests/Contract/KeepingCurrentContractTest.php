@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
@@ -30,14 +33,17 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Standings;
 use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatAMovedOfferSays;
 use Tests\Support\WhatTheContractAccepts;
 
 // The KeepingCurrent contract, run against the adapter and against the fake.
@@ -140,7 +146,7 @@ function whatAStackWithUpdatesSends(): array
             'confirmed' => true,
             'rehearsed' => false,
             'in_flight' => [],
-            'offer' => '5f3a9c1e',
+            'offer' => AStackThatKeepsCurrent::THE_OFFER,
             'stack_edits' => [],
             'applied' => [
                 [
@@ -204,7 +210,7 @@ function whatAStackWithAnUpdateAvailableSends(): array
             'confirmed' => false,
             'rehearsed' => false,
             'in_flight' => [],
-            'offer' => '5f3a9c1e',
+            'offer' => AStackThatKeepsCurrent::THE_OFFER,
             'stack_edits' => [],
             'applied' => [],
             'changes' => [aChangeTo('jellyfin', refused: false), aChangeTo('sonarr', refused: true)],
@@ -241,7 +247,9 @@ function theSameStandingWithAnUpdateAvailable(): Upkeep
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
         TheStackEdits::none(),
-    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
+    )
+        ->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')))
+        ->offering(AnOffer::named(AStackThatKeepsCurrent::THE_OFFER));
 }
 
 /**
@@ -265,7 +273,7 @@ function whatAStackWithPendingNotesSends(): array
             'confirmed' => false,
             'rehearsed' => false,
             'in_flight' => [],
-            'offer' => '5f3a9c1e',
+            'offer' => AStackThatKeepsCurrent::THE_OFFER,
             'stack_edits' => [],
             'applied' => [],
             'changes' => [],
@@ -579,6 +587,7 @@ function whatTheTakingSaid(KeepingCurrent $keeping): string
             },
             ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
             met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
+            moved: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('moved: %s', $why->summary())),
         )->said;
 }
 
@@ -607,6 +616,7 @@ it('leads with the services that are not where the operator wanted them', functi
                 done: static fn(Upkeep $report): HowServicesTookIt => $report->howItWent(),
                 ended: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
                 met: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
+                moved: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
             );
         $wrong = [];
 
@@ -659,6 +669,55 @@ it('asking after an update tells a refused session from a stack that is not answ
     }
 });
 
+it('reads an update refused because what it would apply moved as that, in the stack\'s own words', function (): void {
+    $moved = HowTheUpdateIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
+
+    foreach (everyWayOfFollowingAnUpdate(WhatAMovedOfferSays::endedOn(RefusalCode::UpdateMoved), $moved) as $which => $build) {
+        expect(whatTheTakingSaid($build()))->toBe(sprintf('moved: %s', WhatAMovedOfferSays::SUMMARY), $which);
+    }
+});
+
+it('reads any other refusal that ends an update as what was met, not as a moved offer', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([WhatAMovedOfferSays::endedOn(RefusalCode::RestartMoved)]);
+
+    expect(whatTheTakingSaid(new Upkeepers(new PinnedClients(), SequencedEntropy::counting())))
+        ->toBe(KindOfObstacle::StackDidNotAnswer->name);
+});
+
+it('comes away with the name the reading gave its offer', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackWithAnUpdateAvailableSends()));
+
+    foreach (everyWayOfKeepingCurrent($answered, standing: theSameStandingWithAnUpdateAvailable()) as $which => $build) {
+        $offer = $build()->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
+            stands: static fn(Upkeep $upkeep): AnOffer => $upkeep->offer(),
+            met: static fn(): AnOffer => AnOffer::none(),
+        );
+
+        expect($offer)->toEqual(AnOffer::named(AStackThatKeepsCurrent::THE_OFFER), $which);
+    }
+});
+
+it('carries the offer the operator read back with the update taken', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = $asked->body()?->all();
+
+            return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => AStackThatKeepsCurrent::THE_JOB]]));
+        },
+    ]);
+
+    howItWasTaken(new Upkeepers(new PinnedClients(), SequencedEntropy::counting()), theUpdateTheOperatorAgreedTo());
+    howItWasTaken(new Upkeepers(new PinnedClients(), SequencedEntropy::counting()), TakingAnUpdate::offeredBy(theSameStandingWithAnUpdateAvailable()->offering(AnOffer::none())));
+
+    expect($sent)->toBe([
+        ['wait' => false, 'service' => null, 'offer' => AStackThatKeepsCurrent::THE_OFFER, 'confirm' => true],
+        ['wait' => false, 'service' => null, 'offer' => null, 'confirm' => true],
+    ]);
+});
+
 it('asking after an update names the handle the take answered', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(theSameStanding(), HowTheUpdateIsGoing::stillRunning());
     whatTheTakingSaid($keeping);
@@ -686,7 +745,7 @@ function aStackWhoseRecordHolds(array $release): array
         'confirmed' => false,
         'rehearsed' => false,
         'in_flight' => [],
-        'offer' => '5f3a9c1e',
+        'offer' => AStackThatKeepsCurrent::THE_OFFER,
         'stack_edits' => [],
         'applied' => [],
         'changes' => [],

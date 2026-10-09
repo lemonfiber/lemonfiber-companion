@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
+use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -39,6 +42,9 @@ trait FollowsWhatTheVerbCameTo
 
     /** What became of it, once this frame has asked. */
     public ?HowTheVerbWent $cameTo = null;
+
+    /** What the stack said where it refused the last yes because what it was given for has moved, or nothing. */
+    public ?ARefusalAsShown $movedOn = null;
 
     /** What became of the verb sent here, or that none was. */
     public function whatItCameTo(): HowTheVerbWent
@@ -136,9 +142,21 @@ trait FollowsWhatTheVerbCameTo
                 done: static fn(WhatTheVerbCameTo $report): HowTheVerbWent => new HowAVerbEndedReads()->done($report, $sent->doing()),
                 ended: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->ended(),
                 met: $this->lettingGoIfRefused($stack, new HowAVerbEndedReads()->met(...)),
+                // Refused and offered again, as a repair is: nothing was done,
+                // the yes was given for what has since moved, so what the stack
+                // said is kept and the verb is put back as a question.
+                moved: function (ARefusalInItsWords $why) use ($sent): HowTheVerbWent {
+                    $this->took = null;
+                    $this->movedOn = new HowARefusalReads()->inItsWords($why);
+                    $this->offerAgain($sent);
+
+                    return new HowAVerbEndedReads()->notAsked();
+                },
             ),
             notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
         );
     }
 
+    /** Put a yes the stack refused because what it was given for has moved back as a question. */
+    abstract private function offerAgain(AgreedTo $sent): void;
 }

@@ -6,6 +6,7 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Forms;
@@ -60,6 +61,12 @@ final class AStackThatSupervises implements Supervising
 
     /** @var list<Job> Every handle it was asked after, in the order it was asked. */
     private array $followed = [];
+
+    /** What it says of a yes it was told, where a test has what that yes was given for move; nothing where none did. */
+    private ?ARefusalInItsWords $yesMoved = null;
+
+    /** Whether the last thing it was handed was a yes rather than a rehearsal, which is what a moved offer answers. */
+    private bool $lastWasAYes = false;
 
     /**
     /** How many times it was asked for its forms, which are counted apart from {@see askings()}. */
@@ -220,6 +227,20 @@ final class AStackThatSupervises implements Supervising
     }
 
     /**
+     * The same stack, which refuses every yes it is told because what it was given for moved.
+     *
+     * Rehearsals are still answered as {@see whichCameTo()} said: the stack
+     * refuses the yes, not the question, and offering again rehearses afresh.
+     */
+    public function whoseYesMoved(ARefusalInItsWords $why): self
+    {
+        $moving = new self($this->answer, $this->acting, $this->becoming, $this->declares);
+        $moving->yesMoved = $why;
+
+        return $moving;
+    }
+
+    /**
      * The same stack, which declares these forms.
      *
      * A wither for {@see whichCameTo()}'s reason: what a stack declares is
@@ -283,6 +304,7 @@ final class AStackThatSupervises implements Supervising
         $this->remember($stack, $session);
         $this->askings++;
         $this->told[] = $agreed;
+        $this->lastWasAYes = true;
 
         return ($this->acting)();
     }
@@ -298,6 +320,7 @@ final class AStackThatSupervises implements Supervising
     {
         $this->remember($stack, $session);
         $this->rehearsed[] = $agreed;
+        $this->lastWasAYes = false;
 
         return ($this->acting)();
     }
@@ -327,6 +350,10 @@ final class AStackThatSupervises implements Supervising
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
     {
         $this->followed[] = $job;
+
+        if ($this->lastWasAYes && $this->yesMoved instanceof ARefusalInItsWords) {
+            return HowTheVerbIsGoing::moved($this->yesMoved);
+        }
 
         return $this->becoming ?? HowTheVerbIsGoing::stillRunning();
     }
