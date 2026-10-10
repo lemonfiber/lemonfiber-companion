@@ -152,7 +152,7 @@ return [
         'it_is_yours' => 'Yes, somebody in my house sent it',
         'it_is_not_yours' => 'No, don’t go on',
         'signing_in' => 'Sign in',
-        'signing_in_explained' => 'Type the name and password you were given.',
+        'signing_in_explained' => 'Type your name and your password.',
         'your_name' => 'Your name',
         'your_password' => 'Your password',
         'sign_in' => 'Sign in',

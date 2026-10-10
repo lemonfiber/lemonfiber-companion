@@ -140,7 +140,7 @@ return [
         'it_is_not_yours' => 'Nee, niet verder',
         'called' => 'Thuis',
         'signing_in' => 'Inloggen',
-        'signing_in_explained' => 'Typ de naam en het wachtwoord die je hebt gekregen.',
+        'signing_in_explained' => 'Typ je naam en je wachtwoord.',
         'your_name' => 'Je naam',
         'your_password' => 'Je wachtwoord',
         'sign_in' => 'Inloggen',
