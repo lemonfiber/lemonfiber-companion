@@ -13,6 +13,14 @@
     @if ($plugin->standingSaid !== '')
         <x-operator::note>{{ __($plugin->standingSaid, ['why' => $plugin->standingWhy]) }}</x-operator::note>
     @endif
+    @forelse ($plugin->outOfContract as $answer)
+        @if ($loop->first)
+            <x-design::strong>{{ __('plugins.out_of_contract') }}</x-design::strong>
+        @endif
+        <x-operator::note>{{ __('plugins.answered_out_of_contract', ['capability' => $answer->capability, 'operation' => $answer->operation, 'why' => $answer->why]) }}</x-operator::note>
+    @empty
+        {{-- Adapters that answered within their contracts are the plugin filling what it was chosen for, which the rest of the card already says. --}}
+    @endforelse
     @if ($plugin->revision !== '')
         <x-operator::note>{{ __('plugins.revision', ['revision' => $plugin->revision]) }}</x-operator::note>
     @endif

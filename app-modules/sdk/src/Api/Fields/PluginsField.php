@@ -115,4 +115,7 @@ enum PluginsField: string implements NamesAWireField
 
     /** The plugin filling a capability now, which is the one going. */
     case FilledBy = 'filled_by';
+
+    /** Every answer an installed plugin's adapter gave outside its contract. */
+    case Nonconforming = 'nonconforming';
 }

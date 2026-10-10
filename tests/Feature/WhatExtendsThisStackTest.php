@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
@@ -100,6 +101,24 @@ function aPluginRefusal(string $said): HowExtendingItIsGoing
     return HowExtendingItIsGoing::refused(ARefusalInItsWords::said($said, 'Nothing was installed and nothing was written.', WhatTheRefusalNamed::nothing()));
 }
 
+it('says a plugin fills nothing its adapter answered outside the contract for, until it is proved again', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(thePluginsScreen(aStackWithTdarr()));
+
+    expect($drawn->said())->toContain(aPluginsLine('plugins.out_of_contract'))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.answered_out_of_contract', [
+            'capability' => 'transcoding',
+            'operation' => 'queue',
+            'why' => 'It answered with a field its contract does not have',
+        ]));
+});
+
+it('says nothing of answers out of contract where its adapters gave none', function (): void {
+    $held = iterator_to_array(APluginAsItArrives::theListing()->installed(), preserve_keys: false);
+    $drawn = WhatTheDeviceWouldDraw::by(thePluginsScreen(AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these(...$held), ThePluginSources::these(), TheAnswersOutOfContract::these()))));
+
+    expect($drawn->said())->not->toContain(aPluginsLine('plugins.out_of_contract'));
+});
+
 it('opens on what is installed, each with what vouches for it and how its source stands', function (): void {
     $extending = aStackWithTdarr();
     $drawn = WhatTheDeviceWouldDraw::by(thePluginsScreen($extending));
@@ -115,7 +134,7 @@ it('opens on what is installed, each with what vouches for it and how its source
 });
 
 it('says no plugins are installed where the record holds none, and that the record could not be read where it could not', function (): void {
-    $none = WhatTheDeviceWouldDraw::by(thePluginsScreen(AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these(), ThePluginSources::these()))));
+    $none = WhatTheDeviceWouldDraw::by(thePluginsScreen(AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these(), ThePluginSources::these(), TheAnswersOutOfContract::these()))));
     $unread = WhatTheDeviceWouldDraw::by(thePluginsScreen(AStackThatExtendsItself::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
 
     expect($none->said())->toContain(aPluginsLine('plugins.none'))
@@ -353,7 +372,7 @@ function thePluginsListed(AStackThatExtendsItself $extending): WhatExtendsThisSt
 it('offers to update and to remove each plugin by its name, and says where one cannot be updated', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(thePluginsListed(aStackWithTdarr()));
     $sourceless = APlugin::named('tdarr', '2.1.0', 'Tdarr', WhatVouchesForAPlugin::recorded('', '', '', reviewed: false, upstream: '', licence: ''), TheRecipes::these());
-    $extending = AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these($sourceless), ThePluginSources::these()));
+    $extending = AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these($sourceless), ThePluginSources::these(), TheAnswersOutOfContract::these()));
     $screen = thePluginsListed($extending);
     $cannot = WhatTheDeviceWouldDraw::by($screen);
     $screen->updateOne(0);
