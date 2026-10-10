@@ -10,9 +10,11 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\PluginsEnvelope;
+use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\ASourceAsked;
 use Modules\Kernel\Api\HowItsSourceStands;
+use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
@@ -53,6 +55,7 @@ final readonly class PluginInstalls
 
         $installed = TheInstalledPlugins::these(...self::installed($data));
         $sources = self::sources($data);
+        $outOfContract = self::outOfContract($data);
 
         $agreement = self::agreement($data);
 
@@ -60,7 +63,7 @@ final readonly class PluginInstalls
             self::carries($data, PluginsField::Install) => ThePlugins::aboutAnInstall($installed, $sources, $agreement, PluginInstallReports::in(self::table($data, PluginsField::Install))),
             self::carries($data, PluginsField::Update) => ThePlugins::aboutAnUpdate($installed, $sources, $agreement, PluginUpdatesAndRemovals::update(self::table($data, PluginsField::Update))),
             self::carries($data, WireField::Removal) => ThePlugins::aboutAPluginRemoval($installed, $sources, $agreement, PluginUpdatesAndRemovals::removal(self::table($data, WireField::Removal))),
-            default => ThePlugins::listed($installed, $sources),
+            default => ThePlugins::listed($installed, $sources, $outOfContract),
         };
     }
 
@@ -148,6 +151,37 @@ final readonly class PluginInstalls
         }
 
         return ThePluginSources::these(...$found);
+    }
+
+    /**
+     * Every answer the installed plugins' adapters gave outside their contracts; none where the listing carries none.
+     *
+     * @param array<mixed> $data
+     */
+    private static function outOfContract(array $data): TheAnswersOutOfContract
+    {
+        if (! array_key_exists(PluginsField::Nonconforming->value, $data)) {
+            return TheAnswersOutOfContract::these();
+        }
+
+        $found = [];
+        $position = 0;
+
+        foreach (self::rows($data, PluginsField::Nonconforming) as $row) {
+            if (! is_array($row)) {
+                throw PluginsAreUnreadable::entry(PluginsField::Nonconforming, PluginsField::Plugin, $position);
+            }
+
+            $found[] = AnAnswerOutOfContract::of(
+                self::text($row, PluginsField::Nonconforming, PluginsField::Plugin, $position),
+                self::text($row, PluginsField::Nonconforming, WireField::Capability, $position),
+                self::text($row, PluginsField::Nonconforming, WireField::Operation, $position),
+                self::text($row, PluginsField::Nonconforming, WireField::Why, $position),
+            );
+            $position++;
+        }
+
+        return TheAnswersOutOfContract::these(...$found);
     }
 
     /**

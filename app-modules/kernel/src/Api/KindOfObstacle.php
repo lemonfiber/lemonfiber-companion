@@ -246,12 +246,28 @@ enum KindOfObstacle: string
      */
     case NotOnThisStack = 'not_on_this_stack';
 
+    /**
+     * The stack answered, and this version of the app cannot read the answer.
+     *
+     * Not silence, because something came back, and not a refused credential,
+     * because nothing was refused. The operator is sent to update the app or
+     * the machine; a member, who has neither to update, is told the house
+     * cannot be reached right now.
+     */
+    case AnswerCouldNotBeRead = 'answer_unreadable';
+
     /** The kinds met on the way to the stack's address, beside which the address tried is shown. */
     private const array MET_ON_THE_WAY_TO_THE_STACK = [
         self::StackDidNotAnswer,
         self::NameWasNotFound,
         self::NothingAtThePairedAddress,
         self::ConnectionWasTurnedAway,
+    ];
+
+    /** The kinds a member is told in the household's words rather than the operator's. */
+    private const array SAID_IN_THE_HOUSEHOLDS_WORDS = [
+        ...self::MET_ON_THE_WAY_TO_THE_STACK,
+        self::AnswerCouldNotBeRead,
     ];
 
     /**
@@ -295,19 +311,26 @@ enum KindOfObstacle: string
      * The key for what stood in the way, on a member's screen.
      *
      * A member is told what an operator is, in the household's words, where
-     * the obstacle was met on the way to the stack: those sentences name a
-     * machine, an address and software, and a member has none of them to look
-     * at. Everything else is the same sentence on both sides.
+     * the obstacle was met on the way to the stack or the answer could not be
+     * read: those sentences name a machine, an address and software, and a
+     * member has none of them to look at. Everything else is the same sentence
+     * on both sides.
      */
     public function saidToTheHousehold(): string
     {
-        return $this->isMetOnTheWayToTheStack() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->said() : $this->said();
+        return $this->isSaidInTheHouseholdsWords() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->said() : $this->said();
     }
 
     /** The key for what a member can do about it, in the household's words where {@see saidToTheHousehold()} is. */
     public function remedyForTheHousehold(): string
     {
-        return $this->isMetOnTheWayToTheStack() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy() : $this->remedy();
+        return $this->isSaidInTheHouseholdsWords() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy() : $this->remedy();
+    }
+
+    /** Whether a member is told this in the household's words rather than the operator's. */
+    public function isSaidInTheHouseholdsWords(): bool
+    {
+        return in_array($this, self::SAID_IN_THE_HOUSEHOLDS_WORDS, strict: true);
     }
 
     /**
@@ -400,6 +423,7 @@ enum KindOfObstacle: string
             self::VersionsDisagree => 'COMPANION-VERSIONS-DISAGREE',
             self::StackIsBusy => 'COMPANION-STACK-BUSY',
             self::NotOnThisStack => 'COMPANION-NOT-ON-THIS-STACK',
+            self::AnswerCouldNotBeRead => 'COMPANION-ANSWER-UNREADABLE',
         });
     }
 
@@ -440,6 +464,7 @@ enum KindOfObstacle: string
             self::ConnectionWasTurnedAway,
             self::AddressIsNotTheStacks,
             self::VersionsDisagree,
+            self::AnswerCouldNotBeRead,
             self::CredentialWasRefused => Severity::Error,
             self::StackIsNotTheOnePaired => Severity::Critical,
         };
@@ -478,6 +503,7 @@ enum KindOfObstacle: string
             // Updating the app or the machine, and waiting for other work,
             // both happen where this app cannot act.
             self::VersionsDisagree,
+            self::AnswerCouldNotBeRead,
             self::StackIsBusy => Standing::Guided,
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,

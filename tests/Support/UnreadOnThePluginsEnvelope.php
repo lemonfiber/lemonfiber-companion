@@ -19,6 +19,26 @@ final readonly class UnreadOnThePluginsEnvelope
     /** @var list<array{path: string, because: string}> */
     public const array ROWS = [
         [
+            'path' => 'PluginsEnvelope.install.would.manifest',
+            'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].manifest',
+            'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.manifest',
+            'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.nonconforming[].at',
+            'because' => 'When an adapter answered outside its contract. What it answered, as which capability, and that the plugin fills none of it until it is proved again are drawn; the moment changes none of that, and the stack keeps the answer until a proof clears it.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.proof',
+            'because' => 'What proving a plugin again came to. It is filled only on an answer to proving one again, which this app does not offer, and no requirement asks it to.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.against',
             'because' => 'What the proofs\' verdicts were reached against: the recordings a plugin ships, or the service on this machine. An install this app agrees to is proven against the service, and each proof\'s outcome is read and drawn (`N25-R2`); which evidence an author\'s read used is not a question the operator is asked.',
         ],

@@ -163,7 +163,7 @@ foreach (everyWayOfDescribingAnUpgrade() as $name => $build) {
 }
 
 it('the fake and the adapter both refuse rather than answer with nothing', function (): void {
-    expect(anUpgradeDescribedWith(['nothing' => 'the contract knows']))->toBe('refused:no_answer')
+    expect(anUpgradeDescribedWith(['nothing' => 'the contract knows']))->toBe('refused:answer_unreadable')
         ->and(howAnUpgradeReadsAsText(AStackThatUpgrades::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->upgrade(
             theMachineWhoseLibraryIsUpgraded(),
             theSessionAnUpgradeIsAskedOn(),
@@ -205,7 +205,7 @@ it('upgrades with the yes, and reads what each service was asked', function (): 
 });
 
 it('refuses an upgrade answer it cannot read rather than drawing part of one', function (mixed $body): void {
-    expect(anUpgradeDescribedWith($body))->toBe('refused:no_answer');
+    expect(anUpgradeDescribedWith($body))->toBe('refused:answer_unreadable');
 })->with([
     'data that is not a table' => [['api_version' => 1, 'kind' => 'upgrade', 'data' => 'movies']],
     'confirmed that is not yes or no' => [[...whatAStackSaysOfAnUpgrade(), 'data' => ['confirmed' => 'no', 'media' => []]]],

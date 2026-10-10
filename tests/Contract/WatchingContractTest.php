@@ -220,14 +220,14 @@ it('tells a refused session from a stack that did not answer, where the shelf co
     $refusals = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         // A shelf whose rows this side cannot read is the same thing to the
         // member as one that never arrived.
         [
             MockResponse::make((string) json_encode(whatAStackSendsAboutAShelf([
                 ['id' => 'a1', 'title' => 'A film', 'medium' => 'hologram'],
             ]))),
-            Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead),
         ],
         // A blank line among real ones. One type decides what an empty
         // sentence means and this one decides what an unreadable answer means
@@ -238,7 +238,7 @@ it('tells a refused session from a stack that did not answer, where the shelf co
             MockResponse::make((string) json_encode(
                 whatAStackSendsAboutAShelf([], available: false, findings: ['   ']),
             )),
-            Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead),
         ],
     ];
 
@@ -434,11 +434,11 @@ it('answers a title the core did not hand over as absent', function (): void {
     }
 });
 
-it('says the stack did not answer where a title cannot be read', function (array $title): void {
+it('says the answer could not be read where a title cannot be read', function (array $title): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutATitle($title)));
 
-    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
-        expect(whatATitleSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::StackDidNotAnswer->value), $which);
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))) as $which => $build) {
+        expect(whatATitleSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::AnswerCouldNotBeRead->value), $which);
     }
 })->with([
     'a location with no door' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'door' => null, 'stream_from' => 'https://192.168.1.42:8920/Videos/s1/master.m3u8']],
@@ -564,11 +564,11 @@ it('hands over nothing part-way through as nothing', function (): void {
     }
 });
 
-it('says the stack did not answer where what they were part-way through cannot be read', function (array $partWay): void {
+it('says the answer could not be read where what they were part-way through cannot be read', function (array $partWay): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSendsAboutWhereTheyLeftOff($partWay)));
 
-    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
-        expect(whereTheyLeftOffWasSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::StackDidNotAnswer->value), $which);
+    foreach (everyWayOfReadingAShelf($answered, AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))) as $which => $build) {
+        expect(whereTheyLeftOffWasSaid($build()))->toBe(sprintf('refused:%s', KindOfObstacle::AnswerCouldNotBeRead->value), $which);
     }
 })->with([
     'an item that is not one' => [['a1']],

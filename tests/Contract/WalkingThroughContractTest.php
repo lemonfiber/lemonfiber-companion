@@ -199,7 +199,7 @@ function theWaysAWalkIsNotReached(): array
     return [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 }
 
@@ -364,11 +364,11 @@ it('asks after the handle the start answered', function (): void {
     expect($mock->getLastPendingRequest()?->getUrl())->toEndWith(sprintf('/api/jobs/%s', AStackThatWalksThrough::THE_JOB));
 });
 
-it('refuses a finished walk it cannot read as a stack that did not answer', function (): void {
+it('refuses a finished walk it cannot read as an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([aFinishedWalk([...WalkthroughsToFollow::theWalkThatWorkedAsAStackSendsIt(), 'state' => 'wandering'])]);
 
-    expect(whatTheWalkBecame(new Guides(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheWalkBecame(new Guides(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

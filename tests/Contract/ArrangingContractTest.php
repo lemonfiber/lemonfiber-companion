@@ -259,7 +259,7 @@ it('an unreadable listing is refused rather than shortened', function (): void {
         ],
     ])]);
 
-    expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))->toBe('refused:answer_unreadable');
 });
 
 it('a setting with no name is refused rather than drawn nameless', function (): void {
@@ -321,26 +321,26 @@ it('refuses an answer with no settings at all rather than reading it as none', f
     // nothing set says so with an empty list, which is accepted above. An
     // answer with no `settings` key is one this app could not read.
     expect(howAStackReadsAsText(aStackAnsweringWith(['changed' => false, 'rehearsed' => false])))
-        ->toBe('refused:no_answer');
+        ->toBe('refused:answer_unreadable');
 });
 
 it('refuses an answer whose data is not a table', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'config', 'data' => 'settings'])]);
 
-    expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))->toBe('refused:no_answer');
+    expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))->toBe('refused:answer_unreadable');
 });
 
 it('refuses settings that are not a list', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false, 'settings' => 'all of them',
-    ])))->toBe('refused:no_answer');
+    ])))->toBe('refused:answer_unreadable');
 });
 
 it('refuses a row that is not a setting, and says which row', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false, 'settings' => ['LIBRARY_PATH'],
-    ])))->toBe('refused:no_answer');
+    ])))->toBe('refused:answer_unreadable');
 
     // The position, not merely that it threw. A stack sending eighty settings
     // and one bad row is otherwise a message with nowhere to look — and the
@@ -362,18 +362,18 @@ it('refuses a row with no key, and one whose key is not text', function (): void
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
         'settings' => [['value' => '/data/media', 'secret' => false, 'origin' => ['origin' => 'bundled']]],
-    ])))->toBe('refused:no_answer')
+    ])))->toBe('refused:answer_unreadable')
         ->and(howAStackReadsAsText(aStackAnsweringWith([
             'changed' => false, 'rehearsed' => false,
             'settings' => [['key' => 7, 'value' => '/data/media', 'secret' => false, 'origin' => ['origin' => 'bundled']]],
-        ])))->toBe('refused:no_answer');
+        ])))->toBe('refused:answer_unreadable');
 });
 
 it('refuses a row whose value is not text', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
         'settings' => [['key' => 'PORT', 'value' => 8443, 'secret' => false, 'origin' => ['origin' => 'bundled']]],
-    ])))->toBe('refused:no_answer');
+    ])))->toBe('refused:answer_unreadable');
 });
 
 it('refuses a secret flag that is not a boolean rather than reading it for truth', function (): void {
@@ -384,7 +384,7 @@ it('refuses a secret flag that is not a boolean rather than reading it for truth
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
         'settings' => [['key' => 'API_KEY', 'value' => 'set, not shown', 'secret' => 'false', 'origin' => ['origin' => 'bundled']]],
-    ])))->toBe('refused:no_answer');
+    ])))->toBe('refused:answer_unreadable');
 });
 
 it('says which field was missing, for whoever has to find it', function (): void {
@@ -422,7 +422,7 @@ it('refuses a row that does not say where its value came from', function (): voi
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
         'settings' => [['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false]],
-    ])))->toBe('refused:no_answer');
+    ])))->toBe('refused:answer_unreadable');
 
     expect(static fn(): Settings => Dials::in(new Envelope(1, 'config', [
         'changed' => false, 'rehearsed' => false,
@@ -432,9 +432,9 @@ it('refuses a row that does not say where its value came from', function (): voi
 
 it('refuses an origin that is not a table, and one whose word is not text', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo('bundled'))))
-        ->toBe('refused:no_answer')
+        ->toBe('refused:answer_unreadable')
         ->and(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo(['origin' => 7]))))
-        ->toBe('refused:no_answer');
+        ->toBe('refused:answer_unreadable');
 });
 
 it('refuses an origin naming a word this app has not been taught, and quotes it', function (): void {
@@ -464,7 +464,7 @@ it('refuses a plugin named in blanks as the listing\'s own refusal, so the scree
     // adapter catches — so a reader that let it through would end the screen
     // on a stack's typo rather than saying the answer could not be read.
     expect(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo(['origin' => 'plugin', 'named' => '   ']))))
-        ->toBe('refused:no_answer');
+        ->toBe('refused:answer_unreadable');
 
     expect(static fn(): Settings => Dials::in(
         new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'plugin', 'named' => '   '])),

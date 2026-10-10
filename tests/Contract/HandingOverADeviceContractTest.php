@@ -288,7 +288,7 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -303,11 +303,11 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
     }
 });
 
-it('an asking answered with a handle it cannot follow is a stack that did not answer', function (): void {
+it('an asking answered with a handle it cannot follow is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'household-handoff', 'job' => ' ']]), 202)]);
 
-    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(howTheHandoffWasAskedFor(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('a hand-off still being worked out is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
@@ -322,11 +322,11 @@ it('a hand-off still being worked out is its own answer, and one the stack forgo
     'never known' => [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
 ]);
 
-it('a hand-off this app cannot read is a stack that did not answer, never one with a part missing', function (array $changed): void {
+it('a hand-off this app cannot read is an answer it could not read, never one with a part missing', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersAHandoffWith($changed)))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no name' => [['name' => null]],
     'a blank name' => [['name' => ' ']],
@@ -348,11 +348,11 @@ it('a hand-off this app cannot read is a stack that did not answer, never one wi
     'a session seen at a moment that is not words' => [['sessions' => [['device' => 'A phone', 'client' => 'Jellyfin Web', 'last_seen' => 7]]]],
 ]);
 
-it('a payload that is not a hand-off at all is a stack that did not answer', function (): void {
+it('a payload that is not a hand-off at all is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'handoff', 'data' => 'nothing']))]);
 
-    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheHandoff(new Connectors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('the fake names each person asked for and each handle asked after', function (): void {

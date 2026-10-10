@@ -59,7 +59,7 @@ trait FindsItsWayAroundAStack
             'appSettings' => new ThePhonesSettingsInTheMenu(),
         ]))
             ->label($this->around->theMenuIsCalled())
-            ->besideBack(besideBack: $this->opensOnTopOfAnother())
+            ->besideBack(besideBack: $this->hasAWayBack())
             ->modal();
     }
 
@@ -69,14 +69,14 @@ trait FindsItsWayAroundAStack
         $this->navigate(new TheWhatsNewInTheMenu($this->howMuchIsNewHere())->goes(), [AScreenWithoutAStack::WHATS_NEW_SHOWS => $this->stack()->id()->stored()]);
     }
 
-    /** How much is new on this stack, which the menu counts beside What's new. */
-    abstract protected function howMuchIsNewHere(): HowMuchIsNew;
-
-    /** Whether this screen is opened on top of another, and so has a back button. */
-    protected function opensOnTopOfAnother(): bool
+    /** Whether this screen is opened on top of another, and so draws a back button the menu sits beside. */
+    public function hasAWayBack(): bool
     {
         return ! $this->isDrawnAsATab() && $this->nativeRouter?->isRootScreen() === false;
     }
+
+    /** How much is new on this stack, which the menu counts beside What's new. */
+    abstract protected function howMuchIsNewHere(): HowMuchIsNew;
 
     /** Whether this screen is drawn as a tab, the root of what the phone draws for it. */
     abstract protected function isDrawnAsATab(): bool;

@@ -254,7 +254,7 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     }
 });
 
-it('cannot hear a step it cannot read, and says so as a stack that did not answer', function (): void {
+it('cannot hear a step it cannot read, and says so as an answer it could not read', function (): void {
     foreach ([
         anEventOnTheWalk('step', 'not json at all'),
         aStepEvent(aStepTheWalkSays('dawdling', 'Doing nothing much', '')),
@@ -264,9 +264,9 @@ it('cannot hear a step it cannot read, and says so as a stack that did not answe
     ] as $said) {
         foreach (everyWayOfFollowingAWalk(
             [MockResponse::make($said)],
-            [WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+            [WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
         ) as $which => $make) {
-            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesOfTheWalkHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
         }
     }
 });
@@ -341,7 +341,7 @@ it('holds nothing after a step it could not read, so the next wake opens again',
     ]);
 
     expect(whatWakesOfTheWalkHear(new Narrators(new PinnedClients()), 2))->toBe([
-        KindOfObstacle::StackDidNotAnswer->value,
+        KindOfObstacle::AnswerCouldNotBeRead->value,
         aLineHeardAsAWord(theDownloadingLine()),
     ])->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
 });

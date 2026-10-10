@@ -199,7 +199,7 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -214,11 +214,11 @@ it('tells a refused session and a silent stack from a refusal', function (): voi
     }
 });
 
-it('an asking answered with a handle it cannot follow is a stack that did not answer', function (): void {
+it('an asking answered with a handle it cannot follow is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'companion-pair', 'job' => ' ']]), 202)]);
 
-    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(howTheCodeWasAskedFor(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('a code still being made is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
@@ -233,11 +233,11 @@ it('a code still being made is its own answer, and one the stack forgot is ended
     'never known' => [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
 ]);
 
-it('a code this app cannot read is a stack that did not answer, never a code with a part missing', function (array $changed): void {
+it('a code this app cannot read is an answer it could not read, never a code with a part missing', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAnswersACodeWith($changed)))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no material' => [['material' => 'here']],
     'no expiry' => [['material' => ['address' => 'https://den.local:8443', 'fingerprint' => str_repeat('0', Fingerprint::CHARACTERS), 'expires' => 'soon']]],
@@ -252,11 +252,11 @@ it('a code this app cannot read is a stack that did not answer, never a code wit
     'a fingerprint that is not one' => [['material' => ['address' => 'https://den.local:8443', 'fingerprint' => 'abab', 'expires' => 1_790_813_400, 'stack' => '000102030405060708090a0b0c0d0e0f']]],
 ]);
 
-it('a payload that is not a pairing at all is a stack that did not answer', function (): void {
+it('a payload that is not a pairing at all is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'pairing', 'data' => 'nothing']))]);
 
-    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheCode(new Pairers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('the fake counts each asking and names the handle each following asked by', function (): void {

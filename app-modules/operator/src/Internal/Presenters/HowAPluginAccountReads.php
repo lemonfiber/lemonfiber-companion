@@ -16,9 +16,11 @@ use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AContestAsShown;
+use Modules\Operator\Internal\ViewModels\AnAnswerOutOfContractAsShown;
 use Modules\Operator\Internal\ViewModels\APluginAsShown;
 use Modules\Operator\Internal\ViewModels\APluginChangeAsShown;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
@@ -46,9 +48,9 @@ final readonly class HowAPluginAccountReads
     /**
      * One plugin, with every recipe in full.
      *
-     * @param list<string> $approved
+     * @param list<string>                $approved
      */
-    public function plugin(APlugin $plugin, HowItsSourceStands $standing, array $approved): APluginAsShown
+    public function plugin(APlugin $plugin, HowItsSourceStands $standing, array $approved, TheAnswersOutOfContract $outOfContract): APluginAsShown
     {
         $vouched = $plugin->vouched();
         $recipes = [];
@@ -71,6 +73,7 @@ final readonly class HowAPluginAccountReads
             standingWhy: $standing->why(),
             recipes: $recipes,
             updatable: $plugin->canBeUpdated(),
+            outOfContract: $this->outOfContract($outOfContract),
         );
     }
 
@@ -118,7 +121,7 @@ final readonly class HowAPluginAccountReads
         );
 
         return new APluginInstallAsShown(
-            plugin: $this->plugin($install->would(), HowItsSourceStands::notSaid(), $approved),
+            plugin: $this->plugin($install->would(), HowItsSourceStands::notSaid(), $approved, TheAnswersOutOfContract::these()),
             isAReading: $install->isAReading(),
             agreeable: $agreeable,
             headline: $this->headline($install),
@@ -249,5 +252,21 @@ final readonly class HowAPluginAccountReads
         }
 
         return $listed;
+    }
+
+    /**
+     * Each answer out of contract, as the plugin's card says it.
+     *
+     * @return list<AnAnswerOutOfContractAsShown>
+     */
+    private function outOfContract(TheAnswersOutOfContract $answers): array
+    {
+        $shown = [];
+
+        foreach ($answers as $answer) {
+            $shown[] = new AnAnswerOutOfContractAsShown($answer->capability(), $answer->operation(), $answer->why());
+        }
+
+        return $shown;
     }
 }

@@ -46,6 +46,8 @@ const WHAT_A_COMPONENT_IS = [
     'top-bar' => false,
     'top-bar-title' => false,
     'scroll-view' => false,
+    // The platform's own pull-down gesture, which speaks for itself to a screen reader.
+    'refreshable' => false,
     'bottom-nav' => false,
     // A sheet over the screen is a box for what is drawn in it. Swiping it
     // away is the platform's own gesture, and the rows inside are the controls.

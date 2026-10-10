@@ -154,7 +154,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -171,7 +171,7 @@ it('a trace this app cannot read is an obstacle, never a trace half-drawn', func
         'coverage' => ['have' => 12, 'wanted' => 10, 'unmonitored' => 0, 'seasons' => []],
     ]]))]);
 
-    expect(everythingTheTraceSays(new Followers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheTraceSays(new Followers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('asks the trace endpoint, naming what to follow', function (): void {

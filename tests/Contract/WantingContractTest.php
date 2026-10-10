@@ -233,7 +233,7 @@ it('tells a refused session from a stack that did not answer, where a decision c
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $met]) {
@@ -360,7 +360,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -370,11 +370,11 @@ it('tells a session that has ended from a stack that is not answering', function
     }
 });
 
-it('tells a household the stack could not read from a stack that did not answer, and from a payload it cannot read', function (): void {
+it('tells a household the stack could not read from a payload it cannot read', function (): void {
     $unread = ['api_version' => 1, 'kind' => 'household', 'data' => ['available' => false, 'findings' => ['The request service did not answer.'], 'members' => [], 'rehearsed' => false]];
     $table = [
         [MockResponse::make((string) json_encode($unread)), Obstacle::of(KindOfObstacle::HouseholdCouldNotBeRead)],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => 'a house'])), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => 'a house'])), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

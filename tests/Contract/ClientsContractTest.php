@@ -91,9 +91,9 @@ it('reads an envelope in another API version as the two versions disagreeing, na
         ->and([$met->versionsSpoken()->answered(), $met->versionsSpoken()->spoken()])->toBe([2, 1]);
 })->with('every set of clients');
 
-it('reads an answer it could not read as a stack that did not answer', function (Clients $clients): void {
+it('reads an answer it could not read as one, with no address beside it', function (Clients $clients): void {
     expect($clients->whatStoodInTheWay(aStackThatWentQuiet(), UnreadableResponse::notAnEnvelope()))
-        ->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->whenTriedAt(aStackThatWentQuiet()->at()));
+        ->toEqual(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead));
 })->with('every set of clients');
 
 it('reads a request the stack does not declare as the stack too old for it, or not this account\'s to ask', function (Clients $clients): void {

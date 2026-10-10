@@ -10,6 +10,7 @@ use function it;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\StreamInterrupted;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\WhyNothingAnswered;
@@ -123,7 +124,8 @@ it('asks the phone nothing about a reach that was answered', function (Throwable
         ->and($localNetwork->asked())->toBe([]);
 })->with([
     'an envelope in another API version' => [ApiVersionMismatch::between(spoken: 1, answered: 2), KindOfObstacle::VersionsDisagree],
-    'an answer it could not read' => [UnreadableResponse::notAnEnvelope(), KindOfObstacle::StackDidNotAnswer],
+    'an answer it could not read' => [UnreadableResponse::notAnEnvelope(), KindOfObstacle::AnswerCouldNotBeRead],
+    'live updates cut short part-way' => [StreamInterrupted::cutShort(), KindOfObstacle::StackDidNotAnswer],
 ]);
 
 it('hands on the client pinned to the stack', function (): void {

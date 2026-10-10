@@ -760,6 +760,9 @@ enum WireField: string implements NamesAWireField
     /** The capability a link asks for, that nothing fills, or that a choice fills. */
     case Capability = 'capability';
 
+    /** The operation behind a change on the record, or the one a plugin's adapter was asked. */
+    case Operation = 'operation';
+
     /** What stood before: the data root a copy was taken against, and the service a choice of filler replaces. */
     case Was = 'was';
 
