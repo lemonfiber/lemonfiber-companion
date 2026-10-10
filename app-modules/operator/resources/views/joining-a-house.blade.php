@@ -11,7 +11,7 @@
         @if ($this->nothingWasScanned())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __($this->whyNothingCameBack()) }}</x-design::strong>
-                <x-design::body>{{ __('household.joining.camera_action') }}</x-design::body>
+                <x-design::body>{{ __($this->whatToDoAboutTheCamera()) }}</x-design::body>
             </x-design::notice>
         @elseif ($this->codeWasUnreadable)
             <x-design::notice>
@@ -56,6 +56,4 @@
             <x-design::action label="{{ __('household.joining.sign_in') }}" tap="signIn()" />
         </x-design::card>
     @endif
-
-    <x-design::link label="{{ __('household.joining.back') }}" :goes="$this->theStartIsAt()" />
 </x-operator::content>

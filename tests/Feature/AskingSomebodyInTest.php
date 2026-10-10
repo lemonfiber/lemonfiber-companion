@@ -269,7 +269,8 @@ it('hands over the address that turns it down beside its own, as text and as a c
 
     expect($encoding->carried())->toContain('http://192.168.1.42:8096', $declines)
         ->and($said)->toContain(__('stacks.invitation.code'), __('stacks.invitation.to_turn_down'), $declines, __('stacks.invitation.decline_code'))
-        ->and(array_search(__('stacks.invitation.code'), $said, true))->toBeLessThan(array_search(__('stacks.invitation.decline_code'), $said, true));
+        ->and(array_values(array_filter($said, static fn(string $line): bool => in_array($line, [__('stacks.invitation.code'), __('stacks.invitation.decline_code')], strict: true))))
+        ->toBe([__('stacks.invitation.code'), __('stacks.invitation.decline_code')]);
 });
 
 it('hands over the address the stack gave, with its caution, as text, as a code, and through the device\'s sharing', function (): void {

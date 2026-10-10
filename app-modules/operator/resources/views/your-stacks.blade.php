@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('navigation.your_stacks')" :back="$this->hasAWayBack()" />
+<x-operator::screen-opens :title="$this->nothingIsPairedYet() && ! $this->runsTheHouse ? __('household.joining.title') : __('navigation.your_stacks')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
     {{-- What stood between this launch and the machine, shown rather
@@ -100,6 +100,10 @@
          is real. --}}
     @if ($this->pairingIsOffered())
         <x-design::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
+    @endif
+
+    @if ($this->nothingIsPairedYet() && $this->runsTheHouse)
+        <x-design::link label="{{ __('household.joining.invited') }}" :goes="$this->joiningIsAt()" />
     @endif
 
     {{-- Assembled for the operator to send, and not sent by the app. On this

@@ -13,7 +13,7 @@ return [
     // app cannot.
     'local_network_reason' => 'lemonfiber talks to your stack over your own network, and nowhere else.',
     'local_network_alternative' => 'Without it, you can still read what your stack last reported while you were connected.',
-    'camera_reason' => 'The camera is used only to read a code you are shown, such as the pairing code on your stack.',
+    'camera_reason' => 'The camera is used only to read a code you are shown.',
     'camera_alternative' => 'You can type the pairing code instead.',
     'unlock' => 'Unlock',
     'unlock_reason' => 'Unlock lemonfiber to carry on.',

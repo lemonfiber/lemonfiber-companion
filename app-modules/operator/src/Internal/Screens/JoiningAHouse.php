@@ -28,14 +28,15 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
+use Modules\Operator\Internal\InTheWayInsWords;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheWayInIs;
 use Modules\Stacks\Api\AStacksScreen;
-use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\Screens\WaitsAFrameForWhatTheStackServes;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -153,10 +154,10 @@ final class JoiningAHouse extends NativeComponent
         return WhatStoodInTheWayOfJoining::of($this->went);
     }
 
-    /** Where the first screen is, for somebody who came here by mistake. */
-    public function theStartIsAt(): string
+    /** The key for what to do about the camera giving nothing back, in the household's words, or empty where it gave something. */
+    public function whatToDoAboutTheCamera(): string
     {
-        return AScreenWithoutAStack::TheList->value;
+        return $this->nothingCameBack instanceof WhyNothingWasScanned ? InTheWayInsWords::remedy($this->nothingCameBack->value) : '';
     }
 
     /** Read what the phone was handed, and join the house it names. */

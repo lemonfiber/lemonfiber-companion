@@ -288,7 +288,7 @@
             "NSBonjourServices": [
                 "_lemonfiber._tcp"
             ],
-            "NSCameraUsageDescription": "lemonfiber uses the camera only to read a code you are shown, such as the pairing code your stack is showing. Nothing it sees is stored or sent anywhere."
+            "NSCameraUsageDescription": "lemonfiber uses the camera only to read a code you are shown. Nothing it sees is stored or sent anywhere."
         },
         "background_modes": [
             "audio"

@@ -77,6 +77,7 @@ it('asks a phone holding nothing which of the two is holding it, before any step
 
     expect($drawn->said())->toContain(__('household.joining.which_are_you'), __('household.joining.invited'), __('household.joining.runs_it'))
         ->and($drawn->said())->not->toContain(__('onboarding.what_this_is'))
+        ->and(data_get(WhatTheDeviceWouldDraw::tree($screen), 'props.title'))->toBe(__('household.joining.title'))
         ->and($screen->joiningIsAt())->toBe(AScreenWithoutAStack::JoiningAHouse->value)
         ->and($screen->pairingIsOffered())->toBeFalse();
 });
@@ -87,6 +88,9 @@ it('draws its first step on a device holding nothing, and no unlock', function (
     $screen = theScreenAFirstRunLandsOn();
     $screen->iRunTheHouse();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect(data_get(WhatTheDeviceWouldDraw::tree($screen), 'props.title'))->toBe(__('navigation.your_stacks'))
+        ->and($drawn->offers())->toContain(__('household.joining.invited'));
 
     expect($drawn->said())->toContain(__('onboarding.what_this_is'))
         ->and($drawn->said())->not->toContain(__('device.unlock_reason'));

@@ -131,7 +131,20 @@ it('says why the camera gave nothing back, with the way to put it right', functi
 
     expect($screen->nothingWasScanned())->toBeTrue()
         ->and($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhyNothingWasScanned::TheCameraWasDeclined->saidOnTheScreen()), __('household.joining.camera_action'));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhyNothingWasScanned::TheCameraWasDeclined->saidOnTheScreen()), __('household.joining.the_camera_was_declined_action'));
+});
+
+it('says what to do about every way the camera can give nothing back, in household words, in every language', function (): void {
+    foreach (WhyNothingWasScanned::cases() as $why) {
+        $screen = theWayIn(ACameraInMemory::answering($why));
+        $screen->findTheHouse();
+
+        foreach (['en', 'nl'] as $locale) {
+            expect(app('translator')->has($screen->whatToDoAboutTheCamera(), $locale, fallback: false))->toBeTrue($why->value);
+        }
+    }
+
+    expect(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()))->whatToDoAboutTheCamera())->toBe('');
 });
 
 it('stays on the first step when this phone could not keep the house', function (): void {
@@ -193,10 +206,6 @@ it('says nothing stood in the way before signing in, or once it worked', functio
         ->and(WhatStoodInTheWayOfJoining::of(HowTheSignInWent::SignedIn))->toBeNull();
 });
 
-it('is reached from the first screen, and leads back to it', function (): void {
-    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()));
-
-    expect(NativeRouter::resolve(AScreenWithoutAStack::JoiningAHouse->value))->not->toBeNull()
-        ->and($screen->theStartIsAt())->toBe(AScreenWithoutAStack::TheList->value)
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.back'));
+it('is reached from the first screen', function (): void {
+    expect(NativeRouter::resolve(AScreenWithoutAStack::JoiningAHouse->value))->not->toBeNull();
 });
