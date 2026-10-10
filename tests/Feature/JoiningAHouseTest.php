@@ -206,6 +206,24 @@ it('says nothing stood in the way before signing in, or once it worked', functio
         ->and(WhatStoodInTheWayOfJoining::of(HowTheSignInWent::SignedIn))->toBeNull();
 });
 
+it('reads every way a sign-in can go wrong as what stood in the way of joining', function (HowTheSignInWent $went, WhatStoodInTheWayOfJoining $stood): void {
+    expect(WhatStoodInTheWayOfJoining::of($went))->toBe($stood);
+})->with([
+    'a password refused' => [HowTheSignInWent::CredentialWasRefused, WhatStoodInTheWayOfJoining::Refused],
+    'a pair refused' => [HowTheSignInWent::ThePairWasRefused, WhatStoodInTheWayOfJoining::Refused],
+    'too many attempts' => [HowTheSignInWent::TooManyAttempts, WhatStoodInTheWayOfJoining::TooManyAttempts],
+    'nowhere to keep a session' => [HowTheSignInWent::NoStoreOnThisDevice, WhatStoodInTheWayOfJoining::NotKept],
+    'a store that would not open' => [HowTheSignInWent::TheStoreWouldNotOpen, WhatStoodInTheWayOfJoining::NotKept],
+    'the local network not allowed' => [HowTheSignInWent::TheNetworkIsNotPermitted, WhatStoodInTheWayOfJoining::NotPermitted],
+    'another certificate' => [HowTheSignInWent::TheMachineIsNotTheOnePaired, WhatStoodInTheWayOfJoining::NotTheHouse],
+    'an address that is not the house' => [HowTheSignInWent::TheAddressIsNotTheStacks, WhatStoodInTheWayOfJoining::NotTheHouse],
+    'no answer' => [HowTheSignInWent::StackDidNotAnswer, WhatStoodInTheWayOfJoining::NoAnswer],
+    'a name not found' => [HowTheSignInWent::NameWasNotFound, WhatStoodInTheWayOfJoining::NameNotFound],
+    'nothing at the address' => [HowTheSignInWent::NothingAtThePairedAddress, WhatStoodInTheWayOfJoining::NothingAtTheAddress],
+    'a connection turned away' => [HowTheSignInWent::ConnectionWasTurnedAway, WhatStoodInTheWayOfJoining::ConnectionRefused],
+    'an answer that could not be read' => [HowTheSignInWent::AnswerCouldNotBeRead, WhatStoodInTheWayOfJoining::AnswerUnreadable],
+]);
+
 it('is reached from the first screen', function (): void {
     expect(NativeRouter::resolve(AScreenWithoutAStack::JoiningAHouse->value))->not->toBeNull();
 });
