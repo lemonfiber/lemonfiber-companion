@@ -61,12 +61,14 @@ function aStackToSignInto(): Stack
  *
  * The stack is put in the store *and* named in the route, because those are two
  * different facts and the screen needs both — which stack the operator picked,
- * and whether this device still holds it.
+ * and whether this device still holds it. The operator's form unless the test
+ * says otherwise, since almost every case here is about the operator.
  */
 function signInScreen(
     ADoorThatWasKnockedOn $door,
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
+    bool $runsTheHouse = true,
 ): SignIntoAStack {
     $stack = aStackToSignInto();
     $keychain ??= AKeychainInMemory::working();
@@ -80,6 +82,10 @@ function signInScreen(
     );
 
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
+
+    if ($runsTheHouse) {
+        $screen->iRunTheHouse();
+    }
 
     return $screen;
 }
@@ -559,28 +565,53 @@ it('keeps the operator on the screen once in, with the way to the report, and se
         ->and($refused->getNavigationIntent())->toBeNull();
 });
 
-/** The screen with a member's name typed into it. */
+/** The screen on a member's form, with their name typed into it. */
 function typedName(SignIntoAStack $screen, string $said): SignIntoAStack
 {
+    $screen->iWasInvited();
     $screen->__syncProperty('theirName', $said);
 
     return $screen;
 }
 
-it('knocks as a member where a name was typed, and as the operator where it was left empty or only spaces', function (): void {
+it('knocks as a member where a name was typed, as the operator once they said they run the house, and not at all on a member\'s form with no name', function (): void {
     $member = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(ENDS_AT), Whose::member('a7f3'));
     typedPassword(typedName(signInScreen($member), '  ada '), 'a-members-password')->offer();
 
-    foreach (['', '   '] as $nobody) {
-        $operator = aDoorThatOpens();
-        typedPassword(typedName(signInScreen($operator), $nobody), 'the-operators-password')->offer();
+    $operator = aDoorThatOpens();
+    typedPassword(signInScreen($operator), 'the-operators-password')->offer();
 
-        expect($operator->namedAs())->toBeNull()
-            ->and($operator->knocks())->toBe(1);
+    foreach (['', '   '] as $nobody) {
+        $nobodyNamed = aDoorThatOpens();
+        $screen = typedPassword(typedName(signInScreen($nobodyNamed), $nobody), 'a-password');
+        $screen->offer();
+
+        expect($nobodyNamed->knocks())->toBe(0)
+            ->and($screen->mayOffer())->toBeFalse()
+            ->and($screen->went())->toBe(HowTheSignInWent::NotYet);
     }
 
     expect($member->namedAs())->toBe('ada')
-        ->and($member->knocks())->toBe(1);
+        ->and($member->knocks())->toBe(1)
+        ->and($operator->namedAs())->toBeNull()
+        ->and($operator->knocks())->toBe(1);
+});
+
+it('lets go of a member\'s name when the person says they run the house, and asks for it again when they say they were invited', function (): void {
+    $screen = typedName(signInScreen(aDoorThatOpens(), runsTheHouse: false), 'ada');
+
+    $screen->iRunTheHouse();
+    $operators = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->iWasInvited();
+    $members = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->theirName)->toBe('')
+        ->and($operators)->toContain(__('connection.sign_in_as_the_operator_action'))
+        ->and($members)->toContain(__('connection.sign_in_to_action'))
+        ->and($operators)->not->toContain(__('connection.member_name_label'))
+        ->and($operators)->toContain(__('household.joining.invited'))
+        ->and($members)->toContain(__('connection.member_name_label'))
+        ->and($members)->toContain(__('household.joining.runs_it'));
 });
 
 it('says a name and password were not recognised, keeping the name and clearing the password', function (): void {
@@ -595,7 +626,7 @@ it('says a name and password were not recognised, keeping the name and clearing 
         ->and($drawn)->toContain(__('connection.pair_was_refused_action'));
 });
 
-it('asks to try again after a refusal, naming the password only where no name was typed', function (): void {
+it('asks to try again after a refusal, naming the password only on the operator\'s form', function (): void {
     $refusing = static fn(): ADoorThatWasKnockedOn => ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $member = typedPassword(typedName(signInScreen($refusing()), 'ada'), 'a-members-password');
     $operator = typedPassword(signInScreen($refusing()), 'the-operators-password');
@@ -606,7 +637,7 @@ it('asks to try again after a refusal, naming the password only where no name wa
         ->and($member->offerLabel())->toBe('connection.member_try_again')
         ->and(WhatTheDeviceWouldDraw::by($member)->said())->toContain(__('connection.member_try_again'))
         ->and($operator->offerLabel())->toBe('connection.try_that_again')
-        ->and(typedName($member, '  ')->offerLabel())->toBe('connection.try_that_again');
+        ->and(typedName($member, '  ')->offerLabel())->toBe('connection.member_try_again');
 });
 
 it('clears the name once a member is in', function (): void {
@@ -617,13 +648,16 @@ it('clears the name once a member is in', function (): void {
         ->and($screen->theirName)->toBe('');
 });
 
-it('asks for a member\'s name above the password, and says to leave it empty to sign in as the operator', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(signInScreen(aDoorThatOpens()))->said();
+it('opens on a member\'s name above their password, with the operator\'s way in as a separate choice and never as a hint on the member\'s form', function (): void {
+    $screen = signInScreen(aDoorThatOpens(), runsTheHouse: false);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $name = array_search(__('connection.member_name_label'), $drawn, strict: true);
     $password = array_search(__('connection.password_label'), $drawn, strict: true);
 
     expect(is_int($name) && is_int($password) && $name < $password)->toBeTrue()
-        ->and($drawn)->toContain(__('connection.member_name_hint'));
+        ->and($screen->runsTheHouse)->toBeFalse()
+        ->and($drawn)->toContain(__('household.joining.runs_it'))
+        ->and(implode(' ', $drawn))->not->toContain('operator');
 });
 
 it('renders the frame it is named for', function (): void {
