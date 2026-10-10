@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Kernel\Api\AClientToHandOver;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\AScannableCode;
@@ -20,7 +21,10 @@ use Modules\Kernel\Api\Encoding;
  */
 final class ACodeOfWhatItWasGiven implements Encoding
 {
-    private AnAddressToHand|APairingLine|null $given = null;
+    private AnAddressToHand|APairingLine|AClientToHandOver|null $given = null;
+
+    /** @var list<string> */
+    private array $carried = [];
 
     private function __construct(private readonly AScannableCode $drawn) {}
 
@@ -37,14 +41,25 @@ final class ACodeOfWhatItWasGiven implements Encoding
     }
 
     /** What it was last handed, or nothing where it never was. */
-    public function given(): AnAddressToHand|APairingLine|null
+    public function given(): AnAddressToHand|APairingLine|AClientToHandOver|null
     {
         return $this->given;
     }
 
-    public function codeFor(AnAddressToHand|APairingLine $handed): AScannableCode
+    /**
+     * The text of everything it was handed, in the order it was.
+     *
+     * @return list<string>
+     */
+    public function carried(): array
+    {
+        return $this->carried;
+    }
+
+    public function codeFor(AnAddressToHand|APairingLine|AClientToHandOver $handed): AScannableCode
     {
         $this->given = $handed;
+        $this->carried[] = $handed->carried();
 
         return $this->drawn;
     }

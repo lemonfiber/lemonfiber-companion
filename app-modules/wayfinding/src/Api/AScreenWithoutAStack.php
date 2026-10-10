@@ -43,6 +43,9 @@ enum AScreenWithoutAStack: string
     /** Typing it, for a camera that is refused or absent. */
     case PairByTyping = '/pair/typed';
 
+    /** The way in for somebody invited: finding their house, then signing in. */
+    case JoiningAHouse = '/join';
+
     /** What is new on every stack this phone holds. */
     case WhatsNew = '/whats-new';
 

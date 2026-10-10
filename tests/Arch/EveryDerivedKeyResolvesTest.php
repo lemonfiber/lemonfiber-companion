@@ -87,7 +87,9 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\NotACountOfDays;
+use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Modules\Wayfinding\Api\TheTabs;
@@ -507,6 +509,14 @@ function everyDerivedKey(): array
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),
             static fn(WhereInTheMenu $group): array => [$group->said()],
+        ),
+        HowAnInvitedPhoneFindsTheHouse::class => aPairPerCase(
+            HowAnInvitedPhoneFindsTheHouse::cases(),
+            static fn(HowAnInvitedPhoneFindsTheHouse $finds): array => [$finds->said(), $finds->explained()],
+        ),
+        WhatStoodInTheWayOfJoining::class => aPairPerCase(
+            WhatStoodInTheWayOfJoining::cases(),
+            static fn(WhatStoodInTheWayOfJoining $stood): array => [$stood->said(), $stood->remedy()],
         ),
         WhereTheFirstRunIs::class => aPairPerCase(
             WhereTheFirstRunIs::cases(),

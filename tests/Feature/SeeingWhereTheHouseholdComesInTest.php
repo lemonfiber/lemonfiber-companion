@@ -28,6 +28,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackWithAFrontDoor;
@@ -76,6 +77,7 @@ function theDoorScreen(
     AStackWithAFrontDoor $welcoming,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?ACodeOfWhatItWasGiven $encoding = null,
 ): WhereTheHouseholdComesIn {
     $stack = theStackWhoseDoorIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -84,7 +86,7 @@ function theDoorScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereTheHouseholdComesIn($welcoming, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhereTheHouseholdComesIn($welcoming, $keychain, $encoding ?? ACodeOfWhatItWasGiven::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -107,6 +109,19 @@ it('draws every address exactly as the stack sent it, with its caution, and comp
         ->and($drawn)->toContain('http://loft.local:8096')
         ->and($drawn)->toContain('Changes if the router restarts')
         ->and(implode("\n", $drawn))->not->toContain('192.168.1.42');
+});
+
+it('draws every address as a code beside its text, of the text exactly as the stack sent it', function (): void {
+    $encoding = ACodeOfWhatItWasGiven::working();
+    WhatTheDeviceWouldDraw::by(theDoorScreen(AStackWithAFrontDoor::with(aDoorWhoseNamingWasRefused()), encoding: $encoding));
+
+    expect($encoding->carried())->toBe(['http://loft.local:5055', 'http://loft.local:8096']);
+});
+
+it('says where an address could not be drawn as a code', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theDoorScreen(AStackWithAFrontDoor::with(aDoorWhoseNamingWasRefused()), encoding: ACodeOfWhatItWasGiven::drawingNothing()))->said();
+
+    expect(array_filter($drawn, static fn(string $line): bool => $line === __('stacks.invitation.no_code')))->toHaveCount(2);
 });
 
 it('says what each service beside the door is to the household, and why it is not the door', function (): void {

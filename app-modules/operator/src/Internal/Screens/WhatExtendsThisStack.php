@@ -29,13 +29,13 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Kernel\Api\WhatWasFoundOfThePlugins;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
@@ -84,6 +84,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use ReadsACode;
 
     public const string TEMPLATE = 'operator::what-extends-this-stack';
 
@@ -126,6 +127,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly Scanning $camera,
     ) {}
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
@@ -153,6 +155,14 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     }
 
     /** Ask what installing from the typed source would do. A blank source asks nothing. */
+    /** Read where the plugin comes from off a code somebody shows, into the field, for the operator to rehearse as typed. */
+    public function scanWhereItComesFrom(): void
+    {
+        $this->readACode($this->camera, function (string $payload): void {
+            $this->source = trim($payload);
+        });
+    }
+
     public function rehearse(): void
     {
         if (is_string($this->following) || trim($this->source) === '') {
@@ -357,27 +367,20 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         };
     }
 
-    /** What is installed, asked now. */
+    /** What is installed, asked now, or what the operator met instead. */
     private function installedNow(): WhatExtendsItTurnedOutToBe
     {
         $stack = $this->stack();
+        $listed = function (ThePlugins $plugins): WhatExtendsItTurnedOutToBe {
+            $this->listing = $plugins;
+
+            return new HowExtendingItReads()->answered($plugins, [], agreed: false);
+        };
+        $met = $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why, agreed: false));
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatExtendsItTurnedOutToBe => $this->listed($this->extending->installedOn($stack, $session), $stack),
+            held: fn(Session $session): WhatExtendsItTurnedOutToBe => $this->extending->installedOn($stack, $session)->either(found: $listed, met: $met),
             notHeld: static fn(): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->signedOut(),
-        );
-    }
-
-    /** What is installed, or what the operator met instead. */
-    private function listed(WhatWasFoundOfThePlugins $found, Stack $stack): WhatExtendsItTurnedOutToBe
-    {
-        return $found->either(
-            found: function (ThePlugins $plugins): WhatExtendsItTurnedOutToBe {
-                $this->listing = $plugins;
-
-                return new HowExtendingItReads()->answered($plugins, [], agreed: false);
-            },
-            met: $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why, agreed: false)),
         );
     }
 

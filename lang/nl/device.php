@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'local_network_reason' => 'lemonfiber praat met je stack via je eigen netwerk, en nergens anders.',
     'local_network_alternative' => 'Zonder toestemming lees je nog steeds wat je stack het laatst meldde toen je verbonden was.',
-    'camera_reason' => 'De camera wordt één keer gebruikt, om de koppelingscode op je stack te lezen.',
+    'camera_reason' => 'De camera wordt alleen gebruikt om een code te lezen die je wordt getoond, zoals de koppelingscode op je stack.',
     'camera_alternative' => 'Je kunt de koppelingscode ook intypen.',
     'unlock' => 'Ontgrendelen',
     'unlock_reason' => 'Ontgrendel lemonfiber om verder te gaan.',

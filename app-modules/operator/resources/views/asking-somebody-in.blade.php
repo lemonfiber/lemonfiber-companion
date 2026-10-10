@@ -116,6 +116,16 @@
                         <x-design::note>{{ __('stacks.invitation.code') }}</x-design::note>
                     @endif
                 </x-design::card>
+                @if ($this->howItIsGoing()->invitation->toHand->declines !== '')
+                    <x-design::card>
+                        <x-design::strong>{{ __('stacks.invitation.to_turn_down') }}</x-design::strong>
+                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->declines }}</x-design::verbatim>
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->declineCode" missing="{{ __('stacks.invitation.no_code') }}" />
+                        @if ($this->howItIsGoing()->invitation->toHand->declineCode !== [])
+                            <x-design::note>{{ __('stacks.invitation.decline_code') }}</x-design::note>
+                        @endif
+                    </x-design::card>
+                @endif
                 <x-design::action label="{{ __('stacks.invitation.pass_on') }}" tap="passOn()" />
                 @if ($this->passedOn !== '')
                     <x-design::note>{{ __($this->passedOn) }}</x-design::note>

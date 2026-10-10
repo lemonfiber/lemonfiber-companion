@@ -24,7 +24,7 @@ use Tests\Support\TheWordCarriedOut;
 // without a phone and a denied permission.
 //
 // The asymmetry worth naming: on a handset the answer arrives from the runloop
-// *after* `forAPairingCode()` has returned, and here both arms answer inside
+// *after* `aCode()` has returned, and here both arms answer inside
 // it. Every assertion below is written in terms of what the callback was given
 // rather than when, so the difference cannot hide a disagreement — and the one
 // thing it could hide, that an implementation answers twice or not at all, is
@@ -94,7 +94,7 @@ function whatCameBack(Scanning $camera): string
 {
     $said = 'nothing was answered at all';
 
-    $camera->forAPairingCode(static function (WhatTheCameraSaw $saw) use (&$said): void {
+    $camera->aCode(static function (WhatTheCameraSaw $saw) use (&$said): void {
         $said = $saw->either(
             read: static fn(string $payload): TheWordCarriedOut => new TheWordCarriedOut($payload),
             nothing: static fn(WhyNothingWasScanned $why): TheWordCarriedOut => new TheWordCarriedOut($why->value),
@@ -147,7 +147,7 @@ it('captions the camera with this application\'s own sentence', function (): voi
     // device, or captioned with a key, is what the catalogue exists to prevent.
     $camera = ACameraOnAHandset::closed();
 
-    overAHandsetsCamera($camera)->forAPairingCode(static function (): void {});
+    overAHandsetsCamera($camera)->aCode(static function (): void {});
 
     expect($camera->whatItSaid())->toBe([Catalogue::words()->for(Permission::Camera->reason())]);
 });
@@ -162,7 +162,7 @@ it('answers once per attempt, and answers at all', function (): void {
 
         // What was seen is not read, deliberately: this counts the calls, and
         // the arms above are where what they carried is checked.
-        $make()->forAPairingCode(static function () use (&$answers): void {
+        $make()->aCode(static function () use (&$answers): void {
             $answers++;
         });
 

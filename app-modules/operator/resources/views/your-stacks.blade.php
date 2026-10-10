@@ -36,7 +36,15 @@
              Drawn only where nothing is paired, so a device holding a pairing
              never evaluates it, the sequence cannot be re-entered and nothing
              has to remember that it was finished. --}}
-        <x-operator::first-run :at="$this->firstRunIsAt()" on="goOn()" leave="skipAhead()" />
+        @if ($this->runsTheHouse)
+            <x-operator::first-run :at="$this->firstRunIsAt()" on="goOn()" leave="skipAhead()" />
+        @else
+            <x-design::title>{{ __('household.joining.which_are_you') }}</x-design::title>
+            <x-design::section>
+                <x-design::row :headline="__('household.joining.invited')" :supporting="__('household.joining.invited_explained')" :goes="$this->joiningIsAt()" />
+                <x-design::row :headline="__('household.joining.runs_it')" :supporting="__('household.joining.runs_it_explained')" tap="iRunTheHouse()" />
+            </x-design::section>
+        @endif
     @elseif (! $this->howItOpened()->isHeldBack)
         {{-- Not where the stacks are held back: the notice above says why they
              cannot be listed, and an empty list under it would read as a phone

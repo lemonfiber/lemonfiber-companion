@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheFrontDoor;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AServiceBesideAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheFrontDoorTurnedOutToBe;
@@ -31,12 +32,12 @@ final readonly class HowTheFrontDoorReads
     }
 
     /** The stack answered, and this is its door. */
-    public function this(TheFrontDoor $door): TheFrontDoorTurnedOutToBe
+    public function this(TheFrontDoor $door, TheCodesDrawn $drawn): TheFrontDoorTurnedOutToBe
     {
         $beside = [];
 
         foreach ($door->beside() as $service) {
-            $beside[] = $this->beside($service);
+            $beside[] = $this->beside($service, $drawn);
         }
 
         return new TheFrontDoorTurnedOutToBe(
@@ -53,6 +54,7 @@ final readonly class HowTheFrontDoorReads
                     facingSaid: $facing->saidOnTheScreen(),
                     url: $address->url(),
                     caution: $address->caution(),
+                    squares: new HowACodeReads()->squares($drawn->for($address)),
                 ),
                 nowhere: WhereTheyBeginAsShown::nowhere(...),
             ),
@@ -84,7 +86,7 @@ final readonly class HowTheFrontDoorReads
     }
 
     /** One service beside the door, as the row that draws it. */
-    private function beside(AServiceBeside $service): AServiceBesideAsShown
+    private function beside(AServiceBeside $service, TheCodesDrawn $drawn): AServiceBesideAsShown
     {
         return new AServiceBesideAsShown(
             service: $service->service(),
@@ -92,6 +94,7 @@ final readonly class HowTheFrontDoorReads
             because: $service->because(),
             url: $service->address()->url(),
             caution: $service->address()->caution(),
+            squares: new HowACodeReads()->squares($drawn->for($service->address())),
         );
     }
 

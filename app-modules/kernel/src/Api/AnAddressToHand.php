@@ -82,4 +82,10 @@ final readonly class AnAddressToHand
     {
         return $this->decline;
     }
+
+    /** The address that turns the invitation down, as an address to hand over in its own right, or none where the stack gave none. */
+    public function declining(): self
+    {
+        return new self($this->decline, '');
+    }
 }

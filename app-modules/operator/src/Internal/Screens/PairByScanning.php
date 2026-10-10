@@ -17,8 +17,6 @@ use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
-use Modules\Kernel\Api\WhatTheCameraSaw;
-use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -71,6 +69,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class PairByScanning extends NativeComponent
 {
+    use ReadsACode;
     use HasAWayBack;
     use OffersTheAppsSettings;
     use DrawsItsTemplate;
@@ -94,16 +93,6 @@ final class PairByScanning extends NativeComponent
      * `phpstan.neon` says why a screen is the one place it cannot apply.
      */
     public string $called = '';
-
-    /**
-     * What the camera came back with, or nothing yet.
-     *
-     * Held rather than recomputed, which is the opposite of {@see PairByTyping}
-     * and right for the opposite reason: there is no field to get out of step
-     * with. A scan happens once, at a moment the operator chose, and the result
-     * is what the screen is about until they scan again.
-     */
-    public ?WhyNothingWasScanned $nothingCameBack = null;
 
     /** What became of the pairing, once a scan has completed one. */
     public HowThePairingWent $went = HowThePairingWent::NotYet;
@@ -186,43 +175,6 @@ final class PairByScanning extends NativeComponent
         return trim($this->called) !== '';
     }
 
-    /** Whether the last attempt came back with nothing, for any of the three reasons. */
-    public function nothingWasScanned(): bool
-    {
-        return $this->nothingCameBack instanceof WhyNothingWasScanned;
-    }
-
-    /**
-     * What to do about the camera coming back empty, as a key.
-     *
-     * Answered by the reason rather than by this screen, which is where the
-     * three-into-two mistake was: a boolean choosing between "open Settings"
-     * and one generic alternative can only be wrong about the third reason,
-     * and it was — a closed scanner was told it could type the code instead
-     * rather than that it could open the camera again.
-     *
-     * The empty string where nothing came back, which is what the template
-     * branches on: there is no advice to give about a camera that has not been
-     * opened yet, and a key invented for that state would be a catalogue line
-     * for a sentence nobody should read.
-     */
-    public function remedyForTheCamera(): string
-    {
-        return $this->nothingCameBack?->remedy() ?? '';
-    }
-
-    /**
-     * The key for what to say about the camera coming back empty.
-     *
-     * A key rather than the words, so `A4` keeps the translator out of a class
-     * that never asked for one, and {@see WhyNothingWasScanned} owns which
-     * sentence belongs to which reason.
-     */
-    public function whyNothingCameBack(): string
-    {
-        return $this->nothingCameBack?->saidOnTheScreen() ?? '';
-    }
-
     /**
      * Open the camera, and pair with whatever it reads.
      *
@@ -240,10 +192,11 @@ final class PairByScanning extends NativeComponent
             return;
         }
 
-        $this->nothingCameBack = null;
         $this->codeWasUnreadable = false;
 
-        $this->camera->forAPairingCode($this->read(...));
+        $this->readACode($this->camera, function (string $payload): void {
+            $this->paired($payload);
+        });
     }
 
     /**
@@ -293,26 +246,6 @@ final class PairByScanning extends NativeComponent
     public function theListIsAt(): string
     {
         return AScreenWithoutAStack::TheList->value;
-    }
-
-    /**
-     * What to do with what the camera saw.
-     *
-     * A method rather than a closure at the call site, for the reason the
-     * composition root gives about the same shape: a closure reaching two ports
-     * and two outcome types is one nobody reads twice, and the analyser refuses
-     * a checked exception raised inside one.
-     */
-    private function read(WhatTheCameraSaw $saw): void
-    {
-        $saw->either(
-            read: fn(string $payload): HowThePairingWent => $this->paired($payload),
-            nothing: function (WhyNothingWasScanned $why): HowThePairingWent {
-                $this->nothingCameBack = $why;
-
-                return HowThePairingWent::NotYet;
-            },
-        );
     }
 
     /**

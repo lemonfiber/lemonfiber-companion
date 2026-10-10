@@ -12,6 +12,7 @@ return [
     'not_reviewed' => 'Niet gecontroleerd: niemand heeft hem bekeken voordat hij werd geïnstalleerd',
     'out_of_contract' => 'Het vult deze niet tot het opnieuw is bewezen.',
     'answered_out_of_contract' => ':capability, gevraagd om :operation: :why',
+    'scan_where_from' => 'Scan waar het vandaan komt',
     'from' => 'Van :source',
     'source' => [
         'reachable' => 'De bron antwoordt, dus hij kan daarvandaan worden bijgewerkt',

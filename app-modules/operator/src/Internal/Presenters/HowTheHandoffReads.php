@@ -7,13 +7,13 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\AClientToHandOver;
 use Modules\Kernel\Api\AHandoff;
 use Modules\Kernel\Api\AMomentAsWritten;
-use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\ASignedInDevice;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhereTheHandoffStands;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AClientAsShown;
 use Modules\Operator\Internal\ViewModels\AHandoffAsShown;
 use Modules\Operator\Internal\ViewModels\ASignedInDeviceAsShown;
@@ -65,10 +65,10 @@ final readonly class HowTheHandoffReads
      * Where the stack said it stands, with the address drawn as a code where
      * there is one to hand over, and every moment counted back from `$now`.
      *
-     * The squares are passed in rather than made here, because making them is
+     * The codes are passed in rather than made here, because making them is
      * a port's work and a presenter asks nothing of anybody.
      */
-    public function answered(AHandoff $handoff, AScannableCode $drawn, Instant $now): HowTheHandoffWent
+    public function answered(AHandoff $handoff, TheCodesDrawn $drawn, Instant $now): HowTheHandoffWent
     {
         $next = $handoff->next();
         $handsOver = $handoff->stands()->handsACodeOver() && $handoff->handed()->address()->url() !== '';
@@ -81,7 +81,7 @@ final readonly class HowTheHandoffReads
         }
 
         foreach ($handoff->handed()->clients() as $client) {
-            $clients[] = $this->client($client);
+            $clients[] = $this->client($client, $drawn);
         }
 
         foreach ($handoff->signedIn() as $device) {
@@ -102,7 +102,7 @@ final readonly class HowTheHandoffReads
                 starts: $next === WhatTheHandoffNeedsNext::StartServer,
                 records: $next === WhatTheHandoffNeedsNext::RecordAddress,
                 handsOver: $handsOver,
-                squares: $handsOver ? new HowACodeReads()->squares($drawn) : [],
+                squares: $handsOver ? new HowACodeReads()->squares($drawn->for($handoff->handed()->address())) : [],
                 address: $handoff->handed()->address()->url(),
                 caution: $handoff->handed()->address()->caution(),
                 steps: $steps,
@@ -124,14 +124,15 @@ final readonly class HowTheHandoffReads
     }
 
 
-    /** One app, with its link where its code is one. */
-    private function client(AClientToHandOver $client): AClientAsShown
+    /** One app, with its link and the link's code where its code is one. */
+    private function client(AClientToHandOver $client, TheCodesDrawn $drawn): AClientAsShown
     {
         return new AClientAsShown(
             device: $client->device(),
             client: $client->client(),
             openSource: $client->isOpenSource(),
             link: $client->isALink() ? $client->code() : '',
+            squares: $client->isALink() ? new HowACodeReads()->squares($drawn->for($client)) : [],
         );
     }
 

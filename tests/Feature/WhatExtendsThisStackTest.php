@@ -23,11 +23,13 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Tests\Support\APluginAsItArrives;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -52,13 +54,13 @@ function theMachinePluginsExtend(): Stack
 }
 
 /** The screen, signed in, in front of a stack that answers as the case says. */
-function thePluginsScreen(AStackThatExtendsItself $extending, ?AKeychainInMemory $keychain = null): WhatExtendsThisStack
+function thePluginsScreen(AStackThatExtendsItself $extending, ?AKeychainInMemory $keychain = null, ?ACameraInMemory $camera = null): WhatExtendsThisStack
 {
     $stack = theMachinePluginsExtend();
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $camera ?? ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -100,6 +102,26 @@ function aPluginRefusal(string $said): HowExtendingItIsGoing
 {
     return HowExtendingItIsGoing::refused(ARefusalInItsWords::said($said, 'Nothing was installed and nothing was written.', WhatTheRefusalNamed::nothing()));
 }
+
+it('takes where a plugin comes from off a code as well as from the field', function (): void {
+    $screen = thePluginsScreen(aStackWithTdarr(), camera: ACameraInMemory::reading('  https://example.org/plugins/tdarr.git  '));
+    $screen->installOne();
+    $screen->scanWhereItComesFrom();
+
+    expect($screen->source)->toBe('https://example.org/plugins/tdarr.git')
+        ->and($screen->nothingWasScanned())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aPluginsLine('plugins.scan_where_from'));
+});
+
+it('says why where the camera handed nothing back, and leaves the field as it was', function (): void {
+    $screen = thePluginsScreen(aStackWithTdarr(), camera: ACameraInMemory::answering(WhyNothingWasScanned::TheCameraWasDeclined));
+    $screen->installOne();
+    $screen->source = 'tdarr';
+    $screen->scanWhereItComesFrom();
+
+    expect($screen->source)->toBe('tdarr')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhyNothingWasScanned::TheCameraWasDeclined->saidOnTheScreen()));
+});
 
 it('says a plugin fills nothing its adapter answered outside the contract for, until it is proved again', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(thePluginsScreen(aStackWithTdarr()));
@@ -340,7 +362,7 @@ it('lets go of the rehearsal and every approval when it goes back, and asks afte
 it('says the session has ended where this phone holds none, and asks nothing', function (): void {
     $extending = aStackWithTdarr();
     $stack = theMachinePluginsExtend();
-    $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->cameBack())->toBeFalse()

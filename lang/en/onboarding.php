@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'step' => 'Step :step of :of',
     'go_on' => 'Next',
-    'skip' => 'Skip to pairing',
+    'skip' => 'Skip the introduction',
     'what_this_is' => 'This app watches your stacks.',
     'what_this_is_explained' => 'A stack is a machine at home that keeps your files. This app tells you how each one is doing, and lets you put the small things right from here.',
     'at_the_machine' => 'Setting a stack up happens at the machine.',

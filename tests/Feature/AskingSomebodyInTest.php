@@ -62,9 +62,11 @@ function theStackSomebodyIsAskedIn(): Stack
 }
 
 /** What the stack answers for Anna, rehearsed or carried out, finding what is given. */
-function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = WhereTheInvitationStands::Made): AnInvitation
+function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = WhereTheInvitationStands::Made, string $declines = ''): AnInvitation
 {
-    $toHand = AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change when the router restarts'), 72);
+    $toHand = AnInvitationToHand::to('anna', $declines === ''
+        ? AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change when the router restarts')
+        : AnAddressToHand::declinable('http://192.168.1.42:8096', 'The number can change when the router restarts', $declines), 72);
     $linked = $rehearsed ? WhetherTheyCanAsk::NotTried : WhetherTheyCanAsk::NotYet;
     $withdrawn = WhoWasTakenBack::of('bob');
     $suspended = WhoWasSwitchedOff::of('carol');
@@ -251,6 +253,23 @@ it('sends what the rehearsal was asked with, not what the fields say now', funct
 
     expect($inviting->asked())->toBe(['would', 'after:j-1', 'invite'])
         ->and($inviting->agreedTo()?->asked())->toBe($shown);
+});
+
+it('hands over the address that turns it down beside its own, as text and as a code labelled with what it opens', function (): void {
+    $encoding = ACodeOfWhatItWasGiven::working();
+    $declines = 'http://192.168.1.42:5056/decline/abc';
+    $inviting = AStackThatInvites::answering(...theWorkThenIts(annasInvitation(rehearsed: true, declines: $declines)), ...theWorkThenIts(annasInvitation(rehearsed: false, declines: $declines)));
+    $screen = annaTypedInto(theInvitationScreen($inviting, encoding: $encoding));
+    $screen->offer();
+    $screen->again();
+    $screen->howItIsGoing();
+    $screen->send();
+    $screen->whileItRuns();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($encoding->carried())->toContain('http://192.168.1.42:8096', $declines)
+        ->and($said)->toContain(__('stacks.invitation.code'), __('stacks.invitation.to_turn_down'), $declines, __('stacks.invitation.decline_code'))
+        ->and(array_search(__('stacks.invitation.code'), $said, true))->toBeLessThan(array_search(__('stacks.invitation.decline_code'), $said, true));
 });
 
 it('hands over the address the stack gave, with its caution, as text, as a code, and through the device\'s sharing', function (): void {

@@ -19,7 +19,7 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
  *
  * **It answers synchronously, and the contract test is what says that is
  * allowed.** On a handset the callback arrives from the runloop after
- * `forAPairingCode()` has returned; here it arrives inside it. Every assertion
+ * `aCode()` has returned; here it arrives inside it. Every assertion
  * either implementation is held to is written in terms of *what the callback
  * was given* rather than *when*, so the difference cannot hide a disagreement
  * — which is the one thing about this fake worth checking, and `G2` is where
@@ -46,7 +46,7 @@ final class ACameraInMemory implements Scanning
         return new self(WhatTheCameraSaw::nothing($why));
     }
 
-    public function forAPairingCode(Closure $saw): void
+    public function aCode(Closure $saw): void
     {
         $this->opened++;
 

@@ -35,6 +35,7 @@ use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
@@ -378,7 +379,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
                     $this->answered = null;
                 }
 
-                return new HowTheInvitationReads()->answered($invitation, $this->encoding->codeFor($invitation->toHand()->address()));
+                return new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($this->encoding, $invitation->toHand()->address(), $invitation->toHand()->address()->declining()));
             },
             ended: function () use ($name): TheInvitationTurnedOutToBe {
                 $this->following = null;

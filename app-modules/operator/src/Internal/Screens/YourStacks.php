@@ -125,6 +125,15 @@ final class YourStacks extends NativeComponent
     public WhereTheFirstRunIs $firstRunAt = WhereTheFirstRunIs::WhatThisIs;
 
     /**
+     * Whether the person holding a phone with nothing on it said they run the house.
+     *
+     * Asked before anything else, because two people arrive at an empty phone:
+     * somebody invited, who is sent to their own way in, and whoever runs the
+     * house, who reads the first run and pairs.
+     */
+    public bool $runsTheHouse = false;
+
+    /**
      * What became of the phone's saved data when the app opened, once asked.
      *
      * Held so that the opening is asked once per screen: the seal says a key
@@ -188,6 +197,18 @@ final class YourStacks extends NativeComponent
         return $this->firstRunAt;
     }
 
+    /** The person holding the phone runs the house: show them the first run. */
+    public function iRunTheHouse(): void
+    {
+        $this->runsTheHouse = true;
+    }
+
+    /** Where somebody invited goes: their own way in. */
+    public function joiningIsAt(): string
+    {
+        return AScreenWithoutAStack::JoiningAHouse->value;
+    }
+
     /** Read that step; show the next one. */
     public function goOn(): void
     {
@@ -223,7 +244,7 @@ final class YourStacks extends NativeComponent
      */
     public function theFirstRunIsStillRunning(): bool
     {
-        return $this->nothingIsPairedYet() && ! $this->firstRunAt->isThePairing();
+        return $this->nothingIsPairedYet() && (! $this->runsTheHouse || ! $this->firstRunAt->isThePairing());
     }
 
     /**

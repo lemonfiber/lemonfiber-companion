@@ -58,6 +58,12 @@ final readonly class AClientToHandOver
         return $this->code;
     }
 
+    /** What a code of it carries, which is its code as the stack gave it. */
+    public function carried(): string
+    {
+        return $this->code;
+    }
+
     /** Whether the code is such a link rather than the address alone. */
     public function isALink(): bool
     {

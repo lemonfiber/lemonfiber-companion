@@ -12,6 +12,7 @@ return [
     'not_reviewed' => 'Not reviewed: nobody checked it before it was installed',
     'out_of_contract' => 'It fills none of these until it is proved again.',
     'answered_out_of_contract' => ':capability, asked to :operation: :why',
+    'scan_where_from' => 'Scan where it comes from',
     'from' => 'From :source',
     'source' => [
         'reachable' => 'Its source answers, so it can be updated from there',

@@ -21,6 +21,14 @@
     <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
 @elseif ($this->answer()->typing)
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
+    @if ($this->nothingWasScanned())
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->whyNothingCameBack()) }}</x-design::strong>
+            <x-design::body>{{ __($this->remedyForTheCamera()) }}</x-design::body>
+        </x-design::notice>
+    @endif
+    <x-operator::note>{{ __('device.camera_reason') }}</x-operator::note>
+    <x-design::action label="{{ __('plugins.scan_where_from') }}" tap="scanWhereItComesFrom()" tone="tonal" />
     {{-- The three shapes a source can take, under the one field. Which one
          was typed is the stack's to tell. --}}
     <x-operator::note>{{ __('plugins.source_catalogue') }}</x-operator::note>

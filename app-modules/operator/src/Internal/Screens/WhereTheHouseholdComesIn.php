@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -13,9 +15,11 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheFrontDoor;
 use Modules\Kernel\Api\Welcoming;
+use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheFrontDoorReads;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\TheFrontDoorTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -60,6 +64,7 @@ final class WhereTheHouseholdComesIn extends NativeComponent
     public function __construct(
         private readonly Welcoming $welcoming,
         private readonly SecureStorage $storage,
+        private readonly Encoding $encoding,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
@@ -86,8 +91,23 @@ final class WhereTheHouseholdComesIn extends NativeComponent
     private function asked(Stack $stack, Session $session): TheFrontDoorTurnedOutToBe
     {
         return $this->welcoming->frontDoorOf($stack, $session)->either(
-            found: static fn(TheFrontDoor $door): TheFrontDoorTurnedOutToBe => new HowTheFrontDoorReads()->this($door),
+            found: fn(TheFrontDoor $door): TheFrontDoorTurnedOutToBe => new HowTheFrontDoorReads()->this($door, $this->codesOf($door)),
             met: $this->lettingGoIfRefused($stack, new HowTheFrontDoorReads()->met(...)),
         );
+    }
+
+    /** A code for every address the door hands over: where they begin, and each service beside it. */
+    private function codesOf(TheFrontDoor $door): TheCodesDrawn
+    {
+        $addresses = [$door->begins()->either(
+            at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): AnAddressToHand => $address,
+            nowhere: AnAddressToHand::none(...),
+        )];
+
+        foreach ($door->beside() as $service) {
+            $addresses[] = $service->address();
+        }
+
+        return TheCodesDrawn::of($this->encoding, ...$addresses);
     }
 }
