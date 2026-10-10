@@ -40,20 +40,45 @@ it('puts the address and its caution under the covering sentence, and the cautio
     $cautioned = AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change'), 72);
     $plain = AnInvitationToHand::to('anna', AnAddressToHand::at('http://loft.local:8096', ''), 72);
 
-    expect(AnInvitationToPassOn::of($cautioned, 'Come in', 'Turn it down:')->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change")
-        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Turn it down:')->text())->toBe("Come in\n\nhttp://loft.local:8096")
-        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Turn it down:')->named())->toBe('anna')
-        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, ' ', 'Turn it down:'))->toThrow(InvitationSaysNothing::class, 'its `covering` blank')
-        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, 'Come in', ' '))->toThrow(InvitationSaysNothing::class, 'its `declining` blank');
+    expect(AnInvitationToPassOn::of($cautioned, 'Come in', 'Join:', 'Turn it down:')->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change")
+        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Join:', 'Turn it down:')->text())->toBe("Come in\n\nhttp://loft.local:8096")
+        ->and(AnInvitationToPassOn::of($plain, 'Come in', 'Join:', 'Turn it down:')->named())->toBe('anna')
+        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, ' ', 'Join:', 'Turn it down:'))->toThrow(InvitationSaysNothing::class, 'its `covering` blank')
+        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, 'Come in', 'Join:', ' '))->toThrow(InvitationSaysNothing::class, 'its `declining` blank')
+        ->and(fn(): AnInvitationToPassOn => AnInvitationToPassOn::of($plain, 'Come in', ' ', 'Turn it down:'))->toThrow(InvitationSaysNothing::class, 'its `joining` blank');
 });
 
 it('ends the text with the address that turns the invitation down, on a line of its own under its sentence, and keeps it out of the code', function (): void {
     $address = AnAddressToHand::declinable('http://192.168.1.42:8096', 'The number can change', 'http://192.168.1.42:5056/decline/abc');
-    $invitation = AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Turn it down:');
+    $invitation = AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Join:', 'Turn it down:');
 
     expect($invitation->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nThe number can change\n\nTurn it down:\nhttp://192.168.1.42:5056/decline/abc")
         ->and($address->carried())->toBe('http://192.168.1.42:8096')
         ->and($address->decline())->toBe('http://192.168.1.42:5056/decline/abc')
         ->and(AnAddressToHand::at('http://loft.local:8096', '')->decline())->toBe('')
         ->and(fn(): AnAddressToHand => AnAddressToHand::declinable('http://192.168.1.42:8096', '', ' '))->toThrow(TheDoorSaysNothing::class, '`decline`');
+});
+
+it('puts the join link after the address and before the address that turns it down, each under its sentence, and draws each as a code of its own', function (): void {
+    $address = AnAddressToHand::joinable(AnAddressToHand::declinable('http://192.168.1.42:8096', '', 'http://192.168.1.42:5056/decline/abc'), 'lemonfiber://join?stack=abc');
+    $invitation = AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Join:', 'Turn it down:');
+
+    expect($invitation->text())->toBe("Come in\n\nhttp://192.168.1.42:8096\n\nJoin:\nlemonfiber://join?stack=abc\n\nTurn it down:\nhttp://192.168.1.42:5056/decline/abc")
+        ->and($address->join())->toBe('lemonfiber://join?stack=abc')
+        ->and($address->joining()->carried())->toBe('lemonfiber://join?stack=abc')
+        ->and($address->declining()->carried())->toBe('http://192.168.1.42:5056/decline/abc')
+        ->and($address->carried())->toBe('http://192.168.1.42:8096')
+        ->and($address->whyNotJoinable())->toBe('')
+        ->and(AnAddressToHand::at('http://loft.local:8096', '')->join())->toBe('')
+        ->and(AnAddressToHand::at('http://loft.local:8096', '')->joining()->carried())->toBe('')
+        ->and(fn(): AnAddressToHand => AnAddressToHand::joinable(AnAddressToHand::at('http://loft.local:8096', ''), ' '))->toThrow(TheDoorSaysNothing::class, '`join`');
+});
+
+it('keeps the stack\'s sentence for why an invitation has no join link, and puts no link in the text', function (): void {
+    $address = AnAddressToHand::unjoinable(AnAddressToHand::at('http://loft.local:8096', ''), 'The house has no certificate to pin yet');
+
+    expect($address->whyNotJoinable())->toBe('The house has no certificate to pin yet')
+        ->and($address->join())->toBe('')
+        ->and(AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Join:', 'Turn it down:')->text())->toBe("Come in\n\nhttp://loft.local:8096")
+        ->and(fn(): AnAddressToHand => AnAddressToHand::unjoinable(AnAddressToHand::at('http://loft.local:8096', ''), ''))->toThrow(TheDoorSaysNothing::class, '`unjoinable`');
 });

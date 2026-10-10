@@ -146,6 +146,18 @@ it('reads the address that turns the invitation down, and none where it was sent
         ->and(Invitations::in(invitationSaying(aPlainInvitation()))->toHand()->address()->decline())->toBe('');
 });
 
+it('reads the join link, or the stack\'s sentence for why there is none, and neither where each was sent as nothing or left out', function (): void {
+    $joinable = Invitations::in(invitationSaying([...aPlainInvitation(), 'join' => 'lemonfiber://join?stack=abc', 'unjoinable' => null]))->toHand()->address();
+    $unjoinable = Invitations::in(invitationSaying([...aPlainInvitation(), 'join' => null, 'unjoinable' => 'The house has no certificate to pin yet']))->toHand()->address();
+    $silent = Invitations::in(invitationSaying(aPlainInvitation()))->toHand()->address();
+
+    expect([$joinable->join(), $joinable->whyNotJoinable(), $joinable->carried()])->toBe(['lemonfiber://join?stack=abc', '', 'http://loft.local:8096'])
+        ->and([$unjoinable->join(), $unjoinable->whyNotJoinable()])->toBe(['', 'The house has no certificate to pin yet'])
+        ->and([$silent->join(), $silent->whyNotJoinable()])->toBe(['', ''])
+        ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'join' => 3])))->toThrow(InvitationIsUnreadable::class, 'no readable `join`')
+        ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'unjoinable' => ' '])))->toThrow(InvitationIsUnreadable::class, 'no readable `unjoinable`');
+});
+
 it('reads a caution or an application sent as nothing as none, and a limit sent as nothing or left out as none', function (): void {
     $applied = [...whatAnInvitationApplied(), 'limit' => null];
     $unlimited = array_diff_key(whatAnInvitationApplied(), ['limit' => true]);

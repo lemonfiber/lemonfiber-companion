@@ -40,4 +40,10 @@ enum InvitationField: string implements NamesAWireField
 
     /** The address that turns the invitation down, where the stack gave one. */
     case Decline = 'decline';
+
+    /** The link the companion app opens the invitation at, where the stack gave one. */
+    case Join = 'join';
+
+    /** Why the invitation carries no join link, in the stack's words, where it said. */
+    case Unjoinable = 'unjoinable';
 }

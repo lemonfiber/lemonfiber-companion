@@ -346,6 +346,56 @@ it('passes the address that turns the invitation down on after the address, unde
         ));
 });
 
+/** Anna's invitation, carried out, with the address the stack gave changed as a test says. */
+function annasInvitationAt(AnAddressToHand $address): AnInvitation
+{
+    return AnInvitation::carriedOut(AnInvitationToHand::to('anna', $address, 72), WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotYet, WhoWasTakenBack::of(), WhoWasSwitchedOff::of());
+}
+
+it('hands over the join link first, as text and as the first code, then the address and the address that turns it down', function (): void {
+    $encoding = ACodeOfWhatItWasGiven::working();
+    $join = 'lemonfiber://join?stack=abc';
+    $address = AnAddressToHand::joinable(AnAddressToHand::declinable('http://192.168.1.42:8096', '', 'http://192.168.1.42:5056/decline/abc'), $join);
+    $screen = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(annasInvitationAt($address))), encoding: $encoding);
+    $screen->name = 'anna';
+    $screen->offer();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+    $notes = [__('stacks.invitation.join_code'), __('stacks.invitation.code'), __('stacks.invitation.decline_code')];
+
+    expect($encoding->carried())->toBe([$join, 'http://192.168.1.42:8096', 'http://192.168.1.42:5056/decline/abc'])
+        ->and($said)->toContain(__('stacks.invitation.to_join'), $join)
+        ->and(array_values(array_filter($said, static fn(string $line): bool => in_array($line, $notes, strict: true))))->toBe($notes);
+});
+
+it('passes the join link on after the address and before the address that turns it down, under its own sentence', function (): void {
+    $sharing = AShareSheetThatWasOffered::working();
+    $address = AnAddressToHand::joinable(AnAddressToHand::declinable('http://192.168.1.42:8096', '', 'http://192.168.1.42:5056/decline/abc'), 'lemonfiber://join?stack=abc');
+    $screen = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(annasInvitationAt($address))), $sharing);
+    $screen->name = 'anna';
+    $screen->offer();
+    $screen->passOn();
+
+    expect($sharing->passed()?->text())->toBe(sprintf(
+        "%s\n\nhttp://192.168.1.42:8096\n\n%s\nlemonfiber://join?stack=abc\n\n%s\nhttp://192.168.1.42:5056/decline/abc",
+        trans_choice('stacks.invitation.covering', 72, ['name' => 'anna', 'stack' => 'The loft']),
+        whatTheInvitationCatalogueSays('stacks.invitation.joining'),
+        whatTheInvitationCatalogueSays('stacks.invitation.declining'),
+    ));
+});
+
+it('shows the stack\'s sentence for why there is no join link with the invitation, which still stands', function (): void {
+    $address = AnAddressToHand::unjoinable(AnAddressToHand::at('http://192.168.1.42:8096', ''), 'The house has no certificate to pin yet');
+    $screen = theInvitationScreen(AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(annasInvitationAt($address))));
+    $screen->name = 'anna';
+    $screen->offer();
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain('The house has no certificate to pin yet')
+        ->and($said)->toContain(__(WhereTheInvitationStands::Made->saidOnTheScreen(), ['name' => 'anna']))
+        ->and($said)->toContain('http://192.168.1.42:8096', __('stacks.invitation.code'))
+        ->and($said)->not->toContain(__('stacks.invitation.to_join'));
+});
+
 it('says nothing was sent where the device would not pass it on, and keeps the address on the screen', function (): void {
     $inviting = AStackThatInvites::answering(WhatBecameOfTheInvitation::answered(annasInvitation(rehearsed: false)));
     $screen = theInvitationScreen($inviting, AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer));

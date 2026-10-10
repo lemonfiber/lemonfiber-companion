@@ -114,7 +114,6 @@ final readonly class HowTheInvitationReads
         );
     }
 
-    /** What was written on the account, as the rows that draw it. */
     /** What is handed over, with each address and the code of it; it lapses, since anybody it is handed to has not joined. */
     private function handedOver(AnInvitationToHand $toHand, TheCodesDrawn $drawn): AnInvitationToHandAsShown
     {
@@ -126,6 +125,9 @@ final readonly class HowTheInvitationReads
             code: new HowACodeReads()->squares($drawn->for($toHand->address())),
             declines: $toHand->address()->decline(),
             declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
+            joins: $toHand->address()->join(),
+            joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
+            unjoinable: $toHand->address()->whyNotJoinable(),
             handsOver: true,
             lapses: true,
         );
@@ -142,11 +144,15 @@ final readonly class HowTheInvitationReads
             code: [],
             declines: '',
             declineCode: [],
+            joins: '',
+            joinCode: [],
+            unjoinable: $toHand->address()->whyNotJoinable(),
             handsOver: false,
             lapses: $lapses,
         );
     }
 
+    /** What was written on the account, as the rows that draw it. */
     private function granted(WhatWasGranted $granted): WhatWasGrantedAsShown
     {
         $libraries = [];
