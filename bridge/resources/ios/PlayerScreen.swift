@@ -46,6 +46,9 @@ final class PlayerScreen: AVPlayerViewController {
 
     private var watchingFailures: NSObjectProtocol?
 
+    /// The stall observer, kept so it can be removed.
+    private var watchingStalls: NSObjectProtocol?
+
     /// When the picture last stopped for want of data, or nil while it is not stalled.
     private var stalledSince: Date?
 
@@ -171,6 +174,12 @@ final class PlayerScreen: AVPlayerViewController {
             self?.stop(self?.relay.why ?? .unreachable)
         }
 
+        watchingStalls = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.playbackStalledNotification, object: item, queue: .main
+        ) { [weak self] _ in
+            self?.beginStall()
+        }
+
         looking = player.addPeriodicTimeObserver(forInterval: Self.lookEvery, queue: .main) { [weak self] _ in
             self?.tick()
         }
@@ -189,9 +198,14 @@ final class PlayerScreen: AVPlayerViewController {
             NotificationCenter.default.removeObserver(watchingFailures)
         }
 
+        if let watchingStalls {
+            NotificationCenter.default.removeObserver(watchingStalls)
+        }
+
         looking = nil
         watchingSeeks = nil
         watchingFailures = nil
+        watchingStalls = nil
         watchingStatus = nil
         watchingControl = nil
     }
@@ -223,7 +237,16 @@ final class PlayerScreen: AVPlayerViewController {
             stalledSince = nil
             settle(.playing)
         case .paused:
-            stalledSince = nil
+            if relay.isFailing, player.currentItem?.isPlaybackLikelyToKeepUp != true {
+                stop(relay.why ?? .unreachable)
+
+                return
+            }
+
+            if player.currentItem?.isPlaybackBufferEmpty != true {
+                stalledSince = nil
+            }
+
             report(moved: true)
             settle(player.currentItem.map { $0.currentTime() >= $0.duration } == true ? .ended : .paused)
 
@@ -231,7 +254,7 @@ final class PlayerScreen: AVPlayerViewController {
                 extensions.tell(.ended)
             }
         case .waitingToPlayAtSpecifiedRate:
-            stalledSince = stalledSince ?? Date()
+            beginStall()
             settle(.stalled)
         @unknown default:
             return
@@ -239,13 +262,31 @@ final class PlayerScreen: AVPlayerViewController {
     }
 
     private func tick() {
-        if let stalledSince, PlaybackRule.givesUp(stalledFor: Date().timeIntervalSince(stalledSince)) {
-            stop(relay.why ?? .unreachable)
+        report(moved: false)
+    }
 
+    /// Start the stall clock, unless one is running: a stall goes on through the pause the player makes when its buffer runs dry.
+    private func beginStall() {
+        guard stalledSince == nil else {
             return
         }
 
-        report(moved: false)
+        let since = Date()
+        stalledSince = since
+        DispatchQueue.main.asyncAfter(deadline: .now() + PlaybackRule.patienceWhileStalled) { [weak self] in
+            self?.stallOutlasted(since)
+        }
+    }
+
+    /// Stop where the stall that began at `since` is still going: time stands still in a stall, so nothing else looks.
+    private func stallOutlasted(_ since: Date) {
+        guard stalledSince == since, player?.currentItem?.isPlaybackLikelyToKeepUp != true,
+            PlaybackRule.givesUp(stalledFor: Date().timeIntervalSince(since))
+        else {
+            return
+        }
+
+        stop(relay.why ?? .unreachable)
     }
 
     /// Load the sound and subtitle groups, then start the tracks the member prefers.

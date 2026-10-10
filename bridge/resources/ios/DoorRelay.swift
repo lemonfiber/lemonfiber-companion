@@ -34,6 +34,8 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
 
     private var whyItStopped: WhyPlaybackStopped?
 
+    private var lastFetchFailed = false
+
     private lazy var session: URLSession = {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
@@ -50,6 +52,11 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
 
     var why: WhyPlaybackStopped? {
         queue.sync { whyItStopped }
+    }
+
+    /// Whether the last fetch through the relay failed, which a fetch that succeeds since puts right.
+    var isFailing: Bool {
+        queue.sync { lastFetchFailed }
     }
 
     private final class Waiting {
@@ -251,6 +258,7 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
 
         guard trust.admits(leaf: leaf, host: space.host, port: space.port) else {
             whyItStopped = .pinMismatch
+            lastFetchFailed = true
             completionHandler(.cancelAuthenticationChallenge, nil)
 
             return
@@ -267,6 +275,7 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
             admitted.host == next.host, admitted.port == next.port, next.user == nil, next.password == nil
         else {
             whyItStopped = .refused
+            lastFetchFailed = true
             completionHandler(nil)
 
             return
@@ -289,13 +298,15 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
         }
 
         guard RangeRule.admits(status: answered.statusCode, askedForPart: one.askedForPart) else {
-            whyItStopped = whyItStopped ?? PlaybackRule.why(status: answered.statusCode)
+            failed(PlaybackRule.why(status: answered.statusCode))
             waiting[dataTask.taskIdentifier] = nil
             finish(one.connection, status: 502)
             completionHandler(.cancel)
 
             return
         }
+
+        lastFetchFailed = false
 
         let type = answered.mimeType?.lowercased() ?? ""
         one.isPlaylist =
@@ -338,7 +349,7 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
         }
 
         if error != nil && !(one.onlyTheHead && !one.isPlaylist) {
-            whyItStopped = whyItStopped ?? .unreachable
+            failed(.unreachable)
             one.connection.cancel()
 
             return
@@ -354,7 +365,7 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
             let rewritten = PlaylistRule(door: asked.door, handing: rule.handed).rewrite(
                 read, at: one.address)
         else {
-            whyItStopped = whyItStopped ?? .refused
+            failed(.refused)
             finish(one.connection, status: 502)
 
             return
@@ -368,6 +379,12 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
         send(
             one.connection, status: 200, type: Self.playlistType, body: one.onlyTheHead ? nil : body,
             length: body.count)
+    }
+
+    /// Record a fetch that failed, keeping the first reason playback met.
+    private func failed(_ why: WhyPlaybackStopped) {
+        whyItStopped = whyItStopped ?? why
+        lastFetchFailed = true
     }
 
     // MARK: - Writing back
