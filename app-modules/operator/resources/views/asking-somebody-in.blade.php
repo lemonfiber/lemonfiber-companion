@@ -101,11 +101,29 @@
                 <x-operator::offered-action label="{{ __('stacks.invitation.send', ['name' => $this->howItIsGoing()->invitation->toHand->name]) }}" tap="send()" :offer="$this->offered(AskingThemIn::Invite)" />
             @endif
 
+            @if ($this->howItIsGoing()->invitation->toHand->unjoinable !== '')
+                {{-- Why there is no join link, in the stack's words. The
+                     invitation stands without it. --}}
+                <x-design::note>{{ $this->howItIsGoing()->invitation->toHand->unjoinable }}</x-design::note>
+            @endif
+
             @if ($this->howItIsGoing()->invitation->toHand->handsOver)
-                {{-- The address exactly as the stack sent it, its caution beside
-                     it, the same address as a code another phone scans off this
-                     screen, and the device's own sharing to pass it on. --}}
+                {{-- The join link first where there is one, as the stack sent it
+                     and as the first code another phone scans off this screen;
+                     then the address exactly as the stack sent it, its caution
+                     beside it, the same address as a code, and the device's own
+                     sharing to pass it on. --}}
                 <x-design::heading>{{ __('stacks.invitation.to_hand_over') }}</x-design::heading>
+                @if ($this->howItIsGoing()->invitation->toHand->joins !== '')
+                    <x-design::card>
+                        <x-design::strong>{{ __('stacks.invitation.to_join') }}</x-design::strong>
+                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->joins }}</x-design::verbatim>
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->joinCode" missing="{{ __('stacks.invitation.no_code') }}" />
+                        @if ($this->howItIsGoing()->invitation->toHand->joinCode !== [])
+                            <x-design::note>{{ __('stacks.invitation.join_code') }}</x-design::note>
+                        @endif
+                    </x-design::card>
+                @endif
                 <x-design::card>
                     <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->url }}</x-design::verbatim>
                     @if ($this->howItIsGoing()->invitation->toHand->caution !== '')

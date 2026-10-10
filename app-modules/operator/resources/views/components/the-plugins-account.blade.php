@@ -65,6 +65,32 @@
         <x-operator::note>{{ __('plugins.no_contests') }}</x-operator::note>
     @endforelse
 
+    {{-- Every service that would take a privileged shape, with what it is
+         granted and given and why, each with its own switch apart from the
+         offer: the yes to the install approves none of them. --}}
+    <x-operator::heading>{{ __('plugins.shapes') }}</x-operator::heading>
+    @forelse ($install->taking as $shape)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ $shape->service }}</x-operator::emphasis>
+            <x-design::body>{{ __($shape->neededFor) }}</x-design::body>
+            @forelse ($shape->grants as $grant)
+                <x-operator::note>{{ __('plugins.granted', ['grant' => $grant]) }}</x-operator::note>
+            @empty
+                {{-- Granted no capability beyond every plugin's entry. --}}
+            @endforelse
+            @forelse ($shape->devices as $device)
+                <x-operator::note>{{ __('plugins.given', ['device' => $device]) }}</x-operator::note>
+            @empty
+                {{-- Given no device beyond every plugin's entry. --}}
+            @endforelse
+            @if ($shape->approval !== null && $install->agreeable)
+                <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->approved" tap="approve({{ $shape->approval }})" />
+            @endif
+        </x-operator::entry>
+    @empty
+        <x-operator::note>{{ __('plugins.no_shapes') }}</x-operator::note>
+    @endforelse
+
     {{-- Every recipe as its steps in order, and every value it would carry
          elsewhere as its own line with its own switch. --}}
     <x-operator::heading>{{ __('plugins.recipes') }}</x-operator::heading>

@@ -128,10 +128,11 @@ it('tells a report that is not there from a platform that would not offer', func
     expect($said)->toHaveCount(count(array_unique($said)));
 });
 
-it('passes an invitation on under its name, with the address, its caution and the address that turns it down, and says it did', function (): void {
+it('passes an invitation on under its name, with the address, its caution, its join link and the address that turns it down, and says it did', function (): void {
     $invitation = AnInvitationToPassOn::of(
-        AnInvitationToHand::to('anna', AnAddressToHand::declinable('http://192.168.1.42:8096', 'The number can change', 'http://192.168.1.42:5056/decline/abc'), 72),
+        AnInvitationToHand::to('anna', AnAddressToHand::joinable(AnAddressToHand::declinable('http://192.168.1.42:8096', 'The number can change', 'http://192.168.1.42:5056/decline/abc'), 'lemonfiber://join?stack=abc'), 72),
         'You are invited into the household',
+        'On a phone with the lemonfiber app, open this link to join from there:',
         'To turn this invitation down, open this address instead:',
     );
     $adapter = overASheetThatSays(['outcome' => 'offered']);
@@ -147,7 +148,7 @@ it('passes an invitation on under its name, with the address, its caution and th
         'Lemonfiber.Handover.Offer',
         static fn(array $sent): bool => $sent === [
             'title' => 'anna',
-            'text' => "You are invited into the household\n\nhttp://192.168.1.42:8096\n\nThe number can change\n\nTo turn this invitation down, open this address instead:\nhttp://192.168.1.42:5056/decline/abc",
+            'text' => "You are invited into the household\n\nhttp://192.168.1.42:8096\n\nThe number can change\n\nOn a phone with the lemonfiber app, open this link to join from there:\nlemonfiber://join?stack=abc\n\nTo turn this invitation down, open this address instead:\nhttp://192.168.1.42:5056/decline/abc",
         ],
     );
 });
@@ -156,6 +157,7 @@ it('says so where the platform would not pass an invitation on', function (): vo
     $invitation = AnInvitationToPassOn::of(
         AnInvitationToHand::to('anna', AnAddressToHand::at('http://loft.local:8096', ''), 72),
         'You are invited into the household',
+        'On a phone with the lemonfiber app, open this link to join from there:',
         'To turn this invitation down, open this address instead:',
     );
     $adapter = overASheetThatSays(['outcome' => 'refused', 'because' => 'the_platform_would_not']);

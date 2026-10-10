@@ -78,18 +78,18 @@ final readonly class WhatToWatchWith
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, ClientsField::Devices) as $row) {
+        foreach (self::rows($data, WireField::Devices) as $row) {
             if (! is_array($row)) {
-                throw ClientsIsUnreadable::row(ClientsField::Devices, $position);
+                throw ClientsIsUnreadable::row(WireField::Devices, $position);
             }
 
             $found[] = ADeviceToWatchOn::rated(
-                self::text($row, ClientsField::Devices, WireField::Device, $position),
-                self::text($row, ClientsField::Devices, WireField::Client, $position),
+                self::text($row, WireField::Devices, WireField::Device, $position),
+                self::text($row, WireField::Devices, WireField::Client, $position),
                 self::support($row, $position),
-                self::flag($row, ClientsField::Devices, WireField::OpenSource, $position),
-                self::optional($row, ClientsField::Devices, WireField::Caution, $position),
-                self::optional($row, ClientsField::Devices, WireField::Instead, $position),
+                self::flag($row, WireField::Devices, WireField::OpenSource, $position),
+                self::optional($row, WireField::Devices, WireField::Caution, $position),
+                self::optional($row, WireField::Devices, WireField::Instead, $position),
             );
             $position++;
         }
@@ -104,7 +104,7 @@ final readonly class WhatToWatchWith
      */
     private static function support(array $row, int $position): HowWellADeviceIsServed
     {
-        $said = self::text($row, ClientsField::Devices, ClientsField::Support, $position);
+        $said = self::text($row, WireField::Devices, ClientsField::Support, $position);
 
         return HowWellADeviceIsServed::tryFrom($said) ?? throw ClientsIsUnreadable::support($said, $position);
     }

@@ -7,6 +7,7 @@ use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Household\Internal\Month;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
@@ -176,6 +177,10 @@ function everyDerivedKey(): array
         WhatAChangePuts::class => aPairPerCase(
             WhatAChangePuts::cases(),
             static fn(WhatAChangePuts $puts): array => [$puts->saidOnTheScreen()],
+        ),
+        APrivilegedShape::class => aPairPerCase(
+            APrivilegedShape::cases(),
+            static fn(APrivilegedShape $shape): array => [$shape->neededFor()],
         ),
         // `NotSaid` is skipped: it is a plugin the stack said nothing of, and
         // a screen draws nothing for it.

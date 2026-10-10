@@ -17,9 +17,6 @@ enum ClientsField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Every kind of device, in the order somebody is likely to be holding one. */
-    case Devices = 'devices';
-
     /** How well it is served. */
     case Support = 'support';
 

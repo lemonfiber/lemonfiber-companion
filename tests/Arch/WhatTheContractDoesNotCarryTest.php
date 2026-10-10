@@ -73,7 +73,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // already, on a household request and on a repair.
         'envelope' => 'InvitationEnvelope',
         'field' => null,
-        'shape' => 'array{address: string, applied?: array{filtering: string, libraries: list<string>, limit?: string|null, requesting: \'made\'|\'not-yet\'|\'not-tried\', unrated: \'held-back\'|\'let-through\'}|null, caution?: string|null, decline?: string|null, hours: int, linked: \'made\'|\'not-yet\'|\'not-tried\', name: string, rehearsed: bool, standing: \'made\'|\'waiting\'|\'joined\'|\'reset\', suspended: list<string>, withdrawn: list<string>}',
+        'shape' => 'array{address: string, applied?: array{filtering: string, libraries: list<string>, limit?: string|null, requesting: \'made\'|\'not-yet\'|\'not-tried\', unrated: \'held-back\'|\'let-through\'}|null, caution?: string|null, decline?: string|null, hours: int, join?: string|null, linked: \'made\'|\'not-yet\'|\'not-tried\', name: string, rehearsed: bool, standing: \'made\'|\'waiting\'|\'joined\'|\'reset\', suspended: list<string>, unjoinable?: string|null, withdrawn: list<string>}',
         'raised' => 'An invitation\'s `standing` is `made`, `waiting`, `joined` or `reset`, and none of those '
             . 'says that it ran out unaccepted or that the person turned it down. `waiting` past its '
             . '`hours` is the nearest, and reading it as lapsed would be this app working out a state '

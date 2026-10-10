@@ -16,11 +16,13 @@ use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ASettingItOverrides;
+use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\ASourceAsked;
 use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ChangesAndWhy;
@@ -37,6 +39,7 @@ use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheSettingsItOverrides;
+use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAChangePuts;
@@ -64,6 +67,9 @@ final readonly class APluginAsItArrives
 
     /** The one approval its recipe asks for. */
     public const string APPROVAL = 'library@hooks.example.com';
+
+    /** What approving the egress guard's shape for its one service is written as. */
+    public const string SHAPE_APPROVAL = 'egress-guard@gluetun';
 
     /**
      * Tdarr, as a record on the wire holds it.
@@ -159,7 +165,22 @@ final readonly class APluginAsItArrives
             'proofs' => [['proof' => 'answers', 'establishes' => 'It answers on its port', 'asks' => 'GET /api/status', 'why' => 'A service that does not answer is not running', 'of' => 'tdarr']],
             'contests' => [['capability' => 'transcode', 'by' => 'sonarr', 'claimants' => ['tdarr', 'unmanic']]],
             'overrides' => [['setting' => 'sonarr.rename', 'why' => 'Tdarr renames what it transcodes']],
+            'asks' => [['by' => 'tdarr', 'origin' => ['origin' => 'plugin', 'named' => 'tdarr'], 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => ['jellyfin'], 'settled' => ['settled' => 'outright'], 'origins' => ['jellyfin' => ['origin' => 'bundled']]]]],
             'recipes_ran' => [],
+            'taking' => [],
+        ];
+    }
+
+    /**
+     * The reading, with one service taking the egress guard's shape.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aGuardedReadingOnTheWire(): array
+    {
+        return [
+            ...self::aReadingOnTheWire(),
+            'taking' => [['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => self::SHAPE_APPROVAL]],
         ];
     }
 
@@ -357,6 +378,44 @@ final readonly class APluginAsItArrives
         );
     }
 
+    /** The reading with one service taking the egress guard's shape, as this app holds it. */
+    public static function theGuardedReading(): ThePlugins
+    {
+        return ThePlugins::aboutAnInstall(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            self::theGuardedInstall(),
+        );
+    }
+
+    /** The install with one service taking the egress guard's shape, as a reading. */
+    public static function theGuardedInstall(): APluginInstall
+    {
+        return APluginInstall::reported(
+            self::held(),
+            recorded: false,
+            changes: self::changes(),
+            proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+            contests: self::contests(),
+            overrides: self::overrides(),
+            taking: self::theGuard(),
+            checks: WhatTheChecksMade::notAsked(),
+        );
+    }
+
+    /** The one service taking the egress guard's shape, as this app holds it. */
+    public static function theGuard(): TheShapesTaken
+    {
+        return TheShapesTaken::these(AShapeTaken::by(
+            'gluetun',
+            APrivilegedShape::EgressGuard,
+            PluginLines::under('grants', 'NET_ADMIN'),
+            PluginLines::under('devices', '/dev/net/tun'),
+            self::SHAPE_APPROVAL,
+        ));
+    }
+
     /** The install that went back, as this app holds it. */
     public static function thePutBack(): ThePlugins
     {
@@ -382,6 +441,7 @@ final readonly class APluginAsItArrives
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
                 contests: self::contests(),
                 overrides: self::overrides(),
+                taking: TheShapesTaken::these(),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
             ),
         );
@@ -432,6 +492,7 @@ final readonly class APluginAsItArrives
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             contests: self::contests(),
             overrides: self::overrides(),
+            taking: TheShapesTaken::these(),
             checks: WhatTheChecksMade::notAsked(),
         );
     }
@@ -444,6 +505,7 @@ final readonly class APluginAsItArrives
             TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
             self::contests(),
             self::overrides(),
+            TheShapesTaken::these(),
             WhatTheChecksMade::notAsked(),
             ARunPutBack::reported(
                 WhetherItWasRehearsed::CarriedOut,

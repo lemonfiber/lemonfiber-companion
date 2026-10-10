@@ -11,6 +11,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
@@ -62,8 +63,8 @@ final readonly class HowExtendingItReads
         return $this->without(HowTheReadingWent::itCameBack(), afterTheYes: $agreed, hasEnded: true);
     }
 
-    /** The stack refused, and this is what it said and named. */
-    public function refused(ARefusalInItsWords $why, ExtendingIt $act, bool $agreed): WhatExtendsItTurnedOutToBe
+    /** The stack refused, and this is what it said and named, with each service the yes left unapproved to take its shape. */
+    public function refused(ARefusalInItsWords $why, ExtendingIt $act, bool $agreed, TheShapesTaken $leftUnapproved): WhatExtendsItTurnedOutToBe
     {
         return new WhatExtendsItTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
@@ -74,6 +75,7 @@ final readonly class HowExtendingItReads
             hasEnded: false,
             refusedSaid: $this->refusal($act, $agreed),
             refused: new HowARefusalReads()->inItsWords($why),
+            unapproved: new HowAPluginAccountReads()->leftUnapproved($leftUnapproved),
             installed: [],
             install: null,
             update: null,
@@ -112,6 +114,7 @@ final readonly class HowExtendingItReads
             hasEnded: false,
             refusedSaid: '',
             refused: null,
+            unapproved: [],
             installed: $installed,
             install: $account instanceof APluginInstallAsShown ? $account : null,
             update: $account instanceof APluginUpdateAsShown ? $account : null,
@@ -165,6 +168,7 @@ final readonly class HowExtendingItReads
             hasEnded: $hasEnded,
             refusedSaid: '',
             refused: null,
+            unapproved: [],
             installed: [],
             install: null,
             update: null,

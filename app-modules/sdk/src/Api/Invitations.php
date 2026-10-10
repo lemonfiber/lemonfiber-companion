@@ -85,8 +85,9 @@ final readonly class Invitations
     }
 
     /**
-     * The one address to send them, with the stack's caution about it and the
-     * address that turns the invitation down, where it has them.
+     * The one address to send them, with the stack's caution about it, the
+     * address that turns the invitation down, and its join link or why it has
+     * none, where it has them.
      *
      * @param array<mixed> $data
      */
@@ -99,10 +100,26 @@ final readonly class Invitations
         }
 
         $url = self::text($data, WireField::Address);
+        $decline = self::said($data, InvitationField::Decline);
+        $address = $decline === null ? AnAddressToHand::at($url, $caution) : AnAddressToHand::declinable($url, $caution, $decline);
+        $join = self::said($data, InvitationField::Join);
+        $unjoinable = self::said($data, InvitationField::Unjoinable);
 
-        return array_key_exists(InvitationField::Decline->value, $data) && $data[InvitationField::Decline->value] !== null
-            ? AnAddressToHand::declinable($url, $caution, self::text($data, InvitationField::Decline))
-            : AnAddressToHand::at($url, $caution);
+        return match (true) {
+            $join !== null => AnAddressToHand::joinable($address, $join),
+            $unjoinable !== null => AnAddressToHand::unjoinable($address, $unjoinable),
+            default => $address,
+        };
+    }
+
+    /**
+     * A word the stack may leave out or send as null, or null where it did.
+     *
+     * @param array<mixed> $data
+     */
+    private static function said(array $data, NamesAWireField $field): ?string
+    {
+        return array_key_exists($field->value, $data) && $data[$field->value] !== null ? self::text($data, $field) : null;
     }
 
     /**
