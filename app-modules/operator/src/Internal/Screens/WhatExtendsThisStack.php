@@ -35,6 +35,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -63,9 +64,10 @@ use function trim;
  * native one among them, is its refusal in its own words with nothing
  * offered to do.
  *
- * **Two agreements where a value would leave.** Each value an install's or
- * an update's recipes would carry elsewhere has a switch of its own, all off;
- * the yes agrees to the act. Choosing another act lets go of the rehearsal
+ * **Two agreements where a value would leave or a shape is taken.** Each
+ * value an install's or an update's recipes would carry elsewhere, and each
+ * service that would take a privileged shape, has a switch of its own, all
+ * off; the yes agrees to the act and approves none of them. Choosing another act lets go of the rehearsal
  * and every approval given against it.
  *
  * **No inputs are taken.** A recipe that asks the operator for a value is
@@ -109,8 +111,11 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** The source an install's rehearsal was asked about, which the yes names again. */
     public string $rehearsedFrom = '';
 
-    /** @var list<string> every value approved against the rehearsal, as it spells each */
+    /** @var list<string> every value and shape approved against the rehearsal, as it spells each */
     public array $approved = [];
+
+    /** Every service the yes left unapproved to take its privileged shape, which a refusal of it names. */
+    public ?TheShapesTaken $leftUnapproved = null;
 
     /** The handle of the work being followed, while there is one. Not shown and never kept past this screen. */
     public ?string $following = null;
@@ -154,7 +159,6 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->typing = true;
     }
 
-    /** Ask what installing from the typed source would do. A blank source asks nothing. */
     /** Read where the plugin comes from off a code somebody shows, into the field, for the operator to rehearse as typed. */
     public function scanWhereItComesFrom(): void
     {
@@ -163,6 +167,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         });
     }
 
+    /** Ask what installing from the typed source would do. A blank source asks nothing. */
     public function rehearse(): void
     {
         if (is_string($this->following) || trim($this->source) === '') {
@@ -192,7 +197,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     }
 
     /**
-     * Approve one value a recipe would carry elsewhere, or take the approval back.
+     * Approve one value a recipe would carry elsewhere, or one service's privileged shape, or take the approval back.
      *
      * Named by its place among the rehearsal's approvals. A place it does not
      * have changes nothing.
@@ -205,7 +210,6 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
             return;
         }
 
-        // Collected by hand, so a place is the one the screen drew.
         $approvals = [];
 
         foreach ($rehearsal->approvals() as $approval) {
@@ -238,6 +242,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         }
 
         $asking = $this->theYes($rehearsal, $act);
+        $this->leftUnapproved = $rehearsal->shapesTaken()->leftOutOf(PluginLines::under('approved', ...$this->approved));
         $this->rehearsal = null;
         $this->approved = [];
         $this->agreed = true;
@@ -420,7 +425,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
             refused: function (ARefusalInItsWords $why) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
 
-                return new HowExtendingItReads()->refused($why, $act, $agreed);
+                return new HowExtendingItReads()->refused($why, $act, $agreed, $this->leftUnapproved ?? TheShapesTaken::these());
             },
             ended: function () use ($agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
@@ -441,6 +446,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->rehearsal = null;
         $this->rehearsedFrom = '';
         $this->approved = [];
+        $this->leftUnapproved = null;
         $this->act = '';
         $this->subject = null;
         $this->agreed = false;

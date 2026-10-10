@@ -63,6 +63,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Which of the plugin\'s own services a proof asks. What it asks, as the method and the path, is read and drawn, and the plugin\'s services are named nowhere else on the screen.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.asks',
+            'because' => 'Every link the plugin\'s services would ask for, with what each would reach and how it would be settled. The rehearsal draws what `N25-R1` asks of it, and a link a service holds once it is installed is drawn with every other on the wiring screen; no requirement asks for it before the yes.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.recipes_ran',
             'because' => 'Every install recipe that ran and held, with what each step came to. It is filled only on an install that held, which the screen says in one line; a recipe that did not hold ends the install with a refusal carrying its own account, which is read in the stack\'s words.',
         ],
@@ -413,6 +417,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.proofs[].of',
             'because' => 'As `PluginsEnvelope.install.proofs[].of`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.asks',
+            'because' => 'As `PluginsEnvelope.install.asks`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.recipes_ran',

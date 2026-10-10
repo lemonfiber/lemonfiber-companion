@@ -118,4 +118,10 @@ enum PluginsField: string implements NamesAWireField
 
     /** Every answer an installed plugin's adapter gave outside its contract. */
     case Nonconforming = 'nonconforming';
+
+    /** Every service an install would have take a privileged shape. */
+    case Taking = 'taking';
+
+    /** The kernel capabilities a service taking a privileged shape is granted. */
+    case Grants = 'grants';
 }

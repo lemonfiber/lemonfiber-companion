@@ -157,6 +157,19 @@ it('reads each answer out of contract against the plugin whose adapter gave it, 
         ->and(iterator_to_array(PluginInstalls::in(pluginsSaying($data))->answersOutOfContractOf(APluginAsItArrives::held()), preserve_keys: false))->toBe([]);
 });
 
+it('reads each service taking a privileged shape with what it is granted and given, and an install saying nothing of it as none taking one', function (): void {
+    $guarded = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(APluginAsItArrives::aGuardedReadingOnTheWire(), APluginAsItArrives::AGREEMENT)['data']));
+    $silent = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static function (array $install): array {
+        unset($install['taking']);
+
+        return $install;
+    })));
+
+    expect($guarded)->toEqual(APluginAsItArrives::theGuardedReading())
+        ->and($silent->shapesTaken()->isEmpty())->toBeTrue()
+        ->and(iterator_to_array($silent->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL]);
+});
+
 it('reads a listing that asked no source, and a record that keeps no recipe, as saying nothing of either', function (): void {
     $answer = APluginAsItArrives::theAnswer(null);
     $data = $answer['data'];
@@ -278,6 +291,13 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a contest that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'contests' => ['transcode']])), $unreadable],
         'claimants that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'contests' => [['capability' => 'transcode', 'by' => 'sonarr', 'claimants' => 'tdarr']]])), $unreadable],
         'a blank claimant' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'contests' => [['capability' => 'transcode', 'by' => 'sonarr', 'claimants' => [' ']]]])), $unreadable],
+        'shapes taken that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => 'gluetun'])), $unreadable],
+        'a shape taken that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => ['gluetun']])), $unreadable],
+        'a shape taken by no service' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'service' => ' ']]])), $unreadable],
+        'a shape nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'shape' => 'host-network']]])), $unreadable],
+        'grants that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'grants' => 'NET_ADMIN']]])), $unreadable],
+        'a blank device' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'devices' => ['']]]])), $unreadable],
+        'a shape taken with no approval to give' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'approval' => '']]])), $unreadable],
         'an override that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'overrides' => ['sonarr.rename']])), $unreadable],
         'checks that are not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'verified' => 'fine'])), $unreadable],
         'a check broken with no reading now' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'verified' => ['broke' => [['before' => null]], 'unsettled' => []]])), $unreadable],

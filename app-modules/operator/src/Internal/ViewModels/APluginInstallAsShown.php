@@ -23,6 +23,7 @@ final readonly class APluginInstallAsShown
      * @param list<AProofAsShown>         $proofs     every proof, with what asking it came to
      * @param list<AChangeAndWhyAsShown>  $overrides  every bundled setting it changes, with why
      * @param list<AContestAsShown>       $contests   every ask it would leave contested
+     * @param list<AShapeTakenAsShown>    $taking     every service taking a privileged shape, each with its own switch
      * @param bool                        $checked    whether the stack's own checks were asked
      * @param list<string>                $broke      every check it made worse, by title
      * @param list<string>                $unsettled  every check nothing could be concluded about, by title
@@ -37,6 +38,7 @@ final readonly class APluginInstallAsShown
         public array $proofs,
         public array $overrides,
         public array $contests,
+        public array $taking,
         public bool $checked,
         public array $broke,
         public array $unsettled,

@@ -737,7 +737,7 @@ function aWiringSaid(string $answering = 'qbittorrent', array $changed = []): ar
         'kind' => 'wiring',
         'data' => [
             'wired' => [
-                ['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [$answering], 'settled' => ['settled' => 'outright'], 'origins' => [$answering => ['origin' => 'bundled']]]],
+                ['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [$answering], 'settled' => ['settled' => 'outright'], 'origins' => [$answering => ['origin' => 'bundled']]]],
             ],
             'unfilled' => [['by' => 'lidarr', 'capability' => 'music-tagger']],
             ...$changed,

@@ -6,16 +6,28 @@ namespace Modules\Kernel\Tests\Api;
 
 use function expect;
 use function it;
+use function iterator_to_array;
 
+use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\AProof;
+use Modules\Kernel\Api\ARunPutBack;
+use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePluginChanges;
+use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheSettingsItOverrides;
+use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAProofCameTo;
+use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
+use Modules\Kernel\Api\WhatWentBack;
+use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Tests\Support\APluginAsItArrives;
 
 /** An install recorded, with this proof and these checks. */
@@ -28,6 +40,7 @@ function anInstallRecorded(WhatAProofCameTo $cameTo, WhatTheChecksMade $checks, 
         proofs: TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', $cameTo)),
         contests: TheContestsLeft::these(),
         overrides: TheSettingsItOverrides::these(),
+        taking: TheShapesTaken::these(),
         checks: $checks,
     );
 }
@@ -60,4 +73,31 @@ it('says the checks were not asked apart from asked and finding nothing', functi
     expect(WhatTheChecksMade::notAsked()->wereAsked())->toBeFalse()
         ->and(WhatTheChecksMade::notAsked()->brokeNothing())->toBeFalse()
         ->and(WhatTheChecksMade::of(PluginLines::none(), PluginLines::none())->brokeNothing())->toBeTrue();
+});
+
+it('asks for each shape a service takes apart from the offer, after its recipes\' values, for an install and for an update', function (): void {
+    $guarded = APluginAsItArrives::theGuardedInstall();
+    $update = ThePlugins::aboutAnUpdate(
+        TheInstalledPlugins::these(APluginAsItArrives::held()),
+        ThePluginSources::these(),
+        APluginAsItArrives::AGREEMENT,
+        AnUpdate::reported(
+            'tdarr',
+            TheVersionsItMovesBetween::of('2.1.0', '2.2.0'),
+            PluginLines::under('interrupts', 'tdarr'),
+            $guarded,
+            ARunPutBack::reported(WhetherItWasRehearsed::Rehearsed, WhatWentBack::these(), ChangesAndWhy::these(), ChangesAndWhy::these()),
+            '',
+            WhatPuttingTheOldVersionBackCameTo::notNeeded(),
+        ),
+    );
+    $both = [APluginAsItArrives::APPROVAL, APluginAsItArrives::SHAPE_APPROVAL];
+
+    expect(iterator_to_array($guarded->approvals(), preserve_keys: false))->toBe($both)
+        ->and(iterator_to_array(APluginAsItArrives::theGuardedReading()->approvals(), preserve_keys: false))->toBe($both)
+        ->and(iterator_to_array($update->approvals(), preserve_keys: false))->toBe($both)
+        ->and(iterator_to_array(APluginAsItArrives::theGuardedReading()->shapesTaken()->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::SHAPE_APPROVAL])
+        ->and(iterator_to_array($update->shapesTaken()->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::SHAPE_APPROVAL])
+        ->and(APluginAsItArrives::theListing()->shapesTaken()->isEmpty())->toBeTrue()
+        ->and(APluginAsItArrives::theReading()->shapesTaken()->isEmpty())->toBeTrue();
 });

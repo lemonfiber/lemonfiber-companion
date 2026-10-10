@@ -14,9 +14,11 @@ use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARunPutBack;
+use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
+use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AContestAsShown;
@@ -29,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
 use Modules\Operator\Internal\ViewModels\AProofAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeStepAsShown;
+use Modules\Operator\Internal\ViewModels\AShapeTakenAsShown;
 use Modules\Operator\Internal\ViewModels\AValueCarriedAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 
@@ -114,6 +117,15 @@ final readonly class HowAPluginAccountReads
             $contests[] = new AContestAsShown(capability: $contest->capability(), by: $contest->by(), claimants: $this->lines($contest->claimants()));
         }
 
+        $approvals = $this->lines($install->approvals());
+        $taking = [];
+
+        foreach ($install->taking() as $taken) {
+            $place = array_search($taken->approval(), $approvals, strict: true);
+
+            $taking[] = $this->shape($taken, is_int($place) ? $place : null, in_array($taken->approval(), $approved, strict: true));
+        }
+
         $checks = $install->checks();
         $putBack = $install->wasItPutBack(
             putBack: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
@@ -129,6 +141,7 @@ final readonly class HowAPluginAccountReads
             proofs: $proofs,
             overrides: $overrides,
             contests: $contests,
+            taking: $taking,
             checked: $checks->wereAsked(),
             broke: $this->lines($checks->broke()),
             unsettled: $this->lines($checks->unsettled()),
@@ -192,6 +205,22 @@ final readonly class HowAPluginAccountReads
         );
     }
 
+    /**
+     * Each service left unapproved to take its privileged shape, as a refusal names it.
+     *
+     * @return list<AShapeTakenAsShown>
+     */
+    public function leftUnapproved(TheShapesTaken $left): array
+    {
+        $shown = [];
+
+        foreach ($left as $taken) {
+            $shown[] = $this->shape($taken, approval: null, approved: false);
+        }
+
+        return $shown;
+    }
+
     /** How an install ended, as a catalogue key, or empty for a reading. */
     private function headline(APluginInstall $install): string
     {
@@ -236,6 +265,19 @@ final readonly class HowAPluginAccountReads
         }
 
         return new ARecipeAsShown(title: $recipe->title(), why: $recipe->why(), steps: $steps, pairs: $pairs);
+    }
+
+    /** One service taking a privileged shape, with its switch's place where the screen offers one. */
+    private function shape(AShapeTaken $taken, ?int $approval, bool $approved): AShapeTakenAsShown
+    {
+        return new AShapeTakenAsShown(
+            service: $taken->service(),
+            neededFor: $taken->shape()->neededFor(),
+            grants: $this->lines($taken->grants()),
+            devices: $this->lines($taken->devices()),
+            approval: $approval,
+            approved: $approved,
+        );
     }
 
     /**

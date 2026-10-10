@@ -80,12 +80,22 @@ final readonly class ThePlugins
         return $about !== null && $about->isAReading() ? $this->agreement : '';
     }
 
+    /** Every service the install or update asked about would have take a privileged shape, or none. */
+    public function shapesTaken(): TheShapesTaken
+    {
+        return match (true) {
+            $this->about instanceof APluginInstall => $this->about->taking(),
+            $this->about instanceof AnUpdate => $this->about->install()->taking(),
+            default => TheShapesTaken::these(),
+        };
+    }
+
     /** Every approval the install or update asked about would need, or none. */
     public function approvals(): PluginLines
     {
         return match (true) {
-            $this->about instanceof APluginInstall => $this->about->would()->approvals(),
-            $this->about instanceof AnUpdate => $this->about->install()->would()->approvals(),
+            $this->about instanceof APluginInstall => $this->about->approvals(),
+            $this->about instanceof AnUpdate => $this->about->install()->approvals(),
             default => PluginLines::none(),
         };
     }

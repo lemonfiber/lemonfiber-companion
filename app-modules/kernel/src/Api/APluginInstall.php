@@ -10,7 +10,8 @@ use Closure;
  * What installing a plugin would do, or did: the plugin, every change, every proof, and how it ended.
  *
  * **The same account before and after the yes.** A reading lists what the
- * install would settle, write, prove, override and leave contested, writing
+ * install would settle, write, prove, override, leave contested and grant
+ * beyond every plugin's entry, writing
  * none of it; after the yes the same lists come back with what each proof came
  * to, what the stack's own checks made of it, and either the record written or
  * what putting it back came to.
@@ -28,6 +29,7 @@ final readonly class APluginInstall
         private TheProofs $proofs,
         private TheContestsLeft $contests,
         private TheSettingsItOverrides $overrides,
+        private TheShapesTaken $taking,
         private WhatTheChecksMade $checks,
         private ?ARunPutBack $putBack,
     ) {}
@@ -40,9 +42,10 @@ final readonly class APluginInstall
         TheProofs $proofs,
         TheContestsLeft $contests,
         TheSettingsItOverrides $overrides,
+        TheShapesTaken $taking,
         WhatTheChecksMade $checks,
     ): self {
-        return new self($would, $recorded, $changes, $proofs, $contests, $overrides, $checks, null);
+        return new self($would, $recorded, $changes, $proofs, $contests, $overrides, $taking, $checks, null);
     }
 
     /** The account of an install that did not hold, and what putting it back came to. Nothing put back is recorded. */
@@ -52,10 +55,11 @@ final readonly class APluginInstall
         TheProofs $proofs,
         TheContestsLeft $contests,
         TheSettingsItOverrides $overrides,
+        TheShapesTaken $taking,
         WhatTheChecksMade $checks,
         ARunPutBack $putBack,
     ): self {
-        return new self($would, recorded: false, changes: $changes, proofs: $proofs, contests: $contests, overrides: $overrides, checks: $checks, putBack: $putBack);
+        return new self($would, recorded: false, changes: $changes, proofs: $proofs, contests: $contests, overrides: $overrides, taking: $taking, checks: $checks, putBack: $putBack);
     }
 
     /** The plugin, as the install settles it. */
@@ -86,6 +90,26 @@ final readonly class APluginInstall
     public function overrides(): TheSettingsItOverrides
     {
         return $this->overrides;
+    }
+
+    /** Every service taking a privileged shape. */
+    public function taking(): TheShapesTaken
+    {
+        return $this->taking;
+    }
+
+    /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes. */
+    public function approvals(): PluginLines
+    {
+        $approvals = [];
+
+        foreach ([$this->would->approvals(), $this->taking->approvals()] as $lines) {
+            foreach ($lines as $approval) {
+                $approvals[] = $approval;
+            }
+        }
+
+        return PluginLines::under('approval', ...$approvals);
     }
 
     /** What the stack's own checks made of it. */
