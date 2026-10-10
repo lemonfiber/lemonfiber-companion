@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -229,6 +230,9 @@ it('reads every way a sign-in can go wrong as what stood in the way of joining',
     'nothing at the address' => [HowTheSignInWent::NothingAtThePairedAddress, WhatStoodInTheWayOfJoining::NothingAtTheAddress],
     'a connection turned away' => [HowTheSignInWent::ConnectionWasTurnedAway, WhatStoodInTheWayOfJoining::ConnectionRefused],
     'an answer that could not be read' => [HowTheSignInWent::AnswerCouldNotBeRead, WhatStoodInTheWayOfJoining::AnswerUnreadable],
+    'an invitation no longer open' => [HowTheSignInWent::InvitationWasNotOpen, WhatStoodInTheWayOfJoining::NotOpen],
+    'a chosen password too short' => [HowTheSignInWent::ChosenPasswordWasTooShort, WhatStoodInTheWayOfJoining::TooShort],
+    'a claim the media server could not confirm' => [HowTheSignInWent::TheMediaServerDidNotAnswer, WhatStoodInTheWayOfJoining::NotConfirmed],
 ]);
 
 it('is reached from the first screen', function (): void {
@@ -481,9 +485,119 @@ it('refuses a join link it cannot use, in household words, and keeps nothing', f
     'lapsed' => [theJoinLink(['expires' => '1000'])],
     'with a parameter it does not know' => [theJoinLink(['operator' => 'yes'])],
     'without a name' => ['lemonfiber://join?address=https%3A%2F%2F192.168.1.42%3A8443'],
-    'carrying a claim, which this app cannot offer yet' => [theJoinLink(['claim' => 'a-token-of-enough-random-bits'])],
 ]);
 
 it('is opened by the platform at the scheme every join link is written under', function (): void {
     expect(config('nativephp.deeplink_scheme'))->toBe(AJoinLink::scheme());
+});
+
+/** The claim every claiming link in this file carries. */
+const THE_CLAIM = 'a-token-of-enough-random-bits';
+
+/**
+ * The way in, handed a join link carrying a claim, with the house confirmed, and a door answering a claim as a test says.
+ *
+ * @return array{JoiningAHouse, ADoorThatWasKnockedOn, AKeychainInMemory}
+ */
+function aClaimOpenedAt(ADoorThatWasKnockedOn $door, ?StacksInMemory $stacks = null): array
+{
+    $keychain = AKeychainInMemory::working();
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink(['claim' => THE_CLAIM])), $door, $stacks, $keychain);
+    $screen->findTheHouse();
+    $screen->confirmTheHouse();
+
+    return [$screen, $door, $keychain];
+}
+
+/** A door that refuses a claim for the reason given, in the house's own words where some are given, and opens a sign-in. */
+function aDoorRefusingClaims(KindOfObstacle $kind, ?WhatTheHouseholdWasTold $told = null): ADoorThatWasKnockedOn
+{
+    $why = Obstacle::of($kind);
+
+    return ADoorThatWasKnockedOn::refusingClaimsAndOpeningFor(
+        $told instanceof WhatTheHouseholdWasTold ? $why->withWhatTheHouseholdWasTold($told) : $why,
+        Session::of('a-session-not-a-secret'),
+        Instant::atEpochSeconds(JOINED_AT * 2),
+        Whose::member('a-member'),
+    );
+}
+
+/** The screen with a password typed into the field it offers. */
+function choosing(JoiningAHouse $screen, string $password = 'a-password-of-twelve'): JoiningAHouse
+{
+    $screen->__syncProperty('typed', $password);
+
+    return $screen;
+}
+
+it('asks the person to choose their password where the link carries a claim, and claims it through the house before landing on Home', function (): void {
+    [$screen, $door, $keychain] = aClaimOpenedAt(ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')));
+    $asked = WhatTheDeviceWouldDraw::by($screen);
+
+    choosing($screen)->signIn();
+
+    expect($asked->said())->toContain(__('household.joining.choosing'), __('household.joining.choosing_explained'), __('household.joining.chosen_password'))
+        ->and($asked->offers())->toContain(__('household.joining.choose'))
+        ->and($door->claims())->toBe(1)
+        ->and($door->claimedWith())->toBe(THE_CLAIM)
+        ->and($door->knocks())->toBe(1)
+        ->and($door->namedAs())->toBe('Robin Ash')
+        ->and($screen->went)->toBe(HowTheSignInWent::SignedIn)
+        ->and($screen->typed)->toBe('')
+        ->and($keychain->isHolding(StackId::saidBy(THE_HOUSE)))->toBeTrue()
+        ->and($screen->getNavigationIntent()?->uri)->toBe(AStacksScreen::Shelf->forTheStack(StackId::saidBy(THE_HOUSE)));
+});
+
+it('goes straight to choosing a password where the phone holds the house the claim is for under the same certificate', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('a', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink(['claim' => THE_CLAIM])), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->choosing)->toBeTrue()
+        ->and($screen->offeredAt)->toBe('')
+        ->and($screen->theirName)->toBe('Robin Ash');
+});
+
+it('offers a plain sign-in with the same name where the invitation is no longer open, and sends no claim again', function (): void {
+    [$screen, $door] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::InvitationNotOpen));
+
+    choosing($screen)->signIn();
+    $refused = WhatTheDeviceWouldDraw::by($screen);
+    choosing($screen, 'the-password-they-chose')->signIn();
+
+    expect($refused->said())->toContain(__('household.joining.not_open'), __('household.joining.not_open_action'), __('household.joining.signing_in'))
+        ->and($refused->offers())->toContain(__('household.joining.sign_in'))
+        ->and($screen->choosing)->toBeFalse()
+        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and($door->claims())->toBe(1)
+        ->and($door->knocks())->toBe(2)
+        ->and($screen->went)->toBe(HowTheSignInWent::SignedIn);
+});
+
+it('keeps the person choosing where the house could not set the password yet, and sends the claim again', function (): void {
+    [$screen, $door] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::MediaServerDidNotAnswer));
+
+    choosing($screen)->signIn();
+    $refused = WhatTheDeviceWouldDraw::by($screen);
+    choosing($screen)->signIn();
+
+    expect($refused->said())->toContain(__('household.joining.not_confirmed'), __('household.joining.not_confirmed_action'))
+        ->and($screen->choosing)->toBeTrue()
+        ->and($door->claims())->toBe(2);
+});
+
+it('says a chosen password is too short in the house\'s own words, which name the length, and in this app\'s where it gave none', function (): void {
+    [$named] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::ChosenPasswordTooShort, WhatTheHouseholdWasTold::said('That password is too short.', 'Choose one of at least 12 characters.')));
+    [$silent] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::ChosenPasswordTooShort));
+
+    choosing($named, 'short')->signIn();
+    choosing($silent, 'short')->signIn();
+
+    expect(WhatTheDeviceWouldDraw::by($named)->said())->toContain('That password is too short.', 'Choose one of at least 12 characters.')
+        ->and(WhatTheDeviceWouldDraw::by($named)->said())->not->toContain(__('household.joining.too_short_action'))
+        ->and(WhatTheDeviceWouldDraw::by($silent)->said())->toContain(__('household.joining.too_short'), __('household.joining.too_short_action'))
+        ->and($named->choosing)->toBeTrue()
+        ->and($named->stoodInTheWay())->toBe(WhatStoodInTheWayOfJoining::TooShort);
 });

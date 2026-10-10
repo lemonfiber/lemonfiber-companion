@@ -128,4 +128,10 @@ final class MustNotLeaveThisProcess extends LogicException
     {
         return new self('A pairing line may not be serialised. It is pairing material, held on the screen that asked for it and kept out of every cache, and anything that serialises one writes where a machine is and which certificate it presents wherever the result is kept.');
     }
+
+    /** The claim an invitation's join link carries. */
+    public static function aClaim(): self
+    {
+        return new self('A claim may not be serialised. It sets the password on the one account an invitation names, and it is held on the screen that opened the invitation and nowhere else.');
+    }
 }

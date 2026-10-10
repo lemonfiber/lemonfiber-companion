@@ -7,6 +7,9 @@ namespace Modules\Kernel\Api;
 use function array_diff;
 use function array_key_exists;
 use function array_keys;
+
+use Closure;
+
 use function count;
 use function explode;
 
@@ -51,7 +54,7 @@ final readonly class AJoinLink
         private Fingerprint $presenting,
         private StackId $stack,
         private AMembersName $name,
-        private bool $claims,
+        private ?AClaim $claim,
     ) {}
 
     /**
@@ -111,10 +114,20 @@ final readonly class AJoinLink
         return $this->name;
     }
 
-    /** Whether it carries a claim: the person chooses their password, rather than signing in with one. */
-    public function claims(): bool
+    /**
+     * Say what happens where it carries a claim, so the person chooses their password, and where it does not, so they sign in with one.
+     *
+     * @template TClaiming of object
+     * @template TSigningIn of object
+     *
+     * @param Closure(AClaim): TClaiming $claiming
+     * @param Closure(): TSigningIn      $signingIn
+     *
+     * @return TClaiming|TSigningIn
+     */
+    public function leadsTo(Closure $claiming, Closure $signingIn): object
     {
-        return $this->claims;
+        return $this->claim instanceof AClaim ? $claiming($this->claim) : $signingIn();
     }
 
     /** The query of a join link, or a refusal where what was handed over is not one. */
@@ -184,20 +197,12 @@ final readonly class AJoinLink
     }
 
     /**
-     * Whether the link carries a claim; one carried empty cannot be read.
+     * The claim the link carries, or none where it carries none; one carried empty cannot be read.
      *
      * @param array<string, string> $said
      */
-    private static function claimIn(array $said): bool
+    private static function claimIn(array $said): ?AClaim
     {
-        if (! array_key_exists(WhatAJoinLinkSays::Claim->value, $said)) {
-            return false;
-        }
-
-        if ($said[WhatAJoinLinkSays::Claim->value] === '') {
-            throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Claim->value);
-        }
-
-        return true;
+        return array_key_exists(WhatAJoinLinkSays::Claim->value, $said) ? AClaim::carried($said[WhatAJoinLinkSays::Claim->value]) : null;
     }
 }

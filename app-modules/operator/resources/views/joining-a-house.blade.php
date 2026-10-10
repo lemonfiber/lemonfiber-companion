@@ -35,10 +35,20 @@
         <x-design::note>{{ __('device.camera_reason') }}</x-design::note>
         <x-design::action label="{{ __('household.joining.scan') }}" tap="findTheHouse()" />
     @else
-        <x-design::title>{{ __('household.joining.signing_in') }}</x-design::title>
-        <x-design::body>{{ __('household.joining.signing_in_explained') }}</x-design::body>
+        @if ($this->choosing)
+            <x-design::title>{{ __('household.joining.choosing') }}</x-design::title>
+            <x-design::body>{{ __('household.joining.choosing_explained') }}</x-design::body>
+        @else
+            <x-design::title>{{ __('household.joining.signing_in') }}</x-design::title>
+            <x-design::body>{{ __('household.joining.signing_in_explained') }}</x-design::body>
+        @endif
 
-        @if ($this->stoodInTheWay() !== null)
+        @if ($this->stoodInTheWay() !== null && $this->told !== null && $this->told->wasSaid())
+            <x-design::notice>
+                <x-design::strong>{{ $this->told->sentence() }}</x-design::strong>
+                <x-design::body>{{ $this->told->remedy() }}</x-design::body>
+            </x-design::notice>
+        @elseif ($this->stoodInTheWay() !== null)
             <x-design::notice>
                 <x-design::strong>{{ __($this->stoodInTheWay()->said()) }}</x-design::strong>
                 <x-design::body>{{ __($this->stoodInTheWay()->remedy()) }}</x-design::body>
@@ -55,12 +65,12 @@
 
             <native:outlined-text-input
                 native:model="typed"
-                label="{{ __('household.joining.your_password') }}"
+                label="{{ $this->choosing ? __('household.joining.chosen_password') : __('household.joining.your_password') }}"
                 keyboard="password"
                 secure
             />
 
-            <x-design::action label="{{ __('household.joining.sign_in') }}" tap="signIn()" />
+            <x-design::action label="{{ $this->choosing ? __('household.joining.choose') : __('household.joining.sign_in') }}" tap="signIn()" />
         </x-design::card>
     @endif
 </x-operator::content>

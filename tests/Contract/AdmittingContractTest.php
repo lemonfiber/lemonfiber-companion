@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
@@ -25,6 +27,7 @@ use Saloon\Contracts\Body\BodyRepository;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -276,6 +279,61 @@ it('tells a name and password the stack did not recognise from a door that has s
 
             expect($said)->toBe($why->kind()->value, sprintf('%s, %s', $which, $why->kind()->value));
         }
+    }
+});
+
+/** A refusal the door answers a claim with, carrying its code and the house's words. */
+function aClaimRefusedUnder(string $code, int $status): MockResponse
+{
+    return MockResponse::make((string) json_encode([
+        'api_version' => 1,
+        'kind' => 'error',
+        'data' => ['code' => $code, 'summary' => 'Refused at the door.', 'meaning' => 'm', 'severity' => 'error', 'state' => 'actionable', 'remedies' => []],
+    ]), $status);
+}
+
+/** What claiming came to at a door, as a word, whichever arm it took. */
+function whatClaimingCameTo(Admitting $door, ?Credential $chosen = null): string
+{
+    $claim = AJoinLink::read(
+        sprintf('lemonfiber://join?address=%s&fingerprint=%s&stack=%s&expires=2000&name=ada&claim=a-claim-token', rawurlencode('https://192.168.1.42:8443'), str_repeat('b', 64), str_repeat('a', 32)),
+        FrozenClock::at(Instant::atEpochSeconds(1000)),
+    )->leadsTo(claiming: static fn(AClaim $carried): AClaim => $carried, signingIn: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no claim'));
+
+    return $claim instanceof AClaim
+        ? $door->claimAs(aStackWithADoor(), AMembersName::of('ada'), $chosen ?? Credential::of('a-password-of-twelve'), $claim)->either(
+            opened: static fn(Session $session): TheWordCarriedOut => new TheWordCarriedOut(sprintf('opened %s', $session->forTheHeader())),
+            refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+        )->said
+        : 'no claim';
+}
+
+it('claims an invitation with the name, the chosen password and the claim, and comes away with the member\'s session', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([anOpening()]);
+    $chosen = Credential::of('a-password-of-twelve');
+
+    $said = whatClaimingCameTo(new Admissions(new PinnedDoors(), new PinnedClients()), $chosen);
+    $body = $mock->getLastPendingRequest()?->body();
+
+    expect($said)->toBe('opened a-session-not-a-secret')
+        ->and($chosen->wasSpent())->toBeTrue()
+        ->and($body instanceof BodyRepository ? $body->all() : [])->toBe(['name' => 'ada', 'password' => 'a-password-of-twelve', 'claim' => 'a-claim-token']);
+});
+
+it('reads an invitation no longer open, a choice too short and a media server that could not confirm from their codes, never as a wrong password', function (): void {
+    $table = [
+        [aClaimRefusedUnder('ADMIT-13', 401), KindOfObstacle::InvitationNotOpen],
+        [aClaimRefusedUnder('ADMIT-14', 400), KindOfObstacle::ChosenPasswordTooShort],
+        [aClaimRefusedUnder('ADMIT-7', 403), KindOfObstacle::MediaServerDidNotAnswer],
+        [MockResponse::make('{"error":"wait"}', 429), KindOfObstacle::TooManyAttempts],
+    ];
+
+    foreach ($table as [$answered, $kind]) {
+        MockClient::destroyGlobal();
+        MockClient::global([$answered]);
+
+        expect(whatClaimingCameTo(new Admissions(new PinnedDoors(), new PinnedClients())))->toBe($kind->value, $kind->value);
     }
 });
 

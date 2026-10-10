@@ -8,20 +8,27 @@ use function expect;
 use function http_build_query;
 use function it;
 
+use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\JoinLinkCannotBeUsed;
+use Modules\Kernel\Api\MustNotLeaveThisProcess;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhyAJoinLinkCannotBeUsed;
 
 use const PHP_QUERY_RFC3986;
 
+use function print_r;
+use function serialize;
 use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\TheWordCarriedOut;
+
+use function unserialize;
 
 /** The moment every link in this file is opened at. */
 const OPENED_AT = 1_000;
@@ -77,11 +84,17 @@ it('reads the house, its certificate and the name the person signs in as, decode
         ->and($house->at()->forTheClient())->toBe('https://192.168.1.42:8443')
         ->and($house->presents()->is(Fingerprint::of(str_repeat('a', 64))))->toBeTrue()
         ->and($link->name()->forTheExchange())->toBe('Robin Ash')
-        ->and($link->claims())->toBeFalse();
+        ->and($link->leadsTo(claiming: static fn(): TheWordCarriedOut => new TheWordCarriedOut('claiming'), signingIn: static fn(): TheWordCarriedOut => new TheWordCarriedOut('signing in'))->said)->toBe('signing in');
 });
 
-it('says whether it carries a claim', function (): void {
-    expect(AJoinLink::read(aLinkCarrying([...whatTheLinkCarries(), 'claim' => 'a-token-of-enough-random-bits']), openedNow())->claims())->toBeTrue();
+it('carries the claim it was written with, for the one exchange that claims the invitation, and never lets it out of the process', function (): void {
+    $claim = AJoinLink::read(aLinkCarrying([...whatTheLinkCarries(), 'claim' => 'a-token-of-enough-random-bits']), openedNow())
+        ->leadsTo(claiming: static fn(AClaim $carried): AClaim => $carried, signingIn: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no claim'));
+
+    expect($claim instanceof AClaim ? $claim->forTheExchange() : $claim->said)->toBe('a-token-of-enough-random-bits')
+        ->and(print_r($claim, return: true))->not->toContain('a-token-of-enough-random-bits')
+        ->and(static fn(): string => serialize($claim))->toThrow(MustNotLeaveThisProcess::class, 'A claim may not be serialised')
+        ->and(static fn(): mixed => unserialize('O:25:"Modules\\Kernel\\Api\\AClaim":0:{}'))->toThrow(MustNotLeaveThisProcess::class);
 });
 
 it('refuses what is not a join link', function (string $handed): void {

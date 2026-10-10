@@ -10,6 +10,8 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\TooManyAttempts;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RefusalCode;
+use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AMembersName;
@@ -20,6 +22,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Whose;
+use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
  * The one place a credential is offered to a stack.
@@ -47,6 +50,7 @@ use Modules\Kernel\Api\Whose;
  * | {@see PasswordWasRefused} | `CredentialWasRefused` — offer another attempt |
  * | {@see TooManyAttempts} | `TooManyAttempts` — wait, and do not attempt |
  * | {@see CertificateWasRefused} | `StackIsNotTheOnePaired` — this is not the machine paired with; nothing was sent, the password included |
+ * | {@see RequestFailed} carrying a code | what {@see WhatARefusalMeant} reads that code as, with the house's own words: a claim no longer open, a choice too short, a media server that could not confirm it |
  * | {@see RequestFailed}, {@see Unreachable}, {@see UnreadableResponse} | what {@see Clients::whatStoodInTheWay()} says stood in the way |
  *
  * **Nothing here reads a timestamp.** The SDK hands over the ending as a count
@@ -69,23 +73,30 @@ final readonly class Admissions implements Admitting
 
     public function admit(Stack $stack, Credential $said): Admitted
     {
-        return $this->exchanged($stack, null, $said);
+        return $this->exchanged($stack, null, $said, null);
     }
 
     public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted
     {
-        return $this->exchanged($stack, $named, $said);
+        return $this->exchanged($stack, $named, $said, null);
     }
 
-    /** What came of offering at this stack's door: the credential alone, or with a member's name. */
-    private function exchanged(Stack $stack, ?AMembersName $named, Credential $said): Admitted
+    public function claimAs(Stack $stack, AMembersName $named, Credential $chosen, AClaim $claim): Admitted
+    {
+        return $this->exchanged($stack, $named, $chosen, $claim);
+    }
+
+    /** What came of offering at this stack's door: the credential alone, with a member's name, or chosen with the claim an invitation carried. */
+    private function exchanged(Stack $stack, ?AMembersName $named, Credential $said, ?AClaim $claim): Admitted
     {
         $door = $this->doors->door($stack);
 
         try {
-            $opened = $named instanceof AMembersName
-                ? $door->openAs($named->forTheExchange(), $said->forTheExchange())
-                : $door->open($said->forTheExchange());
+            $opened = match (true) {
+                $named instanceof AMembersName && $claim instanceof AClaim => $door->claimAs($named->forTheExchange(), $said->forTheExchange(), $claim->forTheExchange()),
+                $named instanceof AMembersName => $door->openAs($named->forTheExchange(), $said->forTheExchange()),
+                default => $door->open($said->forTheExchange()),
+            };
         } catch (CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why) {
             return Admitted::refused($this->met($stack, $why));
         }
@@ -120,6 +131,7 @@ final readonly class Admissions implements Admitting
             $why instanceof PasswordWasRefused => Obstacle::of(KindOfObstacle::CredentialWasRefused),
             $why instanceof TooManyAttempts => Obstacle::of(KindOfObstacle::TooManyAttempts),
             $why instanceof CertificateWasRefused => Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired),
+            $why instanceof RequestFailed && $why->code() instanceof RefusalCode => WhatARefusalMeant::obstacle($why),
             default => $this->clients->whatStoodInTheWay($stack, $why),
         };
     }

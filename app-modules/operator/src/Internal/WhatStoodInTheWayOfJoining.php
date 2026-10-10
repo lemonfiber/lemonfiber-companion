@@ -14,7 +14,8 @@ use Modules\Kernel\Api\InTheConnectionCatalogue;
  *
  * The house being out of reach is said as every member screen says it; the
  * rest are the way in's own, because they are about the name and password the
- * member was given and the code they scanned.
+ * member was given or chose, the invitation they opened and the code they
+ * scanned.
  */
 enum WhatStoodInTheWayOfJoining: string
 {
@@ -38,6 +39,12 @@ enum WhatStoodInTheWayOfJoining: string
 
     case AnswerUnreadable = 'answer_unreadable';
 
+    case NotOpen = 'not_open';
+
+    case TooShort = 'too_short';
+
+    case NotConfirmed = 'not_confirmed';
+
     /** What stood in the way of a sign-in that went as it did, or null where nothing did. */
     public static function of(HowTheSignInWent $went): ?self
     {
@@ -53,6 +60,9 @@ enum WhatStoodInTheWayOfJoining: string
             HowTheSignInWent::NothingAtThePairedAddress => self::NothingAtTheAddress,
             HowTheSignInWent::ConnectionWasTurnedAway => self::ConnectionRefused,
             HowTheSignInWent::AnswerCouldNotBeRead => self::AnswerUnreadable,
+            HowTheSignInWent::InvitationWasNotOpen => self::NotOpen,
+            HowTheSignInWent::ChosenPasswordWasTooShort => self::TooShort,
+            HowTheSignInWent::TheMediaServerDidNotAnswer => self::NotConfirmed,
         };
     }
 

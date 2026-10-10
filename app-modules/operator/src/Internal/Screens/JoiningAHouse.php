@@ -11,6 +11,7 @@ use function is_string;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\AMembersName;
@@ -30,6 +31,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
@@ -102,14 +104,23 @@ final class JoiningAHouse extends NativeComponent
     /** What signing in came to, once it was tried. */
     public HowTheSignInWent $went = HowTheSignInWent::NotYet;
 
+    /** What the house said, in the household's words, where it refused and said something; this app's own lines stand in where it did not. */
+    public ?WhatTheHouseholdWasTold $told = null;
+
     /** Where the house a join link would add is, as the link carries it, while the person is asked whether somebody in their house sent it. */
     public string $offeredAt = '';
+
+    /** Whether the person chooses their password, with the claim their invitation carries, rather than signing in with one. */
+    public bool $choosing = false;
 
     /** The house a join link would add, held until the person says somebody in their house sent it; nothing is pinned or kept meanwhile. */
     private ?Stack $offered = null;
 
-    /** The name the link would have them sign in as, put in the field once they say so. */
-    private string $offeredAs = '';
+    /** The link that offered the house, whose name and claim the person goes on with once they say so. */
+    private ?AJoinLink $offeredBy = null;
+
+    /** The claim the person chooses their password with, while they do; never kept past this screen. */
+    private ?AClaim $claim = null;
 
     public function __construct(
         private readonly Scanning $camera,
@@ -155,25 +166,26 @@ final class JoiningAHouse extends NativeComponent
     public function confirmTheHouse(): void
     {
         $house = $this->offered;
-        $named = $this->offeredAs;
+        $link = $this->offeredBy;
         $this->forgetTheHouse();
 
-        if (! $house instanceof Stack) {
+        if (! $house instanceof Stack || ! $link instanceof AJoinLink) {
             return;
         }
 
         $this->keeping($house);
 
         if ($this->at === WhereTheWayInIs::SigningIn) {
-            $this->theirName = $named;
+            $this->goingOnWith($link);
         }
     }
+
 
     /** Let go of the house a join link offered, keeping nothing of it. */
     public function forgetTheHouse(): void
     {
         $this->offered = null;
-        $this->offeredAs = '';
+        $this->offeredBy = null;
         $this->offeredAt = '';
     }
 
@@ -188,12 +200,25 @@ final class JoiningAHouse extends NativeComponent
 
         $said = Credential::of($this->typed);
         $this->typed = '';
+        $this->told = null;
         $stack = $this->around->stack(StackId::rememberedAs($this->joined));
 
-        $this->went = $this->admitting->admitAs($stack, AMembersName::of($named), $said)->either(
+        $offered = $this->claim instanceof AClaim
+            ? $this->admitting->claimAs($stack, AMembersName::of($named), $said, $this->claim)
+            : $this->admitting->admitAs($stack, AMembersName::of($named), $said);
+
+        $this->went = $offered->either(
             opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent => $this->sessionKept($stack->id(), $session, $whose),
-            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::metWithAName($why),
+            refused: function (Obstacle $why): HowTheSignInWent {
+                $this->told = $why->whatTheHouseholdWasTold();
+
+                return HowTheSignInWent::metWithAName($why);
+            },
         );
+
+        if ($this->went === HowTheSignInWent::InvitationWasNotOpen) {
+            $this->signingInAs($named);
+        }
 
         if ($this->went->isSignedIn()) {
             $this->replaceTheWholeStack(AStacksScreen::Shelf->forTheStack($stack->id()));
@@ -235,35 +260,57 @@ final class JoiningAHouse extends NativeComponent
      * password into the stranger's machine. So nothing is pinned, kept or sent
      * until they say somebody in their house sent it.
      *
-     * A link carrying a claim asks the person to choose their password, which
-     * this app cannot offer the house yet, so it is refused as one that cannot
-     * be used.
+     * A link carrying a claim has the person choose their password with it,
+     * and one carrying none has them sign in with the one they were given.
      */
     private function openedBy(AJoinLink $link): self
     {
         $house = $link->house($this->called());
 
-        if ($link->claims()) {
-            $this->met = WhatFindingTheHouseMet::LinkUnusable;
-
-            return $this;
-        }
-
-        return $this->admits($house) ? $this->offering($house, $link->name()) : $this;
+        return $this->admits($house) ? $this->offering($house, $link) : $this;
     }
 
     /** Signing in to a house this phone holds under the link's certificate, or the person asked whether to trust one it does not hold. */
-    private function offering(Stack $house, AMembersName $named): self
+    private function offering(Stack $house, AJoinLink $link): self
     {
         if ($this->stacks->configured()->knows($house->id())) {
-            $this->theirName = $named->forTheExchange();
-
-            return $this->signingInTo($house->id());
+            return $this->signingInTo($house->id())->goingOnWith($link);
         }
 
         $this->offered = $house;
-        $this->offeredAs = $named->forTheExchange();
+        $this->offeredBy = $link;
         $this->offeredAt = $house->at()->forThePersonAskedToTrustIt();
+
+        return $this;
+    }
+
+    /** The link's name in the field, and choosing a password with its claim where it carries one, or signing in where it carries none. */
+    private function goingOnWith(AJoinLink $link): self
+    {
+        $named = $link->name()->forTheExchange();
+
+        return $link->leadsTo(
+            claiming: fn(AClaim $claim): self => $this->choosingWith($named, $claim),
+            signingIn: fn(): self => $this->signingInAs($named),
+        );
+    }
+
+    /** The name in the field, with the person choosing their password with the claim. */
+    private function choosingWith(string $named, AClaim $claim): self
+    {
+        $this->theirName = $named;
+        $this->claim = $claim;
+        $this->choosing = true;
+
+        return $this;
+    }
+
+    /** The name in the field, with the person signing in with the password they were given, and no claim held. */
+    private function signingInAs(string $named): self
+    {
+        $this->theirName = $named;
+        $this->claim = null;
+        $this->choosing = false;
 
         return $this;
     }

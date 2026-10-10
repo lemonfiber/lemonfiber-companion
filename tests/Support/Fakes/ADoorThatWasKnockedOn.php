@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Closure;
+use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AMembersName;
@@ -44,8 +45,17 @@ final class ADoorThatWasKnockedOn implements Admitting
     /** The name it was last knocked on with, or nothing where none was given. */
     private ?string $namedAs = null;
 
-    /** @param Closure(): Admitted $answer */
-    private function __construct(private readonly Closure $answer) {}
+    /** How many claims it was offered. */
+    private int $claims = 0;
+
+    /** The claim it was last offered, or nothing where it never was. */
+    private ?string $claimedWith = null;
+
+    /**
+     * @param Closure(): Admitted $answer   what it answers a sign-in with
+     * @param Closure(): Admitted $claiming what it answers a claim with
+     */
+    private function __construct(private readonly Closure $answer, private readonly Closure $claiming) {}
 
     /** A door that opens for the operator, with a session lasting until the moment given. */
     public static function opening(Session $session, Instant $until): self
@@ -62,13 +72,26 @@ final class ADoorThatWasKnockedOn implements Admitting
      */
     public static function openingFor(Session $session, Instant $until, Whose $whose): self
     {
-        return new self(static fn(): Admitted => Admitted::opening($session, $until, $whose));
+        $opens = static fn(): Admitted => Admitted::opening($session, $until, $whose);
+
+        return new self($opens, $opens);
+    }
+
+    /** A door that refuses every claim for the reason given, and opens a sign-in for whoever is named. */
+    public static function refusingClaimsAndOpeningFor(Obstacle $why, Session $session, Instant $until, Whose $whose): self
+    {
+        return new self(
+            static fn(): Admitted => Admitted::opening($session, $until, $whose),
+            static fn(): Admitted => Admitted::refused($why),
+        );
     }
 
     /** A door that does not open, for the reason given. */
     public static function refusing(Obstacle $why): self
     {
-        return new self(static fn(): Admitted => Admitted::refused($why));
+        $refuses = static fn(): Admitted => Admitted::refused($why);
+
+        return new self($refuses, $refuses);
     }
 
     /** The stack it was last knocked on for, or nothing where it never was. */
@@ -92,6 +115,30 @@ final class ADoorThatWasKnockedOn implements Admitting
     public function namedAs(): ?string
     {
         return $this->namedAs;
+    }
+
+    /** The claim it was last offered, or nothing where it never was. */
+    public function claimedWith(): ?string
+    {
+        return $this->claimedWith;
+    }
+
+    /** How many claims it was offered, which tells a claim from a sign-in. */
+    public function claims(): int
+    {
+        return $this->claims;
+    }
+
+    public function claimAs(Stack $stack, AMembersName $named, Credential $chosen, AClaim $claim): Admitted
+    {
+        $this->knockedOn = $stack;
+        $this->knocks++;
+        $this->claims++;
+        $this->namedAs = $named->forTheExchange();
+        $chosen->forTheExchange();
+        $this->claimedWith = $claim->forTheExchange();
+
+        return ($this->claiming)();
     }
 
     public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted
