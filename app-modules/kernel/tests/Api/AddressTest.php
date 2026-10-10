@@ -15,6 +15,10 @@ use Modules\Kernel\Api\HowAnAddressIsWritten;
 use Modules\Kernel\Api\MustNotLeaveThisProcess;
 use Modules\Kernel\Api\Scheme;
 
+use function parse_url;
+
+use const PHP_URL_HOST;
+
 use function print_r;
 use function serialize;
 use function sprintf;
@@ -181,3 +185,50 @@ it('says the port it is dialled on, its own or its scheme\'s', function (): void
         ->and(Address::of('https://loft.example.org')->port())->toBe(443)
         ->and(Address::of('http://loft.example.org')->port())->toBe(80);
 });
+
+it('holds a join link\'s address as one host and port, shown and dialled as the same text', function (string $handed, string $held): void {
+    $address = Address::joinedAt($handed);
+
+    expect($address->forThePersonAskedToTrustIt())->toBe($held)
+        ->and($address->forTheClient())->toBe($held)
+        ->and(parse_url($address->forTheClient(), PHP_URL_HOST))->toBe(parse_url($held, PHP_URL_HOST))
+        ->and($address->isEncrypted())->toBeTrue();
+})->with([
+    'a dotted IPv4 address and a port' => ['https://192.168.1.42:8443', 'https://192.168.1.42:8443'],
+    'a closing slash, dropped' => ['https://192.168.1.42:8443/', 'https://192.168.1.42:8443'],
+    'a local name' => ['https://the-loft.local', 'https://the-loft.local'],
+    'a bracketed IPv6 address' => ['https://[fd00::1]:8443', 'https://[fd00::1]:8443'],
+    'the highest port' => ['https://loft.example:65535', 'https://loft.example:65535'],
+    'a name whose first label begins with a digit' => ['https://1loft.local', 'https://1loft.local'],
+]);
+
+it('refuses a join link\'s address that a person could read as one host and that would dial another', function (string $handed): void {
+    expect(static fn(): Address => Address::joinedAt($handed))->toThrow(AddressIsUnreachable::class, 'one plain host');
+})->with([
+    'a user before an @' => ['https://192.168.1.42@evil.example'],
+    'a user and a password' => ['https://loft.local:pw@evil.example:8443'],
+    'a backslash' => ['https://loft.local\\@evil.example'],
+    'a path' => ['https://loft.local/evil.example'],
+    'a query' => ['https://loft.local?evil.example'],
+    'a fragment' => ['https://loft.local#evil.example'],
+    'percent-encoding' => ['https://loft%2elocal'],
+    'an encoded international name' => ['https://xn--lft-una.local'],
+    'an international name' => ['https://löft.local'],
+    'capital letters' => ['https://Loft.local'],
+    'a trailing dot' => ['https://loft.local.'],
+    'an empty label' => ['https://loft..local'],
+    'a label beginning with a hyphen' => ['https://-loft.local'],
+    'a number read as an address it does not look like' => ['https://127.1'],
+    'a hex number' => ['https://0x7f.0.0.1'],
+    'a name whose last label begins with a digit' => ['https://loft.1local'],
+    'an IPv4 address out of range' => ['https://192.168.1.420'],
+    'a port with a leading zero' => ['https://loft.local:08443'],
+    'a port past the highest' => ['https://loft.local:65536'],
+    'an empty port' => ['https://loft.local:'],
+    'plain http' => ['http://loft.local'],
+    'a capital scheme' => ['HTTPS://loft.local'],
+    'whitespace around it' => [' https://loft.local'],
+    'an IPv6 address that is not one' => ['https://[fd00::zz]'],
+    'an unbracketed IPv6 address' => ['https://fd00::1'],
+    'nothing at all' => [''],
+]);

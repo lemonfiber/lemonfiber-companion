@@ -14,7 +14,7 @@ use Modules\Kernel\Api\Session;
  * Three types each carry a string with a fixed place to go, and each
  * publishes one way to reach it per place, named for that place:
  * `forTheHeader`, `forTheExchange`, `forTheClient`, and for an address also
- * `forTheOperatorWhoCouldNotReachIt`. The naming is the guard — reading one
+ * `forTheOperatorWhoCouldNotReachIt` and `forThePersonAskedToTrustIt`. The naming is the guard — reading one
  * for any other purpose is meant to read wrong at the call site.
  *
  * **Here rather than in the test that counts them, because two rules need it.**
@@ -58,12 +58,13 @@ final readonly class OneDestination
             ],
             [
                 Address::class,
-                ['forTheClient', 'forTheOperatorWhoCouldNotReachIt'],
+                ['forTheClient', 'forTheOperatorWhoCouldNotReachIt', 'forThePersonAskedToTrustIt'],
                 'N1-R15',
                 'A stack address must not be logged, transmitted or put in a diagnostic report, '
-                . 'and is shown only to the operator on the screen that says it was not reached. '
-                . 'One accessor named for the transport and one for that screen are what make any '
-                . 'other use read wrong where it is written, which is the only place anybody would catch it.',
+                . 'and is shown only to the operator on the screen that says it was not reached, and to '
+                . 'the person deciding whether to trust the join link that names it. One accessor named '
+                . 'for the transport and one for each of those screens are what make any other use read '
+                . 'wrong where it is written, which is the only place anybody would catch it.',
             ],
         ];
     }

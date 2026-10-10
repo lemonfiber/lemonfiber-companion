@@ -32,6 +32,7 @@ interface Runloop
      *
      * @param Closure(string, array<mixed>): mixed $build  how a screen is made, given its name and its route's parameters
      * @param array<mixed>                        $params what the route carried
+     * @param string                              $at     the address the screen was asked for, with what it carried after `?`
      */
-    public function enter(Closure $build, string $screen, array $params, string $path): mixed;
+    public function enter(Closure $build, string $screen, array $params, string $at): mixed;
 }

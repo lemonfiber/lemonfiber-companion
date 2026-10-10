@@ -24,7 +24,7 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 
 use function sprintf;
 
-it('is the seventeen an operator must be able to tell apart', function (): void {
+it('is the nineteen an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -41,6 +41,8 @@ it('is the seventeen an operator must be able to tell apart', function (): void 
         KindOfObstacle::NotForThisAccount,
         KindOfObstacle::TooManyAttempts,
         KindOfObstacle::MediaServerDidNotAnswer,
+        KindOfObstacle::InvitationNotOpen,
+        KindOfObstacle::ChosenPasswordTooShort,
         KindOfObstacle::HouseholdCouldNotBeRead,
         KindOfObstacle::AddressIsNotTheStacks,
         KindOfObstacle::VersionsDisagree,
@@ -78,6 +80,8 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-NOT-FOR-THIS-ACCOUNT',
         'COMPANION-TOO-MANY-ATTEMPTS',
         'COMPANION-MEDIA-SERVER-UNCONFIRMED',
+        'COMPANION-INVITATION-NOT-OPEN',
+        'COMPANION-CHOSEN-PASSWORD-TOO-SHORT',
         'COMPANION-HOUSEHOLD-UNREAD',
         'COMPANION-ADDRESS-NOT-THE-STACKS',
         'COMPANION-VERSIONS-DISAGREE',

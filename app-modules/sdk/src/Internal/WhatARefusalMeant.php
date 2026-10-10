@@ -205,14 +205,14 @@ final readonly class WhatARefusalMeant
             RefusalCode::Unconfirmed,
             RefusalCode::ServerSilent => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
             RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
+            RefusalCode::NotOpen => Obstacle::of(KindOfObstacle::InvitationNotOpen),
+            RefusalCode::ShortChoice => Obstacle::of(KindOfObstacle::ChosenPasswordTooShort),
             // The door's own refusals, which `Admissions` reads where the
-            // password is offered or chosen at a claim. One reaching here is
-            // about what was offered at the door, and it ends no session.
+            // password is offered. One reaching here is about what was offered
+            // at the door, and it ends no session.
             RefusalCode::NotThePassword,
             RefusalCode::TooManyAttempts,
             RefusalCode::NotAPassword,
-            RefusalCode::NotOpen,
-            RefusalCode::ShortChoice,
             // A key's own refusals. This app sends a session and no key, so one
             // reaching it ends no session, and its words are the answer.
             RefusalCode::KeyInTheClear,

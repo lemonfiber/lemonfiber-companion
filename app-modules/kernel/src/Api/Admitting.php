@@ -50,4 +50,13 @@ interface Admitting
      * after, and a refusal does not say which of the two it did not recognise.
      */
     public function admitAs(Stack $stack, AMembersName $named, Credential $said): Admitted;
+
+    /**
+     * Claim an invitation: set the password a member chose on the account it names, and come away with their session or with a reason.
+     *
+     * The chosen password is spent by being offered, as every credential is;
+     * the claim is not, since one the media server could not confirm is kept
+     * by the stack and tried again.
+     */
+    public function claimAs(Stack $stack, AMembersName $named, Credential $chosen, AClaim $claim): Admitted;
 }

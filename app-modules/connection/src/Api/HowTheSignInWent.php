@@ -151,6 +151,15 @@ enum HowTheSignInWent: string
      */
     case AnswerCouldNotBeRead = 'answer_unreadable';
 
+    /** The invitation a claim was offered for is not open, and the person may sign in with a password they already chose. */
+    case InvitationWasNotOpen = 'invitation_not_open';
+
+    /** The password a member chose to claim their invitation is shorter than the stack accepts. */
+    case ChosenPasswordWasTooShort = 'chosen_password_too_short';
+
+    /** The stack could not check a claim with its media server; the claim is kept, and trying again later may go through. */
+    case TheMediaServerDidNotAnswer = 'media_server_unconfirmed';
+
     /** The states whose way on is the pairing screen rather than this one. */
     private const array PUT_RIGHT_BY_PAIRING_AGAIN = [
         self::TheMachineIsNotTheOnePaired,
@@ -265,9 +274,9 @@ enum HowTheSignInWent: string
     public function standing(): Standing
     {
         return match ($this) {
-            self::NotYet, self::CredentialWasRefused, self::ThePairWasRefused => Standing::Actionable,
+            self::NotYet, self::CredentialWasRefused, self::ThePairWasRefused, self::InvitationWasNotOpen, self::ChosenPasswordWasTooShort => Standing::Actionable,
             self::SignedIn => Standing::Suppressed,
-            self::TooManyAttempts, self::StackDidNotAnswer, self::ConnectionWasTurnedAway, self::AnswerCouldNotBeRead => Standing::Guided,
+            self::TooManyAttempts, self::StackDidNotAnswer, self::ConnectionWasTurnedAway, self::AnswerCouldNotBeRead, self::TheMediaServerDidNotAnswer => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
             // `Guided` rather than `Actionable`, which is the distinction that
             // makes the distinction worth having: the operator must act, and not here.
@@ -351,6 +360,9 @@ enum HowTheSignInWent: string
             KindOfObstacle::NothingAtThePairedAddress => self::NothingAtThePairedAddress,
             KindOfObstacle::ConnectionWasTurnedAway => self::ConnectionWasTurnedAway,
             KindOfObstacle::AnswerCouldNotBeRead => self::AnswerCouldNotBeRead,
+            KindOfObstacle::InvitationNotOpen => self::InvitationWasNotOpen,
+            KindOfObstacle::ChosenPasswordTooShort => self::ChosenPasswordWasTooShort,
+            KindOfObstacle::MediaServerDidNotAnswer => self::TheMediaServerDidNotAnswer,
             KindOfObstacle::StackDidNotAnswer,
             KindOfObstacle::DeviceHasNoNetwork,
             // The door answers neither: it is asked before any version is
@@ -366,10 +378,6 @@ enum HowTheSignInWent: string
             // this enum has none that would be true of it, and inventing one
             // now would be a screen nobody can reach.
             KindOfObstacle::NotForThisAccount,
-            // The door is the one place that never asks the media server about an
-            // account it has not yet admitted, so this cannot arrive here either;
-            // the day it does, it is owed a state of its own rather than this one.
-            KindOfObstacle::MediaServerDidNotAnswer,
             // The door reads no household, so this cannot arrive here either.
             KindOfObstacle::HouseholdCouldNotBeRead,
             // Signing in is not asked of what a stack declares it can do, so

@@ -116,7 +116,7 @@ it('answers a request for a screen through the runloop it was given', function (
     $ran = $entered->whatItRan();
 
     expect($ran['screen'])->toBe(YourStacks::class)
-        ->and($ran['path'])->toBe('/')
+        ->and($ran['at'])->toBe('/')
         ->and($ran['params'])->toBe([]);
 });
 
@@ -152,7 +152,7 @@ it('takes no parameters from a path the navigation stack does not know', functio
     ranTheRouteAt('/a-screen-for-an-unknown-path');
 
     expect($entered->whatItRan()['params'])->toBe([])
-        ->and($entered->whatItRan()['path'])->toBe('/nothing-is-registered-here');
+        ->and($entered->whatItRan()['at'])->toBe('/nothing-is-registered-here');
 });
 
 it('resolves the parameters the navigation stack holds, not the router\'s', function (): void {
@@ -177,7 +177,21 @@ it('resolves the parameters the navigation stack holds, not the router\'s', func
     ranTheRouteAt('/a-stack/{stack}');
 
     expect($entered->whatItRan()['params'])->toBe(['stack' => 'the-loft'])
-        ->and($entered->whatItRan()['path'])->toBe('/a-stack/the-loft');
+        ->and($entered->whatItRan()['at'])->toBe('/a-stack/the-loft');
+});
+
+it('starts the screen at the whole address it was asked for, with what it carried after the path', function (): void {
+    $entered = new ARunloopThatOnlyRemembers();
+
+    new ScreenRoutes(aBuildThatKnows(), $entered)->declare();
+    Route::native('/a-stack/{stack}', YourStacks::class);
+
+    servingARequestFor('/a-stack/the-loft?name=Robin%20Ash');
+
+    ranTheRouteAt('/a-stack/{stack}');
+
+    expect($entered->whatItRan()['params'])->toBe(['stack' => 'the-loft'])
+        ->and($entered->whatItRan()['at'])->toBe('/a-stack/the-loft?name=Robin%20Ash');
 });
 
 it('answers a request for a screen with the harness where there is no device', function (): void {

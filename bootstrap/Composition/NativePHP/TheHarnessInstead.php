@@ -51,7 +51,7 @@ final readonly class TheHarnessInstead implements Runloop
      * @param Closure(string, array<mixed>): mixed $build
      * @param array<mixed>                        $params
      */
-    public function enter(Closure $build, string $screen, array $params, string $path): mixed
+    public function enter(Closure $build, string $screen, array $params, string $at): mixed
     {
         // Built and dropped. What this proves is that the route names something
         // this application can construct, which is the half of a screen a

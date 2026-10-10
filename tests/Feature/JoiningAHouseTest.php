@@ -5,16 +5,22 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\JoiningAHouse;
+use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheWayInIs;
 use Modules\Stacks\Api\AStacksScreen;
@@ -29,6 +35,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheRouterHolds;
 
 /** The moment every code in this file is scanned at. */
 const JOINED_AT = 1_000;
@@ -62,6 +69,7 @@ function theWayIn(
         $camera,
         new Introducing(),
         new Remembering($stacks, $keychain),
+        $stacks,
         $clock,
         $door ?? ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')),
         $keychain,
@@ -88,8 +96,8 @@ it('opens on finding the house, saying it is the first of three steps', function
     expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
         ->and($said)->toContain(
             __('onboarding.step', ['step' => 1, 'of' => 3]),
-            __('household.joining.the_code_for_a_new_phone'),
-            __('household.joining.the_code_for_a_new_phone_explained'),
+            __('household.joining.your_invitation'),
+            __('household.joining.your_invitation_explained'),
             __('household.joining.scan'),
         );
 });
@@ -119,7 +127,7 @@ it('stays on the first step and says so when what was scanned is not a code for 
     $screen->findTheHouse();
 
     expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
-        ->and($screen->codeWasUnreadable)->toBeTrue()
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::CodeUnreadable)
         ->and($stacks->holdsAny())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.code_unreadable'), __('household.joining.code_unreadable_action'));
 });
@@ -152,7 +160,7 @@ it('stays on the first step when this phone could not keep the house', function 
 
     $screen->findTheHouse();
 
-    expect($screen->notKept)->toBeTrue()
+    expect($screen->met)->toBe(WhatFindingTheHouseMet::NotKept)
         ->and($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_kept'), __('household.joining.not_kept_action'));
 });
@@ -222,8 +230,374 @@ it('reads every way a sign-in can go wrong as what stood in the way of joining',
     'nothing at the address' => [HowTheSignInWent::NothingAtThePairedAddress, WhatStoodInTheWayOfJoining::NothingAtTheAddress],
     'a connection turned away' => [HowTheSignInWent::ConnectionWasTurnedAway, WhatStoodInTheWayOfJoining::ConnectionRefused],
     'an answer that could not be read' => [HowTheSignInWent::AnswerCouldNotBeRead, WhatStoodInTheWayOfJoining::AnswerUnreadable],
+    'an invitation no longer open' => [HowTheSignInWent::InvitationWasNotOpen, WhatStoodInTheWayOfJoining::NotOpen],
+    'a chosen password too short' => [HowTheSignInWent::ChosenPasswordWasTooShort, WhatStoodInTheWayOfJoining::TooShort],
+    'a claim the media server could not confirm' => [HowTheSignInWent::TheMediaServerDidNotAnswer, WhatStoodInTheWayOfJoining::NotConfirmed],
 ]);
 
 it('is reached from the first screen', function (): void {
     expect(NativeRouter::resolve(AScreenWithoutAStack::JoiningAHouse->value))->not->toBeNull();
+});
+
+/**
+ * An invitation's join link to the house, with whatever a test needs to change about it.
+ *
+ * @param array<string, string> $changed
+ */
+function theJoinLink(array $changed = []): string
+{
+    return sprintf('lemonfiber://join?%s', http_build_query([
+        'address' => 'https://192.168.1.42:8443',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'stack' => THE_HOUSE,
+        'expires' => '2000',
+        'name' => 'Robin Ash',
+        ...$changed,
+    ], encoding_type: PHP_QUERY_RFC3986));
+}
+
+/** The house as a phone already holds it, under the certificate given. */
+function theHouseHeld(string $fingerprint): Stack
+{
+    return Stack::of(StackId::saidBy(THE_HOUSE), StackName::of('The loft'), Address::of('https://192.168.1.42:8443'), Fingerprint::of($fingerprint));
+}
+
+/**
+ * The way in, handed the join link on the path a test names: scanned, or opened by the platform while the app was running or from cold.
+ *
+ * @return array{JoiningAHouse, StacksInMemory, ADoorThatWasKnockedOn}
+ */
+function aJoinLinkOpenedBy(string $path): array
+{
+    $stacks = StacksInMemory::working();
+    $door = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member'));
+    $screen = theWayIn(ACameraInMemory::reading($path === 'scanned' ? theJoinLink() : ''), $door, $stacks);
+
+    if ($path === 'scanned') {
+        $screen->findTheHouse();
+
+        return [$screen, $stacks, $door];
+    }
+
+    $opened = sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY));
+    $path === 'opened while it was running'
+        ? WhatTheRouterHolds::over($screen, $opened, AScreenWithoutAStack::TheList->value)
+        : WhatTheRouterHolds::over($screen, $opened);
+    $screen->mount();
+
+    return [$screen, $stacks, $door];
+}
+
+it('asks whether somebody in their house sent a join link before it pins or keeps anything, or sends any password', function (string $path): void {
+    [$screen, $stacks, $door] = aJoinLinkOpenedBy($path);
+    $asked = WhatTheDeviceWouldDraw::by($screen);
+    $screen->__syncProperty('theirName', 'Robin Ash');
+    $screen->__syncProperty('typed', 'a-members-password');
+    $screen->signIn();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->offeredAt)->toBe('https://192.168.1.42:8443')
+        ->and($stacks->holdsAny())->toBeFalse()
+        ->and($door->knocks())->toBe(0)
+        ->and($asked->said())->toContain(__('household.joining.is_it_yours'), __('household.joining.is_it_yours_explained'), 'https://192.168.1.42:8443')
+        ->and($asked->offers())->toContain(__('household.joining.it_is_yours'), __('household.joining.it_is_not_yours'))
+        ->and($asked->offers())->not->toContain(__('household.joining.sign_in'));
+})->with(['scanned', 'opened while it was running', 'opened from cold']);
+
+it('adds the house a join link names, pinned to its certificate, once they say somebody in their house sent it, and asks them to sign in as its name', function (string $path): void {
+    [$screen, $stacks, $door] = aJoinLinkOpenedBy($path);
+
+    $screen->confirmTheHouse();
+
+    $kept = $stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE));
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->met)->toBeNull()
+        ->and($screen->offeredAt)->toBe('')
+        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and($kept->name()->shown())->toBe(__('household.joining.called'))
+        ->and($kept->presents()->is(Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))))->toBeTrue()
+        ->and($kept->at()->forTheClient())->toBe('https://192.168.1.42:8443')
+        ->and($door->knocks())->toBe(0)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
+})->with(['scanned', 'opened while it was running', 'opened from cold']);
+
+it('keeps nothing of a join link they say nobody in their house sent, and confirming afterwards adds nothing', function (): void {
+    [$screen, $stacks] = aJoinLinkOpenedBy('scanned');
+
+    $screen->forgetTheHouse();
+    $screen->confirmTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->offeredAt)->toBe('')
+        ->and($screen->theirName)->toBe('')
+        ->and($stacks->holdsAny())->toBeFalse();
+});
+
+
+it('opens on finding the house where the phone opened it at no link', function (): void {
+    $screen = theWayIn(ACameraInMemory::reading(''));
+    WhatTheRouterHolds::over($screen, AScreenWithoutAStack::JoiningAHouse->value, AScreenWithoutAStack::TheList->value);
+
+    $screen->mount();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBeNull();
+});
+
+it('goes straight to signing in on a phone that holds the house under the same certificate, and changes nothing it holds', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('a', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->name()->shown())->toBe('The loft');
+});
+
+it('refuses a join link for a house the phone holds under another certificate, and never re-pins it', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('b', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and($stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->presents()->is(Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS))))->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_this_house'), __('household.joining.a_new_invitation_action'));
+});
+
+/**
+ * A phone holding the house under the certificate given, with a session for it.
+ *
+ * @return array{StacksInMemory, AKeychainInMemory}
+ */
+function aPhoneHoldingTheHouse(string $fingerprint): array
+{
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep(StackId::saidBy(THE_HOUSE), Session::of('a-session-not-a-secret'), Whose::member('a-member'));
+
+    return [StacksInMemory::holding(theHouseHeld($fingerprint)), $keychain];
+}
+
+/** Whether the phone still holds the house pinned to the certificate given, with its session. */
+function stillPinnedTo(StacksInMemory $stacks, AKeychainInMemory $keychain, string $fingerprint): bool
+{
+    return $stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->presents()->is(Fingerprint::of($fingerprint))
+        && $keychain->isHolding(StackId::saidBy(THE_HOUSE));
+}
+
+it('refuses a scanned code for a house the phone holds under another certificate, and never re-pins it or lets go of its session', function (): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('b', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), stacks: $stacks, keychain: $keychain);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('b', Fingerprint::CHARACTERS)))->toBeTrue();
+});
+
+it('refuses a join link the phone was opened at for a house it holds under another certificate, whether it was running or not', function (string ...$beneath): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('b', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(''), stacks: $stacks, keychain: $keychain);
+    WhatTheRouterHolds::over($screen, sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY)), ...$beneath);
+
+    $screen->mount();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and($screen->theirName)->toBe('')
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('b', Fingerprint::CHARACTERS)))->toBeTrue();
+})->with([
+    'opened while it was running' => [AScreenWithoutAStack::TheList->value],
+    'opened from cold' => [],
+]);
+
+it('goes on to signing in from a scanned code for a house the phone holds under the same certificate, keeping its session', function (): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('a', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), stacks: $stacks, keychain: $keychain);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->met)->toBeNull()
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('a', Fingerprint::CHARACTERS)))->toBeTrue();
+});
+
+it('writes an address it was opened at to the phone\'s log only up to what a link carries', function (): void {
+    $kept = (string) tempnam(sys_get_temp_dir(), 'joining');
+    unlink($kept);
+    mkdir(sprintf('%s/logs', $kept), recursive: true);
+    $before = storage_path();
+    app()->useStoragePath($kept);
+
+    try {
+        NativeRouter::debugLog(sprintf('start: class=%s uri=%s?%s', JoiningAHouse::class, AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(['claim' => 'a-token-of-enough-random-bits']), PHP_URL_QUERY)));
+        $written = (string) file_get_contents(sprintf('%s/logs/edge-nav.log', $kept));
+    } finally {
+        app()->useStoragePath($before);
+    }
+
+    unlink(sprintf('%s/logs/edge-nav.log', $kept));
+    rmdir(sprintf('%s/logs', $kept));
+    rmdir($kept);
+
+    expect($written)->toContain(sprintf('uri=%s?', AScreenWithoutAStack::JoiningAHouse->value))
+        ->and($written)->not->toContain('Robin')
+        ->and($written)->not->toContain('a-token-of-enough-random-bits')
+        ->and($written)->not->toContain(str_repeat('a', Fingerprint::CHARACTERS));
+});
+
+it('writes a deep link to every platform log only up to what it carries', function (string $file, string ...$carries): void {
+    foreach ($carries as $line) {
+        expect((string) file_get_contents(base_path($file)))->toContain($line);
+    }
+})->with([
+    'the iOS debug log' => [
+        'vendor/nativephp/mobile/resources/xcode/NativePHP/DebugLogger.swift',
+        'let redacted = message.replacingOccurrences(of: "\\\\?\\\\S*", with: "?", options: .regularExpression)',
+        'let logEntry = "[\(timestamp)] \(redacted)\n"',
+        'print("🐛 \(redacted)")',
+    ],
+    'the iOS boot' => [
+        'vendor/nativephp/mobile/resources/xcode/NativePHP/NativePHPApp.swift',
+        'NSLog("[NativeBoot] 🚀 Direct native dispatch: \(uri.components(separatedBy: "?")[0])")',
+    ],
+    'Android' => [
+        'vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt',
+        'Log.d("DeepLink", "🌐 Received deep link: ${uri.toString().substringBefore(\'?\')}")',
+        'Log.d("DeepLink", "📦 Saving deep link for later: ${laravelUrl.substringBefore(\'?\')}")',
+        'Log.d("DeepLink", "🚀 native-ui: dispatching __deeplink event: ${route.substringBefore(\'?\')}")',
+    ],
+]);
+
+it('refuses a join link it cannot use, in household words, and keeps nothing', function (string $link): void {
+    $stacks = StacksInMemory::working();
+    $screen = theWayIn(ACameraInMemory::reading($link), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->met)->toBe(WhatFindingTheHouseMet::LinkUnusable)
+        ->and($stacks->holdsAny())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.link_unusable'), __('household.joining.a_new_invitation_action'));
+})->with([
+    'lapsed' => [theJoinLink(['expires' => '1000'])],
+    'with a parameter it does not know' => [theJoinLink(['operator' => 'yes'])],
+    'without a name' => ['lemonfiber://join?address=https%3A%2F%2F192.168.1.42%3A8443'],
+]);
+
+it('is opened by the platform at the scheme every join link is written under', function (): void {
+    expect(config('nativephp.deeplink_scheme'))->toBe(AJoinLink::scheme());
+});
+
+/** The claim every claiming link in this file carries. */
+const THE_CLAIM = 'a-token-of-enough-random-bits';
+
+/**
+ * The way in, handed a join link carrying a claim, with the house confirmed, and a door answering a claim as a test says.
+ *
+ * @return array{JoiningAHouse, ADoorThatWasKnockedOn, AKeychainInMemory}
+ */
+function aClaimOpenedAt(ADoorThatWasKnockedOn $door, ?StacksInMemory $stacks = null): array
+{
+    $keychain = AKeychainInMemory::working();
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink(['claim' => THE_CLAIM])), $door, $stacks, $keychain);
+    $screen->findTheHouse();
+    $screen->confirmTheHouse();
+
+    return [$screen, $door, $keychain];
+}
+
+/** A door that refuses a claim for the reason given, in the house's own words where some are given, and opens a sign-in. */
+function aDoorRefusingClaims(KindOfObstacle $kind, ?WhatTheHouseholdWasTold $told = null): ADoorThatWasKnockedOn
+{
+    $why = Obstacle::of($kind);
+
+    return ADoorThatWasKnockedOn::refusingClaimsAndOpeningFor(
+        $told instanceof WhatTheHouseholdWasTold ? $why->withWhatTheHouseholdWasTold($told) : $why,
+        Session::of('a-session-not-a-secret'),
+        Instant::atEpochSeconds(JOINED_AT * 2),
+        Whose::member('a-member'),
+    );
+}
+
+/** The screen with a password typed into the field it offers. */
+function choosing(JoiningAHouse $screen, string $password = 'a-password-of-twelve'): JoiningAHouse
+{
+    $screen->__syncProperty('typed', $password);
+
+    return $screen;
+}
+
+it('asks the person to choose their password where the link carries a claim, and claims it through the house before landing on Home', function (): void {
+    [$screen, $door, $keychain] = aClaimOpenedAt(ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')));
+    $asked = WhatTheDeviceWouldDraw::by($screen);
+
+    choosing($screen)->signIn();
+
+    expect($asked->said())->toContain(__('household.joining.choosing'), __('household.joining.choosing_explained'), __('household.joining.chosen_password'))
+        ->and($asked->offers())->toContain(__('household.joining.choose'))
+        ->and($door->claims())->toBe(1)
+        ->and($door->claimedWith())->toBe(THE_CLAIM)
+        ->and($door->knocks())->toBe(1)
+        ->and($door->namedAs())->toBe('Robin Ash')
+        ->and($screen->went)->toBe(HowTheSignInWent::SignedIn)
+        ->and($screen->typed)->toBe('')
+        ->and($keychain->isHolding(StackId::saidBy(THE_HOUSE)))->toBeTrue()
+        ->and($screen->getNavigationIntent()?->uri)->toBe(AStacksScreen::Shelf->forTheStack(StackId::saidBy(THE_HOUSE)));
+});
+
+it('goes straight to choosing a password where the phone holds the house the claim is for under the same certificate', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('a', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink(['claim' => THE_CLAIM])), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->choosing)->toBeTrue()
+        ->and($screen->offeredAt)->toBe('')
+        ->and($screen->theirName)->toBe('Robin Ash');
+});
+
+it('offers a plain sign-in with the same name where the invitation is no longer open, and sends no claim again', function (): void {
+    [$screen, $door] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::InvitationNotOpen));
+
+    choosing($screen)->signIn();
+    $refused = WhatTheDeviceWouldDraw::by($screen);
+    choosing($screen, 'the-password-they-chose')->signIn();
+
+    expect($refused->said())->toContain(__('household.joining.not_open'), __('household.joining.not_open_action'), __('household.joining.signing_in'))
+        ->and($refused->offers())->toContain(__('household.joining.sign_in'))
+        ->and($screen->choosing)->toBeFalse()
+        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and($door->claims())->toBe(1)
+        ->and($door->knocks())->toBe(2)
+        ->and($screen->went)->toBe(HowTheSignInWent::SignedIn);
+});
+
+it('keeps the person choosing where the house could not set the password yet, and sends the claim again', function (): void {
+    [$screen, $door] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::MediaServerDidNotAnswer));
+
+    choosing($screen)->signIn();
+    $refused = WhatTheDeviceWouldDraw::by($screen);
+    choosing($screen)->signIn();
+
+    expect($refused->said())->toContain(__('household.joining.not_confirmed'), __('household.joining.not_confirmed_action'))
+        ->and($screen->choosing)->toBeTrue()
+        ->and($door->claims())->toBe(2);
+});
+
+it('says a chosen password is too short in the house\'s own words, which name the length, and in this app\'s where it gave none', function (): void {
+    [$named] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::ChosenPasswordTooShort, WhatTheHouseholdWasTold::said('That password is too short.', 'Choose one of at least 12 characters.')));
+    [$silent] = aClaimOpenedAt(aDoorRefusingClaims(KindOfObstacle::ChosenPasswordTooShort));
+
+    choosing($named, 'short')->signIn();
+    choosing($silent, 'short')->signIn();
+
+    expect(WhatTheDeviceWouldDraw::by($named)->said())->toContain('That password is too short.', 'Choose one of at least 12 characters.')
+        ->and(WhatTheDeviceWouldDraw::by($named)->said())->not->toContain(__('household.joining.too_short_action'))
+        ->and(WhatTheDeviceWouldDraw::by($silent)->said())->toContain(__('household.joining.too_short'), __('household.joining.too_short_action'))
+        ->and($named->choosing)->toBeTrue()
+        ->and($named->stoodInTheWay())->toBe(WhatStoodInTheWayOfJoining::TooShort);
 });

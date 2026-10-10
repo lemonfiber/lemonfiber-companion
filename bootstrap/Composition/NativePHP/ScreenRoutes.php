@@ -121,7 +121,7 @@ final readonly class ScreenRoutes
     {
         $path = sprintf('/%s', ltrim(request()->path(), '/'));
 
-        return $this->runloop->enter($this->build, $screen, $this->parameters($path), $path);
+        return $this->runloop->enter($this->build, $screen, $this->parameters($path), request()->getRequestUri());
     }
 
     /**

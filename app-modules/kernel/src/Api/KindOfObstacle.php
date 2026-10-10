@@ -194,6 +194,18 @@ enum KindOfObstacle: string
     case MediaServerDidNotAnswer = 'media_server_unconfirmed';
 
     /**
+     * The invitation a claim was offered for is not open: unknown, spent, lapsed or turned down, or its account already claimed.
+     *
+     * Said as one, because the stack says it as one so a guess learns nothing
+     * about which. The person may already have chosen a password, so what is
+     * offered next is signing in with it.
+     */
+    case InvitationNotOpen = 'invitation_not_open';
+
+    /** The password a member chose is shorter than the stack accepts. */
+    case ChosenPasswordTooShort = 'chosen_password_too_short';
+
+    /**
      * The stack answered, and could not read who is in the household.
      *
      * The stack is there and said why its list of people is empty, which is
@@ -424,6 +436,8 @@ enum KindOfObstacle: string
             self::StackIsBusy => 'COMPANION-STACK-BUSY',
             self::NotOnThisStack => 'COMPANION-NOT-ON-THIS-STACK',
             self::AnswerCouldNotBeRead => 'COMPANION-ANSWER-UNREADABLE',
+            self::InvitationNotOpen => 'COMPANION-INVITATION-NOT-OPEN',
+            self::ChosenPasswordTooShort => 'COMPANION-CHOSEN-PASSWORD-TOO-SHORT',
         });
     }
 
@@ -456,7 +470,9 @@ enum KindOfObstacle: string
             // clears itself once that work is done.
             self::StackIsBusy,
             // Nothing is broken: the stack works, and is older than this.
-            self::NotOnThisStack => Severity::Warning,
+            self::NotOnThisStack,
+            self::InvitationNotOpen,
+            self::ChosenPasswordTooShort => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
             self::NameWasNotFound,
@@ -515,7 +531,9 @@ enum KindOfObstacle: string
             self::StackIsNotTheOnePaired,
             // Updating the machine is a thing the app offers, on its updates
             // screen, so the remedy is a road there.
-            self::NotOnThisStack => Standing::Actionable,
+            self::NotOnThisStack,
+            self::InvitationNotOpen,
+            self::ChosenPasswordTooShort => Standing::Actionable,
         };
     }
 }

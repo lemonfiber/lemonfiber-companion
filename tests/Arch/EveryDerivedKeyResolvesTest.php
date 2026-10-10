@@ -90,6 +90,7 @@ use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\NotACountOfDays;
+use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
@@ -518,6 +519,10 @@ function everyDerivedKey(): array
         HowAnInvitedPhoneFindsTheHouse::class => aPairPerCase(
             HowAnInvitedPhoneFindsTheHouse::cases(),
             static fn(HowAnInvitedPhoneFindsTheHouse $finds): array => [$finds->said(), $finds->explained()],
+        ),
+        WhatFindingTheHouseMet::class => aPairPerCase(
+            WhatFindingTheHouseMet::cases(),
+            static fn(WhatFindingTheHouseMet $met): array => [$met->said(), $met->remedy()],
         ),
         WhatStoodInTheWayOfJoining::class => aPairPerCase(
             WhatStoodInTheWayOfJoining::cases(),
