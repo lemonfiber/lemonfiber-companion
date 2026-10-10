@@ -17,6 +17,8 @@ final readonly class InTheWayInsWords
 
     private const string REMEDY = 'household.joining.%s_action';
 
+    private const string A_NEW_INVITATION = 'household.joining.a_new_invitation_action';
+
     /** The key for what a stem says. */
     public static function said(string $stem): string
     {
@@ -33,5 +35,11 @@ final readonly class InTheWayInsWords
     public static function remedy(string $stem): string
     {
         return sprintf(self::REMEDY, $stem);
+    }
+
+    /** The key for asking whoever sent the invitation for a new one, the remedy wherever an invitation cannot take the phone to its house. */
+    public static function askingForANewInvitation(): string
+    {
+        return self::A_NEW_INVITATION;
     }
 }

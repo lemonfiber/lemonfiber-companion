@@ -75,7 +75,11 @@ enum WhatStoodInTheWayOfJoining: string
     /** The key for what to do about it. */
     public function remedy(): string
     {
-        return $this->isTheHouseOutOfReach() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy() : InTheWayInsWords::remedy($this->value);
+        if ($this->isTheHouseOutOfReach()) {
+            return InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy();
+        }
+
+        return $this === self::NotTheHouse ? InTheWayInsWords::askingForANewInvitation() : InTheWayInsWords::remedy($this->value);
     }
 
     /** Whether it is the house being out of reach, which every member screen says the same way. */

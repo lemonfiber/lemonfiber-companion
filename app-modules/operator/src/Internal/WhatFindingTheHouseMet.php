@@ -26,6 +26,9 @@ enum WhatFindingTheHouseMet: string
     /** The key for what to do about it. */
     public function remedy(): string
     {
-        return InTheWayInsWords::remedy($this->value);
+        return match ($this) {
+            self::LinkUnusable, self::NotThisHouse => InTheWayInsWords::askingForANewInvitation(),
+            self::CodeUnreadable, self::NotKept => InTheWayInsWords::remedy($this->value),
+        };
     }
 }

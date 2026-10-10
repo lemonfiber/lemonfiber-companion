@@ -364,7 +364,7 @@ it('refuses a join link for a house the phone holds under another certificate, a
     expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
         ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
         ->and($stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->presents()->is(Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS))))->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_this_house'), __('household.joining.not_this_house_action'));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_this_house'), __('household.joining.a_new_invitation_action'));
 });
 
 /**
@@ -480,7 +480,7 @@ it('refuses a join link it cannot use, in household words, and keeps nothing', f
 
     expect($screen->met)->toBe(WhatFindingTheHouseMet::LinkUnusable)
         ->and($stacks->holdsAny())->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.link_unusable'), __('household.joining.link_unusable_action'));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.link_unusable'), __('household.joining.a_new_invitation_action'));
 })->with([
     'lapsed' => [theJoinLink(['expires' => '1000'])],
     'with a parameter it does not know' => [theJoinLink(['operator' => 'yes'])],
