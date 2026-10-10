@@ -12,7 +12,7 @@ use function sprintf;
  * A `version` envelope arrived that cannot be read as the versions a stack runs.
  *
  * One kind for everything the reading refuses, so the adapter catches one and
- * the screen says the stack did not answer rather than drawing half of it.
+ * the screen says the answer could not be read rather than drawing half of it.
  */
 final class VersionsAreUnreadable extends InvalidArgumentException
 {

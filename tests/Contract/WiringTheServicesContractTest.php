@@ -174,7 +174,7 @@ it('tells a session that has ended from a stack that is not answering', function
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('Not yours to ask', 403, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::NotForThisAccount)],
         [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -227,7 +227,7 @@ it('a run this app cannot read is an obstacle, never a run that did less', funct
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfTheRun([...whatTheRunCarries(), 'assessment' => 'mostly'])))]);
 
     expect(everythingTheWiringSays(new Wirers(new PinnedClients(), SequencedEntropy::counting())->whatBecameOf(aStackToWire(), Session::of('a-session-not-a-secret'), Job::named('j-1'))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('a handle this app cannot read is an obstacle, never a run under way', function (): void {
@@ -235,7 +235,7 @@ it('a handle this app cannot read is an obstacle, never a run under way', functi
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'seed']]), 202)]);
 
     expect(everythingTheWiringSays(new Wirers(new PinnedClients(), SequencedEntropy::counting())->wire(aStackToWire(), Session::of('a-session-not-a-secret'))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

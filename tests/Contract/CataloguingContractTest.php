@@ -208,11 +208,11 @@ it('reads a stack that declares nothing and has dropped nothing as an answer, no
     expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe('');
 });
 
-it('a catalogue this app cannot read is a stack that did not answer, never a shorter catalogue', function (array $changed): void {
+it('a catalogue this app cannot read is an answer it could not read, never a shorter catalogue', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCatalogue($changed)))]);
 
-    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no services' => [['services' => null]],
     'nothing dropped said at all' => [['removed' => 'none']],
@@ -227,18 +227,18 @@ it('a catalogue this app cannot read is a stack that did not answer, never a sho
     'a dropped service replaced by a blank' => [['removed' => [['id' => 'ombi', 'removed_in' => '0.8.0', 'reason' => 'It went', 'replaced_by' => ' ']]]],
 ]);
 
-it('a catalogue leaving out either list is a stack that did not answer', function (string $field): void {
+it('a catalogue leaving out either list is an answer it could not read', function (string $field): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCatalogue(without: [$field])))]);
 
-    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with(['services', 'removed']);
 
 it('tells a refused session from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

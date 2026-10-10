@@ -111,11 +111,11 @@ it('reads the grant the core answered, lapsing as its last day ends', function (
     }
 });
 
-it('says the stack did not answer where the grant cannot be played with', function (array $changed): void {
+it('says the answer could not be read where the grant cannot be played with', function (array $changed): void {
     $answered = MockResponse::make((string) json_encode(whatAStackGrants($changed)));
 
-    foreach (everyWayOfGranting($answered, WhatTheGrantCameTo::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
-        expect(whatTheGrantCameTo($build()))->toBe(KindOfObstacle::StackDidNotAnswer->name, $which);
+    foreach (everyWayOfGranting($answered, WhatTheGrantCameTo::refused(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))) as $which => $build) {
+        expect(whatTheGrantCameTo($build()))->toBe(KindOfObstacle::AnswerCouldNotBeRead->name, $which);
     }
 })->with([
     'no token' => [['token' => null, 'granted' => false]],

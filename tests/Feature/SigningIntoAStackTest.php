@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
+use Native\Mobile\Edge\NavigationIntent;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -353,6 +354,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::TooManyAttempts, false, true],
         [HowTheSignInWent::StackDidNotAnswer, false, true],
         [HowTheSignInWent::ConnectionWasTurnedAway, false, true],
+        [HowTheSignInWent::AnswerCouldNotBeRead, false, true],
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
         // No field and no way back: the remedy is in the phone's settings, so
@@ -462,7 +464,7 @@ it('takes them to the report once they are in, rather than describing where it i
         ->and($drawn->offers())->toContain(__('health.see_how_it_is'));
 });
 
-it('hands a member their own application, on Home, rather than the operator\'s report', function (): void {
+it('takes a member straight to their own application, on Home, in place of every screen before it, rather than to the operator\'s report', function (): void {
     // The identity decides the application. Both people offer a password at
     // the same field and come away signed in the same way; the only thing that
     // differs is what the stack said about whose session it opened. A screen
@@ -479,6 +481,8 @@ it('hands a member their own application, on Home, rather than the operator\'s r
     $screen->offer();
 
     expect($screen->isSignedIn())->toBeTrue()
+        ->and($screen->getNavigationIntent()?->type)->toBe(NavigationIntent::RESET)
+        ->and($screen->getNavigationIntent()?->uri)->toBe($screen->onwardsTo())
         ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s/watch', aStackToSignInto()->id()->stored()))
         ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
             'A member signing in leads to a URI the navigation stack does not know, so '
@@ -534,14 +538,22 @@ it('carries the menu, ending in Stack settings and App settings, so a stack that
     expect(array_slice($offers, -2))->toBe([__('navigation.menu.stack_settings'), __('navigation.menu.app_settings')]);
 });
 
-it('offers only the way to another stack and the two settings, before signing in and once a member is', function (): void {
+it('offers only the way to another stack and the two settings before signing in, whoever is about to', function (): void {
     $screen = typedPassword(signInScreen(aDoorThatOpensForAMember()), 'the-members-password');
-    $before = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers();
-    $screen->offer();
-    $anyones = [__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
 
-    expect($before)->toBe($anyones)
-        ->and(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toBe($anyones);
+    expect(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())
+        ->toBe([__('navigation.menu.switch_stack'), __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')]);
+});
+
+it('keeps the operator on the screen once in, with the way to the report, and sends a member who was not let in nowhere', function (): void {
+    $operator = typedPassword(signInScreen(aDoorThatOpens()), 'the-operators-password');
+    $operator->offer();
+    $refused = typedName(typedPassword(signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused))), 'not-the-password'), 'ada');
+    $refused->offer();
+
+    expect($operator->isSignedIn())->toBeTrue()
+        ->and($operator->getNavigationIntent())->toBeNull()
+        ->and($refused->getNavigationIntent())->toBeNull();
 });
 
 /** The screen with a member's name typed into it. */

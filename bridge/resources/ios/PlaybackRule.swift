@@ -40,6 +40,9 @@ public enum PlaybackRule {
     /// How long a stall is waited out before playback stops, in seconds.
     public static let patienceWhileStalled: Double = 10
 
+    /// How long a title may take to become ready before the player gives up on it, in seconds.
+    public static let patienceWhileOpening: Double = 20
+
     /// The statuses a door refuses a stream with.
     private static let refusals: Set<Int> = [401, 403, 404, 410]
 

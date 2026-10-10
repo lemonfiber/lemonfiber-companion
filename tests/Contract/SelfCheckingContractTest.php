@@ -144,7 +144,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -158,7 +158,7 @@ it('an installation this app cannot read is an obstacle, never one lemonfiber ca
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItself('snap')))]);
 
-    expect(everythingTheCopySays(new Inspectors(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheCopySays(new Inspectors(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('asks the update endpoint about the running copy, and nothing else', function (): void {

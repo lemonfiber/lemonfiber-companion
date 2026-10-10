@@ -129,7 +129,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -143,7 +143,7 @@ it('a word this app cannot read is an obstacle, never a word half-explained', fu
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItsWordsMean(seedingMeans: ' ')))]);
 
-    expect(everythingTheWordsSay(new Explainers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheWordsSay(new Explainers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('asks the explain endpoint naming no word, which is how the whole glossary is asked for', function (): void {
@@ -245,7 +245,7 @@ it('asking for one word tells a session that has ended from a stack that is not 
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -259,7 +259,7 @@ it('a word asked for that this app cannot read is an obstacle, never a word half
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode([...whatAStackSaysOfOneWord(), 'data' => ['word' => 'grab']]))]);
 
-    expect(everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed'))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed'))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('asks the explain endpoint naming the one word, as it was drawn', function (): void {

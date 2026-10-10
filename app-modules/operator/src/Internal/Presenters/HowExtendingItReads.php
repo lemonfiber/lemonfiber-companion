@@ -92,7 +92,7 @@ final readonly class HowExtendingItReads
         $installed = [];
 
         foreach ($plugins->installed() as $plugin) {
-            $installed[] = $rows->plugin($plugin, $plugins->sourceOf($plugin), $approved);
+            $installed[] = $rows->plugin($plugin, $plugins->sourceOf($plugin), $approved, $plugins->answersOutOfContractOf($plugin));
         }
 
         $agreeable = $plugins->agreement() !== '';

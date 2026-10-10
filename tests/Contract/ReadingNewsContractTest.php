@@ -157,11 +157,11 @@ it('reads a request by its number, its title and who asked', function (): void {
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toContain("requests read\n12|Dune|Anna\n7||Bram");
 });
 
-it('answers a stack that did not answer the same way through both', function (): void {
-    $why = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
+it('answers an answer it could not read the same way through both', function (): void {
+    $why = Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead);
 
     foreach (everyWayOfAskingForNews(MockResponse::make('not json at all'), $why) as $which => $make) {
-        expect(everythingTheNewsSays($make()))->toBe(KindOfObstacle::StackDidNotAnswer->value, $which);
+        expect(everythingTheNewsSays($make()))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 
@@ -170,7 +170,7 @@ it('refuses an onset that is not a number of seconds, rather than guessing when'
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
-    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
 })->with(['yesterday', '-1759400000', '17594e5', '99999999999999999999']);
 
 it('refuses a list it cannot read whole, rather than showing part of it as everything new', function (array $data): void {
@@ -178,7 +178,7 @@ it('refuses a list it cannot read whole, rather than showing part of it as every
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
-    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
 })->with([
     'an unread kind that is not a word' => [['unread' => [7]]],
     'a request without its number' => [['requests' => [['title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],

@@ -305,7 +305,7 @@ it('refuses to list a copy the stack would not, with the obstacle rather than a 
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"too new"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -342,11 +342,11 @@ it('a listing refused with a problem at a status that says who may ask is what w
     }
 });
 
-it('a listing this app cannot read is a stack that did not answer, never a shorter listing', function (array $would): void {
+it('a listing this app cannot read is an answer it could not read, never a shorter listing', function (array $would): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingItBack($would)))]);
 
-    expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatPuttingItBackWouldDoSaid(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'a blank agreement' => [['agreement' => ' ']],
     'no manifest' => [['manifest' => 'none']],
@@ -366,8 +366,8 @@ it('comes away from a refused yes with the obstacle rather than a job', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"still running"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -396,11 +396,11 @@ it('reads a finished restore that put the data back where it came from', functio
     'left out' => [['from_version' => '0.9.0', 'scope' => ['scope' => 'service', 'name' => 'sonarr']]],
 ]);
 
-it('a finished restore that says nothing of what it did is a stack that did not answer', function (): void {
+it('a finished restore that says nothing of what it did is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingItBack()))]);
 
-    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingItBack(new Restorers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('a restore still running is its own answer', function (): void {
@@ -422,7 +422,7 @@ it('asking after a restore tells a refused session from a stack that is not answ
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

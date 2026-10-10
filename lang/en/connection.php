@@ -36,6 +36,8 @@ return [
     'busy_action' => 'Nothing was changed. Try again once it has finished.',
     'not_on_this_stack' => 'This stack needs a newer lemonfiber for this.',
     'not_on_this_stack_action' => 'Nothing was asked of it. Update lemonfiber on the machine to have it here.',
+    'answer_unreadable' => 'This stack answered in a way this app cannot read.',
+    'answer_unreadable_action' => 'Nothing was read from it. Update this app, or lemonfiber on the machine.',
     'not_set_up' => 'Something on this stack has to be set up before this does anything.',
     'go_to_updates' => 'Open Updates',
     'try_again' => 'Try again',

@@ -135,13 +135,13 @@ it('hears nothing new from a stream that carried no start line', function (): vo
     }
 });
 
-it('cannot hear a start line that is blank or not text, and says so as a stack that did not answer', function (): void {
+it('cannot hear a start line that is blank or not text, and says so as an answer it could not read', function (): void {
     foreach ([aStartLine('   '), aStartLine(['waiting' => 'for sonarr']), anEventWhileItStarts('start', 'not json at all')] as $said) {
         foreach (everyWayOfHearingAStart(
             [MockResponse::make($said)],
-            [WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+            [WhatAStartWaitsOn::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
         ) as $which => $make) {
-            expect(whatWakesHearOfAStart($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesHearOfAStart($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
         }
     }
 });
@@ -206,7 +206,7 @@ it('holds no start stream after a line it could not read, so the next ask opens 
     ]);
 
     expect(whatWakesHearOfAStart(new StartLines(new PinnedClients()), 2))
-        ->toBe([KindOfObstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"'])
+        ->toBe([KindOfObstacle::AnswerCouldNotBeRead->value, 'saying "Waiting for sonarr to answer"'])
         ->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
 });
 

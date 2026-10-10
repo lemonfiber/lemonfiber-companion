@@ -9,7 +9,7 @@ import Testing
 private let theAddress = "https://door.home:8443/library/1/main.m3u8"
 
 private func aRule(_ scheme: String = "https") -> PlaylistRule? {
-    Door.of(theAddress).map { PlaylistRule(door: $0, scheme: scheme) }
+    Door.of(theAddress).map { PlaylistRule(door: $0, handing: { scheme + $0.dropFirst(Door.scheme.count) }) }
 }
 
 @Test("a media playlist's segments are made absolute at the door")

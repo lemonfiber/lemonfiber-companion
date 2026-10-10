@@ -173,7 +173,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -187,7 +187,7 @@ it('connections this app cannot read are an obstacle, not a shorter list', funct
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysLeavesIt('telemetry')))]);
 
-    expect(everythingThatLeaves(new Lookouts(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingThatLeaves(new Lookouts(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

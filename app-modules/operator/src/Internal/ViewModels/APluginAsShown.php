@@ -8,7 +8,9 @@ namespace Modules\Operator\Internal\ViewModels;
  * One plugin, as a row and as the head of an install's account: what it is, and what vouches for it.
  *
  * Reviewed or not is on every one, because a plugin nobody reviewed is to be
- * said to be one wherever it appears.
+ * said to be one wherever it appears. Where its adapters answered outside
+ * their contracts, the row says it fills none of those until it is proved
+ * again, so it is never read as filling them.
  */
 final readonly class APluginAsShown
 {
@@ -26,6 +28,7 @@ final readonly class APluginAsShown
      * @param string               $standingWhy  the stack's reason for how it stands, or empty
      * @param list<ARecipeAsShown> $recipes      its recipes, each in full
      * @param bool                 $updatable    whether its record names a source an update can fetch again
+     * @param list<AnAnswerOutOfContractAsShown> $outOfContract what its adapters answered outside their contracts, which it fills nothing for until it is proved again
      */
     public function __construct(
         public string $name,
@@ -41,5 +44,6 @@ final readonly class APluginAsShown
         public string $standingWhy,
         public array $recipes,
         public bool $updatable,
+        public array $outOfContract,
     ) {}
 }

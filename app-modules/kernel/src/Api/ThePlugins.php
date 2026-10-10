@@ -9,7 +9,7 @@ use Closure;
 use function trim;
 
 /**
- * What a stack says of its plugins: which are installed, how each one's source stands, and the install, update or removal it was asked about.
+ * What a stack says of its plugins: which are installed, how each one's source stands, what their adapters answered outside their contracts, and the install, update or removal it was asked about.
  *
  * **The listing is what the record holds.** After a reading, or an act that
  * was put back, it is what it held before: something nobody recorded is
@@ -27,30 +27,37 @@ final readonly class ThePlugins
         private ThePluginSources $sources,
         private string $agreement,
         private APluginInstall|AnUpdate|APluginRemoval|null $about,
+        private TheAnswersOutOfContract $outOfContract,
     ) {}
 
-    /** The listing alone. */
-    public static function listed(TheInstalledPlugins $installed, ThePluginSources $sources): self
+    /** The listing alone, with the answers its plugins gave outside their contracts. */
+    public static function listed(TheInstalledPlugins $installed, ThePluginSources $sources, TheAnswersOutOfContract $outOfContract): self
     {
-        return new self($installed, $sources, '', null);
+        return new self($installed, $sources, '', null, $outOfContract);
     }
 
     /** An answer about an install, beside what the record holds; `agreement` is empty where the stack named none. */
     public static function aboutAnInstall(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall $install): self
     {
-        return new self($installed, $sources, trim($agreement), $install);
+        return new self($installed, $sources, trim($agreement), $install, TheAnswersOutOfContract::these());
     }
 
     /** An answer about an update, beside what the record holds. */
     public static function aboutAnUpdate(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, AnUpdate $update): self
     {
-        return new self($installed, $sources, trim($agreement), $update);
+        return new self($installed, $sources, trim($agreement), $update, TheAnswersOutOfContract::these());
     }
 
     /** An answer about a removal, beside what the record holds. */
     public static function aboutAPluginRemoval(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginRemoval $removal): self
     {
-        return new self($installed, $sources, trim($agreement), $removal);
+        return new self($installed, $sources, trim($agreement), $removal, TheAnswersOutOfContract::these());
+    }
+
+    /** The answers that plugin's adapters gave outside their contracts, which it fills nothing for until it is proved again. */
+    public function answersOutOfContractOf(APlugin $plugin): TheAnswersOutOfContract
+    {
+        return $this->outOfContract->of($plugin);
     }
 
     /** Every plugin the record holds. */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use InvalidArgumentException;
+use Lemonfiber\Sdk\Exception\AnswerUnusable;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\WhyNothingAnswered;
@@ -26,8 +28,13 @@ use Throwable;
  * the name was found nowhere, nothing is at the paired address, something
  * there turned the connection away, or no answer came in time. The first
  * three have remedies of their own, so each is its own obstacle; a reach that
- * ran out of time, and one the SDK could not place, are a stack that did not
- * answer, as is an answer that could not be read.
+ * ran out of time, one the SDK could not place, and anything else that ended
+ * it are a stack that did not answer.
+ *
+ * **An answer that could not be read is its own.** The SDK marks an answer it
+ * cannot use, and this app's readers refuse a payload that is not what the
+ * contract says by an `InvalidArgumentException`. Something came back, so it
+ * is not silence, and updating the app or the machine is its remedy.
  *
  * **Only what the reach itself says.** Silence here is read as the way to the
  * stack's, because the reach cannot tell a switched-off machine from a phone
@@ -50,6 +57,7 @@ final readonly class WhatTheReachMet
             $why instanceof ApiVersionMismatch => self::versions($why),
             $why instanceof TheStackDoesNotOfferIt => $why->obstacle(),
             $why instanceof Unreachable => Obstacle::of(self::silence($why->why())),
+            $why instanceof AnswerUnusable, $why instanceof InvalidArgumentException => Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead),
             default => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }

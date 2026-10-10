@@ -272,15 +272,15 @@ it('hands on the stack\'s own sentence where it refuses the asking or the naming
         [MockResponse::make('`unrated` is neither `block` nor `allow`', 400), 'refused:`unrated` is neither `block` nor `allow`'],
         [MockResponse::make('', 400), 'met:StackDidNotAnswer'],
         [aRefusalAt(502, 'The media server did not answer'), 'met:StackDidNotAnswer'],
-        [aRefusalAt(399, 'Not a refusal'), 'met:StackDidNotAnswer'],
+        [aRefusalAt(399, 'Not a refusal'), 'met:AnswerCouldNotBeRead'],
         [aRefusalAt(499, 'The last refusal there is'), 'refused:The last refusal there is'],
         [aRefusalAt(500, 'The first failure there is'), 'met:StackDidNotAnswer'],
         [aRefusalAt(401, 'Who are you'), 'met:CredentialWasRefused'],
         [aRefusalAt(403, 'Not you'), 'met:NotForThisAccount'],
-        [MockResponse::make('not json at all', 202), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'invitation', 'data' => []]), 202), 'met:StackDidNotAnswer'],
+        [MockResponse::make('not json at all', 202), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => ' ', 'action' => 'invite']]), 202), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'invite']]), 202), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'invitation', 'data' => []]), 202), 'met:AnswerCouldNotBeRead'],
         [MockResponse::make((string) json_encode(['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']]), 202), 'met:VersionsDisagree'],
         [nothingAnswering(), 'met:StackDidNotAnswer'],
     ];
@@ -304,10 +304,10 @@ it('follows the work by its name to the invitation, and says when it is still go
         [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
         [aRefusalAt(404, 'Nobody is called bob here'), 'refused:Nobody is called bob here'],
         [aRefusalAt(401, 'Who are you'), 'met:CredentialWasRefused'],
-        [MockResponse::make((string) json_encode(thePasswordTakenOffAnna(['standing' => 'declined']))), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode(thePasswordTakenOffAnna(['hours' => -1]))), 'met:StackDidNotAnswer'],
-        [MockResponse::make((string) json_encode([...thePasswordTakenOffAnna(), 'kind' => 'repair'])), 'met:StackDidNotAnswer'],
-        [MockResponse::make('not json at all'), 'met:StackDidNotAnswer'],
+        [MockResponse::make((string) json_encode(thePasswordTakenOffAnna(['standing' => 'declined']))), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make((string) json_encode(thePasswordTakenOffAnna(['hours' => -1]))), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make((string) json_encode([...thePasswordTakenOffAnna(), 'kind' => 'repair'])), 'met:AnswerCouldNotBeRead'],
+        [MockResponse::make('not json at all'), 'met:AnswerCouldNotBeRead'],
     ];
 
     foreach ($table as [$answer, $expected]) {
@@ -334,9 +334,9 @@ it('reads who is in off the household the operator\'s requests are read from, an
     $table = [
         [MockResponse::make((string) json_encode($household)), 'anna'],
         [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'available' => false]])), 'met:HouseholdCouldNotBeRead'],
-        [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'members' => [['name' => ' ', 'claimed' => true]]]])), 'met:StackDidNotAnswer'],
+        [MockResponse::make((string) json_encode([...$household, 'data' => [...$household['data'], 'members' => [['name' => ' ', 'claimed' => true]]]])), 'met:AnswerCouldNotBeRead'],
         [aRefusalAt(401, 'Who are you'), 'met:CredentialWasRefused'],
-        [MockResponse::make('not json at all'), 'met:StackDidNotAnswer'],
+        [MockResponse::make('not json at all'), 'met:AnswerCouldNotBeRead'],
     ];
 
     foreach ($table as [$answer, $expected]) {

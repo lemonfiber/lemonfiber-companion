@@ -366,7 +366,7 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     }
 });
 
-it('cannot hear a summary it cannot read, and says so as a stack that did not answer', function (): void {
+it('cannot hear a summary it cannot read, and says so as an answer it could not read', function (): void {
     $unknownWord = [...whatAHealthyStackSaysOfItsHealth(), 'standing' => 'splendid'];
     $belowNothing = [...whatAHealthyStackSaysOfItsHealth(), 'wanting_attention' => -1];
     $anUnknownStall = [...aStoppedQueueRow(), 'stall' => 'sulking'];
@@ -381,9 +381,9 @@ it('cannot hear a summary it cannot read, and says so as a stack that did not an
     ] as $said) {
         foreach (everyWayOfListening(
             [MockResponse::make($said)],
-            [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+            [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
         ) as $which => $make) {
-            expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+            expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
         }
     }
 });
@@ -524,7 +524,7 @@ it('holds nothing after a summary it could not read, so the next wake opens agai
     ]);
 
     expect(whatWakesHear(new Listeners(new PinnedClients()), 2))->toBe([
-        KindOfObstacle::StackDidNotAnswer->value,
+        KindOfObstacle::AnswerCouldNotBeRead->value,
         'healthy, 0 wanting, worst "", {}',
     ]);
 });
@@ -689,12 +689,12 @@ it('hears a kind the stack could not read as unread, whatever its list holds', f
     }
 });
 
-it('cannot hear a newest it cannot read, and says so as a stack that did not answer', function (array $changed): void {
+it('cannot hear a newest it cannot read, and says so as an answer it could not read', function (array $changed): void {
     foreach (everyWayOfListening(
         [MockResponse::make(aNewsEvent($changed))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
     ) as $which => $make) {
-        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
 })->with([
     'updates that are not a list' => [['updates' => 'all of them']],
@@ -708,12 +708,12 @@ it('cannot hear a newest it cannot read, and says so as a stack that did not ans
     'an unread kind that is not words' => [['unread' => [1]]],
 ]);
 
-it('cannot hear a newest whose data is not a record, and says so as a stack that did not answer', function (): void {
+it('cannot hear a newest whose data is not a record, and says so as an answer it could not read', function (): void {
     foreach (everyWayOfListening(
         [MockResponse::make(aNewsEventWhoseDataIs('nothing new'))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
     ) as $which => $make) {
-        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
 });
 
@@ -837,12 +837,12 @@ it('hears what answers what on its own as a sign of life, and only the last of i
     }
 });
 
-it('cannot hear a wiring it cannot read, and says so as a stack that did not answer', function (array $changed): void {
+it('cannot hear a wiring it cannot read, and says so as an answer it could not read', function (array $changed): void {
     foreach (everyWayOfListening(
         [MockResponse::make(aWiringEvent(changed: $changed))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
     ) as $which => $make) {
-        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::StackDidNotAnswer->value], $which);
+        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
 })->with([
     'links that are not a list' => [['wired' => 'all of them']],

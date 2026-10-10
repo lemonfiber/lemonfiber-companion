@@ -1,0 +1,1 @@
+RelayRule ios Android's ExoPlayer fetches every segment through DoorDataSource, so it needs no relay.

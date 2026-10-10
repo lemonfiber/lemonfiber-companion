@@ -265,11 +265,11 @@ it('reads a stack that asks nothing of its services as an answer, not an obstacl
     expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toBe('');
 });
 
-it('a wiring this app cannot read is a stack that did not answer, never a shorter one', function (array $changed): void {
+it('a wiring this app cannot read is an answer it could not read, never a shorter one', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItWires($changed)))]);
 
-    expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no links' => [['wired' => null]],
     'a link that is not a row' => [['wired' => ['sonarr']]],
@@ -291,18 +291,18 @@ it('a wiring this app cannot read is a stack that did not answer, never a shorte
     'an unfilled ask naming no capability' => [['unfilled' => [['by' => 'lidarr']]]],
 ]);
 
-it('a wiring leaving out either list is a stack that did not answer', function (string $field): void {
+it('a wiring leaving out either list is an answer it could not read', function (string $field): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItWires(without: [$field])))]);
 
-    expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with(['wired', 'unfilled']);
 
 it('tells a refused session from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
