@@ -15,6 +15,7 @@ use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 
 use function sprintf;
+use function str_repeat;
 
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
@@ -46,6 +47,13 @@ it('draws a raised 2:3 tile with its year and kind above its title, and nothing 
         ->and(data_get($tile, 'children.1.props.font_name'))->toBe('GolosText-ExtraBold')
         ->and(data_get($tile, 'children.1.props.color'))->toBe(ThemeToken::Text->in(WhoseTheme::Member));
 });
+
+it('letters its year, kind and title at the sizes it names, whatever the person\'s text size, at every step', function (string $titled): void {
+    $tile = data_get(WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf($titled)]), 'children.0');
+
+    expect(data_get($tile, 'children.0.props.fixed_size'))->toBe(1)
+        ->and(data_get($tile, 'children.1.props.fixed_size'))->toBe(1);
+})->with(['Alien', 'The Lemon Grove of the North', str_repeat('A title of a great many words ', 3)]);
 
 it('is read as one element, its title, kind and year said once from its label', function (): void {
     expect(data_get(WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien')]), 'props.a11y_label'))

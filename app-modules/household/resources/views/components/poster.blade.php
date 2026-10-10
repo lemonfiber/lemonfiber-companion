@@ -13,13 +13,13 @@
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}">
 @endif
 <native:column class="w-full aspect-[2/3] justify-between gap-2 rounded border border-theme-line bg-theme-raised p-3">
-    <native:text class="text-[12] font-medium text-theme-muted" font="DMMono-Medium" :max-lines="1">{{ $above }}</native:text>
+    <native:text class="text-[12] font-medium text-theme-muted" font="DMMono-Medium" :fixed-size="true" :max-lines="1">{{ $above }}</native:text>
     @if ($poster->lettered === HowAPosterIsLettered::Large)
-    <native:text class="text-[27] font-extrabold text-theme-text" font="GolosText-ExtraBold" :max-lines="$lines">{{ $poster->titled }}</native:text>
+    <native:text class="text-[27] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $poster->titled }}</native:text>
     @elseif ($poster->lettered === HowAPosterIsLettered::Middle)
-    <native:text class="text-[15] font-extrabold text-theme-text" font="GolosText-ExtraBold" :max-lines="$lines">{{ $poster->titled }}</native:text>
+    <native:text class="text-[15] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $poster->titled }}</native:text>
     @else
-    <native:text class="text-[13] font-extrabold text-theme-text" font="GolosText-ExtraBold" :max-lines="$lines">{{ $poster->titled }}</native:text>
+    <native:text class="text-[13] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $poster->titled }}</native:text>
     @endif
 </native:column>
 </native:pressable>

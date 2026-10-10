@@ -72,11 +72,10 @@ function theToldScreen(
     return $screen;
 }
 
-it('shows the preset with what it means and with every exception made to it', function (): void {
+it('shows what the preset in force means, and every exception made to it', function (): void {
     $answer = theToldScreen(AStackThatSaysWhatItTells::with(aQuietSettingWithTwoExceptions()))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()
-        ->and($answer->preset)->toBe('quiet')
         ->and($answer->means)->toBe('Only what needs you today')
         ->and(array_map(static fn(OneEventSetApart $event): array => [$event->kind, $event->heardSaid], $answer->exceptions))->toBe([
             ['update-available', WhetherItIsHeard::Silenced->saidOnTheScreen()],
@@ -84,14 +83,15 @@ it('shows the preset with what it means and with every exception made to it', fu
         ]);
 });
 
-it('draws the preset with what it means, and each event set apart with how it is heard beneath it', function (): void {
+it('draws what the preset means as its heading, never the preset\'s own word, and each event set apart with how it is heard beneath it', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theToldScreen(AStackThatSaysWhatItTells::with(aQuietSettingWithTwoExceptions())));
     $said = $drawn->said();
     $quiet = array_search('update-available', $said, strict: true);
     $heard = array_search('disk-low', $said, strict: true);
 
-    expect($said)->toContain(__('stacks.alerts.preset', ['preset' => 'quiet']))
-        ->and($said)->toContain('Only what needs you today')
+    expect($said)->toContain('Only what needs you today')
+        ->and(array_values(array_filter($said, static fn(string $line): bool => in_array($line, ['Only what needs you today', __('stacks.alerts.set_apart')], strict: true))))->toBe(['Only what needs you today', __('stacks.alerts.set_apart')])
+        ->and($said)->not->toContain('quiet')
         ->and($said)->toContain(__('stacks.alerts.set_apart'))
         ->and(is_int($quiet) ? $said[$quiet + 1] : null)->toBe(__(WhetherItIsHeard::Silenced->saidOnTheScreen()))
         ->and(is_int($heard) ? $said[$heard + 1] : null)->toBe(__(WhetherItIsHeard::Heard->saidOnTheScreen()))
@@ -115,7 +115,6 @@ it('a stack that could not be asked is not a setting of nothing', function (): v
 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($answer->preset)->toBe('')
         ->and($answer->means)->toBe('')
         ->and($answer->exceptions)->toBe([]);
 });
@@ -131,7 +130,6 @@ it('a session that has ended is not a setting of nothing', function (): void {
 
     expect($answer->went->isSignedIn)->toBeFalse()
         ->and($answer->went->met)->toBe('')
-        ->and($answer->preset)->toBe('')
         ->and($answer->means)->toBe('')
         ->and($answer->exceptions)->toBe([]);
 });

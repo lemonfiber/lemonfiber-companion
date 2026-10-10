@@ -1,0 +1,63 @@
+A text can be drawn at the size it was given whatever the person's text size,
+for lettering that stands in for a picture on a tile of a fixed width: scaled
+with the system's text size, a word wider than the tile is broken across two
+lines. `fixed-size` on a text says so, and both renderers draw it at the size
+it names; everything else still scales.
+
+--- a/vendor/nativephp/mobile/src/Edge/Elements/Text.php
++++ b/vendor/nativephp/mobile/src/Edge/Elements/Text.php
+@@ -42 +42,2 @@
+             'content-transition' => 'contentTransition',
++            'fixed-size' => 'fixedSize',
+@@ -100 +101,4 @@
++        if (isset($attrs['fixedSize'])) {
++            $this->textProps['fixed_size'] = filter_var($attrs['fixedSize'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
++        }
+         if (isset($attrs['contentTransition'])) {
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUITextRenderer.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUITextRenderer.swift
+@@ -39 +39,2 @@
+         let isItalic = p.getInt("font_style") == 1
++        let isFixedSize = p.getInt("fixed_size") == 1
+@@ -69 +70 @@
+-                .nuiScaledFont(size: CGFloat(fontSize), weight: fontWeight, design: fontDesign, fontName: fontName.isEmpty ? nil : fontName, italic: isItalic)
++                .modifier(NUIFontAtItsSize(fixed: isFixedSize, size: CGFloat(fontSize), weight: fontWeight, design: fontDesign, fontName: fontName.isEmpty ? nil : fontName, italic: isItalic))
+@@ -310 +311,24 @@
++/// A text's font at the size it names where it is fixed, and scaled with the
++/// person's text size where it is not.
++private struct NUIFontAtItsSize: ViewModifier {
++    let fixed: Bool
++    let size: CGFloat
++    let weight: Font.Weight
++    let design: Font.Design
++    let fontName: String?
++    let italic: Bool
++
++    func body(content: Content) -> some View {
++        if fixed {
++            if let name = fontName, let custom = NativeUIFontResolver.font(name, size: size, italic: italic) {
++                content.font(custom.weight(weight))
++            } else {
++                content.font(.system(size: size, weight: weight, design: design))
++            }
++        } else {
++            content.nuiScaledFont(size: size, weight: weight, design: design, fontName: fontName, italic: italic)
++        }
++    }
++}
++
+ /// Applies `.truncationMode(.tail)` only when a line limit is actually set.
+--- a/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt
+@@ -10 +10,2 @@
+ import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.platform.LocalDensity
+@@ -29 +30,2 @@
+ import androidx.compose.ui.unit.sp
++import androidx.compose.ui.unit.dp
+@@ -63 +65,2 @@
+         val textAlign = resolveTextAlign(p.getInt("text_align"))
++        val drawnAt = if (p.getInt("fixed_size") == 1) with(LocalDensity.current) { fontSize.dp.toSp() } else fontSize.sp
+@@ -72 +75 @@
+-            fontSize = fontSize.sp,
++            fontSize = drawnAt,

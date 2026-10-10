@@ -41,6 +41,9 @@ final readonly class HowATitleReads
     /** How long it runs, under an hour. */
     private const string RUNS_MINUTES = 'household.title.runs_minutes';
 
+    /** How long it runs, under a minute, which the server states as none. */
+    private const string RUNS_UNDER_A_MINUTE = 'household.title.runs_under_a_minute';
+
     /** When it came out. */
     private const string RELEASED = 'household.title.released';
 
@@ -166,9 +169,11 @@ final readonly class HowATitleReads
     {
         $minutes = intdiv($seconds % SecondsIn::AnHour->value, SecondsIn::AMinute->value);
 
-        return $seconds < SecondsIn::AnHour->value
-            ? new Keyed(self::RUNS_MINUTES, ['minutes' => $minutes])
-            : new Keyed(self::RUNS_HOURS, ['hours' => intdiv($seconds, SecondsIn::AnHour->value), 'minutes' => $minutes]);
+        return match (true) {
+            $seconds < SecondsIn::AMinute->value => new Keyed(self::RUNS_UNDER_A_MINUTE, []),
+            $seconds < SecondsIn::AnHour->value => new Keyed(self::RUNS_MINUTES, ['minutes' => $minutes]),
+            default => new Keyed(self::RUNS_HOURS, ['hours' => intdiv($seconds, SecondsIn::AnHour->value), 'minutes' => $minutes]),
+        };
     }
 
     /**

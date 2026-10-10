@@ -73,8 +73,8 @@ return [
     'nothing_owed_action' => 'Het huis zegt niets over wat je kunt aanvragen.',
     'signed_out' => 'Je bent afgemeld bij dit huis.',
     'signed_in' => 'Dit huis staat voor je open.',
-    'ask_again' => 'Opnieuw vragen',
-    'ask_again_for_yours' => 'Opnieuw vragen naar wat je hebt aangevraagd',
+    'ask_again' => 'Opnieuw controleren',
+    'ask_again_for_yours' => 'Opnieuw controleren wat je hebt aangevraagd',
     'needs_an_update' => 'Het huis heeft hiervoor een update nodig.',
     'needs_an_update_action' => 'Wie het huis beheert, kan het bijwerken.',
 
@@ -218,6 +218,7 @@ return [
         'to_home' => 'Naar Thuis',
         'runs_hours' => ':hours u :minutes min',
         'runs_minutes' => ':minutes min',
+        'runs_under_a_minute' => 'Korter dan een minuut',
         'certificate' => 'Kijkwijzer :certificate',
         'released' => 'Uitgekomen op :day :month :year',
         'episode' => ':number. :title',

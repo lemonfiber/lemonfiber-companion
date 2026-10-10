@@ -78,8 +78,8 @@ return [
     'nothing_owed_action' => 'The house has nothing to say about what you can ask for.',
     'signed_out' => 'You are signed out of this house.',
     'signed_in' => 'This house is open to you.',
-    'ask_again' => 'Ask again',
-    'ask_again_for_yours' => 'Ask again for what you asked for',
+    'ask_again' => 'Check again',
+    'ask_again_for_yours' => 'Check again on what you asked for',
     'needs_an_update' => 'The house needs an update for this.',
     'needs_an_update_action' => 'Whoever looks after the house can update it.',
 
@@ -237,6 +237,7 @@ return [
         'to_home' => 'Go to Home',
         'runs_hours' => ':hours h :minutes min',
         'runs_minutes' => ':minutes min',
+        'runs_under_a_minute' => 'Under a minute',
         'certificate' => 'Rated :certificate',
         'released' => 'Released :day :month :year',
         'episode' => ':number. :title',

@@ -20,7 +20,7 @@ final readonly class HowWhatIsToldReads
     /** This device no longer holds a session for that stack. */
     public function signedOut(): WhatIsToldTurnedOutToBe
     {
-        return new WhatIsToldTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), preset: '', means: '', exceptions: []);
+        return new WhatIsToldTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), means: '', exceptions: []);
     }
 
     /** The stack answered, and this is what its operator is told about. */
@@ -34,7 +34,6 @@ final readonly class HowWhatIsToldReads
 
         return new WhatIsToldTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
-            preset: $told->preset(),
             means: $told->means(),
             exceptions: $exceptions,
         );
@@ -43,6 +42,6 @@ final readonly class HowWhatIsToldReads
     /** It did not, and this is what the operator met. */
     public function met(Obstacle $why): WhatIsToldTurnedOutToBe
     {
-        return new WhatIsToldTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), preset: '', means: '', exceptions: []);
+        return new WhatIsToldTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), means: '', exceptions: []);
     }
 }
