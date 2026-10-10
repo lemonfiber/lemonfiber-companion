@@ -22,6 +22,7 @@ use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatTheChecksMade;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
@@ -60,27 +61,20 @@ final readonly class PluginInstallReports
         }
 
         $would = PluginRecords::of($install[WireField::Would->value], WireField::Would, 0);
-        $changes = ThePluginChanges::these(...self::changes($install));
+        $changing = WhatAnInstallChanges::these(
+            ThePluginChanges::these(...self::changes($install)),
+            TheContestsLeft::these(...self::contests($install)),
+            TheSettingsItOverrides::these(...self::overrides($install)),
+            TheShapesTaken::these(...self::taking($install)),
+        );
         $proofs = WhatAProofsVerdictWas::proofs($install);
-        $contests = TheContestsLeft::these(...self::contests($install));
-        $overrides = TheSettingsItOverrides::these(...self::overrides($install));
-        $taking = TheShapesTaken::these(...self::taking($install));
         $checks = self::checks($install);
 
         if (array_key_exists(WireField::Reversed->value, $install) && $install[WireField::Reversed->value] !== null) {
-            return APluginInstall::putBack($would, $changes, $proofs, $contests, $overrides, $taking, $checks, self::putBack($install));
+            return APluginInstall::putBack($would, $changing, $proofs, $checks, self::putBack($install));
         }
 
-        return APluginInstall::reported(
-            $would,
-            recorded: $install[WireField::Recorded->value],
-            changes: $changes,
-            proofs: $proofs,
-            contests: $contests,
-            overrides: $overrides,
-            taking: $taking,
-            checks: $checks,
-        );
+        return APluginInstall::reported($would, recorded: $install[WireField::Recorded->value], changing: $changing, proofs: $proofs, checks: $checks);
     }
 
     /**

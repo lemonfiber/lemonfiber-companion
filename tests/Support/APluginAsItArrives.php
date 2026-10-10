@@ -43,6 +43,7 @@ use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatAProofCameTo;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
@@ -395,11 +396,8 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changes: self::changes(),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
-            contests: self::contests(),
-            overrides: self::overrides(),
-            taking: self::theGuard(),
             checks: WhatTheChecksMade::notAsked(),
         );
     }
@@ -437,11 +435,8 @@ final readonly class APluginAsItArrives
             APluginInstall::reported(
                 self::held(),
                 recorded: true,
-                changes: self::changes(),
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
-                contests: self::contests(),
-                overrides: self::overrides(),
-                taking: TheShapesTaken::these(),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
             ),
         );
@@ -488,11 +483,8 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changes: self::changes(),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
-            contests: self::contests(),
-            overrides: self::overrides(),
-            taking: TheShapesTaken::these(),
             checks: WhatTheChecksMade::notAsked(),
         );
     }
@@ -501,11 +493,8 @@ final readonly class APluginAsItArrives
     {
         return APluginInstall::putBack(
             self::held(),
-            self::changes(),
+            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
             TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
-            self::contests(),
-            self::overrides(),
-            TheShapesTaken::these(),
             WhatTheChecksMade::notAsked(),
             ARunPutBack::reported(
                 WhetherItWasRehearsed::CarriedOut,
