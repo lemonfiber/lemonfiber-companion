@@ -133,12 +133,13 @@ jobs:
             # patches it with `scripts/patch_nativephp/`. `swift` lints, builds
             # and tests the Swift package, and `kotlin` the Gradle project,
             # whose ktlint reads the root `.editorconfig` as well as the
-            # bridge's own. `agreement` reads the two test trees.
+            # bridge's own. `agreement` reads the two test trees and the rules
+            # declared to one platform alone.
             case "${path}" in
             bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php | scripts/patch_nativephp/*) run[typecheck]=true ;;&
             bridge/resources/ios/* | bridge/ios/* | bridge/Package.swift | bridge/.swift-format) run[swift]=true ;;&
             bridge/resources/android/* | bridge/android/* | bridge/.editorconfig | .editorconfig) run[kotlin]=true ;;&
-            bridge/android/src/test/kotlin/* | bridge/ios/Tests/*) run[agreement]=true ;;&
+            bridge/android/src/test/kotlin/* | bridge/ios/Tests/* | bridge/platform-only.txt | scripts/both_halves_agree.py) run[agreement]=true ;;&
             composer.lock)
               if [ "$(nativephp "${BASE}")" != "$(nativephp HEAD)" ]; then
                 run[typecheck]=true
@@ -418,93 +419,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: the judgement refuses every disagreement it is shown
+        run: python3 scripts/both_halves_agree.py --self-test
+
       - name: compare the two test files, case for case
-        shell: python3 {0}
-        run: |
-            """Both halves must ask the same questions.
-
-            Written in Python rather than in `sed`, because the patterns that
-            pull a test name out of each file are full of regex anchors and
-            backticks — and in a shell they are three layers of quoting deep,
-            which is how a comparison ends up silently matching nothing and
-            reporting agreement.
-            """
-            import re
-            import sys
-            from pathlib import Path
-
-            # Every mirrored pair, found rather than listed: a rule added
-            # tomorrow with only one half written is exactly what this exists to
-            # catch, and a hand-kept list would not know about it.
-            #
-            # Both trees are globbed, so a suite on either side with no
-            # counterpart on the other is found and named. A check that reports
-            # agreement by not looking is the failure its own error message
-            # describes.
-            kotlin = {
-                p.stem.removesuffix("Test")
-                for p in Path("bridge/android/src/test/kotlin").glob("*Test.kt")
-            }
-            swift = {
-                p.parent.name.removesuffix("Tests")
-                for p in Path("bridge/ios/Tests").glob("*Tests/*Tests.swift")
-            }
-
-            pairs = [
-                (
-                    Path("bridge/android/src/test/kotlin") / f"{name}Test.kt",
-                    Path("bridge/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
-                )
-                for name in sorted(kotlin | swift)
-            ]
-
-            missing = [str(p) for pair in pairs for p in pair if not p.exists()]
-
-            if missing:
-                print("::error::A rule is tested on one platform and not the other.")
-                for path in missing:
-                    print(f"  no such file: {path}")
-                sys.exit(1)
-
-            failed = False
-
-            for kotlin_path, swift_path in pairs:
-                kotlin = kotlin_path.read_text()
-                swift = swift_path.read_text()
-
-                # Compared character for character, with nothing normalised
-                # away. A name is a sentence somebody wrote about what the rule
-                # decides, and two spellings of one sentence is a pair of files
-                # drifting in exactly the way this job exists to notice. Each
-                # normalisation added here is also a way for two genuinely
-                # different names to compare equal.
-                asked = {
-                    "kotlin": set(re.findall(r"fun `([^`]+)`", kotlin)),
-                    "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
-                }
-
-                if asked["kotlin"] == asked["swift"]:
-                    print(f"{kotlin_path.stem}: both halves answer the same "
-                          f"{len(asked['kotlin'])} questions.")
-                    continue
-
-                failed = True
-                print(f"::error::{kotlin_path.stem} and {swift_path.stem} no longer "
-                      "ask the same questions.")
-
-                for side, other in (("kotlin", "swift"), ("swift", "kotlin")):
-                    only = sorted(asked[side] - asked[other])
-                    if only:
-                        print(f"Only in {side}:")
-                        for name in only:
-                            print(f"  {name}")
-
-            if failed:
-                print()
-                print("A rule kept on one platform and not the other is the bug nobody")
-                print("finds: each half looks right on its own. Add the missing case")
-                print("rather than deleting the one that has no pair.")
-                sys.exit(1)
+        run: python3 scripts/both_halves_agree.py
 
   tests:
     name: tests and coverage

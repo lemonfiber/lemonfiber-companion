@@ -27,6 +27,14 @@ sides answer the same questions. Where one platform answers directly what the
 other has to reconstruct, the input is carried anyway and the page says why — a
 rule that exists on one side only cannot disagree visibly.
 
+A rule for a problem only one platform has, because the other platform's
+framework does that work itself, is declared in `bridge/platform-only.txt` with
+the reason. `scripts/both_halves_agree.py` refuses a one-sided suite that is not
+declared there, a declared rule that has gained its other half, and a declared
+rule that is gone. It declares `RelayRule`: AVFoundation fetches HLS segments
+itself, so iOS plays through a loopback relay, while Media3 reads every byte
+through `DoorDataSource`.
+
 **3 — A shim that does nothing but ask and apply.**
 
 The Kotlin or Swift that touches the framework: gather the facts, hand them to
