@@ -13,15 +13,11 @@
                 <x-design::strong>{{ __($this->whyNothingCameBack()) }}</x-design::strong>
                 <x-design::body>{{ __($this->whatToDoAboutTheCamera()) }}</x-design::body>
             </x-design::notice>
-        @elseif ($this->codeWasUnreadable)
+        @endif
+        @if ($this->met !== null)
             <x-design::notice>
-                <x-design::strong>{{ __('household.joining.code_unreadable') }}</x-design::strong>
-                <x-design::body>{{ __('household.joining.code_unreadable_action') }}</x-design::body>
-            </x-design::notice>
-        @elseif ($this->notKept)
-            <x-design::notice>
-                <x-design::strong>{{ __('household.joining.not_kept') }}</x-design::strong>
-                <x-design::body>{{ __('household.joining.not_kept_action') }}</x-design::body>
+                <x-design::strong>{{ __($this->met->said()) }}</x-design::strong>
+                <x-design::body>{{ __($this->met->remedy()) }}</x-design::body>
             </x-design::notice>
         @endif
 

@@ -54,6 +54,7 @@ use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
+use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
@@ -136,6 +137,9 @@ final class CompositionRoot extends ServiceProvider
     /** The setting that picks the colour of Android's status bar and navigation bar icons. */
     private const string THE_ICONS_ON_THE_SYSTEM_BARS = 'nativephp.android.status_bar_style';
 
+    /** The setting that names the scheme the platform opens this application at. */
+    private const string THE_SCHEME_LINKS_OPEN_US_AT = 'nativephp.deeplink_scheme';
+
     /** The tag every store of what the phone keeps is registered under. */
     private const string WHAT_THE_PHONE_KEEPS = 'what-the-phone-keeps';
 
@@ -179,6 +183,11 @@ final class CompositionRoot extends ServiceProvider
         // and read by the build commands after this has run.
         config()->set(self::HOW_THE_PLATFORM_DRAWS_ITS_OWN, 'dark');
         config()->set(self::THE_ICONS_ON_THE_SYSTEM_BARS, 'light');
+
+        // An invitation's join link opens this application, so the scheme it
+        // is written under is the one the platform registers, whatever the
+        // builder's environment says.
+        config()->set(self::THE_SCHEME_LINKS_OPEN_US_AT, AJoinLink::scheme());
 
         $this->bindThePlatform();
         $this->bindWhatThePhoneKeeps();

@@ -27,21 +27,21 @@ use function expect;
  */
 final class ARunloopThatOnlyRemembers implements Runloop
 {
-    /** @var list<array{screen: string, params: array<mixed>, path: string}> */
+    /** @var list<array{screen: string, params: array<mixed>, at: string}> */
     private array $entered = [];
 
     /**
      * @param Closure(string, array<mixed>): mixed $build
      * @param array<mixed>                        $params
      */
-    public function enter(Closure $build, string $screen, array $params, string $path): mixed
+    public function enter(Closure $build, string $screen, array $params, string $at): mixed
     {
         // Built and dropped, as `TheHarnessInstead` builds and drops it. What
         // is remembered is what a test asks about; what is built is what the
         // contract holds every implementation of this seam to.
         $build($screen, $params);
 
-        $this->entered[] = ['screen' => $screen, 'params' => $params, 'path' => $path];
+        $this->entered[] = ['screen' => $screen, 'params' => $params, 'at' => $at];
 
         return '';
     }
@@ -54,7 +54,7 @@ final class ARunloopThatOnlyRemembers implements Runloop
      * questions is one a test can be written against without knowing how it
      * remembers.
      *
-     * @return array{screen: string, params: array<mixed>, path: string}
+     * @return array{screen: string, params: array<mixed>, at: string}
      */
     public function whatItRan(): array
     {

@@ -5,16 +5,21 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\JoiningAHouse;
+use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheWayInIs;
 use Modules\Stacks\Api\AStacksScreen;
@@ -29,6 +34,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheRouterHolds;
 
 /** The moment every code in this file is scanned at. */
 const JOINED_AT = 1_000;
@@ -62,6 +68,7 @@ function theWayIn(
         $camera,
         new Introducing(),
         new Remembering($stacks, $keychain),
+        $stacks,
         $clock,
         $door ?? ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')),
         $keychain,
@@ -88,8 +95,8 @@ it('opens on finding the house, saying it is the first of three steps', function
     expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
         ->and($said)->toContain(
             __('onboarding.step', ['step' => 1, 'of' => 3]),
-            __('household.joining.the_code_for_a_new_phone'),
-            __('household.joining.the_code_for_a_new_phone_explained'),
+            __('household.joining.your_invitation'),
+            __('household.joining.your_invitation_explained'),
             __('household.joining.scan'),
         );
 });
@@ -119,7 +126,7 @@ it('stays on the first step and says so when what was scanned is not a code for 
     $screen->findTheHouse();
 
     expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
-        ->and($screen->codeWasUnreadable)->toBeTrue()
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::CodeUnreadable)
         ->and($stacks->holdsAny())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.code_unreadable'), __('household.joining.code_unreadable_action'));
 });
@@ -152,7 +159,7 @@ it('stays on the first step when this phone could not keep the house', function 
 
     $screen->findTheHouse();
 
-    expect($screen->notKept)->toBeTrue()
+    expect($screen->met)->toBe(WhatFindingTheHouseMet::NotKept)
         ->and($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_kept'), __('household.joining.not_kept_action'));
 });
@@ -208,4 +215,105 @@ it('says nothing stood in the way before signing in, or once it worked', functio
 
 it('is reached from the first screen', function (): void {
     expect(NativeRouter::resolve(AScreenWithoutAStack::JoiningAHouse->value))->not->toBeNull();
+});
+
+/**
+ * An invitation's join link to the house, with whatever a test needs to change about it.
+ *
+ * @param array<string, string> $changed
+ */
+function theJoinLink(array $changed = []): string
+{
+    return sprintf('lemonfiber://join?%s', http_build_query([
+        'address' => 'https://192.168.1.42:8443',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'stack' => THE_HOUSE,
+        'expires' => '2000',
+        'name' => 'Robin Ash',
+        ...$changed,
+    ], encoding_type: PHP_QUERY_RFC3986));
+}
+
+/** The house as a phone already holds it, under the certificate given. */
+function theHouseHeld(string $fingerprint): Stack
+{
+    return Stack::of(StackId::saidBy(THE_HOUSE), StackName::of('The loft'), Address::of('https://192.168.1.42:8443'), Fingerprint::of($fingerprint));
+}
+
+it('adds the house a scanned join link names, pinned to its certificate, and asks the person to sign in as the name it carries', function (): void {
+    $stacks = StacksInMemory::working();
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    $kept = $stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE));
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->met)->toBeNull()
+        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and($kept->name()->shown())->toBe(__('household.joining.called'))
+        ->and($kept->presents()->is(Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))))->toBeTrue();
+});
+
+it('opens the join link the phone opened it at, straight to signing in', function (): void {
+    $screen = theWayIn(ACameraInMemory::reading(''));
+    WhatTheRouterHolds::over($screen, sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY)), AScreenWithoutAStack::TheList->value);
+
+    $screen->mount();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
+});
+
+it('opens on finding the house where the phone opened it at no link', function (): void {
+    $screen = theWayIn(ACameraInMemory::reading(''));
+    WhatTheRouterHolds::over($screen, AScreenWithoutAStack::JoiningAHouse->value, AScreenWithoutAStack::TheList->value);
+
+    $screen->mount();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBeNull();
+});
+
+it('goes straight to signing in on a phone that holds the house under the same certificate, and changes nothing it holds', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('a', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->name()->shown())->toBe('The loft');
+});
+
+it('refuses a join link for a house the phone holds under another certificate, and never re-pins it', function (): void {
+    $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('b', Fingerprint::CHARACTERS)));
+    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and($stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->presents()->is(Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS))))->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_this_house'), __('household.joining.not_this_house_action'));
+});
+
+it('refuses a join link it cannot use, in household words, and keeps nothing', function (string $link): void {
+    $stacks = StacksInMemory::working();
+    $screen = theWayIn(ACameraInMemory::reading($link), stacks: $stacks);
+
+    $screen->findTheHouse();
+
+    expect($screen->met)->toBe(WhatFindingTheHouseMet::LinkUnusable)
+        ->and($stacks->holdsAny())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.link_unusable'), __('household.joining.link_unusable_action'));
+})->with([
+    'lapsed' => [theJoinLink(['expires' => '1000'])],
+    'with a parameter it does not know' => [theJoinLink(['operator' => 'yes'])],
+    'without a name' => ['lemonfiber://join?address=https%3A%2F%2F192.168.1.42%3A8443'],
+    'carrying a claim, which this app cannot offer yet' => [theJoinLink(['claim' => 'a-token-of-enough-random-bits'])],
+]);
+
+it('is opened by the platform at the scheme every join link is written under', function (): void {
+    expect(config('nativephp.deeplink_scheme'))->toBe(AJoinLink::scheme());
 });

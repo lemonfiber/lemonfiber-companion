@@ -36,8 +36,8 @@ final readonly class TheRunloop implements Runloop
      * @param Closure(string, array<mixed>): mixed $build
      * @param array<mixed>                        $params
      */
-    public function enter(Closure $build, string $screen, array $params, string $path): mixed
+    public function enter(Closure $build, string $screen, array $params, string $at): mixed
     {
-        return WhereAScreenLeavesYou::after(new ScreenRouter($build, $this->atTheFront)->start($screen, $params, $path));
+        return WhereAScreenLeavesYou::after(new ScreenRouter($build, $this->atTheFront)->start($screen, $params, $at));
     }
 }
