@@ -11,7 +11,7 @@ use Tests\Support\OneDestination;
  * Three types here each carry a string with a fixed place to go, and each
  * publishes one way to reach it per place, named for that place:
  * `forTheHeader`, `forTheExchange`, `forTheClient`, and for an address also
- * `forTheOperatorWhoCouldNotReachIt`. The naming is deliberate and every one of
+ * `forTheOperatorWhoCouldNotReachIt` and `forThePersonAskedToTrustIt`. The naming is deliberate and every one of
  * the three docblocks says so — reading it for any other purpose is meant to
  * read wrong at the call site.
  *
