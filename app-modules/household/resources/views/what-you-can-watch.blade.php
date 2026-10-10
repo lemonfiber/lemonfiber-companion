@@ -64,20 +64,11 @@
 @elseif ($this->answer()->isOutOfReach)
     {{-- Not an empty shelf, and drawn so it can never be mistaken for one. The
          library exists and could not be reached, which is the opposite thing
-         to tell somebody about their own collection.
-
-         The core's own sentences, in the core's own words. Whoever could not
-         reach what is a fact about two machines, and a line written here would
-         be this app guessing at which. --}}
+         to tell somebody about their own collection. Why it could not be
+         read is the core's finding for the operator, never shown here. --}}
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('household.shelf_is_out_of_reach') }}</x-design::strong>
-        @forelse ($this->answer()->reasons as $reason)
-            <x-design::body>{{ $reason }}</x-design::body>
-        @empty
-            {{-- The core said it could not, and said nothing about why. Better than
-                 a blank frame, which reads as the shelf being empty. --}}
-            <x-design::body>{{ __('household.shelf_is_out_of_reach_action') }}</x-design::body>
-        @endforelse
+        <x-design::body>{{ __('household.shelf_is_out_of_reach_action') }}</x-design::body>
     </x-design::notice>
 
     <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
@@ -99,7 +90,7 @@
 @else
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
-    <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
+    <x-design::body>{{ __('household.signed_out') }}</x-design::body>
     <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
 @endif
 </x-operator::content>

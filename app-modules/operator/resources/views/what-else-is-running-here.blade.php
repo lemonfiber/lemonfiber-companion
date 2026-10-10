@@ -11,7 +11,9 @@
          the whole point of the screen — a list of names an operator does
          not recognise, with nothing saying why they are here, is what this
          replaces. --}}
-    <x-design::note>{{ __('health.undeclared_explained') }}</x-design::note>
+    @if ($this->howMany() > 0)
+        <x-design::note>{{ __('health.undeclared_explained') }}</x-design::note>
+    @endif
 
     <x-design::section>
         @forelse ($this->answer()->running as $container)
@@ -29,10 +31,7 @@
             {{-- Not the same screen as a machine that could not be asked.
                  Nothing unaccounted for is the answer the operator wants, and
                  saying so is what tells it apart from the obstacle branch. --}}
-            <x-design::row
-                :headline="__('health.nothing_undeclared')"
-                :supporting="__('health.nothing_undeclared_action')"
-            />
+            <x-design::row :headline="__('health.nothing_undeclared_action')" />
         @endforelse
     </x-design::section>
 

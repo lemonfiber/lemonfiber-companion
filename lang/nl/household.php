@@ -71,6 +71,8 @@ return [
 
     'nothing_owed' => 'Er is hier niets om je te vertellen.',
     'nothing_owed_action' => 'Het huis zegt niets over wat je kunt aanvragen.',
+    'signed_out' => 'Je bent afgemeld bij dit huis.',
+    'signed_in' => 'Dit huis staat voor je open.',
     'ask_again' => 'Opnieuw vragen',
     'ask_again_for_yours' => 'Opnieuw vragen naar wat je hebt aangevraagd',
     'needs_an_update' => 'Het huis heeft hiervoor een update nodig.',
@@ -202,7 +204,7 @@ return [
     'preview' => [
         'marked' => 'Voorbeeld: wat een lid ziet',
         'about' => 'Dit ziet iemand die met de standaardinstellingen van het huishouden is uitgenodigd. Niemands eigen plank of aanvragen worden getoond.',
-        'back' => 'Terug naar Switchboard',
+        'back' => 'Preview verlaten',
         'ask' => 'Iets aanvragen',
         'cannot_ask' => 'Een voorbeeld kan niets aanvragen.',
         'cannot_play' => 'Een voorbeeld kan niets afspelen.',

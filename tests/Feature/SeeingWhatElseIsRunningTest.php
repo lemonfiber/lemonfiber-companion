@@ -28,6 +28,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What is running here that this stack never declared.
 //
@@ -129,6 +130,22 @@ it('a machine running only what it declared says so', function (): void {
     expect($screen->howMany())->toBe(0)
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         ->and($screen->answer()->went->met)->toBe('');
+
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(trans_choice('health.undeclared_count', 0))
+        ->and($said)->toContain(__('health.nothing_undeclared_action'))
+        ->and($said)->not->toContain(__('health.undeclared_explained'));
+});
+
+it('explains what the list is only where it lists something', function (): void {
+    $screen = theStrangersScreen(AStackThatSupervises::alsoRunning(
+        Daemons::none(whatTheVerbsCostBesideTheStrangers()),
+        twoThingsNobodyDeclared(),
+    ));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.undeclared_explained'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.nothing_undeclared_action'));
 });
 
 it('a machine that could not be asked reports no strangers, not none', function (): void {

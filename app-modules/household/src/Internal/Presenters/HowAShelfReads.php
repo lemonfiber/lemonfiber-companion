@@ -14,7 +14,6 @@ use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\StackId;
 
@@ -62,15 +61,9 @@ final readonly class HowAShelfReads
     }
 
     /** The core answered and the library was not its to hand over. */
-    public function outOfReach(Sentences $said): WhatAMemberTurnedOutToBeAbleToWatch
+    public function outOfReach(): WhatAMemberTurnedOutToBeAbleToWatch
     {
-        $reasons = [];
-
-        foreach ($said as $sentence) {
-            $reasons[] = $sentence->shown();
-        }
-
-        return WhatAMemberTurnedOutToBeAbleToWatch::outOfReach($reasons);
+        return WhatAMemberTurnedOutToBeAbleToWatch::outOfReach();
     }
 
     /**
