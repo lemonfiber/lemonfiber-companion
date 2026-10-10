@@ -258,31 +258,77 @@ function theHouseHeld(string $fingerprint): Stack
     return Stack::of(StackId::saidBy(THE_HOUSE), StackName::of('The loft'), Address::of('https://192.168.1.42:8443'), Fingerprint::of($fingerprint));
 }
 
-it('adds the house a scanned join link names, pinned to its certificate, and asks the person to sign in as the name it carries', function (): void {
+/**
+ * The way in, handed the join link on the path a test names: scanned, or opened by the platform while the app was running or from cold.
+ *
+ * @return array{JoiningAHouse, StacksInMemory, ADoorThatWasKnockedOn}
+ */
+function aJoinLinkOpenedBy(string $path): array
+{
     $stacks = StacksInMemory::working();
-    $screen = theWayIn(ACameraInMemory::reading(theJoinLink()), stacks: $stacks);
+    $door = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member'));
+    $screen = theWayIn(ACameraInMemory::reading($path === 'scanned' ? theJoinLink() : ''), $door, $stacks);
 
-    $screen->findTheHouse();
+    if ($path === 'scanned') {
+        $screen->findTheHouse();
+
+        return [$screen, $stacks, $door];
+    }
+
+    $opened = sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY));
+    $path === 'opened while it was running'
+        ? WhatTheRouterHolds::over($screen, $opened, AScreenWithoutAStack::TheList->value)
+        : WhatTheRouterHolds::over($screen, $opened);
+    $screen->mount();
+
+    return [$screen, $stacks, $door];
+}
+
+it('asks whether somebody in their house sent a join link before it pins or keeps anything, or sends any password', function (string $path): void {
+    [$screen, $stacks, $door] = aJoinLinkOpenedBy($path);
+    $asked = WhatTheDeviceWouldDraw::by($screen);
+    $screen->__syncProperty('theirName', 'Robin Ash');
+    $screen->__syncProperty('typed', 'a-members-password');
+    $screen->signIn();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->offeredAt)->toBe('https://192.168.1.42:8443')
+        ->and($stacks->holdsAny())->toBeFalse()
+        ->and($door->knocks())->toBe(0)
+        ->and($asked->said())->toContain(__('household.joining.is_it_yours'), __('household.joining.is_it_yours_explained'), 'https://192.168.1.42:8443')
+        ->and($asked->offers())->toContain(__('household.joining.it_is_yours'), __('household.joining.it_is_not_yours'))
+        ->and($asked->offers())->not->toContain(__('household.joining.sign_in'));
+})->with(['scanned', 'opened while it was running', 'opened from cold']);
+
+it('adds the house a join link names, pinned to its certificate, once they say somebody in their house sent it, and asks them to sign in as its name', function (string $path): void {
+    [$screen, $stacks, $door] = aJoinLinkOpenedBy($path);
+
+    $screen->confirmTheHouse();
 
     $kept = $stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE));
 
     expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
         ->and($screen->met)->toBeNull()
+        ->and($screen->offeredAt)->toBe('')
         ->and($screen->theirName)->toBe('Robin Ash')
         ->and($kept->name()->shown())->toBe(__('household.joining.called'))
-        ->and($kept->presents()->is(Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))))->toBeTrue();
-});
-
-it('opens the join link the phone opened it at, straight to signing in', function (): void {
-    $screen = theWayIn(ACameraInMemory::reading(''));
-    WhatTheRouterHolds::over($screen, sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY)), AScreenWithoutAStack::TheList->value);
-
-    $screen->mount();
-
-    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
-        ->and($screen->theirName)->toBe('Robin Ash')
+        ->and($kept->presents()->is(Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))))->toBeTrue()
+        ->and($door->knocks())->toBe(0)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
+})->with(['scanned', 'opened while it was running', 'opened from cold']);
+
+it('keeps nothing of a join link they say nobody in their house sent, and confirming afterwards adds nothing', function (): void {
+    [$screen, $stacks] = aJoinLinkOpenedBy('scanned');
+
+    $screen->forgetTheHouse();
+    $screen->confirmTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->offeredAt)->toBe('')
+        ->and($screen->theirName)->toBe('')
+        ->and($stacks->holdsAny())->toBeFalse();
 });
+
 
 it('opens on finding the house where the phone opened it at no link', function (): void {
     $screen = theWayIn(ACameraInMemory::reading(''));

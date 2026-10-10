@@ -151,6 +151,20 @@ final readonly class Address implements JsonSerializable
     }
 
     /**
+     * The address a join link carries, for the person asked whether somebody in
+     * their house sent it, and nowhere else.
+     *
+     * The one place a member sees an address: a link anybody can write names
+     * the machine it would connect them to, and that is what they are deciding
+     * to trust. `TheAddressALinkCarriesIsShownOnlyWhereItIsTrustedTest` holds
+     * every reader to that.
+     */
+    public function forThePersonAskedToTrustIt(): string
+    {
+        return $this->url;
+    }
+
+    /**
      * Which kind of name it reaches its machine by: numeric, a `.local` name or
      * any other name, and nothing of the name itself.
      */

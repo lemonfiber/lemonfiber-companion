@@ -102,6 +102,15 @@ final class JoiningAHouse extends NativeComponent
     /** What signing in came to, once it was tried. */
     public HowTheSignInWent $went = HowTheSignInWent::NotYet;
 
+    /** Where the house a join link would add is, as the link carries it, while the person is asked whether somebody in their house sent it. */
+    public string $offeredAt = '';
+
+    /** The house a join link would add, held until the person says somebody in their house sent it; nothing is pinned or kept meanwhile. */
+    private ?Stack $offered = null;
+
+    /** The name the link would have them sign in as, put in the field once they say so. */
+    private string $offeredAs = '';
+
     public function __construct(
         private readonly Scanning $camera,
         private readonly Introducing $introducing,
@@ -135,10 +144,37 @@ final class JoiningAHouse extends NativeComponent
     public function findTheHouse(): void
     {
         $this->met = null;
+        $this->forgetTheHouse();
 
         $this->readACode($this->camera, function (string $handed): void {
             $this->handed($handed);
         });
+    }
+
+    /** Add the house a join link offered, now the person has said somebody in their house sent it, and go on to signing in. */
+    public function confirmTheHouse(): void
+    {
+        $house = $this->offered;
+        $named = $this->offeredAs;
+        $this->forgetTheHouse();
+
+        if (! $house instanceof Stack) {
+            return;
+        }
+
+        $this->keeping($house);
+
+        if ($this->at === WhereTheWayInIs::SigningIn) {
+            $this->theirName = $named;
+        }
+    }
+
+    /** Let go of the house a join link offered, keeping nothing of it. */
+    public function forgetTheHouse(): void
+    {
+        $this->offered = null;
+        $this->offeredAs = '';
+        $this->offeredAt = '';
     }
 
     /** Offer the name and the password, and land on Home once in. */
@@ -191,7 +227,13 @@ final class JoiningAHouse extends NativeComponent
     }
 
     /**
-     * The house a join link names, added where the phone holds none, signed in to where it holds it, and refused where it holds it under another certificate.
+     * The house a join link names: offered for the person to confirm where the phone holds none, signed in to where it holds it, and refused where it holds it under another certificate.
+     *
+     * **A link anybody can send never adds a house on its own.** It names an
+     * address and a certificate, and whoever wrote it chose both; added
+     * straight away, a stranger's link would have the person typing their
+     * password into the stranger's machine. So nothing is pinned, kept or sent
+     * until they say somebody in their house sent it.
      *
      * A link carrying a claim asks the person to choose their password, which
      * this app cannot offer the house yet, so it is refused as one that cannot
@@ -207,13 +249,23 @@ final class JoiningAHouse extends NativeComponent
             return $this;
         }
 
-        if (! $this->admits($house)) {
-            return $this;
+        return $this->admits($house) ? $this->offering($house, $link->name()) : $this;
+    }
+
+    /** Signing in to a house this phone holds under the link's certificate, or the person asked whether to trust one it does not hold. */
+    private function offering(Stack $house, AMembersName $named): self
+    {
+        if ($this->stacks->configured()->knows($house->id())) {
+            $this->theirName = $named->forTheExchange();
+
+            return $this->signingInTo($house->id());
         }
 
-        $this->theirName = $link->name()->forTheExchange();
+        $this->offered = $house;
+        $this->offeredAs = $named->forTheExchange();
+        $this->offeredAt = $house->at()->forThePersonAskedToTrustIt();
 
-        return $this->stacks->configured()->knows($house->id()) ? $this->signingInTo($house->id()) : $this->keeping($house);
+        return $this;
     }
 
     /**

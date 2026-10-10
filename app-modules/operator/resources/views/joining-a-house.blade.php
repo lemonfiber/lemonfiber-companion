@@ -4,7 +4,18 @@
 <x-operator::content>
     <x-design::note>{{ __('onboarding.step', ['step' => $this->at->step(), 'of' => $this->at->ofHowMany()]) }}</x-design::note>
 
-    @if ($this->at === WhereTheWayInIs::FindingTheHouse)
+    @if ($this->at === WhereTheWayInIs::FindingTheHouse && $this->offeredAt !== '')
+        {{-- A link anybody can send names the machine it connects to, so the
+             person says whether somebody in their house sent it before
+             anything is kept or any password is asked for. --}}
+        <x-design::title>{{ __('household.joining.is_it_yours') }}</x-design::title>
+        <x-design::body>{{ __('household.joining.is_it_yours_explained') }}</x-design::body>
+        <x-design::card>
+            <x-design::verbatim>{{ $this->offeredAt }}</x-design::verbatim>
+        </x-design::card>
+        <x-design::action label="{{ __('household.joining.it_is_yours') }}" tap="confirmTheHouse()" />
+        <x-operator::quiet-action label="{{ __('household.joining.it_is_not_yours') }}" tap="forgetTheHouse()" />
+    @elseif ($this->at === WhereTheWayInIs::FindingTheHouse)
         <x-design::title>{{ __($this->findsTheHouse()->said()) }}</x-design::title>
         <x-design::body>{{ __($this->findsTheHouse()->explained()) }}</x-design::body>
 
