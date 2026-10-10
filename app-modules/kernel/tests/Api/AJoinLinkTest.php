@@ -87,6 +87,12 @@ it('reads the house, its certificate and the name the person signs in as, decode
         ->and($link->leadsTo(claiming: static fn(): TheWordCarriedOut => new TheWordCarriedOut('claiming'), signingIn: static fn(): TheWordCarriedOut => new TheWordCarriedOut('signing in'))->said)->toBe('signing in');
 });
 
+it('reads a house named by a machine whose own name carries capitals, as the core writes it', function (): void {
+    $link = AJoinLink::read(aLinkCarrying([...whatTheLinkCarries(), 'address' => 'https://Wessels-MacBook-Pro.local:8443']), openedNow());
+
+    expect($link->house(StackName::of('Home'))->at()->forTheClient())->toBe('https://wessels-macbook-pro.local:8443');
+});
+
 it('carries the claim it was written with, for the one exchange that claims the invitation, and never lets it out of the process', function (): void {
     $claim = AJoinLink::read(aLinkCarrying([...whatTheLinkCarries(), 'claim' => 'a-token-of-enough-random-bits']), openedNow())
         ->leadsTo(claiming: static fn(AClaim $carried): AClaim => $carried, signingIn: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no claim'));

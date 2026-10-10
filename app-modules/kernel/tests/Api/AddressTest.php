@@ -200,6 +200,8 @@ it('holds a join link\'s address as one host and port, shown and dialled as the 
     'a bracketed IPv6 address' => ['https://[fd00::1]:8443', 'https://[fd00::1]:8443'],
     'the highest port' => ['https://loft.example:65535', 'https://loft.example:65535'],
     'a name whose first label begins with a digit' => ['https://1loft.local', 'https://1loft.local'],
+    'a machine\'s own name in capitals, held in small letters' => ['https://Wessels-MacBook-Pro.local:8443', 'https://wessels-macbook-pro.local:8443'],
+    'an IPv6 address in capitals, held in small letters' => ['https://[FD00::1]:8443', 'https://[fd00::1]:8443'],
 ]);
 
 it('refuses a join link\'s address that a person could read as one host and that would dial another', function (string $handed): void {
@@ -214,7 +216,8 @@ it('refuses a join link\'s address that a person could read as one host and that
     'percent-encoding' => ['https://loft%2elocal'],
     'an encoded international name' => ['https://xn--lft-una.local'],
     'an international name' => ['https://löft.local'],
-    'capital letters' => ['https://Loft.local'],
+    'an international name in capitals' => ['https://LÖFT.local'],
+    'an encoded international name in capitals' => ['https://XN--LFT-UNA.local'],
     'a trailing dot' => ['https://loft.local.'],
     'an empty label' => ['https://loft..local'],
     'a label beginning with a hyphen' => ['https://-loft.local'],
