@@ -68,8 +68,8 @@ final readonly class Address implements JsonSerializable
     /** How a name only the local network answers for ends. */
     private const string ONLY_THE_LOCAL_NETWORK_ANSWERS = '.local';
 
-    /** One encrypted host and at most a port, and nothing else: a lowercase name, a dotted IPv4 address or a bracketed IPv6 one, then an optional closing slash. */
-    private const string ONE_HOST_WRITTEN_PLAINLY = '~\Ahttps://(?<host>[a-z0-9.-]+|\[[0-9a-f:.]+\])(?<port>:[1-9][0-9]{0,4})?(?<closing>/?)\z~';
+    /** One encrypted host and at most a port, and nothing else: a name, a dotted IPv4 address or a bracketed IPv6 one, then an optional closing slash. */
+    private const string ONE_HOST_WRITTEN_PLAINLY = '~\Ahttps://(?<host>[a-zA-Z0-9.-]+|\[[0-9a-fA-F:.]+\])(?<port>:[1-9][0-9]{0,4})?(?<closing>/?)\z~';
 
     /** One label of a name: letters, digits and inner hyphens, at most 63 long. */
     private const string A_LABEL = '~\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\z~';
@@ -157,13 +157,21 @@ final readonly class Address implements JsonSerializable
      * the address shown must be the one connected to. So the host and port are
      * read once, and the address held is rebuilt from them: no user before an
      * `@`, no backslash, no path, query or fragment, no percent-encoding, no
-     * internationalised or encoded name, no trailing dot, no capital letters, no
-     * number a resolver could read as an address other than the one it seems,
-     * and no port outside the range or written with a leading zero.
+     * internationalised or encoded name, no trailing dot, no number a resolver
+     * could read as an address other than the one it seems, and no port outside
+     * the range or written with a leading zero. A host is case-insensitive
+     * (RFC 3986), and a machine's own name often carries capitals, so the host
+     * is held in small letters, shown and dialled alike.
      */
     public static function joinedAt(string $handed): self
     {
-        if (preg_match(self::ONE_HOST_WRITTEN_PLAINLY, $handed, $found) !== 1 || ! self::isOneHost($found['host'])) {
+        if (preg_match(self::ONE_HOST_WRITTEN_PLAINLY, $handed, $found) !== 1) {
+            throw AddressIsUnreachable::notOneHostWrittenPlainly();
+        }
+
+        $found['host'] = mb_strtolower($found['host']);
+
+        if (! self::isOneHost($found['host'])) {
             throw AddressIsUnreachable::notOneHostWrittenPlainly();
         }
 
