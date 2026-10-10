@@ -1,0 +1,117 @@
+A text field can say what it holds, for the platform's password manager:
+`content-type` is `username`, `password` or `new-password`. iOS sets the
+field's text content type and Android its autofill content type, so a new
+password is offered a strong one and saved as the account's, and a sign-in
+is filled and saved as one. Anything else leaves the field untyped.
+
+--- a/vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php
++++ b/vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php
+@@ -107,2 +107,6 @@
+             $this->revealable();
++        }
++        $contentType = $attrs['content-type'] ?? $attrs['contentType'] ?? null;
++        if ($contentType !== null) {
++            $this->contentType((string) $contentType);
+         }
+@@ -338,2 +342,14 @@
+         $this->inputProps['secure'] = $value;
++
++        return $this;
++    }
++
++    /**
++     * What the field holds, for the platform's password manager: `username`,
++     * `password` or `new-password`. A new password is offered a strong one and
++     * saved as the account's; anything else leaves the field untyped.
++     */
++    public function contentType(string $type): static
++    {
++        $this->inputProps['content_type'] = $type;
+ 
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift
+@@ -221,2 +221,3 @@
+         .autocorrectionDisabled(!autocorrect)
++        .textContentType(resolveContentType(p.getString("content_type")))
+         .disabled(disabled || readOnly)
+@@ -566,2 +567,12 @@
+ 
++/// What the field holds, for the password manager; unknown or empty leaves it untyped.
++private func resolveContentType(_ kind: String) -> UITextContentType? {
++    switch kind {
++    case "username":     return .username
++    case "password":     return .password
++    case "new-password": return .newPassword
++    default:             return nil
++    }
++}
++
+ /// Keyboard resolution — accepts string hints ("email", "number", etc.) that
+--- a/vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt
+@@ -7,9 +7,11 @@
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.remember
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.autofill.ContentType
+ import androidx.compose.ui.focus.FocusRequester
+ import androidx.compose.ui.focus.focusRequester
+ import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.contentType
+ import androidx.compose.ui.semantics.semantics
+ import androidx.compose.ui.text.TextRange
+ import androidx.compose.ui.text.input.KeyboardCapitalization
+@@ -60,6 +62,7 @@
+     val capitalization: KeyboardCapitalization?,
+     /** The `autocorrect` prop; null leaves Compose's own default alone. */
+     val autocorrect: Boolean?,
++    val contentType: String,
+     val disabled: Boolean,
+     val readOnly: Boolean,
+     val isError: Boolean,
+@@ -147,6 +150,7 @@
+         keyboard     = resolveKeyboardType(p.getString("keyboard")),
+         capitalization = resolveCapitalization(p.getString("autocapitalize"), p.getBool("secure"), p.getString("keyboard")),
+         autocorrect  = if (p.has("autocorrect")) p.getBool("autocorrect") else null,
++        contentType  = p.getString("content_type"),
+         disabled     = p.getBool("disabled"),
+         readOnly     = p.getBool("read_only"),
+         isError      = p.getBool("is_error"),
+@@ -533,6 +537,17 @@
+     return if (merged.isEmpty()) this else semantics(mergeDescendants = true) { contentDescription = merged }
+ }
+ 
++/** What the field holds, for the autofill service; unknown or empty leaves it untyped. */
++internal fun Modifier.nuiContentType(kind: String): Modifier {
++    val type = when (kind) {
++        "username" -> ContentType.Username
++        "password" -> ContentType.Password
++        "new-password" -> ContentType.NewPassword
++        else -> return this
++    }
++    return semantics { contentType = type }
++}
++
+ /**
+  * Focus the field and raise the keyboard on first composition.
+  *
+--- a/vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt
+@@ -164,3 +164,3 @@
+             // layout mode) still wins since it comes later in the chain.
+-            modifier = Modifier.fillMaxWidth().then(modifier).nuiA11y(props.a11yLabel, props.a11yHint)
++            modifier = Modifier.fillMaxWidth().then(modifier).nuiA11y(props.a11yLabel, props.a11yHint).nuiContentType(props.contentType)
+                 .nuiAutofocus(props.autofocus),
+--- a/vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt
+@@ -134,3 +134,3 @@
+             // layout mode) still wins since it comes later in the chain.
+-            modifier = Modifier.fillMaxWidth().then(modifier).nuiA11y(props.a11yLabel, props.a11yHint)
++            modifier = Modifier.fillMaxWidth().then(modifier).nuiA11y(props.a11yLabel, props.a11yHint).nuiContentType(props.contentType)
+                 .nuiAutofocus(props.autofocus),
+--- a/vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt
+@@ -136,2 +136,3 @@
+                 .then(modifier)
++                .nuiContentType(props.contentType)
+                 .nuiAutofocus(props.autofocus),

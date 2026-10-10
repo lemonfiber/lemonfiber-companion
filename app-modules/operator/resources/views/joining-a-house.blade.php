@@ -59,6 +59,7 @@
             <native:outlined-text-input
                 native:model="theirName"
                 label="{{ __('household.joining.your_name') }}"
+                content-type="username"
                 autocorrect="off"
                 autocapitalize="none"
             />
@@ -66,6 +67,7 @@
             <native:outlined-text-input
                 native:model="typed"
                 label="{{ $this->choosing ? __('household.joining.chosen_password') : __('household.joining.your_password') }}"
+                content-type="{{ $this->choosing ? 'new-password' : 'password' }}"
                 keyboard="password"
                 secure
             />
