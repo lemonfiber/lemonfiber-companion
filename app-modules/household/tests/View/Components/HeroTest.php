@@ -13,6 +13,9 @@ use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
+
+use function str_repeat;
+
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -45,6 +48,13 @@ it('draws a raised 16:9 tile, said as one element, then Play and More', function
         ->and(data_get($drawn, 'children.1.props.on_press'))->toBeInt()
         ->and(data_get($drawn, 'children.2.props.a11y_label'))->toBe(__('household.hero.more_named', ['title' => 'Alien']));
 });
+
+it('letters its top line and title at the sizes it names, whatever the person\'s text size, at every step', function (string $titled): void {
+    $tile = data_get(WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" tap="play(\'a1\')" />', ['poster' => theNewestTitle($titled)]), 'children.0.children.0');
+
+    expect(data_get($tile, 'children.0.props.fixed_size'))->toBe(1)
+        ->and(data_get($tile, 'children.1.props.fixed_size'))->toBe(1);
+})->with(['Alien', 'The Lemon Grove of the North', str_repeat('A title of a great many words ', 3)]);
 
 it('draws Play that waits, with the reason beside it, where the screen says nothing of pressing it', function (): void {
     $drawn = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle()]);
