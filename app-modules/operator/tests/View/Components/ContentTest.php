@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Native\Mobile\Edge\CallbackRegistry;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -58,9 +59,18 @@ it('opens at its top', function (): void {
 });
 
 it('opens at its end when asked to, around the same column', function (): void {
-    $markup = '<x-operator::content from-the-end><native:text>Inside</native:text></x-operator::content>';
+    $markup = '@use(\'Modules\\Operator\\Api\\HowTheColumnScrolls\')<x-operator::content :scrolls="HowTheColumnScrolls::FromTheEnd"><native:text>Inside</native:text></x-operator::content>';
 
     expect(data_get(WhatMarkupDraws::drawn($markup), 'props.scroll_anchor'))->toBe('bottom')
         ->and(WhatMarkupDraws::outline($markup))
         ->toBe('scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
+});
+
+it('is pulled down to ask again where the screen asks the stack again, around the same column', function (): void {
+    $markup = '@use(\'Modules\\Operator\\Api\\HowTheColumnScrolls\')<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain"><native:text>Inside</native:text></x-operator::content>';
+
+    expect(WhatMarkupDraws::outline($markup))
+        ->toStartWith('refreshable')
+        ->toEndWith('[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]')
+        ->and(data_get(WhatMarkupDraws::drawn($markup), 'props.on_refresh'))->toBe(new CallbackRegistry()->register('askAgain()'));
 });

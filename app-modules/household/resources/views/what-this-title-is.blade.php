@@ -1,7 +1,8 @@
 @use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="$this->title()->named()" :back="$this->hasAWayBack()" />
 
-<x-operator::content>
+<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain">
 
 @if ($this->title()->title !== null)
     {{-- The title as the core answered it for this member: its poster, Play,
