@@ -53,7 +53,12 @@ function whatMigratingProduces(): array
     // repository does not install.
     Artisan::call('migrate', ['--force' => true]);
 
-    return ['jobs' => Schema::hasTable('jobs'), 'failed_jobs' => Schema::hasTable('failed_jobs')];
+    return [
+        'jobs' => Schema::hasTable('jobs'),
+        'failed_jobs' => Schema::hasTable('failed_jobs'),
+        'cache' => Schema::hasTable('cache'),
+        'cache_locks' => Schema::hasTable('cache_locks'),
+    ];
 }
 
 it('the queue the packager polls has a table to poll', function (): void {
@@ -68,6 +73,18 @@ it('the queue the packager polls has a table to poll', function (): void {
     expect($made['failed_jobs'])->toBeTrue(
         'The framework\'s failed-job driver is `database-uuids`, so a job that fails writes '
         . 'to `failed_jobs`. A second missing table is this same defect with another name.',
+    );
+});
+
+it('the cache the worker reads before each poll has a table to read', function (): void {
+    $made = whatMigratingProduces();
+
+    expect($made['cache'])->toBeTrue(
+        'Before each poll the worker asks the cache which queues are paused, and on iOS the '
+        . 'cache store is `database`. Without the table every poll is a logged stack trace; '
+        . 'it reached 1 GB on a handset. Add the cache migration.',
+    )->and($made['cache_locks'])->toBeTrue(
+        'A lock taken through the database cache store writes to `cache_locks`.',
     );
 });
 
