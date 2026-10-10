@@ -139,6 +139,19 @@ it('draws the title in full, with Play', function (): void {
         ->and($drawn->offersThatWait())->toBe([]);
 });
 
+it('says a title the server states as running no minutes runs under a minute, never 0 min', function (): void {
+    $title = WhatTheTitleIs::told(ATitle::of(
+        Holding::of(HoldingId::called('a2'), 'A short', Medium::Film, WhenItCameOut::in(2018)),
+        ItsDetails::of('', HowLongItRuns::minutes(0), Genres::of(), '', WhenItWasReleased::unstated()),
+        streamingAtTheDoor('a2'),
+        Seasons::none(),
+    ));
+    $said = WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle($title)))->said();
+
+    expect($said)->toContain(__('household.title.runs_under_a_minute'))
+        ->and($said)->not->toContain(__('household.title.runs_minutes', ['minutes' => 0]));
+});
+
 it('says why it cannot play in the core\'s own words where no location is stated', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(WhereItPlays::cannot(Sentence::of('This machine\'s household address is not known.')))))));
 

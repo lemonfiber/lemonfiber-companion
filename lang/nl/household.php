@@ -218,6 +218,7 @@ return [
         'to_home' => 'Naar Thuis',
         'runs_hours' => ':hours u :minutes min',
         'runs_minutes' => ':minutes min',
+        'runs_under_a_minute' => 'Korter dan een minuut',
         'certificate' => 'Kijkwijzer :certificate',
         'released' => 'Uitgekomen op :day :month :year',
         'episode' => ':number. :title',

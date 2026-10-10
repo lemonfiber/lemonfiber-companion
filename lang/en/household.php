@@ -237,6 +237,7 @@ return [
         'to_home' => 'Go to Home',
         'runs_hours' => ':hours h :minutes min',
         'runs_minutes' => ':minutes min',
+        'runs_under_a_minute' => 'Under a minute',
         'certificate' => 'Rated :certificate',
         'released' => 'Released :day :month :year',
         'episode' => ':number. :title',
