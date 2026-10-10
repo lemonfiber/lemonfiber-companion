@@ -19,8 +19,8 @@ use function view;
  * lines arrive oldest first, and the one that says why it fell over is the
  * last, so that screen opens there and is scrolled back from.
  *
- * On a screen that asks the stack again, pulling it down asks again, so what
- * the house holds now is a pull away rather than a tab away. A column opened
+ * On a screen that asks the stack again, pulling it down reads it again, so
+ * what the house holds now is a pull away rather than a tab away. A column opened
  * from its end is not pulled down from its top, so {@see HowTheColumnScrolls}
  * is one of the three.
  *
@@ -32,8 +32,14 @@ final class Content extends Component
 {
     use HoldsItsSlot;
 
-    /** What pulling the screen down calls: the ask again every screen that asks the stack again has. */
-    private const string ASKS_AGAIN = 'askAgain()';
+    /**
+     * What pulling the screen down calls: the reading again every screen that asks the stack again has.
+     *
+     * The reading rather than the operator's *ask again*, which also lets go of
+     * what the stack offers and so draws the waiting frame over the whole
+     * screen; a pull keeps the screen drawn while it reads.
+     */
+    private const string READS_AGAIN = 'again()';
 
     /** Where a column read from its end is anchored. */
     private const string AT_THE_END = 'bottom';
@@ -59,6 +65,6 @@ final class Content extends Component
     /** What pulling it down calls, or nothing where it is not pulled down. */
     private function pulledDownTo(): ?string
     {
-        return $this->scrolls === HowTheColumnScrolls::PulledDownToAskAgain ? self::ASKS_AGAIN : null;
+        return $this->scrolls === HowTheColumnScrolls::PulledDownToReadAgain ? self::READS_AGAIN : null;
     }
 }

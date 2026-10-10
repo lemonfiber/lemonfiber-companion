@@ -1,7 +1,7 @@
 @use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="__('household.tabs.home')" :back="$this->hasAWayBack()" />
 
-<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain">
+<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToReadAgain">
 
 {{-- Home leads with what is theirs: what they were part-way through, what
      they asked for that has arrived, and what is on its way, each row drawn

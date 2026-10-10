@@ -2,7 +2,7 @@
 @use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="$this->title()->named()" :back="$this->hasAWayBack()" />
 
-<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain">
+<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToReadAgain">
 
 @if ($this->title()->title !== null)
     {{-- The title as the core answered it for this member: its poster, Play,

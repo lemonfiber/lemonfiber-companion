@@ -2,7 +2,7 @@
 @use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="__($this->tab()->said())" :back="$this->hasAWayBack()" />
 
-<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain">
+<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToReadAgain">
 
 <x-household::the-preview-mark />
 

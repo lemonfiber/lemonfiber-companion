@@ -360,13 +360,13 @@ function whatPullingDownCalls(NativeComponent $screen): array
     return array_values(array_filter($pulled, is_int(...)));
 }
 
-it('asks the house again when Home is pulled down, so a title added since shows without leaving it', function (): void {
+it('reads the house again when Home is pulled down, so a title added since shows without leaving it', function (): void {
     $watching = AShelfThatWasRead::holding(aShelfOfThree());
     $screen = theShelfScreen($watching);
 
-    expect(whatPullingDownCalls($screen))->toBe([new CallbackRegistry()->register('askAgain()')]);
+    expect(whatPullingDownCalls($screen))->toBe([new CallbackRegistry()->register('again()')]);
 
-    $screen->askAgain();
+    $screen->again();
     $screen->answer();
 
     expect($watching->askings())->toBe(2);

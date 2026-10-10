@@ -1,7 +1,7 @@
 @use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="__('household.tabs.requests')" :back="$this->hasAWayBack()" />
 
-<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToAskAgain">
+<x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToReadAgain">
 
 @if ($this->answer()->cameBack())
     {{-- The core's own sentences, in the core's own order and wording.
