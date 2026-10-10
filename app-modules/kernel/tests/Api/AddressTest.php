@@ -199,6 +199,7 @@ it('holds a join link\'s address as one host and port, shown and dialled as the 
     'a local name' => ['https://the-loft.local', 'https://the-loft.local'],
     'a bracketed IPv6 address' => ['https://[fd00::1]:8443', 'https://[fd00::1]:8443'],
     'the highest port' => ['https://loft.example:65535', 'https://loft.example:65535'],
+    'a name whose first label begins with a digit' => ['https://1loft.local', 'https://1loft.local'],
 ]);
 
 it('refuses a join link\'s address that a person could read as one host and that would dial another', function (string $handed): void {
@@ -219,6 +220,7 @@ it('refuses a join link\'s address that a person could read as one host and that
     'a label beginning with a hyphen' => ['https://-loft.local'],
     'a number read as an address it does not look like' => ['https://127.1'],
     'a hex number' => ['https://0x7f.0.0.1'],
+    'a name whose last label begins with a digit' => ['https://loft.1local'],
     'an IPv4 address out of range' => ['https://192.168.1.420'],
     'a port with a leading zero' => ['https://loft.local:08443'],
     'a port past the highest' => ['https://loft.local:65536'],

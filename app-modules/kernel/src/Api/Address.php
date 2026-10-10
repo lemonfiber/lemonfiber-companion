@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function count;
-use function ctype_digit;
 use function explode;
 
 use const FILTER_VALIDATE_IP;
 
 use function filter_var;
 use function is_int;
+use function is_numeric;
 use function is_string;
 
 use JsonSerializable;
@@ -279,6 +279,6 @@ final readonly class Address implements JsonSerializable
             }
         }
 
-        return ! ctype_digit($labels[count($labels) - 1][0]);
+        return ! is_numeric($labels[count($labels) - 1][0]);
     }
 }
