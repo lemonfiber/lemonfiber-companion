@@ -21,7 +21,7 @@ return [
     'not_put_back' => 'Putting the preset back over your edits is not offered here.',
 
     'for' => 'For :scope',
-    'per_hour' => 'Roughly :size for an hour',
+    'per_hour' => 'Size: :size',
     'transcodes_here' => 'This machine would have to transcode this in software',
     'no_presets' => 'The stack reports no preset in force.',
 

@@ -387,13 +387,13 @@ it('draws a library out of reach as itself, never as an empty shelf', function (
     ));
 
     expect($outOfReach->answer()->isOutOfReach)->toBeTrue()
-        ->and($outOfReach->answer()->cameBack())->toBeFalse()
-        ->and($outOfReach->answer()->reasons)->toBe(['The media server did not answer.']);
+        ->and($outOfReach->answer()->cameBack())->toBeFalse();
 
     $drawn = WhatTheDeviceWouldDraw::by($outOfReach)->said();
 
     expect($drawn)->toContain(__('household.shelf_is_out_of_reach'));
-    expect($drawn)->toContain('The media server did not answer.');
+    expect($drawn)->toContain(__('household.shelf_is_out_of_reach_action'));
+    expect($drawn)->not->toContain('The media server did not answer.');
     expect($drawn)->not->toContain(__('household.shelf_is_empty'));
 });
 
@@ -449,8 +449,7 @@ it('draws an obstacle as itself, never as a library out of reach', function (): 
     // what somebody reads, not which boolean is set.
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($met->answer()->isOutOfReach)->toBeFalse()
-        ->and($met->answer()->reasons)->toBe([]);
+    expect($met->answer()->isOutOfReach)->toBeFalse();
 
     $drawn = WhatTheDeviceWouldDraw::by($met)->said();
 
@@ -544,15 +543,14 @@ it('carries no sentence and no remedy where the core answered', function (): voi
         ->and($empty->isOutOfReach)->toBeFalse()
         ->and($unread->isSignedIn)->toBeTrue()
         ->and($out->isOutOfReach)->toBeFalse()
-        ->and($out->rows)->toBe([])
-        ->and($out->reasons)->toBe([]);
+        ->and($out->rows)->toBe([]);
 });
 
 it('draws the way back in where this device holds no session', function (): void {
     $out = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), signedIn: false);
 
     expect($out->answer()->isSignedIn)->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($out)->said())->toContain(__('connection.session_has_ended'));
+        ->and(WhatTheDeviceWouldDraw::by($out)->said())->toContain(__('household.signed_out'));
 });
 
 it('asks the machine once per frame, however many fields are read', function (): void {

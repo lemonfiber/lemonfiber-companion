@@ -202,7 +202,8 @@ final readonly class WhatARefusalMeant
         return match ($code) {
             RefusalCode::NotAdmitted => Obstacle::of(KindOfObstacle::CredentialWasRefused),
             RefusalCode::NotYours => Obstacle::of(KindOfObstacle::NotForThisAccount),
-            RefusalCode::Unconfirmed => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
+            RefusalCode::Unconfirmed,
+            RefusalCode::ServerSilent => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
             RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
             // The door's own refusals, which `Admissions` reads where the
             // password is offered. One reaching here is about what was offered
@@ -238,6 +239,11 @@ final readonly class WhatARefusalMeant
             RefusalCode::NoSetting,
             RefusalCode::NoMember,
             RefusalCode::NoShelfWithoutAMember,
+            RefusalCode::NotAnItem,
+            RefusalCode::NotOnTheirShelf,
+            RefusalCode::NotADevice,
+            RefusalCode::NobodyNamed,
+            RefusalCode::NoSuchPicture,
             RefusalCode::NotACount,
             RefusalCode::TooManyAtOnce,
             RefusalCode::NoSuchGroup,
@@ -318,7 +324,10 @@ final readonly class WhatARefusalMeant
             RefusalCode::ChoiceUnwritable,
             RefusalCode::WiringMoved,
             RefusalCode::Unreasonable,
-            RefusalCode::AlreadyFills => self::byFamily($why),
+            RefusalCode::AlreadyFills,
+            RefusalCode::NothingToPlayFrom,
+            RefusalCode::NotInTheHousehold,
+            RefusalCode::SignsNoDeviceIn => self::byFamily($why),
         };
     }
 

@@ -52,4 +52,22 @@ enum WhichSurfaceTheyAreGiven: string
      * refuse, one screen before the core was asked anything.
      */
     case TheirHome = 'their_home';
+
+    /** The catalogue key of what signing in opened, said under the title that names the stack. */
+    public function opened(): string
+    {
+        return match ($this) {
+            self::TheReport => 'connection.signed_in_action',
+            self::TheirHome => 'household.signed_in',
+        };
+    }
+
+    /** The catalogue key of the action that goes on to it. */
+    public function onwards(): string
+    {
+        return match ($this) {
+            self::TheReport => 'health.see_how_it_is',
+            self::TheirHome => 'household.title.to_home',
+        };
+    }
 }

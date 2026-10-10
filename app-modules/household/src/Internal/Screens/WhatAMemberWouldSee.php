@@ -185,8 +185,8 @@ final class WhatAMemberWouldSee extends NativeComponent implements DrawnAsAMembe
         return $this->watching->theDefaultShelf($stack, $session)->either(
             told: static fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->asAPreview($shelf),
-            outOfReach: static fn(Sentences $said): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->outOfReach($said),
+            outOfReach: static fn(): WhatAMemberTurnedOutToBeAbleToWatch
+                => new HowAShelfReads()->outOfReach(),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {
                 // A credential refused here is the same signed-out device as
                 // one refused on any other read, so the store is told while the

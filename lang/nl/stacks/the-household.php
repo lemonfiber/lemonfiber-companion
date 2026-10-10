@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'credentials' => [
-        'heading' => 'Credentials',
+        'heading' => 'Wachtwoorden',
         'state' => [
             'absent' => 'Ontbreekt: iets hier heeft hem nodig en hij is nooit opgegeven',
             'active' => 'Werkt',
@@ -14,20 +14,20 @@ return [
             'superseded' => 'Vervangen; de oude wacht om vernietigd te worden',
         ],
         'origin' => [
-            'operator' => 'Door jou opgegeven, van een account elders',
+            'operator' => 'Door jou op te geven, van een account elders',
             'service' => 'De service heeft hem zelf gemaakt',
             'lemonfiber' => 'Door lemonfiber gemaakt',
         ],
         'used_by' => 'Gebruikt door',
         'used_by_nothing' => 'Niets gebruikt hem',
-        'none' => 'Deze machine bewaart geen credentials',
+        'none' => 'Deze machine bewaart geen wachtwoorden',
         'protection' => [
             'heading' => 'Hoe ze bewaard worden',
             'against' => 'Dit beschermt tegen:',
             'not_against' => 'Dit beschermt niet tegen:',
             'nothing_listed' => 'Niets opgesomd',
         ],
-        'at_the_machine' => 'Een credential wordt op de machine ingesteld of vervangen, niet hier.',
+        'at_the_machine' => 'Een wachtwoord wordt op de machine ingesteld of vervangen, niet hier.',
     ],
     'clients' => [
         'heading' => 'Waarop kijken',

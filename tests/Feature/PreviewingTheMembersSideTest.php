@@ -244,7 +244,8 @@ it('a refused credential is a signed-out device, on either tab', function (): vo
 it('draws a library out of reach and a stack that would not say as themselves', function (): void {
     $unread = thePreview(watching: AShelfThatWasRead::outOfReach(Sentences::of(Sentence::of('The media server did not answer.'))));
 
-    expect(WhatTheDeviceWouldDraw::by($unread)->said())->toContain('The media server did not answer.');
+    expect(WhatTheDeviceWouldDraw::by($unread)->said())->toContain(__('household.shelf_is_out_of_reach_action'))
+        ->and(WhatTheDeviceWouldDraw::by($unread)->said())->not->toContain('The media server did not answer.');
 
     $met = thePreview(owing: AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $met->showRequests();

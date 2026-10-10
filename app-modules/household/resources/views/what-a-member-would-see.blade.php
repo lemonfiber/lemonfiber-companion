@@ -33,11 +33,7 @@
         {{-- Not an empty shelf, and drawn so it can never be mistaken for one. --}}
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('household.shelf_is_out_of_reach') }}</x-design::strong>
-            @forelse ($this->shelf()->reasons as $reason)
-                <x-design::body>{{ $reason }}</x-design::body>
-            @empty
-                <x-design::body>{{ __('household.shelf_is_out_of_reach_action') }}</x-design::body>
-            @endforelse
+            <x-design::body>{{ __('household.shelf_is_out_of_reach_action') }}</x-design::body>
         </x-design::notice>
 
         <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />

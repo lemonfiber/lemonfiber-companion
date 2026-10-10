@@ -270,7 +270,6 @@ return [
     'stuck_for_good' => 'Hier gebeurt vanzelf niets meer mee.',
     'undeclared_count' => '{0} Er draait hier verder niets|{1} Er draait hier nog één ding|[2,*] Er draaien hier nog :count dingen',
     'undeclared_explained' => 'Deze draaien op de machine en de configuratie van deze stack noemt ze niet. lemonfiber heeft ze niet gestart en stopt ze niet.',
-    'nothing_undeclared' => 'Er draait hier verder niets.',
     'nothing_undeclared_action' => 'Alles op deze machine is iets dat deze stack zelf heeft opgegeven.',
 
     'nothing_stopped' => 'Er is niets blijven steken.',
