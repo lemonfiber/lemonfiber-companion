@@ -25,41 +25,22 @@ final readonly class APluginInstall
     private function __construct(
         private APlugin $would,
         private bool $recorded,
-        private ThePluginChanges $changes,
+        private WhatAnInstallChanges $changing,
         private TheProofs $proofs,
-        private TheContestsLeft $contests,
-        private TheSettingsItOverrides $overrides,
-        private TheShapesTaken $taking,
         private WhatTheChecksMade $checks,
         private ?ARunPutBack $putBack,
     ) {}
 
     /** The account of an install nothing was put back from: a reading, or one that was recorded. */
-    public static function reported(
-        APlugin $would,
-        bool $recorded,
-        ThePluginChanges $changes,
-        TheProofs $proofs,
-        TheContestsLeft $contests,
-        TheSettingsItOverrides $overrides,
-        TheShapesTaken $taking,
-        WhatTheChecksMade $checks,
-    ): self {
-        return new self($would, $recorded, $changes, $proofs, $contests, $overrides, $taking, $checks, null);
+    public static function reported(APlugin $would, bool $recorded, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks): self
+    {
+        return new self($would, $recorded, $changing, $proofs, $checks, null);
     }
 
     /** The account of an install that did not hold, and what putting it back came to. Nothing put back is recorded. */
-    public static function putBack(
-        APlugin $would,
-        ThePluginChanges $changes,
-        TheProofs $proofs,
-        TheContestsLeft $contests,
-        TheSettingsItOverrides $overrides,
-        TheShapesTaken $taking,
-        WhatTheChecksMade $checks,
-        ARunPutBack $putBack,
-    ): self {
-        return new self($would, recorded: false, changes: $changes, proofs: $proofs, contests: $contests, overrides: $overrides, taking: $taking, checks: $checks, putBack: $putBack);
+    public static function putBack(APlugin $would, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks, ARunPutBack $putBack): self
+    {
+        return new self($would, recorded: false, changing: $changing, proofs: $proofs, checks: $checks, putBack: $putBack);
     }
 
     /** The plugin, as the install settles it. */
@@ -71,7 +52,7 @@ final readonly class APluginInstall
     /** Every change, in order. */
     public function changes(): ThePluginChanges
     {
-        return $this->changes;
+        return $this->changing->changes();
     }
 
     /** Every proof, with what asking it came to. */
@@ -83,19 +64,19 @@ final readonly class APluginInstall
     /** Every ask it would leave contested. */
     public function contests(): TheContestsLeft
     {
-        return $this->contests;
+        return $this->changing->contests();
     }
 
     /** Every bundled setting it changes. */
     public function overrides(): TheSettingsItOverrides
     {
-        return $this->overrides;
+        return $this->changing->overrides();
     }
 
     /** Every service taking a privileged shape. */
     public function taking(): TheShapesTaken
     {
-        return $this->taking;
+        return $this->changing->taking();
     }
 
     /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes. */
@@ -103,7 +84,7 @@ final readonly class APluginInstall
     {
         $approvals = [];
 
-        foreach ([$this->would->approvals(), $this->taking->approvals()] as $lines) {
+        foreach ([$this->would->approvals(), $this->changing->taking()->approvals()] as $lines) {
             foreach ($lines as $approval) {
                 $approvals[] = $approval;
             }

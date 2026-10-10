@@ -23,6 +23,7 @@ use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
+use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatAProofCameTo;
 use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
@@ -36,11 +37,8 @@ function anInstallRecorded(WhatAProofCameTo $cameTo, WhatTheChecksMade $checks, 
     return APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: $recorded,
-        changes: ThePluginChanges::these(),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these()),
         proofs: TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', $cameTo)),
-        contests: TheContestsLeft::these(),
-        overrides: TheSettingsItOverrides::these(),
-        taking: TheShapesTaken::these(),
         checks: $checks,
     );
 }
