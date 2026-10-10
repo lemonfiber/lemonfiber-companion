@@ -116,6 +116,10 @@ it('refuses a link with a parameter it cannot read', function (string $handed): 
 })->with([
     'an unencrypted address' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'http://192.168.1.42:8443'])],
     'an address that is not one' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'nowhere'])],
+    'an address naming one host and dialling another' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'https://192.168.1.42:8443@evil.example'])],
+    'an address with a backslash' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'https://192.168.1.42\\@evil.example'])],
+    'an address with an encoded name' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'https://xn--lft-una.local'])],
+    'an address with a trailing dot' => [aLinkCarrying([...whatTheLinkCarries(), 'address' => 'https://loft.local.'])],
     'a fingerprint that is not one' => [aLinkCarrying([...whatTheLinkCarries(), 'fingerprint' => 'abc'])],
     'a house no stack names itself' => [aLinkCarrying([...whatTheLinkCarries(), 'stack' => 'the-loft'])],
     'a blank name' => [aLinkCarrying([...whatTheLinkCarries(), 'name' => ' '])],

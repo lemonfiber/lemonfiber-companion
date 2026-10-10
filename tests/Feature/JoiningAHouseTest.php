@@ -313,6 +313,7 @@ it('adds the house a join link names, pinned to its certificate, once they say s
         ->and($screen->theirName)->toBe('Robin Ash')
         ->and($kept->name()->shown())->toBe(__('household.joining.called'))
         ->and($kept->presents()->is(Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS))))->toBeTrue()
+        ->and($kept->at()->forTheClient())->toBe('https://192.168.1.42:8443')
         ->and($door->knocks())->toBe(0)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
 })->with(['scanned', 'opened while it was running', 'opened from cold']);

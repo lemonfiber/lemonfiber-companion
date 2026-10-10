@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function count;
+use function ctype_digit;
+use function explode;
+
 use const FILTER_VALIDATE_IP;
 
 use function filter_var;
@@ -12,6 +16,7 @@ use function is_string;
 
 use JsonSerializable;
 
+use function ltrim;
 use function mb_strtolower;
 use function parse_url;
 
@@ -19,7 +24,10 @@ use const PHP_URL_HOST;
 use const PHP_URL_PORT;
 use const PHP_URL_SCHEME;
 
+use function preg_match;
+use function sprintf;
 use function str_ends_with;
+use function str_starts_with;
 use function trim;
 
 /**
@@ -59,6 +67,18 @@ final readonly class Address implements JsonSerializable
 {
     /** How a name only the local network answers for ends. */
     private const string ONLY_THE_LOCAL_NETWORK_ANSWERS = '.local';
+
+    /** One encrypted host and at most a port, and nothing else: a lowercase name, a dotted IPv4 address or a bracketed IPv6 one, then an optional closing slash. */
+    private const string ONE_HOST_WRITTEN_PLAINLY = '~\Ahttps://(?<host>[a-z0-9.-]+|\[[0-9a-f:.]+\])(?<port>:[1-9][0-9]{0,4})?(?<closing>/?)\z~';
+
+    /** One label of a name: letters, digits and inner hyphens, at most 63 long. */
+    private const string A_LABEL = '~\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\z~';
+
+    /** What an internationalised label is written as, which reads as a different name from the one it dials. */
+    private const string AN_ENCODED_LABEL = 'xn--';
+
+    /** The highest port there is. */
+    private const int HIGHEST_PORT = 65535;
 
     private function __construct(private string $url, private Scheme $scheme) {}
 
@@ -127,6 +147,31 @@ final readonly class Address implements JsonSerializable
             ?? throw AddressIsUnreachable::withAnUnknownScheme();
 
         return new self($trimmed, $scheme);
+    }
+
+    /**
+     * The address a join link carries, refused unless it is one encrypted host and port written one way only.
+     *
+     * **One parse feeds what the person reads and what is dialled.** A link
+     * anybody can write is shown to the person deciding whether to trust it, and
+     * the address shown must be the one connected to. So the host and port are
+     * read once, and the address held is rebuilt from them: no user before an
+     * `@`, no backslash, no path, query or fragment, no percent-encoding, no
+     * internationalised or encoded name, no trailing dot, no capital letters, no
+     * number a resolver could read as an address other than the one it seems,
+     * and no port outside the range or written with a leading zero.
+     */
+    public static function joinedAt(string $handed): self
+    {
+        if (preg_match(self::ONE_HOST_WRITTEN_PLAINLY, $handed, $found) !== 1 || ! self::isOneHost($found['host'])) {
+            throw AddressIsUnreachable::notOneHostWrittenPlainly();
+        }
+
+        if ($found['port'] !== '' && (int) ltrim($found['port'], ':') > self::HIGHEST_PORT) {
+            throw AddressIsUnreachable::notOneHostWrittenPlainly();
+        }
+
+        return new self(sprintf('https://%s%s', $found['host'], $found['port']), Scheme::Https);
     }
 
     /** The value the client dials, and nothing else. */
@@ -211,5 +256,29 @@ final readonly class Address implements JsonSerializable
     public function jsonSerialize(): string
     {
         return '(a stack address, hidden)';
+    }
+
+    /** Whether the host is a bracketed IPv6 address, a dotted IPv4 one, or a plain name. */
+    private static function isOneHost(string $host): bool
+    {
+        if (str_starts_with($host, '[')) {
+            return filter_var(trim($host, '[]'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
+        }
+
+        return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false || self::isAName($host);
+    }
+
+    /** Whether the host is a name whose labels are plain and whose last cannot be read as a number. */
+    private static function isAName(string $host): bool
+    {
+        $labels = explode('.', $host);
+
+        foreach ($labels as $label) {
+            if (preg_match(self::A_LABEL, $label) !== 1 || str_starts_with($label, self::AN_ENCODED_LABEL)) {
+                return false;
+            }
+        }
+
+        return ! ctype_digit($labels[count($labels) - 1][0]);
     }
 }

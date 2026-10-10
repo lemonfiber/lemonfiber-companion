@@ -52,6 +52,12 @@ final class AddressIsUnreachable extends InvalidArgumentException
         ));
     }
 
+    /** An address a join link carried that is not one encrypted host and port written one way only. */
+    public static function notOneHostWrittenPlainly(): self
+    {
+        return new self('A join link names its house as https, one plain host and at most a port, and this one is written some other way.');
+    }
+
     public static function blank(): self
     {
         return new self('A stack address arrived empty, so there is nowhere to reach.');

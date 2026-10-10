@@ -73,14 +73,8 @@ final readonly class AJoinLink
         self::stillOpen($said[WhatAJoinLinkSays::Expires->value], $clock);
 
         try {
-            $at = Address::of($said[WhatAJoinLinkSays::Address->value]);
-
-            if (! $at->isEncrypted()) {
-                throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Address->value);
-            }
-
             return new self(
-                $at,
+                Address::joinedAt($said[WhatAJoinLinkSays::Address->value]),
                 Fingerprint::of($said[WhatAJoinLinkSays::Fingerprint->value]),
                 StackId::saidBy($said[WhatAJoinLinkSays::Stack->value]),
                 AMembersName::of($said[WhatAJoinLinkSays::Name->value]),
