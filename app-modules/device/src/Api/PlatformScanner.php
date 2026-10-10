@@ -40,7 +40,7 @@ final readonly class PlatformScanner implements Scanning
 {
     public function __construct(private TheCamera $camera, private Words $words) {}
 
-    public function forAPairingCode(Closure $saw): void
+    public function aCode(Closure $saw): void
     {
         $read = $this->camera->forAPairingCode($this->words->for(Permission::Camera->reason()));
 

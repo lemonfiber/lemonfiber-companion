@@ -10,12 +10,13 @@ use function it;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
-use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
+use Modules\Operator\Internal\TheCodesDrawn;
+use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 
 /** An invitation for anna the stack carried out, with an address to hand over. */
 function annasInvitationCarriedOut(): AnInvitation
@@ -42,11 +43,32 @@ it('names nobody where what was typed could not be asked, since nothing was', fu
 });
 
 it('draws the code square for square, dark where the code is dark', function (): void {
-    $read = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), AScannableCode::drawn('10', '01'));
+    $address = annasInvitationCarriedOut()->toHand()->address();
+    $read = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), TheCodesDrawn::of(ACodeOfWhatItWasGiven::working(), $address, $address->declining()));
 
-    expect($read->invitation?->toHand->code)->toBe([[true, false], [false, true]])
+    expect($read->invitation?->toHand->code)->toBe([[true, false, true], [false, true, false], [true, false, true]])
+        ->and($read->invitation?->toHand->declines)->toBe('')
+        ->and($read->invitation?->toHand->declineCode)->toBe([])
         ->and($read->notAskable)->toBe('')
         ->and($read->askedFor)->toBe('anna');
+});
+
+it('hands over the address that turns it down, with a code of its own', function (): void {
+    $address = AnAddressToHand::declinable('http://loft.local:8096', '', 'http://loft.local:5056/decline/abc');
+    $invitation = AnInvitation::carriedOut(
+        AnInvitationToHand::to('anna', $address, 72),
+        WhereTheInvitationStands::Made,
+        WhetherTheyCanAsk::Made,
+        WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
+    );
+    $encoding = ACodeOfWhatItWasGiven::working();
+
+    $read = new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($encoding, $address, $address->declining()));
+
+    expect($read->invitation?->toHand->declines)->toBe('http://loft.local:5056/decline/abc')
+        ->and($read->invitation?->toHand->declineCode)->not->toBe([])
+        ->and($encoding->carried())->toBe(['http://loft.local:8096', 'http://loft.local:5056/decline/abc']);
 });
 
 it('names what went on the way past as what would, on a rehearsal, and as what did once carried out', function (): void {
@@ -56,8 +78,8 @@ it('names what went on the way past as what would, on a rehearsal, and as what d
         WhetherTheyCanAsk::NotTried,
         WhoWasTakenBack::of(),
         WhoWasSwitchedOff::of(),
-    ), AScannableCode::drawn('1'));
-    $carriedOut = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), AScannableCode::drawn('1'));
+    ), TheCodesDrawn::of(ACodeOfWhatItWasGiven::working()));
+    $carriedOut = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), TheCodesDrawn::of(ACodeOfWhatItWasGiven::working()));
 
     expect([$rehearsed->invitation?->withdrawnSaid, $rehearsed->invitation?->suspendedSaid])
         ->toBe(['stacks.invitation.would_withdraw', 'stacks.invitation.would_switch_off'])

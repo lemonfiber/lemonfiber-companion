@@ -10,9 +10,18 @@
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words: a source holding no plugin, a
          plugin this build refuses, a value left unapproved or an offer that
-         moved. Nothing is offered to do beneath it. --}}
+         moved, and each service the yes did not allow what it needs. Nothing
+         is offered to do beneath it. --}}
     <x-operator::emphasis>{{ __($this->answer()->refusedSaid) }}</x-operator::emphasis>
     <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
+    @forelse ($this->answer()->unapproved as $shape)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ __('plugins.shape_unapproved', ['service' => $shape->service]) }}</x-operator::emphasis>
+            <x-design::body>{{ __($shape->neededFor) }}</x-design::body>
+        </x-operator::entry>
+    @empty
+        {{-- Every service taking a shape was allowed it, or none takes one. --}}
+    @endforelse
     <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure and not a refusal: the stack has no outcome for the
@@ -21,6 +30,14 @@
     <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
 @elseif ($this->answer()->typing)
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
+    @if ($this->nothingWasScanned())
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->whyNothingCameBack()) }}</x-design::strong>
+            <x-design::body>{{ __($this->remedyForTheCamera()) }}</x-design::body>
+        </x-design::notice>
+    @endif
+    <x-operator::note>{{ __('device.camera_reason') }}</x-operator::note>
+    <x-design::action label="{{ __('plugins.scan_where_from') }}" tap="scanWhereItComesFrom()" tone="tonal" />
     {{-- The three shapes a source can take, under the one field. Which one
          was typed is the stack's to tell. --}}
     <x-operator::note>{{ __('plugins.source_catalogue') }}</x-operator::note>

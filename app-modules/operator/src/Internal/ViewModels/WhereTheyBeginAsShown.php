@@ -17,18 +17,20 @@ final readonly class WhereTheyBeginAsShown
      * @param string $service    the service, by the name it shows itself under, or empty
      * @param string $facingSaid the catalogue key for what it is to them, or empty
      * @param string $url        the address as the stack sent it, or empty
-     * @param string $caution    what is worth knowing about that address, or empty
+     * @param string           $caution    what is worth knowing about that address, or empty
+     * @param list<list<bool>> $squares    that address as a code, rows of squares dark where true, or none where there is no address or it could not be drawn
      */
     public function __construct(
         public string $service,
         public string $facingSaid,
         public string $url,
         public string $caution,
+        public array $squares,
     ) {}
 
     /** Nothing to begin at. */
     public static function nowhere(): self
     {
-        return new self(service: '', facingSaid: '', url: '', caution: '');
+        return new self(service: '', facingSaid: '', url: '', caution: '', squares: []);
     }
 }

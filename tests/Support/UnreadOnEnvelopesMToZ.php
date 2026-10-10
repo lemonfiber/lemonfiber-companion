@@ -593,5 +593,11 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'Which of the two versions is the later, in one word. Read with `existing`, for its '
                 . 'reason.',
         ],
+        [
+            'path' => 'WiringEnvelope.wired[].origin',
+            'because' => 'Where the service asking came from: this build\'s stack or a named plugin. Each link '
+                . 'is drawn with the service asking, what it reaches and where each service it reaches came '
+                . 'from; no requirement asks where the one asking came from.',
+        ],
     ];
 }

@@ -54,6 +54,7 @@
                     @if ($client->link !== '')
                         <x-design::note>{{ __('stacks.handoff.opens_at_this_server', ['client' => $client->client]) }}</x-design::note>
                         <x-design::verbatim>{{ $client->link }}</x-design::verbatim>
+                        <x-design::scannable :rows="$client->squares" missing="{{ __('stacks.invitation.no_code') }}" />
                     @endif
                 </x-design::card>
             @empty

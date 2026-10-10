@@ -537,6 +537,18 @@ it('carries only the approvals the reading lists, each once', function (): void 
         ->and($agreed->agreement())->toBe(APluginAsItArrives::AGREEMENT);
 });
 
+it('carries a shape\'s approval only where the operator gave it, and the yes alone gives none', function (): void {
+    $given = APluginInstallAgreed::after(
+        APluginAsItArrives::theGuardedReading(),
+        APluginSource::typed('tdarr'),
+        PluginLines::under('approved', APluginAsItArrives::SHAPE_APPROVAL, 'egress-guard@elsewhere'),
+    );
+    $yesAlone = APluginInstallAgreed::after(APluginAsItArrives::theGuardedReading(), APluginSource::typed('tdarr'), PluginLines::none());
+
+    expect(joinedPluginLines($given->approved()))->toBe(APluginAsItArrives::SHAPE_APPROVAL)
+        ->and($yesAlone->approved()->isEmpty())->toBeTrue();
+});
+
 it('tells a session that has ended from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
@@ -606,6 +618,7 @@ it('stands in for a stack with payloads the contract would accept', function ():
     foreach ([
         APluginAsItArrives::theAnswer(null),
         APluginAsItArrives::theAnswer(APluginAsItArrives::aReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
+        APluginAsItArrives::theAnswer(APluginAsItArrives::aGuardedReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::putBackOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::installedOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateReadingOnTheWire()),

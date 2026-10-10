@@ -12,6 +12,7 @@ return [
     'not_reviewed' => 'Not reviewed: nobody checked it before it was installed',
     'out_of_contract' => 'It fills none of these until it is proved again.',
     'answered_out_of_contract' => ':capability, asked to :operation: :why',
+    'scan_where_from' => 'Scan where it comes from',
     'from' => 'From :source',
     'source' => [
         'reachable' => 'Its source answers, so it can be updated from there',
@@ -62,6 +63,15 @@ return [
     'no_contests' => 'It leaves nothing contested',
     'asked_by' => 'Asked for by :by. Choose which answers on the Connections screen',
     'claimant' => 'Claimed by :claimant',
+    'shapes' => 'More than every plugin\'s service gets',
+    'no_shapes' => 'No service of it takes more than every plugin\'s service gets',
+    'granted' => 'Granted :grant',
+    'given' => 'Given :device',
+    'approve_shape' => 'Allow :service to take this',
+    'shape_unapproved' => ':service was not allowed to take what it needs',
+    'shape' => [
+        'egress-guard' => 'It guards this stack\'s way out: it manages the network and opens a tunnel, so traffic leaves only through the guard',
+    ],
     'recipes' => 'Recipes',
     'no_recipes' => 'It has no recipes',
     'step' => ':method :to :path',
@@ -71,7 +81,7 @@ return [
     'release' => 'Read from :from and released: :why',
     'approve' => 'Allow sending :value to :to',
     'stays_here' => 'Stays on this machine, and asks for no approval',
-    'approvals_apart' => 'Each switch above allows one value to go where it says, and nothing else. Installing is a separate yes',
+    'approvals_apart' => 'Each switch above allows one value to go where it says, or one service to take what it needs, and nothing else. Installing is a separate yes',
     'install' => 'Install',
     'inputs_elsewhere' => 'This app gives a recipe no values of yours. A plugin whose recipes ask for one is installed at the web console or the terminal',
 

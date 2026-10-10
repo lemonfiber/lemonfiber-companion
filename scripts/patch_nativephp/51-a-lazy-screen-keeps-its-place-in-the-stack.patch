@@ -1,0 +1,24 @@
+A lazy screen publishes its placeholder before its first frame, and the
+placeholder carries no root sentinel. The bridge read the screen's first frame
+after it as a stack mounting cold, reset the navigation coordinator, and made
+the pushed screen the root: it drew the hand-drawn back chevron, and going back
+pushed the screen beneath on top of it instead of returning to it. The stack is
+taken to mount cold only where the last frame that had a sentinel was not a
+stack's, so the plain frames a screen draws while it opens leave its place in
+the stack as it was.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeElementBridge.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/NativeRender/NativeElementBridge.swift
+@@ -125 +125,5 @@
+     private static var nativeChromePrevTrees: [String: NativeUITree] = [:]
++
++    /// The root sentinel of the last tree that carried one, kept across the
++    /// plain frames a lazy screen publishes while it opens.
++    private static var lastChromeRootType: String?
+@@ -420,2 +424,5 @@
+             let isFreshStackMount =
+-                newRootType == "native_root_stack" && prevRootType != "native_root_stack"
++                newRootType == "native_root_stack" && lastChromeRootType != "native_root_stack"
++            if newRootType == "native_root_stack" || newRootType == "native_root_tabs" {
++                lastChromeRootType = newRootType
++            }

@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -199,8 +200,22 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
     {
         return $this->drawn ??= new HowTheHandoffReads()->answered(
             $handoff,
-            $this->encoding->codeFor($handoff->handed()->address()),
+            $this->codesOf($handoff),
             $this->clock->now(),
         );
+    }
+
+    /** A code for the address, and for every app whose code is a link that opens it at this server. */
+    private function codesOf(AHandoff $handoff): TheCodesDrawn
+    {
+        $handed = [$handoff->handed()->address()];
+
+        foreach ($handoff->handed()->clients() as $client) {
+            if ($client->isALink()) {
+                $handed[] = $client;
+            }
+        }
+
+        return TheCodesDrawn::of($this->encoding, ...$handed);
     }
 }

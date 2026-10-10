@@ -7,6 +7,7 @@ use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Household\Internal\Month;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
@@ -87,7 +88,9 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\NotACountOfDays;
+use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Modules\Wayfinding\Api\TheTabs;
@@ -173,6 +176,10 @@ function everyDerivedKey(): array
         WhatAChangePuts::class => aPairPerCase(
             WhatAChangePuts::cases(),
             static fn(WhatAChangePuts $puts): array => [$puts->saidOnTheScreen()],
+        ),
+        APrivilegedShape::class => aPairPerCase(
+            APrivilegedShape::cases(),
+            static fn(APrivilegedShape $shape): array => [$shape->neededFor()],
         ),
         // `NotSaid` is skipped: it is a plugin the stack said nothing of, and
         // a screen draws nothing for it.
@@ -507,6 +514,14 @@ function everyDerivedKey(): array
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),
             static fn(WhereInTheMenu $group): array => [$group->said()],
+        ),
+        HowAnInvitedPhoneFindsTheHouse::class => aPairPerCase(
+            HowAnInvitedPhoneFindsTheHouse::cases(),
+            static fn(HowAnInvitedPhoneFindsTheHouse $finds): array => [$finds->said(), $finds->explained()],
+        ),
+        WhatStoodInTheWayOfJoining::class => aPairPerCase(
+            WhatStoodInTheWayOfJoining::cases(),
+            static fn(WhatStoodInTheWayOfJoining $stood): array => [$stood->said(), $stood->remedy()],
         ),
         WhereTheFirstRunIs::class => aPairPerCase(
             WhereTheFirstRunIs::cases(),

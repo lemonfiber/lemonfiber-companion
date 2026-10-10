@@ -12,13 +12,17 @@ use function is_string;
 use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\APluginChange;
 use Modules\Kernel\Api\APluginInstall;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ASettingItOverrides;
+use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheContestsLeft;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\TheSettingsItOverrides;
+use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatTheChecksMade;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
@@ -57,25 +61,20 @@ final readonly class PluginInstallReports
         }
 
         $would = PluginRecords::of($install[WireField::Would->value], WireField::Would, 0);
-        $changes = ThePluginChanges::these(...self::changes($install));
+        $changing = WhatAnInstallChanges::these(
+            ThePluginChanges::these(...self::changes($install)),
+            TheContestsLeft::these(...self::contests($install)),
+            TheSettingsItOverrides::these(...self::overrides($install)),
+            TheShapesTaken::these(...self::taking($install)),
+        );
         $proofs = WhatAProofsVerdictWas::proofs($install);
-        $contests = TheContestsLeft::these(...self::contests($install));
-        $overrides = TheSettingsItOverrides::these(...self::overrides($install));
         $checks = self::checks($install);
 
         if (array_key_exists(WireField::Reversed->value, $install) && $install[WireField::Reversed->value] !== null) {
-            return APluginInstall::putBack($would, $changes, $proofs, $contests, $overrides, $checks, self::putBack($install));
+            return APluginInstall::putBack($would, $changing, $proofs, $checks, self::putBack($install));
         }
 
-        return APluginInstall::reported(
-            $would,
-            recorded: $install[WireField::Recorded->value],
-            changes: $changes,
-            proofs: $proofs,
-            contests: $contests,
-            overrides: $overrides,
-            checks: $checks,
-        );
+        return APluginInstall::reported($would, recorded: $install[WireField::Recorded->value], changing: $changing, proofs: $proofs, checks: $checks);
     }
 
     /**
@@ -152,6 +151,41 @@ final readonly class PluginInstallReports
             $found[] = ASettingItOverrides::of(
                 self::text($row, PluginsField::Overrides, PluginsField::Setting, $position),
                 self::text($row, PluginsField::Overrides, WireField::Why, $position),
+            );
+            $position++;
+        }
+
+        return $found;
+    }
+
+    /**
+     * Every service the install would have take a privileged shape, or none where a stack says nothing of it.
+     *
+     * @param  array<mixed>      $install
+     * @return list<AShapeTaken>
+     */
+    private static function taking(array $install): array
+    {
+        if (! array_key_exists(PluginsField::Taking->value, $install)) {
+            return [];
+        }
+
+        $found = [];
+        $position = 0;
+
+        foreach (self::rows($install, PluginsField::Taking) as $row) {
+            if (! is_array($row)) {
+                throw PluginsAreUnreadable::entry(PluginsField::Taking, WireField::Service, $position);
+            }
+
+            $shape = self::text($row, PluginsField::Taking, WireField::Shape, $position);
+
+            $found[] = AShapeTaken::by(
+                self::text($row, PluginsField::Taking, WireField::Service, $position),
+                APrivilegedShape::tryFrom($shape) ?? throw PluginsAreUnreadable::said(WireField::Shape, $shape),
+                PluginLines::under(PluginsField::Grants->value, ...self::words($row, PluginsField::Taking, PluginsField::Grants, $position)),
+                PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
+                self::text($row, PluginsField::Taking, PluginsField::Approval, $position),
             );
             $position++;
         }

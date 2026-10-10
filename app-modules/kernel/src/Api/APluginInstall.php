@@ -10,7 +10,8 @@ use Closure;
  * What installing a plugin would do, or did: the plugin, every change, every proof, and how it ended.
  *
  * **The same account before and after the yes.** A reading lists what the
- * install would settle, write, prove, override and leave contested, writing
+ * install would settle, write, prove, override, leave contested and grant
+ * beyond every plugin's entry, writing
  * none of it; after the yes the same lists come back with what each proof came
  * to, what the stack's own checks made of it, and either the record written or
  * what putting it back came to.
@@ -24,38 +25,22 @@ final readonly class APluginInstall
     private function __construct(
         private APlugin $would,
         private bool $recorded,
-        private ThePluginChanges $changes,
+        private WhatAnInstallChanges $changing,
         private TheProofs $proofs,
-        private TheContestsLeft $contests,
-        private TheSettingsItOverrides $overrides,
         private WhatTheChecksMade $checks,
         private ?ARunPutBack $putBack,
     ) {}
 
     /** The account of an install nothing was put back from: a reading, or one that was recorded. */
-    public static function reported(
-        APlugin $would,
-        bool $recorded,
-        ThePluginChanges $changes,
-        TheProofs $proofs,
-        TheContestsLeft $contests,
-        TheSettingsItOverrides $overrides,
-        WhatTheChecksMade $checks,
-    ): self {
-        return new self($would, $recorded, $changes, $proofs, $contests, $overrides, $checks, null);
+    public static function reported(APlugin $would, bool $recorded, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks): self
+    {
+        return new self($would, $recorded, $changing, $proofs, $checks, null);
     }
 
     /** The account of an install that did not hold, and what putting it back came to. Nothing put back is recorded. */
-    public static function putBack(
-        APlugin $would,
-        ThePluginChanges $changes,
-        TheProofs $proofs,
-        TheContestsLeft $contests,
-        TheSettingsItOverrides $overrides,
-        WhatTheChecksMade $checks,
-        ARunPutBack $putBack,
-    ): self {
-        return new self($would, recorded: false, changes: $changes, proofs: $proofs, contests: $contests, overrides: $overrides, checks: $checks, putBack: $putBack);
+    public static function putBack(APlugin $would, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks, ARunPutBack $putBack): self
+    {
+        return new self($would, recorded: false, changing: $changing, proofs: $proofs, checks: $checks, putBack: $putBack);
     }
 
     /** The plugin, as the install settles it. */
@@ -67,7 +52,7 @@ final readonly class APluginInstall
     /** Every change, in order. */
     public function changes(): ThePluginChanges
     {
-        return $this->changes;
+        return $this->changing->changes();
     }
 
     /** Every proof, with what asking it came to. */
@@ -79,13 +64,33 @@ final readonly class APluginInstall
     /** Every ask it would leave contested. */
     public function contests(): TheContestsLeft
     {
-        return $this->contests;
+        return $this->changing->contests();
     }
 
     /** Every bundled setting it changes. */
     public function overrides(): TheSettingsItOverrides
     {
-        return $this->overrides;
+        return $this->changing->overrides();
+    }
+
+    /** Every service taking a privileged shape. */
+    public function taking(): TheShapesTaken
+    {
+        return $this->changing->taking();
+    }
+
+    /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes. */
+    public function approvals(): PluginLines
+    {
+        $approvals = [];
+
+        foreach ([$this->would->approvals(), $this->changing->taking()->approvals()] as $lines) {
+            foreach ($lines as $approval) {
+                $approvals[] = $approval;
+            }
+        }
+
+        return PluginLines::under('approval', ...$approvals);
     }
 
     /** What the stack's own checks made of it. */

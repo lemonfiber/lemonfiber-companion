@@ -161,7 +161,7 @@ it('shows the address as a code and as text, the steps, the apps and when the co
     $screen = theConnectingScreenAnswered(aHandoffThatStands(WhereTheHandoffStands::Ready), $encoding);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($encoding->given()?->carried())->toBe('https://den.local:8920')
+    expect($encoding->carried())->toBe(['https://den.local:8920', 'swiftfin://server?url=https://den.local:8920'])
         ->and($drawn)->toContain(__('stacks.handoff.stands.ready'))
         ->and($drawn)->toContain('https://den.local:8920')
         ->and($drawn)->toContain('That address answers only on the home network.')
@@ -174,6 +174,12 @@ it('shows the address as a code and as text, the steps, the apps and when the co
         ->and($drawn)->not->toContain(__('stacks.handoff.opens_at_this_server', ['client' => 'Jellyfin for TV']))
         ->and(array_filter($drawn, static fn(string $line): bool => $line === __('stacks.clients.not_open_source')))->toHaveCount(1)
         ->and($drawn)->toContain(__('stacks.handoff.first_given', ['when' => trans_choice('health.ago.hours', 1)]));
+});
+
+it('draws a code beside each link that opens an app at this server, and says where one could not be drawn', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theConnectingScreenAnswered(aHandoffThatStands(WhereTheHandoffStands::Ready), ACodeOfWhatItWasGiven::drawingNothing()))->said();
+
+    expect(array_filter($drawn, static fn(string $line): bool => $line === __('stacks.invitation.no_code')))->toHaveCount(2);
 });
 
 it('lists the devices signed in, with when each was last seen where the media server said', function (): void {

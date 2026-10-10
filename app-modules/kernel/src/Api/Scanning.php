@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 /**
- * The camera, asked to read a pairing code.
+ * The camera, asked to read a code: a pairing code, or an address somebody shows as one.
  *
  * The first road. A port because there is no camera on a laptop and because the
  * alternative — a screen reaching for the platform's scanner directly — is the
@@ -55,5 +55,5 @@ interface Scanning
      * returned, from the runloop, which is what the annotation records: a
      * reader tracing this will not find the call below it.
      */
-    public function forAPairingCode(Closure $saw): void;
+    public function aCode(Closure $saw): void;
 }

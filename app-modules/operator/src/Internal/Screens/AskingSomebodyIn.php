@@ -35,6 +35,7 @@ use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
@@ -93,6 +94,9 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     public const string TEMPLATE = 'operator::asking-somebody-in';
     /** The sentence the text handed over leads to the address that turns the invitation down with. */
     private const string DECLINING = 'stacks.invitation.declining';
+
+    /** The sentence that leads to the invitation's join link in what is handed over. */
+    private const string JOINING = 'stacks.invitation.joining';
 
     /** Whose password the operator has asked to take off and not yet said yes to, or empty. */
     public string $member = '';
@@ -279,9 +283,15 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
             'name' => $toHand->name(),
             'stack' => $this->stack()->name()->shown(),
         ]);
+        $joining = $this->catalogue->get(self::JOINING);
         $declining = $this->catalogue->get(self::DECLINING);
 
-        $this->passedOn = $this->sharing->passOn(AnInvitationToPassOn::of($toHand, $covering, is_string($declining) ? $declining : self::DECLINING))->either(
+        $this->passedOn = $this->sharing->passOn(AnInvitationToPassOn::of(
+            $toHand,
+            $covering,
+            is_string($joining) ? $joining : self::JOINING,
+            is_string($declining) ? $declining : self::DECLINING,
+        ))->either(
             over: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('stacks.invitation.passed_on'),
             // One sentence for both refusals: whichever it was, nothing was
             // sent and the address is on the screen to hand over another way.
@@ -378,7 +388,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
                     $this->answered = null;
                 }
 
-                return new HowTheInvitationReads()->answered($invitation, $this->encoding->codeFor($invitation->toHand()->address()));
+                return new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($this->encoding, $invitation->toHand()->address()->joining(), $invitation->toHand()->address(), $invitation->toHand()->address()->declining()));
             },
             ended: function () use ($name): TheInvitationTurnedOutToBe {
                 $this->following = null;

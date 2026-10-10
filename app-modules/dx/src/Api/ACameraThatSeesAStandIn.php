@@ -44,7 +44,7 @@ final readonly class ACameraThatSeesAStandIn implements StandsIn
     public function which(): Scanning
     {
         return new class implements Scanning {
-            public function forAPairingCode(Closure $saw): void
+            public function aCode(Closure $saw): void
             {
                 $saw(WhatTheCameraSaw::read(WhatAPairingCodeWouldSay::asItWouldBeScanned()));
             }

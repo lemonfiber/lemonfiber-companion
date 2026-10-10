@@ -18,6 +18,7 @@
                  together here. --}}
             @if ($this->answer()->begins->url !== '')
                 <x-design::verbatim>{{ $this->answer()->begins->url }}</x-design::verbatim>
+                <x-design::scannable :rows="$this->answer()->begins->squares" missing="{{ __('stacks.invitation.no_code') }}" />
             @else
                 <x-design::note>{{ __('stacks.front_door.no_address') }}</x-design::note>
             @endif
@@ -37,6 +38,7 @@
             <x-design::body>{{ $service->because }}</x-design::body>
             @if ($service->url !== '')
                 <x-design::verbatim>{{ $service->url }}</x-design::verbatim>
+                <x-design::scannable :rows="$service->squares" missing="{{ __('stacks.invitation.no_code') }}" />
             @else
                 <x-design::note>{{ __('stacks.front_door.no_address') }}</x-design::note>
             @endif

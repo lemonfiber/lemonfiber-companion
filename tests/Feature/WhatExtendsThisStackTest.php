@@ -23,11 +23,13 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Tests\Support\APluginAsItArrives;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -52,13 +54,13 @@ function theMachinePluginsExtend(): Stack
 }
 
 /** The screen, signed in, in front of a stack that answers as the case says. */
-function thePluginsScreen(AStackThatExtendsItself $extending, ?AKeychainInMemory $keychain = null): WhatExtendsThisStack
+function thePluginsScreen(AStackThatExtendsItself $extending, ?AKeychainInMemory $keychain = null, ?ACameraInMemory $camera = null): WhatExtendsThisStack
 {
     $stack = theMachinePluginsExtend();
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $camera ?? ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -100,6 +102,26 @@ function aPluginRefusal(string $said): HowExtendingItIsGoing
 {
     return HowExtendingItIsGoing::refused(ARefusalInItsWords::said($said, 'Nothing was installed and nothing was written.', WhatTheRefusalNamed::nothing()));
 }
+
+it('takes where a plugin comes from off a code as well as from the field', function (): void {
+    $screen = thePluginsScreen(aStackWithTdarr(), camera: ACameraInMemory::reading('  https://example.org/plugins/tdarr.git  '));
+    $screen->installOne();
+    $screen->scanWhereItComesFrom();
+
+    expect($screen->source)->toBe('https://example.org/plugins/tdarr.git')
+        ->and($screen->nothingWasScanned())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aPluginsLine('plugins.scan_where_from'));
+});
+
+it('says why where the camera handed nothing back, and leaves the field as it was', function (): void {
+    $screen = thePluginsScreen(aStackWithTdarr(), camera: ACameraInMemory::answering(WhyNothingWasScanned::TheCameraWasDeclined));
+    $screen->installOne();
+    $screen->source = 'tdarr';
+    $screen->scanWhereItComesFrom();
+
+    expect($screen->source)->toBe('tdarr')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhyNothingWasScanned::TheCameraWasDeclined->saidOnTheScreen()));
+});
 
 it('says a plugin fills nothing its adapter answered outside the contract for, until it is proved again', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(thePluginsScreen(aStackWithTdarr()));
@@ -207,6 +229,59 @@ it('approves each value apart from the install, and sends only what was approved
         ->and($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL)])
         ->and($screen->following)->toBe('j-2')
         ->and($screen->agreed)->toBeTrue();
+});
+
+it('draws each service taking a privileged shape with what it is granted and given and why, each with a switch of its own', function (): void {
+    $screen = tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGuardedReading()),
+    ));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $plain = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    )));
+
+    expect($drawn->said())->toContain('gluetun')
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.shape.egress-guard'))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.granted', ['grant' => 'NET_ADMIN']))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.given', ['device' => '/dev/net/tun']))
+        ->and($drawn->offers())->toContain(aPluginsLine('plugins.approve_shape', ['service' => 'gluetun']))
+        ->and($plain->said())->toContain(aPluginsLine('plugins.no_shapes'))
+        ->and($plain->offers())->not->toContain(aPluginsLine('plugins.approve_shape', ['service' => 'gluetun']));
+});
+
+it('approves a shape apart from the install, and sends it with the reading\'s name only where it was approved', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGuardedReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $screen = tdarrRehearsed($extending);
+    $screen->approve(1);
+    $screen->agree();
+
+    expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::SHAPE_APPROVAL)])
+        ->and($screen->leftUnapproved?->isEmpty())->toBeTrue();
+});
+
+it('names each service the yes left without its shape where the install is refused, and lets go of them on the way back', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGuardedReading()),
+        aPluginRefusal('egress-guard@gluetun was not approved'),
+    );
+    $screen = tdarrRehearsed($extending);
+    $screen->approve(0);
+    $screen->agree();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $screen->backToThePlugins();
+
+    expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL)])
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.refused.install'))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.shape_unapproved', ['service' => 'gluetun']))
+        ->and($drawn->said())->toContain(aPluginsLine('plugins.shape.egress-guard'))
+        ->and($screen->leftUnapproved)->toBeNull();
 });
 
 it('sends an install with nothing approved, and draws what the stack makes of it in its words', function (): void {
@@ -340,7 +415,7 @@ it('lets go of the rehearsal and every approval when it goes back, and asks afte
 it('says the session has ended where this phone holds none, and asks nothing', function (): void {
     $extending = aStackWithTdarr();
     $stack = theMachinePluginsExtend();
-    $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->cameBack())->toBeFalse()

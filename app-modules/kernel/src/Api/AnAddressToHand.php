@@ -16,10 +16,20 @@ use function trim;
  *
  * `caution` is empty where the address keeps working on its own. What a code
  * of it carries is the address alone, never its caution.
+ *
+ * An invitation's address can come with its join link, which the app opens, or
+ * with the stack's sentence saying why it has none; each is the stack's text,
+ * held as it came.
  */
 final readonly class AnAddressToHand
 {
-    private function __construct(private string $url, private string $caution, private string $decline = '') {}
+    private function __construct(
+        private string $url,
+        private string $caution,
+        private string $decline = '',
+        private string $join = '',
+        private string $unjoinable = '',
+    ) {}
 
     /** The address the stack sent, with what is worth knowing about it; a blank one is refused. */
     public static function at(string $url, string $caution): self
@@ -53,6 +63,26 @@ final readonly class AnAddressToHand
         return new self($address->url, $address->caution, $decline);
     }
 
+    /** That address, with the join link the stack gave for the invitation; a blank one is refused. */
+    public static function joinable(self $address, string $join): self
+    {
+        if (trim($join) === '') {
+            throw TheDoorSaysNothing::about('join');
+        }
+
+        return new self($address->url, $address->caution, $address->decline, $join, '');
+    }
+
+    /** That address, with the stack's sentence saying why the invitation has no join link; a blank one is refused. */
+    public static function unjoinable(self $address, string $why): self
+    {
+        if (trim($why) === '') {
+            throw TheDoorSaysNothing::about('unjoinable');
+        }
+
+        return new self($address->url, $address->caution, $address->decline, '', $why);
+    }
+
     /** The stack sent no address. */
     public static function none(): self
     {
@@ -81,5 +111,29 @@ final readonly class AnAddressToHand
     public function decline(): string
     {
         return $this->decline;
+    }
+
+    /** The join link the stack gave for the invitation, or empty where it gave none. */
+    public function join(): string
+    {
+        return $this->join;
+    }
+
+    /** The join link, as an address to hand over in its own right, or none where the stack gave none. */
+    public function joining(): self
+    {
+        return new self($this->join, '');
+    }
+
+    /** Why the invitation has no join link, in the stack's words, or empty where it said nothing of it. */
+    public function whyNotJoinable(): string
+    {
+        return $this->unjoinable;
+    }
+
+    /** The address that turns the invitation down, as an address to hand over in its own right, or none where the stack gave none. */
+    public function declining(): self
+    {
+        return new self($this->decline, '');
     }
 }

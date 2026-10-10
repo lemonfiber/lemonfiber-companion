@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AnInvitation;
-use Modules\Kernel\Api\AScannableCode;
+use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasGranted;
+use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AnInvitationAsShown;
 use Modules\Operator\Internal\ViewModels\AnInvitationToHandAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -66,12 +67,12 @@ final readonly class HowTheInvitationReads
     }
 
     /**
-     * The invitation the stack answered, with the address drawn as a code where there is one to hand over.
+     * The invitation the stack answered, with each address drawn as a code where there is one to hand over.
      *
-     * The code is passed in rather than made here, because making one is a
+     * The codes are passed in rather than made here, because making one is a
      * port's work and a presenter asks nothing of anybody.
      */
-    public function answered(AnInvitation $invitation, AScannableCode $code): TheInvitationTurnedOutToBe
+    public function answered(AnInvitation $invitation, TheCodesDrawn $drawn): TheInvitationTurnedOutToBe
     {
         $toHand = $invitation->toHand();
         $somethingToHand = $invitation->standing()->leavesSomethingToHandOver();
@@ -100,15 +101,7 @@ final readonly class HowTheInvitationReads
                 mayBeSent: $invitation->wasRehearsed() && $somethingToHand,
                 standingSaid: $invitation->standing()->saidOnTheScreen(),
                 askingSaid: $invitation->linked()->saidOnTheScreen(),
-                toHand: new AnInvitationToHandAsShown(
-                    name: $toHand->name(),
-                    url: $toHand->address()->url(),
-                    caution: $toHand->address()->caution(),
-                    hours: $toHand->hours(),
-                    code: $handsOver ? new HowACodeReads()->squares($code) : [],
-                    handsOver: $handsOver,
-                    lapses: $somethingToHand,
-                ),
+                toHand: $handsOver ? $this->handedOver($toHand, $drawn) : $this->notHandedOver($toHand, $somethingToHand),
                 granted: $invitation->granted(
                     these: $this->granted(...),
                     nothing: WhatWasGrantedAsShown::nothing(...),
@@ -118,6 +111,44 @@ final readonly class HowTheInvitationReads
                 suspended: $suspended,
                 suspendedSaid: $invitation->wasRehearsed() ? 'stacks.invitation.would_switch_off' : 'stacks.invitation.switched_off',
             ),
+        );
+    }
+
+    /** What is handed over, with each address and the code of it; it lapses, since anybody it is handed to has not joined. */
+    private function handedOver(AnInvitationToHand $toHand, TheCodesDrawn $drawn): AnInvitationToHandAsShown
+    {
+        return new AnInvitationToHandAsShown(
+            name: $toHand->name(),
+            url: $toHand->address()->url(),
+            caution: $toHand->address()->caution(),
+            hours: $toHand->hours(),
+            code: new HowACodeReads()->squares($drawn->for($toHand->address())),
+            declines: $toHand->address()->decline(),
+            declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
+            joins: $toHand->address()->join(),
+            joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
+            unjoinable: $toHand->address()->whyNotJoinable(),
+            handsOver: true,
+            lapses: true,
+        );
+    }
+
+    /** What would be handed over, on a rehearsal or for somebody who has joined: no address to hand and no code of one. */
+    private function notHandedOver(AnInvitationToHand $toHand, bool $lapses): AnInvitationToHandAsShown
+    {
+        return new AnInvitationToHandAsShown(
+            name: $toHand->name(),
+            url: $toHand->address()->url(),
+            caution: $toHand->address()->caution(),
+            hours: $toHand->hours(),
+            code: [],
+            declines: '',
+            declineCode: [],
+            joins: '',
+            joinCode: [],
+            unjoinable: $toHand->address()->whyNotJoinable(),
+            handsOver: false,
+            lapses: $lapses,
         );
     }
 

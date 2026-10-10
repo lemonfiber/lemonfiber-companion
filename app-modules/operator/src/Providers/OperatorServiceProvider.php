@@ -17,6 +17,7 @@ use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\JoiningAHouse;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\PairByScanning;
@@ -144,6 +145,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // other must not be able to reach one.
             Router::native(AScreenWithoutAStack::PairByScanning->value, PairByScanning::class);
             Router::native(AScreenWithoutAStack::PairByTyping->value, PairByTyping::class);
+            Router::native(AScreenWithoutAStack::JoiningAHouse->value, JoiningAHouse::class);
 
             // What is new on every stack this phone holds, from the menu.
             Router::native(AScreenWithoutAStack::WhatsNew->value, WhatIsNewOnEveryStack::class);

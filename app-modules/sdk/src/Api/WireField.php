@@ -132,6 +132,12 @@ enum WireField: string implements NamesAWireField
      */
     case Service = 'service';
 
+    /** Every kind of device somebody might be holding, in the order they are likely to be holding one; and the devices a plugin's service is given. */
+    case Devices = 'devices';
+
+    /** Which walk a walkthrough was; and the privileged shape a plugin's service takes. */
+    case Shape = 'shape';
+
     /** What something is called in the core's words: a check, or a stalled item. */
     case Title = 'title';
 

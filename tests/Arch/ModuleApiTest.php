@@ -21,7 +21,7 @@ use Tests\Support\ApiSurface;
  * same reason: each entry is a claim that somebody else's machinery is what
  * decides the shape, and the list is the prompt to write down whose.
  *
- * `Scanning::forAPairingCode()` opens the platform's scanner, which is a screen
+ * `Scanning::aCode()` opens the platform's scanner, which is a screen
  * of its own — it takes the display and reports through NativePHP's callback
  * machinery after this call has returned. A method shaped
  * `read(): WhatTheCameraSaw` would be a promise only a fake could keep, and the
@@ -38,8 +38,8 @@ use Tests\Support\ApiSurface;
  * an Api surface and the adapter's signature is the port's.
  */
 const THE_ANSWER_ARRIVES_LATER = [
-    'Modules\Kernel\Api\Scanning::forAPairingCode()',
-    'Modules\Device\Api\PlatformScanner::forAPairingCode()',
+    'Modules\Kernel\Api\Scanning::aCode()',
+    'Modules\Device\Api\PlatformScanner::aCode()',
 ];
 
 // C1 — Outcome crosses module boundaries

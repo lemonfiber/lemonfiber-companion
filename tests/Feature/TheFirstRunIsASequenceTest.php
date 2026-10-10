@@ -13,6 +13,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
+use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -70,10 +71,26 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
     );
 }
 
+it('asks a phone holding nothing which of the two is holding it, before any step', function (): void {
+    $screen = theScreenAFirstRunLandsOn();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('household.joining.which_are_you'), __('household.joining.invited'), __('household.joining.runs_it'))
+        ->and($drawn->said())->not->toContain(__('onboarding.what_this_is'))
+        ->and(data_get(WhatTheDeviceWouldDraw::tree($screen), 'props.title'))->toBe(__('household.joining.title'))
+        ->and($screen->joiningIsAt())->toBe(AScreenWithoutAStack::JoiningAHouse->value)
+        ->and($screen->pairingIsOffered())->toBeFalse();
+});
+
 it('draws its first step on a device holding nothing, and no unlock', function (): void {
     // A lock over an empty store protects nothing, so the gate builds this
     // screen without asking; what reaches the glass is the first step.
-    $drawn = WhatTheDeviceWouldDraw::by(theScreenAFirstRunLandsOn());
+    $screen = theScreenAFirstRunLandsOn();
+    $screen->iRunTheHouse();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect(data_get(WhatTheDeviceWouldDraw::tree($screen), 'props.title'))->toBe(__('navigation.your_stacks'))
+        ->and($drawn->offers())->toContain(__('household.joining.invited'));
 
     expect($drawn->said())->toContain(__('onboarding.what_this_is'))
         ->and($drawn->said())->not->toContain(__('device.unlock_reason'));
@@ -125,6 +142,7 @@ it('every step says which it is and how many there are', function (): void {
 
 it('leaving lands on the way into pairing rather than on nothing', function (): void {
     $screen = theScreenAFirstRunLandsOn();
+    $screen->iRunTheHouse();
 
     $screen->skipAhead();
 
@@ -148,6 +166,7 @@ it('says why the app reaches the local network, and what still works without it,
 
 it('pairing is offered at the end of the sequence and not before', function (): void {
     $screen = theScreenAFirstRunLandsOn();
+    $screen->iRunTheHouse();
 
     expect($screen->pairingIsOffered())->toBeFalse();
 

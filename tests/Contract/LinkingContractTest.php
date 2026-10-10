@@ -65,13 +65,13 @@ function whatAStackSaysItWires(array $changed = [], array $without = []): array
 {
     $data = [
         'wired' => [
-            ['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => ['qbittorrent'], 'settled' => ['settled' => 'outright'], 'origins' => ['qbittorrent' => ['origin' => 'bundled']]]],
-            ['by' => 'prowlarr', 'reaches' => ['how' => 'asked', 'capability' => 'arr', 'services' => ['sonarr', 'radarr'], 'settled' => ['settled' => 'each'], 'origins' => ['sonarr' => ['origin' => 'bundled'], 'radarr' => ['origin' => 'operator']]]],
-            ['by' => 'seerr', 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => [], 'settled' => ['settled' => 'contested', 'claimants' => ['jellyfin', 'plex']], 'origins' => ['jellyfin' => ['origin' => 'bundled'], 'plex' => ['origin' => 'plugin', 'named' => 'plex']]]],
-            ['by' => 'radarr', 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => ['prowlarr'], 'settled' => ['settled' => 'chosen', 'whose' => 'operator', 'over' => ['jackett'], 'why' => 'Jackett is too slow here'], 'origins' => ['prowlarr' => ['origin' => 'bundled'], 'jackett' => ['origin' => 'unknown', 'why' => 'the record would not read']]]],
-            ['by' => 'bazarr', 'reaches' => ['how' => 'asked', 'capability' => 'subtitles', 'services' => ['opensubtitles'], 'settled' => ['settled' => 'chosen', 'whose' => 'stack', 'over' => ['subscene']], 'origins' => []]],
-            ['by' => 'lidarr', 'reaches' => ['how' => 'asked', 'capability' => 'music-tagger', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => []]],
-            ['by' => 'jellyfin', 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'Transcoding runs on the other machine']],
+            ['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => ['qbittorrent'], 'settled' => ['settled' => 'outright'], 'origins' => ['qbittorrent' => ['origin' => 'bundled']]]],
+            ['by' => 'prowlarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'arr', 'services' => ['sonarr', 'radarr'], 'settled' => ['settled' => 'each'], 'origins' => ['sonarr' => ['origin' => 'bundled'], 'radarr' => ['origin' => 'operator']]]],
+            ['by' => 'seerr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => [], 'settled' => ['settled' => 'contested', 'claimants' => ['jellyfin', 'plex']], 'origins' => ['jellyfin' => ['origin' => 'bundled'], 'plex' => ['origin' => 'plugin', 'named' => 'plex']]]],
+            ['by' => 'radarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => ['prowlarr'], 'settled' => ['settled' => 'chosen', 'whose' => 'operator', 'over' => ['jackett'], 'why' => 'Jackett is too slow here'], 'origins' => ['prowlarr' => ['origin' => 'bundled'], 'jackett' => ['origin' => 'unknown', 'why' => 'the record would not read']]]],
+            ['by' => 'bazarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'subtitles', 'services' => ['opensubtitles'], 'settled' => ['settled' => 'chosen', 'whose' => 'stack', 'over' => ['subscene']], 'origins' => []]],
+            ['by' => 'lidarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'music-tagger', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => []]],
+            ['by' => 'jellyfin', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'Transcoding runs on the other machine']],
         ],
         'unfilled' => [['by' => 'lidarr', 'capability' => 'music-tagger']],
         ...$changed,
@@ -252,7 +252,7 @@ it('reads every link with how it was settled and where each claimant came from, 
 it('reads a choice whose reason is null as one nobody gave a reason for', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysItWires(['wired' => [
-        ['by' => 'bazarr', 'reaches' => ['how' => 'asked', 'capability' => 'subtitles', 'services' => ['opensubtitles'], 'settled' => ['settled' => 'chosen', 'whose' => 'stack', 'over' => [], 'why' => null], 'origins' => []]],
+        ['by' => 'bazarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'subtitles', 'services' => ['opensubtitles'], 'settled' => ['settled' => 'chosen', 'whose' => 'stack', 'over' => [], 'why' => null], 'origins' => []]],
     ], 'unfilled' => []])))]);
 
     expect(whatTheStacksWiringComesTo(new Linkers(new PinnedClients())))->toBe('bazarr: asks subtitles, reaches opensubtitles, chosen by stack over , no reason []');
@@ -273,20 +273,20 @@ it('a wiring this app cannot read is an answer it could not read, never a shorte
 })->with([
     'no links' => [['wired' => null]],
     'a link that is not a row' => [['wired' => ['sonarr']]],
-    'a link reaching nothing readable' => [['wired' => [['by' => 'sonarr', 'reaches' => 'qbittorrent']]]],
+    'a link reaching nothing readable' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => 'qbittorrent']]]],
     'a link from nobody' => [['wired' => [['by' => ' ', 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'Elsewhere']]]]],
-    'a link reached in a way this app has no word for' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'guessed', 'service' => 'tdarr', 'why' => 'Elsewhere']]]]],
-    'a by-name link with no reason' => [['wired' => [['by' => 'jellyfin', 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => ' ']]]]],
-    'an ask with no capability' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => []]]]]],
-    'an ask reaching a service with no name' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [' '], 'settled' => ['settled' => 'outright'], 'origins' => []]]]]],
-    'an ask settled in a way this app has no word for' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'first-installed'], 'origins' => []]]]]],
-    'an ask settled by nothing readable' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => 'outright', 'origins' => []]]]]],
-    'a contest naming no claimants' => [['wired' => [['by' => 'seerr', 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => [], 'settled' => ['settled' => 'contested'], 'origins' => []]]]]],
-    'a choice made by somebody this app has no word for' => [['wired' => [['by' => 'radarr', 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => [], 'settled' => ['settled' => 'chosen', 'whose' => 'plugin', 'over' => []], 'origins' => []]]]]],
-    'a choice with a blank reason' => [['wired' => [['by' => 'radarr', 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => [], 'settled' => ['settled' => 'chosen', 'whose' => 'operator', 'over' => [], 'why' => ' '], 'origins' => []]]]]],
-    'origins that are not a table' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => 'bundled']]]]],
-    'a claimant whose origin is not a table' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => ['qbittorrent' => 'bundled']]]]]],
-    'a claimant from somewhere this app has no word for' => [['wired' => [['by' => 'sonarr', 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => ['qbittorrent' => ['origin' => 'elsewhere']]]]]]],
+    'a link reached in a way this app has no word for' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'guessed', 'service' => 'tdarr', 'why' => 'Elsewhere']]]]],
+    'a by-name link with no reason' => [['wired' => [['by' => 'jellyfin', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => ' ']]]]],
+    'an ask with no capability' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => []]]]]],
+    'an ask reaching a service with no name' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [' '], 'settled' => ['settled' => 'outright'], 'origins' => []]]]]],
+    'an ask settled in a way this app has no word for' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'first-installed'], 'origins' => []]]]]],
+    'an ask settled by nothing readable' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => 'outright', 'origins' => []]]]]],
+    'a contest naming no claimants' => [['wired' => [['by' => 'seerr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => [], 'settled' => ['settled' => 'contested'], 'origins' => []]]]]],
+    'a choice made by somebody this app has no word for' => [['wired' => [['by' => 'radarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => [], 'settled' => ['settled' => 'chosen', 'whose' => 'plugin', 'over' => []], 'origins' => []]]]]],
+    'a choice with a blank reason' => [['wired' => [['by' => 'radarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => [], 'settled' => ['settled' => 'chosen', 'whose' => 'operator', 'over' => [], 'why' => ' '], 'origins' => []]]]]],
+    'origins that are not a table' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => 'bundled']]]]],
+    'a claimant whose origin is not a table' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => ['qbittorrent' => 'bundled']]]]]],
+    'a claimant from somewhere this app has no word for' => [['wired' => [['by' => 'sonarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'download-client', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => ['qbittorrent' => ['origin' => 'elsewhere']]]]]]],
     'an unfilled ask that is not a row' => [['unfilled' => ['lidarr']]],
     'an unfilled ask naming no capability' => [['unfilled' => [['by' => 'lidarr']]]],
 ]);

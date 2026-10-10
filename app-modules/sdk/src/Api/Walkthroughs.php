@@ -120,10 +120,10 @@ final readonly class Walkthroughs
     /** @param array<array-key, mixed> $data */
     private static function shape(array $data): WhichWalk
     {
-        $said = self::text($data, WalkthroughField::Shape);
+        $said = self::text($data, WireField::Shape);
 
         return WhichWalk::tryFrom($said)
-            ?? throw WalkthroughIsUnreadable::word(WalkthroughField::Shape, $said, ...array_map(static fn(WhichWalk $case): string => $case->value, WhichWalk::cases()));
+            ?? throw WalkthroughIsUnreadable::word(WireField::Shape, $said, ...array_map(static fn(WhichWalk $case): string => $case->value, WhichWalk::cases()));
     }
 
     /** @param array<array-key, mixed> $data */

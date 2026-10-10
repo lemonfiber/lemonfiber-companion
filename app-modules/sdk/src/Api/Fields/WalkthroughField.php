@@ -17,9 +17,6 @@ enum WalkthroughField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Which walk this was. */
-    case Shape = 'shape';
-
     /** What it set out to prove, said so the operator knows what they watched. */
     case Proves = 'proves';
 
