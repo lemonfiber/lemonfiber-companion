@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bootstrap\Composition;
 
+use function array_unique;
+use function array_values;
+
 use Bootstrap\Composition\NativePHP\BehindTheLock;
 use Bootstrap\Composition\NativePHP\OutOfTheOperatorsScreens;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
@@ -19,6 +22,10 @@ use function config;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+
+use function is_array;
+use function is_string;
+
 use Lemonfiber\Native\AppsSettings as TheAppsSettingsPage;
 use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
@@ -140,6 +147,12 @@ final class CompositionRoot extends ServiceProvider
     /** The setting that names the scheme the platform opens this application at, which is the one every join link is written under. */
     private const string THE_SCHEME_LINKS_OPEN_US_AT = 'nativephp.deeplink_scheme';
 
+    /** The setting that names what a build leaves out of the application it bundles. */
+    private const string WHAT_A_BUILD_LEAVES_OUT = 'nativephp.cleanup_exclude_files';
+
+    /** What only a developer's checkout holds: the analyser's cache, branches kept before deleting, and coverage reports. */
+    private const array WHAT_ONLY_A_CHECKOUT_HOLDS = ['.phpstan-cache', '.branch-backups', 'coverage'];
+
     /** The tag every store of what the phone keeps is registered under. */
     private const string WHAT_THE_PHONE_KEEPS = 'what-the-phone-keeps';
 
@@ -185,6 +198,7 @@ final class CompositionRoot extends ServiceProvider
         config()->set(self::THE_ICONS_ON_THE_SYSTEM_BARS, 'light');
 
         config()->set(self::THE_SCHEME_LINKS_OPEN_US_AT, AJoinLink::scheme());
+        config()->set(self::WHAT_A_BUILD_LEAVES_OUT, $this->whatABuildLeavesOut());
 
         $this->bindThePlatform();
         $this->bindWhatThePhoneKeeps();
@@ -640,5 +654,24 @@ final class CompositionRoot extends ServiceProvider
     private function made(string $class): mixed
     {
         return $this->app->make($class);
+    }
+
+    /**
+     * What a build leaves out: what the checkout's own settings name, and what only a checkout holds.
+     *
+     * @return list<string>
+     */
+    private function whatABuildLeavesOut(): array
+    {
+        $named = config(self::WHAT_A_BUILD_LEAVES_OUT, []);
+        $leftOut = [];
+
+        foreach (is_array($named) ? $named : [] as $path) {
+            if (is_string($path)) {
+                $leftOut[] = $path;
+            }
+        }
+
+        return array_values(array_unique([...$leftOut, ...self::WHAT_ONLY_A_CHECKOUT_HOLDS]));
     }
 }
