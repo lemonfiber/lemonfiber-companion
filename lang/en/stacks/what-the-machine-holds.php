@@ -101,8 +101,6 @@ return [
 
     // What the machine will tell its operator about.
     'alerts' => [
-        // The preset's name is the stack's; what it means is drawn beside it.
-        'preset' => 'Preset: :preset',
         'set_apart' => 'Set apart from the preset',
         'heard' => [
             'heard' => 'You hear about this, whatever the preset says',

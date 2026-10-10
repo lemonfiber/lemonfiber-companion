@@ -3,11 +3,7 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    {{-- The preset first, with what it means beside it: a preset's name alone
-         is a word somebody has to look up before they know whether they will
-         be woken at three. --}}
-    <x-design::heading>{{ __('stacks.alerts.preset', ['preset' => $this->answer()->preset]) }}</x-design::heading>
-    <x-design::body>{{ $this->answer()->means }}</x-design::body>
+    <x-design::heading>{{ $this->answer()->means }}</x-design::heading>
 
     {{-- Each one heard or kept quiet whatever the preset says, which is the
          operator's own decision and said as theirs. --}}

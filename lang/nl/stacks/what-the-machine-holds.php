@@ -68,7 +68,6 @@ return [
         ],
     ],
     'alerts' => [
-        'preset' => 'Voorinstelling: :preset',
         'set_apart' => 'Apart gezet van de voorinstelling',
         'heard' => [
             'heard' => 'Je hoort hierover, wat de voorinstelling ook zegt',
