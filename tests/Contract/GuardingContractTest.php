@@ -150,8 +150,8 @@ it('comes away from a guard that was not taken on with the obstacle rather than 
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'watch', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'watch', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -221,7 +221,7 @@ it('asking after a guard tells a refused session from a stack that is not answer
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"not yours"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
         [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -231,11 +231,11 @@ it('asking after a guard tells a refused session from a stack that is not answer
     }
 });
 
-it('a report this app cannot read is a stack that did not answer, never a guard that stopped something', function (array $changed): void {
+it('a report this app cannot read is an answer it could not read, never a guard that stopped something', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfAGuard($changed)))]);
 
-    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no word on whether it stopped them' => [['stopped' => 'yes']],
     'no reason' => [['reason' => ' ']],
@@ -245,11 +245,11 @@ it('a report this app cannot read is a stack that did not answer, never a guard 
     'a form that is not text' => [['forms' => [7]]],
 ]);
 
-it('a payload with no data is a stack that did not answer', function (): void {
+it('a payload with no data is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'watch', 'data' => 'gone']))]);
 
-    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheGuard(new Guards(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('lets a guard go by its name, and answers where it then stands', function (): void {
@@ -274,7 +274,7 @@ it('letting go of a guard the stack no longer knows is unknown, and a refusal is
     foreach ([
         [MockResponse::make('{"error":"No work in this run goes by that name."}', 404), 'unknown'],
         [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused->name],
-        [MockResponse::make('not json at all'), KindOfObstacle::StackDidNotAnswer->name],
+        [MockResponse::make('not json at all'), KindOfObstacle::AnswerCouldNotBeRead->name],
     ] as [$answered, $said]) {
         MockClient::destroyGlobal();
         MockClient::global([$answered]);

@@ -175,9 +175,9 @@ it('reads a refused session, an account that may not ask, and a refusal with no 
     'markup from something in between' => [502, '<html>bad gateway</html>', Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
 ]);
 
-it('reads a bundle written to a path that names no file as a stack that did not answer', function (): void {
+it('reads a bundle written to a path that names no file as an answer it could not read', function (): void {
     expect(whatBecameOfTheBundleAnswered(MockResponse::make((string) json_encode(WhatABundleSays::envelope(['path' => '/home/op/bundles/'])))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('fetches a written bundle by the last segment of its path, and hands back its bytes unopened', function (): void {

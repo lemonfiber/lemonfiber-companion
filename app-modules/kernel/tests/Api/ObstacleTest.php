@@ -11,6 +11,7 @@ use function array_unique;
 use function array_values;
 use function count;
 use function expect;
+use function in_array;
 use function it;
 
 use Modules\Kernel\Api\Address;
@@ -23,7 +24,7 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 
 use function sprintf;
 
-it('is the sixteen an operator must be able to tell apart', function (): void {
+it('is the seventeen an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -45,6 +46,7 @@ it('is the sixteen an operator must be able to tell apart', function (): void {
         KindOfObstacle::VersionsDisagree,
         KindOfObstacle::StackIsBusy,
         KindOfObstacle::NotOnThisStack,
+        KindOfObstacle::AnswerCouldNotBeRead,
     ]);
 });
 
@@ -81,6 +83,7 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-VERSIONS-DISAGREE',
         'COMPANION-STACK-BUSY',
         'COMPANION-NOT-ON-THIS-STACK',
+        'COMPANION-ANSWER-UNREADABLE',
     ]);
 });
 
@@ -125,6 +128,9 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
     // A stack older than what was asked of it works, and is older.
     expect(KindOfObstacle::NotOnThisStack->severity())->toBe(Severity::Warning);
 
+    // An answer this app cannot read stays unread until one side is updated.
+    expect(KindOfObstacle::AnswerCouldNotBeRead->severity())->toBe(Severity::Error);
+
     // Each way a reach met nothing is something supposed to work that does not.
     expect(KindOfObstacle::NameWasNotFound->severity())->toBe(Severity::Error);
     expect(KindOfObstacle::NothingAtThePairedAddress->severity())->toBe(Severity::Error);
@@ -162,6 +168,7 @@ it('offers a button only where the app can press it', function (): void {
     // app cannot act.
     expect(KindOfObstacle::VersionsDisagree->standing())->toBe(Standing::Guided);
     expect(KindOfObstacle::StackIsBusy->standing())->toBe(Standing::Guided);
+    expect(KindOfObstacle::AnswerCouldNotBeRead->standing())->toBe(Standing::Guided);
 
     // A stack too old for what was asked is updated from the app's own
     // updates screen, so the remedy is a road there.
@@ -277,11 +284,18 @@ it('carries no address where none was tried', function (): void {
     expect(Obstacle::of(KindOfObstacle::NothingAtThePairedAddress)->whereItWasTried())->toBe('');
 });
 
-it('tells a member in the household\'s words where it was met on the way to the stack, and as the operator is told everywhere else', function (KindOfObstacle $kind): void {
+it('tells a member in the household\'s words where it was met on the way to the stack or the answer could not be read, and as the operator is told everywhere else', function (KindOfObstacle $kind): void {
     $met = Obstacle::of($kind);
+    $inTheHouseholdsWords = in_array($kind, [
+        KindOfObstacle::StackDidNotAnswer,
+        KindOfObstacle::NameWasNotFound,
+        KindOfObstacle::NothingAtThePairedAddress,
+        KindOfObstacle::ConnectionWasTurnedAway,
+        KindOfObstacle::AnswerCouldNotBeRead,
+    ], strict: true);
 
-    expect($met->saidToTheHousehold())->toBe($kind->isMetOnTheWayToTheStack() ? sprintf('household.out_of_reach.%s', $kind->value) : $met->said())
-        ->and($met->remedyForTheHousehold())->toBe($kind->isMetOnTheWayToTheStack() ? sprintf('household.out_of_reach.%s_action', $kind->value) : $met->remedy());
+    expect($met->saidToTheHousehold())->toBe($inTheHouseholdsWords ? sprintf('household.out_of_reach.%s', $kind->value) : $met->said())
+        ->and($met->remedyForTheHousehold())->toBe($inTheHouseholdsWords ? sprintf('household.out_of_reach.%s_action', $kind->value) : $met->remedy());
 })->with(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind !== KindOfObstacle::VersionsDisagree)));
 
 it('keeps the remedy a disagreement over versions owes on a member\'s screen', function (): void {

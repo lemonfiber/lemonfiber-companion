@@ -216,7 +216,7 @@ it('tells a session that has ended from a stack that is not answering', function
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         // A fault on the stack's side, even one with a sentence, is not its refusal.
         [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all', 202), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -292,7 +292,7 @@ it('refuses a removal whose reach is a word this app has no case for', function 
     $removing = everyWayOfTakingSomebodyOut(MockResponse::make((string) json_encode($body)))['the adapter']();
 
     expect(everythingTheRemovalSays($removing->whatBecameOf(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), Job::named('j-1'))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

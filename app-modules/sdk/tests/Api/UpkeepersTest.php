@@ -209,7 +209,7 @@ it('a payload this side cannot read is an obstacle, not an exception', function 
     ];
 
     foreach ($unreadable as $said) {
-        expect(whatTheAdapterMade(MockResponse::make($said)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        expect(whatTheAdapterMade(MockResponse::make($said)))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
     }
 });
 
@@ -256,7 +256,7 @@ it('an acknowledgement this side cannot read is an obstacle too', function (): v
         (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => []]),
     ));
 
-    expect(whatBecameOfTheTaking($unreadable))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfTheTaking($unreadable))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 /**

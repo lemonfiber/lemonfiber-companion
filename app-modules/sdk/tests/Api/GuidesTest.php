@@ -85,8 +85,8 @@ function whatFollowingCameTo(Guides $guide): string
 // `status` is stood in for and not judged: it is an answer about something else, and that is the case.
 // `walkthrough` is stood in for and not judged: its version or what it proves is what each case takes away.
 
-it('reads a start it cannot follow as a stack that did not answer, whatever made it unreadable', function (array $body): void {
-    expect(whatStartingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+it('reads a start it cannot follow as an answer it could not read, whatever made it unreadable', function (array $body): void {
+    expect(whatStartingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'an answer about something else' => [['api_version' => 1, 'kind' => 'status', 'data' => []]],
     'a handle with no name' => [['api_version' => 1, 'kind' => 'job', 'data' => []]],
@@ -99,8 +99,8 @@ it('reads a start or a record in a contract version it does not speak as the ver
         ->toEqual(KindOfObstacle::VersionsDisagree->name);
 });
 
-it('reads a record it cannot read as a stack that did not answer, whatever made it unreadable', function (array $body): void {
-    expect(whatFollowingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+it('reads a record it cannot read as an answer it could not read, whatever made it unreadable', function (array $body): void {
+    expect(whatFollowingCameTo(aGuideAnswering($body)))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'an answer about something else' => [['api_version' => 1, 'kind' => 'status', 'data' => []]],
     'a record missing what it proves' => [['api_version' => 1, 'kind' => 'walkthrough', 'data' => ['state' => 'complete']]],

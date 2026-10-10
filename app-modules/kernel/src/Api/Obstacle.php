@@ -132,12 +132,12 @@ final readonly class Obstacle
      * The key for what a member can do about it.
      *
      * The household's words where the obstacle was met on the way to the
-     * stack, and {@see self::remedy()} everywhere else, which keeps the remedy
-     * a disagreement over versions owes.
+     * stack or the answer could not be read, and {@see self::remedy()}
+     * everywhere else, which keeps the remedy a disagreement over versions owes.
      */
     public function remedyForTheHousehold(): string
     {
-        return $this->kind->isMetOnTheWayToTheStack() ? $this->kind->remedyForTheHousehold() : $this->remedy();
+        return $this->kind->isSaidInTheHouseholdsWords() ? $this->kind->remedyForTheHousehold() : $this->remedy();
     }
 
     /** Whether its remedy is a switch on this app's page in the phone's settings. */

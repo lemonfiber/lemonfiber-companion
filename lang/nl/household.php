@@ -122,6 +122,8 @@ return [
         'nothing_at_the_address_action' => 'Vraag wie het huis beheert om deze telefoon opnieuw in te stellen.',
         'connection_refused' => 'Het huis is nu dicht.',
         'connection_refused_action' => 'Vraag wie het huis beheert om het weer open te zetten.',
+        'answer_unreadable' => 'Het huis is nu niet te bereiken.',
+        'answer_unreadable_action' => 'Probeer het later nog eens. Blijft het zo, laat het dan weten aan wie het huis beheert.',
     ],
     'medium' => [
         'film' => 'Film',

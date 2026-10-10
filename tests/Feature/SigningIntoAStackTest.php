@@ -353,6 +353,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::TooManyAttempts, false, true],
         [HowTheSignInWent::StackDidNotAnswer, false, true],
         [HowTheSignInWent::ConnectionWasTurnedAway, false, true],
+        [HowTheSignInWent::AnswerCouldNotBeRead, false, true],
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
         // No field and no way back: the remedy is in the phone's settings, so

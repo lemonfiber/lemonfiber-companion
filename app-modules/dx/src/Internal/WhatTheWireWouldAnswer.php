@@ -128,7 +128,7 @@ final readonly class WhatTheWireWouldAnswer
      *
      * The one action whose work a screen draws on its first frame: what
      * stopping seeding one download would cost arrives as work, and redeemed
-     * into a repair it would draw that screen as a stack that did not answer.
+     * into a repair it would draw that screen as an answer it could not read.
      * So the stand-in names that work after its action, and redeems work by
      * that name into the `stop-seeding` envelope, which carries the offer and
      * what became of it.
@@ -173,8 +173,8 @@ final readonly class WhatTheWireWouldAnswer
      * insists on beyond its type ({@see WHEN_A_CHANGE_WAS_MADE} is the other):
      * {@see \Lemonfiber\Sdk\Admitted::of()} puts `until` through `Stamp`, and
      * a stamp it cannot read is an `UnreadableResponse` — which arrives at the
-     * sign-in screen as *this stack did not answer*, about a door that answered
-     * perfectly well. Nearly every other string in a synthesised payload is
+     * sign-in screen as *this stack answered in a way this app cannot read*,
+     * about a door that answered perfectly well. Nearly every other string in a synthesised payload is
      * free-form and carries its own field name, which is what makes a stand-in
      * payload obvious on a screen; this one cannot.
      *
@@ -189,7 +189,7 @@ final readonly class WhatTheWireWouldAnswer
      * change's `at` as seconds since the epoch written in digits, and the
      * generated type says only `string` — so a synthesised `at` is the word
      * `at`, `Records` refuses it as it would refuse any stack that wrote one,
-     * and the record screen draws *this stack did not answer* against a machine
+     * and the record screen draws an answer it could not read against a machine
      * answering everything.
      *
      * In the past, so every change reads with an age rather than as something

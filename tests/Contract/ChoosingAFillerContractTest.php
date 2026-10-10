@@ -257,7 +257,7 @@ it('tells a refused session from a stack that is not answering', function (): vo
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -267,9 +267,9 @@ it('tells a refused session from a stack that is not answering', function (): vo
     }
 });
 
-it('a choice this app cannot read is a stack that did not answer, never a smaller cost', function (array $changed, array $choice, array $without): void {
+it('a choice this app cannot read is an answer it could not read, never a smaller cost', function (array $changed, array $choice, array $without): void {
     expect(whatFillingItWouldComeTo(aFillerAnswered(MockResponse::make((string) json_encode(whatAStackSaysAFillComesTo($changed, $choice, $without))))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no name for the reading' => [['agreement' => ' '], [], []],
     'no word on whether it was made' => [['applied' => 'yes'], [], []],
@@ -286,8 +286,8 @@ it('a choice this app cannot read is a stack that did not answer, never a smalle
     'a loss naming no capability' => [[], ['leaves_unfilled' => [['by' => 'tdarr']]], []],
 ]);
 
-it('an answer whose data is not a table, or of another kind, is a stack that did not answer', function (array $answered): void {
-    expect(whatFillingItWouldComeTo(aFillerAnswered(MockResponse::make((string) json_encode($answered)))))->toBe(KindOfObstacle::StackDidNotAnswer->name);
+it('an answer whose data is not a table, or of another kind, is an answer it could not read', function (array $answered): void {
+    expect(whatFillingItWouldComeTo(aFillerAnswered(MockResponse::make((string) json_encode($answered)))))->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'data that is not a table' => [['api_version' => 1, 'kind' => 'substitution', 'data' => 'plex']],
     'an answer of another kind' => [['api_version' => 1, 'kind' => 'wiring', 'data' => []]],

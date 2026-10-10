@@ -141,7 +141,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -155,7 +155,7 @@ it('a rehearsal this app cannot read is an obstacle, never a start half-describe
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends(name: ' ')))]);
 
-    expect(everythingTheRehearsalSays(new Rehearsers(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheRehearsalSays(new Rehearsers(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('asks the forms read naming the form, which is how a start is rehearsed rather than the forms listed', function (): void {
