@@ -298,6 +298,111 @@ it('refuses a join link for a house the phone holds under another certificate, a
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.joining.not_this_house'), __('household.joining.not_this_house_action'));
 });
 
+/**
+ * A phone holding the house under the certificate given, with a session for it.
+ *
+ * @return array{StacksInMemory, AKeychainInMemory}
+ */
+function aPhoneHoldingTheHouse(string $fingerprint): array
+{
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep(StackId::saidBy(THE_HOUSE), Session::of('a-session-not-a-secret'), Whose::member('a-member'));
+
+    return [StacksInMemory::holding(theHouseHeld($fingerprint)), $keychain];
+}
+
+/** Whether the phone still holds the house pinned to the certificate given, with its session. */
+function stillPinnedTo(StacksInMemory $stacks, AKeychainInMemory $keychain, string $fingerprint): bool
+{
+    return $stacks->configured()->stack(StackId::rememberedAs(THE_HOUSE))->presents()->is(Fingerprint::of($fingerprint))
+        && $keychain->isHolding(StackId::saidBy(THE_HOUSE));
+}
+
+it('refuses a scanned code for a house the phone holds under another certificate, and never re-pins it or lets go of its session', function (): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('b', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), stacks: $stacks, keychain: $keychain);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('b', Fingerprint::CHARACTERS)))->toBeTrue();
+});
+
+it('refuses a join link the phone was opened at for a house it holds under another certificate, whether it was running or not', function (string ...$beneath): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('b', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(''), stacks: $stacks, keychain: $keychain);
+    WhatTheRouterHolds::over($screen, sprintf('%s?%s', AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(), PHP_URL_QUERY)), ...$beneath);
+
+    $screen->mount();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::FindingTheHouse)
+        ->and($screen->met)->toBe(WhatFindingTheHouseMet::NotThisHouse)
+        ->and($screen->theirName)->toBe('')
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('b', Fingerprint::CHARACTERS)))->toBeTrue();
+})->with([
+    'opened while it was running' => [AScreenWithoutAStack::TheList->value],
+    'opened from cold' => [],
+]);
+
+it('goes on to signing in from a scanned code for a house the phone holds under the same certificate, keeping its session', function (): void {
+    [$stacks, $keychain] = aPhoneHoldingTheHouse(str_repeat('a', Fingerprint::CHARACTERS));
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), stacks: $stacks, keychain: $keychain);
+
+    $screen->findTheHouse();
+
+    expect($screen->at)->toBe(WhereTheWayInIs::SigningIn)
+        ->and($screen->met)->toBeNull()
+        ->and(stillPinnedTo($stacks, $keychain, str_repeat('a', Fingerprint::CHARACTERS)))->toBeTrue();
+});
+
+it('writes an address it was opened at to the phone\'s log only up to what a link carries', function (): void {
+    $kept = (string) tempnam(sys_get_temp_dir(), 'joining');
+    unlink($kept);
+    mkdir(sprintf('%s/logs', $kept), recursive: true);
+    $before = storage_path();
+    app()->useStoragePath($kept);
+
+    try {
+        NativeRouter::debugLog(sprintf('start: class=%s uri=%s?%s', JoiningAHouse::class, AScreenWithoutAStack::JoiningAHouse->value, (string) parse_url(theJoinLink(['claim' => 'a-token-of-enough-random-bits']), PHP_URL_QUERY)));
+        $written = (string) file_get_contents(sprintf('%s/logs/edge-nav.log', $kept));
+    } finally {
+        app()->useStoragePath($before);
+    }
+
+    unlink(sprintf('%s/logs/edge-nav.log', $kept));
+    rmdir(sprintf('%s/logs', $kept));
+    rmdir($kept);
+
+    expect($written)->toContain(sprintf('uri=%s?', AScreenWithoutAStack::JoiningAHouse->value))
+        ->and($written)->not->toContain('Robin')
+        ->and($written)->not->toContain('a-token-of-enough-random-bits')
+        ->and($written)->not->toContain(str_repeat('a', Fingerprint::CHARACTERS));
+});
+
+it('writes a deep link to every platform log only up to what it carries', function (string $file, string ...$carries): void {
+    foreach ($carries as $line) {
+        expect((string) file_get_contents(base_path($file)))->toContain($line);
+    }
+})->with([
+    'the iOS debug log' => [
+        'vendor/nativephp/mobile/resources/xcode/NativePHP/DebugLogger.swift',
+        'let redacted = message.replacingOccurrences(of: "\\\\?\\\\S*", with: "?", options: .regularExpression)',
+        'let logEntry = "[\(timestamp)] \(redacted)\n"',
+        'print("🐛 \(redacted)")',
+    ],
+    'the iOS boot' => [
+        'vendor/nativephp/mobile/resources/xcode/NativePHP/NativePHPApp.swift',
+        'NSLog("[NativeBoot] 🚀 Direct native dispatch: \(uri.components(separatedBy: "?")[0])")',
+    ],
+    'Android' => [
+        'vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt',
+        'Log.d("DeepLink", "🌐 Received deep link: ${uri.toString().substringBefore(\'?\')}")',
+        'Log.d("DeepLink", "📦 Saving deep link for later: ${laravelUrl.substringBefore(\'?\')}")',
+        'Log.d("DeepLink", "🚀 native-ui: dispatching __deeplink event: ${route.substringBefore(\'?\')}")',
+    ],
+]);
+
 it('refuses a join link it cannot use, in household words, and keeps nothing', function (string $link): void {
     $stacks = StacksInMemory::working();
     $screen = theWayIn(ACameraInMemory::reading($link), stacks: $stacks);

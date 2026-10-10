@@ -137,7 +137,7 @@ final class CompositionRoot extends ServiceProvider
     /** The setting that picks the colour of Android's status bar and navigation bar icons. */
     private const string THE_ICONS_ON_THE_SYSTEM_BARS = 'nativephp.android.status_bar_style';
 
-    /** The setting that names the scheme the platform opens this application at. */
+    /** The setting that names the scheme the platform opens this application at, which is the one every join link is written under. */
     private const string THE_SCHEME_LINKS_OPEN_US_AT = 'nativephp.deeplink_scheme';
 
     /** The tag every store of what the phone keeps is registered under. */
@@ -184,9 +184,6 @@ final class CompositionRoot extends ServiceProvider
         config()->set(self::HOW_THE_PLATFORM_DRAWS_ITS_OWN, 'dark');
         config()->set(self::THE_ICONS_ON_THE_SYSTEM_BARS, 'light');
 
-        // An invitation's join link opens this application, so the scheme it
-        // is written under is the one the platform registers, whatever the
-        // builder's environment says.
         config()->set(self::THE_SCHEME_LINKS_OPEN_US_AT, AJoinLink::scheme());
 
         $this->bindThePlatform();

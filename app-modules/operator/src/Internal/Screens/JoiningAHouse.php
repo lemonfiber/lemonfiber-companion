@@ -191,7 +191,7 @@ final class JoiningAHouse extends NativeComponent
     }
 
     /**
-     * The house a join link names, added where the phone holds none and refused where it holds it under another certificate.
+     * The house a join link names, added where the phone holds none, signed in to where it holds it, and refused where it holds it under another certificate.
      *
      * A link carrying a claim asks the person to choose their password, which
      * this app cannot offer the house yet, so it is refused as one that cannot
@@ -200,21 +200,38 @@ final class JoiningAHouse extends NativeComponent
     private function openedBy(AJoinLink $link): self
     {
         $house = $link->house($this->called());
-        $held = $this->stacks->configured();
 
-        $this->met = match (true) {
-            $link->claims() => WhatFindingTheHouseMet::LinkUnusable,
-            $held->wouldRepin($house) => WhatFindingTheHouseMet::NotThisHouse,
-            default => null,
-        };
+        if ($link->claims()) {
+            $this->met = WhatFindingTheHouseMet::LinkUnusable;
 
-        if ($this->met instanceof WhatFindingTheHouseMet) {
+            return $this;
+        }
+
+        if (! $this->admits($house)) {
             return $this;
         }
 
         $this->theirName = $link->name()->forTheExchange();
 
-        return $held->knows($house->id()) ? $this->signingInTo($house->id()) : $this->keeping($house);
+        return $this->stacks->configured()->knows($house->id()) ? $this->signingInTo($house->id()) : $this->keeping($house);
+    }
+
+    /**
+     * Whether the house may be joined as handed over: never where this phone holds it under another certificate.
+     *
+     * The one gate every way in passes, a link and a code alike: a phone
+     * somebody was invited on never has a house it holds re-pinned, so what it
+     * was handed cannot point a house it already trusts at another key.
+     */
+    private function admits(Stack $house): bool
+    {
+        if ($this->stacks->configured()->wouldRepin($house)) {
+            $this->met = WhatFindingTheHouseMet::NotThisHouse;
+
+            return false;
+        }
+
+        return true;
     }
 
     /** What the house is called on this phone. */
@@ -225,9 +242,13 @@ final class JoiningAHouse extends NativeComponent
         return StackName::of(is_string($called) ? $called : self::CALLED);
     }
 
-    /** Keep the house, going on to signing in where it was kept. */
+    /** Keep the house, going on to signing in where it was kept; one held under another certificate is refused and nothing is written. */
     private function keeping(Stack $house): self
     {
+        if (! $this->admits($house)) {
+            return $this;
+        }
+
         if (! $this->remembering->stack($house)->isPaired()) {
             $this->met = WhatFindingTheHouseMet::NotKept;
 

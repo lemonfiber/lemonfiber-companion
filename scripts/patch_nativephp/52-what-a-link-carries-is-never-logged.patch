@@ -1,0 +1,49 @@
+An invitation's join link carries the house's address and certificate, the
+member's name and, where it has one, a claim the person chooses their password
+with. Every address a screen is opened at was written to the router's log on
+the phone, which is kept as a file with the app's data and travels with its
+backups, and the iOS debug log is a file there too; a deep link was written to
+both, and to the platform's log, whole. Each now writes an address only up to
+its `?`, so nothing a link carries after it is written down anywhere.
+
+--- a/vendor/nativephp/mobile/src/Edge/NativeRouter.php
++++ b/vendor/nativephp/mobile/src/Edge/NativeRouter.php
+@@ -44 +44 @@
+-        @file_put_contents($logPath, date('[H:i:s.').substr(microtime(), 2, 3).'] '.$msg."\n", FILE_APPEND);
++        @file_put_contents($logPath, date('[H:i:s.').substr(microtime(), 2, 3).'] '.preg_replace('/\?\S*/', '?', $msg)."\n", FILE_APPEND);
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/DebugLogger.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/DebugLogger.swift
+@@ -24 +24,2 @@
+-        let logEntry = "[\(timestamp)] \(message)\n"
++        let redacted = message.replacingOccurrences(of: "\\?\\S*", with: "?", options: .regularExpression)
++        let logEntry = "[\(timestamp)] \(redacted)\n"
+@@ -42 +43 @@
+-        print("🐛 \(message)")
++        print("🐛 \(redacted)")
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/NativePHPApp.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/NativePHPApp.swift
+@@ -160 +160 @@
+-            NSLog("[NativeBoot] 🚀 Direct native dispatch: \(uri)")
++            NSLog("[NativeBoot] 🚀 Direct native dispatch: \(uri.components(separatedBy: "?")[0])")
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/PHPSchemeHandler.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/PHPSchemeHandler.swift
+@@ -854 +854 @@
+-        NSLog("%@", "[NativePHP] [JUMP-WEBVIEW] --> \(request.method) \(urlString)")
++        NSLog("%@", "[NativePHP] [JUMP-WEBVIEW] --> \(request.method) \(urlString.components(separatedBy: "?")[0])")
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
+@@ -235 +235 @@
+-                        Log.d("DeepLink", "🚀 Loading final URL after WebView setup: $fullUrl")
++                        Log.d("DeepLink", "🚀 Loading final URL after WebView setup: ${fullUrl.substringBefore('?')}")
+@@ -649 +649 @@
+-            Log.d("DeepLink", "🚀 native-ui: dispatching __deeplink event: $route")
++            Log.d("DeepLink", "🚀 native-ui: dispatching __deeplink event: ${route.substringBefore('?')}")
+@@ -653 +653 @@
+-            Log.d("DeepLink", "🚀 Loading deep link immediately (app already running): $fullUrl")
++            Log.d("DeepLink", "🚀 Loading deep link immediately (app already running): ${fullUrl.substringBefore('?')}")
+@@ -693 +693 @@
+-        Log.d("DeepLink", "🌐 Received deep link: $uri")
++        Log.d("DeepLink", "🌐 Received deep link: ${uri.toString().substringBefore('?')}")
+@@ -741 +741 @@
+-        Log.d("DeepLink", "📦 Saving deep link for later: $laravelUrl")
++        Log.d("DeepLink", "📦 Saving deep link for later: ${laravelUrl.substringBefore('?')}")
