@@ -1,6 +1,6 @@
 @use('Modules\Kernel\Api\WhatToDoAboutPairing')
 @use('Modules\Stacks\Api\AStacksScreen')
-<x-wayfinding::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
+<x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
     <x-design::title>{{ __('stacks.pairing.heading') }}</x-design::title>
