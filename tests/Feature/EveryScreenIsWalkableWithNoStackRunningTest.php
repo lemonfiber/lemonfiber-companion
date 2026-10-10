@@ -152,7 +152,7 @@ function withNoStackRunning(): void
 function whatNoAnswerLooksLike(): array
 {
     return [
-        theSignedOutSentence(),
+        ...theSignedOutSentences(),
         theExpiredSentence(),
         whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->said()),
         whateverTheCatalogueSays(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()),
@@ -207,14 +207,16 @@ function whateverTheCatalogueSays(string $key): string
 }
 
 /**
- * The sentence a screen draws when this device is signed out of a stack.
+ * The sentences a screen draws when this device is signed out of a stack: the operator's, and a member's.
  *
  * Read off the catalogue rather than written here, so a rule about what a
  * screen says cannot disagree with what the screen says.
+ *
+ * @return list<string>
  */
-function theSignedOutSentence(): string
+function theSignedOutSentences(): array
 {
-    return whateverTheCatalogueSays('connection.session_has_ended');
+    return [whateverTheCatalogueSays('connection.session_has_ended'), whateverTheCatalogueSays('household.signed_out')];
 }
 
 it('a machine that answers draws every screen it is behind', function (): void {
@@ -413,7 +415,7 @@ it('a machine that refuses the session draws the way back in', function (): void
             continue;
         }
 
-        if (! in_array(theSignedOutSentence(), $drawn->said(), strict: true)) {
+        if (array_intersect(theSignedOutSentences(), $drawn->said()) === []) {
             $wrong[] = sprintf('%s — drew no signed-out prompt against the machine that refuses', $name);
         }
     }

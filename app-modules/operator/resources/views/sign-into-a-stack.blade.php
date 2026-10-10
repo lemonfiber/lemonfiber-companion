@@ -2,7 +2,11 @@
 
 <x-operator::content>
     <x-design::title>{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</x-design::title>
-    <x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>
+    @if ($this->isSignedIn())
+        <x-design::body>{{ __($this->given->opened()) }}</x-design::body>
+    @else
+        <x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>
+    @endif
     @if ($this->went()->isPutRightInTheAppsSettings())
         <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
@@ -14,7 +18,7 @@
         {{-- Straight to what they came for, rather than telling them where to
              find it. An app that says "you can reach it from the main screen"
              is an app asking somebody to navigate on its behalf. --}}
-        <x-design::action label="{{ __('health.see_how_it_is') }}" :goes="$this->onwardsTo()" />
+        <x-design::action label="{{ __($this->given->onwards()) }}" :goes="$this->onwardsTo()" />
     @endif
 
     @if ($this->mayStartOver())

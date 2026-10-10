@@ -42,6 +42,7 @@ return [
     'puts' => [
         'directory' => 'Een map',
         'document' => 'Een heel bestand',
+        'key' => 'Een sleutel die lemonfiber voor de plug-in maakt',
         'region' => 'Een deel van een bestand',
     ],
     'proofs' => 'Bewijzen',

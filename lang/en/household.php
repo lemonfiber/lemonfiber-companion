@@ -76,6 +76,8 @@ return [
     // that are not sentences: nothing to tell you, and a way to ask again.
     'nothing_owed' => 'There is nothing to tell you here.',
     'nothing_owed_action' => 'The house has nothing to say about what you can ask for.',
+    'signed_out' => 'You are signed out of this house.',
+    'signed_in' => 'This house is open to you.',
     'ask_again' => 'Ask again',
     'ask_again_for_yours' => 'Ask again for what you asked for',
     'needs_an_update' => 'The house needs an update for this.',
@@ -224,7 +226,7 @@ return [
     'preview' => [
         'marked' => 'Preview: what a member sees',
         'about' => 'This is what somebody invited with the household\'s defaults sees. Nobody\'s own shelf or requests are shown.',
-        'back' => 'Back to Switchboard',
+        'back' => 'Leave the preview',
         'ask' => 'Ask for something',
         'cannot_ask' => 'A preview cannot ask for anything.',
         'cannot_play' => 'A preview cannot play anything.',

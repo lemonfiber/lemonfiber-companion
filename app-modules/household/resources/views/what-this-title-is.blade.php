@@ -67,7 +67,7 @@
         @endif
     @endif
 @else
-    <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
+    <x-design::body>{{ __('household.signed_out') }}</x-design::body>
     <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
 @endif
 </x-operator::content>

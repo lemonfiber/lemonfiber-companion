@@ -20,7 +20,6 @@ use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\SecureStorage;
-use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
@@ -263,8 +262,8 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         return $this->watching->theShelfOf($stack, $session, $whose)->either(
             told: static fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->these($shelf, $stack->id()),
-            outOfReach: static fn(Sentences $said): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->outOfReach($said),
+            outOfReach: static fn(): WhatAMemberTurnedOutToBeAbleToWatch
+                => new HowAShelfReads()->outOfReach(),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {
                 // A credential refused on this read is the same signed-out
                 // device as one refused on any other, and a fold cannot forget

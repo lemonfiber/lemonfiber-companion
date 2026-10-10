@@ -274,7 +274,6 @@ return [
     'stuck_for_good' => 'Nothing will move this by itself.',
     'undeclared_count' => '{0} Nothing else is running here|{1} One other thing is running here|[2,*] :count other things are running here',
     'undeclared_explained' => 'These are running on the machine, and this stack\'s own configuration does not mention them. lemonfiber did not start them and will not stop them.',
-    'nothing_undeclared' => 'Nothing else is running here.',
     'nothing_undeclared_action' => 'Everything on this machine is something this stack declared.',
 
     'nothing_stopped' => 'Nothing has stopped coming in.',

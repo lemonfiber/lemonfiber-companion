@@ -455,6 +455,11 @@ it('takes them to the report once they are in, rather than describing where it i
             'Signing in leads to a URI the navigation stack does not know, so the '
             . 'operator would tap into nothing.',
         );
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('connection.signed_in_action'))
+        ->and($drawn->offers())->toContain(__('health.see_how_it_is'));
 });
 
 it('hands a member their own application, on Home, rather than the operator\'s report', function (): void {
@@ -479,6 +484,13 @@ it('hands a member their own application, on Home, rather than the operator\'s r
             'A member signing in leads to a URI the navigation stack does not know, so '
             . 'they would tap into nothing.',
         );
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('household.signed_in'))
+        ->and($drawn->said())->not->toContain(__('connection.signed_in_action'))
+        ->and($drawn->offers())->toContain(__('household.title.to_home'))
+        ->and($drawn->offers())->not->toContain(__('health.see_how_it_is'));
 });
 
 it('answers a session it could not keep with the way it always led', function (): void {
