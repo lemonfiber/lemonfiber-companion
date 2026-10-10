@@ -365,6 +365,9 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::TheAddressIsNotTheStacks, false, false],
         [HowTheSignInWent::NameWasNotFound, false, false],
         [HowTheSignInWent::NothingAtThePairedAddress, false, false],
+        [HowTheSignInWent::InvitationWasNotOpen, true, false],
+        [HowTheSignInWent::ChosenPasswordWasTooShort, true, false],
+        [HowTheSignInWent::TheMediaServerDidNotAnswer, false, true],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));
