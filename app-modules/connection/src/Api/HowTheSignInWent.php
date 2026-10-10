@@ -142,6 +142,15 @@ enum HowTheSignInWent: string
      */
     case TheAddressIsNotTheStacks = 'address_not_the_stacks';
 
+    /**
+     * The door answered, and this version of the app cannot read the answer.
+     *
+     * Not a door that did not answer: something came back. Updating the app or
+     * the machine is the remedy, and a password typed again would be read no
+     * better.
+     */
+    case AnswerCouldNotBeRead = 'answer_unreadable';
+
     /** The states whose way on is the pairing screen rather than this one. */
     private const array PUT_RIGHT_BY_PAIRING_AGAIN = [
         self::TheMachineIsNotTheOnePaired,
@@ -258,7 +267,7 @@ enum HowTheSignInWent: string
         return match ($this) {
             self::NotYet, self::CredentialWasRefused, self::ThePairWasRefused => Standing::Actionable,
             self::SignedIn => Standing::Suppressed,
-            self::TooManyAttempts, self::StackDidNotAnswer, self::ConnectionWasTurnedAway => Standing::Guided,
+            self::TooManyAttempts, self::StackDidNotAnswer, self::ConnectionWasTurnedAway, self::AnswerCouldNotBeRead => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
             // `Guided` rather than `Actionable`, which is the distinction that
             // makes the distinction worth having: the operator must act, and not here.
@@ -341,6 +350,7 @@ enum HowTheSignInWent: string
             KindOfObstacle::NameWasNotFound => self::NameWasNotFound,
             KindOfObstacle::NothingAtThePairedAddress => self::NothingAtThePairedAddress,
             KindOfObstacle::ConnectionWasTurnedAway => self::ConnectionWasTurnedAway,
+            KindOfObstacle::AnswerCouldNotBeRead => self::AnswerCouldNotBeRead,
             KindOfObstacle::StackDidNotAnswer,
             KindOfObstacle::DeviceHasNoNetwork,
             // The door answers neither: it is asked before any version is

@@ -244,8 +244,8 @@ it('comes away from a refused yes with the obstacle rather than a job', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"no such run"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -283,11 +283,11 @@ it('reads a report that leaves out what was noted as noting nothing', function (
         ->toBe('carried_out|restore lemonfiber, delete sonarr|left sonarr: the service that made it did not answer|noted ');
 });
 
-it('a report this app cannot read is a stack that did not answer, never a shorter report', function (array $changed): void {
+it('a report this app cannot read is an answer it could not read, never a shorter report', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack($changed)))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no left' => [['left' => null]],
     'no reversed' => [['reversed' => 'all of it']],
@@ -305,18 +305,18 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     'a reversal doing something this app has no word for' => [['reversed' => [['target' => 'sonarr', 'action' => ['does' => 'teleport']]]]],
 ]);
 
-it('a report leaving out a list, or whether it was a rehearsal, is a stack that did not answer', function (string $field): void {
+it('a report leaving out a list, or whether it was a rehearsal, is an answer it could not read', function (string $field): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(without: [$field])))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with(['reversed', 'left', 'rehearsed']);
 
-it('a reversal that leaves out what it does is a stack that did not answer', function (): void {
+it('a reversal that leaves out what it does is an answer it could not read', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(['reversed' => [['target' => 'sonarr']]])))]);
 
-    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('a run still going back is its own answer', function (): void {
@@ -338,7 +338,7 @@ it('asking after a run tells a refused session from a stack that is not answerin
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"cannot succeed"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

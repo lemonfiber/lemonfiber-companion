@@ -108,7 +108,7 @@ it('an empty list is an answer, and one that could not be read is not', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -122,7 +122,7 @@ it('a copy with no name is an obstacle, never a shorter list', function (): void
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsCopies(['lemonfiber-20260924-0300-full', ''])))]);
 
-    expect(everythingTheCopiesSay(new Copyists(new PinnedClients())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingTheCopiesSay(new Copyists(new PinnedClients())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

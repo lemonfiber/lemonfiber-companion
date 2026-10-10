@@ -142,11 +142,11 @@ it('says the session was refused where the core would not take it', function ():
     }
 });
 
-it('says the stack did not answer where the answer is not a place kept', function (array $answer): void {
+it('says the answer could not be read where the answer is not a place kept', function (array $answer): void {
     $answered = MockResponse::make((string) json_encode($answer));
 
-    foreach (everyWayOfKeepingThePlace($answered, WhatThePlaceCameTo::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))) as $which => $build) {
-        expect(whatThePlaceCameTo($build(), ThePlace::in(HoldingId::called('a1'), HowFarIn::at(61))))->toBe(KindOfObstacle::StackDidNotAnswer->name, $which);
+    foreach (everyWayOfKeepingThePlace($answered, WhatThePlaceCameTo::refused(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))) as $which => $build) {
+        expect(whatThePlaceCameTo($build(), ThePlace::in(HoldingId::called('a1'), HowFarIn::at(61))))->toBe(KindOfObstacle::AnswerCouldNotBeRead->name, $which);
     }
 })->with([
     'another kind' => [[...whatAStackSaysOfAPlace(), 'kind' => 'grant']],

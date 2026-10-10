@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\ACapabilityLeftUnfilled;
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
+use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheCapabilitiesLeftUnfilled;
 use Modules\Kernel\Api\TheContestsLeft;
 use Modules\Kernel\Api\TheInstalledPlugins;
@@ -130,12 +132,14 @@ final readonly class APluginAsItArrives
             'installed' => [self::onTheWire()],
             'rehearsed' => false,
             'sources' => [['plugin' => 'tdarr', 'from' => 'tdarr', 'standing' => ['standing' => 'unreachable', 'why' => 'The catalogue did not answer']]],
+            'nonconforming' => [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => '2026-10-09T21:00:00Z']],
         ];
 
         if ($install !== null) {
             $data['install'] = $install;
             $data['agreement'] = $agreement;
             $data['sources'] = [];
+            $data['nonconforming'] = [];
         }
 
         return ['api_version' => 1, 'kind' => 'plugins', 'data' => $data];
@@ -338,6 +342,7 @@ final readonly class APluginAsItArrives
         return ThePlugins::listed(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(ASourceAsked::of('tdarr', HowItsSourceStands::unreachable('The catalogue did not answer'))),
+            TheAnswersOutOfContract::these(AnAnswerOutOfContract::of('tdarr', 'transcoding', 'queue', 'It answered with a field its contract does not have')),
         );
     }
 

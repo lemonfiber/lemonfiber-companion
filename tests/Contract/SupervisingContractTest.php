@@ -417,22 +417,21 @@ it('the forms are the ones the stack declares, and no profile is one of them', f
     }
 });
 
-it('forms that could not be read are a stack that did not answer, not one with none', function (): void {
-    // The forms did not arrive. Reading that as a stack that declares no
-    // forms would take every form control off the screen and say nothing
-    // about why; a stack that did not answer is the honest sentence.
+it('forms that did not arrive, or arrived unreadable, are an obstacle, not a stack with none', function (): void {
+    // Reading either as a stack that declares no forms would take every form
+    // control off the screen and say nothing about why.
     $table = [
-        'refused' => MockResponse::make('{"error":"gone"}', 500),
-        'a form with no id' => MockResponse::make((string) json_encode([
+        'refused' => [MockResponse::make('{"error":"gone"}', 500), KindOfObstacle::StackDidNotAnswer],
+        'a form with no id' => [MockResponse::make((string) json_encode([
             'api_version' => 1,
             'kind' => 'forms',
             'data' => ['forms' => [['name' => 'Library', 'description' => 'Serve what exists.', 'composable' => true]]],
-        ])),
+        ])), KindOfObstacle::AnswerCouldNotBeRead],
     ];
 
-    foreach ($table as $case => $forms) {
-        foreach (everyWayOfSupervising([$forms], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
-            expect(theFormsIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
+    foreach ($table as $case => [$forms, $kind]) {
+        foreach (everyWayOfSupervising([$forms], Obstacle::of($kind)) as $which => $make) {
+            expect(theFormsIn($make()))->toEqual($kind->value, sprintf('%s: %s', $case, $which));
         }
     }
 });
@@ -515,7 +514,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -544,7 +543,7 @@ it('tells a refused session from a stack that did not answer, where a verb could
     }
 });
 
-it('an answer this app cannot read is a stack that did not answer', function (): void {
+it('an answer this app cannot read is an answer it could not read', function (): void {
     // A service missing its state is the shape that matters: the adapter
     // refuses it, and the refusal has to reach the screen as an obstacle rather
     // than as a raise. A listing one row short is a service nobody can turn off
@@ -578,16 +577,16 @@ it('an answer this app cannot read is a stack that did not answer', function ():
         ]),
     );
 
-    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
-        expect(everythingRunningIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)) as $which => $make) {
+        expect(everythingRunningIn($make()))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 
-it('an acknowledgement with no name in it is a stack that did not answer', function (): void {
+it('an acknowledgement with no name in it is an answer it could not read', function (): void {
     // The state where an action was delivered and named nothing, reached through
     // the port. It must not be sent again, and there is no handle to ask after
     // it by —
-    // which reaches the screen as a stack that did not answer rather than as a
+    // which reaches the screen as an answer it could not read rather than as a
     // raise on a tap.
     $agreed = AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('sonarr'));
 
@@ -595,8 +594,8 @@ it('an acknowledgement with no name in it is a stack that did not answer', funct
         (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'up']]),
     );
 
-    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
-        expect(whatCameOfSaying($make(), $agreed))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)) as $which => $make) {
+        expect(whatCameOfSaying($make(), $agreed))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 
@@ -876,7 +875,7 @@ it('asking after a verb tells a refused session from a stack that is not answeri
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -886,11 +885,11 @@ it('asking after a verb tells a refused session from a stack that is not answeri
     }
 });
 
-it('a report this app cannot read is a stack that did not answer, never a shorter report', function (array $changed): void {
+it('a report this app cannot read is an answer it could not read, never a shorter report', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfARestart($changed)))]);
 
-    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 })->with([
     'no word on whether it was rehearsed' => [['rehearsed' => 'no']],
     'a condition this app has no word for' => [['condition' => 'fine']],

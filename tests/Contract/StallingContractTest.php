@@ -181,7 +181,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -191,7 +191,7 @@ it('tells a session that has ended from a stack that is not answering', function
     }
 });
 
-it('an answer this app cannot read is a stack that did not answer', function (): void {
+it('an answer this app cannot read is an answer it could not read', function (): void {
     // A row missing its stage is the shape that matters: the adapter refuses
     // it, and the refusal has to reach the screen as an obstacle rather than as
     // a raise. A listing one row short would read as one fewer thing stuck,
@@ -207,8 +207,8 @@ it('an answer this app cannot read is a stack that did not answer', function ():
         ]),
     );
 
-    foreach (everyWayOfAskingWhatStopped($answered, Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
-        expect(everythingStuckIn($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfAskingWhatStopped($answered, Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)) as $which => $make) {
+        expect(everythingStuckIn($make()))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 

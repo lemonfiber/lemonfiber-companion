@@ -195,8 +195,8 @@ it('comes away from asking with the obstacle rather than a job where the stack w
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -236,9 +236,9 @@ it('reads an offer that leaves the cost out altogether as saying nothing', funct
         ->toBe('Show.Season1|4000|seeding at 0.80||The copy in the downloads tree goes with it|stop-seeding-show-season1-4000');
 });
 
-it('an offer this app cannot read is a stack that did not answer, never a shorter offer', function (array $download, array $changed): void {
+it('an offer this app cannot read is an answer it could not read, never a shorter offer', function (array $download, array $changed): void {
     expect(whatTheOfferToLetGoSaid(aReleaserAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfLettingItGo($download, $changed))))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'a blank agreement' => [[], ['agreement' => ' ']],
     'no agreement' => [[], ['agreement' => null]],
@@ -253,9 +253,9 @@ it('an offer this app cannot read is a stack that did not answer, never a shorte
     'a seeding download with no ratio' => [['standing' => ['standing' => 'seeding']], []],
 ]);
 
-it('an answer that is not an offer at all is a stack that did not answer', function (): void {
+it('an answer that is not an offer at all is an answer it could not read', function (): void {
     expect(whatTheOfferToLetGoSaid(aReleaserAnswered(MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'stop-seeding', 'data' => 'nothing'])))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 });
 
 it('an offer still being worked out is its own answer', function (): void {
@@ -277,7 +277,7 @@ it('asking after an offer tells a refused session from a stack that is not answe
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -297,8 +297,8 @@ it('comes away from a refused yes with the obstacle rather than a job', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"another offer"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -319,9 +319,9 @@ it('reads what became of the download, and whether it was only rehearsed', funct
     'rehearsed' => [true, WhetherItWasRehearsed::Rehearsed],
 ]);
 
-it('a finished yes that does not say what became of the download is a stack that did not answer', function (?array $gone): void {
+it('a finished yes that does not say what became of the download is an answer it could not read', function (?array $gone): void {
     expect(whatBecameOfLettingItGo(aReleaserAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfLettingItGo(gone: $gone))))))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'said as nothing' => [null],
     'without saying whether it was rehearsed' => [['bytes' => 4_000, 'name' => 'Show.Season1']],
@@ -349,7 +349,7 @@ it('asking after stopping tells a refused session from a stack that is not answe
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"still held"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

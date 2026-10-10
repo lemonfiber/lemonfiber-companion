@@ -1,9 +1,10 @@
 @use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
 <x-wayfinding::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
-<x-operator::content :from-the-end="! $this->answer()->startsAtTheFirstError">
+<x-operator::content :scrolls="$this->answer()->startsAtTheFirstError ? HowTheColumnScrolls::FromTheTop : HowTheColumnScrolls::FromTheEnd">
     {{-- The lines from the first error on, one tap away at the top where a
          screen that opens at its end is not; and every line back, once they
          were narrowed. --}}

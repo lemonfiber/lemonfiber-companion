@@ -48,7 +48,7 @@ const THE_PLAYER = [
     'bridge/resources/android/DoorDataSource.kt',
     'bridge/resources/android/PlaybackService.kt',
     'bridge/resources/android/PlayerActivity.kt',
-    'bridge/resources/ios/DoorLoader.swift',
+    'bridge/resources/ios/DoorRelay.swift',
     'bridge/resources/ios/PlayerScreen.swift',
 ];
 
@@ -160,7 +160,7 @@ it('the player fetches nothing past the door', function (): void {
 
     expect($found)->toBe([], sprintf(
         "These fetch past the door:\n  %s\n\n"
-        . 'Every fetch goes through DoorDataSource on Android and DoorLoader on iOS, which '
+        . 'Every fetch goes through DoorDataSource on Android and DoorRelay on iOS, which '
         . 'admit only the certificate the core stated and only addresses at its door (N3-R14).',
         implode("\n  ", $found),
     ));
@@ -178,7 +178,7 @@ it('every source the player builds reads through the door', function (): void {
         ->and(substr_count($ios, 'AVURLAsset(url:'))
         ->toBeGreaterThan(0)
         ->toBe(substr_count($ios, 'AVURLAsset(url: handed)'))
-        ->and($ios)->toContain('resourceLoader.setDelegate(loader');
+        ->and($ios)->toContain('guard let source, let handed = relay.open(source.address)');
 });
 
 it('the player fetches the address the door admitted, and nothing parsed a second time', function (): void {
@@ -187,10 +187,14 @@ it('the player fetches the address the door admitted, and nothing parsed a secon
     // Fetching anything else, the text re-parsed or a redirect followed as the
     // session found it, reopens the gap between what was checked and what is
     // fetched.
-    $ios = (string) file_get_contents(Tree::at('bridge/resources/ios/DoorLoader.swift'));
+    $ios = (string) file_get_contents(Tree::at('bridge/resources/ios/DoorRelay.swift'));
+    $relay = (string) file_get_contents(Tree::at('bridge/resources/ios/RelayRule.swift'));
     $android = (string) file_get_contents(Tree::at('bridge/resources/android/DoorDataSource.kt'));
 
-    expect($ios)->toContain('guard let url = asked.door.admitted(address)')
+    expect($ios)->toContain('guard let url = rule.asked(request.target)')
+        ->and($ios)->toContain('URLRequest(url: url)')
+        ->and($relay)->toContain('guard let url = door.admitted(address)')
+        ->and($relay)->toContain('return door.admitted(')
         ->and($ios)->toContain('let admitted = asked.door.admitted(next.absoluteString)')
         ->and($ios)->toContain('followed.url = admitted')
         ->and($ios)->not->toContain('URL(string: address)')

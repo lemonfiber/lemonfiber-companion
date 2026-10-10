@@ -21,6 +21,7 @@ use Modules\Wayfinding\Api\WhoTheMenuIsFor;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\TheWhatsNewInTheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
+use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -136,7 +137,17 @@ it('names the control that opens the menu in the operator\'s language', function
         ->and(__('navigation.menu.open'))->toBe('Menu');
 });
 
-it('puts the menu control beside the back button on a screen opened on top of a tab, and not on a tab', function (): void {
+/**
+ * Whether a screen's top bar draws the platform's back control. Named for this file.
+ *
+ * The bar is hoisted into the screen's root, which carries it as `nav_back`.
+ */
+function drawsABackControl(NativeComponent $screen): bool
+{
+    return data_get(WhatTheDeviceWouldDraw::tree($screen), 'props.nav_back') === true;
+}
+
+it('draws the back control on a screen opened on top of a tab, with the menu control beside it, and neither on a tab', function (): void {
     $tab = aTabWithTheMenu();
     $opened = aScreenTheMenuOpens();
     $atTheTab = AStacksScreen::Updates->forTheStack(theStackWhoseMenuIsOpened()->id());
@@ -144,7 +155,9 @@ it('puts the menu control beside the back button on a screen opened on top of a 
     WhatTheRouterHolds::over($opened, AStacksScreen::Words->forTheStack(theStackWhoseMenuIsOpened()->id()), $atTheTab);
 
     expect($tab->drawerOverride()->isBesideBack())->toBeFalse()
-        ->and($opened->drawerOverride()->isBesideBack())->toBeTrue();
+        ->and(drawsABackControl($tab))->toBeFalse()
+        ->and($opened->drawerOverride()->isBesideBack())->toBeTrue()
+        ->and(drawsABackControl($opened))->toBeTrue();
 });
 
 it('draws the bar on a tab with that tab marked, and hides it on a screen the menu opens', function (): void {

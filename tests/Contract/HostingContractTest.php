@@ -285,7 +285,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -304,7 +304,7 @@ it('a listing this app cannot read is an obstacle, not a shorter list', function
         (string) json_encode(whatAHostingMachineSends('a-word-this-app-does-not-read')),
     )]);
 
-    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('an unsupported machine with nothing to do instead is an obstacle', function (): void {
@@ -316,7 +316,7 @@ it('an unsupported machine with nothing to do instead is an obstacle', function 
         (string) json_encode(whatAnUnsupportedMachineSends(saysWhatToDoInstead: false)),
     )]);
 
-    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(everythingKeptBy(new Keepers(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a machine with a payload the contract would accept', function (): void {
@@ -585,7 +585,7 @@ it('tells a refused session, and a stack that said nothing, from a refusal in wo
     $table = [
         [MockResponse::make('the session is not one', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -595,7 +595,7 @@ it('tells a refused session, and a stack that said nothing, from a refusal in wo
     }
 });
 
-it('an account of an act this app cannot read is a stack that did not answer', function (): void {
+it('an account of an act this app cannot read is an answer it could not read', function (): void {
     // Every one of these is refused rather than defaulted. A missing
     // `rehearsed` read as false is a rehearsal shown as a real install; a
     // missing standing is an install reported by nothing.
@@ -628,13 +628,13 @@ it('an account of an act this app cannot read is a stack that did not answer', f
     ];
 
     foreach ($spoiled as $which => $body) {
-        expect(whatTheAdapterMakesOf($body))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
+        expect(whatTheAdapterMakesOf($body))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 
 it('a reading with no account of an act is not taken for one', function (): void {
     // The listing on its own answers what is hosted, not what was done.
-    expect(whatTheAdapterMakesOf(whatAHostingMachineSends()))->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect(whatTheAdapterMakesOf(whatAHostingMachineSends()))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('stands in for a machine answering a handing over with payloads the contract would accept', function (): void {

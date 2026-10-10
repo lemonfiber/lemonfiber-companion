@@ -134,6 +134,8 @@ return [
         'nothing_at_the_address_action' => 'Ask whoever runs the house to set this phone up again.',
         'connection_refused' => 'The house is closed right now.',
         'connection_refused_action' => 'Ask whoever runs the house to open it again.',
+        'answer_unreadable' => 'The house can\'t be reached right now.',
+        'answer_unreadable_action' => 'Try again later. If it keeps happening, tell whoever runs the house.',
     ],
     'medium' => [
         'film' => 'Film',

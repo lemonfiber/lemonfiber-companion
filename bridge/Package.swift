@@ -37,7 +37,7 @@ let package = Package(
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
                 "ReorderableRenderer.swift",
-                "DoorLoader.swift",
+                "DoorRelay.swift",
                 "PlayerScreen.swift",
                 "PlayerFunctions.swift",
             ]
@@ -176,6 +176,11 @@ let package = Package(
             name: "ExtraSubtitlesTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/ExtraSubtitlesTests"
+        ),
+        .testTarget(
+            name: "RelayRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/RelayRuleTests"
         ),
     ]
 )

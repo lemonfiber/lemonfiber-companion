@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_map;
+
 use Closure;
 
 use function expect;
 use function implode;
 use function is_array;
 use function it;
+use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\ThePlugins;
@@ -139,6 +143,20 @@ it('reads every way a source can stand', function (): void {
     }
 });
 
+it('reads each answer out of contract against the plugin whose adapter gave it, and a listing carrying none as none', function (): void {
+    $plugins = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(null)['data']));
+    $answers = array_map(
+        static fn(AnAnswerOutOfContract $answer): string => sprintf('%s %s %s', $answer->capability(), $answer->operation(), $answer->why()),
+        iterator_to_array($plugins->answersOutOfContractOf(APluginAsItArrives::held()), preserve_keys: false),
+    );
+    $data = APluginAsItArrives::theAnswer(null)['data'];
+    $data = is_array($data) ? $data : [];
+    unset($data['nonconforming']);
+
+    expect($answers)->toBe(['transcoding queue It answered with a field its contract does not have'])
+        ->and(iterator_to_array(PluginInstalls::in(pluginsSaying($data))->answersOutOfContractOf(APluginAsItArrives::held()), preserve_keys: false))->toBe([]);
+});
+
 it('reads a listing that asked no source, and a record that keeps no recipe, as saying nothing of either', function (): void {
     $answer = APluginAsItArrives::theAnswer(null);
     $data = $answer['data'];
@@ -249,6 +267,9 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'an installed row that is not a table' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'installed' => ['tdarr']]), $unreadable],
         'a source row with no standing' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'sources' => [['plugin' => 'tdarr']]]), $unreadable],
         'a standing nobody reads' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'sources' => [['plugin' => 'tdarr', 'standing' => ['standing' => 'lost']]]]), $unreadable],
+        'an answer out of contract that is not a table' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'nonconforming' => ['tdarr']]), $unreadable],
+        'an answer out of contract saying nothing of why' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'nonconforming' => [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => ' ']]]), $unreadable],
+        'nonconforming that is not a list' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'nonconforming' => 'none']), $unreadable],
         'the standing a stack never says' => [anInstallAnswerWith(static fn(array $data): array => [...$data, 'sources' => [['plugin' => 'tdarr', 'standing' => ['standing' => 'not_said']]]]), $unreadable],
         'no plugin it would settle' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'would' => 'tdarr'])), $unreadable],
         'no word on whether it was recorded' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'recorded' => 'no'])), $unreadable],

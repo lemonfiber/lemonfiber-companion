@@ -36,6 +36,8 @@ return [
     'busy_action' => 'Er is niets veranderd. Probeer het opnieuw zodra het klaar is.',
     'not_on_this_stack' => 'Hiervoor heeft deze stack een nieuwere lemonfiber nodig.',
     'not_on_this_stack_action' => 'Er is niets aan gevraagd. Werk lemonfiber op de machine bij om dit te krijgen.',
+    'answer_unreadable' => 'Deze stack antwoordde op een manier die deze app niet kan lezen.',
+    'answer_unreadable_action' => 'Er is niets uit gelezen. Werk deze app bij, of lemonfiber op de machine.',
     'not_set_up' => 'Op deze stack moet eerst iets worden ingesteld voordat dit iets doet.',
     'go_to_updates' => 'Open Updates',
     'try_again' => 'Opnieuw proberen',

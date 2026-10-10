@@ -233,7 +233,7 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -243,7 +243,7 @@ it('tells a session that has ended from a stack that is not answering', function
     }
 });
 
-it('a line this app cannot read is a stack that did not answer', function (): void {
+it('a line this app cannot read is an answer it could not read', function (): void {
     // A line missing its stream. The adapter refuses it, and the refusal has to
     // reach the screen as an obstacle rather than as a raise — a window one
     // line short is worse than no window, because the missing line is the one
@@ -256,8 +256,8 @@ it('a line this app cannot read is a stack that did not answer', function (): vo
         ])),
     );
 
-    foreach (everyWayOfReadingAService($answered, Obstacle::of(KindOfObstacle::StackDidNotAnswer)) as $which => $make) {
-        expect(everyLineOf($make()))->toEqual(KindOfObstacle::StackDidNotAnswer->value, $which);
+    foreach (everyWayOfReadingAService($answered, Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)) as $which => $make) {
+        expect(everyLineOf($make()))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value, $which);
     }
 });
 

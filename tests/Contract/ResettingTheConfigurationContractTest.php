@@ -136,8 +136,8 @@ it('comes away from a preview the stack would not take on with the obstacle rath
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
         [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -158,8 +158,8 @@ it('comes away from a refused yes with the obstacle rather than a job', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
@@ -195,11 +195,11 @@ it('reads a preview that reverts nothing as exactly that', function (): void {
     expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toBe('previewed||');
 });
 
-it('a report this app cannot read is a stack that did not answer, never a shorter report', function (array $changed): void {
+it('a report this app cannot read is an answer it could not read, never a shorter report', function (array $changed): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(WhatAResetSays::envelope(confirmed: false, changed: $changed)))]);
 
-    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no word on whether it was carried out' => [['confirmed' => 'yes']],
     'no files' => [['reverted' => null]],
@@ -215,14 +215,14 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     'a connection with no name' => [['reverted_connections' => [' ']]],
 ]);
 
-it('a report missing a part altogether is a stack that did not answer, never a shorter report', function (string $missing): void {
+it('a report missing a part altogether is an answer it could not read, never a shorter report', function (string $missing): void {
     $envelope = WhatAResetSays::envelope(confirmed: false);
     $data = $envelope['data'];
     $envelope['data'] = is_array($data) ? array_diff_key($data, [$missing => true]) : [];
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($envelope))]);
 
-    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
+    expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with(['confirmed', 'reverted', 'reverted_connections']);
 
 it('a reset the stack refused is its refusal, in its words, with what it named', function (): void {
@@ -261,7 +261,7 @@ it('asking after a reset tells a refused session from a stack that is not answer
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
         [MockResponse::make('', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

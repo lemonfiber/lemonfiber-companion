@@ -318,7 +318,7 @@ it('an answer this app cannot read is the machine, not the session', function ()
     MockClient::global([MockResponse::make('not json at all')]);
 
     expect(whatStartingSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('a refused session while reading a handle is still a refused session', function (): void {
@@ -338,7 +338,7 @@ it('a handle that answers with something unreadable is the machine', function ()
     MockClient::global([MockResponse::make('not json at all')]);
 
     expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
-        ->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+        ->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 /** A yes against the listing both implementations answer with. */
@@ -588,7 +588,7 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
                 => new TheWordCarriedOut($why->kind()->value),
         )->said;
 
-    expect($said)->toEqual(KindOfObstacle::StackDidNotAnswer->value);
+    expect($said)->toEqual(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
 
 it('reading what was done can meet an obstacle of its own', function (): void {
@@ -596,7 +596,7 @@ it('reading what was done can meet an obstacle of its own', function (): void {
     // session ends underneath somebody.
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

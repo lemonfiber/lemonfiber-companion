@@ -349,7 +349,7 @@ it('reads a hand-edited configuration as edited, and every disposition as the st
 })->with(['shown', 'recorded', 'rehearsed', 'held', 'reapplied', 'would-reapply']);
 
 it('refuses a quality answer it cannot read rather than drawing part of one', function (string $field, mixed $value): void {
-    expect(howTheQualityReadsAsText(gradersAnswering(aQualityAnswerWith($field, $value))))->toBe('refused:no_answer');
+    expect(howTheQualityReadsAsText(gradersAnswering(aQualityAnswerWith($field, $value))))->toBe('refused:answer_unreadable');
 })->with([
     'a disposition the contract has not got' => ['disposition', 'mostly'],
     'a disposition that is not a word' => ['disposition', 3],
@@ -364,12 +364,12 @@ it('refuses a quality answer it cannot read rather than drawing part of one', fu
 ]);
 
 it('refuses a quality answer missing a field the contract requires', function (string $field): void {
-    expect(howTheQualityReadsAsText(gradersAnswering(aQualityAnswerWithout($field))))->toBe('refused:no_answer');
+    expect(howTheQualityReadsAsText(gradersAnswering(aQualityAnswerWithout($field))))->toBe('refused:answer_unreadable');
 })->with(['choices', 'disposition', 'customised']);
 
 it('refuses a quality answer whose data is not a table', function (): void {
     expect(howTheQualityReadsAsText(gradersAnswering(['api_version' => 1, 'kind' => 'quality', 'data' => 'Balanced'])))
-        ->toBe('refused:no_answer');
+        ->toBe('refused:answer_unreadable');
 });
 
 it('says the credential was refused when the stack refuses it', function (): void {
@@ -416,7 +416,7 @@ it('reads every way asking the music service can have gone', function (?array $o
 ]);
 
 it('refuses a choice answer it cannot read rather than drawing part of one', function (mixed $body): void {
-    expect(aChoiceAnsweredWith($body))->toBe('refused:no_answer');
+    expect(aChoiceAnsweredWith($body))->toBe('refused:answer_unreadable');
 })->with([
     'an outcome the contract has not got' => [whatAStackSaysOfAFormatChosen(['state' => 'mostly'])],
     'a failure with no reason' => [whatAStackSaysOfAFormatChosen(['state' => 'failed'])],

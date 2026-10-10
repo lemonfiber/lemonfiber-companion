@@ -251,7 +251,7 @@ it('a stance the contract has not got is refused rather than guessed at', functi
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange(stance: 'mostly'))]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('a cost the contract has not got is refused rather than read as cheap', function (): void {
@@ -260,21 +260,21 @@ it('a cost the contract has not got is refused rather than read as cheap', funct
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(whatAStackSendsAboutAChange(cost: 'free'))]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('an answer carrying no review at all is refused rather than read as no change', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(aChangeAnsweredWithNoReview())]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('an answer whose data is not a table is refused', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'config', 'data' => 'a review'])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('a blocked change carries the reason and an applied one carries none', function (): void {
@@ -350,7 +350,7 @@ it('a `from` that is not text is refused rather than printed', function (): void
         ],
     ])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('a `from` that is explicitly null is a setting holding nothing yet', function (): void {
@@ -389,7 +389,7 @@ it('a change that is not a table is refused', function (): void {
         ],
     ])]);
 
-    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:no_answer');
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))->toBe('refused:answer_unreadable');
 });
 
 it('a change naming no setting is refused rather than drawn nameless', function (): void {

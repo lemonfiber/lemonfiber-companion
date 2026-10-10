@@ -237,6 +237,10 @@ final class SignIntoAStack extends NativeComponent
      * the glass for as long as the screen is up; after a refusal it is a
      * password the next tap would offer again unchanged, which is a second
      * attempt the operator did not decide to make.
+     *
+     * A member who got in is taken straight to Home, in place of every screen
+     * that led here: their application has no report to show and no menu, and
+     * the way back from Home is not to the password they just typed.
      */
     public function offer(): void
     {
@@ -244,6 +248,10 @@ final class SignIntoAStack extends NativeComponent
 
         $this->went = $named === '' ? $this->asTheOperator() : $this->asAMember(AMembersName::of($named));
         $this->theirName = $this->went->isSignedIn() ? '' : $this->theirName;
+
+        if ($this->went->isSignedIn() && $this->given === WhichSurfaceTheyAreGiven::TheirHome) {
+            $this->replaceTheWholeStack($this->onwardsTo());
+        }
     }
 
     /**
