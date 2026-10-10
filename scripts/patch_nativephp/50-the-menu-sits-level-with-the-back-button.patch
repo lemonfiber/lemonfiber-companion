@@ -1,0 +1,8 @@
+The menu control sits level with the back button and the title, at the top of
+the bar, rather than six points below them.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift
+@@ -209 +209 @@
+-                    .padding(.top, windowSafeAreaTop + 6)
++                    .padding(.top, windowSafeAreaTop)
