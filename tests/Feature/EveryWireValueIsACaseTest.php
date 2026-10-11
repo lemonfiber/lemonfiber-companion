@@ -26,6 +26,7 @@ use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
@@ -39,6 +40,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatALineIsAbout;
+use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -57,6 +59,7 @@ use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -610,6 +613,27 @@ it('everything a download client can say it was doing has a case, beside the one
 
     expect($words)->not->toBe([], 'no was union was found in the generated envelope');
     expect(TheWireUnions::valuesOf($said))->toBe($words);
+});
+
+it('every kind a member\'s search names a title has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AskableEnvelope'), 'kind');
+
+    expect($words)->not->toBe([], 'no kind union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(KindOfTitle::cases()))->toBe($words);
+});
+
+it('everywhere a found title can stand has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AskableEnvelope'), 'stands');
+
+    expect($words)->not->toBe([], 'no stands union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhereAFoundTitleStands::cases()))->toBe($words);
+});
+
+it('everything a member\'s ask can become has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AskedEnvelope'), 'outcome');
+
+    expect($words)->not->toBe([], 'no outcome union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatAnAskBecame::cases()))->toBe($words);
 });
 
 it('everywhere a front door can stand has a case', function (): void {

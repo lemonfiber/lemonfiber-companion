@@ -6,7 +6,7 @@ Profile, in a bottom bar, and no side menu.
 | Tab | Screen | What it draws |
 |---|---|---|
 | Home | `WhatYouCanWatch` | what is theirs, then the newest title and the shelf as rows of posters, which is where a member lands |
-| Search | `LookingForATitle` | that searching from the phone is coming, in household words |
+| Search | `LookingForATitle` | titles the house does not hold yet, found by the core under the member's limits, a page at a time as they scroll; a title opens `AskingForATitle`, which rehearses the ask, shows the core's sentence on approval and allowance, and asks once under one key |
 | Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
 | Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, the languages titles play in (kept by `watching`), and taking the house off the phone |
 

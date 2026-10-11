@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal;
 
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -35,5 +36,11 @@ final readonly class WhereTheHouseIs
     public function title(HoldingId $title): string
     {
         return AStacksScreen::Title->forTheStacksTitle($this->stack, $title);
+    }
+
+    /** One title a member's search found, on this house. */
+    public function found(AFoundTitle $title): string
+    {
+        return AStacksScreen::Found->forTheStacksFoundTitle($this->stack, $title);
     }
 }

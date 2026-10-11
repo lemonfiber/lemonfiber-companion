@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Sdk\Api\Fields\AdoptionField;
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
+use Modules\Sdk\Api\Fields\AskableField;
 use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\BundleField;
@@ -127,6 +128,7 @@ function everyFieldNamedOnTheWire(): array
         ...StatusField::cases(),
         ...StopSeedingField::cases(),
         ...PausingField::cases(),
+        ...AskableField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
         ...SubstitutionField::cases(),

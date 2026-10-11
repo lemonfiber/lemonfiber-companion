@@ -221,6 +221,23 @@ final readonly class WhatARefusalMeant
             // words are the answer, and every code is written out so that one the
             // contract adds is decided here rather than swept in unread.
             RefusalCode::NoSuchAction,
+            // A member's search, an ask and a found title's poster refused:
+            // the words searched for, the title, their allowance, the house's
+            // room or its request service. Every one carries a household
+            // sentence, and that sentence is what the member is shown.
+            RefusalCode::NotASearch,
+            RefusalCode::NotAPlace,
+            RefusalCode::NotAskable,
+            RefusalCode::CannotFetch,
+            RefusalCode::AlreadyHere,
+            RefusalCode::NothingLeft,
+            RefusalCode::NoRoom,
+            RefusalCode::NotWorking,
+            RefusalCode::NotSetUp,
+            RefusalCode::NotItsSeason,
+            RefusalCode::NobodyAsking,
+            RefusalCode::NotAMember,
+            RefusalCode::NoPicture,
             RefusalCode::MissingArgument,
             RefusalCode::UnrecognisedArgument,
             RefusalCode::UnwantedArgument,

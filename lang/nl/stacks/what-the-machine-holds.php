@@ -36,6 +36,7 @@ return [
             'updates' => 'Kijken of er een nieuwere lemonfiber is',
             'plugin-source' => 'Een plugin ophalen bij de bron',
             'catalogue' => 'Een plugin opzoeken in de catalogus',
+            'posters' => 'Posters ophalen voor wat een huisgenoot zocht',
         ],
         'allowed' => [
             'allowed' => 'Toegestaan door de instellingen van deze machine',

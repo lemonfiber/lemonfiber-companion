@@ -225,9 +225,9 @@ final readonly class Walkthroughs
         $handover = self::table($data[WalkthroughField::Handover->value], WalkthroughField::Handover);
         $next = [];
 
-        foreach (self::texts($handover, WalkthroughField::Next) as $said) {
+        foreach (self::texts($handover, WireField::Next) as $said) {
             $next[] = WhatToDoNext::tryFrom($said)
-                ?? throw WalkthroughIsUnreadable::word(WalkthroughField::Next, $said, ...array_map(static fn(WhatToDoNext $case): string => $case->value, WhatToDoNext::cases()));
+                ?? throw WalkthroughIsUnreadable::word(WireField::Next, $said, ...array_map(static fn(WhatToDoNext $case): string => $case->value, WhatToDoNext::cases()));
         }
 
         return WhatComesNext::of(...$next);

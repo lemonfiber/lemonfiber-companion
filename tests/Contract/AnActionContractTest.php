@@ -7,6 +7,7 @@ use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AnAction;
+use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
@@ -59,7 +60,7 @@ function everyActionNamed(): array
 {
     return [
         ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
-        ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
+        ...AskingForIt::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none()),

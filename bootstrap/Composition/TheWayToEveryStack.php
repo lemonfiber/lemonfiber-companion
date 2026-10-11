@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
+use Modules\Kernel\Api\AskingForTitles;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingQuality;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ExtendingTheStack;
+use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
@@ -77,6 +79,7 @@ use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Assessors;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
@@ -93,6 +96,7 @@ use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
+use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Grantors;
@@ -364,6 +368,8 @@ final class TheWayToEveryStack extends ServiceProvider
         // bound for the same reason.
         $this->app->bind(StoppingSeeding::class, Releasers::class);
         $this->app->bind(PausingDownloads::class, Pausers::class);
+        $this->app->bind(FindingTitles::class, Finders::class);
+        $this->app->bind(AskingForTitles::class, Askers::class);
 
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.

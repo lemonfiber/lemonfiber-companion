@@ -5,10 +5,13 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
+use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
@@ -77,6 +80,7 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
         $screen->setParams($case->alsoNeedsAService()
             ? ['stack' => $stack, 'service' => whatTheSecondSegmentNames($case)]
             : ['stack' => $stack]);
+        $screen->setData(whatTheRoadToItCarries($case));
 
         $drawn[$case->name] = WhatASettledScreenDraws::of($screen);
     }
@@ -94,6 +98,24 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
 function whatTheSecondSegmentNames(AStacksScreen $case): string
 {
     return $case === AStacksScreen::Downloads ? WhatToDoWithTheDownloads::Pause->value : 'gluetun';
+}
+
+/**
+ * What the road to a screen hands it besides its path, where it is only ever reached that way.
+ *
+ * A title a member\'s search found is opened from its row, which carries what
+ * the search said of it: a film anybody may ask for, here.
+ *
+ * @return array<string, string>
+ */
+function whatTheRoadToItCarries(AStacksScreen $case): array
+{
+    return $case === AStacksScreen::Found ? [
+        WhatAFoundTitleIsOpenedWith::Kind->value => KindOfTitle::Film->value,
+        WhatAFoundTitleIsOpenedWith::Title->value => 'Dune',
+        WhatAFoundTitleIsOpenedWith::Year->value => '2021',
+        WhatAFoundTitleIsOpenedWith::Stands->value => WhereAFoundTitleStands::Askable->value,
+    ] : [];
 }
 
 /**
@@ -342,9 +364,7 @@ const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone', 'Search', 'Profile', 'Title'
  *
  * @var array<string, string> the screen's name => why the bar is its only way off
  */
-const LEFT_BY_THE_BAR_ALONE = [
-    'Search' => 'searching from the phone is coming, so the tab says so and the member leaves it by another tab',
-];
+const LEFT_BY_THE_BAR_ALONE = [];
 
 it('draws a screen that asks its machine nothing the same against every machine, and never what stood in the way', function (): void {
     withNoStackRunning();

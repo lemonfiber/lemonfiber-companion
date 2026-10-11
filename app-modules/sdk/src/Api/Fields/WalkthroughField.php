@@ -38,9 +38,6 @@ enum WalkthroughField: string implements NamesAWireField
     /** Where a finished walkthrough leaves the operator. */
     case Handover = 'handover';
 
-    /** What to do next, in order, under the handover. */
-    case Next = 'next';
-
     /**
      * What the services involved were saying when it stopped.
      *

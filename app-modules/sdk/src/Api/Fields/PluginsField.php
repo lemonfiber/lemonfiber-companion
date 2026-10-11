@@ -47,9 +47,6 @@ enum PluginsField: string implements NamesAWireField
     /** The adapter of lemonfiber's a call reaches its destination through. */
     case Adapter = 'adapter';
 
-    /** What approving one value's carriage is written as. */
-    case Approval = 'approval';
-
     /** Why a value is released away from the service it was read from. */
     case Release = 'release';
 

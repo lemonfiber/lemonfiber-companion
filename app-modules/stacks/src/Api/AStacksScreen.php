@@ -6,6 +6,7 @@ namespace Modules\Stacks\Api;
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
@@ -140,8 +141,17 @@ enum AStacksScreen: string
      */
     case Title = '/stacks/{stack}/watch/{service}';
 
-    /** The member's Search tab, which says that searching from the phone is coming. */
+    /** The member's Search tab: titles the house does not hold yet, found by the core under their limits. */
     case Search = '/stacks/{stack}/search';
+
+    /**
+     * One title a member's search found, with what asking for it would come to and the ask.
+     *
+     * Under `found` because it is reached only from a search: the second
+     * segment is the id the search listed it under, and the rest of what the
+     * search said of it is carried along.
+     */
+    case Found = '/stacks/{stack}/found/{service}';
 
     /** The member's own corner of the app: changing house, the phone's settings and taking the house off the phone. */
     case Profile = '/stacks/{stack}/profile';
@@ -420,6 +430,20 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->named())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one title a member's search found on one machine.
+     *
+     * Encoded for {@see self::forTheStacksTitle()}'s reason.
+     */
+    public function forTheStacksFoundTitle(StackId $stack, AFoundTitle $title): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->id())], $this->value);
     }
 
     /**
