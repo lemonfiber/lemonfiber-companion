@@ -43,10 +43,4 @@ final readonly class WhatAskingShows
     {
         return $this->isSignedIn && ! $this->stopped instanceof WhatStoppedAMember;
     }
-
-    /** Whether this is what an ask became, rather than a rehearsal of it. */
-    public function wasAsked(): bool
-    {
-        return $this->became !== '';
-    }
 }

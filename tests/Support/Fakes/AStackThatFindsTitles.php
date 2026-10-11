@@ -37,6 +37,12 @@ final class AStackThatFindsTitles implements FindingTitles
         return new self(array_values(array_map(HowASearchWent::found(...), $pages)));
     }
 
+    /** A stack answering each search with the next of these answers, a page or an obstacle. */
+    public static function answering(HowASearchWent ...$answers): self
+    {
+        return new self(array_values($answers));
+    }
+
     /** A stack answering every search with this obstacle. */
     public static function met(Obstacle $why): self
     {

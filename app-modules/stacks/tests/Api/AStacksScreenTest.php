@@ -9,15 +9,19 @@ use function it;
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
+use Modules\Kernel\Api\WhenItCameOut;
+use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -122,6 +126,10 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
     expect(fn(): string => AStacksScreen::Health->forTheStacksTitle(
         StackId::rememberedAs(A_MACHINE),
         HoldingId::called('a1'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksFoundTitle(
+        StackId::rememberedAs(A_MACHINE),
+        AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
     expect(fn(): string => AStacksScreen::Health->forTheStacksItem(
         StackId::rememberedAs(A_MACHINE),

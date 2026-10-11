@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAnAskWent;
+use Modules\Kernel\Api\HowASearchWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Nonce;
@@ -253,4 +254,44 @@ it('opened with nothing carried, says to open it from Search and asks nothing', 
 
     expect(WhatTheDeviceWouldDraw::by($page)->said())->toContain(__('household.found.from_search'))
         ->and($asking->rehearsed())->toBe([]);
+});
+
+it('keeps the titles already shown and draws what stopped the next page beneath them', function (): void {
+    $screen = theSearchTab(AStackThatFindsTitles::answering(HowASearchWent::found(aFirstPage()), HowASearchWent::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $screen->typed = 'dune';
+    $screen->search();
+    $screen->more();
+
+    expect(array_map(static fn(AFoundTitleAsShown $row): string => $row->titled, $screen->answer()->rows))->toBe(['Dune', 'Dune: Prophecy'])
+        ->and($screen->answer()->stopped?->met)->toBe(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())
+        ->and($screen->answer()->hasMore())->toBeFalse();
+});
+
+it('opened with a blank title carried, says to open it from Search, and asks nothing when told to ask', function (): void {
+    $asking = AStackThatTakesAsks::answering(aRehearsalSaid('unused'), aRehearsalSaid('unused'));
+    $page = theFoundPage($asking, dune(), carried: false);
+    $page->setData([
+        WhatAFoundTitleIsOpenedWith::Kind->value => KindOfTitle::Film->value,
+        WhatAFoundTitleIsOpenedWith::Title->value => '  ',
+        WhatAFoundTitleIsOpenedWith::Year->value => '',
+        WhatAFoundTitleIsOpenedWith::Stands->value => WhereAFoundTitleStands::Askable->value,
+    ]);
+
+    $page->ask();
+
+    expect($page->title())->toBeNull()
+        ->and($page->shown())->toBeNull()
+        ->and($asking->asked())->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(__('household.found.from_search'));
+});
+
+it('rehearses again when asked to check again', function (): void {
+    $asking = AStackThatTakesAsks::answering(aRehearsalSaid('Asks wait for a yes.'), aRehearsalSaid('unused'));
+    $page = theFoundPage($asking, dune());
+    $page->rehearsal();
+
+    $page->askAgain();
+    $page->rehearsal();
+
+    expect($asking->rehearsed())->toHaveCount(2);
 });
