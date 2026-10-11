@@ -79,6 +79,8 @@ func theAppDrawsFromOneStore() {
     ArtworkHeld.shared.letGoOfEvery()
 
     #expect(ArtworkHeld.shared.hold(key: aKey, stack: "attic", bytes: bytes(10)))
-    #expect(!ArtworkHeld.shared.hold(key: anotherKey, stack: "attic", bytes: bytes(ArtworkHeld.mostBytesOfOne + 1)))
+    #expect(
+        !ArtworkHeld.shared.hold(
+            key: anotherKey, stack: "attic", bytes: bytes(ArtworkHeld.mostBytesOfOne + 1)))
     #expect(ArtworkHeld.shared.letGoOfEvery() == [aKey])
 }

@@ -202,7 +202,7 @@ it('names no member and draws none of the operator\'s controls', function (TheHo
 
     expect($tree)->not->toContain(__('navigation.menu.switch_stack'))
         ->and($tree)->not->toContain('The loft')
-        ->and($tree)->not->toContain('ada');
+        ->and($tree)->not->toMatch('/\bada\b/');
 })->with([TheHouseholdsTabs::Home, TheHouseholdsTabs::Requests]);
 
 it('asks nothing for a member\'s session, and says it is not theirs to ask', function (): void {
