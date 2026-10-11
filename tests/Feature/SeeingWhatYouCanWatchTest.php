@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
+use Modules\Household\Internal\ThePicturesItDraws;
+use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
+use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Artwork;
+use Modules\Kernel\Api\ArtworkKey;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
@@ -38,8 +44,11 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\AShelfThatWasRead;
+use Tests\Support\Fakes\AStackWithPosters;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -86,6 +95,7 @@ function theShelfScreen(
     ?string $named = null,
     ?AppsSettingsThatOpen $settings = null,
     ?AMemberWhoIsOwed $owing = null,
+    ?ThePicturesItDraws $pictures = null,
 ): WhatYouCanWatch {
     $stack = theStackAShelfIsReadFrom();
     $keychain ??= AKeychainInMemory::working();
@@ -98,7 +108,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatYouCanWatch($watching, $pictures ?? ThePicturesOnScreen::none(), $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -183,7 +193,7 @@ it('draws the newest title in the house across the screen, with Play and More', 
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $hero = array_search(__('household.hero.reads', ['reads' => 'A film, Film, 1999']), $drawn, strict: true);
 
-    expect($screen->answer()->hero)->toBe($screen->answer()->rows[0]->posters[0])
+    expect($screen->answer()->hero)->toEqual($screen->answer()->rows[0]->posters[0])
         ->and($hero)->toBeInt()
         ->and(array_slice($drawn, (int) $hero, 5))->toBe([
             __('household.hero.reads', ['reads' => 'A film, Film, 1999']),
@@ -554,6 +564,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
     // stack up under whatever casting produced rather than under nothing.
     $screen = new WhatYouCanWatch(
         AShelfThatWasRead::holding(aShelfOfThree()),
+        ThePicturesOnScreen::none(),
         AMemberWhoIsOwed::owedNothing(),
         AKeychainInMemory::working(),
         TheTitlesOnScreen::over(AShelfThatWasRead::holding(aShelfOfThree()), AKeychainInMemory::working()),
@@ -653,4 +664,53 @@ it('offers a member the app\'s settings where the local network was refused, and
 
     expect($settings->timesOpened())->toBe(1)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.settings_would_not_open'));
+});
+
+it('draws the hero\'s backdrop and the front of each row\'s posters from what the phone holds, asking for each poster once', function (): void {
+    $films = array_map(static fn(int $n): Holding => Holding::of(HoldingId::called(sprintf('f%d', $n)), sprintf('Film %d', $n), Medium::Film, WhenItCameOut::in(2000 + $n)), range(1, WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2));
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $shown = theShelfScreen(AShelfThatWasRead::holding(Shelf::of(...$films, ...[Holding::of(HoldingId::called('s1'), 'A series', Medium::Series, WhenItCameOut::unstated())])), pictures: new ThePicturesItDraws($held, $posters))->answer();
+    $pictured = static fn(WhatAShelfRowSays $row): array => array_keys(array_filter($row->posters, static fn(WhatOnePosterSays $poster): bool => $poster->pictured !== ''));
+    $front = range(0, WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW - 1);
+
+    expect($shown->hero?->pictured)->toStartWith(ArtworkKey::SCHEME)
+        ->and($pictured($shown->rows[0]))->toBe($front)
+        ->and($shown->rows[0]->posters)->toHaveCount(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 3)
+        ->and($pictured($shown->rows[1]))->toBe($front)
+        ->and($pictured($shown->rows[2]))->toBe([0])
+        ->and($shown->hero?->pictured)->not->toBe($shown->rows[0]->posters[0]->pictured)
+        ->and($posters->asked())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2)
+        ->and($held->howMany())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2);
+});
+
+it('draws the shelf\'s pictures again once back on view, after the lock let go of every one', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), pictures: new ThePicturesItDraws($held, $posters));
+    $screen->answer();
+    $before = $held->howMany();
+
+    $held->letGoOf(theStackAShelfIsReadFrom()->id());
+    $screen->onResume();
+
+    expect($held->howMany())->toBe($before)
+        ->and($posters->asked())->toBe(2 * $before)
+        ->and($screen->answer()->hero?->pictured)->toStartWith(ArtworkKey::SCHEME);
+});
+
+it('leaves a Home that was never drawn, or whose session has ended, as it was when back on view', function (): void {
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $unread = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters));
+    $keychain = AKeychainInMemory::working();
+    $ended = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), keychain: $keychain, pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters));
+    $ended->answer();
+    $asked = $posters->asked();
+    $keychain->forget(theStackAShelfIsReadFrom()->id());
+
+    $unread->onResume();
+    $ended->onResume();
+
+    expect($unread->answered)->toBeNull()
+        ->and($posters->asked())->toBe($asked);
 });

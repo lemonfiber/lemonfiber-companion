@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
@@ -52,6 +53,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\GrantsKeptInMemory;
@@ -111,6 +113,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake pairings' => StacksInMemory::working(),
         'the platform keychain' => new PlatformKeychain(APlatformStore::working()),
         'the fake keychain' => AKeychainInMemory::working(),
+        'the keychain letting go of artwork' => new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::working()), ArtworkHeldInMemory::working()),
         'the readings' => new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty()),
         'the upkeep' => new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty()),
         'what it runs' => WhatThePhoneKeeps::noListingYet(),
@@ -163,7 +166,7 @@ function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
         return;
     }
 
-    if ($keeper instanceof PlatformKeychain || $keeper instanceof AKeychainInMemory) {
+    if ($keeper instanceof PlatformKeychain || $keeper instanceof AKeychainInMemory || $keeper instanceof ArtworkGoesWithTheSession) {
         $keeper->keep($stack->id(), Session::of('a-session'), Whose::theOperator());
 
         return;
@@ -252,6 +255,7 @@ it('says it may still keep something where its store cannot be read', function (
     foreach ([
         'the platform pairings' => new PlatformStacks(APlatformStore::refusing()),
         'the platform keychain' => new PlatformKeychain(APlatformStore::refusing()),
+        'the keychain letting go of artwork' => new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::refusing()), ArtworkHeldInMemory::working()),
         'the platform words' => new PlatformStandings(APlatformStore::refusing()),
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),

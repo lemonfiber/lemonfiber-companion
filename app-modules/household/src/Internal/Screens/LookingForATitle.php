@@ -8,7 +8,9 @@ use Closure;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatTheSearchShows;
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\HowASearchWent;
@@ -27,6 +29,7 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+use Override;
 
 /**
  * The member's Search tab: titles the house does not hold yet, found by the core under their limits.
@@ -65,6 +68,7 @@ final class LookingForATitle extends NativeComponent
 
     public function __construct(
         private readonly FindingTitles $finding,
+        private readonly ThePicturesItDraws $pictures,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -115,6 +119,29 @@ final class LookingForATitle extends NativeComponent
         return AStacksScreen::SignIn->forTheStack($this->stack()->id());
     }
 
+    /** Back on view, as after the lock let go of every picture: draw each title's poster again. */
+    #[Override]
+    public function onResume(): void
+    {
+        if (! $this->shown instanceof WhatTheSearchShows) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $shown = $this->shown;
+
+        $this->shown = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatTheSearchShows => $this->pictured($shown, $stack, $session),
+            notHeld: static fn(): WhatTheSearchShows => $shown,
+        );
+    }
+
+    /** What the search shows, each title drawn with its poster. */
+    private function pictured(WhatTheSearchShows $shown, Stack $stack, Session $session): WhatTheSearchShows
+    {
+        return $shown->pictured(fn(AFoundTitle $title): string => $this->pictures->ofAFoundTitle($stack, $session, $title));
+    }
+
     /**
      * Resume the session, ask the core on it, and read what came back.
      *
@@ -126,7 +153,7 @@ final class LookingForATitle extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheSearchShows => $asking($stack, $session)->either(
-                found: static fn(WhatASearchFound $page): WhatTheSearchShows => new HowAFoundTitleReads()->found($page),
+                found: fn(WhatASearchFound $page): WhatTheSearchShows => $this->pictured(new HowAFoundTitleReads()->found($page), $stack, $session),
                 refused: function (Obstacle $why) use ($stack): WhatTheSearchShows {
                     $this->letGoOfTheSession($why, $stack);
 

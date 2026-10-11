@@ -18,6 +18,7 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\JobStanding;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
+use Lemonfiber\Sdk\Picture;
 use Lemonfiber\Sdk\Repair;
 use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Session;
@@ -133,6 +134,57 @@ final readonly class GatedClient
     public function logs(Logs $asked): LogWindow
     {
         return $this->clients->towards($this->stack, $this->session, Ability::of(Api::LOGS_ENDPOINT))->logs($asked);
+    }
+
+    /**
+     * The poster of a title the house holds, through the gate the core declares it under.
+     *
+     * @param array<string, scalar> $query
+     *
+     * @throws ApiVersionMismatch
+     * @throws ConfigurationProblem
+     * @throws RequestFailed
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function poster(string $id, array $query = []): Picture
+    {
+        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::POSTER_ENDPOINT))->poster($id, $query);
+    }
+
+    /**
+     * The backdrop of a title the house holds, through the gate the core declares it under.
+     *
+     * @param array<string, scalar> $query
+     *
+     * @throws ApiVersionMismatch
+     * @throws ConfigurationProblem
+     * @throws RequestFailed
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function backdrop(string $id, array $query = []): Picture
+    {
+        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::BACKDROP_ENDPOINT))->backdrop($id, $query);
+    }
+
+    /**
+     * The poster of a title a member's search offered, through the gate the core declares it under.
+     *
+     * @param array<string, scalar> $query
+     *
+     * @throws ApiVersionMismatch
+     * @throws ConfigurationProblem
+     * @throws RequestFailed
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function askablePoster(string $id, array $query = []): Picture
+    {
+        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::ASKABLE_POSTER_ENDPOINT))->askablePoster($id, $query);
     }
 
     /**

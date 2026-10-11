@@ -60,6 +60,7 @@
                 :goes="$this->goes()->found($row->found)"
                 :answers-to="__('household.search.open_named', ['title' => $row->titled])"
                 :carries="$row->carries"
+                :image="$row->pictured"
             />
         @empty
             {{-- Nothing to list: what there is to say is said above. --}}

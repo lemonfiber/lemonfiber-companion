@@ -101,6 +101,7 @@ enum TheLock {
             LemonfiberFunctions.refresh()
 
             if moved.now.held && !moved.was.held {
+                ArtworkImages.letGoOfEvery()
                 wake()
             }
         }

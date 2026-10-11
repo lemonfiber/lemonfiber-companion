@@ -1,0 +1,49 @@
+An image whose source is `lemonfiber-art:<key>` is drawn from the artwork the
+app holds in memory (`ArtworkImages`), never fetched: `AsyncImage` loads
+through `URLSession.shared`, which keeps what it loads in `URLCache`, cannot
+carry a session's credential and cannot pin a stack's certificate. A key the
+app no longer holds draws nothing, so what is behind the image shows, which is
+the lettered poster.
+
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUIImageSource.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUIImageSource.swift
+@@ -17 +17,3 @@
+     case remote(url: URL)
++    /// Artwork the app holds in memory, under its key.
++    case held(key: String)
+@@ -34,3 +36,6 @@
+         if src.isEmpty {
+             return .unresolvable
+         }
++        if src.hasPrefix(ArtworkHeld.scheme) {
++            return .held(key: src)
++        }
+@@ -130,8 +135,16 @@
+         case .remote(let url):
+             AsyncImage(url: url) { image in
+                 image
+                     .resizable()
+                     .scaledToFill()
+             } placeholder: {
+                 placeholder()
+             }
++        case .held(let key):
++            if let uiImage = ArtworkImages.image(for: key) {
++                Image(uiImage: uiImage)
++                    .resizable()
++                    .scaledToFill()
++            } else {
++                placeholder()
++            }
+--- a/vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift
++++ b/vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift
+@@ -204,3 +204,9 @@
++        case .held(let key):
++            if let uiImage = ArtworkImages.image(for: key) {
++                tinted(Image(uiImage: uiImage), contentMode: contentMode, tintArgb: tintArgb, cornerRadius: cornerRadius)
++            } else {
++                Color.clear
++            }
+         case .unresolvable:
+             Color.clear
+         }

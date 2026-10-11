@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEpisode;
+use Modules\Kernel\Api\Artwork;
+use Modules\Kernel\Api\ArtworkKey;
 use Modules\Kernel\Api\ASeason;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\Episodes;
@@ -12,6 +15,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Genres;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\HowLongItRuns;
 use Modules\Kernel\Api\ItsDetails;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -37,8 +41,11 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\AShelfThatWasRead;
+use Tests\Support\Fakes\AStackWithPosters;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -92,7 +99,7 @@ function aSeriesInFull(): ATitle
 }
 
 /** The title's screen at the title the route names, over a fake, signed in as a member unless a test says otherwise. */
-function theTitleScreen(AShelfThatWasRead $watching, bool $signedIn = true): WhatThisTitleIs
+function theTitleScreen(AShelfThatWasRead $watching, bool $signedIn = true, ?ThePicturesItDraws $pictures = null): WhatThisTitleIs
 {
     $stack = theStackATitleIsOn();
     $keychain = AKeychainInMemory::working();
@@ -101,7 +108,7 @@ function theTitleScreen(AShelfThatWasRead $watching, bool $signedIn = true): Wha
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::member('ada'));
     }
 
-    $screen = new WhatThisTitleIs($watching, $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new WhatThisTitleIs($watching, $pictures ?? ThePicturesOnScreen::none(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
 
     return $screen;
@@ -243,4 +250,32 @@ it('offers to sign in again where the core refused the session', function (): vo
 
     expect($drawn->said())->toContain(__('household.signed_out'))
         ->and($drawn->offers())->toBe([__('connection.sign_in')]);
+});
+
+it('draws the title\'s poster from what the phone holds, and letters it where the core has none', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
+
+    expect(theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters))->title()->title?->poster->pictured)->toStartWith(ArtworkKey::SCHEME)
+        ->and($held->howMany())->toBe(1)
+        ->and(theTitleScreen($watching)->title()->title?->poster->pictured)->toBe('');
+});
+
+it('draws the title\'s poster again once back on view, after the lock let go of it, and leaves an unread page as it was', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
+    $screen = theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters));
+    $unread = theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters));
+    $screen->title();
+
+    $held->letGoOf(theStackATitleIsOn()->id());
+    $screen->onResume();
+    $unread->onResume();
+
+    expect($held->howMany())->toBe(1)
+        ->and($posters->asked())->toBe(2)
+        ->and($unread->answered)->toBeNull()
+        ->and($screen->title()->title?->poster->pictured)->toStartWith(ArtworkKey::SCHEME);
 });

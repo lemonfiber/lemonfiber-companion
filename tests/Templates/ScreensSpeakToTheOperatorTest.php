@@ -83,6 +83,10 @@ const WHAT_A_COMPONENT_IS = [
     // words are what a reader hears, and a glyph announced before them is the
     // same news twice.
     'icon' => false,
+    // A title's poster, drawn over its lettering or beside its name: the
+    // title is said by the words it covers or sits by, and a picture
+    // announced as well would say it twice.
+    'image' => false,
 
     // The platform's list row. Furniture by kind, because a row that goes
     // nowhere is a line read out as its headline; one given `@press` or

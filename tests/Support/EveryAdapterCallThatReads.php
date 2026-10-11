@@ -169,6 +169,7 @@ use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\Pausers;
+use Modules\Sdk\Api\Pictures;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Players;
@@ -301,6 +302,12 @@ final readonly class EveryAdapterCallThatReads
                 => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
             'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
             'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
+            'Pictures::posterOfAHolding' => static fn(): object
+                => new Pictures($clients)->posterOfAHolding($stack, $session, Whose::member('sanne'), HoldingId::called('a1')),
+            'Pictures::backdropOfAHolding' => static fn(): object
+                => new Pictures($clients)->backdropOfAHolding($stack, $session, Whose::member('sanne'), HoldingId::called('a1')),
+            'Pictures::posterOfAFoundTitle' => static fn(): object
+                => new Pictures($clients)->posterOfAFoundTitle($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
             'Players::now' => static fn(): object => new Players($clients)->now($stack, $session),
             'Players::heard' => static fn(): object => new Players($clients)->heard($stack, $session),
             'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session),

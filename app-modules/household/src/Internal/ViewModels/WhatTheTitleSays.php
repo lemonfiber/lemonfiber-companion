@@ -36,4 +36,10 @@ final readonly class WhatTheTitleSays
         public WhatPlayingSays $playing,
         public array $seasons,
     ) {}
+
+    /** The title, its poster drawn from `$source`, or lettered where that is empty. */
+    public function pictured(string $source): self
+    {
+        return new self($this->poster->pictured($source), $this->about, $this->runs, $this->runsFilling, $this->genres, $this->certificate, $this->released, $this->releasedFilling, $this->releasedIn, $this->playing, $this->seasons);
+    }
 }

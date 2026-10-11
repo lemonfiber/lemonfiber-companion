@@ -16,6 +16,7 @@ implements one kernel port over the platform:
 | `PlatformShare` | `Sharing` |
 | `PlatformAuth` | `DeviceAuth` |
 | `PlatformPlayer` | `Playing` |
+| `PlatformArtwork` | `HoldingArtwork` |
 
 The phone's features are reached through `nativephp/mobile` and this
 application's `lemonfiber/bridge` plugin. Secure storage is in `vault`.
@@ -26,6 +27,13 @@ it into one app-private directory used for nothing else, grants the chosen app
 read access to that one file, and empties the directory before every new
 handover and on the next launch, so at most one bundle is ever on the device.
 Nothing reports which app was chosen.
+
+`PlatformArtwork` hands a picture's bytes to the native half under an opaque
+`lemonfiber-art:` key and the stack it came from. Both halves hold pictures in
+memory only, within a bound, and draw an image element whose source is the key
+from there; the patched image loaders read no disk or URL cache for it. A
+stack's pictures are let go of when its session is kept, forgotten or the stack
+removed, and every picture when the app locks.
 
 `PlatformPlayer` hands the device's player one title as the core stated it:
 the location, the door's fingerprint and the member's grant, and where to start.

@@ -10,6 +10,15 @@ Profile, in a bottom bar, and no side menu.
 | Requests | `WhatYouAreOwed` | what the house says they are owed, in the core's words, and what they asked for |
 | Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, the languages titles play in (kept by `watching`), and taking the house off the phone |
 
+**Posters are drawn from memory.** `ThePicturesItDraws` answers the source an
+image element draws a title's picture from: the device's memory where it holds
+the picture, and otherwise the core's own path for it, fetched through the SDK
+on the session the screen is drawn for and handed to the device to hold. Home
+draws the newest title's backdrop and the first posters of each row, each
+asked for once; a title's page and a found title's page draw its poster. A
+picture the core does not have, or that could not be fetched, leaves the
+lettered poster drawn, and so does one let go of under it.
+
 Every member screen draws its way around through `FindsItsWayAroundTheHouse`:
 the platform's top bar with the screen's title, and the bar the household's
 `screen-closes` draws, shown on a tab's screen and hidden on one opened over a

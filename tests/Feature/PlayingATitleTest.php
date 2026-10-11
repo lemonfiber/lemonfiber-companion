@@ -43,6 +43,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\AStackThatGrants;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -60,6 +61,7 @@ function aPageToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $play
     $keychain ??= ATitleThatPlays::signedIn();
     $page = new WhatThisTitleIs(
         $watching,
+        ThePicturesOnScreen::none(),
         $keychain,
         TheTitlesOnScreen::over($watching, $keychain, $player, new WhatIsPlaying(), $core, $languages),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
@@ -194,6 +196,7 @@ function aHomeToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $play
     $keychain = ATitleThatPlays::signedIn();
     $home = new WhatYouCanWatch(
         $watching,
+        ThePicturesOnScreen::none(),
         AMemberWhoIsOwed::owedNothing(),
         $keychain,
         TheTitlesOnScreen::over($watching, $keychain, $player, null, $core),

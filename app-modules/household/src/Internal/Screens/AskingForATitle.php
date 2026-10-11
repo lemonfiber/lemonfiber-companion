@@ -11,6 +11,8 @@ use function is_string;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
+use Modules\Household\Internal\Presenters\InWords;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
 use Modules\Household\Internal\ViewModels\WhatAskingShows;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
@@ -77,6 +79,7 @@ final class AskingForATitle extends NativeComponent
 
     public function __construct(
         private readonly AskingForTitles $asking,
+        private readonly ThePicturesItDraws $pictures,
         private readonly SecureStorage $storage,
         private readonly Entropy $entropy,
         protected readonly TheWayAround $around,
@@ -115,6 +118,23 @@ final class AskingForATitle extends NativeComponent
         $shown = new HowAFoundTitleReads()->shown($title);
 
         return $this->asked instanceof WhatAskingShows && $this->asked->cameBack() ? $shown->standing($this->asked->became) : $shown;
+    }
+
+    /** The source the title's poster is drawn from, or nothing where there is no title, no session or no poster. */
+    public function pictured(): string
+    {
+        $title = $this->title();
+
+        if (! $title instanceof AFoundTitle) {
+            return '';
+        }
+
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): InWords => new InWords($this->pictures->ofAFoundTitle($stack, $session, $title)),
+            notHeld: static fn(): InWords => new InWords(''),
+        )->said;
     }
 
     /** What asking would come to, asked once per frame where the title may be asked for. */

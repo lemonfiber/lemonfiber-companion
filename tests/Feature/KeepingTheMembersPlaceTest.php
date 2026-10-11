@@ -26,6 +26,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGrants;
 use Tests\Support\Fakes\AStackThatKeepsThePlace;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 
 // What the player moving means: the member's place told to the core as it is
@@ -194,7 +195,7 @@ it('tells the place and has the page say why, when the device says the player mo
     $playing = new WhatIsPlaying();
     $core = AStackThatKeepsThePlace::keeping();
     $titles = TheTitlesOnScreen::over($watching, $keychain, $player, $playing);
-    $page = new WhatThisTitleIs($watching, $keychain, $titles, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
+    $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $page->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
     $moved = new WhenThePlayerMoves(new KeepsTheMembersPlace($player, $playing, $core, $keychain, $titles));
 

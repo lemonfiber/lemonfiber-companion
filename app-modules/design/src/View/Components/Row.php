@@ -56,6 +56,7 @@ final class Row extends Component
         string $iosIcon = '',
         /** @var array<string, mixed> what the screen it opens is handed, besides the route */
         public readonly array $carries = [],
+        public readonly string $image = '',
     ) {
         $this->named = $answersTo === '' ? $headline : $answersTo;
         $says = $tone === '' ? null : Tone::from($tone);

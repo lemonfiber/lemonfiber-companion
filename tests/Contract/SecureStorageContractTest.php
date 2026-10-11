@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Nonce;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Vault\Api\PlatformKeychain;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
 
 // The SecureStorage contract, run against the adapter and against the fake.
 //
@@ -149,12 +151,13 @@ function everyStoreHolding(): array
 {
     $fake = AKeychainInMemory::working();
     $adapter = new PlatformKeychain(APlatformStore::working());
+    $lettingGoOfArtwork = new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::working()), ArtworkHeldInMemory::working());
 
-    foreach ([$fake, $adapter] as $store) {
+    foreach ([$fake, $adapter, $lettingGoOfArtwork] as $store) {
         $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator());
     }
 
-    return ['the fake' => $fake, 'the adapter' => $adapter];
+    return ['the fake' => $fake, 'the adapter' => $adapter, 'the adapter letting go of artwork with the session' => $lettingGoOfArtwork];
 }
 
 /**
@@ -257,6 +260,7 @@ it('a store that will not open has no session rather than a fault', function ():
         'the fake that will not open' => AKeychainInMemory::thatWillNotOpen(),
         'the adapter with no store' => new PlatformKeychain(APlatformStore::absent()),
         'the adapter that will not open' => new PlatformKeychain(APlatformStore::refusing()),
+        'the adapter letting go of artwork, that will not open' => new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::refusing()), ArtworkHeldInMemory::working()),
     ];
 
     foreach ($stores as $which => $store) {

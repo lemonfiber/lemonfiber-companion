@@ -40,7 +40,14 @@ let package = Package(
                 "DoorRelay.swift",
                 "PlayerScreen.swift",
                 "PlayerFunctions.swift",
+                "ArtworkImages.swift",
+                "ArtworkFunctions.swift",
             ]
+        ),
+        .testTarget(
+            name: "ArtworkHeldTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ArtworkHeldTests"
         ),
         .testTarget(
             name: "CaptureRuleTests",

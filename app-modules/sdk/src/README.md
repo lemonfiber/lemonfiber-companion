@@ -32,3 +32,9 @@ for the one screen it belongs to, and reads it without waiting for what has not
 arrived: the first for the health summary and the newest the stack names, the
 second for the steps of a running walk, the third for what a running start is
 waiting for, and the fourth for what the household is playing.
+
+`Pictures`, for `FetchingArtwork`, reads a title's poster and backdrop from the
+core's `/api/held/{id}/…` paths and a found title's poster from
+`/api/askable/{id}/poster`, through the gate and pinned as every request is.
+The SDK bounds each answer to the picture types and size the contract allows,
+and the bytes are handed on without being kept here.

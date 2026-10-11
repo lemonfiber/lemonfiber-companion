@@ -32,6 +32,7 @@ use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -192,6 +193,7 @@ it('tells a member the house needs an update, never which software or version', 
     $keychain = aKeychainHoldingASessionFor($stack, Whose::member('ada'));
     $screen = new WhatYouCanWatch(
         AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::NotOnThisStack)),
+        ThePicturesOnScreen::none(),
         AMemberWhoIsOwed::owedNothing(),
         $keychain,
         TheTitlesOnScreen::over(AShelfThatWasRead::holdingNothing(), $keychain),

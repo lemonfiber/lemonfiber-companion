@@ -5,12 +5,16 @@ declare(strict_types=1);
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
 use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Household\Internal\Screens\LookingForATitle;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFoundTitle;
+use Modules\Kernel\Api\Artwork;
+use Modules\Kernel\Api\ArtworkKey;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAnAskWent;
+use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\HowASearchWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
@@ -32,10 +36,13 @@ use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\AStackThatFindsTitles;
 use Tests\Support\Fakes\AStackThatTakesAsks;
+use Tests\Support\Fakes\AStackWithPosters;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -60,10 +67,10 @@ function aKeychainSignedInAs(Whose $whose): AKeychainInMemory
 }
 
 /** The Search tab, asking the house given. */
-function theSearchTab(AStackThatFindsTitles $finding, ?AKeychainInMemory $keychain = null): LookingForATitle
+function theSearchTab(AStackThatFindsTitles $finding, ?AKeychainInMemory $keychain = null, ?ThePicturesItDraws $pictures = null): LookingForATitle
 {
     $keychain ??= aKeychainSignedInAs(Whose::member('sanne'));
-    $screen = new LookingForATitle($finding, $keychain, AroundThePhone::holding(StacksInMemory::holding(theHouseSearchedFrom()), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new LookingForATitle($finding, $pictures ?? ThePicturesOnScreen::none(), $keychain, AroundThePhone::holding(StacksInMemory::holding(theHouseSearchedFrom()), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => theHouseSearchedFrom()->id()->stored()]);
 
     return $screen;
@@ -93,10 +100,10 @@ function aLastPage(): WhatASearchFound
 }
 
 /** A found title's page, opened from its search row, asking the house given. */
-function theFoundPage(AStackThatTakesAsks $asking, AFoundTitle $title, bool $carried = true): AskingForATitle
+function theFoundPage(AStackThatTakesAsks $asking, AFoundTitle $title, bool $carried = true, ?ThePicturesItDraws $pictures = null): AskingForATitle
 {
     $keychain = aKeychainSignedInAs(Whose::member('sanne'));
-    $screen = new AskingForATitle($asking, $keychain, SequencedEntropy::counting(), AroundThePhone::holding(StacksInMemory::holding(theHouseSearchedFrom()), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new AskingForATitle($asking, $pictures ?? ThePicturesOnScreen::none(), $keychain, SequencedEntropy::counting(), AroundThePhone::holding(StacksInMemory::holding(theHouseSearchedFrom()), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => theHouseSearchedFrom()->id()->stored(), 'service' => $title->id()]);
 
     if ($carried) {
@@ -295,4 +302,54 @@ it('rehearses again when asked to check again', function (): void {
     $page->rehearsal();
 
     expect($asking->rehearsed())->toHaveCount(2);
+});
+
+it('draws each title\'s poster from what the phone holds, fetched once, and letters a title with none', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $screen = theSearchTab(AStackThatFindsTitles::finding(aFirstPage(), aFirstPage()), pictures: new ThePicturesItDraws($held, $posters));
+    $screen->typed = 'dune';
+    $screen->search();
+    $screen->search();
+
+    $sources = array_map(static fn(AFoundTitleAsShown $row): string => $row->pictured, $screen->answer()->rows);
+
+    expect($sources)->each->toStartWith(ArtworkKey::SCHEME)
+        ->and($posters->asked())->toBe(2)
+        ->and($held->howMany())->toBe(2);
+
+    $lettered = theSearchTab(AStackThatFindsTitles::finding(aFirstPage()));
+    $lettered->typed = 'dune';
+    $lettered->search();
+
+    expect(array_map(static fn(AFoundTitleAsShown $row): string => $row->pictured, $lettered->answer()->rows))->each->toBe('');
+});
+
+it('draws the found title\'s poster from what the phone holds, and none where it was opened with nothing', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $page = theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('It arrives without waiting.'), aRehearsalSaid('unused')), dune(), pictures: new ThePicturesItDraws($held, $posters));
+    $drawn = WhatTheDeviceWouldDraw::by($page)->said();
+
+    expect($page->pictured())->toStartWith(ArtworkKey::SCHEME)
+        ->and($drawn)->toContain('Dune')
+        ->and(theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('It arrives without waiting.'), aRehearsalSaid('unused')), dune(), carried: false, pictures: new ThePicturesItDraws($held, $posters))->pictured())->toBe('')
+        ->and($posters->asked())->toBe(1);
+});
+
+it('draws each title\'s poster again once back on view, after the lock let go of every one, and leaves an empty tab as it was', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $screen = theSearchTab(AStackThatFindsTitles::finding(aFirstPage()), pictures: new ThePicturesItDraws($held, $posters));
+    $untouched = theSearchTab(AStackThatFindsTitles::finding(aFirstPage()), pictures: new ThePicturesItDraws($held, $posters));
+    $screen->typed = 'dune';
+    $screen->search();
+
+    $held->letGoOf(theHouseSearchedFrom()->id());
+    $screen->onResume();
+    $untouched->onResume();
+
+    expect($held->howMany())->toBe(2)
+        ->and($posters->asked())->toBe(4)
+        ->and($untouched->shown)->toBeNull();
 });

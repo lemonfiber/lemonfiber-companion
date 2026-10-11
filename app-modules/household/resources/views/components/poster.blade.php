@@ -12,7 +12,10 @@
 @else
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}">
 @endif
-<native:column class="w-full aspect-[2/3] justify-between gap-2 rounded border border-theme-line bg-theme-raised p-3">
+{{-- The picture, where the phone holds one, is drawn over the lettering, so
+     a picture that is let go of leaves the lettered poster showing. --}}
+<native:stack class="w-full aspect-[2/3]">
+<native:column class="w-full h-full justify-between gap-2 rounded border border-theme-line bg-theme-raised p-3">
     <native:text class="text-[12] font-medium text-theme-muted" font="DMMono-Medium" :fixed-size="true" :max-lines="1">{{ $above }}</native:text>
     @if ($poster->lettered === HowAPosterIsLettered::Large)
     <native:text class="text-[27] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
@@ -22,4 +25,8 @@
     <native:text class="text-[13] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
     @endif
 </native:column>
+@if ($poster->pictured !== '')
+<native:image src="{{ $poster->pictured }}" class="w-full h-full rounded object-cover" />
+@endif
+</native:stack>
 </native:pressable>

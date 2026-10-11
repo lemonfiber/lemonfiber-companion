@@ -85,13 +85,20 @@ const DOORS_THE_APP_OPENS = [
     // and nowhere else, and where it says each step of a running walk as it
     // happens. It reads and changes nothing, and a screen holds it only while
     // somebody can see it.
-    'eventSource' => 'listens to the stack\'s event stream for the health summary and the steps of a running walk, changing nothing',
+    'eventSource' => 'listens to the stack\'s event stream for the health summary, the steps of a running walk and what the household is playing, changing nothing',
 
     // The one read whose answer is a file rather than an envelope: a support
     // bundle the stack already wrote, fetched by the name its path ends in so
     // the operator can hand it over through the device's own sharing. It
     // changes nothing on the machine, and nothing is sent back through it.
     'bundle' => 'reads one support bundle the stack wrote, by its name, changing nothing',
+
+    // A title's poster and backdrop, read from the core's own path for a
+    // title it listed and held in the device's memory only. Pictures rather
+    // than envelopes, so each has a door of its own; none changes anything.
+    'poster' => 'reads the poster of a title the house holds, changing nothing',
+    'backdrop' => 'reads the backdrop of a title the house holds, changing nothing',
+    'askablePoster' => 'reads the poster of a title a member\'s search offered, changing nothing',
 
     // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint

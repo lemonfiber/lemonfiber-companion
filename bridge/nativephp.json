@@ -204,6 +204,24 @@
             "android": "app.lemonfiber.native.PlayerFunctions.State",
             "ios": "PlayerFunctions.State",
             "description": "Where the player stands: playing, paused, stalled, ended or stopped and why, with the tracks it offers"
+        },
+        {
+            "name": "Lemonfiber.Artwork.Hold",
+            "android": "app.lemonfiber.native.ArtworkFunctions.Hold",
+            "ios": "ArtworkFunctions.Hold",
+            "description": "Hold a picture in memory under its key, for the stack it came from; never on disk or in a URL cache"
+        },
+        {
+            "name": "Lemonfiber.Artwork.Holds",
+            "android": "app.lemonfiber.native.ArtworkFunctions.Holds",
+            "ios": "ArtworkFunctions.Holds",
+            "description": "Whether a picture is still held in memory under its key"
+        },
+        {
+            "name": "Lemonfiber.Artwork.LetGo",
+            "android": "app.lemonfiber.native.ArtworkFunctions.LetGo",
+            "ios": "ArtworkFunctions.LetGo",
+            "description": "Let go of every picture held for a stack, as its session ends or it is removed"
         }
     ],
     "components": [

@@ -27,6 +27,7 @@ use function is_array;
 use function is_string;
 
 use Lemonfiber\Native\AppsSettings as TheAppsSettingsPage;
+use Lemonfiber\Native\Artwork as TheArtworkHeld;
 use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
 use Lemonfiber\Native\Events\ThePlayerMoved;
@@ -45,6 +46,7 @@ use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Device\Api\PlatformAppsSettings;
+use Modules\Device\Api\PlatformArtwork;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
@@ -69,6 +71,7 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\ForgetsOldReadings;
+use Modules\Kernel\Api\HoldingArtwork;
 use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\KeepingTheGrant;
 use Modules\Kernel\Api\KeepsReadingsFor;
@@ -277,7 +280,15 @@ final class CompositionRoot extends ServiceProvider
         // unlocked after the device has locked.
         $this->app->bind(
             SecureStorage::class,
-            static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
+            static fn(): SecureStorage => new ArtworkGoesWithTheSession(new PlatformKeychain(new PlatformStore()), new PlatformArtwork(new TheArtworkHeld())),
+        );
+
+        // Artwork in the device's memory, and nowhere else. Bound rather than a
+        // singleton for the store's reason: what is held is the device's, and
+        // the bridge is a handle to it.
+        $this->app->bind(
+            HoldingArtwork::class,
+            static fn(): HoldingArtwork => new PlatformArtwork(new TheArtworkHeld()),
         );
 
         // Handing a diagnostic report to the operator, which is the only way

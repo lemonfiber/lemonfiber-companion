@@ -43,6 +43,7 @@ final readonly class WhatOnePosterSays
     /**
      * @param array<string, string> $filling what the two lines are filled with, as written
      * @param array<string, string> $keyed   what the two lines are filled with that is a catalogue key
+     * @param string                $pictured the source its picture is drawn from over its lettering, or empty where it is only lettered
      */
     private function __construct(
         public string $titled,
@@ -54,7 +55,14 @@ final readonly class WhatOnePosterSays
         public string $goes,
         public string $plays,
         public string $tap = '',
+        public string $pictured = '',
     ) {}
+
+    /** The same poster, drawn from this source over its lettering. */
+    public function pictured(string $source): self
+    {
+        return new self($this->titled, $this->lettered, $this->above, $this->reads, $this->filling, $this->keyed, $this->goes, $this->plays, $this->tap, $source);
+    }
 
     /**
      * A title on the shelf: its year and kind at the top, where the core

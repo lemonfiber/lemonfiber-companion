@@ -19,10 +19,16 @@ namespace Modules\Household\Internal\ViewModels;
  *
  * @param list<WhatAShelfRowSays> $rows
  */
+use function array_key_exists;
+
+use Closure;
 use Modules\Kernel\Api\Obstacle;
 
 final readonly class WhatAMemberTurnedOutToBeAbleToWatch
 {
+    /** How many posters at the front of each row are drawn with their pictures; the rest stay lettered, so a large library is never fetched whole. */
+    public const int PICTURED_IN_EACH_ROW = 9;
+
     /** @param list<WhatAShelfRowSays> $rows */
     private function __construct(
         public bool $isSignedIn,
@@ -122,6 +128,36 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     public function isInTheStacksWords(): bool
     {
         return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
+    }
+
+    /**
+     * The shelf, its hero drawn with its backdrop and the front of each row with their posters.
+     *
+     * Each poster is asked for once, however many rows it is in.
+     *
+     * @param Closure(string): string $poster   the source of the poster of the title a poster plays
+     * @param Closure(string): string $backdrop the source of the backdrop of the title the hero plays
+     */
+    public function pictured(Closure $poster, Closure $backdrop): self
+    {
+        $sources = [];
+        $once = static function (string $plays) use (&$sources, $poster): string {
+            if (! array_key_exists($plays, $sources)) {
+                $sources[$plays] = $poster($plays);
+            }
+
+            return $sources[$plays];
+        };
+
+        $rows = [];
+
+        foreach ($this->rows as $row) {
+            $rows[] = $row->pictured(self::PICTURED_IN_EACH_ROW, $once);
+        }
+
+        $hero = $this->hero instanceof WhatOnePosterSays && $this->hero->plays !== '' ? $this->hero->pictured($backdrop($this->hero->plays)) : $this->hero;
+
+        return new self($this->isSignedIn, $this->met, $this->remedy, $this->isOutOfReach, $hero, $rows, $this->why);
     }
 
     /** Whether there is a title to draw across the screen: an empty shelf has none. */
