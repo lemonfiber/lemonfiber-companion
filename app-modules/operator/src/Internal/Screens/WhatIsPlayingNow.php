@@ -104,7 +104,7 @@ final class WhatIsPlayingNow extends NativeComponent
         $this->playingHeard = $held->hasGoneQuiet($now) ? $held->after($this->following->letGo(), $now) : $held;
     }
 
-    public function shown(): WhatIsPlayingAsShown
+    public function answer(): WhatIsPlayingAsShown
     {
         $heard = $this->playingHeardSoFar();
 

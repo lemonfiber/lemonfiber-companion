@@ -134,7 +134,7 @@ it('keeps the list current from the stream without being asked again', function 
     expect($playing->asked())->toBe(1)
         ->and($drawn)->toContain('Joris')
         ->and($drawn)->not->toContain('Sanne')
-        ->and($screen->shown()->ago->said)->toBe('');
+        ->and($screen->answer()->ago->said)->toBe('');
 });
 
 it('says when it last heard once the stream stops, and that it could not hear', function (): void {
@@ -148,8 +148,8 @@ it('says when it last heard once the stream stops, and that it could not hear', 
     $clock->moveTo(secondsIntoWatchingWhatPlays(120));
     $screen->follow();
 
-    expect($screen->shown()->broke)->toBeTrue()
-        ->and($screen->shown()->ago->said)->not->toBe('')
+    expect($screen->answer()->broke)->toBeTrue()
+        ->and($screen->answer()->ago->said)->not->toBe('')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLinePlaying('stacks.playing.unheard'), 'Sanne');
 });
 
@@ -164,7 +164,7 @@ it('lets go of a stream gone quiet past the contract\'s silence, and of one nobo
     $screen->follow();
 
     expect($playing->lettingsGo())->toBe(1)
-        ->and($screen->shown()->ago->said)->not->toBe('');
+        ->and($screen->answer()->ago->said)->not->toBe('');
 
     $capture->backgrounded();
     $screen->follow();
@@ -210,9 +210,9 @@ it('offers signing in where the device holds no session, and lets go of one the 
     $keychain = AKeychainInMemory::working();
     $refused = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::refused(Obstacle::of(KindOfObstacle::CredentialWasRefused))), Whose::theOperator(), keychain: $keychain);
 
-    expect($signedOut->shown()->went->cameBack())->toBeFalse()
+    expect($signedOut->answer()->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($signedOut)->said())->toContain(aLinePlaying('connection.session_has_ended'))
-        ->and($refused->shown()->went->cameBack())->toBeFalse()
+        ->and($refused->answer()->went->cameBack())->toBeFalse()
         ->and($keychain->resume(theHouseWhosePlayingIsWatched()->id())->whoseItIs(
             nobody: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nobody'),
             theirs: static fn(): TheWordCarriedOut => new TheWordCarriedOut('somebody'),
