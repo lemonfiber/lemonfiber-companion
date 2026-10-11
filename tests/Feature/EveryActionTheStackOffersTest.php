@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Alert', 'Certificate', 'Keys', 'MintedKey',
+    'Alert', 'Certificate', 'KeyClaim', 'Keys', 'MintedKey',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {
