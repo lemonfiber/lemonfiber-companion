@@ -13,8 +13,11 @@ declare(strict_types=1);
  * A hunk is matched by its lines, never by the line numbers in its header: the
  * numbers say where the lines sat in the version this tree locks, and they
  * move whenever the package changes anything above them. Its lines are matched
- * as whole lines, wherever they appear, and every place they appear is
- * rewritten. A hunk whose result is already in the file is skipped, because
+ * as whole lines, wherever they appear, and must appear once: a hunk whose
+ * lines appear in more than one place is refused, since a context too short to
+ * be told apart rewrites every place it matches, unless its patch carries the
+ * line `patch_nativephp: replace-all` before its first file, saying it means
+ * every place. A hunk whose result is already in the file is skipped, because
  * `composer install` does not unpack a package again only because this script
  * runs, so most runs find every patch applied.
  *
@@ -40,6 +43,9 @@ const WHERE_EARLIER_HUNKS_ARE = '/patch_nativephp/earlier';
 
 /** The only files a patch may name: NativePHP's, as composer installs them. */
 const WHAT_A_PATCH_MAY_REWRITE = 'vendor/nativephp/';
+
+/** The line a patch's prose carries to say each of its hunks rewrites every place its lines appear. */
+const A_PATCH_MEANS_EVERY_MATCH = 'patch_nativephp: replace-all';
 
 /** A hunk: its header, the line counts each side leaves out when it is one, and its lines. */
 const A_HUNK = '/\A(@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@[^\n]*)\n(.*)\z/s';
@@ -77,6 +83,13 @@ const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %1\$s, which %2\$s rewrites
  * One literal for the reason the ones above are one literal.
  */
 const WHEN_THE_INSTALLED_COPY_DIFFERS = "patch_nativephp: %1\$s does not carry what the package ships.\n\nThat file belongs to the native project `native:install` copied out of the package, and the copy no longer matches the package this tree installed. Run `php artisan native:install --force` to copy it again from the patched package. Building from it as it is leaves the device on code this patch never reached. Do not ignore this.\n";
+
+/**
+ * What to do when the lines a hunk rewrites appear in more than one place.
+ *
+ * One literal for the reason the ones above are one literal.
+ */
+const WHEN_THE_LINES_APPEAR_MORE_THAN_ONCE = "patch_nativephp: the lines %2\$s rewrites appear %3\$d times in %1\$s.\n\nA hunk is made where its lines appear, and these appear in more than one place, so it would rewrite every one of them. Give the hunk more context, until its lines appear once. Where the patch means every place, say so with the line `patch_nativephp: replace-all` before its first file. Nothing was written to that file. Do not ignore this.\n";
 
 /**
  * What to do when a patch cannot be read as one.
@@ -134,6 +147,21 @@ function patchesIn(string $directory): array
     $patches = glob(sprintf('%s%s/*.patch', __DIR__, $directory));
 
     return $patches === false ? [] : $patches;
+}
+
+/** Whether a patch's prose, before its first file, says each of its hunks means every place its lines appear. */
+function meansEveryMatch(string $patch): bool
+{
+    $text = (string) file_get_contents($patch);
+    $prose = preg_split('/^(?=--- )/m', $text, 2);
+
+    return in_array(A_PATCH_MEANS_EVERY_MATCH, explode("\n", is_array($prose) ? $prose[0] : ''), strict: true);
+}
+
+/** How many places a file holds these lines in, as whole lines. */
+function placesHolding(string $source, string $lines): int
+{
+    return mb_substr_count(sprintf("\n%s", $source), sprintf("\n%s", $lines));
 }
 
 /**
@@ -311,8 +339,10 @@ $hunks = [];
 $results = [];
 
 foreach ($patches as $patch) {
+    $everyMatch = meansEveryMatch($patch);
+
     foreach (hunksIn($patch) as $hunk) {
-        $hunks[] = [...$hunk, 'patch' => basename($patch)];
+        $hunks[] = [...$hunk, 'patch' => basename($patch), 'every_match' => $everyMatch];
         $results[resultOf($hunk['path'], $hunk['becomes'])] = true;
     }
 }
@@ -331,7 +361,7 @@ foreach (patchesIn(WHERE_EARLIER_HUNKS_ARE) as $patch) {
 
 $rewritten = 0;
 
-foreach ($hunks as ['path' => $where, 'ships' => $ships, 'becomes' => $becomes, 'patch' => $patch]) {
+foreach ($hunks as ['path' => $where, 'ships' => $ships, 'becomes' => $becomes, 'patch' => $patch, 'every_match' => $everyMatch]) {
     $was = array_key_exists(resultOf($where, $becomes), $earlier) ? $earlier[resultOf($where, $becomes)] : $ships;
 
     foreach (whereItIsMade($where) as ['path' => $path, 'file_is_not_there' => $fileIsNotThere, 'line_has_moved' => $lineHasMoved]) {
@@ -353,6 +383,12 @@ foreach ($hunks as ['path' => $where, 'ships' => $ships, 'becomes' => $becomes, 
 
         if (! holds($source, $from)) {
             refuse($lineHasMoved, $path, $patch);
+        }
+
+        $places = placesHolding($source, $from);
+
+        if ($places > 1 && ! $everyMatch) {
+            refuse(WHEN_THE_LINES_APPEAR_MORE_THAN_ONCE, $path, $patch, (string) $places);
         }
 
         file_put_contents($path, rewrite($source, $from, $becomes));
