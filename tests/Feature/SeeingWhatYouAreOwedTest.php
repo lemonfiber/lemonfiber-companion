@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -292,6 +293,20 @@ it('shows what they asked for, each with where it stands', function (): void {
         ->and($rows[1]->wasRefused())->toBeTrue();
 });
 
+it('shows a request no service has named yet in their words, by its kind, beside the rest', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::notYetNamed(3, 'Robin', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+    )));
+    $rows = $screen->requests()->rows;
+
+    expect($screen->requests()->cameBack())->toBeTrue()
+        ->and($rows[0]->title)->toBe('')
+        ->and($rows[0]->untitled)->toBe('household.not_yet_named.theirs.series')
+        ->and($rows[1]->title)->toBe('The Third Man')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.not_yet_named.theirs.series'), 'The Third Man');
+});
+
 it('says where a request stands in their words, not the operator\'s', function (): void {
     // The one state whose wording differs in meaning rather than in phrasing.
     // *Waiting for your decision* is true to an operator and false to the person
@@ -316,6 +331,7 @@ it('carries no requester on a member\'s own row', function (): void {
             'title' => $row->title,
             'standing' => $row->standing,
             'reason' => $row->reason,
+            'untitled' => $row->untitled,
         ]);
     }
 });

@@ -6,11 +6,14 @@ namespace Modules\Household\Internal\Presenters;
 
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+
+use function sprintf;
 
 /**
  * What asking a stack what a member asked for produces, as the fields a screen draws.
@@ -34,6 +37,8 @@ final readonly class HowWhatAMemberAskedForReads
 {
     /** What a request is said to stand at where the core named no standing. */
     public const string UNNAMED = 'household.asked.unnamed';
+
+    public const string NOT_YET_NAMED = 'household.not_yet_named.theirs.%s';
 
     /** The stack answered, and this is what they have asked for. */
     public function these(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
@@ -63,6 +68,12 @@ final readonly class HowWhatAMemberAskedForReads
     public function signedOut(): WhatAMemberTurnedOutToHaveAsked
     {
         return WhatAMemberTurnedOutToHaveAsked::theSessionEnded();
+    }
+
+    /** The catalogue key for a request of theirs nothing has named yet, by its kind. */
+    public static function notYetNamed(KindOfRequest $kind): string
+    {
+        return sprintf(self::NOT_YET_NAMED, $kind->value);
     }
 
     /**
@@ -102,11 +113,17 @@ final readonly class HowWhatAMemberAskedForReads
      */
     private function told(Wanted $wanted, string $standing): WhatOneOfTheirRequestsSays
     {
+        $title = $wanted->called()->either(named: static fn(string $named): InWords => new InWords($named), notYet: static fn(): InWords => new InWords(''))->said;
+        $untitled = $wanted->called()->either(
+            named: static fn(): InWords => new InWords(''),
+            notYet: static fn(KindOfRequest $kind): InWords => new InWords(self::notYetNamed($kind)),
+        )->said;
+
         return $wanted->refusal(
             was: static fn(TurnedDown $why): WhatOneOfTheirRequestsSays
-                => new WhatOneOfTheirRequestsSays($wanted->forWhat(), $standing, $why->reason()),
+                => new WhatOneOfTheirRequestsSays($title, $standing, $why->reason(), $untitled),
             wasNot: static fn(): WhatOneOfTheirRequestsSays
-                => new WhatOneOfTheirRequestsSays($wanted->forWhat(), $standing, ''),
+                => new WhatOneOfTheirRequestsSays($title, $standing, '', $untitled),
         );
     }
 }

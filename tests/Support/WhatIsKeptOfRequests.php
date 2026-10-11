@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\SealedPayload;
@@ -55,6 +56,15 @@ final readonly class WhatIsKeptOfRequests
     }
 
     /** A household that has asked for nothing. */
+    /** A reading of requests no service has named yet, one waiting and one turned down. */
+    public static function aReadingNotYetNamed(): Requested
+    {
+        return Requested::of(
+            Wanted::notYetNamed(6, 'Mira', KindOfRequest::Film, Size::guessedAt(5_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::turnedDownNotYetNamed(7, 'Joost', KindOfRequest::Series, Size::unknown(), TurnedDown::because('Not now')),
+        );
+    }
+
     public static function aReadingOfNothing(): Requested
     {
         return Requested::none();

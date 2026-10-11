@@ -45,7 +45,7 @@ final readonly class Wanted
     private function __construct(
         private int $number,
         private string $by,
-        private string $forWhat,
+        private WhatARequestIsCalled $called,
         private Size $size,
         private HowARequestStands $standing,
         private ?TurnedDown $turnedDown = null,
@@ -84,7 +84,25 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::forNothing($number, $asker);
         }
 
-        return new self($number, $asker, $title, $size, $standing);
+        return new self($number, $asker, WhatARequestIsCalled::named($title), $size, $standing);
+    }
+
+    /**
+     * A request no service has named yet, by the kind of thing it is.
+     *
+     * Still one to decide on: who asked, what kind of thing and roughly how
+     * big are on it, and a request waiting for a yes has been handed to
+     * nobody who could name it.
+     */
+    public static function notYetNamed(int $number, string $by, KindOfRequest $kind, Size $size, HowARequestStands $standing): self
+    {
+        $asker = trim($by);
+
+        if ($asker === '') {
+            throw RequestHasNobodyBehindIt::atNumber($number);
+        }
+
+        return new self($number, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing);
     }
 
     /**
@@ -104,10 +122,10 @@ final readonly class Wanted
         return $this->by;
     }
 
-    /** What they asked for, in the words the stack holds. */
-    public function forWhat(): string
+    /** What they asked for: its title in the words the stack holds, or the kind of thing it is. */
+    public function called(): WhatARequestIsCalled
     {
-        return $this->forWhat;
+        return $this->called;
     }
 
     /** How big it is, and whether anybody measured. */
@@ -136,9 +154,13 @@ final readonly class Wanted
         Size $size,
         TurnedDown $why,
     ): self {
-        $was = self::of($number, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined));
+        return self::declined(self::of($number, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined)), $why);
+    }
 
-        return new self($was->number, $was->by, $was->forWhat, $was->size, $was->standing, $why);
+    /** A refused request no service named, by the kind of thing it was. */
+    public static function turnedDownNotYetNamed(int $number, string $by, KindOfRequest $kind, Size $size, TurnedDown $why): self
+    {
+        return self::declined(self::notYetNamed($number, $by, $kind, $size, HowARequestStands::said(Waiting::Declined)), $why);
     }
 
     /**
@@ -165,5 +187,10 @@ final readonly class Wanted
     public function standing(): HowARequestStands
     {
         return $this->standing;
+    }
+
+    private static function declined(self $was, TurnedDown $why): self
+    {
+        return new self($was->number, $was->by, $was->called, $was->size, $was->standing, $why);
     }
 }

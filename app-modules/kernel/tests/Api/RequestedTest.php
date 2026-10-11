@@ -17,6 +17,8 @@ use Modules\Kernel\Api\Wanted;
 
 use function sprintf;
 
+use Tests\Support\WhatARequestIsCalledAsAWord;
+
 /** One request, named so a case can say which row it expects back. */
 function aWant(int $number, string $forWhat, Waiting $standing): Wanted
 {
@@ -32,7 +34,7 @@ it('holds what it was given, in the order it was given', function (): void {
     $titles = [];
 
     foreach ($wanted as $one) {
-        $titles[] = $one->forWhat();
+        $titles[] = WhatARequestIsCalledAsAWord::of($one);
     }
 
     expect($titles)->toBe(['First', 'Second'])

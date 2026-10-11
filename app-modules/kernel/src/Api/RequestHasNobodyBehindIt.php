@@ -35,4 +35,10 @@ final class RequestHasNobodyBehindIt extends InvalidArgumentException
             $by,
         ));
     }
+
+    /** A title given to a request was blank, which is a request named nothing rather than one not named yet. */
+    public static function namedBlank(): self
+    {
+        return new self('A request was given a blank title. One with no title yet is named by its kind instead.');
+    }
 }

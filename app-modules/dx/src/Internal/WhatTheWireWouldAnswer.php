@@ -222,11 +222,12 @@ final readonly class WhatTheWireWouldAnswer
     /**
      * The kinds of the events a stand-in stream carries, in the order it says them.
      *
-     * The two a screen holds the stream for: the dashboard the health summary
-     * is read out of, and a step of a running walk. Each screen takes the last
-     * event of its own kind and reads the other as a sign of life.
+     * The three a screen holds the stream for: the dashboard the health summary
+     * is read out of, a step of a running walk, and what the household is
+     * playing. Each screen takes the last event of its own kind and reads the
+     * others as a sign of life.
      */
-    private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step'];
+    private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step', 'playing'];
 
     /**
      * A mock for every request this app can make.

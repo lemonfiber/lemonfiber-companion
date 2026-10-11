@@ -17,9 +17,6 @@ enum UpgradeField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The kinds of media an upgrade covers. */
-    case Media = 'media';
-
     /**
      * A kind of media: the one an upgrade covers, and the one a quality choice
      * is asked for, where it is for one kind rather than everything.

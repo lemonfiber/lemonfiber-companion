@@ -14,10 +14,11 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\StepEnvelope;
+use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatArrivedOnTheStream;
@@ -60,36 +61,42 @@ final class Narrators implements HearingTheWalk
         $this->streams = new TheStreamsHeld($clients);
     }
 
-    public function whereItIs(Stack $stack, Session $session): WhatTheWalkSaid
+    /** @return WhatAStreamSaid<ALineItSaid> */
+    public function whereItIs(Stack $stack, Session $session): WhatAStreamSaid
     {
         if ($this->ended) {
             $this->ended = false;
 
-            return WhatTheWalkSaid::closed();
+            return WhatAStreamSaid::closed();
         }
 
         return $this->heardFrom($stack, $session);
     }
 
-    public function letGo(): WhatTheWalkSaid
+    /** @return WhatAStreamSaid<ALineItSaid> */
+    public function letGo(): WhatAStreamSaid
     {
         $this->streams->letGoOfEvery();
         $this->ended = false;
 
-        return WhatTheWalkSaid::closed();
+        return WhatAStreamSaid::closed();
     }
 
-    /** What has arrived on the stream, opening it where it is not open. */
-    private function heardFrom(Stack $stack, Session $session): WhatTheWalkSaid
+    /**
+     * What has arrived on the stream, opening it where it is not open.
+     *
+     * @return WhatAStreamSaid<ALineItSaid>
+     */
+    private function heardFrom(Stack $stack, Session $session): WhatAStreamSaid
     {
         try {
             return $this->heard($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatTheWalkSaid::met(WhatARefusalMeant::obstacle($why));
+            return WhatAStreamSaid::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|WalkthroughIsUnreadable $why) {
             $this->letGoOf($stack);
 
-            return WhatTheWalkSaid::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatAStreamSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -100,8 +107,12 @@ final class Narrators implements HearingTheWalk
         $this->ended = false;
     }
 
-    /** What arrived, as what the walk said, letting go of a stream that ended. */
-    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived): WhatTheWalkSaid
+    /**
+     * What arrived, as what the walk said, letting go of a stream that ended.
+     *
+     * @return WhatAStreamSaid<ALineItSaid>
+     */
+    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived): WhatAStreamSaid
     {
         $latest = $arrived->theLast(StepEnvelope::KIND);
 
@@ -111,10 +122,10 @@ final class Narrators implements HearingTheWalk
         }
 
         return match (true) {
-            $latest instanceof ServerEvent => WhatTheWalkSaid::said(Walkthroughs::said(new EnvelopeReader()->read($latest->data))),
-            $arrived->anything => WhatTheWalkSaid::aSignOfLife(),
-            $arrived->ended => WhatTheWalkSaid::closed(),
-            default => WhatTheWalkSaid::nothing(),
+            $latest instanceof ServerEvent => WhatAStreamSaid::said(Walkthroughs::said(new EnvelopeReader()->read($latest->data))),
+            $arrived->anything => WhatAStreamSaid::aSignOfLife(),
+            $arrived->ended => WhatAStreamSaid::closed(),
+            default => WhatAStreamSaid::nothing(),
         };
     }
 }

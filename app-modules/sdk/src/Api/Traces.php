@@ -167,7 +167,7 @@ final readonly class Traces
             foreach (self::rows($season, TraceField::Outstanding) as $part) {
                 $episode = self::table($part, TraceField::Outstanding);
                 $outstanding[] = AnEpisodeNotHereYet::numbered(
-                    self::count($episode, TraceField::Season),
+                    self::count($episode, WireField::Season),
                     self::count($episode, WireField::Number),
                     self::text($episode, WireField::Title),
                     self::stage($episode, WireField::Stage),
@@ -175,7 +175,7 @@ final readonly class Traces
             }
 
             $seasons[] = HowMuchOfASeasonIsHere::counted(
-                self::count($season, TraceField::Season),
+                self::count($season, WireField::Season),
                 self::count($season, TraceField::Have),
                 self::count($season, WireField::Wanted),
                 self::count($season, TraceField::Unmonitored),

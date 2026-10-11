@@ -81,16 +81,16 @@ final readonly class WhatAnUpgradeComesTo
      */
     private static function media(array $data): array
     {
-        if (! array_key_exists(UpgradeField::Media->value, $data) || ! is_array($data[UpgradeField::Media->value])) {
-            throw QualityIsUnreadable::missing(UpgradeEnvelope::KIND->value, UpgradeField::Media);
+        if (! array_key_exists(WireField::Media->value, $data) || ! is_array($data[WireField::Media->value])) {
+            throw QualityIsUnreadable::missing(UpgradeEnvelope::KIND->value, WireField::Media);
         }
 
         $found = [];
         $position = 0;
 
-        foreach ($data[UpgradeField::Media->value] as $row) {
+        foreach ($data[WireField::Media->value] as $row) {
             if (! is_array($row)) {
-                throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, UpgradeField::Media, UpgradeField::MediaType, $position);
+                throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, UpgradeField::MediaType, $position);
             }
 
             $found[] = OneKindUpgraded::reported(
@@ -113,7 +113,7 @@ final readonly class WhatAnUpgradeComesTo
     private static function inMedia(array $row, NamesAWireField $field, int $position): string
     {
         if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, UpgradeField::Media, $field, $position);
+            throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, $field, $position);
         }
 
         return $row[$field->value];

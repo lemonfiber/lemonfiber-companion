@@ -27,6 +27,7 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Wanting contract, run against the adapter and against the fake.
@@ -328,7 +329,7 @@ function everyRequestIn(Wanting $wanting): string
             $rows = [];
 
             foreach ($wanted as $one) {
-                $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), $one->forWhat(), theStandingOf($one));
+                $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), WhatARequestIsCalledAsAWord::of($one), theStandingOf($one));
             }
 
             return new TheWordCarriedOut(implode(' | ', $rows));

@@ -152,10 +152,10 @@ final readonly class Handoffs
     {
         $found = [];
 
-        foreach (self::rows($data, HandoffField::Sessions) as $position => $row) {
+        foreach (self::rows($data, WireField::Sessions) as $position => $row) {
             $found[] = ASignedInDevice::listed(
-                self::cell($row, WireField::Device, HandoffField::Sessions, $position),
-                self::cell($row, WireField::Client, HandoffField::Sessions, $position),
+                self::cell($row, WireField::Device, WireField::Sessions, $position),
+                self::cell($row, WireField::Client, WireField::Sessions, $position),
                 AMomentAsWritten::of(self::lastSeen($row, $position)),
             );
         }
@@ -195,7 +195,7 @@ final readonly class Handoffs
             return '';
         }
 
-        return self::cell($row, HandoffField::LastSeen, HandoffField::Sessions, $position);
+        return self::cell($row, HandoffField::LastSeen, WireField::Sessions, $position);
     }
 
     /** A yes or a no one app owes. */

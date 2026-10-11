@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
-use Modules\Health\Api\WhatTheWalkSaidSoFar;
+use Modules\Health\Api\WhatAStreamSaidSoFar;
+use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Operator\Internal\Presenters\HowTheStageReads;
 use Modules\Operator\Internal\ViewModels\TheStageAsShown;
 use Native\Mobile\Edge\NativeComponent;
@@ -35,7 +36,7 @@ use Native\Mobile\Edge\NativeComponent;
  * reason, which the screen using this also uses.
  *
  * **A silence past the contract's bound is a broken subscription**, let go of on
- * the wake that notices and opened again once {@see WhatTheWalkSaidSoFar} says
+ * the wake that notices and opened again once {@see WhatAStreamSaidSoFar} says
  * the break has been waited out.
  *
  * @phpstan-require-extends NativeComponent
@@ -46,8 +47,10 @@ trait HearsWhereTheWalkIs
      * What the subscription has said about the walk so far, and whether it still stands.
      *
      * `public` for the reason {@see HearsHowTheStackIs::$heard} is.
+     *
+     * @var WhatAStreamSaidSoFar<ALineItSaid>|null
      */
-    public ?WhatTheWalkSaidSoFar $stepHeard = null;
+    public ?WhatAStreamSaidSoFar $stepHeard = null;
 
     /** The stage the walk is at, as the template draws it. */
     public function stage(): TheStageAsShown
@@ -76,7 +79,7 @@ trait HearsWhereTheWalkIs
     private function listenToANewWalk(): void
     {
         $this->letGoOfTheWalk();
-        $this->stepHeard = WhatTheWalkSaidSoFar::nothingYet();
+        $this->stepHeard = WhatAStreamSaidSoFar::nothingYet();
 
         $this->listenToTheWalk();
     }
@@ -128,9 +131,10 @@ trait HearsWhereTheWalkIs
         $this->stepHeard = $this->walkHeardSoFar()->after($with->hearing->letGo(), $with->clock->now())->wentAway();
     }
 
-    private function walkHeardSoFar(): WhatTheWalkSaidSoFar
+    /** @return WhatAStreamSaidSoFar<ALineItSaid> */
+    private function walkHeardSoFar(): WhatAStreamSaidSoFar
     {
-        return $this->stepHeard ??= WhatTheWalkSaidSoFar::nothingYet();
+        return $this->stepHeard ??= WhatAStreamSaidSoFar::nothingYet();
     }
 
     /**
@@ -138,15 +142,17 @@ trait HearsWhereTheWalkIs
      *
      * Without one there is nothing to listen with, which reads as a
      * subscription that closed.
+     *
+     * @return WhatAStreamSaid<ALineItSaid>
      */
-    private function walkHeardFrom(Stack $stack): WhatTheWalkSaid
+    private function walkHeardFrom(Stack $stack): WhatAStreamSaid
     {
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatTheWalkSaid => $this->lettingGoOfARefusal(
+            held: fn(Session $session): WhatAStreamSaid => $this->lettingGoOfARefusal(
                 $this->followsTheWalkWith()->hearing->whereItIs($stack, $session),
                 $stack,
             ),
-            notHeld: static fn(): WhatTheWalkSaid => WhatTheWalkSaid::closed(),
+            notHeld: static fn(): WhatAStreamSaid => WhatAStreamSaid::closed(),
         );
     }
 
@@ -155,15 +161,19 @@ trait HearsWhereTheWalkIs
      *
      * The stream refusing the session is the stack refusing it, and a session
      * left in the store would be resumed on the next wake and refused again.
+     *
+     * @template T of object
+     * @param WhatAStreamSaid<T> $said
+     * @return WhatAStreamSaid<T>
      */
-    private function lettingGoOfARefusal(WhatTheWalkSaid $said, Stack $stack): WhatTheWalkSaid
+    private function lettingGoOfARefusal(WhatAStreamSaid $said, Stack $stack): WhatAStreamSaid
     {
         return $said->either(
-            nothing: static fn(): WhatTheWalkSaid => $said,
-            alive: static fn(): WhatTheWalkSaid => $said,
-            said: static fn(): WhatTheWalkSaid => $said,
-            closed: static fn(): WhatTheWalkSaid => $said,
-            met: function (Obstacle $why) use ($said, $stack): WhatTheWalkSaid {
+            nothing: static fn(): WhatAStreamSaid => $said,
+            alive: static fn(): WhatAStreamSaid => $said,
+            said: static fn(): WhatAStreamSaid => $said,
+            closed: static fn(): WhatAStreamSaid => $said,
+            met: function (Obstacle $why) use ($said, $stack): WhatAStreamSaid {
                 $this->letGoOfTheSession($why, $stack);
 
                 return $said;

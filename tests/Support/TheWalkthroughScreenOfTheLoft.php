@@ -15,7 +15,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkthroughStep;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 
@@ -99,10 +99,14 @@ final readonly class TheWalkthroughScreenOfTheLoft
         return Instant::atEpochSeconds(1_790_000_000 + $seconds);
     }
 
-    /** A step the walk says on the stream, as the adapter hands it over. */
-    public static function aStepTheWalkSaid(WalkthroughStep $step, string $said, string $detail = ''): WhatTheWalkSaid
+    /**
+     * A step the walk says on the stream, as the adapter hands it over.
+     *
+     * @return WhatAStreamSaid<ALineItSaid>
+     */
+    public static function aStepTheWalkSaid(WalkthroughStep $step, string $said, string $detail = ''): WhatAStreamSaid
     {
-        return WhatTheWalkSaid::said($detail === ''
+        return WhatAStreamSaid::said($detail === ''
             ? ALineItSaid::withoutDetail($step, $said)
             : ALineItSaid::withDetail($step, $said, $detail));
     }

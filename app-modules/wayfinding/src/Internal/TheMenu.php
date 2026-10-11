@@ -22,6 +22,7 @@ enum TheMenu: string
     case Requests = 'requests';
     case Allowance = 'allowance';
     case ViewAsMember = 'view_as_member';
+    case PlayingNow = 'playing_now';
     case StuckDownloads = 'stuck_downloads';
     case FollowADownload = 'follow_a_download';
     case InviteSomeone = 'invite_someone';
@@ -59,7 +60,7 @@ enum TheMenu: string
     public function group(): WhereInTheMenu
     {
         return match ($this) {
-            self::Requests, self::Allowance, self::ViewAsMember, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
+            self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::PairAPhone => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
             self::General, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
@@ -74,6 +75,7 @@ enum TheMenu: string
             self::Requests => AStacksScreen::Requests,
             self::Allowance => AStacksScreen::Allowance,
             self::ViewAsMember => AStacksScreen::AsAMember,
+            self::PlayingNow => AStacksScreen::Playing,
             self::StuckDownloads => AStacksScreen::Stuck,
             self::FollowADownload => AStacksScreen::Walkthrough,
             self::InviteSomeone => AStacksScreen::Invite,
@@ -126,6 +128,7 @@ enum TheMenu: string
             self::Requests => ['inbox', 'tray'],
             self::Allowance => ['account_balance_wallet', 'wallet.pass'],
             self::ViewAsMember => ['visibility', 'eye'],
+            self::PlayingNow => ['play_circle', 'play.circle'],
             self::StuckDownloads => ['hourglass_empty', 'hourglass'],
             self::FollowADownload => ['route', 'point.topleft.down.to.point.bottomright.curvepath'],
             self::InviteSomeone => ['person_add', 'person.badge.plus'],

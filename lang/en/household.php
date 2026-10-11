@@ -36,6 +36,21 @@ return [
         'unnamed' => 'Status not known here',
     ],
     'your_requests' => 'What you have asked for',
+
+    // A request no service has named yet, by the kind of thing it is: in the
+    // member's own list, and on the operator's.
+    'not_yet_named' => [
+        'theirs' => [
+            'film' => 'A film you asked for',
+            'series' => 'A series you asked for',
+            'something' => 'Something you asked for',
+        ],
+        'anybodys' => [
+            'film' => 'A film, not named yet',
+            'series' => 'A series, not named yet',
+            'something' => 'Something, not named yet',
+        ],
+    ],
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',

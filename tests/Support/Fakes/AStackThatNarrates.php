@@ -7,10 +7,11 @@ namespace Tests\Support\Fakes;
 use function array_key_exists;
 use function array_values;
 
+use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 
 /**
  * A stack's event stream while a walk runs, as a script of what each wake of a screen hears.
@@ -31,25 +32,38 @@ final class AStackThatNarrates implements HearingTheWalk
 
     private int $lettingsGo = 0;
 
-    /** @param list<WhatTheWalkSaid> $script */
+    /**
+     * @param list<WhatAStreamSaid<ALineItSaid>> $script
+     *
+     * @param WhatAStreamSaid<ALineItSaid> $afterwards
+     */
     private function __construct(
         private array $script,
-        private readonly WhatTheWalkSaid $afterwards,
+        private readonly WhatAStreamSaid $afterwards,
     ) {}
 
-    /** A stream that says these in turn and then stays open, saying nothing. */
-    public static function holdingOpen(WhatTheWalkSaid ...$said): self
+    /**
+     * A stream that says these in turn and then stays open, saying nothing.
+     *
+     * @param WhatAStreamSaid<ALineItSaid> ...$said
+     */
+    public static function holdingOpen(WhatAStreamSaid ...$said): self
     {
-        return new self(array_values($said), WhatTheWalkSaid::nothing());
+        return new self(array_values($said), WhatAStreamSaid::nothing());
     }
 
-    /** A stream that says these in turn and then is closed. */
-    public static function thenEnding(WhatTheWalkSaid ...$said): self
+    /**
+     * A stream that says these in turn and then is closed.
+     *
+     * @param WhatAStreamSaid<ALineItSaid> ...$said
+     */
+    public static function thenEnding(WhatAStreamSaid ...$said): self
     {
-        return new self(array_values($said), WhatTheWalkSaid::closed());
+        return new self(array_values($said), WhatAStreamSaid::closed());
     }
 
-    public function whereItIs(Stack $stack, Session $session): WhatTheWalkSaid
+    /** @return WhatAStreamSaid<ALineItSaid> */
+    public function whereItIs(Stack $stack, Session $session): WhatAStreamSaid
     {
         $this->asked++;
 
@@ -60,11 +74,12 @@ final class AStackThatNarrates implements HearingTheWalk
         return $this->script[$this->next++];
     }
 
-    public function letGo(): WhatTheWalkSaid
+    /** @return WhatAStreamSaid<ALineItSaid> */
+    public function letGo(): WhatAStreamSaid
     {
         $this->lettingsGo++;
 
-        return WhatTheWalkSaid::closed();
+        return WhatAStreamSaid::closed();
     }
 
     /** How many times a screen asked what had arrived. */

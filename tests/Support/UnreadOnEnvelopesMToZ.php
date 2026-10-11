@@ -20,6 +20,18 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'PlayingEnvelope.member',
+            'because' => 'The member a report was narrowed to, which is empty for the operator\'s whole-household report and never asked for: the operator sees every session, and no screen narrows it.',
+        ],
+        [
+            'path' => 'PlayingEnvelope.sessions[].medium',
+            'because' => 'What kind of thing a session plays. An episode is told apart by its series, which is read and drawn; `N2-R28` asks for the title or the series, season and episode, and no requirement asks for the kind beside them.',
+        ],
+        [
+            'path' => 'PlayingEnvelope.sessions[].member_id',
+            'because' => 'The media server\'s identifier for the member watching. `N2-R28` asks for the member, and the name beside it is what the operator recognises; nothing opens a member from this screen.',
+        ],
+        [
             'path' => 'QualityEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

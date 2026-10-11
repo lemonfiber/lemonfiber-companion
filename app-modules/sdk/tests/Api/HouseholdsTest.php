@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Api;
 
 use function array_diff_key;
+use function array_map;
 use function expect;
 use function implode;
 use function it;
@@ -24,6 +25,7 @@ use Modules\Sdk\Api\HouseholdWentUnread;
 use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -238,25 +240,46 @@ it('refuses a request with no id rather than one nothing can be decided about', 
         ->toThrow(HouseholdIsUnreadable::class, 'Request 0');
 });
 
-it('refuses a request with no title, which the contract permits and a screen cannot show', function (): void {
-    // Permitted to be absent and still refused: a row with no title is a row
-    // nobody can decide on, and the refusal happens here while the member and
-    // the position are still in hand.
-    $data = ['members' => [aMember('Robin', [['id' => 1, 'state' => 'getting']])]];
+it('reads a request no service has named yet by the kind of thing it is, and keeps the rest readable', function (): void {
+    $data = ['members' => [aMember('Robin', [
+        ['id' => 1, 'state' => 'waiting-for-approval', 'media' => 'film', 'title' => null],
+        ['id' => 2, 'state' => 'waiting-for-approval', 'media' => 'series'],
+        ['id' => 3, 'state' => 'waiting-for-approval', 'media' => 'audiobook'],
+        ['id' => 4, 'state' => 'waiting-for-approval'],
+        aRequest(5, 'A film', 'getting'),
+    ])]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    expect(array_map(WhatARequestIsCalledAsAWord::of(...), $wanted))->toBe([
+        'a film not named yet',
+        'a series not named yet',
+        'a something not named yet',
+        'a something not named yet',
+        'A film',
+    ]);
+});
+
+it('reads a declined request no service named, with its reason', function (): void {
+    $data = ['members' => [aMember('Robin', [['id' => 1, 'state' => 'declined', 'media' => 'film', 'refused' => ['reason' => 'Not this one.']]])]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    expect(WhatARequestIsCalledAsAWord::of($wanted[0]))->toBe('a film not named yet')
+        ->and($wanted[0]->refusal(
+            was: static fn(TurnedDown $why): TheWordCarriedOut => new TheWordCarriedOut($why->reason()),
+            wasNot: static fn(): TheWordCarriedOut => new TheWordCarriedOut('not refused'),
+        )->said)->toBe('Not this one.');
+});
+
+it('refuses a title that is there and is not text', function (): void {
+    $data = ['members' => [aMember('Robin', [['id' => 1, 'state' => 'getting', 'title' => 42]])]];
 
     expect(fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class, 'Robin');
 });
 
-it('reads a request with no state, which is not the same absence as no title', function (): void {
-    // This used to refuse, *for the same reason as one with no title*, and the
-    // two are not the same reason at all. A row with no title is a row nobody
-    // can decide on — the contract permits the absence and says nothing about
-    // what it means. A row with no state is the contract saying something
-    // precise: the request service reported a status lemonfiber has no word
-    // for, and it was left out rather than guessed into the nearest one.
-    //
-    // Treating the second like the first cost the whole reading, for one row.
+it('reads a request with no state as one whose standing nobody named', function (): void {
     $data = ['members' => [aMember('Robin', [['id' => 1, 'title' => 'A film']])]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
@@ -343,8 +366,8 @@ it('reads requests by position even where the wire numbered them', function (): 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
 
     expect($wanted)->toHaveCount(2)
-        ->and($wanted[0]->forWhat())->toBe('First')
-        ->and($wanted[1]->forWhat())->toBe('Second');
+        ->and(WhatARequestIsCalledAsAWord::of($wanted[0]))->toBe('First')
+        ->and(WhatARequestIsCalledAsAWord::of($wanted[1]))->toBe('Second');
 });
 
 it('an estimate says whether anybody measured it, and is read either way', function (): void {
@@ -554,7 +577,7 @@ it('a status nobody named is a row, not the end of the reading', function (): vo
     $read = [];
 
     foreach ($wanted as $one) {
-        $read[] = sprintf('%s/%s', $one->forWhat(), theStandingRead($one));
+        $read[] = sprintf('%s/%s', WhatARequestIsCalledAsAWord::of($one), theStandingRead($one));
     }
 
     expect($read)->toBe([

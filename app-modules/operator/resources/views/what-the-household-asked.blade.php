@@ -41,7 +41,7 @@
              down from the row it sits on would be one tap from doing it by
              accident. --}}
         <x-design::card>
-            <x-design::heading>{{ __('household.turning_down', ['title' => $this->turningDown()->title]) }}</x-design::heading>
+            <x-design::heading>{{ __('household.turning_down', ['title' => $this->turningDown()->title !== '' ? $this->turningDown()->title : __($this->turningDown()->untitled)]) }}</x-design::heading>
             <x-design::body>{{ __('household.turning_down_owes', ['who' => $this->turningDown()->by]) }}</x-design::body>
 
             <native:outlined-text-input
@@ -65,7 +65,7 @@
     @else
     @forelse ($this->answer()->requests as $request)
         <x-design::card>
-            <x-design::strong>{{ $request->title }}</x-design::strong>
+            <x-design::strong>{{ $request->title !== '' ? $request->title : __($request->untitled) }}</x-design::strong>
             <x-design::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-design::note>
 
             {{-- One fact and two sentences: the size, and whether anybody
@@ -98,14 +98,14 @@
                      rather than settling one. --}}
                 <x-operator::offered-action
                     label="{{ __('household.approve') }}"
-                    answers-to="{{ __('household.approve_that', ['title' => $request->title]) }}"
+                    answers-to="{{ __('household.approve_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)]) }}"
                     tap="approve('{{ $request->number }}')"
                     :offer="$this->offered(WhatWasDecided::Approve)"
                     :disabled="$this->answer()->waitsForTheStack"
                 />
                 <x-operator::offered-action
                     label="{{ __('household.turn_down') }}"
-                    answers-to="{{ __('household.turn_down_that', ['title' => $request->title]) }}"
+                    answers-to="{{ __('household.turn_down_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)]) }}"
                     tap="wouldDecline('{{ $request->number }}')"
                     :offer="$this->offered(WhatWasDecided::Decline)"
                     tone="tonal"

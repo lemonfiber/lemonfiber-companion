@@ -14,7 +14,7 @@ And two values about what the core publishes on its event stream:
 | | |
 |---|---|
 | `WhatWasHeardSoFar` | The health summary a screen holding the stream has heard, whether it still stands, and when to open the stream again |
-| `WhatTheWalkSaidSoFar` | The step a running walk last said, whether it still stands, and when to open the stream again |
+| `WhatAStreamSaidSoFar` | The last thing a screen heard on a stack's event stream, whether it still stands, and when to open the stream again |
 
 And one decision about what the phone keeps of it between launches:
 

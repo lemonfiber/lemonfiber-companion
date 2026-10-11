@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\HowBig;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
+
+use function sprintf;
 
 /**
  * One request the household made, as the row a screen lists it on.
@@ -20,6 +23,8 @@ use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
  */
 final readonly class HowARequestReads
 {
+    public const string NOT_YET_NAMED = 'household.not_yet_named.anybodys.%s';
+
     /**
      * Fold one request into the fields a row needs.
      *
@@ -70,6 +75,11 @@ final readonly class HowARequestReads
     {
         $wantsADecision = $wanted->standing()->wantsADecision();
 
+        $title = $wanted->called()->either(named: static fn(string $named): AsText => AsText::of($named), notYet: static fn(): AsText => AsText::nothing())->said;
+        $untitled = $wanted->called()->either(
+            named: static fn(): AsText => AsText::nothing(),
+            notYet: static fn(KindOfRequest $kind): AsText => AsText::of(sprintf(self::NOT_YET_NAMED, $kind->value)),
+        )->said;
         $reason = $why instanceof TurnedDown ? $why->reason() : '';
         $at = $why instanceof TurnedDown ? $why->when(
             then: static fn(string $when): AsText => AsText::of($when),
@@ -79,7 +89,7 @@ final readonly class HowARequestReads
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 number: $wanted->number(),
-                title: $wanted->forWhat(),
+                title: $title,
                 by: $wanted->by(),
                 standing: $standing,
                 wantsADecision: $wantsADecision,
@@ -88,10 +98,11 @@ final readonly class HowARequestReads
                 sizeUnit: HowBig::of($bytes)->said,
                 refusedReason: $reason,
                 refusedAt: $at,
+                untitled: $untitled,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 number: $wanted->number(),
-                title: $wanted->forWhat(),
+                title: $title,
                 by: $wanted->by(),
                 standing: $standing,
                 wantsADecision: $wantsADecision,
@@ -100,10 +111,11 @@ final readonly class HowARequestReads
                 sizeUnit: HowBig::of($bytes)->said,
                 refusedReason: $reason,
                 refusedAt: $at,
+                untitled: $untitled,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
                 number: $wanted->number(),
-                title: $wanted->forWhat(),
+                title: $title,
                 by: $wanted->by(),
                 standing: $standing,
                 wantsADecision: $wantsADecision,
@@ -117,6 +129,7 @@ final readonly class HowARequestReads
                 sizeUnit: '',
                 refusedReason: $reason,
                 refusedAt: $at,
+                untitled: $untitled,
             ),
         );
     }

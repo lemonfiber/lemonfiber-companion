@@ -852,4 +852,13 @@ enum WireField: string implements NamesAWireField
 
     /** A series' seasons in order: on a trace, and on a title read in full. */
     case Seasons = 'seasons';
+
+    /** The sessions a media server holds: the devices signed in to an account, and what the household is playing. */
+    case Sessions = 'sessions';
+
+    /** A season's number: on a trace, and on an episode the household is playing. */
+    case Season = 'season';
+
+    /** The kinds of media an upgrade covers, and the kind of thing a request is for. */
+    case Media = 'media';
 }

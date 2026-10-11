@@ -37,6 +37,7 @@ return [
         'requests' => 'Verzoeken',
         'allowance' => 'Tegoed',
         'view_as_member' => 'Bekijken als lid',
+        'playing_now' => 'Wat er speelt',
         'stuck_downloads' => 'Vastgelopen downloads',
         'follow_a_download' => 'Download volgen',
         'invite_someone' => 'Iemand uitnodigen',

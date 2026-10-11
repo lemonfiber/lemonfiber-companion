@@ -26,7 +26,8 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatOneRequestSays
 {
     /**
-     * @param string $title         what was asked for, which is what a decision is made about
+     * @param string $title         what was asked for, which is what a decision is made about, or empty where nothing has named it yet
+     * @param string $untitled      the key for the kind of thing it is, where nothing has named it yet, or empty
      * @param string $by            who asked, so a decline can reach them by name
      * @param string $standing      the key for where the request stands
      * @param bool   $wantsADecision whether this one is waiting on a decision
@@ -60,5 +61,6 @@ final readonly class WhatOneRequestSays
         public string $sizeUnit,
         public string $refusedReason = '',
         public string $refusedAt = '',
+        public string $untitled = '',
     ) {}
 }

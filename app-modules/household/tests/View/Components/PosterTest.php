@@ -88,6 +88,14 @@ it('draws one of their requests with where it stands at the top, and says its na
         ->and(data_get($drawn, 'on_press'))->toBeNull();
 });
 
+it('letters one of their requests nothing has named yet with its kind, in their words', function (): void {
+    $kind = 'household.not_yet_named.theirs.film';
+    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => WhatOnePosterSays::ofARequestNotYetNamed($kind, 'household.asked.waiting-for-approval')]);
+
+    expect(data_get($drawn, 'props.a11y_label'))->toBe(sprintf('%s, %s', WhatMarkupDraws::words($kind), WhatMarkupDraws::words('household.asked.waiting-for-approval')))
+        ->and(data_get($drawn, 'children.0.children.1.props.text'))->toBe(__($kind));
+});
+
 it('opens its title where it has somewhere to go', function (): void {
     $poster = WhatOnePosterSays::ofATitle('Alien', 'household.medium.film', '1979', '/titles/a1');
     $roads = WhatMarkupDraws::roads('<x-household::poster :poster="$poster" />', ['poster' => $poster]);

@@ -225,4 +225,20 @@ return [
         'no_outcome_after_yes' => 'Whether :name was taken out could not be read: this stack has no outcome for it any more. That is not the same as it not having happened',
         'unread_after_yes' => 'Whether :name was taken out could not be read. That is not the same as it not having happened',
     ],
+    // What the household is playing now, for the operator only.
+    'playing' => [
+        'heading' => 'What is playing',
+        'not_said_yet' => 'Waiting to hear what the household is playing.',
+        'unheard' => 'What the household is playing could not be heard. This screen tries again on its own.',
+        'operators_only' => 'Only whoever runs the house sees what the household is playing.',
+        'nothing' => 'Nothing is playing right now.',
+        'last_heard' => 'Last heard :ago.',
+        'unread' => 'The media server could not be read for what is playing.',
+        'alone' => ':title',
+        'in_series' => ':series: :title',
+        'numbered' => ':series, season :season, episode :episode: :title',
+        'paused' => 'Paused',
+        'playing' => 'Playing',
+        'on' => ':device · :state',
+    ],
 ];
