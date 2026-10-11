@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Internal;
 
+use function array_column;
 use function array_filter;
 use function basename;
+use function count;
 use function dirname;
 use function expect;
 use function file_get_contents;
@@ -324,4 +326,16 @@ it('reads a yes refused with the code it is told means moved in the stack\'s wor
         ->and(whatTheRefusalOfAMovedYesSaid(RefusalCode::UpdateMoved, refusedFor(RefusalCode::RestartMoved)))->toBe(KindOfObstacle::StackDidNotAnswer->name)
         ->and(whatTheRefusalOfAMovedYesSaid(RefusalCode::UpdateMoved, CertificateWasRefused::whenAsking('/api/actions/update', str_repeat('b', 64), str_repeat('a', 64))))
         ->toBe(KindOfObstacle::StackIsNotTheOnePaired->name);
+});
+
+it('decides every code the contract names in exactly one place', function (): void {
+    $placed = [...WhatARefusalMeant::DECIDED_BY_NAME, ...WhatARefusalMeant::ANSWERED_IN_ITS_WORDS, ...WhatARefusalMeant::READ_BY_ITS_FAMILY];
+    $placedNames = [];
+
+    foreach ($placed as $code) {
+        $placedNames[] = $code->name;
+    }
+
+    expect($placedNames)->toEqualCanonicalizing(array_column(RefusalCode::cases(), 'name'))
+        ->and($placed)->toHaveCount(count(RefusalCode::cases()));
 });

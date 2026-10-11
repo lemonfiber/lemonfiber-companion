@@ -6,6 +6,7 @@ namespace Modules\Sdk\Internal;
 
 use Closure;
 
+use function in_array;
 use function is_string;
 
 use Lemonfiber\Sdk\Exception\Busy;
@@ -77,6 +78,220 @@ use function trim;
  */
 final readonly class WhatARefusalMeant
 {
+    /** @var list<RefusalCode> The refusals {@see met()} names one by one, each its own obstacle. */
+    public const array DECIDED_BY_NAME = [
+        RefusalCode::NotAdmitted,
+        RefusalCode::NotYours,
+        RefusalCode::Unconfirmed,
+        RefusalCode::ServerSilent,
+        RefusalCode::Elsewhere,
+        RefusalCode::NotOpen,
+        RefusalCode::ShortChoice,
+    ];
+
+    /**
+     * The refusals whose own words are the answer: the stack refusing what was asked rather than who asked.
+     *
+     * Every code is written out, here or beside, so one the contract adds is
+     * decided rather than swept in unread.
+     *
+     * @var list<RefusalCode>
+     */
+    public const array ANSWERED_IN_ITS_WORDS = [
+        // The door's own refusals, which `Admissions` reads where the
+        // password is offered. One reaching here is about what was offered
+        // at the door, and it ends no session.
+        RefusalCode::NotThePassword,
+        RefusalCode::TooManyAttempts,
+        RefusalCode::NotAPassword,
+        // A key's own refusals. This app sends a session and no key, so one
+        // reaching it ends no session, and its words are the answer.
+        RefusalCode::KeyInTheClear,
+        RefusalCode::NotForAKey,
+        // The stack refusing what was asked rather than who asked. Its own
+        // words are the answer, and every code is written out so that one the
+        // contract adds is decided here rather than swept in unread.
+        RefusalCode::NoSuchAction,
+        // A member's search, an ask and a found title's poster refused:
+        // the words searched for, the title, their allowance, the house's
+        // room or its request service. Every one carries a household
+        // sentence, and that sentence is what the member is shown.
+        RefusalCode::NotASearch,
+        RefusalCode::NotAPlace,
+        RefusalCode::NotAskable,
+        RefusalCode::CannotFetch,
+        RefusalCode::AlreadyHere,
+        RefusalCode::NothingLeft,
+        RefusalCode::NoRoom,
+        RefusalCode::NotWorking,
+        RefusalCode::NotSetUp,
+        RefusalCode::NotItsSeason,
+        RefusalCode::NobodyAsking,
+        RefusalCode::NotAMember,
+        RefusalCode::NoPicture,
+        RefusalCode::MissingArgument,
+        RefusalCode::UnrecognisedArgument,
+        RefusalCode::UnwantedArgument,
+        RefusalCode::ArgumentsTogether,
+        RefusalCode::NotArguments,
+        RefusalCode::NoSuchJob,
+        RefusalCode::NotAnAnswer,
+        RefusalCode::NoEndpoint,
+        RefusalCode::WrongMethod,
+        RefusalCode::NotAKeyRequest,
+        RefusalCode::NotAnIdempotencyKey,
+        RefusalCode::IdempotencyKeyReused,
+        RefusalCode::Unwanted,
+        RefusalCode::Repeated,
+        RefusalCode::NoSuchRead,
+        RefusalCode::NoTerm,
+        RefusalCode::NotASeason,
+        RefusalCode::NoSetting,
+        RefusalCode::NoMember,
+        RefusalCode::NoShelfWithoutAMember,
+        RefusalCode::NotAnItem,
+        RefusalCode::NotOnTheirShelf,
+        RefusalCode::NotADevice,
+        RefusalCode::NobodyNamed,
+        RefusalCode::NoSuchPicture,
+        RefusalCode::NotACount,
+        RefusalCode::TooManyAtOnce,
+        RefusalCode::NoSuchGroup,
+        RefusalCode::NoSuchRemoval,
+        RefusalCode::NoUpdateObject,
+        RefusalCode::NotALineCount,
+        RefusalCode::NotAChoice,
+        RefusalCode::MemberAndDefaults,
+        RefusalCode::Unrenderable,
+        RefusalCode::NoJobName,
+        RefusalCode::Unanswered,
+        RefusalCode::BundleNotHeld,
+        RefusalCode::NoFormNamed,
+        RefusalCode::NoSuchForm,
+        RefusalCode::FormsConflict,
+        RefusalCode::NoLimit,
+        RefusalCode::NotWaiting,
+        RefusalCode::NoReason,
+        RefusalCode::Nobody,
+        RefusalCode::NeverHere,
+        RefusalCode::NothingMeasured,
+        RefusalCode::NoZone,
+        RefusalCode::LimitUnreadable,
+        RefusalCode::NothingToLimit,
+        RefusalCode::NothingToPause,
+        RefusalCode::Cannot,
+        RefusalCode::NotYet,
+        RefusalCode::NotReviewed,
+        RefusalCode::DoesNotApply,
+        RefusalCode::AlreadySetUp,
+        RefusalCode::NothingToRecover,
+        RefusalCode::NowhereToMeasure,
+        RefusalCode::NothingToAsk,
+        RefusalCode::NotHeld,
+        RefusalCode::Unrecognised,
+        RefusalCode::RegistryRefused,
+        RefusalCode::NothingToProve,
+        RefusalCode::StrangerReplacing,
+        // Minting, collecting and revoking a key for an app, refused for
+        // what was asked: a claim that collects nothing is one of them, and
+        // ends no session whatever status it came with.
+        RefusalCode::BadName,
+        RefusalCode::NotAScope,
+        RefusalCode::NotAPurpose,
+        RefusalCode::NameTaken,
+        RefusalCode::NoSuchMember,
+        RefusalCode::NotForYourself,
+        RefusalCode::NoSuchKey,
+        RefusalCode::MembersMayNotMint,
+        RefusalCode::ClaimNotOpen,
+        RefusalCode::Unlinkable,
+        // An answer given for an offer or a listing that has since moved.
+        // The stack's words say what moved, and the adapter following the
+        // work it ended decides whether there is a fresh offer to read.
+        RefusalCode::Stale,
+        RefusalCode::MovedOn,
+        RefusalCode::OfferMoved,
+        RefusalCode::AnotherOffer,
+        RefusalCode::PluginOfferMoved,
+        RefusalCode::RestartMoved,
+        RefusalCode::UpdateMoved,
+        RefusalCode::PausingMoved,
+        RefusalCode::AnotherReading,
+    ];
+
+    /**
+     * The refusals read by their family, as a known code that signs nobody out.
+     *
+     * What {@see met()} reads every code it does not name or list as answered
+     * in its words by; `WhatARefusalMeantTest` holds every code to one place.
+     *
+     * @var list<RefusalCode>
+     */
+    public const array READ_BY_ITS_FAMILY = [
+        // The stack unable to read what it holds — its own description, or
+        // the record of what is installed — and refusing a choice of what
+        // fills a capability, which `Fillers` also reads by its code. Its
+        // words say what stood in the way, and turned away it is an
+        // account that may not ask: a known code ends no session.
+        RefusalCode::StackUnreadable,
+        RefusalCode::StackUnusable,
+        RefusalCode::StackNotEmbedded,
+        RefusalCode::StackNotSetUp,
+        RefusalCode::StackNotWritten,
+        RefusalCode::StackInvalid,
+        RefusalCode::StackMalformed,
+        RefusalCode::StackUnrecognised,
+        RefusalCode::StackNeedsNewer,
+        RefusalCode::StackUnassembled,
+        RefusalCode::Unrecorded,
+        RefusalCode::Unreadable,
+        RefusalCode::Refused,
+        RefusalCode::Already,
+        RefusalCode::Nowhere,
+        RefusalCode::Unwritable,
+        RefusalCode::Unrecordable,
+        RefusalCode::Unproved,
+        RefusalCode::NothingToRemove,
+        RefusalCode::NothingToUpdate,
+        RefusalCode::Stuck,
+        RefusalCode::Answered,
+        RefusalCode::TwoSources,
+        RefusalCode::SourceOff,
+        RefusalCode::Unfetched,
+        RefusalCode::NoRevision,
+        RefusalCode::CatalogueOff,
+        RefusalCode::CatalogueUnreachable,
+        RefusalCode::SignatureUnverified,
+        RefusalCode::CatalogueUnreadable,
+        RefusalCode::NotCatalogued,
+        RefusalCode::NotAsReviewed,
+        RefusalCode::SpelledAlike,
+        RefusalCode::Unapproved,
+        RefusalCode::AnotherPlugin,
+        RefusalCode::Occupied,
+        RefusalCode::SchemeRefused,
+        RefusalCode::AddressRefused,
+        RefusalCode::HeaderNamed,
+        RefusalCode::InputUnmatched,
+        RefusalCode::CallRefused,
+        RefusalCode::StepFailed,
+        RefusalCode::PathNotPlain,
+        RefusalCode::ValueWithheld,
+        RefusalCode::CatalogueReplaced,
+        RefusalCode::NewestUnkept,
+        RefusalCode::NoSuchFiller,
+        RefusalCode::CannotFill,
+        RefusalCode::NothingAsks,
+        RefusalCode::ChoiceUnwritable,
+        RefusalCode::WiringMoved,
+        RefusalCode::Unreasonable,
+        RefusalCode::AlreadyFills,
+        RefusalCode::NothingToPlayFrom,
+        RefusalCode::NotInTheHousehold,
+        RefusalCode::SignsNoDeviceIn,
+        // Another run already working on the stack, which its family reads as the stack being busy.
+        RefusalCode::AlreadyWorking,
+    ];
     /**
      * The status a stack turns away a session it will not accept with.
      *
@@ -199,196 +414,16 @@ final readonly class WhatARefusalMeant
             return self::byStatus($why);
         }
 
-        return match ($code) {
-            RefusalCode::NotAdmitted => Obstacle::of(KindOfObstacle::CredentialWasRefused),
-            RefusalCode::NotYours => Obstacle::of(KindOfObstacle::NotForThisAccount),
-            RefusalCode::Unconfirmed,
-            RefusalCode::ServerSilent => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
-            RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
-            RefusalCode::NotOpen => Obstacle::of(KindOfObstacle::InvitationNotOpen),
-            RefusalCode::ShortChoice => Obstacle::of(KindOfObstacle::ChosenPasswordTooShort),
-            // The door's own refusals, which `Admissions` reads where the
-            // password is offered. One reaching here is about what was offered
-            // at the door, and it ends no session.
-            RefusalCode::NotThePassword,
-            RefusalCode::TooManyAttempts,
-            RefusalCode::NotAPassword,
-            // A key's own refusals. This app sends a session and no key, so one
-            // reaching it ends no session, and its words are the answer.
-            RefusalCode::KeyInTheClear,
-            RefusalCode::NotForAKey,
-            // The stack refusing what was asked rather than who asked. Its own
-            // words are the answer, and every code is written out so that one the
-            // contract adds is decided here rather than swept in unread.
-            RefusalCode::NoSuchAction,
-            // A member's search, an ask and a found title's poster refused:
-            // the words searched for, the title, their allowance, the house's
-            // room or its request service. Every one carries a household
-            // sentence, and that sentence is what the member is shown.
-            RefusalCode::NotASearch,
-            RefusalCode::NotAPlace,
-            RefusalCode::NotAskable,
-            RefusalCode::CannotFetch,
-            RefusalCode::AlreadyHere,
-            RefusalCode::NothingLeft,
-            RefusalCode::NoRoom,
-            RefusalCode::NotWorking,
-            RefusalCode::NotSetUp,
-            RefusalCode::NotItsSeason,
-            RefusalCode::NobodyAsking,
-            RefusalCode::NotAMember,
-            RefusalCode::NoPicture,
-            RefusalCode::MissingArgument,
-            RefusalCode::UnrecognisedArgument,
-            RefusalCode::UnwantedArgument,
-            RefusalCode::ArgumentsTogether,
-            RefusalCode::NotArguments,
-            RefusalCode::NoSuchJob,
-            RefusalCode::NotAnAnswer,
-            RefusalCode::NoEndpoint,
-            RefusalCode::WrongMethod,
-            RefusalCode::NotAKeyRequest,
-            RefusalCode::NotAnIdempotencyKey,
-            RefusalCode::IdempotencyKeyReused,
-            RefusalCode::Unwanted,
-            RefusalCode::Repeated,
-            RefusalCode::NoSuchRead,
-            RefusalCode::NoTerm,
-            RefusalCode::NotASeason,
-            RefusalCode::NoSetting,
-            RefusalCode::NoMember,
-            RefusalCode::NoShelfWithoutAMember,
-            RefusalCode::NotAnItem,
-            RefusalCode::NotOnTheirShelf,
-            RefusalCode::NotADevice,
-            RefusalCode::NobodyNamed,
-            RefusalCode::NoSuchPicture,
-            RefusalCode::NotACount,
-            RefusalCode::TooManyAtOnce,
-            RefusalCode::NoSuchGroup,
-            RefusalCode::NoSuchRemoval,
-            RefusalCode::NoUpdateObject,
-            RefusalCode::NotALineCount,
-            RefusalCode::NotAChoice,
-            RefusalCode::MemberAndDefaults,
-            RefusalCode::Unrenderable,
-            RefusalCode::NoJobName,
-            RefusalCode::Unanswered,
-            RefusalCode::BundleNotHeld,
-            RefusalCode::NoFormNamed,
-            RefusalCode::NoSuchForm,
-            RefusalCode::FormsConflict,
-            RefusalCode::NoLimit,
-            RefusalCode::NotWaiting,
-            RefusalCode::NoReason,
-            RefusalCode::Nobody,
-            RefusalCode::NeverHere,
-            RefusalCode::NothingMeasured,
-            RefusalCode::NoZone,
-            RefusalCode::LimitUnreadable,
-            RefusalCode::NothingToLimit,
-            RefusalCode::NothingToPause,
-            RefusalCode::Cannot,
-            RefusalCode::NotYet,
-            RefusalCode::NotReviewed,
-            RefusalCode::DoesNotApply,
-            RefusalCode::AlreadySetUp,
-            RefusalCode::NothingToRecover,
-            RefusalCode::NowhereToMeasure,
-            RefusalCode::NothingToAsk,
-            RefusalCode::NotHeld,
-            RefusalCode::Unrecognised,
-            RefusalCode::RegistryRefused,
-            RefusalCode::NothingToProve,
-            RefusalCode::StrangerReplacing,
-            // Minting, collecting and revoking a key for an app, refused for
-            // what was asked: a claim that collects nothing is one of them, and
-            // ends no session whatever status it came with.
-            RefusalCode::BadName,
-            RefusalCode::NotAScope,
-            RefusalCode::NotAPurpose,
-            RefusalCode::NameTaken,
-            RefusalCode::NoSuchMember,
-            RefusalCode::NotForYourself,
-            RefusalCode::NoSuchKey,
-            RefusalCode::MembersMayNotMint,
-            RefusalCode::ClaimNotOpen,
-            RefusalCode::Unlinkable,
-            // An answer given for an offer or a listing that has since moved.
-            // The stack's words say what moved, and the adapter following the
-            // work it ended decides whether there is a fresh offer to read.
-            RefusalCode::Stale,
-            RefusalCode::MovedOn,
-            RefusalCode::OfferMoved,
-            RefusalCode::AnotherOffer,
-            RefusalCode::PluginOfferMoved,
-            RefusalCode::RestartMoved,
-            RefusalCode::UpdateMoved,
-            RefusalCode::PausingMoved,
-            RefusalCode::AnotherReading => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
-            // The stack unable to read what it holds — its own description, or
-            // the record of what is installed — and refusing a choice of what
-            // fills a capability, which `Fillers` also reads by its code. Its
-            // words say what stood in the way, and turned away it is an
-            // account that may not ask: a known code ends no session.
-            RefusalCode::StackUnreadable,
-            RefusalCode::StackUnusable,
-            RefusalCode::StackNotEmbedded,
-            RefusalCode::StackNotSetUp,
-            RefusalCode::StackNotWritten,
-            RefusalCode::StackInvalid,
-            RefusalCode::StackMalformed,
-            RefusalCode::StackUnrecognised,
-            RefusalCode::StackNeedsNewer,
-            RefusalCode::StackUnassembled,
-            RefusalCode::Unrecorded,
-            RefusalCode::Unreadable,
-            RefusalCode::Refused,
-            RefusalCode::Already,
-            RefusalCode::Nowhere,
-            RefusalCode::Unwritable,
-            RefusalCode::Unrecordable,
-            RefusalCode::Unproved,
-            RefusalCode::NothingToRemove,
-            RefusalCode::NothingToUpdate,
-            RefusalCode::Stuck,
-            RefusalCode::Answered,
-            RefusalCode::TwoSources,
-            RefusalCode::SourceOff,
-            RefusalCode::Unfetched,
-            RefusalCode::NoRevision,
-            RefusalCode::CatalogueOff,
-            RefusalCode::CatalogueUnreachable,
-            RefusalCode::SignatureUnverified,
-            RefusalCode::CatalogueUnreadable,
-            RefusalCode::NotCatalogued,
-            RefusalCode::NotAsReviewed,
-            RefusalCode::SpelledAlike,
-            RefusalCode::Unapproved,
-            RefusalCode::AnotherPlugin,
-            RefusalCode::Occupied,
-            RefusalCode::SchemeRefused,
-            RefusalCode::AddressRefused,
-            RefusalCode::HeaderNamed,
-            RefusalCode::InputUnmatched,
-            RefusalCode::CallRefused,
-            RefusalCode::StepFailed,
-            RefusalCode::PathNotPlain,
-            RefusalCode::ValueWithheld,
-            RefusalCode::CatalogueReplaced,
-            RefusalCode::NewestUnkept,
-            RefusalCode::NoSuchFiller,
-            RefusalCode::CannotFill,
-            RefusalCode::NothingAsks,
-            RefusalCode::ChoiceUnwritable,
-            RefusalCode::WiringMoved,
-            RefusalCode::Unreasonable,
-            RefusalCode::AlreadyFills,
-            RefusalCode::NothingToPlayFrom,
-            RefusalCode::NotInTheHousehold,
-            RefusalCode::SignsNoDeviceIn,
-            // Another run already working on the stack, which its family reads as the stack being busy.
-            RefusalCode::AlreadyWorking => self::byFamily($why),
+        return match (true) {
+            $code === RefusalCode::NotAdmitted => Obstacle::of(KindOfObstacle::CredentialWasRefused),
+            $code === RefusalCode::NotYours => Obstacle::of(KindOfObstacle::NotForThisAccount),
+            $code === RefusalCode::Unconfirmed,
+            $code === RefusalCode::ServerSilent => Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer),
+            $code === RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
+            $code === RefusalCode::NotOpen => Obstacle::of(KindOfObstacle::InvitationNotOpen),
+            $code === RefusalCode::ShortChoice => Obstacle::of(KindOfObstacle::ChosenPasswordTooShort),
+            in_array($code, self::ANSWERED_IN_ITS_WORDS, strict: true) => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
+            default => self::byFamily($why),
         };
     }
 
