@@ -5,7 +5,7 @@
     @if ($this->isSignedIn())
         <x-design::body>{{ __($this->given->opened()) }}</x-design::body>
     @else
-        <x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>
+        <x-design::body>{{ __($this->explained()) }}</x-design::body>
     @endif
     @if ($this->went()->isPutRightInTheAppsSettings())
         <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
@@ -37,25 +37,32 @@
 
     @if ($this->mayTry())
         <x-design::card>
-            {{-- A member's name, which the operator leaves empty: the stack
-                 decides from what was offered whose session it opens. --}}
-            <native:outlined-text-input
-                native:model="theirName"
-                label="{{ __('connection.member_name_label') }}"
-                supporting="{{ __('connection.member_name_hint') }}"
-                autocorrect="off"
-                autocapitalize="none"
-            />
+            @if (! $this->runsTheHouse)
+                <native:outlined-text-input
+                    native:model="theirName"
+                    label="{{ __('connection.member_name_label') }}"
+                    content-type="username"
+                    autocorrect="off"
+                    autocapitalize="none"
+                />
+            @endif
 
             <native:outlined-text-input
                 native:model="typed"
                 label="{{ __('connection.password_label') }}"
                 placeholder="{{ __('connection.password_placeholder') }}"
+                content-type="password"
                 keyboard="password"
                 secure
             />
 
             <x-design::action label="{{ __($this->offerLabel()) }}" :disabled="! $this->mayOffer()" tap="offer()" />
         </x-design::card>
+
+        @if ($this->runsTheHouse)
+            <x-design::link label="{{ __('household.joining.invited') }}" tap="iWasInvited()" />
+        @else
+            <x-design::link label="{{ __('household.joining.runs_it') }}" tap="iRunTheHouse()" />
+        @endif
     @endif
 </x-operator::content>

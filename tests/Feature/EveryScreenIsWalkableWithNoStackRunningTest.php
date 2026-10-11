@@ -476,6 +476,7 @@ it('a password can be offered to a machine that is not running', function (): vo
     // Through the framework's own property sync, which is how a typed character
     // reaches a screen on a device. A test assigning the property directly
     // would be proving something about PHP.
+    $screen->iRunTheHouse();
     $screen->__syncProperty('typed', 'not-a-password');
 
     expect($screen->mayOffer())->toBeTrue('nothing was typed, so there is nothing to offer');

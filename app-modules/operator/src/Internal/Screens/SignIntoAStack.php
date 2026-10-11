@@ -82,6 +82,9 @@ final class SignIntoAStack extends NativeComponent
 
     public const string TEMPLATE = 'operator::sign-into-a-stack';
 
+    /** What the operator's form asks for before anything was offered: the house's own password, and no name. */
+    private const string THE_OPERATORS_WAY_IN = 'connection.sign_in_as_the_operator_action';
+
     /**
      * The password, as it stands in the field.
      *
@@ -112,6 +115,9 @@ final class SignIntoAStack extends NativeComponent
      * the session says whose it is.
      */
     public string $theirName = '';
+
+    /** Whether the person said they run the house, so the operator's password alone is asked for; a member's name and password until then. */
+    public bool $runsTheHouse = false;
 
     /** What became of the attempt, once one has been made. */
     public HowTheSignInWent $went = HowTheSignInWent::NotYet;
@@ -150,6 +156,12 @@ final class SignIntoAStack extends NativeComponent
     public function went(): HowTheSignInWent
     {
         return $this->went;
+    }
+
+    /** What the screen says under its title: what to type on the form drawn, until something was offered, and then what became of it. */
+    public function explained(): string
+    {
+        return $this->runsTheHouse && $this->went === HowTheSignInWent::NotYet ? self::THE_OPERATORS_WAY_IN : $this->went->remedy();
     }
 
     /** Whether the operator is in, which is when the way onwards is offered. */
@@ -200,25 +212,39 @@ final class SignIntoAStack extends NativeComponent
      * Whether the control that offers the password may be tapped at all.
      *
      * An empty field is not an attempt. Offering it would spend a try against a
-     * door that counts them, on a password nobody typed.
+     * door that counts them, on a password nobody typed; and a member's form
+     * with no name in it is not the operator's, so it offers nothing either.
      */
     public function mayOffer(): bool
     {
-        return trim($this->typed) !== '';
+        return trim($this->typed) !== '' && ($this->runsTheHouse || trim($this->theirName) !== '');
+    }
+
+    /** Ask for the operator's password alone, now the person has said they run the house. */
+    public function iRunTheHouse(): void
+    {
+        $this->runsTheHouse = true;
+        $this->theirName = '';
+    }
+
+    /** Ask for a member's name and password again, now the person has said they were invited. */
+    public function iWasInvited(): void
+    {
+        $this->runsTheHouse = false;
     }
 
     /**
      * The words on the button that offers what was typed.
      *
-     * After a refusal it asks for another try, and the name field decides which:
-     * with a name in it the name and password go again, and without one the
-     * operator's password does.
+     * After a refusal it asks for another try: the operator's password again
+     * where they said they run the house, and a member's name and password
+     * where they did not.
      */
     public function offerLabel(): string
     {
         return match (true) {
             ! $this->went->isWorthAnotherAttempt() => 'connection.sign_in',
-            trim($this->theirName) === '' => 'connection.try_that_again',
+            $this->runsTheHouse => 'connection.try_that_again',
             default => 'connection.member_try_again',
         };
     }
@@ -226,8 +252,9 @@ final class SignIntoAStack extends NativeComponent
     /**
      * Offer what was typed, and say what happened.
      *
-     * The operator's password alone where no name was typed, and a member's
-     * name with their password where one was. Either way the string becomes a
+     * The operator's password alone where they said they run the house, and a
+     * member's name with their password where they did not; nothing is offered
+     * where either is missing. Either way the string becomes a
      * credential at the moment it is offered, the credential is spent by being
      * offered, and what comes back is either a session this device keeps or a
      * reason it did not.
@@ -244,9 +271,11 @@ final class SignIntoAStack extends NativeComponent
      */
     public function offer(): void
     {
-        $named = trim($this->theirName);
+        if (! $this->mayOffer()) {
+            return;
+        }
 
-        $this->went = $named === '' ? $this->asTheOperator() : $this->asAMember(AMembersName::of($named));
+        $this->went = $this->runsTheHouse ? $this->asTheOperator() : $this->asAMember(AMembersName::of(trim($this->theirName)));
         $this->theirName = $this->went->isSignedIn() ? '' : $this->theirName;
 
         if ($this->went->isSignedIn() && $this->given === WhichSurfaceTheyAreGiven::TheirHome) {
