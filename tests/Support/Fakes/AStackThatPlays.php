@@ -24,6 +24,8 @@ final class AStackThatPlays implements FollowingWhatIsPlaying
 {
     private int $next = 0;
 
+    private int $read = 0;
+
     private int $asked = 0;
 
     private int $lettingsGo = 0;
@@ -60,6 +62,8 @@ final class AStackThatPlays implements FollowingWhatIsPlaying
 
     public function now(Stack $stack, Session $session): HowPlayingWasRead
     {
+        $this->read++;
+
         return $this->now;
     }
 
@@ -81,6 +85,12 @@ final class AStackThatPlays implements FollowingWhatIsPlaying
         $this->lettingsGo++;
 
         return WhatAStreamSaid::closed();
+    }
+
+    /** How many times a screen asked what is playing now. */
+    public function read(): int
+    {
+        return $this->read;
     }
 
     /** How many times a screen asked what had arrived. */

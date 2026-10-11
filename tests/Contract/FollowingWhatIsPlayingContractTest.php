@@ -185,6 +185,21 @@ it('hears what is playing on the stream, and then that the stream ended', functi
     }
 });
 
+it('hears nothing from a stream that has said nothing yet, and then that it closed', function (): void {
+    foreach (everyWayOfFollowingWhatIsPlaying(
+        [MockResponse::make('')],
+        HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these()),
+        [WhatAStreamSaid::nothing(), WhatAStreamSaid::closed()],
+    ) as $which => $make) {
+        $following = $make();
+
+        expect([
+            whatTheStreamSaidOfPlaying($following->heard(aHouseThatPlays(), theOperatorsSessionWhilePlaying())),
+            whatTheStreamSaidOfPlaying($following->heard(aHouseThatPlays(), theOperatorsSessionWhilePlaying())),
+        ])->toBe(['nothing', 'closed'], $which);
+    }
+});
+
 it('hears a sign of life in a heartbeat, and closes when let go of', function (): void {
     foreach (everyWayOfFollowingWhatIsPlaying(
         [MockResponse::make(": beat\n\n")],
@@ -204,6 +219,8 @@ it('says a refused session as refused, and a report it cannot read as an answer 
         [MockResponse::make(whatTheCoreSaysIsPlaying(['sessions' => [['member' => 'Sanne', 'title' => 'Low Tide', 'medium' => 'film', 'paused' => false, 'member_id' => 'u-1']]])), KindOfObstacle::AnswerCouldNotBeRead],
         [MockResponse::make(whatTheCoreSaysIsPlaying(['sessions' => [['member' => '  ', 'title' => 'Low Tide', 'device' => 'TV', 'medium' => 'film', 'paused' => false, 'member_id' => 'u-1']]])), KindOfObstacle::AnswerCouldNotBeRead],
         [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => 'yes'])), KindOfObstacle::AnswerCouldNotBeRead],
+        [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => 'Jellyfin did not answer.'])), KindOfObstacle::AnswerCouldNotBeRead],
+        [MockResponse::make(whatTheCoreSaysIsPlaying(['sessions' => [['member' => 'Sanne', 'title' => 'Low Tide', 'device' => 'TV', 'medium' => 'film', 'paused' => 'no', 'member_id' => 'u-1']]])), KindOfObstacle::AnswerCouldNotBeRead],
     ];
 
     foreach ($table as [$answered, $kind]) {

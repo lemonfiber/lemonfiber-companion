@@ -219,6 +219,28 @@ it('offers signing in where the device holds no session, and lets go of one the 
         )->said)->toBe('nobody');
 });
 
+it('asks the core again when the operator checks again', function (): void {
+    $playing = AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these(sannesFilm())));
+    $screen = whatIsPlayingOpened($playing, Whose::theOperator());
+
+    $screen->answer();
+    $screen->again();
+    $screen->answer();
+
+    expect($playing->read())->toBe(2);
+});
+
+it('lets go of the stream when the operator leaves the screen, keeping what it heard', function (): void {
+    $playing = AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these(sannesFilm())));
+    $screen = whatIsPlayingOpened($playing, Whose::theOperator());
+
+    $screen->follow();
+    $screen->stop();
+
+    expect($playing->lettingsGo())->toBe(1)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Sanne');
+});
+
 it('is reached from the household part of the operator\'s menu', function (): void {
     expect(TheMenu::PlayingNow->screen())->toBe(AStacksScreen::Playing)
         ->and(TheMenu::PlayingNow->group())->toBe(WhereInTheMenu::Household);

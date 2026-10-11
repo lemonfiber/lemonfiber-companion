@@ -49,11 +49,6 @@ final readonly class ASessionPlaying
         return $this->member;
     }
 
-    public function title(): string
-    {
-        return $this->title;
-    }
-
     public function device(): string
     {
         return $this->device;
