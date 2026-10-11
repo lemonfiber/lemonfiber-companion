@@ -103,6 +103,18 @@ it('lists each key with what it admits, what it is for, where it stands and who 
     );
 });
 
+it('says when a key was made only where the stack wrote a moment it can read', function (): void {
+    $unread = TheKeysForApps::of(
+        WHAT_A_PURPOSE_IS_WORTH,
+        AKeyForAnApp::listed(AKeysName::of('den'), WhatAKeyAdmits::reading(), WhatAKeyIsFor::SomethingElse, WhereAKeyStands::Active, AMomentAsWritten::of(''), AMomentAsWritten::of(''), memberMinted: false),
+    );
+    $made = trim(aKeysLine('stacks.keys.minted', ['when' => '']));
+    $saysWhenMade = static fn(array $drawn): bool => array_any($drawn, static fn(mixed $line): bool => is_string($line) && str_starts_with($line, $made));
+
+    expect($saysWhenMade(WhatTheDeviceWouldDraw::by(theKeysScreen(AStackThatKeepsKeys::listing($unread)))->said()))->toBeFalse()
+        ->and($saysWhenMade(WhatTheDeviceWouldDraw::by(theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps())))->said()))->toBeTrue();
+});
+
 it('asks before revoking, saying the key stops at once and cannot be brought back, and keeps it when told to', function (): void {
     $keeping = AStackThatKeepsKeys::listing(threeKeysForApps());
     $screen = theKeysScreen($keeping);

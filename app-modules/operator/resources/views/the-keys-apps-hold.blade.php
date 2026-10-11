@@ -14,7 +14,9 @@
             @if ($key->byAMember)
                 <x-design::note>{{ __('stacks.keys.by_a_member') }}</x-design::note>
             @endif
-            <x-design::note>{{ __('stacks.keys.minted', ['when' => trans_choice($key->minted->said, $key->minted->count)]) }}</x-design::note>
+            @if ($key->minted->said !== '')
+                <x-design::note>{{ __('stacks.keys.minted', ['when' => trans_choice($key->minted->said, $key->minted->count)]) }}</x-design::note>
+            @endif
             @if ($key->used->said !== '')
                 <x-design::note>{{ __('stacks.keys.used', ['when' => trans_choice($key->used->said, $key->used->count)]) }}</x-design::note>
             @else

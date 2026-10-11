@@ -88,8 +88,8 @@ final readonly class KeysListed
             self::scope(self::text($row, WireField::Scope, $position), $position),
             self::purpose($row, $position),
             self::state($row, $position),
-            AMomentAsWritten::of(self::text($row, KeysField::Minted, $position)),
-            AMomentAsWritten::of(self::optional($row, KeysField::Used, $position)),
+            AMomentAsWritten::byTheStack(self::text($row, KeysField::Minted, $position)),
+            AMomentAsWritten::byTheStack(self::optional($row, KeysField::Used, $position)),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }
