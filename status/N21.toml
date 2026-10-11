@@ -17,4 +17,5 @@ requirement = [
   { id = "N21-R9", state = "done", evidence = ["app-modules/kernel/src/Api/AnInvitation.php", "app-modules/sdk/src/Api/Invitations.php", "app-modules/kernel/tests/Api/AnInvitationAgreedTest.php", "app-modules/kernel/tests/Api/AnInvitationTest.php"] },
   { id = "N21-R10", state = "done", evidence = ["app-modules/kernel/src/Api/WhoWasSwitchedOff.php", "app-modules/kernel/src/Api/WhoWasTakenBack.php", "app-modules/kernel/tests/Api/AnInvitationAgreedTest.php", "app-modules/kernel/tests/Api/AnInvitationTest.php"] },
   { id = "N21-R11", state = "done", evidence = ["app-modules/kernel/src/Api/AnAddressToHand.php", "app-modules/kernel/src/Api/AnInvitationToPassOn.php", "app-modules/codes/tests/Api/QrCodesTest.php", "app-modules/kernel/tests/Api/AHandoffTest.php"] },
+  { id = "N21-R12", state = "done", evidence = ["app-modules/operator/src/Internal/Presenters/HowTheInvitationReads.php", "tests/Feature/AskingSomebodyInTest.php"] },
 ]

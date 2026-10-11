@@ -113,6 +113,9 @@ final class JoiningAHouse extends NativeComponent
     /** Whether the person chooses their password, with the claim their invitation carries, rather than signing in with one. */
     public bool $choosing = false;
 
+    /** Whether the name in the field is the one a join link named, drawn as a field the person cannot type into; the link's own name is what is offered. */
+    public bool $nameIsTheLinks = false;
+
     /** The house a join link would add, held until the person says somebody in their house sent it; nothing is pinned or kept meanwhile. */
     private ?Stack $offered = null;
 
@@ -121,6 +124,9 @@ final class JoiningAHouse extends NativeComponent
 
     /** The claim the person chooses their password with, while they do; never kept past this screen. */
     private ?AClaim $claim = null;
+
+    /** The one account a join link names, which is the only one it may lead to; nothing where the house was found by a code. */
+    private ?AMembersName $namedByTheLink = null;
 
     public function __construct(
         private readonly Scanning $camera,
@@ -155,6 +161,8 @@ final class JoiningAHouse extends NativeComponent
     public function findTheHouse(): void
     {
         $this->met = null;
+        $this->namedByTheLink = null;
+        $this->nameIsTheLinks = false;
         $this->forgetTheHouse();
 
         $this->readACode($this->camera, function (string $handed): void {
@@ -189,10 +197,10 @@ final class JoiningAHouse extends NativeComponent
         $this->offeredAt = '';
     }
 
-    /** Offer the name and the password, and land on Home once in. */
+    /** Offer the name and the password, and land on Home once in: the name a join link named where one did, whatever the field holds. */
     public function signIn(): void
     {
-        $named = trim($this->theirName);
+        $named = $this->namedByTheLink instanceof AMembersName ? $this->namedByTheLink->forTheExchange() : trim($this->theirName);
 
         if ($named === '' || $this->joined === '') {
             return;
@@ -287,6 +295,8 @@ final class JoiningAHouse extends NativeComponent
     /** The link's name in the field, and choosing a password with its claim where it carries one, or signing in where it carries none. */
     private function goingOnWith(AJoinLink $link): self
     {
+        $this->namedByTheLink = $link->name();
+        $this->nameIsTheLinks = true;
         $named = $link->name()->forTheExchange();
 
         return $link->leadsTo(
