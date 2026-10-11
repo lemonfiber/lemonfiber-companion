@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -148,6 +149,12 @@ final readonly class WhereAStackIs
     public function puttingARunBack(string $stamp): string
     {
         return AStacksScreen::RunBack->forTheStacksRun($this->stack, ARun::stamped($stamp));
+    }
+
+    /** Pausing this machine's downloads, or letting them fetch again. */
+    public function downloads(WhatToDoWithTheDownloads $asked): string
+    {
+        return AStacksScreen::Downloads->forTheStacksDownloads($this->stack, $asked);
     }
 
     /** Stopping seeding one of this machine's completed downloads, by the name the account gave it. */

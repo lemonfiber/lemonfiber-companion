@@ -129,12 +129,12 @@ final readonly class Handoffs
     {
         $found = [];
 
-        foreach (self::rows($data, HandoffField::Clients) as $position => $row) {
+        foreach (self::rows($data, WireField::Clients) as $position => $row) {
             $found[] = AClientToHandOver::named(
-                self::cell($row, WireField::Device, HandoffField::Clients, $position),
-                self::cell($row, WireField::Client, HandoffField::Clients, $position),
+                self::cell($row, WireField::Device, WireField::Clients, $position),
+                self::cell($row, WireField::Client, WireField::Clients, $position),
                 self::flag($row, WireField::OpenSource, $position),
-                self::cell($row, WireField::Code, HandoffField::Clients, $position),
+                self::cell($row, WireField::Code, WireField::Clients, $position),
                 self::flag($row, HandoffField::DeepLink, $position),
             );
         }
@@ -202,7 +202,7 @@ final readonly class Handoffs
     private static function flag(mixed $row, NamesAWireField $field, int $position): bool
     {
         if (! is_array($row) || ! array_key_exists($field->value, $row) || ! is_bool($row[$field->value])) {
-            throw HandoffIsUnreadable::row(HandoffField::Clients, $position);
+            throw HandoffIsUnreadable::row(WireField::Clients, $position);
         }
 
         return $row[$field->value];

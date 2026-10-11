@@ -694,3 +694,12 @@ it('refuses a route parameter that is not text', function (): void {
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
+
+it('draws the menu and the list of stacks, and hides the bar', function (): void {
+    $screen = signInScreen(aDoorThatOpens());
+
+    expect(WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride())->offers())->toContain(__('navigation.menu.switch_stack'))
+        ->and(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->offers())->toBe([aStackToSignInto()->name()->shown()])
+        ->and($screen->itsTab())->toBeNull()
+        ->and($screen->tabBarOptions()?->hidden)->toBeTrue();
+});

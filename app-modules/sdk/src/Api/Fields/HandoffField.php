@@ -14,9 +14,6 @@ enum HandoffField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Every app a device can be pointed at the stack with, and the code that points it. */
-    case Clients = 'clients';
-
     /** Whether a client's code is a link that opens the app at this server, rather than the address alone. */
     case DeepLink = 'deep_link';
 

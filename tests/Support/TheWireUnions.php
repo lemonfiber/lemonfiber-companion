@@ -52,6 +52,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -66,6 +67,7 @@ use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToDoNext;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
@@ -169,6 +171,8 @@ final readonly class TheWireUnions
         WhatGoingBackDoes::class => 'does',
         WhatAChangePuts::class => 'puts',
         Availability::class => 'capabilities',
+        WhatToDoWithTheDownloads::class => 'asked',
+        WhatADownloadClientSaid::class => 'was',
 
         // `state` twice, and that is the wire's name rather than a mistake here:
         // a problem's standing and a household request's are different unions in

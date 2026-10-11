@@ -44,6 +44,7 @@ use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\PausingDownloads;
 use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\PuttingBack;
@@ -108,6 +109,7 @@ use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
+use Modules\Sdk\Api\Pausers;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Quartermasters;
@@ -361,6 +363,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // Stopping seeding one download, beside how full the machine is and
         // bound for the same reason.
         $this->app->bind(StoppingSeeding::class, Releasers::class);
+        $this->app->bind(PausingDownloads::class, Pausers::class);
 
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.

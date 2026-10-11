@@ -8,6 +8,7 @@ use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AStacksScreen;
@@ -74,13 +75,25 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
         }
 
         $screen->setParams($case->alsoNeedsAService()
-            ? ['stack' => $stack, 'service' => 'gluetun']
+            ? ['stack' => $stack, 'service' => whatTheSecondSegmentNames($case)]
             : ['stack' => $stack]);
 
         $drawn[$case->name] = WhatASettledScreenDraws::of($screen);
     }
 
     return $drawn;
+}
+
+/**
+ * A word the second segment of a screen's path can carry.
+ *
+ * Most name something free, a service, a title or a download, and any name
+ * reaches the stack. Pausing names one of two directions, and a word outside
+ * them is refused before the stack is asked anything.
+ */
+function whatTheSecondSegmentNames(AStacksScreen $case): string
+{
+    return $case === AStacksScreen::Downloads ? WhatToDoWithTheDownloads::Pause->value : 'gluetun';
 }
 
 /**

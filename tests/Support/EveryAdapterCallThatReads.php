@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ADownloadClientAsked;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\AFill;
@@ -93,6 +94,7 @@ use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
+use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatGoesAndWhatStays;
@@ -103,10 +105,12 @@ use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatToSet;
@@ -117,6 +121,7 @@ use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
+use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
@@ -154,6 +159,7 @@ use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
+use Modules\Sdk\Api\Pausers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Quartermasters;
@@ -301,6 +307,12 @@ final readonly class EveryAdapterCallThatReads
                 => new Menders($clients, $entropy)->whatWasDoneAbout($stack, $session, Job::named('a-job')),
             'Menders::whatBecameOf' => static fn(): object
                 => new Menders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Pausers::rehearse' => static fn(): object
+                => new Pausers($clients, $entropy)->rehearse($stack, $session, WhatToDoWithTheDownloads::Pause),
+            'Pausers::carryOut' => static fn(): object
+                => new Pausers($clients, $entropy)->carryOut($stack, $session, self::aPauseToSpoilTheAnswerTo()),
+            'Pausers::whatBecameOf' => static fn(): object
+                => new Pausers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Quartermasters::rationedOn' => static fn(): object => new Quartermasters($clients)->rationedOn($stack, $session),
             'Questions::about' => static fn(): object => new Questions($clients)->about($stack, $session),
             'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
@@ -494,6 +506,18 @@ final readonly class EveryAdapterCallThatReads
     private static function anOfferToLetGoToSpoilTheAnswerTo(): WhatLettingItGoCosts
     {
         return WhatLettingItGoCosts::offered(ADownloadOnDisk::neverImported('Show.Season1', 1), 'It goes', 'an-agreement');
+    }
+
+    /** A rehearsed pause, to carry out. */
+    private static function aPauseToSpoilTheAnswerTo(): WhatPausingComesTo
+    {
+        return WhatPausingComesTo::said(
+            WhatToDoWithTheDownloads::Pause,
+            WhetherItWasRehearsed::Rehearsed,
+            'an-agreement',
+            '',
+            ADownloadClientAsked::reached('qbittorrent', WhatADownloadClientSaid::Fetching, WhatADownloadClientSaid::Unsaid),
+        );
     }
 
     /** A run the record shows, to put back against. */

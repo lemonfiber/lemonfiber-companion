@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
 use Modules\Sdk\Internal\OneTitle;
@@ -101,7 +102,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
             ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
             ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
-            ...WhatToDoWithADownload::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),
+            ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),
             ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ];
 

@@ -90,4 +90,47 @@ return [
             'remove' => 'Er was niets om terug te nemen.',
         ],
     ],
+
+    'pausing' => [
+        'heading' => 'Downloads',
+        'names_nothing' => 'Dit noemt pauzeren noch hervatten van de downloads',
+        'working_it_out' => 'Elke downloadclient vragen wat hij doet',
+        'offer_ended' => 'De stack weet niet meer wat de downloadclients deden. Vraag het opnieuw om het vers te horen.',
+        'no_clients' => 'Deze stack draait geen downloadclient',
+        'unreached' => 'Niet bereikt',
+        'unreached_no_reason' => 'Hij gaf geen reden',
+        'before_and_after' => 'Eerst: :was. Nu: :now.',
+        'no_outcome' => 'De stack weet niet meer wat ervan geworden is',
+        'no_outcome_action' => 'De downloadclients kunnen veranderd zijn. Vraag het opnieuw om te zien wat elk doet.',
+        'a_rehearsal' => 'Een repetitie: geen client is iets gevraagd',
+        'said' => [
+            'fetching' => 'Haalt op',
+            'stopped' => 'Haalt niet op',
+            'unsaid' => 'Zei niets',
+        ],
+        'road' => [
+            'pause' => 'Downloads pauzeren',
+            'resume' => 'Downloads hervatten',
+        ],
+        'what_it_does' => [
+            'pause' => 'Wat pauzeren doet',
+            'resume' => 'Wat hervatten doet',
+        ],
+        'explained' => [
+            'pause' => 'Elke downloadclient stopt met ophalen. Er wordt niets verwijderd, en hervatten laat ze weer ophalen.',
+            'resume' => 'Elke downloadclient haalt weer op.',
+        ],
+        'agree' => [
+            'pause' => 'Pauzeer ze',
+            'resume' => 'Hervat ze',
+        ],
+        'working' => [
+            'pause' => 'De downloads pauzeren',
+            'resume' => 'De downloads hervatten',
+        ],
+        'done' => [
+            'pause' => 'De downloads zijn gepauzeerd',
+            'resume' => 'De downloads zijn hervat',
+        ],
+    ],
 ];

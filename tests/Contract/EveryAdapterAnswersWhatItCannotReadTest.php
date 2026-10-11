@@ -95,6 +95,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Extenders::whatBecameOf' => sprintf('%sPluginsEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Pausers::whatBecameOf' => sprintf('%sPausingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Fillers::') => sprintf('%sSubstitutionEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,

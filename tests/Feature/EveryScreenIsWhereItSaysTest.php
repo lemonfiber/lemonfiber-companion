@@ -6,6 +6,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
@@ -220,6 +221,7 @@ function aSampleOf(ReflectionParameter $taken): object|string
         ServiceId::class => ServiceId::called('gluetun'),
         WhatToFollow::class => WhatToFollow::called('Dune'),
         AWordInUse::class => AWordInUse::named('Grabber'),
+        WhatToDoWithTheDownloads::class => WhatToDoWithTheDownloads::Pause,
         default => $taken->getName() === 'stamp' ? '1790150000' : 'gluetun',
     };
 }
@@ -407,5 +409,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'Title', 'RunBack', 'PutBack', 'LetGo', 'InviteNamed', 'TakeOut', 'Device', 'WordAbout', 'Trace']);
+        ->toBe(['Doing', 'Logs', 'Title', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'WordAbout', 'Trace']);
 });
