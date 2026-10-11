@@ -22,12 +22,9 @@ it('never names the software, the machine or how it is reached to a member, in e
     $lines = trans('household.stood_in_the_way', [], $locale);
 
     expect($lines)->toBeArray()
-        ->and(array_filter(is_array($lines) ? $lines : [], static fn(mixed $line): bool => is_string($line) && str_contains(mb_strtolower($line), $word)))->toBe([]);
-})->with([
-    ['en', 'lemonfiber'], ['en', 'stack'], ['en', 'server'], ['en', 'certificate'], ['en', 'session'], ['en', 'api'],
-    ['en', 'machine'], ['en', 'address'], ['en', 'version'], ['en', 'pair'],
-    ['nl', 'lemonfiber'], ['nl', 'stack'], ['nl', 'server'], ['nl', 'certificaat'], ['nl', 'sessie'], ['nl', 'api'],
-    ['nl', 'machine'], ['nl', 'adres'], ['nl', 'versie'], ['nl', 'koppel'],
+        ->and(array_filter(is_array($lines) ? $lines : [], static fn(mixed $line): bool => is_string($line) && preg_match($word, mb_strtolower($line)) === 1))->toBe([]);
+})->with(['en', 'nl'])->with([
+    '/lemonfiber/', '/stack/', '/server/', '/certifica/', '/sessi/', '/\bapi\b/', '/machine/', '/ad+res/', '/versi/', '/pair|kop+el/',
 ]);
 
 it('tells a member the core\'s own sentence and remedy wherever it wrote them, a house too old included', function (KindOfObstacle $kind): void {
