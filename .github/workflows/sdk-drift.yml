@@ -40,15 +40,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  # See `ci.yml`: the local-notifications plugin is served from a private
-  # Composer repository, and an install without this fails with `402`.
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
-
 jobs:
   sdk-drift:
     name: sdk-drift
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
