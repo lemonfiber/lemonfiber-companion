@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -29,6 +30,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The requests awaiting a decision are visible from a phone.
@@ -104,6 +106,21 @@ it('every row says who asked, so a decline can reach them', function (): void {
     expect($rows[0]->by)->toBe('Sam')
         ->and($rows[0]->title)->toBe('A film nobody has seen')
         ->and($rows[1]->by)->toBe('Robin');
+});
+
+it('draws a request no service has named yet by its kind, still one to approve or turn down', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::notYetNamed(7, 'Sanne', KindOfRequest::Film, Size::guessedAt(5_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(8, 'Robin', 'A film nobody has seen', Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+    )));
+    $rows = $screen->answer()->requests;
+    $named = __('household.not_yet_named.anybodys.film');
+
+    expect($rows[0]->title)->toBe('')
+        ->and($rows[0]->untitled)->toBe('household.not_yet_named.anybodys.film')
+        ->and($rows[0]->wantsADecision)->toBeTrue()
+        ->and($rows[1]->title)->toBe('A film nobody has seen')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain($named, 'A film nobody has seen');
 });
 
 it('an estimate is labelled as one, and a measurement is not', function (): void {

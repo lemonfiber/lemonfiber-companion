@@ -11,14 +11,18 @@ use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WalkthroughStep;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 
 use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
 
-/** Which arm an answer about a walk takes, and what it carried there. */
-function theWordForWhichArmTheWalkTook(WhatTheWalkSaid $said): string
+/**
+ * Which arm an answer about a walk takes, and what it carried there.
+ *
+ * @param WhatAStreamSaid<ALineItSaid> $said
+ */
+function theWordForWhichArmTheWalkTook(WhatAStreamSaid $said): string
 {
     return $said->either(
         nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
@@ -32,9 +36,9 @@ function theWordForWhichArmTheWalkTook(WhatTheWalkSaid $said): string
 it('keeps the five things a subscription can answer about a walk apart', function (): void {
     $line = ALineItSaid::withoutDetail(WalkthroughStep::Grabbing, 'Sending the release to the download client');
 
-    expect(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::nothing()))->toBe('nothing')
-        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::aSignOfLife()))->toBe('alive')
-        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::said($line)))->toBe('said grabbing: Sending the release to the download client')
-        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::closed()))->toBe('closed')
-        ->and(theWordForWhichArmTheWalkTook(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
+    expect(theWordForWhichArmTheWalkTook(WhatAStreamSaid::nothing()))->toBe('nothing')
+        ->and(theWordForWhichArmTheWalkTook(WhatAStreamSaid::aSignOfLife()))->toBe('alive')
+        ->and(theWordForWhichArmTheWalkTook(WhatAStreamSaid::said($line)))->toBe('said grabbing: Sending the release to the download client')
+        ->and(theWordForWhichArmTheWalkTook(WhatAStreamSaid::closed()))->toBe('closed')
+        ->and(theWordForWhichArmTheWalkTook(WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met no_answer');
 });

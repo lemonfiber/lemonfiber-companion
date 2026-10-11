@@ -26,6 +26,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Owing contract, run against the adapter and against the fake.
@@ -359,7 +360,7 @@ function whatAMemberAskedFor(Owing $owing): string
             foreach ($wanted as $one) {
                 $rows[] = sprintf(
                     '%s/%s/%s',
-                    $one->forWhat(),
+                    WhatARequestIsCalledAsAWord::of($one),
                     theStandingOfTheirs($one),
                     $one->refusal(
                         was: static fn(TurnedDown $why): TheWordCarriedOut
@@ -436,7 +437,7 @@ it('a list of requests it could not read is a stack that did not answer, not a s
     // A row this app cannot show is refused rather than dropped, for the reason
     // the operator\'s reading gives: a list one row short reads as somebody never
     // having asked, while the person who asked is in the house and will ask again.
-    $short = whatAStackSendsOneMemberWhoHasAsked([['id' => 1, 'state' => 'waiting-for-approval']]);
+    $short = whatAStackSendsOneMemberWhoHasAsked([['id' => 'one', 'state' => 'waiting-for-approval']]);
 
     $table = [
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],

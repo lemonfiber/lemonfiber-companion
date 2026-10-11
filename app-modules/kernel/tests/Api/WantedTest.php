@@ -9,15 +9,18 @@ use function it;
 
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\WhatARequestIsCalled;
 
 use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatARequestIsCalledAsAWord;
 
 /** A request as it arrives, with whatever a case wants to change. */
 function aRequest(
@@ -49,7 +52,7 @@ it('carries who asked and what for, which is what a decision is made from', func
     $wanted = aRequest();
 
     expect($wanted->by())->toBe('Sam')
-        ->and($wanted->forWhat())->toBe('A film nobody has seen')
+        ->and(WhatARequestIsCalledAsAWord::of($wanted))->toBe('A film nobody has seen')
         ->and($wanted->number())->toBe(41);
 });
 
@@ -57,7 +60,7 @@ it('takes the words as the stack wrote them, less the space around them', functi
     $wanted = aRequest(by: "  Sam \n", forWhat: '  A film  ');
 
     expect($wanted->by())->toBe('Sam')
-        ->and($wanted->forWhat())->toBe('A film');
+        ->and(WhatARequestIsCalledAsAWord::of($wanted))->toBe('A film');
 });
 
 it('refuses a request with nobody behind it', function (): void {
@@ -193,4 +196,17 @@ it('says a standing nobody named is neither here for them nor on its way', funct
         ->and(HowARequestStands::said(Waiting::Here)->isOnItsWay())->toBeFalse()
         ->and(HowARequestStands::said(Waiting::Getting)->isOnItsWay())->toBeTrue()
         ->and(HowARequestStands::said(Waiting::Getting)->isReadyForYou())->toBeFalse();
+});
+
+it('builds a request nothing has named yet by its kind, still refusing one nobody asked for', function (): void {
+    $wanted = Wanted::notYetNamed(42, ' Sam ', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+
+    expect(WhatARequestIsCalledAsAWord::of($wanted))->toBe('a series not named yet')
+        ->and($wanted->by())->toBe('Sam')
+        ->and(fn(): Wanted => Wanted::notYetNamed(42, '  ', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)))
+        ->toThrow(RequestHasNobodyBehindIt::class);
+});
+
+it('refuses a blank title given to a request, which is not the same as one not named yet', function (): void {
+    expect(fn(): WhatARequestIsCalled => WhatARequestIsCalled::named('  '))->toThrow(RequestHasNobodyBehindIt::class);
 });

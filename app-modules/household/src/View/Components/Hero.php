@@ -43,6 +43,9 @@ final class Hero extends Component
     /** What a screen reader says for the tile. */
     public readonly string $named;
 
+    /** The title the tile is lettered with, in the reader's language. */
+    public readonly string $titled;
+
     /** The line at the top of the tile. */
     public readonly string $above;
 
@@ -64,16 +67,17 @@ final class Hero extends Component
         public readonly string $tap = '',
     ) {
         $said = WhatAPosterIsFilledWith::by($catalogue, $poster);
-        $named = $catalogue->get(self::READS, ['reads' => $said->line($poster->reads, $poster->titled)]);
+        $this->titled = $said->titled($poster);
+        $named = $catalogue->get(self::READS, ['reads' => $said->line($poster->reads, $this->titled)]);
         $above = $catalogue->get(self::ABOVE, ['line' => $said->line($poster->above, '')]);
-        $plays = $catalogue->get(self::PLAYS, ['title' => $poster->titled]);
-        $more = $catalogue->get(self::MORE, ['title' => $poster->titled]);
+        $plays = $catalogue->get(self::PLAYS, ['title' => $this->titled]);
+        $more = $catalogue->get(self::MORE, ['title' => $this->titled]);
 
-        $this->named = is_string($named) ? $named : $poster->titled;
+        $this->named = is_string($named) ? $named : $this->titled;
         $this->above = is_string($above) ? $above : '';
         $this->lines = $poster->lettered->linesOnTheHero();
-        $this->playNamed = is_string($plays) ? $plays : $poster->titled;
-        $this->moreNamed = is_string($more) ? $more : $poster->titled;
+        $this->playNamed = is_string($plays) ? $plays : $this->titled;
+        $this->moreNamed = is_string($more) ? $more : $this->titled;
     }
 
     public function render(): View

@@ -548,13 +548,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'somebody opened a client.',
         ],
         [
-            'path' => 'HouseholdEnvelope.members[].requests[].media',
-            'because' => 'The library\'s own handle for the thing asked for, the id `/api/held` lists it under. '
-                . '`N2-R11` asks for enough to decide on, and the words a person recognises are the title beside '
-                . 'it. Where a title streams from is answered on the shelf and on the title itself, and no '
-                . 'screen opens a request\'s title by this handle.',
-        ],
-        [
             'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',
             'because' => 'How long a request has waited. Genuinely operator-facing — a fortnight is a different '
                 . 'decision from an hour — and no requirement in `N1` to `N4` asks for it. Raise it against the '
@@ -581,9 +574,8 @@ final readonly class UnreadOnEnvelopesAToL
         [
             'path' => 'HouseholdEnvelope.members[].requests[].shelf_id',
             'because' => 'The media server\'s handle for the title once it has arrived, the one the held read '
-                . 'names it by. This app plays nothing and opens no shelf, for the reason '
-                . '`HouseholdEnvelope.members[].requests[].media` gives, so there is nothing for the handle to '
-                . 'find.',
+                . 'names it by. No screen opens a title from a request, so there is nothing for the handle '
+                . 'to find.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].year',

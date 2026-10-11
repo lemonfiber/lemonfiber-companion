@@ -125,4 +125,24 @@ final readonly class WhatOnePosterSays
             plays: '',
         );
     }
+
+    /**
+     * One of their own requests nothing has named yet: lettered with the kind of thing it is, in their words.
+     *
+     * @param string $kind     what it is, as a catalogue key in the member's words
+     * @param string $standing where it stands, as a catalogue key in the member's words
+     */
+    public static function ofARequestNotYetNamed(string $kind, string $standing): self
+    {
+        return new self(
+            titled: $kind,
+            lettered: HowAPosterIsLettered::Small,
+            above: $standing,
+            reads: self::READS_STANDING,
+            filling: [],
+            keyed: ['title' => $kind, 'standing' => $standing],
+            goes: '',
+            plays: '',
+        );
+    }
 }

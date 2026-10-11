@@ -167,6 +167,9 @@ enum AStacksScreen: string
      */
     case AsAMember = '/stacks/{stack}/as-a-member';
 
+    /** Every session the media server is playing now, for the operator. */
+    case Playing = '/stacks/{stack}/playing';
+
     /**
      * What this machine has changed about itself, and how far each could be put back.
      *

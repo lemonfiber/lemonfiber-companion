@@ -32,6 +32,7 @@ use function str_repeat;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
+use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatIsKeptOfRequests;
 
 /** The moment a kept reading in these tests was read at. */
@@ -62,7 +63,7 @@ function everythingTheRequestSays(Wanted $wanted): string
         '#%d %s for %s, %s, %s, %s',
         $wanted->number(),
         $wanted->by(),
-        $wanted->forWhat(),
+        WhatARequestIsCalledAsAWord::of($wanted),
         $wanted->size()->either(
             measured: static fn(int $bytes): Code => Code::of(sprintf('measured %d', $bytes)),
             guessed: static fn(int $bytes): Code => Code::of(sprintf('guessed %d', $bytes)),
@@ -126,6 +127,16 @@ it('keeps a reading sealed, read now, and hands it back whole with when it was r
         . ' | #3 Mira for Cats, size unknown, declined, refused "We have it already" at 2026-09-30 21:04'
         . ' | #4 Joost for The Room, measured 700000000, declined, refused "Not in this house" at no stated time'
         . ' | #5 Joost for Twin Peaks, size unknown, unnamed, not refused',
+    );
+});
+
+it('keeps a request no service has named yet by the kind of thing it is', function (): void {
+    $kept = aPhoneKeepingRequests();
+    $kept->keeping->keep(theStackTheRequestsAreKeptFor(), WhatIsKeptOfRequests::aReadingNotYetNamed());
+
+    expect(whatTheRequestsScreenOpensOn($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe(
+        'as of 0, 0 ago: #6 Mira for a film not named yet, guessed 5000000000, waiting-for-approval, not refused'
+        . ' | #7 Joost for a series not named yet, size unknown, declined, refused "Not now" at no stated time',
     );
 });
 

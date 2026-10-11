@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Health\Api\WhatTheWalkSaidSoFar;
+use Modules\Health\Api\WhatAStreamSaidSoFar;
 use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
@@ -25,11 +25,12 @@ use Modules\Operator\Internal\ViewModels\TheStageAsShown;
  */
 final readonly class HowTheStageReads
 {
-    public function of(WhatTheWalkSaidSoFar $heard, Instant $now): TheStageAsShown
+    /** @param WhatAStreamSaidSoFar<ALineItSaid> $heard */
+    public function of(WhatAStreamSaidSoFar $heard, Instant $now): TheStageAsShown
     {
         $broke = $heard->hasBroken();
 
-        return $heard->step(
+        return $heard->heard(
             none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::live(), $broke),
             current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::live(), $broke),
             asOf: fn(ALineItSaid $line, Instant $at): TheStageAsShown

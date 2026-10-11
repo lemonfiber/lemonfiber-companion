@@ -7,6 +7,7 @@ namespace Modules\Household\Internal\Presenters;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Waiting;
@@ -84,11 +85,14 @@ final readonly class HowTheirOwnTitlesRead
      */
     private function posterFor(Wanted $wanted): WhatOnePosterSays
     {
-        return $wanted->standing()->either(
-            said: static fn(Waiting $standing): WhatOnePosterSays
-                => WhatOnePosterSays::ofARequest($wanted->forWhat(), $standing->saidToTheMember()),
-            unnamed: static fn(): WhatOnePosterSays
-                => WhatOnePosterSays::ofARequest($wanted->forWhat(), HowWhatAMemberAskedForReads::UNNAMED),
+        $standing = $wanted->standing()->either(
+            said: static fn(Waiting $said): InWords => new InWords($said->saidToTheMember()),
+            unnamed: static fn(): InWords => new InWords(HowWhatAMemberAskedForReads::UNNAMED),
+        )->said;
+
+        return $wanted->called()->either(
+            named: static fn(string $title): WhatOnePosterSays => WhatOnePosterSays::ofARequest($title, $standing),
+            notYet: static fn(KindOfRequest $kind): WhatOnePosterSays => WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($kind), $standing),
         );
     }
 }

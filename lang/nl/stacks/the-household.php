@@ -214,4 +214,20 @@ return [
         'no_outcome_after_yes' => 'Of :name eruit is gehaald kon niet worden gelezen: deze stack heeft er geen uitkomst meer voor. Dat is niet hetzelfde als dat het niet is gebeurd',
         'unread_after_yes' => 'Of :name eruit is gehaald kon niet worden gelezen. Dat is niet hetzelfde als dat het niet is gebeurd',
     ],
+    // Wat het huishouden nu afspeelt, alleen voor wie het huis beheert.
+    'playing' => [
+        'heading' => 'Wat er speelt',
+        'not_said_yet' => 'Wachten tot te horen is wat het huishouden afspeelt.',
+        'unheard' => 'Wat het huishouden afspeelt, kon niet worden gehoord. Dit scherm probeert het vanzelf opnieuw.',
+        'operators_only' => 'Alleen wie het huis beheert, ziet wat het huishouden afspeelt.',
+        'nothing' => 'Er speelt nu niets.',
+        'last_heard' => 'Laatst gehoord :ago.',
+        'unread' => 'De mediaserver kon niet worden gelezen voor wat er speelt.',
+        'alone' => ':title',
+        'in_series' => ':series: :title',
+        'numbered' => ':series, seizoen :season, aflevering :episode: :title',
+        'paused' => 'Gepauzeerd',
+        'playing' => 'Speelt af',
+        'on' => ':device · :state',
+    ],
 ];

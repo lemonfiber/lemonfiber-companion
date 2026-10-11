@@ -41,9 +41,6 @@ enum TraceField: string implements NamesAWireField
     /** How many parts nobody asked for. */
     case Unmonitored = 'unmonitored';
 
-    /** A season's number. */
-    case Season = 'season';
-
     /** The wanted parts not here yet. */
     case Outstanding = 'outstanding';
 }

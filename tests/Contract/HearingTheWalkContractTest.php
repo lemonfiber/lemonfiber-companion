@@ -14,7 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WalkthroughStep;
-use Modules\Kernel\Api\WhatTheWalkSaid;
+use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -132,7 +132,7 @@ function theDownloadingLine(): ALineItSaid
  * Both ways of following a walk, each set up to hear the same thing.
  *
  * @param  list<MockResponse>  $streams  what the far end answers each time the adapter opens the stream
- * @param  list<WhatTheWalkSaid>  $script   what the fake is scripted to answer, wake by wake
+ * @param  list<WhatAStreamSaid<ALineItSaid>>  $script   what the fake is scripted to answer, wake by wake
  * @return array<string, Closure(): HearingTheWalk>
  */
 function everyWayOfFollowingAWalk(array $streams, array $script): array
@@ -148,8 +148,12 @@ function everyWayOfFollowingAWalk(array $streams, array $script): array
     ];
 }
 
-/** Every field of what the walk said, as one line, whichever arm it took. */
-function theWordForWhatTheWalkSaidAsAWord(WhatTheWalkSaid $said): string
+/**
+ * Every field of what the walk said, as one line, whichever arm it took.
+ *
+ * @param WhatAStreamSaid<ALineItSaid> $said
+ */
+function theWordForWhatTheWalkSaidAsAWord(WhatAStreamSaid $said): string
 {
     return $said->either(
         nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
@@ -188,7 +192,7 @@ function whatWakesOfTheWalkHear(HearingTheWalk $hearing, int $wakes): array
 it('hears the step a walk says, and then that the stream ended', function (): void {
     foreach (everyWayOfFollowingAWalk(
         [MockResponse::make(aStepEvent(aSearchingStep()))],
-        [WhatTheWalkSaid::said(theSearchingLine())],
+        [WhatAStreamSaid::said(theSearchingLine())],
     ) as $which => $make) {
         expect(whatWakesOfTheWalkHear($make(), 2))->toBe([
             'searching: Searching the indexers for Sintel (Two indexers answered)',
@@ -200,7 +204,7 @@ it('hears the step a walk says, and then that the stream ended', function (): vo
 it('hears a step with nothing particular to say as a line without a detail', function (): void {
     foreach (everyWayOfFollowingAWalk(
         [MockResponse::make(aStepEvent(aDownloadingStep()))],
-        [WhatTheWalkSaid::said(theDownloadingLine())],
+        [WhatAStreamSaid::said(theDownloadingLine())],
     ) as $which => $make) {
         expect(whatWakesOfTheWalkHear($make(), 1))->toBe(['downloading: Downloading Sintel (nothing particular)'], $which);
     }
@@ -209,7 +213,7 @@ it('hears a step with nothing particular to say as a line without a detail', fun
 it('hears only the last step of everything that arrived since the last wake', function (): void {
     foreach (everyWayOfFollowingAWalk(
         [MockResponse::make(sprintf('%s%s', aStepEvent(aSearchingStep()), aStepEvent(aDownloadingStep())))],
-        [WhatTheWalkSaid::said(theDownloadingLine())],
+        [WhatAStreamSaid::said(theDownloadingLine())],
     ) as $which => $make) {
         expect(whatWakesOfTheWalkHear($make(), 1))->toBe(['downloading: Downloading Sintel (nothing particular)'], $which);
     }
@@ -219,7 +223,7 @@ it('hears a sign of life in a heartbeat, and in an event that is not a step', fu
     foreach ([": beat\n\n", anEventOnTheWalk('dashboard', '{"api_version":1,"kind":"dashboard","data":{}}')] as $said) {
         foreach (everyWayOfFollowingAWalk(
             [MockResponse::make($said)],
-            [WhatTheWalkSaid::aSignOfLife()],
+            [WhatAStreamSaid::aSignOfLife()],
         ) as $which => $make) {
             expect(whatWakesOfTheWalkHear($make(), 2))->toBe(['alive', 'closed'], $which);
         }
@@ -229,7 +233,7 @@ it('hears a sign of life in a heartbeat, and in an event that is not a step', fu
 it('hears nothing from a stream that has said nothing yet', function (): void {
     foreach (everyWayOfFollowingAWalk(
         [MockResponse::make('')],
-        [WhatTheWalkSaid::nothing()],
+        [WhatAStreamSaid::nothing()],
     ) as $which => $make) {
         expect(whatWakesOfTheWalkHear($make(), 2))->toBe(['nothing', 'closed'], $which);
     }
@@ -248,7 +252,7 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     ];
 
     foreach ($table as [$answered, $why]) {
-        foreach (everyWayOfFollowingAWalk($answered, [WhatTheWalkSaid::met($why)]) as $which => $make) {
+        foreach (everyWayOfFollowingAWalk($answered, [WhatAStreamSaid::met($why)]) as $which => $make) {
             expect(whatWakesOfTheWalkHear($make(), 1))->toBe([$why->kind()->value], sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
@@ -264,7 +268,7 @@ it('cannot hear a step it cannot read, and says so as an answer it could not rea
     ] as $said) {
         foreach (everyWayOfFollowingAWalk(
             [MockResponse::make($said)],
-            [WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
+            [WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
         ) as $which => $make) {
             expect(whatWakesOfTheWalkHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
         }
@@ -277,7 +281,7 @@ it('closes when let go of, and opens again the next time it is asked', function 
             MockResponse::make(aStepEvent(aSearchingStep())),
             MockResponse::make(aStepEvent(aDownloadingStep())),
         ],
-        [WhatTheWalkSaid::said(theSearchingLine()), WhatTheWalkSaid::said(theDownloadingLine())],
+        [WhatAStreamSaid::said(theSearchingLine()), WhatAStreamSaid::said(theDownloadingLine())],
     ) as $which => $make) {
         $hearing = $make();
 

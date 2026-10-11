@@ -30,7 +30,7 @@
     @if ($this->requests()->cameBack())
         @forelse ($this->requests()->rows as $request)
             <x-design::card>
-                <x-design::strong>{{ $request->title }}</x-design::strong>
+                <x-design::strong>{{ $request->title !== '' ? $request->title : __($request->untitled) }}</x-design::strong>
 
                 {{-- The state in the member's words rather than the operator's, and
                      a state rather than a stage: no queue position, no percentage,

@@ -8,8 +8,8 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkthroughStep;
+use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Kernel\Api\WhatElseItIsCalled;
-use Modules\Kernel\Api\WhatTheWalkSaid;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -102,7 +102,7 @@ it('says the stack has not named a stage yet while it listens and has heard none
 it('says the stage could not be heard, rather than drawing an idle walk, and when it listens again', function (): void {
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
+        narrating: AStackThatNarrates::holdingOpen(WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
     );
 
     $screen->walk();
@@ -119,7 +119,7 @@ it('takes the stage on the wakes that ask after the walk, and draws the newest, 
     $running = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
     $narrating = AStackThatNarrates::holdingOpen(
         TheWalkthroughScreenOfTheLoft::aStepTheWalkSaid(WalkthroughStep::Grabbing, 'Sending the release to the download client'),
-        WhatTheWalkSaid::nothing(),
+        WhatAStreamSaid::nothing(),
         TheWalkthroughScreenOfTheLoft::aStepTheWalkSaid(WalkthroughStep::Searching, 'Searching again for a better release'),
     );
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($running, narrating: $narrating);
@@ -268,14 +268,14 @@ it('lets go of a session the stream refuses while a walk runs, and keeps one the
     TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
         keychain: $refusing,
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
+        narrating: AStackThatNarrates::holdingOpen(WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))),
     )->walk();
 
     $unanswering = AKeychainInMemory::working();
     TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(
         AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
         keychain: $unanswering,
-        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
+        narrating: AStackThatNarrates::holdingOpen(WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))),
     )->walk();
 
     expect($refusing->isHolding(TheWalkthroughScreenOfTheLoft::theStackAWalkRunsOn()->id()))->toBeFalse()

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Household\View;
 
+use function array_key_exists;
+
 use Illuminate\Contracts\Translation\Translator;
 
 use function is_string;
@@ -45,5 +47,11 @@ final readonly class WhatAPosterIsFilledWith
         $said = $this->catalogue->get($key, $this->filling);
 
         return is_string($said) ? $said : $otherwise;
+    }
+
+    /** The title the poster is lettered with: as written, or said in the reader's language where it is a key. */
+    public function titled(WhatOnePosterSays $poster): string
+    {
+        return array_key_exists('title', $this->filling) ? $this->filling['title'] : $poster->titled;
     }
 }

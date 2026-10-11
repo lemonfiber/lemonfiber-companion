@@ -30,6 +30,9 @@ final class Poster extends Component
     /** What a screen reader says for the tile. */
     public readonly string $named;
 
+    /** The title the tile is lettered with, in the reader's language. */
+    public readonly string $titled;
+
     /** The line at the top of the tile. */
     public readonly string $above;
 
@@ -42,7 +45,8 @@ final class Poster extends Component
     ) {
         $said = WhatAPosterIsFilledWith::by($catalogue, $poster);
 
-        $this->named = $said->line($poster->reads, $poster->titled);
+        $this->titled = $said->titled($poster);
+        $this->named = $said->line($poster->reads, $this->titled);
         $this->above = $said->line($poster->above, '');
         $this->lines = $poster->lettered->linesAtMost();
     }

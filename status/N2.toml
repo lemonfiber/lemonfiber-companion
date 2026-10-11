@@ -16,7 +16,7 @@ requirement = [
   { id = "N2-R8", state = "done", evidence = ["app-modules/kernel/src/Api/AgreedTo.php", "app-modules/sdk/src/Internal/Costs.php", "app-modules/kernel/tests/Api/AgreedToTest.php", "app-modules/kernel/tests/Api/DaemonTest.php"] },
   { id = "N2-R9", state = "done", evidence = ["app-modules/kernel/src/Api/Stage.php", "app-modules/sdk/src/Api/Stalls.php", "app-modules/kernel/tests/Api/HowMuchIsShownTest.php", "app-modules/kernel/tests/Api/StageTest.php"] },
   { id = "N2-R10", state = "done", evidence = ["app-modules/kernel/src/Api/HowManyLines.php", "app-modules/sdk/src/Api/LineIsUnreadable.php", "app-modules/kernel/tests/Api/AboutWhatTest.php", "app-modules/kernel/tests/Api/HowManyLinesTest.php"] },
-  { id = "N2-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Decided.php", "app-modules/kernel/src/Api/HowARequestStands.php", "app-modules/kernel/tests/Api/DecidedTest.php", "app-modules/kernel/tests/Api/RequestedTest.php"] },
+  { id = "N2-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Decided.php", "app-modules/kernel/src/Api/HowARequestStands.php", "app-modules/kernel/tests/Api/DecidedTest.php", "app-modules/kernel/tests/Api/RequestedTest.php", "app-modules/kernel/src/Api/WhatARequestIsCalled.php", "tests/Feature/SeeingWhatTheHouseholdAskedForTest.php"] },
   { id = "N2-R12", state = "done", evidence = ["app-modules/sdk/tests/Api/SupervisorsTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
   { id = "N2-R13", state = "done", evidence = ["app-modules/operator/src/Internal/Presenters/HowTheOneLineReads.php", "tests/Feature/AReadingCarriesItsAgeTest.php"] },
   { id = "N2-R14", state = "done", evidence = ["app-modules/kernel/src/Api/Daemons.php", "app-modules/sdk/src/Api/Households.php", "app-modules/sdk/tests/Api/UpkeepersTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
@@ -33,4 +33,5 @@ requirement = [
   { id = "N2-R25", state = "done", evidence = ["app-modules/kernel/src/Api/Owing.php", "app-modules/kernel/src/Api/Watching.php", "tests/Contract/DrawnAsAMemberSeesItContractTest.php", "tests/Contract/OwingContractTest.php"] },
   { id = "N2-R26", state = "done", evidence = ["tests/Feature/PreviewingTheMembersSideTest.php"] },
   { id = "N2-R27", state = "done", evidence = ["app-modules/kernel/src/Api/AnOffer.php", "tests/Contract/KeepingCurrentContractTest.php", "tests/Contract/SupervisingContractTest.php", "tests/Feature/FollowingWhatAVerbCameToTest.php", "tests/Feature/SeeingWhatAnUpdateTakenHereCameToTest.php"] },
+  { id = "N2-R28", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatIsPlayingNow.php", "app-modules/sdk/src/Api/Players.php", "tests/Contract/FollowingWhatIsPlayingContractTest.php", "tests/Feature/SeeingWhatIsPlayingTest.php"] },
 ]

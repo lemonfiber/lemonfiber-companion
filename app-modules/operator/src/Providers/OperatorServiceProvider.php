@@ -38,6 +38,7 @@ use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
+use Modules\Operator\Internal\Screens\WhatIsPlayingNow;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
@@ -283,6 +284,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // *will this wake me* is asked before a night away and not while
             // reading what the machine sends.
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
+            Router::native(AStacksScreen::Playing->value, WhatIsPlayingNow::class);
 
             // How the line is shared. Its own screen, because *why is the
             // internet slow* is asked by the household at the moment it is slow.

@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\FindingTitles;
+use Modules\Kernel\Api\FollowingWhatIsPlaying;
 use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
@@ -116,6 +117,7 @@ use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\Pausers;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\PlaceKeepers;
+use Modules\Sdk\Api\Players;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
@@ -237,6 +239,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // stack narrates there as they happen. Bound rather than a singleton,
         // for the reason above: the screen following a walk holds its own.
         $this->app->bind(HearingTheWalk::class, Narrators::class);
+        $this->app->bind(FollowingWhatIsPlaying::class, Players::class);
 
         // Holding the same stream for what a running start is waiting for,
         // which the stack says there as it waits. Bound rather than a

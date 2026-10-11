@@ -35,6 +35,7 @@ use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PairingField;
 use Modules\Sdk\Api\Fields\PartWayField;
 use Modules\Sdk\Api\Fields\PausingField;
+use Modules\Sdk\Api\Fields\PlayingField;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
@@ -129,6 +130,7 @@ function everyFieldNamedOnTheWire(): array
         ...StopSeedingField::cases(),
         ...PausingField::cases(),
         ...AskableField::cases(),
+        ...PlayingField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
         ...SubstitutionField::cases(),

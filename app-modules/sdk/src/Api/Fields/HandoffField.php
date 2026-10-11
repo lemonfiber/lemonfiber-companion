@@ -17,9 +17,6 @@ enum HandoffField: string implements NamesAWireField
     /** Whether a client's code is a link that opens the app at this server, rather than the address alone. */
     case DeepLink = 'deep_link';
 
-    /** Every device the media server lists as signed in to the account now. */
-    case Sessions = 'sessions';
-
     /** When the media server last heard from a device signed in. */
     case LastSeen = 'last_seen';
 

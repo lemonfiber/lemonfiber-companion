@@ -8,6 +8,7 @@ use function __;
 use function data_get;
 use function expect;
 use function it;
+use function json_encode;
 
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhoseTheme;
@@ -86,6 +87,15 @@ it('draws one of their requests with where it stands at the top, and says its na
     expect(data_get($drawn, 'props.a11y_label'))->toBe(sprintf('Dune, %s', WhatMarkupDraws::words('household.asked.here')))
         ->and(data_get($drawn, 'children.0.children.0.props.text'))->toBe(__('household.asked.here'))
         ->and(data_get($drawn, 'on_press'))->toBeNull();
+});
+
+it('letters one of their requests nothing has named yet with its kind, in their words', function (): void {
+    $kind = 'household.not_yet_named.theirs.film';
+    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => WhatOnePosterSays::ofARequestNotYetNamed($kind, 'household.asked.waiting-for-approval')]);
+
+    expect(data_get($drawn, 'props.a11y_label'))->toBe(sprintf('%s, %s', WhatMarkupDraws::words($kind), WhatMarkupDraws::words('household.asked.waiting-for-approval')))
+        ->and(json_encode($drawn, JSON_THROW_ON_ERROR))->toContain(json_encode(__($kind), JSON_THROW_ON_ERROR))
+        ->and(json_encode($drawn, JSON_THROW_ON_ERROR))->not->toContain($kind);
 });
 
 it('opens its title where it has somewhere to go', function (): void {

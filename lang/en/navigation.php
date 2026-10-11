@@ -37,6 +37,7 @@ return [
         'requests' => 'Requests',
         'allowance' => 'Allowance',
         'view_as_member' => 'View as member',
+        'playing_now' => 'What is playing',
         'stuck_downloads' => 'Stuck downloads',
         'follow_a_download' => 'Follow a download',
         'invite_someone' => 'Invite someone',

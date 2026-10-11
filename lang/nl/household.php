@@ -36,6 +36,21 @@ return [
         'unnamed' => 'Status hier niet bekend',
     ],
     'your_requests' => 'Wat je hebt aangevraagd',
+
+    // Een verzoek dat nog geen dienst een naam heeft gegeven, naar wat voor iets
+    // het is: in de eigen lijst van het lid, en in die van wie het huis beheert.
+    'not_yet_named' => [
+        'theirs' => [
+            'film' => 'Een film waar je om vroeg',
+            'series' => 'Een serie waar je om vroeg',
+            'something' => 'Iets waar je om vroeg',
+        ],
+        'anybodys' => [
+            'film' => 'Een film, nog zonder naam',
+            'series' => 'Een serie, nog zonder naam',
+            'something' => 'Iets, nog zonder naam',
+        ],
+    ],
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',

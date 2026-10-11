@@ -11,6 +11,7 @@ use function is_int;
 use function is_string;
 
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -26,7 +27,7 @@ use function trim;
  * One row of a member's request list, read into what a screen can show.
  *
  * Lifted out of {@see \Modules\Sdk\Api\Households} rather than written
- * there. That reader answers *what did this household say*; these six methods
+ * there. That reader answers *what did this household say*; these methods
  * answer *what is this one request*, and they were the half of the class that
  * grew every time the contract said something more about a row. The gate that
  * noticed is the cognitive-complexity bound, and it was right: a class holding
@@ -59,20 +60,48 @@ final readonly class WhatWasAskedFor
     {
         $standing = self::standing($row, $by, $position);
         $number = self::number($row, $by, $position);
-        $title = self::title($row, $by, $position);
+        $title = self::under($row, WireField::Title);
+
+        if ($title === null) {
+            return self::notYetNamed($row, $by, $position, $number, $standing);
+        }
+
+        if (! is_string($title)) {
+            throw HouseholdIsUnreadable::request($by, $position);
+        }
 
         if (! $standing->wasDeclined()) {
             return Wanted::of($number, $by, $title, self::size($row), $standing);
         }
 
-        return Wanted::turnedDown(
-            $number,
-            $by,
-            $title,
-            self::size($row),
-            self::whyItWasRefused($row, $by, $position),
-        );
+        return Wanted::turnedDown($number, $by, $title, self::size($row), self::whyItWasRefused($row, $by, $position));
     }
+
+    /**
+     * A request no service has named yet, by the kind of thing the core says it is.
+     *
+     * The contract leaves the title out for a request handed to nobody yet,
+     * and one still waiting for a yes is exactly that: it is shown by its
+     * kind and stays one the operator can rule on.
+     *
+     * @param array<mixed> $row
+     */
+    private static function notYetNamed(array $row, string $by, int $position, int $number, HowARequestStands $standing): Wanted
+    {
+        $media = self::under($row, WireField::Media);
+        $kind = is_string($media) ? KindOfRequest::tryFrom(trim($media)) : null;
+
+        if (! $kind instanceof KindOfRequest) {
+            $kind = KindOfRequest::Something;
+        }
+
+        if (! $standing->wasDeclined()) {
+            return Wanted::notYetNamed($number, $by, $kind, self::size($row), $standing);
+        }
+
+        return Wanted::turnedDownNotYetNamed($number, $by, $kind, self::size($row), self::whyItWasRefused($row, $by, $position));
+    }
+
     /**
      * One field of a request, whatever it holds, or `null` where it is absent.
      *
@@ -104,22 +133,6 @@ final readonly class WhatWasAskedFor
         $said = self::under($row, WireField::Id);
 
         if (! is_int($said)) {
-            throw HouseholdIsUnreadable::request($by, $position);
-        }
-
-        return $said;
-    }
-
-    /** @param array<mixed> $row */
-    private static function title(array $row, string $by, int $position): string
-    {
-        $said = self::under($row, WireField::Title);
-
-        // The contract permits this to be absent, and a row with no title is a
-        // row nobody can decide on — so it is refused here rather than shown
-        // blank or quietly left out. `Wanted` would refuse it a line later; this
-        // refuses it with the member and the position still in hand.
-        if (! is_string($said)) {
             throw HouseholdIsUnreadable::request($by, $position);
         }
 
