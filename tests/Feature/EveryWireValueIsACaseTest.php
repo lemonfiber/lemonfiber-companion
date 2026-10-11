@@ -37,6 +37,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -52,6 +53,7 @@ use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToDoNext;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
@@ -593,6 +595,21 @@ it('every remedy a hand-off can name has a case, beside the one for naming none'
 
     expect($words)->not->toBe([], 'no remedy union was found in the generated envelope');
     expect(TheWireUnions::valuesOf($named))->toBe($words);
+});
+
+it('everything the downloads can be asked to do has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PausingEnvelope'), 'asked');
+
+    expect($words)->not->toBe([], 'no asked union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatToDoWithTheDownloads::cases()))->toBe($words);
+});
+
+it('everything a download client can say it was doing has a case, beside the one for saying neither', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PausingEnvelope'), 'was');
+    $said = array_filter(WhatADownloadClientSaid::cases(), static fn(WhatADownloadClientSaid $word): bool => $word !== WhatADownloadClientSaid::Unsaid);
+
+    expect($words)->not->toBe([], 'no was union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf($said))->toBe($words);
 });
 
 it('everywhere a front door can stand has a case', function (): void {

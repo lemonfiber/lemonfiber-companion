@@ -723,8 +723,11 @@ enum WireField: string implements NamesAWireField
      */
     case Device = 'device';
 
-    /** The app on a device: the one recommended for it, or the one it signed in with. */
+    /** The app on a device: the one recommended for it, or the one it signed in with; and a download client, by the name the stack knows it under. */
     case Client = 'client';
+
+    /** Every app a device can be pointed at the stack with, on a hand-off; and every download client the stack runs, on pausing or resuming them. */
+    case Clients = 'clients';
 
     /** Whether an app is open source, where one is recommended or handed over. */
     case OpenSource = 'open_source';

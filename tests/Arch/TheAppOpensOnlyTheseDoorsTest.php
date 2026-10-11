@@ -35,6 +35,7 @@ use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
@@ -242,6 +243,8 @@ const VERBS_THE_APP_ASKS_FOR = [
     // download go. There is no blanket yes: the offer's own name is the only
     // one the stack takes.
     'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
+    'downloads-pause' => 'rehearses pausing every download client, and pauses them only against that rehearsal',
+    'downloads-resume' => 'rehearses letting every download client fetch again, and resumes them only against that rehearsal',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
     // agreement built from the record's own rows for that run — and a run the
@@ -565,6 +568,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
+        ...array_map(static fn(WhatToDoWithTheDownloads $downloads): string => $downloads->asked(), WhatToDoWithTheDownloads::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(HandingOver $over): string => $over->asked(), HandingOver::cases()),

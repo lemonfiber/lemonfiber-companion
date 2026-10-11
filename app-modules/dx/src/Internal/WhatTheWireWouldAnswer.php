@@ -136,6 +136,15 @@ final readonly class WhatTheWireWouldAnswer
     private const string WHAT_LETTING_GO_BECOMES = 'StopSeedingEnvelope';
 
     /**
+     * What the work of pausing or resuming the downloads redeems into.
+     *
+     * Its rehearsal is drawn on the screen's first frame, for
+     * {@see self::WHAT_LETTING_GO_BECOMES}'s reason, so the stand-in names
+     * that work after its action and redeems it into the `pausing` envelope.
+     */
+    private const string WHAT_PAUSING_BECOMES = 'PausingEnvelope';
+
+    /**
      * What putting the configuration back finishes as.
      *
      * The reset screen asks for work the moment it opens — what putting the
@@ -237,6 +246,7 @@ final readonly class WhatTheWireWouldAnswer
             '*' => static fn(PendingRequest $asked): MockResponse => match (true) {
                 self::answersAtOnce($asked) => new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status),
                 self::isLettingGo($asked) => new MockResponse(self::workNamedFor(self::lettingGo()), $status),
+                TheDownloadsWork::askedBy($asked) !== '' => new MockResponse(self::workNamedFor(TheDownloadsWork::askedBy($asked)), $status),
                 default => self::to(
                     $asked->getRequest()->resolveEndpoint(),
                     $status,
@@ -368,6 +378,7 @@ final readonly class WhatTheWireWouldAnswer
             str_starts_with($endpoint, sprintf('%s/', Api::HELD_ENDPOINT)) => ATitleAsItReads::from(self::oneEnvelope(self::WHAT_ONE_TITLE_IS)),
             $endpoint === Api::CAPABILITIES_ENDPOINT => [...self::oneEnvelope(WhatAStandInServes::DECLARED_IN), 'data' => WhatAStandInServes::declaration()],
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
+            TheDownloadsWork::isFollowedAt($endpoint) => self::oneEnvelope(self::WHAT_PAUSING_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(GrantEnvelope::KIND->value))),

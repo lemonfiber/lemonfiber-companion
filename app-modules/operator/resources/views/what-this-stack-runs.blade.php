@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\WhatToDoWithTheDownloads')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -117,6 +118,19 @@
             @endforelse
         @endif
     @endunless
+
+    {{-- The downloads, every client at once, each way. Each opens to a screen
+         that rehearses it first, so the verb is chosen there and not on the
+         list. --}}
+    <x-operator::heading>{{ __('stacks.pausing.heading') }}</x-operator::heading>
+    @forelse (WhatToDoWithTheDownloads::cases() as $asked)
+        <x-operator::port-row
+            :name="__($this->pausingSays($asked))"
+            :goes="$this->goes()->downloads($asked)"
+        />
+    @empty
+        {{-- Unreachable: pausing and resuming are both always offered. --}}
+    @endforelse
 
     {{-- Words rather than a bar, because it is not the thing this frame wants
          anybody to do. The rows are. --}}

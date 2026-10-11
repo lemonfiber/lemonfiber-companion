@@ -90,4 +90,47 @@ return [
             'remove' => 'Nothing was there to take back.',
         ],
     ],
+
+    'pausing' => [
+        'heading' => 'Downloads',
+        'names_nothing' => 'This names neither pausing nor resuming the downloads',
+        'working_it_out' => 'Asking every download client what it is doing',
+        'offer_ended' => 'The stack no longer knows what the download clients were doing. Ask again to hear it afresh.',
+        'no_clients' => 'This stack runs no download client',
+        'unreached' => 'Could not be reached',
+        'unreached_no_reason' => 'It gave no reason',
+        'before_and_after' => 'Before: :was. Now: :now.',
+        'no_outcome' => 'The stack no longer knows what became of it',
+        'no_outcome_action' => 'The download clients may have changed. Ask again to see what each is doing.',
+        'a_rehearsal' => 'A rehearsal: no client was asked anything',
+        'said' => [
+            'fetching' => 'Fetching',
+            'stopped' => 'Not fetching',
+            'unsaid' => 'Did not say',
+        ],
+        'road' => [
+            'pause' => 'Pause downloads',
+            'resume' => 'Resume downloads',
+        ],
+        'what_it_does' => [
+            'pause' => 'What pausing does',
+            'resume' => 'What resuming does',
+        ],
+        'explained' => [
+            'pause' => 'Every download client stops fetching. Nothing is removed, and resuming lets them fetch again.',
+            'resume' => 'Every download client fetches again.',
+        ],
+        'agree' => [
+            'pause' => 'Pause them',
+            'resume' => 'Resume them',
+        ],
+        'working' => [
+            'pause' => 'Pausing the downloads',
+            'resume' => 'Resuming the downloads',
+        ],
+        'done' => [
+            'pause' => 'The downloads were paused',
+            'resume' => 'The downloads were resumed',
+        ],
+    ],
 ];

@@ -252,9 +252,10 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'DashboardEnvelope.downloaders',
-            'because' => 'Every download client and whether it is paused, the reading that pausing and '
-                . 'resuming downloads act on. This app offers neither (`Pausing` is under `NOT_YET` in '
-                . '`EveryActionTheStackOffersTest`), and the reading goes with the action.',
+            'because' => 'Every download client and whether it is paused. Pausing and resuming downloads '
+                . 'read each client before and after from `PausingEnvelope`, which the action answers with, '
+                . 'so the same clients inside the front page would be a second reading of them on a screen '
+                . 'that does not draw them.',
         ],
         [
             'path' => 'DashboardEnvelope.alerts',

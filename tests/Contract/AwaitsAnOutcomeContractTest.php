@@ -12,6 +12,7 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\PairingAPhone;
+use Modules\Operator\Internal\Screens\PausingTheDownloads;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
@@ -42,6 +43,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     HowCurrentThisStackIs::class,
     HowTheServicesAreWired::class,
     LettingADownloadGo::class,
+    PausingTheDownloads::class,
     PairingAPhone::class,
     PuttingACopyBack::class,
     PuttingThatRunBack::class,

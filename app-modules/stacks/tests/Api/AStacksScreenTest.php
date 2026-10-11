@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
@@ -134,6 +135,10 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
         StackId::rememberedAs(A_MACHINE),
         ADownloadHeld::named('Show.Season1'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Room->forTheStacksDownloads(
+        StackId::rememberedAs(A_MACHINE),
+        WhatToDoWithTheDownloads::Pause,
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
     expect(fn(): string => AStacksScreen::Health->forTheStacksRun(
         StackId::rememberedAs(A_MACHINE),
         ARun::stamped('1790150000'),
@@ -166,6 +171,13 @@ it('puts a run where a service would go, under the record', function (): void {
 it('puts a download where a service would go, encoded, beneath how full the machine is', function (): void {
     expect(AStacksScreen::LetGo->forTheStacksDownload(StackId::rememberedAs(A_MACHINE), ADownloadHeld::named('Show Season1/Extras')))
         ->toBe(sprintf('/stacks/%s/room/Show%%20Season1%%2FExtras', A_MACHINE));
+});
+
+it('puts pausing or resuming where a service would go, by the word the stack is asked with', function (): void {
+    expect(AStacksScreen::Downloads->forTheStacksDownloads(StackId::rememberedAs(A_MACHINE), WhatToDoWithTheDownloads::Pause))
+        ->toBe(sprintf('/stacks/%s/downloads/pause', A_MACHINE))
+        ->and(AStacksScreen::Downloads->forTheStacksDownloads(StackId::rememberedAs(A_MACHINE), WhatToDoWithTheDownloads::Resume))
+        ->toBe(sprintf('/stacks/%s/downloads/resume', A_MACHINE));
 });
 
 it('puts an item to follow where a service would go, encoded', function (): void {

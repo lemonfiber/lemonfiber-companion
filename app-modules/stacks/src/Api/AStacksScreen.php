@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 
 use function rawurlencode;
@@ -227,6 +228,14 @@ enum AStacksScreen: string
      * here it is the name the account of the disk gave a download.
      */
     case LetGo = '/stacks/{stack}/room/{service}';
+
+    /**
+     * Pausing every download client, or letting them fetch again, rehearsed before anything is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is which of the two, as this app names it.
+     */
+    case Downloads = '/stacks/{stack}/downloads/{service}';
 
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
@@ -470,6 +479,16 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($download->name())], $this->value);
+    }
+
+    /** This screen's path, for pausing or resuming one machine's downloads. */
+    public function forTheStacksDownloads(StackId $stack, WhatToDoWithTheDownloads $asked): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $asked->value], $this->value);
     }
 
     /**

@@ -15,7 +15,9 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowPausingReads;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
@@ -161,6 +163,12 @@ final class WhatThisStackRuns extends NativeComponent
         $this->showsWhatIsNotInstalled = ! $this->showsWhatIsNotInstalled;
     }
 
+
+    /** The row that opens pausing or resuming the downloads. */
+    public function pausingSays(WhatToDoWithTheDownloads $asked): string
+    {
+        return new HowPausingReads()->road($asked);
+    }
 
     public function render(): View
     {

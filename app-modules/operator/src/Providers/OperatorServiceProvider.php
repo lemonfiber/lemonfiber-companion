@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PairingAPhone;
+use Modules\Operator\Internal\Screens\PausingTheDownloads;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
@@ -312,6 +313,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // the torrent was called, so it is encoded and takes the rest of
             // the path.
             Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where('service', '.+');
+            Router::native(AStacksScreen::Downloads->value, PausingTheDownloads::class);
 
             // Which version of lemonfiber runs, apart from the services' updates,
             // and the versions under it, reached from there.
