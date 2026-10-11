@@ -37,7 +37,7 @@ function aHouseToSearch(): Stack
 {
     return Stack::of(
         StackId::of(Nonce::of(str_repeat('s', Nonce::SHORTEST))),
-        StackName::of('Thuis'),
+        StackName::of('Home'),
         Address::of('https://192.168.1.42:8443'),
         Fingerprint::of(str_repeat('f', Fingerprint::CHARACTERS)),
     );

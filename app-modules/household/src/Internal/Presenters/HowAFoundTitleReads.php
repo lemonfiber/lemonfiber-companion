@@ -40,6 +40,10 @@ final readonly class HowAFoundTitleReads
     /** What an ask became, heading the core's sentence. */
     public const string BECAME = 'household.found.became.%s';
 
+    public const string DATED = 'household.search.line';
+
+    public const string UNDATED = 'household.search.line_undated';
+
 
     /** One page, each title a row leading to its page. */
     public function found(WhatASearchFound $page): WhatTheSearchShows
@@ -47,7 +51,7 @@ final readonly class HowAFoundTitleReads
         $rows = [];
 
         foreach ($page as $title) {
-            $rows[] = $this->row($title);
+            $rows[] = $this->shown($title);
         }
 
         return WhatTheSearchShows::page(
@@ -93,18 +97,14 @@ final readonly class HowAFoundTitleReads
         return sprintf(self::ACTION, $stands->value);
     }
 
-    private function became(WhatAnAskBecame $became): string
-    {
-        return sprintf(self::BECAME, $became->value);
-    }
-
-    private function row(AFoundTitle $title): AFoundTitleAsShown
+    public function shown(AFoundTitle $title): AFoundTitleAsShown
     {
         $year = $title->year()->either(dated: static fn(int $year): InWords => new InWords((string) $year), unstated: static fn(): InWords => new InWords(''))->said;
 
         return new AFoundTitleAsShown(
             found: $title,
             titled: $title->title(),
+            line: $year === '' ? self::UNDATED : self::DATED,
             year: $year,
             kind: $this->kind($title->kind()),
             stands: $this->stands($title->stands()),
@@ -115,5 +115,10 @@ final readonly class HowAFoundTitleReads
                 WhatAFoundTitleIsOpenedWith::Stands->value => $title->stands()->value,
             ],
         );
+    }
+
+    private function became(WhatAnAskBecame $became): string
+    {
+        return sprintf(self::BECAME, $became->value);
     }
 }

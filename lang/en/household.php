@@ -83,7 +83,7 @@ return [
     'needs_an_update' => 'The house needs an update for this.',
     'needs_an_update_action' => 'Whoever looks after the house can update it.',
 
-    // Searching, which this version of the app does not have yet.
+    // Searching for a title the house does not have, to ask for it.
     'search' => [
         'label' => 'What to look for',
         'placeholder' => 'A film or a series',

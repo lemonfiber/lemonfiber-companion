@@ -56,7 +56,7 @@
         @forelse ($this->answer()->rows as $row)
             <x-design::row
                 :headline="$row->titled"
-                :supporting="$row->year === '' ? __('household.search.line_undated', ['kind' => __($row->kind), 'stands' => __($row->stands)]) : __('household.search.line', ['year' => $row->year, 'kind' => __($row->kind), 'stands' => __($row->stands)])"
+                :supporting="__($row->line, ['year' => $row->year, 'kind' => __($row->kind), 'stands' => __($row->stands)])"
                 :goes="$this->goes()->found($row->found)"
                 :answers-to="__('household.search.open_named', ['title' => $row->titled])"
                 :carries="$row->carries"

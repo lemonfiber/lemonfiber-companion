@@ -42,7 +42,7 @@ function theHouseSearchedFrom(): Stack
 {
     return Stack::of(
         StackId::of(Nonce::of(str_repeat('h', Nonce::SHORTEST))),
-        StackName::of('Thuis'),
+        StackName::of('Home'),
         Address::of('https://192.168.1.42:8443'),
         Fingerprint::of(str_repeat('e', Fingerprint::CHARACTERS)),
     );
@@ -229,7 +229,8 @@ it('asks once under one key, keeps the key while no answer came, and lets it go 
 
     expect($first)->toBe($again)
         ->and($page->key)->toBeNull()
-        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(__('household.found.became.waiting'), 'Dune is asked for, and waits for a yes.');
+        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain('Dune is asked for, and waits for a yes.')
+        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.search.kind.movies'), 'stands' => aSearchLine('household.found.became.waiting')]));
 });
 
 it('draws where a title stands as its one action, not usable, where it cannot be asked for', function (WhereAFoundTitleStands $stands): void {

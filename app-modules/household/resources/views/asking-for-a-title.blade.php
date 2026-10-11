@@ -9,13 +9,11 @@
     <x-design::body>{{ __('household.found.from_search') }}</x-design::body>
     <x-design::action label="{{ __('household.found.to_search') }}" :goes="$this->goes()->to(AStacksScreen::Search)" tone="tonal" />
 @else
-    <x-design::title>{{ $this->title()->title() }}</x-design::title>
-    <x-design::note>{{ __($this->kindSaid()) }} · {{ __($this->standsSaid()) }}</x-design::note>
+    <x-design::title>{{ $this->shown()->titled }}</x-design::title>
+    <x-design::note>{{ __($this->shown()->line, ['year' => $this->shown()->year, 'kind' => __($this->shown()->kind), 'stands' => __($this->shown()->stands)]) }}</x-design::note>
 
     @if ($this->asked !== null && $this->asked->cameBack())
-        {{-- What the ask became, headed in the household's words, then the
-             core's own sentence for it. --}}
-        <x-design::strong>{{ __($this->asked->became) }}</x-design::strong>
+        {{-- The core's own sentence for what the ask became. --}}
         <x-design::body>{{ $this->asked->said }}</x-design::body>
         <x-design::action label="{{ __('household.found.to_requests') }}" :goes="$this->requests()" tone="tonal" />
     @elseif (! $this->title()->stands()->mayBeAskedFor())

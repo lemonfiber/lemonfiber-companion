@@ -11,6 +11,7 @@ use function is_string;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
+use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
 use Modules\Household\Internal\ViewModels\WhatAskingShows;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\AFoundTitle;
@@ -102,16 +103,18 @@ final class AskingForATitle extends NativeComponent
         }
     }
 
-    /** The catalogue key for what the title is. */
-    public function kindSaid(): string
+    /** The title as its row in the search showed it, saying what the ask became once it was answered. */
+    public function shown(): ?AFoundTitleAsShown
     {
-        return $this->said(static fn(AFoundTitle $title): string => new HowAFoundTitleReads()->kind($title->kind()));
-    }
+        $title = $this->title();
 
-    /** The catalogue key for where the title stands. */
-    public function standsSaid(): string
-    {
-        return $this->said(static fn(AFoundTitle $title): string => new HowAFoundTitleReads()->stands($title->stands()));
+        if (! $title instanceof AFoundTitle) {
+            return null;
+        }
+
+        $shown = new HowAFoundTitleReads()->shown($title);
+
+        return $this->asked instanceof WhatAskingShows && $this->asked->cameBack() ? $shown->standing($this->asked->became) : $shown;
     }
 
     /** The catalogue key for the action drawn where the title cannot be asked for. */
