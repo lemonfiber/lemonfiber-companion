@@ -11,7 +11,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function expect;
-use function in_array;
 use function it;
 
 use Modules\Kernel\Api\Address;
@@ -288,23 +287,19 @@ it('carries no address where none was tried', function (): void {
     expect(Obstacle::of(KindOfObstacle::NothingAtThePairedAddress)->whereItWasTried())->toBe('');
 });
 
-it('tells a member in the household\'s words where it was met on the way to the stack or the answer could not be read, and as the operator is told everywhere else', function (KindOfObstacle $kind): void {
+it('tells a member every obstacle in the household\'s words, a sentence and a remedy of its own', function (KindOfObstacle $kind): void {
     $met = Obstacle::of($kind);
-    $inTheHouseholdsWords = in_array($kind, [
-        KindOfObstacle::StackDidNotAnswer,
-        KindOfObstacle::NameWasNotFound,
-        KindOfObstacle::NothingAtThePairedAddress,
-        KindOfObstacle::ConnectionWasTurnedAway,
-        KindOfObstacle::AnswerCouldNotBeRead,
-    ], strict: true);
 
-    expect($met->saidToTheHousehold())->toBe($inTheHouseholdsWords ? sprintf('household.out_of_reach.%s', $kind->value) : $met->said())
-        ->and($met->remedyForTheHousehold())->toBe($inTheHouseholdsWords ? sprintf('household.out_of_reach.%s_action', $kind->value) : $met->remedy());
+    expect($met->saidToTheHousehold())->toBe(sprintf('household.stood_in_the_way.%s', $kind->value))
+        ->and($met->remedyForTheHousehold())->toBe(sprintf('household.stood_in_the_way.%s_action', $kind->value));
 })->with(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind !== KindOfObstacle::VersionsDisagree)));
 
-it('keeps the remedy a disagreement over versions owes on a member\'s screen', function (): void {
-    $met = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 1, spoken: 2));
+it('tells a member to update this app where the house is the newer, and that the house needs updating where it is the older', function (): void {
+    $older = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 1, spoken: 2));
+    $newer = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 2, spoken: 1));
 
-    expect($met->remedyForTheHousehold())->toBe($met->remedy())
-        ->and($met->saidToTheHousehold())->toBe($met->said());
+    expect($older->saidToTheHousehold())->toBe('household.stood_in_the_way.version_mismatch')
+        ->and($newer->saidToTheHousehold())->toBe('household.stood_in_the_way.version_mismatch')
+        ->and($older->remedyForTheHousehold())->toBe('household.stood_in_the_way.version_mismatch_older_action')
+        ->and($newer->remedyForTheHousehold())->toBe('household.stood_in_the_way.version_mismatch_action');
 });

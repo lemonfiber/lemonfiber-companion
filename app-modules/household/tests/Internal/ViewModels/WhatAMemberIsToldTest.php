@@ -11,29 +11,24 @@ use Tests\TestCase;
 // The catalogue is read, so the application is booted.
 uses(TestCase::class);
 
-it('tells a member a house too old for what they opened that the house needs an update', function (): void {
-    $why = Obstacle::of(KindOfObstacle::NotOnThisStack);
-
-    expect(WhatAMemberIsTold::met($why))->toBe('household.needs_an_update')
-        ->and(WhatAMemberIsTold::remedy($why))->toBe('household.needs_an_update_action');
-});
-
-it('tells a member everything else as the household is told it', function (KindOfObstacle $kind): void {
+it('tells a member every obstacle as the household is told it', function (KindOfObstacle $kind): void {
     $why = Obstacle::of($kind);
 
     expect(WhatAMemberIsTold::met($why))->toBe($why->saidToTheHousehold())
         ->and(WhatAMemberIsTold::remedy($why))->toBe($why->remedyForTheHousehold());
+})->with(array_values(array_filter(KindOfObstacle::cases(), static fn(KindOfObstacle $kind): bool => $kind !== KindOfObstacle::VersionsDisagree)));
+
+it('never names the software, the machine or how it is reached to a member, in either language', function (string $locale, string $word): void {
+    $lines = trans('household.stood_in_the_way', [], $locale);
+
+    expect($lines)->toBeArray()
+        ->and(array_filter(is_array($lines) ? $lines : [], static fn(mixed $line): bool => is_string($line) && str_contains(mb_strtolower($line), $word)))->toBe([]);
 })->with([
-    'a reach that met nothing, in the household\'s words' => [KindOfObstacle::StackDidNotAnswer],
-    'anything else, in the obstacle\'s own' => [KindOfObstacle::TooManyAttempts],
+    ['en', 'lemonfiber'], ['en', 'stack'], ['en', 'server'], ['en', 'certificate'], ['en', 'session'], ['en', 'api'],
+    ['en', 'machine'], ['en', 'address'], ['en', 'version'], ['en', 'pair'],
+    ['nl', 'lemonfiber'], ['nl', 'stack'], ['nl', 'server'], ['nl', 'certificaat'], ['nl', 'sessie'], ['nl', 'api'],
+    ['nl', 'machine'], ['nl', 'adres'], ['nl', 'versie'], ['nl', 'koppel'],
 ]);
-
-it('never names the software or a version to a member', function (): void {
-    $why = Obstacle::of(KindOfObstacle::NotOnThisStack);
-
-    expect(__(WhatAMemberIsTold::met($why)))->not->toContain('lemonfiber')
-        ->and(__(WhatAMemberIsTold::remedy($why)))->not->toContain('lemonfiber');
-});
 
 it('tells a member the core\'s own sentence and remedy wherever it wrote them, a house too old included', function (KindOfObstacle $kind): void {
     $why = Obstacle::of($kind)->withWhatTheHouseholdWasTold(WhatTheHouseholdWasTold::said('Your library is not answering right now.', 'Try again in a little while'));

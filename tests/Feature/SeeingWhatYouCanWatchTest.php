@@ -546,12 +546,12 @@ it('tells a member whose household could not be asked the core\'s own sentence a
     // drawn as text even where a line of the core's reads like a key of this
     // app's.
     $keychain = AKeychainInMemory::working();
-    $told = WhatTheHouseholdWasTold::said('Your library is not answering right now.', 'household.needs_an_update');
+    $told = WhatTheHouseholdWasTold::said('Your library is not answering right now.', 'household.stood_in_the_way.not_on_this_stack');
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer)->withWhatTheHouseholdWasTold($told)), keychain: $keychain);
     $drawn = WhatTheDeviceWouldDraw::by($met)->said();
 
     expect($drawn)->toContain('Your library is not answering right now.')
-        ->and($drawn)->toContain('household.needs_an_update')
+        ->and($drawn)->toContain('household.stood_in_the_way.not_on_this_stack')
         ->and($drawn)->not->toContain(__(KindOfObstacle::MediaServerDidNotAnswer->saidToTheHousehold()))
         ->and($drawn)->not->toContain(__(KindOfObstacle::NotForThisAccount->saidToTheHousehold()))
         ->and($met->answer()->isSignedIn)->toBeTrue()
