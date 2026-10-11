@@ -44,6 +44,7 @@ return [
         'front_door' => 'Front door',
         'watch_apps' => 'Watch apps',
         'passwords' => 'Passwords',
+        'app_keys' => 'App keys',
         'pair_a_phone' => 'Pair a phone',
         'storage' => 'Storage',
         'backups' => 'Backups',

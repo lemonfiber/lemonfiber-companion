@@ -33,9 +33,6 @@ enum OutboundField: string implements NamesAWireField
      */
     case Destination = 'destination';
 
-    /** Why a request is made. */
-    case Purpose = 'purpose';
-
     /** Exactly what travels in one of lemonfiber's requests. */
     case Sends = 'sends';
 

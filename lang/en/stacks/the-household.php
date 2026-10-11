@@ -34,6 +34,39 @@ return [
         'at_the_machine' => 'A password is set or replaced at the machine, not from here.',
     ],
 
+    // The keys a stack has minted for apps.
+    'keys' => [
+        'heading' => 'App keys',
+        'state' => [
+            'active' => 'Working',
+            'waiting' => 'Waiting to be collected',
+            'revoked' => 'Revoked',
+            'orphaned' => 'Its member has left the household',
+            'unconfirmed' => 'Its member could not be checked just now',
+        ],
+        'purpose' => [
+            'home-assistant' => 'For Home Assistant',
+            'mcp' => 'For an assistant',
+            'other' => 'For something else',
+        ],
+        'admits' => [
+            'read' => 'Can read everything',
+            'act' => 'Can read everything and do a few things',
+            'member' => 'Sees what :member sees',
+        ],
+        'by_a_member' => 'Made by a member of the household',
+        'minted' => 'Made :when',
+        'used' => 'Last used :when',
+        'never_used' => 'Never used',
+        'revoke' => 'Revoke',
+        'revoke_named' => 'Revoke :name',
+        'revoke_confirm' => ':name stops working at once, and a revoke cannot be undone. Whatever uses it will need a new key.',
+        'keep_it' => 'Keep it',
+        'keep_it_named' => 'Keep :name',
+        'none' => 'This stack has made no keys for apps',
+        'made_at_the_terminal' => 'A new key is made at the stack\'s terminal.',
+    ],
+
     // Which app to watch on, device by device.
     'clients' => [
         'heading' => 'What to watch on',

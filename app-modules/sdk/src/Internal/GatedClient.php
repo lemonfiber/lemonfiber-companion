@@ -154,6 +154,37 @@ final readonly class GatedClient
     }
 
     /**
+     * The integration keys the stack lists, asked of the client directly: the stack declares no
+     * ability for the routes that let somebody in.
+     *
+     * @return Envelope<mixed>
+     *
+     * @throws ApiVersionMismatch
+     * @throws RequestFailed
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function keys(): Envelope
+    {
+        return $this->clients->client($this->stack, $this->session)->read(Api::KEYS_ENDPOINT);
+    }
+
+    /**
+     * Revoke the integration key of that name, answered with the listing as it stands after.
+     *
+     * @return Envelope<mixed>
+     *
+     * @throws ApiVersionMismatch
+     * @throws RequestFailed
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    public function revokeKey(string $name): Envelope
+    {
+        return $this->clients->client($this->stack, $this->session)->revokeKey($name);
+    }
+
+    /**
      * The backdrop of a title the house holds, through the gate the core declares it under.
      *
      * @param array<string, scalar> $query

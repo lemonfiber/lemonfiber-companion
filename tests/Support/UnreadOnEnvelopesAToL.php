@@ -81,6 +81,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'KeysEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
             'path' => 'DoctorEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -283,6 +287,17 @@ final readonly class UnreadOnEnvelopesAToL
             'path' => 'CredentialsEnvelope.rotated',
             'because' => 'What became of a rotation, where one was asked for. Rotating is done at the machine, '
                 . 'and nothing here asks for one, so no answer this app receives carries it.',
+        ],
+        [
+            'path' => 'KeysEnvelope.keys[].revoked',
+            'because' => 'When a revoked key was revoked. The listing says a key is revoked by its `state`, '
+                . 'which is all `N29-R1` and `N29-R6` ask the screen to show; the moment is the journal\'s.',
+        ],
+        [
+            'path' => 'KeysEnvelope.revoked',
+            'because' => 'The name a revoke answered for. This app revokes one key it named, and the listing '
+                . 'that comes back shows that key as the core now answers it (`N29-R6`), so the name come back '
+                . 'is the one this app sent.',
         ],
         [
             'path' => 'CapabilitiesEnvelope.scope',

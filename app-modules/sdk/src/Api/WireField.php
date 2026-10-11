@@ -396,6 +396,12 @@ enum WireField: string implements NamesAWireField
      */
     case Scope = 'scope';
 
+    /**
+     * Why something is: a request leaving the stack on the outbound reading,
+     * and what a key's minter said it is for on the keys listing.
+     */
+    case Purpose = 'purpose';
+
     /** Roughly how much room an hour of media takes at a quality, as the stack words it. */
     case SizePerHour = 'size_per_hour';
 

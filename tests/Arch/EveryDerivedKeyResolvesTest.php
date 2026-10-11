@@ -47,6 +47,7 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
+use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -66,6 +67,7 @@ use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
@@ -383,6 +385,14 @@ function everyDerivedKey(): array
         HowLemonfiberWasInstalled::class => aPairPerCase(
             HowLemonfiberWasInstalled::cases(),
             static fn(HowLemonfiberWasInstalled $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatAKeyIsFor::class => aPairPerCase(
+            WhatAKeyIsFor::cases(),
+            static fn(WhatAKeyIsFor $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereAKeyStands::class => aPairPerCase(
+            WhereAKeyStands::cases(),
+            static fn(WhereAKeyStands $case): array => [$case->saidOnTheScreen()],
         ),
         WhereACredentialStands::class => aPairPerCase(
             WhereACredentialStands::cases(),

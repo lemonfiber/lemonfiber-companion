@@ -19,6 +19,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AHeldChoice;
+use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
@@ -161,6 +162,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\KeyKeepers;
 use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
@@ -231,6 +233,8 @@ final readonly class EveryAdapterCallThatReads
             'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
             'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
             'Linkers::linkedOn' => static fn(): object => new Linkers($clients)->linkedOn($stack, $session),
+            'KeyKeepers::listedOn' => static fn(): object => new KeyKeepers($clients)->listedOn($stack, $session),
+            'KeyKeepers::revokedOn' => static fn(): object => new KeyKeepers($clients)->revokedOn($stack, $session, AKeysName::of('den')),
             'Fillers::whatItWouldComeTo' => static fn(): object
                 => new Fillers($clients, $entropy)->whatItWouldComeTo($stack, $session, Capability::called('media-server'), ServiceId::called('plex')),
             'Fillers::choose' => static fn(): object
