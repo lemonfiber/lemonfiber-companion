@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Design\Api;
 
-use function array_map;
 use function implode;
 use function is_int;
 use function json_encode;
@@ -37,7 +36,13 @@ final readonly class ATap
     /** A tap calling `$method`, handing it `$with`. */
     public static function calling(string $method, int|string ...$with): self
     {
-        return new self(sprintf('%s(%s)', $method, implode(', ', array_map(self::argument(...), $with))));
+        $arguments = [];
+
+        foreach ($with as $value) {
+            $arguments[] = self::argument($value);
+        }
+
+        return new self(sprintf('%s(%s)', $method, implode(', ', $arguments)));
     }
 
     /** The tap as the control is handed it, which the parse reads back as the method and each value as it is. */
