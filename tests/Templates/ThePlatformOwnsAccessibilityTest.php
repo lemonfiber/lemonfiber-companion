@@ -121,3 +121,29 @@ foreach ($templates as $template) {
         ));
     });
 }
+
+it('cuts off no label on an operator\'s screen, and reads the stack\'s name whole in the top bar', function () use ($templates): void {
+    $cut = [];
+    $looked = 0;
+
+    foreach ($templates as $template) {
+        if (str_contains($template->path, 'app-modules/household/')) {
+            continue;
+        }
+
+        $looked++;
+
+        foreach ($template->elements() as $element) {
+            if (preg_match('/(?:^|\s):?(?:max-lines|maxLines|line-clamp|truncate)\s*=|\b(?:truncate|line-clamp-\d+)\b/', $element['attributes']) === 1) {
+                $cut[] = $template->describe($element['tag'], $element['line']);
+            }
+        }
+    }
+
+    $bar = (string) file_get_contents(base_path('app-modules/wayfinding/resources/views/components/stack-opens.blade.php'));
+
+    expect($looked)->toBeGreaterThan(50, 'no operator template was read, so this rule read nothing')
+        ->and($cut)->toBe([], sprintf("These cut a label off rather than letting it wrap:\n  %s\n", implode("\n  ", $cut)))
+        ->and($bar)->toContain('label="{{ $title }}"')
+        ->and($bar)->toContain('a11y-label="{{ $title }}"');
+});
