@@ -59,20 +59,13 @@ env:
 jobs:
   bump:
     runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ env.BRANCH }}
+      head: ${{ steps.commit.outputs.built }}
+      clean: ${{ steps.commit.outputs.clean }}
+      title: ${{ steps.said.outputs.title }}
+      body: ${{ steps.said.outputs.body }}
     steps:
-      # `main` requires signed commits and only commits GitHub makes are signed,
-      # and a pull request opened with `GITHUB_TOKEN` triggers no workflows — so
-      # its required checks would never report and it could never merge. Both
-      # reasons want an app token.
-      - name: Mint a token that can open a pull request here
-        id: token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.RELEASE_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_APP_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -80,7 +73,7 @@ jobs:
       - name: Is the lock behind at all
         id: behind
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           pin="$(python3 - <<'PY'
@@ -129,7 +122,7 @@ jobs:
         if: steps.behind.outputs.moved == 'yes'
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # It moves the lock, installs from it, and runs the scripts. The
@@ -150,11 +143,29 @@ jobs:
         if: steps.behind.outputs.moved == 'yes' && steps.install.outcome == 'success'
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           composer analyse
           composer test
+
+      # `main` requires signed commits, and only a commit GitHub makes for an
+      # app is signed. This token writes that commit and reads whether the open
+      # pull request already carries it; the pull request is opened in the next
+      # job, with a token of its own. It is minted only now, after `composer
+      # update` and the suite have run, so it never sits beside the vendor tree
+      # those steps installed and ran.
+      - name: Mint a token that can commit here
+        id: token
+        if: steps.behind.outputs.moved == 'yes'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: read
 
       - name: Put the change on the branch, signed
         id: commit
@@ -409,19 +420,21 @@ jobs:
           # the branch list as something a reader has to work out.
           gh api --method DELETE "repos/${REPO}/git/refs/heads/${staging}" >/dev/null 2>&1 || true
 
-          echo "clean=${CLEAN}" >> "$GITHUB_OUTPUT"
-          echo "installed=${INSTALLED}" >> "$GITHUB_OUTPUT"
+          {
+            echo "clean=${CLEAN}"
+            echo "installed=${INSTALLED}"
+            echo "built=${built}"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Open the pull request, or leave the open one updated
+      - name: What the pull request says
+        id: said
         if: steps.behind.outputs.moved == 'yes' && steps.commit.outputs.moved == 'yes' && steps.commit.outputs.carried != 'yes'
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
           PIN: ${{ steps.behind.outputs.pin }}
           HEAD_SHA: ${{ steps.behind.outputs.head }}
           CLEAN: ${{ steps.commit.outputs.clean }}
           INSTALLED: ${{ steps.commit.outputs.installed }}
           TITLE: ${{ steps.behind.outputs.title }}
-          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -451,44 +464,46 @@ jobs:
             verdict="**The analyser or the suite did not pass.** The client has changed a shape this surface uses, so taking it is a change here rather than a bump. Read the failing run before merging; do not force it green."
           fi
 
-          # Read plainly, because the branch was never equal to `main` and so
-          # nothing closed the pull request on it. This read was unsafe while
-          # the branch was reset in place — it answered with a pull request
-          # already on its way to closed — and it is safe now for the same
-          # reason the reset moved to a scratch ref.
-          #
-          # The title is rewritten where one is already open. It names a
-          # revision, a later run takes a different one, and a pull request
-          # whose title says it takes `f866c1c` above a diff taking `7d5c138`
-          # is one somebody has to open to find out what it does.
-          existing="$(gh pr list --repo "${REPO}" --head "${BRANCH}" --state open --json number --jq '.[0].number // ""')"
-          if [ -n "$existing" ]; then
-            gh pr edit "${existing}" --repo "${REPO}" \
-              --title "${TITLE}" >/dev/null 2>&1 || true
-            echo "::notice::#${existing} updated to ${HEAD_SHA}"
-          else
-            created="$(gh pr create --repo "${REPO}" --head "${BRANCH}" --base main \
-              --title "${TITLE}" \
-              --body "$(printf '%s\n' \
-                "\`sdk-drift\` is a required check here, and the lock was behind. This takes the client so that the next author to open a pull request is not handed a dependency bump they did not come for." \
-                "" \
-                "- was: \`${PIN}\`" \
-                "- now: \`${HEAD_SHA}\`" \
-                "" \
-                "${verdict}" \
-                "" \
-                "Opened by \`sdk-bump\`, which the client's own \`sdk-moved\` fires on every push to its main." \
-                "" \
-                "Spec: Q-R68")")"
-            # `gh pr create` prints the pull request's URL, not its number.
-            existing="${created##*/}"
-            echo "::notice::opened #${existing}"
-          fi
+          # The title names the revision taken, and the next job writes it onto
+          # an open pull request as well as a new one, so the title never names
+          # a revision the diff no longer takes.
+          # Handed to the next job, which opens or edits the pull request.
+          # The delimiter is random, so no line of the body can end the value.
+          delimiter="body_$(openssl rand -hex 16)"
+          {
+            echo "title=${TITLE}"
+            echo "body<<${delimiter}"
+            printf '%s\n' \
+              "\`sdk-drift\` is a required check here, and the lock was behind. This takes the client so that the next author to open a pull request is not handed a dependency bump they did not come for." \
+              "" \
+              "- was: \`${PIN}\`" \
+              "- now: \`${HEAD_SHA}\`" \
+              "" \
+              "${verdict}" \
+              "" \
+              "Opened by \`sdk-bump\`, which the client's own \`sdk-moved\` fires on every push to its main." \
+              "" \
+              "Spec: Q-R68"
+            echo "${delimiter}"
+          } >> "$GITHUB_OUTPUT"
 
-          if [ "$CLEAN" = "success" ]; then
-            gh pr merge "${existing}" --repo "${REPO}" --squash --auto \
-              && echo "auto-merge armed on #${existing}." \
-              || echo "::warning::could not arm auto-merge on #${existing}; merge it by hand."
-          else
-            echo "::warning::#${existing} needs reading: the client did not come out clean."
-          fi
+  # The pull request is opened, or the open one edited, only where it is this
+  # bump's own: the release app opened it from this repository's branch and it
+  # is at the commit above (OPS-R87). It merges itself only where the
+  # client came out clean; otherwise any arming is switched off, because
+  # the change wants a person.
+  pull-request:
+    needs: bump
+    if: needs.bump.outputs.head != ''
+    permissions:
+      contents: read
+    uses: lemonfiber/spec/.github/workflows/rolling-pull-request.yml@be0b484aa5c2a7e2a6cee4b33866143634e6e1df # v1.0.70
+    with:
+      branch: ${{ needs.bump.outputs.branch }}
+      head: ${{ needs.bump.outputs.head }}
+      title: ${{ needs.bump.outputs.title }}
+      body: ${{ needs.bump.outputs.body }}
+      auto-merge: ${{ needs.bump.outputs.clean == 'success' }}
+      disarm: ${{ needs.bump.outputs.clean != 'success' }}
+    secrets:
+      RELEASE_APP_KEY: ${{ secrets.RELEASE_APP_KEY }}
