@@ -59,6 +59,7 @@ env:
 jobs:
   bump:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       branch: ${{ env.BRANCH }}
       head: ${{ steps.commit.outputs.built }}
