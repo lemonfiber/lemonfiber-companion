@@ -15,6 +15,7 @@ use function file_get_contents;
 use function is_string;
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
@@ -173,6 +174,7 @@ final readonly class TheWireUnions
         HowSeriousAConnectionIs::class => 'severity',
         WhatGoingBackDoes::class => 'does',
         WhatAChangePuts::class => 'puts',
+        APrivilegedShape::class => 'shape',
         Availability::class => 'capabilities',
         WhatToDoWithTheDownloads::class => 'asked',
         WhatADownloadClientSaid::class => 'was',

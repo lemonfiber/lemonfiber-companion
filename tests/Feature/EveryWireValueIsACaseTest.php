@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
@@ -400,6 +401,13 @@ it('everything a plugin install puts at a path has a case', function (): void {
 
     expect($puts)->not->toBe([], 'no puts union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatAChangePuts::cases()))->toBe($puts);
+});
+
+it('every privileged shape a plugin\'s service can take has a case', function (): void {
+    $shapes = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginsEnvelope'), 'shape');
+
+    expect($shapes)->not->toBe([], 'no shape union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(APrivilegedShape::cases()))->toBe($shapes);
 });
 
 it('every request lemonfiber makes on its own account has a case', function (): void {
