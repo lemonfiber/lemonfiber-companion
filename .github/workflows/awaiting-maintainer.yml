@@ -14,7 +14,7 @@
 #              the bridge compiles for iOS, kotlin, swift,
 #              both halves answer the same questions,
 #              tests and coverage, gate / gate, sonarcloud
-#   sdk-drift  sdk-drift
+#   sdk-drift  sdk-drift / drift
 #   codeql     analyze, alerts / alerts
 #
 # `sonarcloud` is there in place of `SonarCloud Code Analysis`, which the
@@ -59,6 +59,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/awaiting-maintainer.yml@559ac3e839144da802825750aaa066ee553549fc # v1.0.75
+    uses: lemonfiber/spec/.github/workflows/awaiting-maintainer.yml@164464d71266bdc36d90272c58eb8bd02f1ba10d # v1.0.80
     secrets:
       DISCORD_MAINTAINERS_WEBHOOK: ${{ secrets.DISCORD_MAINTAINERS_WEBHOOK }}
