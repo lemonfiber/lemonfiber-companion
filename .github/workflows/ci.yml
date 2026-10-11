@@ -21,20 +21,16 @@ env:
   # proof carries the coverage report that proved the tree, so a run that
   # skips the suite on it still hands SonarCloud that tree's coverage.
   PROVED_TREE: ci-proved-tree-with-coverage
-  # What lets `composer install` reach `plugins.nativephp.com`.
-  #
-  # `nativephp/mobile-local-notifications` is a paid first-party plugin served
-  # from a private Composer repository, so an install without this credential
-  # fails on the download with `402` rather than with anything that names the
-  # cause. Set as an organisation secret so every repository in the estate that
-  # needs a plugin can reach one without a second place to keep the value.
-  #
-  # A pull request from a fork is given no secrets, so this is empty there and
-  # the install fails. That is the same limitation every paid dependency has and
-  # is not something a workflow can route around; the scan job above already
-  # skips forks for the same reason.
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
+# `COMPOSER_AUTH` is what lets `composer install` reach `plugins.nativephp.com`.
+# `nativephp/mobile-local-notifications` is a paid first-party plugin served from
+# a private Composer repository, so an install without it fails on the download
+# with `402`. It is handed to each install step and to the audit, which reads
+# that repository's advisories, and never to the workflow, so the tests, the
+# analysers and every other step run without the credential. A pull request from
+# a fork is given no secrets, so the install fails there; the scan job skips
+# forks for the same reason.
+#
 # Shaped for cost as much as for correctness.
 #
 # The obvious layout gives each gate its own job, and each job then pays for a
@@ -204,6 +200,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: none
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       - run: vendor/bin/pest --testsuite=Arch,Templates
 
   # R2 — every rule refuses a planted violation.
@@ -244,6 +242,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: none
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       - run: composer test:guards
 
   # Formatting, static analysis, dead idioms, the repository's own guards and
@@ -277,6 +277,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: none
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -295,6 +297,8 @@ jobs:
       - run: composer refactor
       - run: composer deps
       - run: composer audit
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
   # The bridge's own gates: its Kotlin and its Swift, held to the bar the PHP
   # is, and the two held to each other.
@@ -341,6 +345,8 @@ jobs:
       # The NativePHP sources the bridge is compiled against, as the lock
       # installs and `scripts/patch_nativephp.php` patches them.
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       - run: scripts/typecheck_native.sh
 
   kotlin:
@@ -457,6 +463,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       # Writes the clover report the floors gate reads. One run produces both
       # the global number and the seventeen per-tree ones.
       - run: composer test:report
