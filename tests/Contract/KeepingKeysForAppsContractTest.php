@@ -63,7 +63,7 @@ function theSameKeys(WhereAKeyStands $den = WhereAKeyStands::Active): TheKeysFor
  *
  * @return array<string, mixed>
  */
-function whatAStackSaysOfItsKeys(string $denStands = 'active', string $denScope = 'act'): array
+function whatAStackSaysOfItsKeys(string $denStands = 'active', string $denScope = 'act', bool|string $denByAMember = false): array
 {
     return [
         'api_version' => 1,
@@ -73,7 +73,7 @@ function whatAStackSaysOfItsKeys(string $denStands = 'active', string $denScope 
             'rehearsed' => false,
             'revoked' => $denStands === 'revoked' ? 'den' : null,
             'keys' => [
-                ['name' => 'den', 'scope' => $denScope, 'purpose' => 'home-assistant', 'state' => $denStands, 'minted' => '2026-10-01T09:00:00', 'used' => '2026-10-11T08:30:00', 'member_minted' => false, 'revoked' => $denStands === 'revoked' ? '2026-10-11T10:00:00' : null],
+                ['name' => 'den', 'scope' => $denScope, 'purpose' => 'home-assistant', 'state' => $denStands, 'minted' => '2026-10-01T09:00:00', 'used' => '2026-10-11T08:30:00', 'member_minted' => $denByAMember, 'revoked' => $denStands === 'revoked' ? '2026-10-11T10:00:00' : null],
                 ['name' => 'sanne-assistant', 'scope' => 'member:Sanne', 'purpose' => 'mcp', 'state' => 'waiting', 'minted' => '2026-10-11T09:00:00', 'used' => null, 'member_minted' => true, 'revoked' => null],
             ],
         ],
@@ -164,6 +164,7 @@ it('tells a session that has ended from a stack that is not answering, and a key
         [MockResponse::make(whatAStackSaysOfItsKeys('expired')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         [MockResponse::make(whatAStackSaysOfItsKeys(denScope: 'admin')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         [MockResponse::make(whatAStackSaysOfItsKeys(denScope: 'member: ')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make(whatAStackSaysOfItsKeys(denByAMember: 'no')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {
