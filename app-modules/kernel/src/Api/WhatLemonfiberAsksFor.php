@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * One of the requests lemonfiber makes on its own account.
  *
- * Nine, and the closed set is the stack's claim: a tenth is a decision
+ * Ten, and the closed set is the stack's claim: an eleventh is a decision
  * somebody makes by adding it and answering what it sends, where it goes, what
  * switches it off and what that costs — not one that happens because somebody
  * built a request. Read as a closed set here for {@see HowFarItGoesBack}'s
@@ -45,6 +45,9 @@ enum WhatLemonfiberAsksFor: string
 
     /** Reading the catalogue's index to resolve a plugin installed by name. */
     case Catalogue = 'catalogue';
+
+    /** Fetching the poster of a title a member's search found, so their phone is never sent to the catalogue. */
+    case Posters = 'posters';
 
     /** The catalogue key for this request's name, as an operator reads it. */
     public function saidOnTheScreen(): string

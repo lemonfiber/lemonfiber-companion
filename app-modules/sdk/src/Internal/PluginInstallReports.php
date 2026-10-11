@@ -185,7 +185,7 @@ final readonly class PluginInstallReports
                 APrivilegedShape::tryFrom($shape) ?? throw PluginsAreUnreadable::said(WireField::Shape, $shape),
                 PluginLines::under(PluginsField::Grants->value, ...self::words($row, PluginsField::Taking, PluginsField::Grants, $position)),
                 PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
-                self::text($row, PluginsField::Taking, PluginsField::Approval, $position),
+                self::text($row, PluginsField::Taking, WireField::Approval, $position),
             );
             $position++;
         }

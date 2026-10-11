@@ -41,6 +41,7 @@ use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
@@ -53,6 +54,7 @@ use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
+use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -70,6 +72,7 @@ use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
+use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -173,6 +176,9 @@ final readonly class TheWireUnions
         Availability::class => 'capabilities',
         WhatToDoWithTheDownloads::class => 'asked',
         WhatADownloadClientSaid::class => 'was',
+        KindOfTitle::class => 'kind',
+        WhereAFoundTitleStands::class => 'stands',
+        WhatAnAskBecame::class => 'outcome',
 
         // `state` twice, and that is the wire's name rather than a mistake here:
         // a problem's standing and a household request's are different unions in

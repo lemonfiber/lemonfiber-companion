@@ -18,9 +18,9 @@ use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\PausingField;
+use Modules\Sdk\Internal\APath;
 use Modules\Sdk\Internal\Wire;
 
-use function sprintf;
 use function trim;
 
 /**
@@ -108,7 +108,7 @@ final readonly class WhatPausingCameTo
     private static function entry(mixed $row, int|string $position): array
     {
         if (! is_array($row)) {
-            throw PausingIsUnreadable::missing(self::beneath(WireField::Clients->value, $position));
+            throw PausingIsUnreadable::missing(APath::beneath(WireField::Clients->value, $position));
         }
 
         return $row;
@@ -117,22 +117,17 @@ final readonly class WhatPausingCameTo
     /** @param array<mixed> $row */
     private static function client(array $row, int|string $position): ADownloadClientAsked
     {
-        $where = self::beneath(WireField::Clients->value, $position);
-        $client = self::text($row, self::beneath($where, WireField::Client->value), WireField::Client);
-        $was = self::said($row, self::beneath($where, WireField::Was->value), WireField::Was);
+        $where = APath::beneath(WireField::Clients->value, $position);
+        $client = self::text($row, APath::beneath($where, WireField::Client->value), WireField::Client);
+        $was = self::said($row, APath::beneath($where, WireField::Was->value), WireField::Was);
 
         if (array_key_exists(PausingField::Unreached->value, $row) && $row[PausingField::Unreached->value] !== null) {
-            return ADownloadClientAsked::unreached($client, $was, self::optional($row, self::beneath($where, PausingField::Unreached->value), PausingField::Unreached));
+            return ADownloadClientAsked::unreached($client, $was, self::optional($row, APath::beneath($where, PausingField::Unreached->value), PausingField::Unreached));
         }
 
-        return ADownloadClientAsked::reached($client, $was, self::said($row, self::beneath($where, WireField::Now->value), WireField::Now));
+        return ADownloadClientAsked::reached($client, $was, self::said($row, APath::beneath($where, WireField::Now->value), WireField::Now));
     }
 
-    /** Where one name sits beneath another, as a refusal names it. */
-    private static function beneath(string $where, int|string $name): string
-    {
-        return sprintf('%s.%s', $where, $name);
-    }
 
     /**
      * What a client said it was doing, unsaid where the field is absent or null.

@@ -83,9 +83,34 @@ return [
     'needs_an_update' => 'The house needs an update for this.',
     'needs_an_update_action' => 'Whoever looks after the house can update it.',
 
-    // Searching, which this version of the app does not have yet.
-    'search_is_coming' => 'Searching from your phone is coming.',
-    'search_is_coming_action' => 'Until then, what you can watch is on Home, and what you asked for is under Requests.',
+    // Searching for a title the house does not have, to ask for it.
+    'search' => [
+        'label' => 'What to look for',
+        'placeholder' => 'A film or a series',
+        'go' => 'Search',
+        'again' => 'Search again',
+        'explained' => 'Look for a film or a series the house does not have yet, and ask for it.',
+        'nothing_found' => 'Nothing you can ask for matches ":words".',
+        'line' => ':year · :kind · :stands',
+        'line_undated' => ':kind · :stands',
+        'open_named' => 'Open :title',
+        'already_here' => 'Already here',
+        'askable' => 'You can ask for it',
+    ],
+    'found' => [
+        'heading' => 'A title',
+        'from_search' => 'Open a title from Search to ask for it.',
+        'to_search' => 'Go to Search',
+        'ask' => 'Ask for it',
+        'ask_named' => 'Ask for :title',
+        'to_requests' => 'See your requests',
+        'may_have_gone' => 'Your ask may or may not have reached the house. Asking again will not ask twice, and Requests shows whether it arrived.',
+        'became' => [
+            'asked' => 'Asked',
+            'waiting' => 'Asked, and waiting for a yes',
+            'on-its-way' => 'Already on its way',
+        ],
+    ],
 
     // A member's own corner: changing house, the phone's settings, and taking
     // the house off this phone.

@@ -128,11 +128,11 @@ it('hides the bar and marks no tab on a member\'s screen no tab draws, and offer
         ->and(aMemberScreenOffersAWayBackOver($screen, 1))->toBeTrue();
 });
 
-it('says searching from the phone is coming, in household words, and offers nothing but the tabs', function (): void {
+it('opens Search on what it is for, asking the house nothing until the member searches', function (): void {
     [, $search] = everyMembersTab()[TheHouseholdsTabs::Search->value];
     $drawn = WhatTheDeviceWouldDraw::by($search);
 
     expect($search)->toBeInstanceOf(LookingForATitle::class)
-        ->and($drawn->said())->toContain(__('household.search_is_coming'), __('household.search_is_coming_action'))
-        ->and($drawn->offers())->toBe([]);
+        ->and($drawn->said())->toContain(__('household.search.explained'))
+        ->and($drawn->offersThatWait())->toBe([__('household.search.go')]);
 });

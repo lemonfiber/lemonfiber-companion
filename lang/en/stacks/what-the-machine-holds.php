@@ -60,6 +60,7 @@ return [
             'updates' => 'Checking for a newer lemonfiber',
             'plugin-source' => 'Fetching a plugin from its source',
             'catalogue' => 'Looking up a plugin in the catalogue',
+            'posters' => 'Fetching posters for what a member searched for',
         ],
         'allowed' => [
             'allowed' => 'Allowed by this machine\'s settings',

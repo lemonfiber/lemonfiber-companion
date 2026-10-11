@@ -7,6 +7,7 @@ use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
+use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
@@ -244,6 +245,9 @@ const VERBS_THE_APP_ASKS_FOR = [
     // one the stack takes.
     'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
     'downloads-pause' => 'rehearses pausing every download client, and pauses them only against that rehearsal',
+    // A member's own ask for a title their search found, rehearsed first and
+    // sent under a key so a retry is one ask.
+    'ask' => 'rehearses asking for a title a member found, and asks for it as that member once under one key',
     'downloads-resume' => 'rehearses letting every download client fetch again, and resumes them only against that rehearsal',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
@@ -571,6 +575,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoWithTheDownloads $downloads): string => $downloads->asked(), WhatToDoWithTheDownloads::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
+        ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),
         ...array_map(static fn(HandingOver $over): string => $over->asked(), HandingOver::cases()),
         ...array_map(static fn(ExtendingIt $extending): string => $extending->asked(), ExtendingIt::cases()),
         ...array_map(static fn(WhatThePlayerAsks $player): string => $player->asked(), WhatThePlayerAsks::cases()),

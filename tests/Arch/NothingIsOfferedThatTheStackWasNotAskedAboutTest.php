@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
+use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
@@ -59,6 +60,7 @@ const WHAT_OFFERS_NOTHING_ON_ITS_OWN_SCREEN = [
     WhatThisStackRuns::class => 'reads what the stack runs through the port that also starts and stops it, and leads to the screen that offers each verb',
     WhatElseIsRunningHere::class => 'reads what else runs on the machine through the port that also starts and stops a service, and offers no verb',
     WhatWouldBePutRight::class => 'its reading is the repair\'s own request, so the gate in front of the reading is the gate in front of its yes',
+    AskingForATitle::class => 'its reading is the ask\'s own rehearsal through the same gate, so a stack that does not offer asking is told to the member in household words before Ask can be pressed, and a member is never shown the operator\'s road to Updates',
 ];
 
 /**

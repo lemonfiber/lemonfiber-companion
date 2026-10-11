@@ -6,6 +6,7 @@ namespace Modules\Household\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Household\Internal\Screens\LookingForATitle;
 use Modules\Household\Internal\Screens\WhatAMemberWouldSee;
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
@@ -53,6 +54,7 @@ final class HouseholdServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Shelf->value, WhatYouCanWatch::class);
             Router::native(AStacksScreen::Title->value, WhatThisTitleIs::class);
             Router::native(AStacksScreen::Search->value, LookingForATitle::class);
+            Router::native(AStacksScreen::Found->value, AskingForATitle::class);
             Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
             Router::native(AStacksScreen::Profile->value, YourCornerOfTheHouse::class);
             Router::native(AStacksScreen::AsAMember->value, WhatAMemberWouldSee::class);

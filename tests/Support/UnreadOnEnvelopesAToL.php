@@ -18,6 +18,53 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'AskableEnvelope.asking',
+            'because' => 'What the member\'s period allows and has left, in parts. A member is told it in the core\'s '
+                . 'own sentence: the rehearsal of each ask says what that ask would leave, and Requests says '
+                . 'what the period has left. Composing a sentence here out of the parts would be a second '
+                . 'voice for the household\'s rules.',
+        ],
+        [
+            'path' => 'AskableEnvelope.kinds',
+            'because' => 'The kinds the house can fetch right now. Every title on the page names its own kind, and '
+                . 'a kind the house cannot fetch is refused by the core in its own words when it is asked for.',
+        ],
+        [
+            'path' => 'AskableEnvelope.member',
+            'because' => 'Whose search this was, which is the member signed in: the core answered the session that asked.',
+        ],
+        [
+            'path' => 'AskableEnvelope.term',
+            'because' => 'The words searched for, as the core trimmed them. The app sent them and holds them already.',
+        ],
+        [
+            'path' => 'AskedEnvelope.kind',
+            'because' => 'The kind of the title asked for, which the page asking holds from the search that found it.',
+        ],
+        [
+            'path' => 'AskedEnvelope.leaves',
+            'because' => 'What the ask leaves of each kind, in parts. The core\'s `said` is the sentence for all of it, '
+                . 'and that is what the member is shown.',
+        ],
+        [
+            'path' => 'AskedEnvelope.member',
+            'because' => 'Whose ask this was, which is the member signed in.',
+        ],
+        [
+            'path' => 'AskedEnvelope.released',
+            'because' => 'Whether the title is out yet. The core\'s `said` says so where it is not, and nothing else '
+                . 'on the page turns on it.',
+        ],
+        [
+            'path' => 'AskedEnvelope.seasons',
+            'because' => 'The seasons asked for. The app names none, which asks for every season not already here or '
+                . 'on its way, so the answer repeats what was sent.',
+        ],
+        [
+            'path' => 'AskedEnvelope.title',
+            'because' => 'The name of the title asked for, which the page asking holds from the search that found it.',
+        ],
+        [
             'path' => 'BandwidthEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

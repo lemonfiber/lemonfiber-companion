@@ -62,8 +62,14 @@ enum WireField: string implements NamesAWireField
     /** The figure inside an estimate. */
     case Bytes = 'bytes';
 
-    /** What a stack calls one request, for naming it when acting on it. */
+    /** What a stack calls one request, for naming it when acting on it, or the id a search listed a title under. */
     case Id = 'id';
+
+    /** What approving one value's carriage is written as, or the household sentence on whether what a member asks for waits for approval. */
+    case Approval = 'approval';
+
+    /** What to do next, in order, under a walkthrough's handover, or where the next page of a search begins. */
+    case Next = 'next';
 
     /** What something is called: a household member, or a credential in the operator's words. */
     case Name = 'name';

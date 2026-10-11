@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\AFill;
 use Modules\Kernel\Api\AFillAgreed;
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AGuardAskedFor;
@@ -60,7 +61,9 @@ use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Offer;
@@ -113,14 +116,18 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToKnowFirst;
+use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
+use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhenItWasMade;
+use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
+use Modules\Kernel\Api\WhereTheNextPageBegins;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhetherToWait;
@@ -132,6 +139,7 @@ use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Chroniclers;
@@ -143,6 +151,7 @@ use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
+use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Grantors;
@@ -307,6 +316,14 @@ final readonly class EveryAdapterCallThatReads
                 => new Menders($clients, $entropy)->whatWasDoneAbout($stack, $session, Job::named('a-job')),
             'Menders::whatBecameOf' => static fn(): object
                 => new Menders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Askers::rehearse' => static fn(): object
+                => new Askers($clients, $entropy)->rehearse($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
+            'Askers::ask' => static fn(): object
+                => new Askers($clients, $entropy)->ask($stack, $session, self::aFoundTitleToSpoilTheAnswerTo(), IdempotencyKey::of('an-ask')),
+            'Finders::firstPage' => static fn(): object
+                => new Finders($clients)->firstPage($stack, $session, WhatToLookFor::typed('dune')),
+            'Finders::pageAfter' => static fn(): object
+                => new Finders($clients)->pageAfter($stack, $session, WhatToLookFor::typed('dune'), WhereTheNextPageBegins::at('page-2')),
             'Pausers::rehearse' => static fn(): object
                 => new Pausers($clients, $entropy)->rehearse($stack, $session, WhatToDoWithTheDownloads::Pause),
             'Pausers::carryOut' => static fn(): object
@@ -506,6 +523,12 @@ final readonly class EveryAdapterCallThatReads
     private static function anOfferToLetGoToSpoilTheAnswerTo(): WhatLettingItGoCosts
     {
         return WhatLettingItGoCosts::offered(ADownloadOnDisk::neverImported('Show.Season1', 1), 'It goes', 'an-agreement');
+    }
+
+    /** A title a member's search found, to ask for. */
+    private static function aFoundTitleToSpoilTheAnswerTo(): AFoundTitle
+    {
+        return AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable);
     }
 
     /** A rehearsed pause, to carry out. */

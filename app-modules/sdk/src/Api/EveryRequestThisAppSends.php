@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AnAction;
+use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
@@ -79,7 +80,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function readings(): array
     {
         return [
-            Api::ALERTS_ENDPOINT, Api::BACKUPS_ENDPOINT, Api::BANDWIDTH_ENDPOINT, Api::CATALOGUE_ENDPOINT,
+            Api::ALERTS_ENDPOINT, Api::ASKABLE_ENDPOINT, Api::BACKUPS_ENDPOINT, Api::BANDWIDTH_ENDPOINT, Api::CATALOGUE_ENDPOINT,
             Api::CHECKS_ENDPOINT, Api::CLIENTS_ENDPOINT, Api::CONFIG_ENDPOINT, Api::CREDENTIALS_ENDPOINT,
             Api::EXPLAIN_ENDPOINT, Api::FORMS_ENDPOINT, Api::FRONT_DOOR_ENDPOINT, Api::HELD_ENDPOINT,
             Api::HISTORY_ENDPOINT, Api::HOSTING_ENDPOINT, Api::LOGS_ENDPOINT, Api::MIGRATION_ENDPOINT,
@@ -99,7 +100,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function actions(): array
     {
         $cases = [
-            ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
+            ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
             ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),

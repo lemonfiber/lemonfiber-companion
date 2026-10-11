@@ -19,12 +19,14 @@ use const JSON_THROW_ON_ERROR;
 
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Generated\AskedEnvelope;
 use Lemonfiber\Sdk\Generated\GrantEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
 use Lemonfiber\Sdk\Generated\WatchedEnvelope;
 use Modules\Dx\Api\AStandInStack;
+use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithADownload;
@@ -384,6 +386,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(GrantEnvelope::KIND->value))),
             $endpoint === Api::WATCHING_ENDPOINT => WhereTheyLeftOffAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PartWayEnvelope::KIND->value))),
             $endpoint === Api::action(WhatThePlayerAsks::Watched->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(WatchedEnvelope::KIND->value)),
+            $endpoint === Api::action(AskingForIt::AskForIt->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(AskedEnvelope::KIND->value)),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };
