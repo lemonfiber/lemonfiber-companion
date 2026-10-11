@@ -274,6 +274,46 @@ final readonly class WhatARefusalMeant
             RefusalCode::Unrenderable,
             RefusalCode::NoJobName,
             RefusalCode::Unanswered,
+            RefusalCode::BundleNotHeld,
+            RefusalCode::NoFormNamed,
+            RefusalCode::NoSuchForm,
+            RefusalCode::FormsConflict,
+            RefusalCode::NoLimit,
+            RefusalCode::NotWaiting,
+            RefusalCode::NoReason,
+            RefusalCode::Nobody,
+            RefusalCode::NeverHere,
+            RefusalCode::NothingMeasured,
+            RefusalCode::NoZone,
+            RefusalCode::LimitUnreadable,
+            RefusalCode::NothingToLimit,
+            RefusalCode::NothingToPause,
+            RefusalCode::Cannot,
+            RefusalCode::NotYet,
+            RefusalCode::NotReviewed,
+            RefusalCode::DoesNotApply,
+            RefusalCode::AlreadySetUp,
+            RefusalCode::NothingToRecover,
+            RefusalCode::NowhereToMeasure,
+            RefusalCode::NothingToAsk,
+            RefusalCode::NotHeld,
+            RefusalCode::Unrecognised,
+            RefusalCode::RegistryRefused,
+            RefusalCode::NothingToProve,
+            RefusalCode::StrangerReplacing,
+            // Minting, collecting and revoking a key for an app, refused for
+            // what was asked: a claim that collects nothing is one of them, and
+            // ends no session whatever status it came with.
+            RefusalCode::BadName,
+            RefusalCode::NotAScope,
+            RefusalCode::NotAPurpose,
+            RefusalCode::NameTaken,
+            RefusalCode::NoSuchMember,
+            RefusalCode::NotForYourself,
+            RefusalCode::NoSuchKey,
+            RefusalCode::MembersMayNotMint,
+            RefusalCode::ClaimNotOpen,
+            RefusalCode::Unlinkable,
             // An answer given for an offer or a listing that has since moved.
             // The stack's words say what moved, and the adapter following the
             // work it ended decides whether there is a fresh offer to read.
@@ -346,7 +386,9 @@ final readonly class WhatARefusalMeant
             RefusalCode::AlreadyFills,
             RefusalCode::NothingToPlayFrom,
             RefusalCode::NotInTheHousehold,
-            RefusalCode::SignsNoDeviceIn => self::byFamily($why),
+            RefusalCode::SignsNoDeviceIn,
+            // Another run already working on the stack, which its family reads as the stack being busy.
+            RefusalCode::AlreadyWorking => self::byFamily($why),
         };
     }
 
