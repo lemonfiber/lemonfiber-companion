@@ -28,7 +28,7 @@
                 <x-design::action label="{{ __('stacks.keys.revoke') }}" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="revoke()" />
                 <x-design::action label="{{ __('stacks.keys.keep_it') }}" :answers-to="__('stacks.keys.keep_it_named', ['name' => $key->name])" tap="keepIt()" tone="tonal" />
             @elseif ($key->mayBeRevoked)
-                <x-design::action label="{{ __('stacks.keys.revoke') }}" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="askToRevoke('{{ $key->name }}')" tone="tonal" />
+                <x-design::action label="{{ __('stacks.keys.revoke') }}" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="askToRevoke({{ $loop->index }})" tone="tonal" />
             @endif
         </x-design::card>
     @empty

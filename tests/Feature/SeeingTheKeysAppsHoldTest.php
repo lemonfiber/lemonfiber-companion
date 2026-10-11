@@ -31,6 +31,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsKeys;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheDevicePresses;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The keys a stack has minted for apps, and revoking one.
@@ -119,7 +120,7 @@ it('asks before revoking, saying the key stops at once and cannot be brought bac
     $keeping = AStackThatKeepsKeys::listing(threeKeysForApps());
     $screen = theKeysScreen($keeping);
 
-    $screen->askToRevoke('den');
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => 'den']));
     $asked = WhatTheDeviceWouldDraw::by($screen)->said();
     $screen->keepIt();
 
@@ -132,13 +133,40 @@ it('revokes the key once confirmed and shows the listing the stack answers with'
     $keeping = AStackThatKeepsKeys::listing(threeKeysForApps());
     $screen = theKeysScreen($keeping);
 
-    $screen->askToRevoke('den');
-    $screen->revoke();
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => 'den']));
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => 'den']));
     $screen->revoke();
 
     expect($keeping->revoked())->toBe(['den'])
         ->and($screen->answer()->keys[0]->standsSaid)->toBe(WhereAKeyStands::Revoked->saidOnTheScreen())
         ->and($screen->answer()->keys[0]->mayBeRevoked)->toBeFalse();
+});
+
+it('revokes the key the operator pressed whatever the stack named it, quotes and all', function (string $named): void {
+    $keeping = AStackThatKeepsKeys::listing(TheKeysForApps::of(
+        WHAT_A_PURPOSE_IS_WORTH,
+        AKeyForAnApp::listed(AKeysName::of('den'), WhatAKeyAdmits::acting(), WhatAKeyIsFor::HomeAssistant, WhereAKeyStands::Active, AMomentAsWritten::of(''), AMomentAsWritten::of(''), memberMinted: false),
+        AKeyForAnApp::listed(AKeysName::of($named), WhatAKeyAdmits::reading(), WhatAKeyIsFor::SomethingElse, WhereAKeyStands::Active, AMomentAsWritten::of(''), AMomentAsWritten::of(''), memberMinted: false),
+    ));
+    $screen = theKeysScreen($keeping);
+
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => $named]));
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => $named]));
+
+    expect($keeping->revoked())->toBe([$named]);
+})->with([
+    'a quote that would close the argument' => ["den', 'den"],
+    'double quotes and a backslash' => ['the "den" \\ reader'],
+    'markup' => ['<b>den</b> & co'],
+]);
+
+it('asks nothing for a row it does not have or a key that cannot be revoked', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()));
+
+    $screen->askToRevoke(2);
+    $screen->askToRevoke(3);
+
+    expect($screen->revoking)->toBe('');
 });
 
 it('offers no revoke for a key already revoked', function (): void {
@@ -151,8 +179,8 @@ it('offers no revoke for a key already revoked', function (): void {
 it('says a stack with no keys has none, and shows what stood in the way of a revoke', function (): void {
     $none = WhatTheDeviceWouldDraw::by(theKeysScreen(AStackThatKeepsKeys::listing(TheKeysForApps::of(WHAT_A_PURPOSE_IS_WORTH))))->said();
     $refused = theKeysScreen(AStackThatKeepsKeys::refusingToRevoke(threeKeysForApps(), Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
-    $refused->askToRevoke('den');
-    $refused->revoke();
+    TheDevicePresses::on($refused, aKeysLine('stacks.keys.revoke_named', ['name' => 'den']));
+    TheDevicePresses::on($refused, aKeysLine('stacks.keys.revoke_named', ['name' => 'den']));
 
     expect($none)->toContain(aKeysLine('stacks.keys.none'))
         ->and($refused->answer()->went->cameBack())->toBeFalse();

@@ -79,10 +79,20 @@ final class TheKeysAppsHold extends NativeComponent
         return $this->answered ??= $this->sent(fn(Stack $stack, Session $session): WhatWasFoundOfTheKeys => $this->keeping->listedOn($stack, $session));
     }
 
-    /** The operator asked to revoke the key of that name, which is confirmed before anything is sent. */
-    public function askToRevoke(string $name): void
+    /**
+     * The operator asked to revoke the key in that row, which is confirmed before anything is sent.
+     *
+     * The row and not the name, because the name is the stack's to write and a
+     * tap carries its arguments as a quoted expression. A row it does not have,
+     * or one whose key cannot be revoked, asks nothing.
+     */
+    public function askToRevoke(int $which): void
     {
-        $this->revoking = $name;
+        foreach ($this->answer()->keys as $at => $key) {
+            if ($at === $which && $key->mayBeRevoked) {
+                $this->revoking = $key->name;
+            }
+        }
     }
 
     /** The operator kept the key. */
