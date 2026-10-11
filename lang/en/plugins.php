@@ -71,6 +71,7 @@ return [
     'shape_unapproved' => ':service was not allowed to take what it needs',
     'shape' => [
         'egress-guard' => 'It guards this stack\'s way out: it manages the network and opens a tunnel, so traffic leaves only through the guard',
+        'render' => 'It uses this machine\'s graphics hardware to convert video as it plays, so it is given the machine\'s render devices and the group that owns them',
     ],
     'recipes' => 'Recipes',
     'no_recipes' => 'It has no recipes',

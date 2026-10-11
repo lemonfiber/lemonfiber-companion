@@ -71,6 +71,7 @@ return [
     'shape_unapproved' => ':service mocht niet nemen wat hij nodig heeft',
     'shape' => [
         'egress-guard' => 'Hij bewaakt de uitgang van deze stack: hij beheert het netwerk en opent een tunnel, zodat verkeer alleen via de bewaker naar buiten gaat',
+        'render' => 'Hij gebruikt de grafische hardware van deze machine om video tijdens het afspelen om te zetten, dus hij krijgt de renderapparaten van de machine en de groep die ze bezit',
     ],
     'recipes' => 'Recepten',
     'no_recipes' => 'Hij heeft geen recepten',

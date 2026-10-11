@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
@@ -576,3 +577,7 @@ it('is in the menu beside Connections, and opens on its own path', function (): 
         ->and(TheMenu::Plugins->group())->toBe(TheMenu::Connections->group())
         ->and(AStacksScreen::Plugins->forTheStack(theMachinePluginsExtend()->id()))->toBe(sprintf('/stacks/%s/plugins', theMachinePluginsExtend()->id()->stored()));
 });
+
+it('says in every language why a service takes each privileged shape', function (APrivilegedShape $shape, string $locale): void {
+    expect(app('translator')->has($shape->neededFor(), $locale, fallback: false))->toBeTrue();
+})->with(APrivilegedShape::cases())->with(['en', 'nl']);
