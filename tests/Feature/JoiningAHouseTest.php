@@ -548,6 +548,23 @@ it('asks the person to choose their password where the link carries a claim, and
         ->and($screen->getNavigationIntent()?->uri)->toBe(AStacksScreen::Shelf->forTheStack(StackId::saidBy(THE_HOUSE)));
 });
 
+it('claims or signs in only as the account the link names, whatever the name field is changed to', function (): void {
+    [$screen, $door] = aClaimOpenedAt(ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')));
+    $screen->__syncProperty('theirName', 'Somebody Else');
+
+    choosing($screen)->signIn();
+
+    expect($screen->nameIsTheLinks)->toBeTrue()
+        ->and($door->namedAs())->toBe('Robin Ash');
+});
+
+it('leaves the name to the person where the house was found by a code rather than a link', function (): void {
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()));
+    $screen->findTheHouse();
+
+    expect($screen->nameIsTheLinks)->toBeFalse();
+});
+
 it('goes straight to choosing a password where the phone holds the house the claim is for under the same certificate', function (): void {
     $stacks = StacksInMemory::holding(theHouseHeld(str_repeat('a', Fingerprint::CHARACTERS)));
     $screen = theWayIn(ACameraInMemory::reading(theJoinLink(['claim' => THE_CLAIM])), stacks: $stacks);

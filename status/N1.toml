@@ -82,4 +82,5 @@ requirement = [
   { id = "N1-R74", state = "partial", evidence = ["app-modules/operator/src/Internal/Screens/PairingAPhone.php", "tests/Feature/PairingAPhoneTest.php"] },
   { id = "N1-R75", state = "done", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php", "tests/Contract/CataloguingContractTest.php"] },
   { id = "N1-R76", state = "partial", evidence = ["app-modules/sdk/src/Api/PairingCodes.php", "tests/Feature/PairingAPhoneTest.php"] },
+  { id = "N1-R78", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/JoiningAHouse.php", "tests/Feature/JoiningAHouseTest.php"] },
 ]

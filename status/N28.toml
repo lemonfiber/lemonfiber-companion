@@ -8,8 +8,11 @@
 requirement = [
   { id = "N28-R1", state = "done", evidence = ["app-modules/household/src/Internal/Screens/FindsItsWayAroundTheHouse.php", "app-modules/operator/src/Internal/Screens/FindsItsWayAround.php", "tests/Arch/EveryScreenAboutAStackHasTheMenuTest.php"] },
   { id = "N28-R2", state = "done", evidence = ["app-modules/wayfinding/src/Api/Screens/ChoosesAStack.php"] },
+  { id = "N28-R3", state = "done", evidence = ["app-modules/kernel/src/Api/WhereTheOperatorWas.php", "tests/Feature/OpeningWhereTheOperatorLeftOffTest.php"] },
+  { id = "N28-R4", state = "done", evidence = ["tests/Feature/OpeningTheMenuTest.php", "tests/Feature/MarkingTheTabsTest.php"] },
   { id = "N28-R5", state = "done", evidence = ["tests/Arch/EveryScreenOfAStackIsInTheMenuTest.php"] },
   { id = "N28-R6", state = "done", evidence = ["app-modules/operator/src/Internal/HoldsItsStacksStream.php", "app-modules/news/src/Api/HowMuchIsNew.php", "app-modules/news/tests/Api/NoticingTest.php", "app-modules/news/tests/Internal/WhatEachStackLastNamedTest.php"] },
+  { id = "N28-R9", state = "done", evidence = ["tests/Arch/EveryWayAroundIsAFewWordsTest.php"] },
   { id = "N28-R13", state = "done", evidence = ["app-modules/operator/src/Internal/HasAWayBack.php", "app-modules/wayfinding/src/Api/Screens/FindsItsWayAroundAStack.php", "tests/Feature/GoingBackFromAScreenAboutAStackTest.php", "tests/Feature/GoingBackFromAScreenWithoutAStackTest.php"] },
   { id = "N28-R14", state = "done", evidence = ["app-modules/household/src/Internal/Screens/WhatAMemberWouldSee.php", "app-modules/household/src/View/Components/ThePreviewMark.php", "tests/Feature/PreviewingTheMembersSideTest.php"] },
 ]

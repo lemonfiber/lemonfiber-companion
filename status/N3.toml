@@ -28,4 +28,9 @@ requirement = [
   { id = "N3-R23", state = "done", evidence = ["app-modules/household/src/Internal/Presenters/HowTheirOwnTitlesRead.php", "app-modules/household/src/Internal/Screens/WhatYouCanWatch.php", "app-modules/household/tests/View/Components/ShelfRowTest.php", "tests/Feature/SeeingWhatYouCanWatchTest.php"] },
   { id = "N3-R24", state = "done", evidence = ["app-modules/household/src/Internal/ViewModels/HowAPosterIsLettered.php", "app-modules/household/src/View/Components/Hero.php", "app-modules/household/tests/Internal/ViewModels/HowAPosterIsLetteredTest.php", "app-modules/household/tests/View/Components/HeroTest.php"] },
   { id = "N3-R25", state = "done", evidence = ["app-modules/watching/src/Api/KeepingTheirLanguages.php", "app-modules/device/src/Api/PlatformPlayer.php", "tests/Contract/LanguagesKeptContractTest.php", "tests/Contract/PlayingContractTest.php", "tests/Feature/ChoosingWhatToHearAndReadTest.php", "tests/Feature/PlayingATitleTest.php"] },
+  { id = "N3-R26", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/JoiningAHouse.php", "app-modules/operator/src/Internal/Screens/YourStacks.php", "tests/Feature/JoiningAHouseTest.php", "tests/Feature/TheFirstRunIsASequenceTest.php"] },
+  { id = "N3-R27", state = "done", evidence = ["app-modules/kernel/src/Api/AJoinLink.php", "app-modules/kernel/tests/Api/AJoinLinkTest.php", "bootstrap/Composition/NativePHP/ScreenRoutes.php", "tests/Feature/JoiningAHouseTest.php"] },
+  { id = "N3-R28", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/JoiningAHouse.php", "app-modules/sdk/src/Api/Admissions.php", "tests/Feature/JoiningAHouseTest.php"] },
+  { id = "N3-R29", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/JoiningAHouse.php", "tests/Feature/JoiningAHouseTest.php"] },
+  { id = "N3-R30", state = "done", evidence = ["app-modules/operator/src/Internal/WhatStoodInTheWayOfJoining.php", "tests/Feature/JoiningAHouseTest.php"] },
 ]

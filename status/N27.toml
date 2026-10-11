@@ -24,6 +24,10 @@ requirement = [
   { id = "N27-R16", state = "done", evidence = ["app-modules/kernel/src/Api/WhereTheOperatorWas.php", "app-modules/kernel/src/Api/WhichTab.php", "tests/Contract/WhereTheOperatorWasContractTest.php", "tests/Feature/OpeningWhereTheOperatorLeftOffTest.php"] },
   { id = "N27-R18", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/ThisStackOnThisPhone.php", "app-modules/news/src/Api/MarkingAsNew.php", "tests/Feature/ChoosingWhatAStackMarksAsNewTest.php"] },
   { id = "N27-R19", state = "done", evidence = ["app-modules/news/src/Api/MarkingAsNew.php", "app-modules/news/src/Api/Noticing.php", "app-modules/news/tests/Api/MarkingAsNewTest.php", "app-modules/news/tests/Api/NoticingTest.php"] },
+  { id = "N27-R20", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatIsNewOnEveryStack.php", "tests/Feature/SeeingWhatIsNewTest.php"] },
   { id = "N27-R21", state = "done", evidence = ["app-modules/kernel/src/Api/TheNewestNamed.php", "app-modules/sdk/src/Api/Listeners.php", "app-modules/news/tests/Api/NoticingTest.php", "tests/Feature/CountingWhatIsNewTest.php"] },
   { id = "N27-R22", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "app-modules/connection/src/Api/TheLock.php", "tests/Feature/NothingIsBuiltBehindTheLockTest.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
+  { id = "N27-R23", state = "open" },
+  { id = "N27-R24", state = "open" },
+  { id = "N27-R25", state = "open" },
 ]
