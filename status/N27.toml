@@ -27,7 +27,7 @@ requirement = [
   { id = "N27-R20", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatIsNewOnEveryStack.php", "tests/Feature/SeeingWhatIsNewTest.php"] },
   { id = "N27-R21", state = "done", evidence = ["app-modules/kernel/src/Api/TheNewestNamed.php", "app-modules/sdk/src/Api/Listeners.php", "app-modules/news/tests/Api/NoticingTest.php", "tests/Feature/CountingWhatIsNewTest.php"] },
   { id = "N27-R22", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "app-modules/connection/src/Api/TheLock.php", "tests/Feature/NothingIsBuiltBehindTheLockTest.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
-  { id = "N27-R23", state = "open" },
-  { id = "N27-R24", state = "open" },
-  { id = "N27-R25", state = "open" },
+  { id = "N27-R23", state = "done", evidence = ["bridge/resources/ios/ArtworkHeld.swift", "bridge/resources/android/ArtworkHeld.kt", "scripts/patch_nativephp/55-artwork-is-drawn-from-memory-on-ios.patch", "scripts/patch_nativephp/56-artwork-is-drawn-from-memory-on-android.patch", "bootstrap/Composition/ArtworkGoesWithTheSession.php", "bridge/ios/Tests/ArtworkHeldTests/ArtworkHeldTests.swift", "bridge/android/src/test/kotlin/ArtworkHeldTest.kt", "tests/Contract/HoldingArtworkContractTest.php"] },
+  { id = "N27-R24", state = "done", evidence = ["app-modules/sdk/src/Api/Pictures.php", "app-modules/household/src/Internal/ThePicturesItDraws.php", "tests/Contract/FetchingArtworkContractTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N27-R25", state = "done", evidence = ["app-modules/sdk/src/Api/Pictures.php", "tests/Contract/EveryAdapterAnswersWhatItCannotReadTest.php", "tests/Feature/SearchingForATitleTest.php"] },
 ]

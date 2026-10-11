@@ -138,6 +138,7 @@ public object TheLock {
                         show(activity)
 
                         if (became.held && !was.held) {
+                            ArtworkHeld.shared.letGoOfEvery()
                             wake()
                         }
                     }

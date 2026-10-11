@@ -16,6 +16,7 @@ use Tests\Support\Fakes\APlayerOnAHandset;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsThePlace;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 
 // The HearsThePlayer contract, run against every screen that shows Play.
@@ -37,10 +38,10 @@ function everyScreenThatHearsThePlayer(APlayerOnAHandset $player, WhatIsPlaying 
     $titles = TheTitlesOnScreen::over($watching, $keychain, $player, $playing);
     $around = AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain);
 
-    $page = new WhatThisTitleIs($watching, $keychain, $titles, $around, new AppsSettingsThatOpen());
+    $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, $around, new AppsSettingsThatOpen());
     $page->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
 
-    $home = new WhatYouCanWatch($watching, AMemberWhoIsOwed::owedNothing(), $keychain, $titles, $around, new AppsSettingsThatOpen());
+    $home = new WhatYouCanWatch($watching, ThePicturesOnScreen::none(), AMemberWhoIsOwed::owedNothing(), $keychain, $titles, $around, new AppsSettingsThatOpen());
     $home->setParams(['stack' => $stack->id()->stored()]);
 
     return [

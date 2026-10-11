@@ -10,6 +10,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowATitleReads;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatThisTitleTurnedOutToBe;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\Concealed;
@@ -64,6 +65,7 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
 
     public function __construct(
         private readonly Watching $watching,
+        private readonly ThePicturesItDraws $pictures,
         private readonly SecureStorage $storage,
         private readonly PutsATitleOnScreen $titles,
         protected readonly TheWayAround $around,
@@ -149,7 +151,7 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
         }
 
         return $this->watching->theTitle($stack, $session, $whose, $page)->either(
-            told: static fn(ATitle $title): WhatThisTitleTurnedOutToBe => new HowATitleReads()->told($title),
+            told: fn(ATitle $title): WhatThisTitleTurnedOutToBe => new HowATitleReads()->told($title, $this->pictures->ofAHolding($stack, $session, $whose, $page)),
             absent: static fn(): WhatThisTitleTurnedOutToBe => new HowATitleReads()->absent(),
             refused: function (Obstacle $why) use ($stack): WhatThisTitleTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);

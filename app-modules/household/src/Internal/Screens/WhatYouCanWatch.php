@@ -10,6 +10,7 @@ use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Presenters\HowTheirOwnTitlesRead;
 use Modules\Household\Internal\Presenters\HowWhereTheyLeftOffReads;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
@@ -98,6 +99,7 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
 
     public function __construct(
         private readonly Watching $watching,
+        private readonly ThePicturesItDraws $pictures,
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
         private readonly PutsATitleOnScreen $titles,
@@ -260,8 +262,11 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
     private function asked(Stack $stack, Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $this->watching->theShelfOf($stack, $session, $whose)->either(
-            told: static fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->these($shelf, $stack->id()),
+            told: fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
+                => new HowAShelfReads()->these($shelf, $stack->id())->pictured(
+                    poster: fn(string $plays): string => $this->pictures->ofAHolding($stack, $session, $whose, HoldingId::called($plays)),
+                    backdrop: fn(string $plays): string => $this->pictures->backdropOfAHolding($stack, $session, $whose, HoldingId::called($plays)),
+                ),
             outOfReach: static fn(): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->outOfReach(),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {

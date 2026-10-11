@@ -8,7 +8,9 @@ use Closure;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatTheSearchShows;
+use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\HowASearchWent;
@@ -65,6 +67,7 @@ final class LookingForATitle extends NativeComponent
 
     public function __construct(
         private readonly FindingTitles $finding,
+        private readonly ThePicturesItDraws $pictures,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -126,7 +129,9 @@ final class LookingForATitle extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheSearchShows => $asking($stack, $session)->either(
-                found: static fn(WhatASearchFound $page): WhatTheSearchShows => new HowAFoundTitleReads()->found($page),
+                found: fn(WhatASearchFound $page): WhatTheSearchShows => new HowAFoundTitleReads()->found($page)->pictured(
+                    fn(AFoundTitle $title): string => $this->pictures->ofAFoundTitle($stack, $session, $title),
+                ),
                 refused: function (Obstacle $why) use ($stack): WhatTheSearchShows {
                     $this->letGoOfTheSession($why, $stack);
 

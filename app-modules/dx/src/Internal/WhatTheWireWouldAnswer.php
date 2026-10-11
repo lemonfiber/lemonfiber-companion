@@ -229,6 +229,7 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step', 'playing'];
 
+
     /**
      * A mock for every request this app can make.
      *
@@ -271,6 +272,10 @@ final readonly class WhatTheWireWouldAnswer
      */
     public static function to(string $endpoint, int $status, string ...$asked): MockResponse
     {
+        if (APictureAsItIsServed::isServedAt($endpoint)) {
+            return APictureAsItIsServed::answered($status);
+        }
+
         return new MockResponse(self::whatThatPathSends($endpoint, ...$asked), $status);
     }
 

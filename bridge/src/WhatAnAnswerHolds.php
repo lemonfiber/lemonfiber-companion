@@ -78,4 +78,7 @@ enum WhatAnAnswerHolds: string
 
     /** Why playback stopped, or empty while it has not. */
     case Why = 'why';
+
+    /** Whether a picture is held under the key asked about. */
+    case Holds = 'holds';
 }

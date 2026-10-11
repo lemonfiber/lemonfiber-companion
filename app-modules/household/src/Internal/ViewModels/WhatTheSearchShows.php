@@ -6,6 +6,9 @@ namespace Modules\Household\Internal\ViewModels;
 
 use function array_merge;
 
+use Closure;
+use Modules\Kernel\Api\AFoundTitle;
+
 /**
  * What a member's search has shown so far: every page read, in order, or what stopped it.
  *
@@ -64,6 +67,22 @@ final readonly class WhatTheSearchShows
         }
 
         return new self(searched: true, isSignedIn: true, approval: $page->approval, rows: array_merge($this->rows, $page->rows), next: $page->next, stopped: null);
+    }
+
+    /**
+     * This, each row's poster drawn from the source `$from` answers for its title.
+     *
+     * @param Closure(AFoundTitle): string $from
+     */
+    public function pictured(Closure $from): self
+    {
+        $rows = [];
+
+        foreach ($this->rows as $row) {
+            $rows[] = $row->pictured($from($row->found));
+        }
+
+        return new self(searched: $this->searched, isSignedIn: $this->isSignedIn, approval: $this->approval, rows: $rows, next: $this->next, stopped: $this->stopped);
     }
 
     /** Whether the core answered and nothing stood in the way. */

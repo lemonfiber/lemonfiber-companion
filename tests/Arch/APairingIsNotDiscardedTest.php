@@ -95,8 +95,11 @@ it('nothing but removing a stack from the phone asks to forget one', function ()
 
     sort($callers);
 
+    // The store that lets go of artwork with the session passes the removal
+    // on to the store it wraps, and asks nothing of its own.
     expect($callers)->toBe([
         'app-modules/connection/src/Api/RemovingAStack.php',
+        'bootstrap/Composition/ArtworkGoesWithTheSession.php',
         'bootstrap/Composition/EveryKeeperOfAStack.php',
     ]);
 });

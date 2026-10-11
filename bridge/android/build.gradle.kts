@@ -100,6 +100,7 @@ sourceSets {
             "PlaybackService.kt",
             "PlayerActivity.kt",
             "PlayerFunctions.kt",
+            "ArtworkFunctions.kt",
         )
     }
     test {

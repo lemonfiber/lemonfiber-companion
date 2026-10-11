@@ -202,6 +202,20 @@ enum Call: string
     case PlayerState = 'Lemonfiber.Player.State';
 
     /**
+     * Hold a picture in memory under its key, for the stack it came from.
+     *
+     * Carries the picture's bytes, which neither native half writes anywhere
+     * but memory.
+     */
+    case ArtworkHold = 'Lemonfiber.Artwork.Hold';
+
+    /** Whether a picture is still held under its key. */
+    case ArtworkHolds = 'Lemonfiber.Artwork.Holds';
+
+    /** Let go of every picture held for a stack. */
+    case ArtworkLetGo = 'Lemonfiber.Artwork.LetGo';
+
+    /**
      * The payload of a call that carries nothing.
      *
      * On a handset `nativephp_call` is a C extension that takes exactly two

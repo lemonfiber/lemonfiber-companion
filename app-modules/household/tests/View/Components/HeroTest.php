@@ -33,12 +33,12 @@ function theNewestTitle(string $titled = 'Alien'): WhatOnePosterSays
 
 it('draws a raised 16:9 tile, said as one element, then Play and More', function (): void {
     $drawn = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" tap="play(\'a1\')" />', ['poster' => theNewestTitle()]);
-    $tile = data_get($drawn, 'children.0.children.0');
+    $tile = data_get($drawn, 'children.0.children.0.children.0');
 
     expect(data_get($drawn, 'children.0.type'))->toBe('pressable')
         ->and(data_get($drawn, 'children.0.props.a11y_label'))->toBe(__('household.hero.reads', ['reads' => 'Alien, Film, 1979']))
         ->and(data_get($drawn, 'children.0.on_press'))->toBeNull()
-        ->and(data_get($tile, 'layout.aspect_ratio'))->toEqual(16 / 9)
+        ->and(data_get($drawn, 'children.0.children.0.layout.aspect_ratio'))->toEqual(16 / 9)
         ->and(data_get($tile, 'style.bg_color'))->toBe(ThemeToken::Raised->in(WhoseTheme::Member))
         ->and(data_get($tile, 'children.0.props.text'))->toBe(__('household.hero.above', ['line' => '1979 · Film']))
         ->and(data_get($tile, 'children.1.props.text'))->toBe('Alien')
@@ -50,7 +50,7 @@ it('draws a raised 16:9 tile, said as one element, then Play and More', function
 });
 
 it('letters its top line and title at the sizes it names, whatever the person\'s text size, at every step', function (string $titled): void {
-    $tile = data_get(WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" tap="play(\'a1\')" />', ['poster' => theNewestTitle($titled)]), 'children.0.children.0');
+    $tile = data_get(WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" tap="play(\'a1\')" />', ['poster' => theNewestTitle($titled)]), 'children.0.children.0.children.0');
 
     expect(data_get($tile, 'children.0.props.fixed_size'))->toBe(1)
         ->and(data_get($tile, 'children.1.props.fixed_size'))->toBe(1);
@@ -77,7 +77,7 @@ it('draws More that waits where the title opens nothing', function (): void {
 });
 
 it('letters each step a size up from its poster, and lets it take that step\'s lines', function (string $titled, HowAPosterIsLettered $step): void {
-    $title = data_get(WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle($titled)]), 'children.0.children.0.children.1.props');
+    $title = data_get(WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle($titled)]), 'children.0.children.0.children.0.children.1.props');
 
     expect(data_get($title, 'font_size'))->toEqual($step->setOnTheHero()->points())
         ->and(data_get($title, 'max_lines'))->toBe($step->linesOnTheHero());
@@ -86,3 +86,14 @@ it('letters each step a size up from its poster, and lets it take that step\'s l
     'a sentence\'s length' => ['The Lord of the Rings: The Fellowship', HowAPosterIsLettered::Middle],
     'anything longer' => ['Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb', HowAPosterIsLettered::Small],
 ]);
+
+it('draws the backdrop the phone holds over the lettering, and only the lettering where it holds none', function (): void {
+    $source = 'lemonfiber-art:0123456789abcdef0123456789abcdef';
+    $pictured = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle('Alien')->pictured($source)]);
+    $lettered = WhatMarkupDraws::drawn('<x-household::hero :poster="$poster" />', ['poster' => theNewestTitle('Alien')]);
+
+    expect(data_get($pictured, 'children.0.children.0.layout.aspect_ratio'))->toEqual(16 / 9)
+        ->and(data_get($pictured, 'children.0.children.0.children.1.props.src'))->toBe($source)
+        ->and(data_get($pictured, 'children.0.children.0.children.0.children.1.props.text'))->toBe('Alien')
+        ->and(data_get($lettered, 'children.0.children.0.children.1'))->toBeNull();
+});

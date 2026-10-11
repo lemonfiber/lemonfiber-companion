@@ -1,0 +1,26 @@
+An image whose source is `lemonfiber-art:<key>` is drawn from the artwork the
+app holds in memory (`ArtworkHeld`), never fetched, and Coil is told to keep
+neither a memory nor a disk copy of it: the bytes are held once, by the store
+that lets go of them when the stack is removed, its session ends or the lock
+engages. A key the app no longer holds draws nothing, so what is behind the
+image shows, which is the lettered poster.
+
+--- a/vendor/nativephp/mobile-ui/resources/android/NativeUIImageSource.kt
++++ b/vendor/nativephp/mobile-ui/resources/android/NativeUIImageSource.kt
+@@ -3,2 +3,5 @@
+ import android.content.Context
++import app.lemonfiber.native.ArtworkHeld
++import coil3.request.CachePolicy
++import coil3.request.ImageRequest
+ import com.nativephp.mobile.bridge.PHPBridge
+@@ -26 +29,9 @@
+-internal fun nuiResolveImageSrc(src: String, context: Context): String {
++internal fun nuiResolveImageSrc(src: String, context: Context): Any {
++    if (src.startsWith(ArtworkHeld.SCHEME)) {
++        return ImageRequest.Builder(context)
++            .data(ArtworkHeld.shared.bytes(src) ?: ByteArray(0))
++            .memoryCachePolicy(CachePolicy.DISABLED)
++            .diskCachePolicy(CachePolicy.DISABLED)
++            .build()
++    }
++

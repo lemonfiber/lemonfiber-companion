@@ -264,7 +264,15 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
         ]];
     }
 
-    $body = theStandInsAnswerTo($endpoint, ...$asked)->body()->all();
+    $answered = theStandInsAnswerTo($endpoint, ...$asked);
+
+    // A picture is bytes rather than an envelope, so it has no place to spoil;
+    // `FetchingArtworkContractTest` holds what a picture that cannot be read becomes.
+    if (isAPicture($answered)) {
+        return [];
+    }
+
+    $body = $answered->body()->all();
 
     if (is_array($body)) {
         return [$body];
@@ -284,6 +292,14 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
     }
 
     return $lines;
+}
+
+/** Whether an answer is a picture's bytes, labelled as an image. */
+function isAPicture(MockResponse $answered): bool
+{
+    $labelled = $answered->headers()->get('Content-Type');
+
+    return is_string($labelled) && str_starts_with($labelled, 'image/');
 }
 
 /**
@@ -338,7 +354,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
                     $envelopes,
                 ))),
                 Api::EVENTS_ENDPOINT => MockResponse::make(aStreamOf($envelopes)),
-                default => MockResponse::make($envelopes[0]),
+                default => $envelopes === [] ? theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked)) : MockResponse::make($envelopes[0]),
             };
         },
     ]);

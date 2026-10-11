@@ -53,7 +53,8 @@ final readonly class HowATitleReads
     /** An episode's heading, where it has no number. */
     private const string EPISODE_UNNUMBERED = 'household.title.episode_unnumbered';
 
-    public function told(ATitle $title): WhatThisTitleTurnedOutToBe
+    /** The core answered with the title, its poster drawn from `$pictured`, or lettered where that is empty. */
+    public function told(ATitle $title, string $pictured): WhatThisTitleTurnedOutToBe
     {
         $holding = $title->holding();
         $year = $holding->year()->either(
@@ -64,7 +65,7 @@ final readonly class HowATitleReads
         [$released, $releasedFilling, $releasedIn] = $this->released($title->released());
 
         return WhatThisTitleTurnedOutToBe::told(new WhatTheTitleSays(
-            poster: WhatOnePosterSays::ofATitle($holding->titled(), $holding->medium()->saidOnTheScreen(), $year),
+            poster: WhatOnePosterSays::ofATitle($holding->titled(), $holding->medium()->saidOnTheScreen(), $year)->pictured($pictured),
             about: $title->about(),
             runs: $runs,
             runsFilling: $runsFilling,

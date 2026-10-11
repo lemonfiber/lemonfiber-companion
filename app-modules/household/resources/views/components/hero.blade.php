@@ -5,7 +5,10 @@
      every class on it can be read. --}}
 <native:column class="w-full gap-3">
 <native:pressable class="w-full min-h-12" a11y-label="{{ $named }}">
-<native:column class="w-full aspect-video justify-between gap-2 rounded border border-theme-line bg-theme-raised p-4">
+{{-- The backdrop, where the phone holds one, is drawn over the lettering,
+     so a picture that is let go of leaves the lettered title showing. --}}
+<native:stack class="w-full aspect-video">
+<native:column class="w-full h-full justify-between gap-2 rounded border border-theme-line bg-theme-raised p-4">
     <native:text class="text-[12] font-medium text-theme-muted" font="DMMono-Medium" :fixed-size="true" :max-lines="1">{{ $above }}</native:text>
     @if ($poster->lettered === HowAPosterIsLettered::Large)
     <native:text class="text-[38] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
@@ -15,6 +18,10 @@
     <native:text class="text-[15] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
     @endif
 </native:column>
+@if ($poster->pictured !== '')
+<native:image src="{{ $poster->pictured }}" class="w-full h-full rounded object-cover" />
+@endif
+</native:stack>
 </native:pressable>
 {{-- Play plays it where the screen says what pressing it does. Where it
      cannot, as on a preview, it is drawn and not usable, with the reason
