@@ -261,3 +261,21 @@ it('draws the title\'s poster from what the phone holds, and letters it where th
         ->and($held->howMany())->toBe(1)
         ->and(theTitleScreen($watching)->title()->title?->poster->pictured)->toBe('');
 });
+
+it('draws the title\'s poster again once back on view, after the lock let go of it, and leaves an unread page as it was', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
+    $screen = theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters));
+    $unread = theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters));
+    $screen->title();
+
+    $held->letGoOf(theStackATitleIsOn()->id());
+    $screen->onResume();
+    $unread->onResume();
+
+    expect($held->howMany())->toBe(1)
+        ->and($posters->asked())->toBe(2)
+        ->and($unread->answered)->toBeNull()
+        ->and($screen->title()->title?->poster->pictured)->toStartWith(ArtworkKey::SCHEME);
+});

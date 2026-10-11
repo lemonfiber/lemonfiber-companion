@@ -683,3 +683,34 @@ it('draws the hero\'s backdrop and the front of each row\'s posters from what th
         ->and($posters->asked())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2)
         ->and($held->howMany())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2);
 });
+
+it('draws the shelf\'s pictures again once back on view, after the lock let go of every one', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), pictures: new ThePicturesItDraws($held, $posters));
+    $screen->answer();
+    $before = $held->howMany();
+
+    $held->letGoOf(theStackAShelfIsReadFrom()->id());
+    $screen->onResume();
+
+    expect($held->howMany())->toBe($before)
+        ->and($posters->asked())->toBe(2 * $before)
+        ->and($screen->answer()->hero?->pictured)->toStartWith(ArtworkKey::SCHEME);
+});
+
+it('leaves a Home that was never drawn, or whose session has ended, as it was when back on view', function (): void {
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $unread = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters));
+    $keychain = AKeychainInMemory::working();
+    $ended = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), keychain: $keychain, pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters));
+    $ended->answer();
+    $asked = $posters->asked();
+    $keychain->forget(theStackAShelfIsReadFrom()->id());
+
+    $unread->onResume();
+    $ended->onResume();
+
+    expect($unread->answered)->toBeNull()
+        ->and($posters->asked())->toBe($asked);
+});

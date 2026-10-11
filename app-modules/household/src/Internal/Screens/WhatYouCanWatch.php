@@ -34,6 +34,7 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+use Override;
 
 /**
  * What this machine says the person holding the session may watch, led by
@@ -181,6 +182,23 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         return AStacksScreen::SignIn->forTheStack($this->stack()->id());
     }
 
+    /** Back on view, as after the lock let go of every picture: draw the shelf's pictures again. */
+    #[Override]
+    public function onResume(): void
+    {
+        if (! $this->answered instanceof WhatAMemberTurnedOutToBeAbleToWatch) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $answered = $this->answered;
+
+        $this->answered = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch => $this->pictured($answered, $stack, $session, $whose),
+            notHeld: static fn(): WhatAMemberTurnedOutToBeAbleToWatch => $answered,
+        );
+    }
+
     protected function titlesOnScreen(): PutsATitleOnScreen
     {
         return $this->titles;
@@ -258,15 +276,21 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         );
     }
 
+    /** The shelf, its hero drawn with its backdrop and each row's front with their posters, as the member may see them. */
+    private function pictured(WhatAMemberTurnedOutToBeAbleToWatch $shown, Stack $stack, Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch
+    {
+        return $shown->pictured(
+            poster: fn(string $plays): string => $this->pictures->ofAHolding($stack, $session, $whose, HoldingId::called($plays)),
+            backdrop: fn(string $plays): string => $this->pictures->backdropOfAHolding($stack, $session, $whose, HoldingId::called($plays)),
+        );
+    }
+
     /** What the stack said, or what the member met instead. */
     private function asked(Stack $stack, Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $this->watching->theShelfOf($stack, $session, $whose)->either(
             told: fn(Shelf $shelf): WhatAMemberTurnedOutToBeAbleToWatch
-                => new HowAShelfReads()->these($shelf, $stack->id())->pictured(
-                    poster: fn(string $plays): string => $this->pictures->ofAHolding($stack, $session, $whose, HoldingId::called($plays)),
-                    backdrop: fn(string $plays): string => $this->pictures->backdropOfAHolding($stack, $session, $whose, HoldingId::called($plays)),
-                ),
+                => $this->pictured(new HowAShelfReads()->these($shelf, $stack->id()), $stack, $session, $whose),
             outOfReach: static fn(): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->outOfReach(),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {

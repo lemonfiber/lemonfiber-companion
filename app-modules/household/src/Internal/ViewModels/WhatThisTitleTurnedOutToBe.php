@@ -57,6 +57,14 @@ final readonly class WhatThisTitleTurnedOutToBe
             );
     }
 
+    /** The screen, the title's poster drawn from `$source`; an answer with no title has no poster to draw. */
+    public function pictured(string $source): self
+    {
+        return $this->title instanceof WhatTheTitleSays
+            ? new self($this->isSignedIn, $this->isAbsent, $this->met, $this->remedy, $this->title->pictured($source), $this->why)
+            : $this;
+    }
+
     /** The name the screen is headed with, or nothing where there is no title. */
     public function named(): string
     {

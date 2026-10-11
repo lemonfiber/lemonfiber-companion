@@ -30,6 +30,7 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+use Override;
 
 /**
  * One title on a member's shelf, in full, opened from its poster or from Home's hero.
@@ -110,6 +111,25 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
         return AStacksScreen::SignIn->forTheStack($this->stack()->id());
     }
 
+    /** Back on view, as after the lock let go of every picture: draw the poster again. */
+    #[Override]
+    public function onResume(): void
+    {
+        $page = $this->page();
+
+        if (! $this->answered instanceof WhatThisTitleTurnedOutToBe || ! $page instanceof HoldingId) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $answered = $this->answered;
+
+        $this->answered = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session, Whose $whose): WhatThisTitleTurnedOutToBe => $answered->pictured($this->pictures->ofAHolding($stack, $session, $whose, $page)),
+            notHeld: static fn(): WhatThisTitleTurnedOutToBe => $answered,
+        );
+    }
+
     protected function titlesOnScreen(): PutsATitleOnScreen
     {
         return $this->titles;
@@ -151,7 +171,7 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
         }
 
         return $this->watching->theTitle($stack, $session, $whose, $page)->either(
-            told: fn(ATitle $title): WhatThisTitleTurnedOutToBe => new HowATitleReads()->told($title, $this->pictures->ofAHolding($stack, $session, $whose, $page)),
+            told: fn(ATitle $title): WhatThisTitleTurnedOutToBe => new HowATitleReads()->told($title)->pictured($this->pictures->ofAHolding($stack, $session, $whose, $page)),
             absent: static fn(): WhatThisTitleTurnedOutToBe => new HowATitleReads()->absent(),
             refused: function (Obstacle $why) use ($stack): WhatThisTitleTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);

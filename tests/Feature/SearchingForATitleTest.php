@@ -336,3 +336,20 @@ it('draws the found title\'s poster from what the phone holds, and none where it
         ->and(theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('It arrives without waiting.'), aRehearsalSaid('unused')), dune(), carried: false, pictures: new ThePicturesItDraws($held, $posters))->pictured())->toBe('')
         ->and($posters->asked())->toBe(1);
 });
+
+it('draws each title\'s poster again once back on view, after the lock let go of every one, and leaves an empty tab as it was', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $screen = theSearchTab(AStackThatFindsTitles::finding(aFirstPage()), pictures: new ThePicturesItDraws($held, $posters));
+    $untouched = theSearchTab(AStackThatFindsTitles::finding(aFirstPage()), pictures: new ThePicturesItDraws($held, $posters));
+    $screen->typed = 'dune';
+    $screen->search();
+
+    $held->letGoOf(theHouseSearchedFrom()->id());
+    $screen->onResume();
+    $untouched->onResume();
+
+    expect($held->howMany())->toBe(2)
+        ->and($posters->asked())->toBe(4)
+        ->and($untouched->shown)->toBeNull();
+});
