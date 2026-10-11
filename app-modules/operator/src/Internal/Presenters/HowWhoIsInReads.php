@@ -31,7 +31,7 @@ final readonly class HowWhoIsInReads
         foreach ($members as $member) {
             $rows[] = new AMemberAsShown(
                 name: $member->name(),
-                standingSaid: $member->hasJoined() ? 'stacks.invitation.member.joined' : 'stacks.invitation.member.still_invited',
+                standingSaid: $member->stands()->saidOnTheScreen(),
             );
         }
 

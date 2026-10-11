@@ -219,8 +219,11 @@ return [
         'who_is_in' => 'Who is in already',
         'ask_who_is_in_again' => 'See who is in again',
         'member' => [
-            'joined' => 'In the household',
-            'still_invited' => 'Invited, and has not taken it up yet',
+            'invited' => 'Invited, and has not taken it up yet',
+            'expired' => 'Invited, and the invitation lapsed before they took it up',
+            'declined' => 'Invited, and they turned the invitation down',
+            'active' => 'In the household',
+            'suspended' => 'In the household, with their account switched off',
         ],
         'nobody_in' => 'Nobody has an account on the media server yet',
         'would_take_it_off' => 'Let :name choose a new password',

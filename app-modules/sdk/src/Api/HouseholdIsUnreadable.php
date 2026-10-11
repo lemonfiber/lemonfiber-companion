@@ -9,6 +9,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhereAMemberStands;
 
 use function sprintf;
 
@@ -42,6 +43,19 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Member %d in the household envelope is not a member. A household with a row this app cannot read is refused rather than shown one person short, because a missing member takes everything they asked for with them.',
             $position,
+        ));
+    }
+
+    public static function memberStanding(string $said, int $position): self
+    {
+        return new self(sprintf(
+            'Member %d in the household envelope stands `%s`, and this app reads %s. An invitation that lapsed and one that was turned down are different answers, so a standing this app cannot place is refused rather than guessed at.',
+            $position,
+            $said,
+            implode(', ', array_map(
+                static fn(WhereAMemberStands $stands): string => sprintf('`%s`', $stands->value),
+                WhereAMemberStands::cases(),
+            )),
         ));
     }
 

@@ -13,11 +13,14 @@ use function iterator_to_array;
 use function json_encode;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
 use Modules\Sdk\Api\HouseholdWentUnread;
@@ -182,6 +185,32 @@ it('refuses a member row it cannot read, and says which one', function (): void 
 
     expect(fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class, 'Member 1');
+});
+
+it('reads where each member stands, a lapsed invitation apart from a declined one', function (): void {
+    $members = [];
+
+    foreach (WhereAMemberStands::cases() as $stands) {
+        $members[] = [...aMember($stands->name, []), 'claimed' => false, 'standing' => $stands->value];
+    }
+
+    $read = array_map(
+        static fn(AMember $member): WhereAMemberStands => $member->stands(),
+        iterator_to_array(Households::whoIsIn(householdSaying(aHouseholdOf($members))), preserve_keys: false),
+    );
+
+    expect($read)->toBe(WhereAMemberStands::cases())
+        ->and(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => aHouseholdOf($members)]))->toBe([]);
+});
+
+it('refuses a member whose standing is missing or one it does not know, and names the ones it reads', function (): void {
+    $missing = array_diff_key(aMember('Robin', []), ['standing' => true]);
+    $unknown = [...aMember('Robin', []), 'standing' => 'banished'];
+
+    expect(fn(): TheMembers => Households::whoIsIn(householdSaying(aHouseholdOf([$missing]))))
+        ->toThrow(HouseholdIsUnreadable::class, 'Member 0')
+        ->and(fn(): TheMembers => Households::whoIsIn(householdSaying(aHouseholdOf([$unknown]))))
+        ->toThrow(HouseholdIsUnreadable::class, '`banished`, and this app reads `invited`, `expired`, `declined`, `active`, `suspended`');
 });
 
 it('refuses a member with no name rather than showing requests nobody owns', function (): void {
