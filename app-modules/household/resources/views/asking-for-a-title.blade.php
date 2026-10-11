@@ -18,7 +18,7 @@
         <x-design::action label="{{ __('household.found.to_requests') }}" :goes="$this->requests()" tone="tonal" />
     @elseif (! $this->title()->stands()->mayBeAskedFor())
         {{-- Not askable: where it stands is the action, shown and not usable. --}}
-        <x-design::action label="{{ __($this->actionSaid()) }}" tap="ask()" :disabled="true" />
+        <x-design::action label="{{ __($this->shown()->stands) }}" tap="ask()" :disabled="true" />
     @elseif (! $this->rehearsal()->isSignedIn || ($this->asked !== null && ! $this->asked->isSignedIn))
         <x-design::body>{{ __('household.signed_out') }}</x-design::body>
         <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />

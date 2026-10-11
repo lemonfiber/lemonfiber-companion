@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
 use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Household\Internal\Screens\LookingForATitle;
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
@@ -151,9 +152,9 @@ it('shows every title on the page with its year, kind and standing, under the co
     expect($drawn)->toContain(
         'What you ask for arrives without waiting for a yes.',
         'Dune',
-        aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.search.kind.movies'), 'stands' => aSearchLine('household.search.stands.askable')]),
+        aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.medium.film'), 'stands' => aSearchLine('household.search.askable')]),
         'Dune: Prophecy',
-        aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.search.kind.tv'), 'stands' => aSearchLine('household.search.stands.on-its-way')]),
+        aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.medium.series'), 'stands' => aSearchLine('household.asked.getting')]),
     )
         ->and($screen->goes()->found($screen->answer()->rows[0]->found))->toBe(AStacksScreen::Found->forTheStacksFoundTitle(theHouseSearchedFrom()->id(), dune()))
         ->and($screen->answer()->rows[0]->carries)->toBe([
@@ -231,7 +232,7 @@ it('asks once under one key, keeps the key while no answer came, and lets it go 
     expect($first)->toBe($again)
         ->and($page->key)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain('Dune is asked for, and waits for a yes.')
-        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.search.kind.movies'), 'stands' => aSearchLine('household.found.became.waiting')]));
+        ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.medium.film'), 'stands' => aSearchLine('household.found.became.waiting')]));
 });
 
 it('draws where a title stands as its one action, not usable, where it cannot be asked for', function (WhereAFoundTitleStands $stands): void {
@@ -239,8 +240,8 @@ it('draws where a title stands as its one action, not usable, where it cannot be
     $page = theFoundPage($asking, AFoundTitle::listed('1', KindOfTitle::Film, 'Dune', WhenItCameOut::unstated(), $stands));
     $drawn = WhatTheDeviceWouldDraw::by($page);
 
-    expect($drawn->said())->toContain(__(sprintf('household.found.action.%s', $stands->value)))
-        ->and($drawn->offersThatWait())->toContain(__(sprintf('household.found.action.%s', $stands->value)))
+    expect($drawn->said())->toContain(__(new HowAFoundTitleReads()->stands($stands)))
+        ->and($drawn->offersThatWait())->toContain(__(new HowAFoundTitleReads()->stands($stands)))
         ->and($asking->rehearsed())->toBe([]);
 })->with([
     'here' => [WhereAFoundTitleStands::Here],

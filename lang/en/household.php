@@ -94,16 +94,8 @@ return [
         'line' => ':year · :kind · :stands',
         'line_undated' => ':kind · :stands',
         'open_named' => 'Open :title',
-        'kind' => [
-            'movies' => 'Film',
-            'tv' => 'Series',
-        ],
-        'stands' => [
-            'here' => 'Already here',
-            'partly-here' => 'Partly here',
-            'on-its-way' => 'On its way',
-            'askable' => 'You can ask for it',
-        ],
+        'already_here' => 'Already here',
+        'askable' => 'You can ask for it',
     ],
     'found' => [
         'heading' => 'A title',
@@ -113,12 +105,6 @@ return [
         'ask_named' => 'Ask for :title',
         'to_requests' => 'See your requests',
         'may_have_gone' => 'Your ask may or may not have reached the house. Asking again will not ask twice, and Requests shows whether it arrived.',
-        'action' => [
-            'here' => 'Already here',
-            'partly-here' => 'Partly here',
-            'on-its-way' => 'On its way',
-            'askable' => 'Ask for it',
-        ],
         'became' => [
             'asked' => 'Asked',
             'waiting' => 'Asked, and waiting for a yes',

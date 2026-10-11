@@ -88,16 +88,8 @@ return [
         'line' => ':year · :kind · :stands',
         'line_undated' => ':kind · :stands',
         'open_named' => 'Open :title',
-        'kind' => [
-            'movies' => 'Film',
-            'tv' => 'Serie',
-        ],
-        'stands' => [
-            'here' => 'Al hier',
-            'partly-here' => 'Deels hier',
-            'on-its-way' => 'Onderweg',
-            'askable' => 'Je kunt erom vragen',
-        ],
+        'already_here' => 'Al hier',
+        'askable' => 'Je kunt erom vragen',
     ],
     'found' => [
         'heading' => 'Een titel',
@@ -107,12 +99,6 @@ return [
         'ask_named' => 'Vraag om :title',
         'to_requests' => 'Bekijk je aanvragen',
         'may_have_gone' => 'Je vraag is misschien wel of niet bij het huis aangekomen. Opnieuw vragen vraagt niet twee keer, en Aanvragen laat zien of hij is aangekomen.',
-        'action' => [
-            'here' => 'Al hier',
-            'partly-here' => 'Deels hier',
-            'on-its-way' => 'Onderweg',
-            'askable' => 'Vraag erom',
-        ],
         'became' => [
             'asked' => 'Gevraagd',
             'waiting' => 'Gevraagd, en wacht op een ja',

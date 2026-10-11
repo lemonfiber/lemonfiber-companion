@@ -11,7 +11,9 @@ use Modules\Household\Internal\ViewModels\WhatTheSearchShows;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\KindOfTitle;
+use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
@@ -28,14 +30,11 @@ use function sprintf;
  */
 final readonly class HowAFoundTitleReads
 {
-    /** What a title is, by its kind. */
-    public const string KIND = 'household.search.kind.%s';
+    /** A title already in the house. */
+    public const string ALREADY_HERE = 'household.search.already_here';
 
-    /** Where a title stands, by its standing. */
-    public const string STANDS = 'household.search.stands.%s';
-
-    /** The title page's one action where it cannot be asked for, by its standing. */
-    public const string ACTION = 'household.found.action.%s';
+    /** A title the member may ask for. */
+    public const string ASKABLE = 'household.search.askable';
 
     /** What an ask became, heading the core's sentence. */
     public const string BECAME = 'household.found.became.%s';
@@ -43,7 +42,6 @@ final readonly class HowAFoundTitleReads
     public const string DATED = 'household.search.line';
 
     public const string UNDATED = 'household.search.line_undated';
-
 
     /** One page, each title a row leading to its page. */
     public function found(WhatASearchFound $page): WhatTheSearchShows
@@ -82,19 +80,21 @@ final readonly class HowAFoundTitleReads
     /** The catalogue key for what a title is. */
     public function kind(KindOfTitle $kind): string
     {
-        return sprintf(self::KIND, $kind->value);
+        return match ($kind) {
+            KindOfTitle::Film => Medium::Film->saidOnTheScreen(),
+            KindOfTitle::Series => Medium::Series->saidOnTheScreen(),
+        };
     }
 
     /** The catalogue key for where a title stands. */
     public function stands(WhereAFoundTitleStands $stands): string
     {
-        return sprintf(self::STANDS, $stands->value);
-    }
-
-    /** The catalogue key for the title page's action where it cannot be asked for. */
-    public function action(WhereAFoundTitleStands $stands): string
-    {
-        return sprintf(self::ACTION, $stands->value);
+        return match ($stands) {
+            WhereAFoundTitleStands::Here => self::ALREADY_HERE,
+            WhereAFoundTitleStands::PartlyHere => Waiting::PartlyHere->saidToTheMember(),
+            WhereAFoundTitleStands::OnItsWay => Waiting::Getting->saidToTheMember(),
+            WhereAFoundTitleStands::Askable => self::ASKABLE,
+        };
     }
 
     public function shown(AFoundTitle $title): AFoundTitleAsShown

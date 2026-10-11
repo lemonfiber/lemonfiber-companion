@@ -117,12 +117,6 @@ final class AskingForATitle extends NativeComponent
         return $this->asked instanceof WhatAskingShows && $this->asked->cameBack() ? $shown->standing($this->asked->became) : $shown;
     }
 
-    /** The catalogue key for the action drawn where the title cannot be asked for. */
-    public function actionSaid(): string
-    {
-        return $this->said(static fn(AFoundTitle $title): string => new HowAFoundTitleReads()->action($title->stands()));
-    }
-
     /** What asking would come to, asked once per frame where the title may be asked for. */
     public function rehearsal(): WhatAskingShows
     {
@@ -184,14 +178,6 @@ final class AskingForATitle extends NativeComponent
             ),
             notHeld: static fn(): WhatAskingShows => WhatAskingShows::theSessionEnded(),
         );
-    }
-
-    /** @param Closure(AFoundTitle): string $saying */
-    private function said(Closure $saying): string
-    {
-        $title = $this->title();
-
-        return $title instanceof AFoundTitle ? $saying($title) : '';
     }
 
     private function carried(WhatAFoundTitleIsOpenedWith $what): string
