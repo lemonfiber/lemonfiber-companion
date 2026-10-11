@@ -16,4 +16,5 @@ requirement = [
   { id = "N25-R8", state = "done", evidence = ["app-modules/kernel/src/Api/WhatVouchesForAPlugin.php", "app-modules/operator/resources/views/components/the-plugin.blade.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
   { id = "N25-R9", state = "done", evidence = ["app-modules/operator/resources/views/what-extends-this-stack.blade.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
   { id = "N25-R10", state = "done", evidence = ["app-modules/sdk/src/Api/Extenders.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N25-R11", state = "done", evidence = ["app-modules/kernel/src/Api/APrivilegedShape.php", "app-modules/sdk/src/Internal/PluginInstallReports.php", "app-modules/sdk/tests/Api/PluginInstallsTest.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
 ]

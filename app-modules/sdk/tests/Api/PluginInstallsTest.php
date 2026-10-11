@@ -18,6 +18,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
+use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhereItsSourceStands;
@@ -169,6 +170,14 @@ it('reads each service taking a privileged shape with what it is granted and giv
         ->and($silent->shapesTaken()->isEmpty())->toBeTrue()
         ->and(iterator_to_array($silent->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL]);
 });
+
+it('reads every privileged shape the contract names', function (APrivilegedShape $shape): void {
+    $read = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [['service' => 'jellyfin', 'shape' => $shape->value, 'grants' => [], 'devices' => ['/dev/dri'], 'approval' => sprintf('%s@jellyfin', $shape->value)]]])));
+    $taken = iterator_to_array($read->shapesTaken(), preserve_keys: false);
+
+    expect($taken)->toHaveCount(1)
+        ->and($taken[0]->shape())->toBe($shape);
+})->with(APrivilegedShape::cases());
 
 it('reads a listing that asked no source, and a record that keeps no recipe, as saying nothing of either', function (): void {
     $answer = APluginAsItArrives::theAnswer(null);

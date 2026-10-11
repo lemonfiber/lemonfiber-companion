@@ -11,6 +11,8 @@ enum APrivilegedShape: string
 {
     case EgressGuard = 'egress-guard';
 
+    case Render = 'render';
+
     /** Why a service takes it, as a catalogue key. */
     public function neededFor(): string
     {
