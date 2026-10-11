@@ -9,6 +9,6 @@
     {{-- A button rather than an automatic retry. An operator who dismissed the
          prompt meant it, and a screen that asked again at once is what teaches
          people to turn a feature off. --}}
-    <x-design::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
+    <x-design::action :label="__('device.unlock')" tap="tryToUnlock()" />
 </x-operator::content>
 </native:column>

@@ -40,7 +40,7 @@
          about, for the health screen's reason: somebody who has just changed
          something scrolls to the end of what they were reading, and that is
          where they want to ask whether it took. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

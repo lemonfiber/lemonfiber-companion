@@ -14,6 +14,7 @@ use function in_array;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
@@ -81,6 +82,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

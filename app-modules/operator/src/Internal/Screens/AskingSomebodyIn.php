@@ -10,6 +10,7 @@ use Illuminate\Contracts\Translation\Translator;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -84,6 +85,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use ChoosesWhatAnInvitationAsks;

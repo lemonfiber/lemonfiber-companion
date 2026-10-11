@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\Concealed;
@@ -107,6 +108,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;

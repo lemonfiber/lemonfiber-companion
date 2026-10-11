@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
@@ -59,6 +60,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;

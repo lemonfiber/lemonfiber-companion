@@ -28,7 +28,7 @@
              in as somebody. --}}
         @if ($this->going()->handoff->handsOver)
             <x-design::card>
-                <x-design::scannable :rows="$this->going()->handoff->squares" missing="{{ __('stacks.invitation.no_code') }}" />
+                <x-design::scannable :rows="$this->going()->handoff->squares" :missing="__('stacks.invitation.no_code')" />
                 <x-design::verbatim>{{ $this->going()->handoff->address }}</x-design::verbatim>
                 @if ($this->going()->handoff->caution !== '')
                     <x-design::note>{{ $this->going()->handoff->caution }}</x-design::note>
@@ -54,7 +54,7 @@
                     @if ($client->link !== '')
                         <x-design::note>{{ __('stacks.handoff.opens_at_this_server', ['client' => $client->client]) }}</x-design::note>
                         <x-design::verbatim>{{ $client->link }}</x-design::verbatim>
-                        <x-design::scannable :rows="$client->squares" missing="{{ __('stacks.invitation.no_code') }}" />
+                        <x-design::scannable :rows="$client->squares" :missing="__('stacks.invitation.no_code')" />
                     @endif
                 </x-design::card>
             @empty
@@ -84,16 +84,16 @@
         {{-- What there is to do next, as the stack named it: asking again is
              a tap here, and anything else is a screen of its own. --}}
         @if ($this->going()->handoff->asksAgain)
-            <x-operator::offered-action label="{{ __('health.ask_again') }}" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
+            <x-operator::offered-action :label="__('health.ask_again')" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
         @endif
         @if ($this->going()->handoff->invites)
-            <x-design::link label="{{ __('stacks.handoff.invite_them') }}" :goes="$this->goes()->inviting($this->named())" />
+            <x-design::link :label="__('stacks.handoff.invite_them')" :goes="$this->goes()->inviting($this->named())" />
         @endif
         @if ($this->going()->handoff->starts)
-            <x-design::link label="{{ __('navigation.services') }}" :goes="$this->goes()->to(AStacksScreen::Services)" />
+            <x-design::link :label="__('navigation.services')" :goes="$this->goes()->to(AStacksScreen::Services)" />
         @endif
         @if ($this->going()->handoff->records)
-            <x-design::link label="{{ __('navigation.menu.front_door') }}" :goes="$this->goes()->to(AStacksScreen::FrontDoor)" />
+            <x-design::link :label="__('navigation.menu.front_door')" :goes="$this->goes()->to(AStacksScreen::FrontDoor)" />
         @endif
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either
@@ -101,7 +101,7 @@
         @if ($this->going()->refused !== '')
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
-        <x-operator::offered-action label="{{ __('stacks.handoff.show') }}" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
+        <x-operator::offered-action :label="__('stacks.handoff.show')" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />
     @endif
 </x-operator::content>
 

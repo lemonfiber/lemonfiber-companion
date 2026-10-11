@@ -65,7 +65,7 @@
             {{-- Where it got to, followed through every service rather than
                  the one it stopped in. Last on the card, under what it is
                  about. --}}
-            <x-design::link label="{{ __('health.trace.road_in', ['item' => $item->title]) }}" :goes="$this->traceOf($item->title)" />
+            <x-design::link :label="__('health.trace.road_in', ['item' => $item->title])" :goes="$this->traceOf($item->title)" />
         </x-design::card>
     @empty
         {{-- Not the same screen as a stack that could not be asked. Nothing
@@ -84,7 +84,7 @@
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

@@ -32,6 +32,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGuards;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheDevicePresses;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -151,6 +152,21 @@ it('offers each form the stack declares to be named, and starts nothing until a 
 
     expect($guarding->started())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineOfTheGuard('stacks.guard.about_to', ['forms' => 'library']));
+});
+
+it('names and takes back out the form the operator pressed, whatever the stack called it', function (): void {
+    $called = "the den's \"full\" <copy> & co";
+    $screen = theGuardScreen(
+        AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()),
+        AStackThatSupervises::withNothingRunning()->declaring(Forms::these(Form::called('library'), Form::called($called))),
+    );
+
+    TheDevicePresses::on($screen, aLineOfTheGuard('stacks.guard.name', ['form' => $called]));
+    $named = $screen->naming;
+    TheDevicePresses::on($screen, aLineOfTheGuard('stacks.guard.leave_out', ['form' => $called]));
+
+    expect($named)->toBe([$called])
+        ->and($screen->naming)->toBe([]);
 });
 
 it('names a form and takes it back out, and names nothing the stack does not declare', function (): void {

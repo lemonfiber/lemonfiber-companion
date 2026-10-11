@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\Screens;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
@@ -72,6 +73,7 @@ use Override;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
 {
+    use WritesItsTaps;
     use PlaysTitles;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;

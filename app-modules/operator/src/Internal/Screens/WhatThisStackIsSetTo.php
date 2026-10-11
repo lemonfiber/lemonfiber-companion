@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Closure;
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Concealed;
@@ -62,6 +63,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisStackIsSetTo extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

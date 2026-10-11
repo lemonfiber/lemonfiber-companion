@@ -6,7 +6,7 @@
     @unless ($this->isSignedIn())
         {{-- The session has ended, so nothing was asked. --}}
         <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
-        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
+        <x-design::action :label="__('connection.sign_in')" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
     @elseif ($this->offer()->went->met !== '')
         {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
@@ -18,10 +18,10 @@
         {{-- The action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
-        <x-design::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
+        <x-design::action :label="__('health.ask_again')" tap="lookAgain()" />
         <x-operator::try-again :went="$this->offer()->went" tap="tryAgain()" />
         @if ($this->offer()->went->isPutRightInTheAppsSettings())
-            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
             @endif
@@ -35,7 +35,7 @@
             tone="working"
         />
         <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
@@ -45,7 +45,7 @@
             <x-design::strong>{{ __('health.nothing_came_back') }}</x-design::strong>
             <x-design::body>{{ __('health.nothing_came_back_action') }}</x-design::body>
         </x-design::notice>
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" />
     @elseif ($this->wasAgreedTo())
         {{-- What the machine actually did, which is a different question
              from what it said it would do — and rendered from a different value
@@ -58,7 +58,7 @@
                 tone="working"
             />
             <x-design::body>{{ __('health.carrying_it_out_action') }}</x-design::body>
-            <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+            <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
         @elseif (! $this->done()->went->cameBack())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __($this->done()->went->met, $this->done()->went->filling()) }}</x-design::strong>
@@ -69,9 +69,9 @@
                  between the operator and the answer to *did it work*. Taking
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
-            <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+            <x-design::action :label="__('health.ask_again')" tap="askAgain()" />
             @if ($this->done()->went->isPutRightInTheAppsSettings())
-                <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+                <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
                 @if ($this->theSettingsWouldNotOpen)
                     <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
                 @endif
@@ -119,7 +119,7 @@
                  rather than the old listing kept: the machine has just changed,
                  so what it would offer now is not necessarily what it offered
                  before. --}}
-            <x-design::action label="{{ __('health.look_again') }}" tap="lookAgain()" tone="tonal" />
+            <x-design::action :label="__('health.look_again')" tap="lookAgain()" tone="tonal" />
         @endif
     @else
         {{-- The last yes was refused because the offer moved: what the stack
@@ -151,9 +151,9 @@
                      re-read every frame and a position is a fact about the
                      list rather than about the repair. --}}
                 <x-design::action
-                    label="{{ __('health.agree_to_it') }}"
-                    answers-to="{{ __('health.agree_to_that', ['repair' => $repair->does]) }}"
-                    tap="agreeTo('{{ $repair->answers }}')"
+                    :label="__('health.agree_to_it')"
+                    :answers-to="__('health.agree_to_that', ['repair' => $repair->does])"
+                    :tap="$this->tapping('agreeTo', $repair->answers)"
                 />
             </x-design::card>
         @empty
@@ -168,7 +168,7 @@
         {{-- Tonal, under the yeses. Every repair above is a commitment and this
              is not one of them: a filled bar that re-reads the machine is the
              control an operator taps when they meant the one above it. --}}
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @endunless
 
     {{-- No way back of its own. The bar under this screen carries the machine's

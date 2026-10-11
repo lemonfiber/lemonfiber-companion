@@ -5,7 +5,7 @@
          seen clears. The stacks are offered only where there is more than one. --}}
     <x-design::chips>
         @forelse ($this->news()->kinds as $filter)
-            <x-design::chip label="{{ __($filter->said) }}" :tap="$filter->tap" :chosen="$filter->chosen" />
+            <x-design::chip :label="__($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
         @empty
             {{-- Nothing: every kind and each kind are always offered. --}}
         @endforelse
@@ -14,7 +14,7 @@
     @if ($this->news()->stacks !== [])
         <x-design::chips>
             @forelse ($this->news()->stacks as $filter)
-                <x-design::chip label="{{ $filter->said === '' ? $filter->name : __($filter->said) }}" :tap="$filter->tap" :chosen="$filter->chosen" />
+                <x-design::chip :label="$filter->said === '' ? $filter->name : __($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
             @empty
                 {{-- Nothing: this is drawn only where there are stacks to offer. --}}
             @endforelse
@@ -22,7 +22,7 @@
     @endif
 
     @if ($this->news()->hasAnythingNew())
-        <x-design::action label="{{ __('news.mark_all_seen') }}" tap="markAllSeen()" tone="tonal" />
+        <x-design::action :label="__('news.mark_all_seen')" tap="markAllSeen()" tone="tonal" />
     @endif
 
     {{-- A stack that could not be read comes before anything listed, so nothing
@@ -57,7 +57,7 @@
         @endif
     @endforelse
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 
     @if ($this->waitsForTheNextFrame())
         {{-- This frame read one stack, and another shown is still to be read. --}}

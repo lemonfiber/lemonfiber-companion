@@ -8,6 +8,7 @@ use function array_filter;
 use function array_values;
 use function in_array;
 
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Form;
@@ -69,6 +70,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class GuardingWhileYouWatch extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatFormsItHas;

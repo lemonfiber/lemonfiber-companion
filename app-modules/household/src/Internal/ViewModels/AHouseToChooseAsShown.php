@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\ViewModels;
 
+use Modules\Design\Api\ATap;
 use Modules\Wayfinding\Api\AStackToChooseAsShown;
-
-use function sprintf;
 
 /**
  * One house on a member's list of houses: its name, and whether it is the one they are in.
@@ -39,6 +38,6 @@ final readonly class AHouseToChooseAsShown
     /** What choosing this house does: the house they are in only closes the list. */
     public function pressed(): string
     {
-        return $this->current ? 'stayInThisHouse()' : sprintf("openTheHouse('%s')", $this->id);
+        return $this->current ? 'stayInThisHouse()' : ATap::calling('openTheHouse', $this->id)->written();
     }
 }

@@ -134,7 +134,7 @@
 
     {{-- Words rather than a bar, because it is not the thing this frame wants
          anybody to do. The rows are. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

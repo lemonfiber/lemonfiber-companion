@@ -410,19 +410,19 @@ it('offers what it suggests, and walks the one tapped', function (): void {
         __('health.walkthrough.walk_this', ['item' => 'Sintel']),
     );
 
-    $screen->walkSuggested('1');
+    $screen->walkSuggested(1);
 
     expect($walking->walked())->toHaveCount(2)
         ->and(whatItWasAskedToWalk($walking->walked()[1]))->toBe('Sintel');
 
     $screen->whileItRuns();
-    $screen->walkSuggested('0');
+    $screen->walkSuggested(0);
 
     expect($walking->walked())->toHaveCount(3)
         ->and(whatItWasAskedToWalk($walking->walked()[2]))->toBe('Big Buck Bunny');
 });
 
-it('walks nothing for a place the suggestions do not have, or before there are any', function (string $place): void {
+it('walks nothing for a place the suggestions do not have, or before there are any', function (int $place): void {
     $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatMatchedNothing()));
     $screen = aScreenThatWalked($walking);
 
@@ -430,15 +430,15 @@ it('walks nothing for a place the suggestions do not have, or before there are a
 
     $running = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
     $still = aScreenThatWalked($running);
-    $still->walkSuggested('0');
+    $still->walkSuggested(0);
 
     $fresh = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
-    TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($fresh)->walkSuggested('0');
+    TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($fresh)->walkSuggested(0);
 
     expect($walking->walked())->toHaveCount(1)
         ->and($running->walked())->toHaveCount(1)
         ->and($fresh->walked())->toBe([]);
-})->with(['past the end' => ['2'], 'not a place' => ['Sintel'], 'empty' => ['']]);
+})->with(['past the end' => [2], 'before the start' => [-1]]);
 
 it('draws each step as the glossary\'s word for it, explained in place', function (): void {
     $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(

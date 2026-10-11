@@ -99,11 +99,11 @@
          road beside the camera, which is where somebody is when the question
          is real. --}}
     @if ($this->pairingIsOffered())
-        <x-design::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
+        <x-design::action :label="__('connection.pair')" :goes="$this->scanningIsAt()" />
     @endif
 
     @if ($this->nothingIsPairedYet() && $this->runsTheHouse)
-        <x-design::link label="{{ __('household.joining.invited') }}" :goes="$this->joiningIsAt()" />
+        <x-design::link :label="__('household.joining.invited')" :goes="$this->joiningIsAt()" />
     @endif
 
     {{-- Assembled for the operator to send, and not sent by the app. On this
@@ -116,6 +116,6 @@
          and that is where somebody stuck on a first run actually is. A line
          rather than a button, because it is not part of the pairing above it. --}}
     @unless ($this->theFirstRunIsStillRunning())
-        <x-design::link label="{{ __('device.share_diagnostics') }}" tap="share()" />
+        <x-design::link :label="__('device.share_diagnostics')" tap="share()" />
     @endunless
 </x-operator::content>

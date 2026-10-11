@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Presenters;
 
+use Modules\Design\Api\ATap;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
 use Modules\Kernel\Api\APartWay;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PartWays;
-
-use function sprintf;
 
 /**
  * What a member was part-way through, as the row Home leads with.
@@ -30,9 +29,6 @@ final readonly class HowWhereTheyLeftOffReads
 
     /** The line at the top of a poster, where it does not. */
     private const string PART_WAY = 'household.poster.part_way';
-
-    /** What pressing a poster does on Home: play it on from where it was left, by its id. */
-    private const string RESUMES = "resume('%s')";
 
     /** The house answered, and this is what they were part-way through. */
     public function these(PartWays $partWay): WhatTheirOwnTitlesTurnedOutToBe
@@ -61,7 +57,7 @@ final readonly class HowWhereTheyLeftOffReads
     private function posterFor(APartWay $one): WhatOnePosterSays
     {
         $holding = $one->holding();
-        $tap = sprintf(self::RESUMES, $holding->id()->named());
+        $tap = ATap::calling('resume', $holding->id()->named())->written();
 
         return $one->left()->either(
             minutes: static fn(int $minutes): WhatOnePosterSays => WhatOnePosterSays::ofSomethingPartWay($holding->titled(), self::LEFT, ['minutes' => (string) $minutes], $tap),

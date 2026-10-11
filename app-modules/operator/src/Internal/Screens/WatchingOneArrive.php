@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -81,6 +82,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use HearsWhereTheWalkIs {
@@ -157,7 +159,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
      *
      * A place the list does not have starts nothing.
      */
-    public function walkSuggested(string $place): void
+    public function walkSuggested(int $place): void
     {
         $record = $this->answer()->record;
 
@@ -168,7 +170,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         $chosen = null;
 
         foreach ($record->suggestions as $at => $suggestion) {
-            if ((string) $at === $place) {
+            if ($at === $place) {
                 $chosen = WhatToWalk::called($suggestion);
             }
         }

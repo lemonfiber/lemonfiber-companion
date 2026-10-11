@@ -18,7 +18,7 @@
                 <x-design::body>{{ __('quality.held_unexplained') }}</x-design::body>
             @endforelse
         </x-design::notice>
-        <x-operator::offered-action label="{{ __('quality.confirm') }}" tap="confirm()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
+        <x-operator::offered-action :label="__('quality.confirm')" tap="confirm()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     @endif
 
     {{-- A hand-edit is respected, and putting the preset back over it is not
@@ -92,7 +92,7 @@
             label="{{ __('quality.choose.kind') }}"
             supporting="{{ __('quality.choose.kind_help') }}"
         />
-        <x-operator::offered-action label="{{ __('quality.choose.act') }}" tap="choose()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
+        <x-operator::offered-action :label="__('quality.choose.act')" tap="choose()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     </x-design::card>
 
     {{-- Upgrading what is already here is its own act, described kind by
@@ -124,7 +124,7 @@
                 <x-design::body>{{ __($this->upgrading->went->remedy, $this->upgrading->went->filling()) }}</x-design::body>
             </x-design::notice>
             @if ($this->upgrading->went->isPutRightInTheAppsSettings())
-                <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+                <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
                 @if ($this->theSettingsWouldNotOpen)
                     <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
                 @endif
@@ -137,12 +137,12 @@
     @endif
 
     @if ($this->mayUpgrade())
-        <x-operator::offered-action label="{{ __('quality.upgrade.agree') }}" tap="upgrade()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" />
+        <x-operator::offered-action :label="__('quality.upgrade.agree')" tap="upgrade()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" />
     @else
-        <x-operator::offered-action label="{{ __('quality.upgrade.describe') }}" tap="describe()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" tone="tonal" />
+        <x-operator::offered-action :label="__('quality.upgrade.describe')" tap="describe()" :offer="$this->offered(WhatToDoAboutQuality::Upgrade)" tone="tonal" />
     @endif
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

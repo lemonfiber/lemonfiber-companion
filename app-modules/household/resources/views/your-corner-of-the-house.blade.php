@@ -12,7 +12,7 @@
     <x-design::heading>{{ __('household.languages.hear') }}</x-design::heading>
     <x-design::chips>
         @forelse ($this->languages()->hear as $language)
-            <x-design::chip label="{{ __($language->said) }}" tap="hearIn('{{ $language->word }}')" :chosen="$language->chosen" />
+            <x-design::chip :label="__($language->said)" :tap="$this->tapping('hearIn', $language->word)" :chosen="$language->chosen" />
         @empty
             {{-- Nothing: every language is always offered. --}}
         @endforelse
@@ -21,7 +21,7 @@
     <x-design::heading>{{ __('household.languages.read') }}</x-design::heading>
     <x-design::chips>
         @forelse ($this->languages()->read as $language)
-            <x-design::chip label="{{ __($language->said) }}" tap="readIn('{{ $language->word }}')" :chosen="$language->chosen" />
+            <x-design::chip :label="__($language->said)" :tap="$this->tapping('readIn', $language->word)" :chosen="$language->chosen" />
         @empty
             {{-- Nothing: every language, and none, is always offered. --}}
         @endforelse
@@ -32,8 +32,8 @@
          the house again and that nothing changes at the house. --}}
     @if ($this->confirmingTheRemoval)
         <x-design::body>{{ __('household.remove_house_confirm', ['house' => $this->stack()->name()->shown()]) }}</x-design::body>
-        <x-design::action label="{{ __('household.remove') }}" tap="removeTheHouse()" />
-        <x-design::action label="{{ __('household.keep_it') }}" tap="keepTheHouse()" tone="tonal" />
+        <x-design::action :label="__('household.remove')" tap="removeTheHouse()" />
+        <x-design::action :label="__('household.keep_it')" tap="keepTheHouse()" tone="tonal" />
     @endif
 
     @if ($this->removalRefused)

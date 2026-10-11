@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Concealed;
@@ -64,6 +65,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatIsAlreadyOnThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

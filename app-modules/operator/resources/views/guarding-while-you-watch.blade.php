@@ -10,7 +10,7 @@
          outlives the screen is the hosting screen, named here and kept apart. --}}
     <x-design::body>{{ __('stacks.guard.lives_while_asked') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_hosted') }}</x-operator::note>
-    <x-operator::quiet-action label="{{ __('stacks.guard.to_host_one') }}" :goes="$this->goes()->to(AStacksScreen::Hosting)" />
+    <x-operator::quiet-action :label="__('stacks.guard.to_host_one')" :goes="$this->goes()->to(AStacksScreen::Hosting)" />
 
 @if ($this->asking !== null)
     {{-- Asked before it starts, naming the forms it would stop. --}}
@@ -18,8 +18,8 @@
     <x-design::body>{{ __('stacks.guard.would_do') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_said_before') }}</x-operator::note>
 
-    <x-operator::offered-action label="{{ __('health.go_ahead') }}" tap="agree()" :offer="$this->offered($this->asking)" />
-    <x-operator::quiet-action label="{{ __('health.never_mind') }}" tap="neverMind()" />
+    <x-operator::offered-action :label="__('health.go_ahead')" tap="agree()" :offer="$this->offered($this->asking)" />
+    <x-operator::quiet-action :label="__('health.never_mind')" tap="neverMind()" />
 @endif
 
 @if ($this->asking === null && $this->lastGuard()->wasAsked)
@@ -48,7 +48,7 @@
                 @endforelse
             @endif
 
-            <x-operator::action label="{{ __('stacks.guard.start_over') }}" tap="startOver()" />
+            <x-operator::action :label="__('stacks.guard.start_over')" tap="startOver()" />
         @endif
     @else
         <x-operator::what-stood-in-the-way
@@ -58,7 +58,7 @@
         />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 
 @if ($this->asking === null && ! $this->lastGuard()->wasAsked)
@@ -72,23 +72,23 @@
     @forelse ($this->choosing()->forms as $form)
         @if ($form->isNamed)
             <x-operator::action
-                label="{{ __('stacks.guard.named', ['form' => $form->name]) }}"
-                answers-to="{{ __('stacks.guard.leave_out', ['form' => $form->name]) }}"
-                tap="choose('{{ $form->name }}')"
+                :label="__('stacks.guard.named', ['form' => $form->name])"
+                :answers-to="__('stacks.guard.leave_out', ['form' => $form->name])"
+                :tap="$this->tapping('choose', $form->name)"
             />
         @endif
         @if (! $form->isNamed)
-            <x-operator::quiet-action label="{{ __('stacks.guard.name', ['form' => $form->name]) }}" tap="choose('{{ $form->name }}')" />
+            <x-operator::quiet-action :label="__('stacks.guard.name', ['form' => $form->name])" :tap="$this->tapping('choose', $form->name)" />
         @endif
     @empty
         <x-operator::note>{{ __('stacks.guard.no_forms') }}</x-operator::note>
     @endforelse
 
     @if ($this->choosing()->canStart)
-        <x-operator::offered-action label="{{ __('stacks.guard.start') }}" tap="wouldGuard()" :offer="$this->offered($this->theGuardNamed())" />
+        <x-operator::offered-action :label="__('stacks.guard.start')" tap="wouldGuard()" :offer="$this->offered($this->theGuardNamed())" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

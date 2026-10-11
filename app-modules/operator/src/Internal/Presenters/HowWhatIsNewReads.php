@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function addslashes;
 use function count;
 
+use Modules\Design\Api\ATap;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
@@ -138,7 +138,7 @@ final readonly class HowWhatIsNewReads
                         $says,
                         sprintf('news.kind_one.%s', $kind->value),
                         $stack->name()->shown(),
-                        sprintf("open('%s', '%s', '%s')", addslashes($stack->id()->stored()), $kind->value, addslashes($item->named())),
+                        ATap::calling('open', $stack->id()->stored(), $kind->value, $item->named())->written(),
                     );
                 }
             }
@@ -168,10 +168,10 @@ final readonly class HowWhatIsNewReads
      */
     private function kinds(string $kind): array
     {
-        $filters = [new AFilterAsShown('news.all_kinds', '', sprintf("showKind('%s')", self::EVERYTHING), KindOfNews::tryFrom($kind) === null)];
+        $filters = [new AFilterAsShown('news.all_kinds', '', ATap::calling('showKind', self::EVERYTHING)->written(), KindOfNews::tryFrom($kind) === null)];
 
         foreach (KindOfNews::cases() as $one) {
-            $filters[] = new AFilterAsShown($one->saidOnTheScreen(), '', sprintf("showKind('%s')", $one->value), $one->value === $kind);
+            $filters[] = new AFilterAsShown($one->saidOnTheScreen(), '', ATap::calling('showKind', $one->value)->written(), $one->value === $kind);
         }
 
         return $filters;
@@ -184,10 +184,10 @@ final readonly class HowWhatIsNewReads
      */
     private function stacks(Configured $stacks, string $stack): array
     {
-        $filters = [new AFilterAsShown('news.all_stacks', '', sprintf("showStack('%s')", self::EVERYTHING), $stack === self::EVERYTHING)];
+        $filters = [new AFilterAsShown('news.all_stacks', '', ATap::calling('showStack', self::EVERYTHING)->written(), $stack === self::EVERYTHING)];
 
         foreach ($stacks as $one) {
-            $filters[] = new AFilterAsShown('', $one->name()->shown(), sprintf("showStack('%s')", addslashes($one->id()->stored())), $one->id()->stored() === $stack);
+            $filters[] = new AFilterAsShown('', $one->name()->shown(), ATap::calling('showStack', $one->id()->stored())->written(), $one->id()->stored() === $stack);
         }
 
         // Every stack first and then each one, so one paired stack makes two

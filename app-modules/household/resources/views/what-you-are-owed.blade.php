@@ -65,7 +65,7 @@
 
     {{-- Tonal, because the reading is what this frame is for. A filled bar
          would make asking again look like the thing to do. --}}
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->isSignedIn)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
@@ -78,9 +78,9 @@
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
          leaving and returning. --}}
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
     @if ($this->answer()->isPutRightInTheAppsSettings())
-        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
         @endif
@@ -89,7 +89,7 @@
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
     <x-design::body>{{ __('household.signed_out') }}</x-design::body>
-    <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
+    <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
 @endif
 </x-operator::content>
 

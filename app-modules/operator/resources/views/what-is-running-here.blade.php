@@ -57,9 +57,9 @@
     <x-design::note>{{ __('stacks.itself.not_the_services') }}</x-design::note>
 
     {{-- The versions under this one, and what the running release changed. --}}
-    <x-design::link label="{{ __('stacks.versions.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Versions)" />
+    <x-design::link :label="__('stacks.versions.road_in')" :goes="$this->goes()->to(AStacksScreen::Versions)" />
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

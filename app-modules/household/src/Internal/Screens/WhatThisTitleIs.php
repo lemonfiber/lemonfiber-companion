@@ -7,6 +7,7 @@ namespace Modules\Household\Internal\Screens;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowATitleReads;
@@ -52,6 +53,7 @@ use Override;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
 {
+    use WritesItsTaps;
     use PlaysTitles;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;

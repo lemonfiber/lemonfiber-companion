@@ -89,7 +89,7 @@
                 <x-design::note>{{ __('stacks.already_here.preselected') }}</x-design::note>
             @endif
             @if ($mode->by !== null)
-                <x-operator::offered-action label="{{ __($mode->askSaid) }}" tap="wouldMoveIn('{{ $mode->mode }}')" :offer="$this->offered($mode->by)" tone="tonal" />
+                <x-operator::offered-action :label="__($mode->askSaid)" :tap="$this->tapping('wouldMoveIn', $mode->mode)" :offer="$this->offered($mode->by)" tone="tonal" />
             @endif
         </x-design::card>
     @empty
@@ -111,7 +111,7 @@
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.moving_in.no_outcome') }}</x-design::strong>
             </x-design::notice>
-            <x-design::action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" tone="tonal" />
+            <x-design::action :label="__('stacks.moving_in.leave_it')" tap="leaveIt()" tone="tonal" />
         @elseif ($this->howTheMoveIsGoing()->refusal !== '')
             {{-- The stack's answer, drawn as the reason it is rather than as
                  something to try again. --}}
@@ -119,7 +119,7 @@
                 <x-design::strong>{{ __('stacks.moving_in.refused') }}</x-design::strong>
                 <x-design::body>{{ $this->howTheMoveIsGoing()->refusal }}</x-design::body>
             </x-design::notice>
-            <x-design::action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" tone="tonal" />
+            <x-design::action :label="__('stacks.moving_in.leave_it')" tap="leaveIt()" tone="tonal" />
         @elseif ($this->howTheMoveIsGoing()->move !== null)
             {{-- What did not come across leads, with the reason for each,
                  before where the move stands and before what did. --}}
@@ -160,9 +160,9 @@
                         <x-design::row :headline="__('stacks.moving_in.nothing_copied_first')" />
                     @endforelse
                 </x-design::section>
-                <x-design::action label="{{ __($this->howTheMoveIsGoing()->move->agreeSaid) }}" tap="moveIn()" />
+                <x-design::action :label="__($this->howTheMoveIsGoing()->move->agreeSaid)" tap="moveIn()" />
             @endif
-            <x-design::action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" tone="tonal" />
+            <x-design::action :label="__('stacks.moving_in.leave_it')" tap="leaveIt()" tone="tonal" />
         @endif
     @else
         {{-- Asking, or asking after it, met something: said where the answer
@@ -178,7 +178,7 @@
     {{-- Looking again reads the survey, and asks after work still being
          followed. It is not a retry of anything the stack refused, and is
          named for what it does. --}}
-    <x-design::action label="{{ __('stacks.already_here.look_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('stacks.already_here.look_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

@@ -8,7 +8,7 @@
         {{-- Pairing is not signing in: the machine has been introduced and
              this device holds no session for it. So the way onwards is the
              password, not the report. --}}
-        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->onwardsTo()" />
+        <x-design::action :label="__('connection.sign_in')" :goes="$this->onwardsTo()" />
     @endif
 
     @unless ($this->went()->isPaired())
@@ -40,7 +40,7 @@
             <x-design::note>{{ __('device.camera_reason') }}</x-design::note>
             <x-design::note>{{ __('device.camera_alternative') }}</x-design::note>
 
-            <x-design::action label="{{ __('connection.open_the_camera') }}" :disabled="! $this->mayScan()" tap="scan()" />
+            <x-design::action :label="__('connection.open_the_camera')" :disabled="! $this->mayScan()" tap="scan()" />
         </x-design::card>
 
         {{-- The second road, offered beside the first rather than after it has
@@ -48,7 +48,7 @@
              camera is the wrong tool, and nobody wants to discover that twice.
              It is also what lets the list screen offer one road instead of two:
              the choice belongs where somebody is making it. --}}
-        <x-design::link label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
+        <x-design::link :label="__('connection.pair_by_typing')" :goes="$this->typingIsAt()" />
     @endunless
 
     {{-- The way out. On a first run the list is empty and these two roads are
@@ -57,5 +57,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <x-design::link label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
+    <x-design::link :label="__('connection.back_to_your_stacks')" :goes="$this->theListIsAt()" />
 </x-operator::content>

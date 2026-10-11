@@ -94,10 +94,10 @@
             label="{{ __('health.trace.search_label') }}"
             placeholder="{{ __('health.trace.search_placeholder') }}"
         />
-        <x-design::action label="{{ __('health.trace.follow') }}" tap="follow()" tone="tonal" />
+        <x-design::action :label="__('health.trace.follow')" tap="follow()" tone="tonal" />
     </x-design::card>
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

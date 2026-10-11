@@ -17,7 +17,7 @@
 
     <x-design::chips>
         @forelse ($this->lockAfter()->offered as $choice)
-            <x-design::chip label="{{ __($choice->said) }}" tap="lockAfterIs('{{ $choice->word }}')" :chosen="$choice->chosen" />
+            <x-design::chip :label="__($choice->said)" :tap="$this->tapping('lockAfterIs', $choice->word)" :chosen="$choice->chosen" />
         @empty
             {{-- Nothing: there are always five choices. --}}
         @endforelse
@@ -33,7 +33,7 @@
 
     <x-design::chips>
         @forelse ($this->keepReadings()->offered as $choice)
-            <x-design::chip label="{{ trans_choice($choice->said, $choice->count) }}" tap="keepReadingsFor('{{ $choice->word }}')" :chosen="$choice->chosen" />
+            <x-design::chip :label="trans_choice($choice->said, $choice->count)" :tap="$this->tapping('keepReadingsFor', $choice->word)" :chosen="$choice->chosen" />
         @empty
             {{-- Nothing: there are always six choices. --}}
         @endforelse
@@ -49,7 +49,7 @@
                 :error="$this->daysRefused"
             />
 
-            <x-design::action label="{{ __('settings.save') }}" tap="saveDays()" />
+            <x-design::action :label="__('settings.save')" tap="saveDays()" />
         </x-design::card>
     @endif
 
@@ -72,7 +72,7 @@
 
     @if ($this->confirmingTheClear)
         <x-design::body>{{ __($this->speaksTo->clearing()) }}</x-design::body>
-        <x-design::action label="{{ __('settings.clear') }}" tap="clearSavedData()" />
-        <x-design::action label="{{ __('settings.keep_it') }}" tap="keepSavedData()" tone="tonal" />
+        <x-design::action :label="__('settings.clear')" tap="clearSavedData()" />
+        <x-design::action :label="__('settings.keep_it')" tap="keepSavedData()" tone="tonal" />
     @endif
 </x-operator::content>

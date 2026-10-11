@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Concealed;
@@ -63,6 +64,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatTheWordsMean extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

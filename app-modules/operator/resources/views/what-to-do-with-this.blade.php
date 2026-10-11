@@ -95,11 +95,11 @@
 
     {{-- Drawn and not usable while the listing drawn is one the phone kept:
          a verb is agreed to only against a fresh one. --}}
-    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
     @if ($this->answer()->waitsForTheStack)
         <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
     @endif
-    <x-operator::quiet-action label="{{ __('health.never_mind') }}" tap="neverMind()" />
+    <x-operator::quiet-action :label="__('health.never_mind')" tap="neverMind()" />
 @elseif ($this->thing()->waits)
     {{-- Not a service of this name, and the forms are read on the next
          frame: nothing is said about it until they are. --}}
@@ -112,7 +112,7 @@
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('health.nothing_of_that_name', ['name' => $this->thing()->named]) }}</x-design::strong>
     </x-design::notice>
-    <x-design::action label="{{ __('health.back_to_what_runs') }}" :goes="$this->goes()->to(AStacksScreen::Services)" />
+    <x-design::action :label="__('health.back_to_what_runs')" :goes="$this->goes()->to(AStacksScreen::Services)" />
 @else
     {{-- Which thing, and for a service how it stands: led by its port in the
          tone its row on the list carries, and the words for how it runs under
@@ -305,7 +305,7 @@
              and the note says why. A line of words cannot be marked as not
              usable, so such a verb is the platform's quiet button, disabled,
              which a screen reader announces as such. --}}
-        <x-operator::offered-action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}')" :offer="$this->offered($verb)" tone="tonal" drawn="quiet" :disabled="$this->answer()->waitsForTheStack" />
+        <x-operator::offered-action :label="__($verb->saidOnTheScreen())" :tap="$this->tapping('wouldYouLike', $verb->value)" :offer="$this->offered($verb)" tone="tonal" drawn="quiet" :disabled="$this->answer()->waitsForTheStack" />
     @empty
         {{-- Said rather than left blank: a thing this stack runs and offers
              nothing for reads as a frame whose buttons failed to draw. --}}
@@ -329,13 +329,13 @@
 
     @unless ($this->thing()->isAForm)
         <x-operator::quiet-action
-            label="{{ __('health.read_its_logs') }}"
+            :label="__('health.read_its_logs')"
             :goes="$this->goes()->logsOf($this->thing()->service->id)"
             :carries="$this->thing()->service->carriedToTheLogs()"
         />
     @endunless
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

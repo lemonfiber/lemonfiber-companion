@@ -24,6 +24,7 @@ Part of [the rules](../../ARCHITECTURE.md#the-rules) `ARCHITECTURE.md` indexes.
 | F18 | Every screen of one stack is an operator's tab, a menu item, a member's tab, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, both surfaces' tabs and a register that may shrink and may not grow |
 | F19 | Every text element takes its colour from a theme role, so it reads in the member's theme and the operator's alike | arch: over every element of every template |
 | F20 | Every text element names the bundled face it is set in, with the weight class that face is, and no template picks a platform face | arch: over every element of every template, against `Typeface` |
+| F21 | No value is written into a tap's expression: a call that hands a value is bound, written by `ATap`, so the package's parse reads back exactly the value — a stack's names reach a screen as they were said | `tests/Templates` over every template; arch over every call written in PHP |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each

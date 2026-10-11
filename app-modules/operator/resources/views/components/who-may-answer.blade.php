@@ -6,9 +6,9 @@
         <x-design::note>{{ __('stacks.wiring.fills.choose') }}</x-design::note>
     @endif
     <x-operator::offered-action
-        label="{{ $service }}"
+        :label="$service"
         :answers-to="__('stacks.wiring.fills.choose_for', ['service' => $service, 'capability' => $capability, 'by' => $by])"
-        tap="choose('{{ $capability }}', '{{ $service }}')"
+        :tap="$tapping('choose', $capability, $service)"
         :offer="$offer"
         tone="tonal"
     />

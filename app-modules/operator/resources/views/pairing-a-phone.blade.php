@@ -23,7 +23,7 @@
              check and what to know. Nothing here copies it or passes it on:
              it is read off this screen or typed from it. --}}
         <x-design::card>
-            <x-design::scannable :rows="$this->going()->code->squares" missing="{{ __('stacks.pairing.no_code') }}" />
+            <x-design::scannable :rows="$this->going()->code->squares" :missing="__('stacks.pairing.no_code')" />
             <x-design::body>{{ __('stacks.pairing.or_type') }}</x-design::body>
             <x-design::verbatim>{{ $this->going()->code->line }}</x-design::verbatim>
         </x-design::card>
@@ -50,14 +50,14 @@
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.pairing.expired') }}</x-design::strong>
         </x-design::notice>
-        <x-operator::offered-action label="{{ __('stacks.pairing.make_a_new_one') }}" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
+        <x-operator::offered-action :label="__('stacks.pairing.make_a_new_one')" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either
              way the next thing to do is to ask for a code. --}}
         @if ($this->going()->refused !== '')
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
-        <x-operator::offered-action label="{{ __('stacks.pairing.make') }}" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
+        <x-operator::offered-action :label="__('stacks.pairing.make')" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />
     @endif
 </x-operator::content>
 

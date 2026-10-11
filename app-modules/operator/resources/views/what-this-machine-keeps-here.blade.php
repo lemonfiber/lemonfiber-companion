@@ -75,19 +75,19 @@
             @endif
         </x-design::notice>
         @if ($this->copies()->went->isPutRightInTheAppsSettings())
-            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
             @endif
         @endif
         @unless ($this->copies()->went->isSignedIn)
-            <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
+            <x-design::action :label="__('connection.sign_in')" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
         @endunless
     @endif
 
-    <x-design::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->to(AStacksScreen::Copy)" />
+    <x-design::action :label="__('stacks.keeps.take_a_copy')" :goes="$this->goes()->to(AStacksScreen::Copy)" />
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

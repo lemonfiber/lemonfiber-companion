@@ -8,6 +8,7 @@ use function count;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Instant;
@@ -80,6 +81,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatTheHouseholdAsked extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use LooksAgainWhileOpen;
     use OffersTheAppsSettings;

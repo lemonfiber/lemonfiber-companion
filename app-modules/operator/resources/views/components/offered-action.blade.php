@@ -14,5 +14,5 @@
     <x-operator::note>{{ __($offer->note) }}</x-operator::note>
 @endif
 @if ($offer->updatesAt !== '')
-    <x-operator::quiet-action label="{{ __('connection.go_to_updates') }}" :goes="$offer->updatesAt" />
+    <x-operator::quiet-action :label="__('connection.go_to_updates')" :goes="$offer->updatesAt" />
 @endif

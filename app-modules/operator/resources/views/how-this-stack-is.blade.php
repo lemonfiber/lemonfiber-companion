@@ -31,7 +31,7 @@
             <x-design::body>{{ __($this->summary()->remedy, $this->summary()->filling) }}</x-design::body>
         </x-design::notice>
         @if ($this->summary()->inTheAppsSettings)
-            <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+            <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
             @endif
@@ -105,8 +105,8 @@
     <x-design::chips>
         @forelse ($this->families() as $family)
             <x-design::chip
-                label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}"
-                tap="read('{{ $family->family }}')"
+                :label="__('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany])"
+                :tap="$this->tapping('read', $family->family)"
                 :chosen="$family->isOpen"
             />
         @empty
@@ -167,8 +167,8 @@
                  about the machine itself has no scrollback to read. --}}
             @if ($finding->service !== '')
                 <x-design::link
-                    label="{{ __('health.what_a_service_said') }}"
-                    answers-to="{{ $finding->called !== '' ? __('health.what_that_service_said', ['service' => $finding->called]) : __('health.what_a_service_said') }}"
+                    :label="__('health.what_a_service_said')"
+                    :answers-to="$finding->called !== '' ? __('health.what_that_service_said', ['service' => $finding->called]) : __('health.what_a_service_said')"
                     :goes="$this->logsOf($finding->service)"
                     :carries="$finding->carriedToTheLogs()"
                 />
@@ -188,7 +188,7 @@
 
     {{-- Under the findings: somebody who has just fixed something scrolls to
          the end of what was wrong, and that is where they ask whether it took. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

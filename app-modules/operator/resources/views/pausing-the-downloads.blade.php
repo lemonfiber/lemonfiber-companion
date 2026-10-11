@@ -47,15 +47,15 @@
         @endif
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->isWorking)
     {{-- The stack answers the rehearsal as work, so it may not be in yet.
          Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.pausing.working_it_out') }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->hasEnded)
     <x-operator::emphasis>{{ __('stacks.pausing.offer_ended') }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @else
     {{-- The rehearsal: what every client is doing now, all of it before the
          yes. Nothing below has happened, and nothing is worded as though it
@@ -82,9 +82,9 @@
     @endif
 
     @if ($this->answer()->clients !== [])
-        <x-operator::offered-action label="{{ __($this->says()->agree) }}" tap="agree()" :offer="$this->offered($this->whatWasAsked())" />
+        <x-operator::offered-action :label="__($this->says()->agree)" tap="agree()" :offer="$this->offered($this->whatWasAsked())" />
     @endif
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

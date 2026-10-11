@@ -6,6 +6,7 @@ namespace Modules\Operator\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Operator\Internal\ViewModels\AnOffer;
 
 use function view;
@@ -18,6 +19,8 @@ use function view;
  */
 final class WhoMayAnswer extends Component
 {
+    use WritesItsTaps;
+
     /**
      * @param list<string> $choices the services that may be chosen, in the order the row shows its claimants
      * @param AnOffer      $offer   whether the stack offers choosing what fills a capability
