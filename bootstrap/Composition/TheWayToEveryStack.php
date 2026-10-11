@@ -39,6 +39,7 @@ use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\KeepingKeysForApps;
 use Modules\Kernel\Api\KeepingThePlace;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Linking;
@@ -108,6 +109,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\KeyKeepers;
 use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
@@ -385,6 +387,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // Who gets in: the credentials, which app to watch on, and the front
         // door, each read beside the rest and bound for the same reason.
         $this->app->bind(Safekeeping::class, Keyholders::class);
+        $this->app->bind(KeepingKeysForApps::class, KeyKeepers::class);
         $this->app->bind(Advising::class, Advisers::class);
         $this->app->bind(Welcoming::class, Doorkeepers::class);
         $this->app->bind(ReadingNews::class, Newsreaders::class);

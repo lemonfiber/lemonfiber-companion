@@ -94,7 +94,7 @@ final readonly class WhatLeaves
             $found[] = ARequestOfOurs::described(
                 self::asksFor($row, $position),
                 self::destinations($row, $position),
-                self::text($row, WireField::Ours, OutboundField::Purpose, $position),
+                self::text($row, WireField::Ours, WireField::Purpose, $position),
                 self::text($row, WireField::Ours, OutboundField::Sends, $position),
                 WhetherItIsAllowed::said(allowed: self::flag($row, WireField::Ours, OutboundField::Allowed, $position)),
                 self::text($row, WireField::Ours, OutboundField::Switch, $position),
@@ -146,7 +146,7 @@ final readonly class WhatLeaves
         return ARequestOfTheirs::recorded(
             $service,
             self::destination($row, $position),
-            self::text($row, OutboundField::Theirs, OutboundField::Purpose, $position),
+            self::text($row, OutboundField::Theirs, WireField::Purpose, $position),
             $origin,
         );
     }

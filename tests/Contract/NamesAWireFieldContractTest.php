@@ -27,6 +27,7 @@ use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
+use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
@@ -92,6 +93,7 @@ function everyFieldNamedOnTheWire(): array
         ...ClientsField::cases(),
         ...ConfigField::cases(),
         ...CredentialsField::cases(),
+        ...KeysField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),

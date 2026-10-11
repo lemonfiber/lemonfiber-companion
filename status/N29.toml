@@ -1,0 +1,19 @@
+# What this app implements of N29, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N29-R1", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/TheKeysAppsHold.php", "app-modules/sdk/src/Api/KeysListed.php", "tests/Feature/SeeingTheKeysAppsHoldTest.php", "tests/Contract/KeepingKeysForAppsContractTest.php"] },
+  { id = "N29-R2", state = "open" },
+  { id = "N29-R3", state = "open" },
+  { id = "N29-R4", state = "open" },
+  { id = "N29-R5", state = "open" },
+  { id = "N29-R6", state = "done", evidence = ["app-modules/operator/resources/views/the-keys-apps-hold.blade.php", "app-modules/sdk/src/Api/KeyKeepers.php", "tests/Feature/SeeingTheKeysAppsHoldTest.php", "tests/Contract/KeepingKeysForAppsContractTest.php"] },
+  { id = "N29-R7", state = "open" },
+  { id = "N29-R8", state = "open" },
+  { id = "N29-R9", state = "open" },
+  { id = "N29-R10", state = "done", evidence = ["tests/Feature/AMemberNeverOpensTheOperatorsScreensTest.php", "app-modules/wayfinding/tests/Internal/TheMenuTest.php"] },
+]

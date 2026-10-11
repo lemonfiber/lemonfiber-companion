@@ -40,6 +40,7 @@ use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
+use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -61,6 +62,7 @@ use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
+use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -584,6 +586,20 @@ it('everybody who can have produced a credential has a case', function (): void 
 
     expect($words)->not->toBe([], 'no origin union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhoMadeACredential::cases()))->toBe($words);
+});
+
+it('everything a key can be said to be for has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('KeysEnvelope'), 'purpose');
+
+    expect($words)->not->toBe([], 'no purpose union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatAKeyIsFor::cases()))->toBe($words);
+});
+
+it('every state a key can be in has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('KeysEnvelope'), 'state');
+
+    expect($words)->not->toBe([], 'no state union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhereAKeyStands::cases()))->toBe($words);
 });
 
 it('every rating a device can be given has a case', function (): void {

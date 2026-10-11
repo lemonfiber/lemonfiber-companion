@@ -55,6 +55,7 @@ use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
+use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -74,6 +75,7 @@ use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
+use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -149,6 +151,8 @@ final readonly class TheWireUnions
         WhereThisCopyStands::class => 'standing',
         WhereACredentialStands::class => 'state',
         WhoMadeACredential::class => 'origin',
+        WhatAKeyIsFor::class => 'purpose',
+        WhereAKeyStands::class => 'state',
         HowWellADeviceIsServed::class => 'support',
         WhereTheFrontDoorStands::class => 'standing',
         WhereTheHandoffStands::class => 'state',

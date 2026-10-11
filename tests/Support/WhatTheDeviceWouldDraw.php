@@ -57,6 +57,9 @@ use function sprintf;
  */
 final readonly class WhatTheDeviceWouldDraw
 {
+    /** Where a screen's children hang. */
+    public const string BENEATH = 'children';
+
     /** The prop a node carries its words on, whichever kind of node it is. */
     private const string SAID = 'text';
 
@@ -103,9 +106,6 @@ final readonly class WhatTheDeviceWouldDraw
      */
     private const array OPERATED_WHEN_PRESSED = ['list_item', 'pressable'];
 
-    /** Where a screen's children hang. */
-    private const string BENEATH = 'children';
-
     /** The prop that says a control is drawn and cannot be used. */
     private const string DISABLED = 'disabled';
 
@@ -142,6 +142,21 @@ final readonly class WhatTheDeviceWouldDraw
     public static function tree(NativeComponent $screen): array
     {
         return self::treeMadeBy($screen, $screen->render(...));
+    }
+
+    /**
+     * The tree this screen hands the device, its callbacks registered where the
+     * screen then holds them, so a press the device sends next reaches them.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function treeThatTakesPresses(NativeComponent $screen): array
+    {
+        $registry = new CallbackRegistry();
+        $tree = self::treeMadeBy($screen, $screen->render(...), $registry);
+        new ReflectionObject($screen)->getProperty('nativeCallbacks')->setValue($screen, $registry);
+
+        return $tree;
     }
 
     /**
@@ -261,11 +276,12 @@ final readonly class WhatTheDeviceWouldDraw
     /**
      * The tree one of a screen's frames hands the device, drawn as the device draws it.
      *
-     * @param Closure(): mixed $making what the screen answers with for the frame: its render, or its placeholder
+     * @param Closure(): mixed $making   what the screen answers with for the frame: its render, or its placeholder
+     * @param CallbackRegistry $registry where the frame's callbacks are registered
      *
      * @return array<array-key, mixed>
      */
-    private static function treeMadeBy(NativeComponent $screen, Closure $making): array
+    private static function treeMadeBy(NativeComponent $screen, Closure $making, CallbackRegistry $registry = new CallbackRegistry()): array
     {
         $was = NativeTagPrecompiler::setActive(active: true);
 
@@ -279,7 +295,7 @@ final readonly class WhatTheDeviceWouldDraw
         $emitted = [];
         $hashes = [];
 
-        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+        return $tree->toArray($registry, $id, '', 0, $emitted, $hashes);
     }
 
     /**

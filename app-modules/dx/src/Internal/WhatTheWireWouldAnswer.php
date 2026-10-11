@@ -21,6 +21,7 @@ use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Generated\AskedEnvelope;
 use Lemonfiber\Sdk\Generated\GrantEnvelope;
+use Lemonfiber\Sdk\Generated\KeysEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
@@ -390,6 +391,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(GrantEnvelope::KIND->value))),
+            $endpoint === Api::KEYS_ENDPOINT, str_starts_with($endpoint, sprintf('%s/', Api::KEYS_ENDPOINT)) => KeysAsTheyRead::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(KeysEnvelope::KIND->value))),
             $endpoint === Api::WATCHING_ENDPOINT => WhereTheyLeftOffAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PartWayEnvelope::KIND->value))),
             $endpoint === Api::action(WhatThePlayerAsks::Watched->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(WatchedEnvelope::KIND->value)),
             $endpoint === Api::action(AskingForIt::AskForIt->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(AskedEnvelope::KIND->value)),

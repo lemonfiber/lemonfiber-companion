@@ -13,6 +13,8 @@ use function preg_match;
 
 use const PREG_UNMATCHED_AS_NULL;
 
+use function sprintf;
+
 /**
  * A moment a service wrote down in the RFC 3339 form, read to the second.
  *
@@ -79,6 +81,12 @@ final readonly class AMomentAsWritten
     /** Sixty rather than fifty-nine: the standard allows a leap second. */
     private const int LAST_SECOND = 60;
 
+    /** A date and a time to the second, with no zone: how lemonfiber writes an instant of its own, in UTC. */
+    private const string THE_STACKS_OWN = '/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\z/';
+
+    /** The zone the stack's own instants are written in, said the way RFC 3339 says it. */
+    private const string IN_UTC = '%sZ';
+
     private const int DAYS_IN_AN_ERA = 146_097;
 
     /** From 1 March of year 0, where the era arithmetic starts, to 1 January 1970. */
@@ -90,6 +98,12 @@ final readonly class AMomentAsWritten
     public static function of(string $written): self
     {
         return new self(self::instantIn($written));
+    }
+
+    /** A moment the stack wrote of its own, in UTC with no zone; anything else it reads as unreadable. */
+    public static function byTheStack(string $written): self
+    {
+        return new self(preg_match(self::THE_STACKS_OWN, $written) === 1 ? self::instantIn(sprintf(self::IN_UTC, $written)) : null);
     }
 
     /**

@@ -29,6 +29,37 @@ return [
         ],
         'at_the_machine' => 'Een wachtwoord wordt op de machine ingesteld of vervangen, niet hier.',
     ],
+    'keys' => [
+        'heading' => 'App-sleutels',
+        'state' => [
+            'active' => 'Werkt',
+            'waiting' => 'Wacht om opgehaald te worden',
+            'revoked' => 'Ingetrokken',
+            'orphaned' => 'Het lid heeft het huishouden verlaten',
+            'unconfirmed' => 'Het lid kon nu niet worden nagekeken',
+        ],
+        'purpose' => [
+            'home-assistant' => 'Voor Home Assistant',
+            'mcp' => 'Voor een assistent',
+            'other' => 'Voor iets anders',
+        ],
+        'admits' => [
+            'read' => 'Kan alles lezen',
+            'act' => 'Kan alles lezen en een paar dingen doen',
+            'member' => 'Ziet wat :member ziet',
+        ],
+        'by_a_member' => 'Gemaakt door een lid van het huishouden',
+        'minted' => 'Gemaakt :when',
+        'used' => 'Laatst gebruikt :when',
+        'never_used' => 'Nooit gebruikt',
+        'revoke' => 'Intrekken',
+        'revoke_named' => ':name intrekken',
+        'revoke_confirm' => ':name werkt meteen niet meer, en intrekken kan niet ongedaan worden gemaakt. Wat de sleutel gebruikt, heeft een nieuwe nodig.',
+        'keep_it' => 'Houden',
+        'keep_it_named' => ':name houden',
+        'none' => 'Deze stack heeft geen sleutels voor apps gemaakt',
+        'made_at_the_terminal' => 'Een nieuwe sleutel maak je op de terminal van de stack.',
+    ],
     'clients' => [
         'heading' => 'Waarop kijken',
         'support' => [

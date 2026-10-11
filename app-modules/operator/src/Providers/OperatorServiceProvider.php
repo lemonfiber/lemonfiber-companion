@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
 use Modules\Operator\Internal\Screens\TakingSomebodyOut;
+use Modules\Operator\Internal\Screens\TheKeysAppsHold;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
@@ -326,6 +327,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // household watches on, where they come in, and asking somebody
             // in. Four screens, because each is its own question.
             Router::native(AStacksScreen::Credentials->value, WhatItHoldsToLetThemIn::class);
+            Router::native(AStacksScreen::Keys->value, TheKeysAppsHold::class);
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::Pair->value, PairingAPhone::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);

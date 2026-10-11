@@ -52,3 +52,23 @@ it('reads nothing that is not such a moment as a moment', function (string $writ
     'a year before the epoch' => ['1969-12-31T23:59:59Z'],
     'the epoch, written from a clock ahead of it' => ['1970-01-01T00:30:00+01:00'],
 ]);
+
+it('reads a moment the stack wrote of its own as UTC', function (): void {
+    expect(AMomentAsWritten::byTheStack('2026-09-29T21:39:01')->read(
+        read: static fn(Instant $moment): WhatTheTimestampNamed => new WhatTheTimestampNamed($moment->epochSeconds()),
+        unreadable: static fn(): WhatTheTimestampNamed => new WhatTheTimestampNamed(null),
+    )->seconds)->toBe(1_790_717_941);
+});
+
+it('reads nothing but the stack\'s own form as a moment the stack wrote', function (string $written): void {
+    expect(AMomentAsWritten::byTheStack($written)->read(
+        read: static fn(Instant $moment): WhatTheTimestampNamed => new WhatTheTimestampNamed($moment->epochSeconds()),
+        unreadable: static fn(): WhatTheTimestampNamed => new WhatTheTimestampNamed(null),
+    )->seconds)->toBeNull();
+})->with([
+    'nothing' => [''],
+    'with a zone' => ['2026-09-29T21:39:01Z'],
+    'with a fraction' => ['2026-09-29T21:39:01.5'],
+    'a date alone' => ['2026-09-29'],
+    'a thirtieth of February' => ['2026-02-30T00:00:00'],
+]);
