@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AnAction;
 use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Form;
@@ -59,7 +60,7 @@ use Modules\Sdk\Api\EveryRequestThisAppSends;
 function everyActionNamed(): array
 {
     return [
-        ...AskingThemIn::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
+        ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
         ...AskingForIt::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),

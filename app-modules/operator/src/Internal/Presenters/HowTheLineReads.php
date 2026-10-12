@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
@@ -20,6 +21,7 @@ use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\HowTheLineTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheCapAsShown;
+use Modules\Operator\Internal\ViewModels\TheHoursAsShown;
 use Modules\Operator\Internal\ViewModels\TheLineAsMeasured;
 
 /**
@@ -52,6 +54,11 @@ final readonly class HowTheLineReads
             uncapped: static fn(): AsText => AsText::nothing(),
         );
 
+        $hours = $line->hours(
+            kept: static fn(TheHouseholdsHours $kept): TheHoursAsShown => new TheHoursAsShown(from: $kept->starts(), to: $kept->ends(), zone: $kept->zone()),
+            none: static fn(): AsText => AsText::nothing(),
+        );
+
         return new HowTheLineTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             standsSaid: $line->stands()->saidOnTheScreen(),
@@ -65,6 +72,7 @@ final readonly class HowTheLineReads
             cap: $cap instanceof TheCapAsShown ? $cap : null,
             spentCap: $line->spentCap(AsText::of(...), AsText::nothing(...))->said,
             uploadCost: $line->uploadCost(AsText::of(...), AsText::nothing(...))->said,
+            hours: $hours instanceof TheHoursAsShown ? $hours : null,
         );
     }
 
@@ -90,6 +98,7 @@ final readonly class HowTheLineReads
             cap: null,
             spentCap: '',
             uploadCost: '',
+            hours: null,
         );
     }
 

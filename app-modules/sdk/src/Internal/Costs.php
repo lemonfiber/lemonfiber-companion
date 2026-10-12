@@ -90,11 +90,11 @@ final readonly class Costs
      */
     private static function forHowLong(array $one, NamesAWireField $verb): int
     {
-        if (! array_key_exists(StatusField::Seconds->value, $one)) {
+        if (! array_key_exists(WireField::Seconds->value, $one)) {
             throw RosterIsUnreadable::missing($verb);
         }
 
-        $seconds = $one[StatusField::Seconds->value];
+        $seconds = $one[WireField::Seconds->value];
 
         return is_int($seconds) ? $seconds : throw RosterIsUnreadable::missing($verb);
     }

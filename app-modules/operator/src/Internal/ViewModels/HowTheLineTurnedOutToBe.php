@@ -8,8 +8,9 @@ namespace Modules\Operator\Internal\ViewModels;
  * What asking a stack how it shares its line produced, flattened for a template.
  *
  * **What the stack may not know is absent, not zero.** `$measured` is null
- * where nothing measured the line and `$cap` is null where no cap was
- * declared; the template draws a sentence for each absence. The two optional
+ * where nothing measured the line, `$cap` is null where no cap was declared,
+ * and `$hours` is null where no hours were; the template draws a sentence for
+ * each absence. The two optional
  * sentences are empty where the stack said nothing, and the template branches
  * on them rather than printing a blank.
  */
@@ -39,5 +40,6 @@ final readonly class HowTheLineTurnedOutToBe
         public ?TheCapAsShown $cap,
         public string $spentCap,
         public string $uploadCost,
+        public ?TheHoursAsShown $hours,
     ) {}
 }

@@ -56,6 +56,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -142,6 +143,7 @@ final readonly class TheWireUnions
         HowTheLineWasMeasured::class => 'source',
         WhatACapDoes::class => 'exceeded',
         WhereTheMonthStands::class => 'reached',
+        WhatALimitCameTo::class => 'verdict',
         WhereTheRoomStands::class => 'level',
         WhatAVolumeHolds::class => 'role',
         WhatGettingItBackCosts::class => 'reclaim',

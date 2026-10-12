@@ -9,6 +9,7 @@ use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\PairingAPhone;
@@ -41,6 +42,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     AskingSomebodyIn::class,
     ConnectingADeviceForThem::class,
     HowCurrentThisStackIs::class,
+    HowTheLineIsSharedHere::class,
     HowTheServicesAreWired::class,
     LettingADownloadGo::class,
     PausingTheDownloads::class,

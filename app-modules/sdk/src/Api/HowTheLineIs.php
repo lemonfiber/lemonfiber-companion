@@ -19,6 +19,7 @@ use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Remark;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -43,9 +44,9 @@ use function trim;
  * is refused as a reading that contradicts itself.
  *
  * **What this app does not read is recorded in
- * `WhatThisAppDoesNotRead`**: each client's holding, the
- * month's metering, the override, the household's hours and the structured
- * limits the `says` sentences already carry.
+ * `WhatThisAppDoesNotRead`**: the month's metering and the structured limits
+ * the `says` sentences already carry. Each client's holding and the override
+ * are read by {@see WhatTheLineCameTo}.
  */
 final readonly class HowTheLineIs
 {
@@ -107,6 +108,10 @@ final readonly class HowTheLineIs
 
         if (self::carries($data, BandwidthField::Acting)) {
             $line = $line->withASpentCapDoing(Remark::said(self::text($data, BandwidthField::Acting->value, BandwidthField::Acting), BandwidthField::Acting->value));
+        }
+
+        if (self::carries($data, BandwidthField::Rhythm)) {
+            $line = $line->keepingHours(self::hours($data));
         }
 
         if (self::carries($data, WireField::Ratio)) {
@@ -208,6 +213,22 @@ final readonly class HowTheLineIs
         return $monthly->standing(
             WhereTheMonthStands::tryFrom($reached)
                 ?? throw BandwidthIsUnreadable::word(BandwidthField::Reached->value, $reached, ...array_map(static fn(WhereTheMonthStands $case): string => $case->value, WhereTheMonthStands::cases())),
+        );
+    }
+
+    /**
+     * The household's hours, with the zone they are read in where the stack said.
+     *
+     * @param array<mixed> $data
+     */
+    private static function hours(array $data): TheHouseholdsHours
+    {
+        $rhythm = self::object($data, BandwidthField::Rhythm);
+
+        return TheHouseholdsHours::from(
+            self::text($rhythm, WireField::From->under(BandwidthField::Rhythm), WireField::From),
+            self::text($rhythm, WireField::To->under(BandwidthField::Rhythm), WireField::To),
+            self::carries($data, BandwidthField::Zone) ? self::text($data, BandwidthField::Zone->value, BandwidthField::Zone) : '',
         );
     }
 

@@ -65,10 +65,6 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The name of the title asked for, which the page asking holds from the search that found it.',
         ],
         [
-            'path' => 'BandwidthEnvelope.rehearsed',
-            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
-        ],
-        [
             'path' => 'BesideEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -140,32 +136,12 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'Where each tree of an existing setup sits inside the archive. The host path each was read from is what says whose directories were copied, and it is read; the place inside the file is the archive\'s own layout.',
         ],
         [
-            'path' => 'BandwidthEnvelope.applied',
-            'because' => 'Whether the call that answered wrote limits to the clients or only read them. This app reads the line and never writes a limit, so every answer it asks for says it only read, and a screen showing that would be reporting on an act it did not perform.',
-        ],
-        [
-            'path' => 'BandwidthEnvelope.clients',
-            'because' => 'What each download client was asked to hold to and what it is doing about it, direction by direction. A surface of its own — one row per client, with its verdict and whether it is fetching at all — and the next thing to read here; the line\'s standing, its capacity and its cap come first because they answer what `N10` asks, and a client\'s holding answers a question about that client.',
-        ],
-        [
             'path' => 'BandwidthEnvelope.metered',
             'because' => 'What the stack itself moved this calendar month, and what that count leaves out. It belongs beside the cap it is measured against, with its exclusions always said, and it is not read yet: the cap\'s standing already says within, warning or exceeded, and a byte count drawn without its exclusions would read as the whole line\'s usage.',
         ],
         [
-            'path' => 'BandwidthEnvelope.respite',
-            'because' => 'A temporary override lifting the limits, with how long it has left or how long ago it ran out. The line\'s standing already says *overridden* while one is in force; reading the countdown is part of the surface that reads each client, where an override is felt.',
-        ],
-        [
-            'path' => 'BandwidthEnvelope.respite_says',
-            'because' => 'What the override amounts to, in words. Read with `respite`, for its reason.',
-        ],
-        [
-            'path' => 'BandwidthEnvelope.rhythm',
-            'because' => 'The household\'s waking hours, declared once for every client. The line\'s standing already says whether it is inside or outside them right now; the hours themselves are a setting, shown where settings are, and read with the client surface that acts on them.',
-        ],
-        [
-            'path' => 'BandwidthEnvelope.zone',
-            'because' => 'The zone those hours are read in. Read with `rhythm`, for its reason.',
+            'path' => 'BandwidthEnvelope.clients[].answer.period',
+            'because' => 'Which side of the household\'s day a client that keeps the hours itself says it is on. The line\'s standing already says whether the house is up or asleep right now, and a client\'s own view of it is drawn nowhere a change to the line is judged.',
         ],
         [
             'path' => 'BandwidthEnvelope.down.limit',

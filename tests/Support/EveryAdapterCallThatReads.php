@@ -20,6 +20,8 @@ use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AKeysName;
+use Modules\Kernel\Api\ALift;
+use Modules\Kernel\Api\ALineChange;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
@@ -163,6 +165,7 @@ use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\KeyKeepers;
+use Modules\Sdk\Api\Linesmen;
 use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
@@ -345,6 +348,12 @@ final readonly class EveryAdapterCallThatReads
             'Pausers::whatBecameOf' => static fn(): object
                 => new Pausers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Quartermasters::rationedOn' => static fn(): object => new Quartermasters($clients)->rationedOn($stack, $session),
+            'Linesmen::rehearse' => static fn(): object
+                => new Linesmen($clients, $entropy)->rehearse($stack, $session, ALineChange::asked(ALift::none(), down: '50%')),
+            'Linesmen::carryOut' => static fn(): object
+                => new Linesmen($clients, $entropy)->carryOut($stack, $session, ALineChange::asked(ALift::none(), down: '50%')),
+            'Linesmen::whatBecameOf' => static fn(): object
+                => new Linesmen($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Questions::about' => static fn(): object => new Questions($clients)->about($stack, $session),
             'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
             'Rehearsers::whatStarting' => static fn(): object

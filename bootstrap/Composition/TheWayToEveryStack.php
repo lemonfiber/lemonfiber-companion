@@ -63,6 +63,7 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\SelfChecking;
+use Modules\Kernel\Api\SharingTheLine;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Storing;
@@ -110,6 +111,7 @@ use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\KeyKeepers;
+use Modules\Sdk\Api\Linesmen;
 use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
@@ -343,6 +345,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // How the line is shared, read beside the rest and bound for the same
         // reason: one place decides whether a certificate is checked.
         $this->app->bind(Rationing::class, Quartermasters::class);
+        $this->app->bind(SharingTheLine::class, Linesmen::class);
 
         // What the stack keeps and the copies it holds, read beside the rest
         // and bound for the same reason.

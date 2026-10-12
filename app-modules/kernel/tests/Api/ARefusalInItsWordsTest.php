@@ -28,7 +28,13 @@ it('keeps what the stack said, meant and named, less the space around it', funct
 it('carries a refusal that meant and named nothing more as blank', function (): void {
     $why = ARefusalInItsWords::said('The backup could not be unpacked', ' ', WhatTheRefusalNamed::nothing());
 
-    expect([$why->meaning(), $why->named()->forTheOperator()])->toBe(['', '']);
+    expect([$why->meaning(), $why->named()->forTheOperator(), $why->remedy()])->toBe(['', '', '']);
+});
+
+it('carries what the stack says to do, less the space around it, beside the rest', function (): void {
+    $why = ARefusalInItsWords::said('50 could not be read as a download limit', '', WhatTheRefusalNamed::nothing(), ' Write a download limit as 50%, 2MiB or unlimited ');
+
+    expect([$why->summary(), $why->remedy()])->toBe(['50 could not be read as a download limit', 'Write a download limit as 50%, 2MiB or unlimited']);
 });
 
 it('refuses a refusal that says nothing, naming the field', function (string $summary): void {

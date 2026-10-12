@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\LineSaysNothing;
 use Modules\Kernel\Api\Remark;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -34,11 +35,12 @@ function aLimitedLine(): HowTheLineIsShared
 function everyArmOf(HowTheLineIsShared $line): string
 {
     return sprintf(
-        '%s|%s|%s|%s',
+        '%s|%s|%s|%s|%s',
         $line->capacity(static fn(WhatTheLineCarries $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d/%d', $c->down(), $c->up())), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unmeasured'))->said,
         $line->cap(static fn(AMonthlyCap $c): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $c->monthly())), static fn(): TheWordCarriedOut => new TheWordCarriedOut('uncapped'))->said,
         $line->spentCap(static fn(string $doing): TheWordCarriedOut => new TheWordCarriedOut($doing), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unspent'))->said,
         $line->uploadCost(static fn(string $costs): TheWordCarriedOut => new TheWordCarriedOut($costs), static fn(): TheWordCarriedOut => new TheWordCarriedOut('no upload limit'))->said,
+        $line->hours(static fn(TheHouseholdsHours $h): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s-%s', $h->starts(), $h->ends())), static fn(): TheWordCarriedOut => new TheWordCarriedOut('no hours'))->said,
     );
 }
 
@@ -54,7 +56,7 @@ it('carries where the line stands, what it means, each direction\'s sentence and
 });
 
 it('knows nothing it was not told: unmeasured, uncapped, nothing spent, no upload cost', function (): void {
-    expect(everyArmOf(aLimitedLine()))->toBe('unmeasured|uncapped|unspent|no upload limit');
+    expect(everyArmOf(aLimitedLine()))->toBe('unmeasured|uncapped|unspent|no upload limit|no hours');
 });
 
 it('carries each thing it is told, and keeps the rest', function (): void {
@@ -62,11 +64,23 @@ it('carries each thing it is told, and keeps the rest', function (): void {
         ->measuredAt(WhatTheLineCarries::measured(12, 3, HowTheLineWasMeasured::Declared, Instant::atEpochSeconds(1), WhetherItGoesThroughTheTunnel::Beside))
         ->cappedAt(AMonthlyCap::of(0, WhatACapDoes::Pause))
         ->withASpentCapDoing(Remark::said('Fetching has stopped until the 1st', 'acting'))
-        ->withUploadCosting(Remark::said('Seeding back at a quarter slows the ratio', 'ratio'));
+        ->withUploadCosting(Remark::said('Seeding back at a quarter slows the ratio', 'ratio'))
+        ->keepingHours(TheHouseholdsHours::from('07:00', '23:00', ''));
 
-    expect(everyArmOf($line))->toBe('12/3|0|Fetching has stopped until the 1st|Seeding back at a quarter slows the ratio')
+    expect(everyArmOf($line))->toBe('12/3|0|Fetching has stopped until the 1st|Seeding back at a quarter slows the ratio|07:00-23:00')
         ->and($line->stands())->toBe(WhereTheLineStands::Limited)
         ->and($line->means())->toBe('The stack takes a share');
+});
+
+it('keeps the household\'s hours through everything told after them', function (): void {
+    $line = aLimitedLine()
+        ->keepingHours(TheHouseholdsHours::from('07:00', '23:00', ''))
+        ->measuredAt(WhatTheLineCarries::measured(12, 3, HowTheLineWasMeasured::Declared, Instant::atEpochSeconds(1), WhetherItGoesThroughTheTunnel::Beside))
+        ->cappedAt(AMonthlyCap::of(0, WhatACapDoes::Pause))
+        ->withASpentCapDoing(Remark::said('Fetching has stopped until the 1st', 'acting'))
+        ->withUploadCosting(Remark::said('Seeding back at a quarter slows the ratio', 'ratio'));
+
+    expect(everyArmOf($line))->toBe('12/3|0|Fetching has stopped until the 1st|Seeding back at a quarter slows the ratio|07:00-23:00');
 });
 
 it('refuses a reading with a blank where a sentence belongs, naming which', function (string $field): void {

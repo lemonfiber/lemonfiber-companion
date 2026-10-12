@@ -63,4 +63,31 @@ enum BandwidthField: string implements NamesAWireField
 
     /** What a spent cap is doing to the figures. */
     case Acting = 'acting';
+
+    /** How one download client answered about the limits on it. */
+    case Answer = 'answer';
+
+    /** Which of its two shapes a client's answer is. */
+    case Answered = 'answered';
+
+    /** Whether a client is fetching at all, where a cap made that a question. */
+    case Pulling = 'pulling';
+
+    /** What a client reports as in force in one direction. */
+    case Accepted = 'accepted';
+
+    /** What a client is moving right now in one direction. */
+    case Moving = 'moving';
+
+    /** A temporary lift of the limits, where one is running or has just run out. */
+    case Respite = 'respite';
+
+    /** What a lift of the limits amounts to, in words. */
+    case RespiteSays = 'respite_says';
+
+    /** The hours the household is up, where any were declared. */
+    case Rhythm = 'rhythm';
+
+    /** The zone the clients read those hours in, where the stack says. */
+    case Zone = 'zone';
 }

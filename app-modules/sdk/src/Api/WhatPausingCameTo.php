@@ -83,10 +83,10 @@ final readonly class WhatPausingCameTo
     /** @param array<mixed> $data */
     private static function asked(array $data): WhatToDoWithTheDownloads
     {
-        $said = self::text($data, PausingField::Asked->value, PausingField::Asked);
+        $said = self::text($data, WireField::Asked->value, WireField::Asked);
 
         return WhatToDoWithTheDownloads::tryFrom($said)
-            ?? throw PausingIsUnreadable::word(PausingField::Asked->value, $said, ...array_map(static fn(WhatToDoWithTheDownloads $case): string => $case->value, WhatToDoWithTheDownloads::cases()));
+            ?? throw PausingIsUnreadable::word(WireField::Asked->value, $said, ...array_map(static fn(WhatToDoWithTheDownloads $case): string => $case->value, WhatToDoWithTheDownloads::cases()));
     }
 
     /**

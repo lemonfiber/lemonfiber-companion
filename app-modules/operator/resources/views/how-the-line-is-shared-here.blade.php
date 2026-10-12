@@ -1,28 +1,24 @@
-@use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Kernel\Api\ChangingTheLine')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    {{-- Where the line stands and what that means for the house, first:
-         it is the answer to *why is the internet slow*. --}}
-    <x-design::standing :said="__($this->answer()->standsSaid)" :tone="$this->answer()->tone" />
-    <x-design::body>{{ $this->answer()->means }}</x-design::body>
+    <x-operator::the-line :line="$this->answer()" />
 
-    {{-- Each direction in the stack's own sentence, which carries the figure
-         a share is a share of. --}}
-    <x-design::section>
+    <x-operator::heading>{{ __('stacks.line_change.title') }}</x-operator::heading>
+    <x-design::body>{{ __('stacks.line_change.left_blank') }}</x-design::body>
+
+    {{-- Each limit beside the limit in force, whose sentence carries the
+         figure a share is a share of. --}}
+    <x-design::card>
         <x-design::row :headline="__('stacks.line.down', ['says' => $this->answer()->downSays])" />
-        <x-design::row
-            :headline="__('stacks.line.up', ['says' => $this->answer()->upSays])"
-            :supporting="$this->answer()->uploadCost === '' ? '' : __('stacks.line.upload_cost', ['costs' => $this->answer()->uploadCost])"
-        />
-    </x-design::section>
+        <native:outlined-text-input native:model="down" label="{{ __('stacks.line_change.down') }}" supporting="{{ __('stacks.line_change.down_is') }}" />
+        <x-design::row :headline="__('stacks.line.up', ['says' => $this->answer()->upSays])" />
+        <native:outlined-text-input native:model="up" label="{{ __('stacks.line_change.up') }}" supporting="{{ __('stacks.line_change.up_is') }}" />
+    </x-design::card>
 
-    <x-design::section :label="__('stacks.line.capacity')">
+    <x-design::card>
         @if ($this->answer()->measured !== null)
-            {{-- Down and up apart, and always with how the figure came to be:
-                 a declared figure is a claim, and one measured beside the tunnel
-                 says nothing about the tunnel. --}}
             <x-design::row
                 :headline="__('stacks.line.carries', [
                     'down' => $this->answer()->measured->downFigure,
@@ -30,55 +26,125 @@
                     'up' => $this->answer()->measured->upFigure,
                     'up_unit' => __($this->answer()->measured->upUnit),
                 ])"
-                :supporting="trans_choice($this->answer()->measured->agoSaid, $this->answer()->measured->agoCount)"
+                :supporting="__($this->answer()->measured->measuredSaid)"
             />
-            <x-design::row :headline="__($this->answer()->measured->measuredSaid)" />
-            <x-design::row :headline="__($this->answer()->measured->tunnelSaid)" />
         @else
             <x-design::row :headline="__('stacks.line.unmeasured')" />
         @endif
-    </x-design::section>
-
-    <x-design::section :label="__('stacks.line.monthly_cap')">
-        @if ($this->answer()->cap !== null)
-            {{-- Nought is a cap and drawn as one; what reaching it does is on the
-                 same row, because *you have reached your cap* without it is not
-                 an answer. --}}
-            <x-design::row
-                :headline="__('stacks.line.capped_at', ['figure' => $this->answer()->cap->figure, 'unit' => __($this->answer()->cap->unit)])"
-                :supporting="__($this->answer()->cap->doesSaid)"
-            />
-
-            @if ($this->answer()->cap->standingSaid !== '')
-                <x-design::row :headline="__($this->answer()->cap->standingSaid)" />
-            @endif
+        <native:outlined-text-input native:model="line" label="{{ __('stacks.line_change.line') }}" supporting="{{ __('stacks.line_change.line_is') }}" />
+        @if ($this->answer()->hours !== null)
+            <x-design::row :headline="__('stacks.line.up_from', ['from' => $this->answer()->hours->from, 'to' => $this->answer()->hours->to])" />
         @else
-            <x-design::row :headline="__('stacks.line.uncapped')" />
+            <x-design::row :headline="__('stacks.line.no_hours')" />
+        @endif
+        <native:outlined-text-input native:model="active" label="{{ __('stacks.line_change.active') }}" supporting="{{ __('stacks.line_change.active_is') }}" />
+    </x-design::card>
+
+    {{-- What reaching the cap does is chosen with the cap, in advance. --}}
+    <x-design::card>
+        <native:outlined-text-input native:model="cap" label="{{ __('stacks.line_change.cap') }}" supporting="{{ __('stacks.line_change.cap_is') }}" />
+        <x-design::note>{{ __('stacks.line_change.exceeded_is', ['choice' => __($this->exceededChoice()->said)]) }}</x-design::note>
+        <x-design::chips>
+            @forelse ($this->exceededChoice()->offered as $choice)
+                <x-design::chip :label="__($choice->said)" :tap="$this->tapping('exceededIs', $choice->word)" :chosen="$choice->chosen" />
+            @empty
+                {{-- Nothing: every way is always offered. --}}
+            @endforelse
+        </x-design::chips>
+    </x-design::card>
+
+    <x-design::card>
+        <x-design::strong>{{ __('stacks.line_change.lift.heading') }}</x-design::strong>
+        <x-design::chips>
+            @forelse ($this->liftChoice() as $choice)
+                <x-design::chip :label="__($choice->said)" :tap="$this->tapping('liftFor', $choice->word)" :chosen="$choice->chosen" />
+            @empty
+                {{-- Nothing: every length is always offered. --}}
+            @endforelse
+        </x-design::chips>
+        <native:outlined-text-input native:model="lift" label="{{ __('stacks.line_change.lift.minutes') }}" supporting="{{ __('stacks.line_change.lift.minutes_are') }}" />
+    </x-design::card>
+
+    @if ($this->howItIsGoing()->notAskable !== '')
+        <x-design::notice>
+            <x-design::strong>{{ __($this->howItIsGoing()->notAskable) }}</x-design::strong>
+        </x-design::notice>
+    @endif
+
+    @if ($this->howItIsGoing()->went->cameBack())
+        @if ($this->howItIsGoing()->isWorking)
+            <x-design::standing :said="__('stacks.line_change.working')" tone="working" />
+        @elseif ($this->howItIsGoing()->hasEnded)
+            <x-design::notice tone="unknown">
+                <x-design::strong>{{ __('stacks.line_change.no_outcome') }}</x-design::strong>
+            </x-design::notice>
+            <x-design::action :label="__('stacks.line_change.start_again')" tap="startAgain()" />
+        @elseif ($this->howItIsGoing()->refused !== null)
+            {{-- The stack's own sentence and remedy: a share of a line nobody
+                 measured, hours with no time zone, a value it cannot read. --}}
+            <x-design::notice>
+                <x-design::strong>{{ __('stacks.line_change.refused') }}</x-design::strong>
+                <x-operator::refused-in-its-words :refused="$this->howItIsGoing()->refused" />
+            </x-design::notice>
+            <x-design::action :label="__('stacks.line_change.start_again')" tap="startAgain()" />
+        @elseif ($this->howItIsGoing()->change !== null)
+            {{-- What the run was, said before anything else: a rehearsal is
+                 never drawn as limits in force. --}}
+            <x-design::notice>
+                <x-design::strong>{{ __($this->howItIsGoing()->change->didSaid) }}</x-design::strong>
+            </x-design::notice>
+
+            <x-operator::the-line :line="$this->howItIsGoing()->change->line" />
+
+            <x-design::section :label="__('stacks.line_change.clients')">
+                @forelse ($this->howItIsGoing()->change->clients as $client)
+                    <x-design::row :headline="$client->name" :supporting="$client->pullingSaid === '' ? '' : __($client->pullingSaid)" />
+                    @if ($client->answered)
+                        @forelse ($client->directions as $held)
+                            <x-design::row
+                                :headline="__($held->said, ['verdict' => __($held->verdictSaid)])"
+                                :supporting="$held->miss ? __('stacks.line_change.missed') : ''"
+                            />
+                            @forelse ($held->rates as $rate)
+                                <x-design::note>{{ __($rate->said, ['figure' => $rate->figure, 'unit' => __($rate->unit)]) }}</x-design::note>
+                            @empty
+                                {{-- Nothing: the client gave no figure for this direction. --}}
+                            @endforelse
+                        @empty
+                            {{-- Unreachable: a client that answered answered for both directions. --}}
+                        @endforelse
+                    @else
+                        <x-design::note>{{ __('stacks.line_change.silent', ['said' => $client->said]) }}</x-design::note>
+                    @endif
+                @empty
+                    <x-design::row :headline="__('stacks.line_change.no_clients')" />
+                @endforelse
+            </x-design::section>
+
+            @if ($this->howItIsGoing()->change->lift->said !== '')
+                <x-design::row
+                    :headline="trans_choice($this->howItIsGoing()->change->lift->said, $this->howItIsGoing()->change->lift->count)"
+                    :supporting="$this->howItIsGoing()->change->lift->says"
+                />
+            @endif
+
+            @if ($this->howItIsGoing()->change->mayBeApplied)
+                <x-operator::offered-action :label="__('stacks.line_change.apply')" tap="apply()" :offer="$this->offered(ChangingTheLine::Change)" />
+            @endif
         @endif
 
-        @if ($this->answer()->spentCap !== '')
-            <x-design::row :headline="$this->answer()->spentCap" />
-        @endif
-    </x-design::section>
+        @unless ($this->howItIsGoing()->isWorking)
+            <x-operator::offered-action :label="__('stacks.line_change.rehearse')" tap="rehearse()" tone="tonal" :offer="$this->offered(ChangingTheLine::Change)" />
+        @endunless
 
-    <x-design::section :label="__('stacks.line.untouched')">
-        @forelse ($this->answer()->untouched as $one)
-            <x-design::row :headline="$one" />
-        @empty
-            <x-design::row :headline="__('stacks.line.nothing_untouched')" />
-        @endforelse
-    </x-design::section>
-
-    {{-- What to know before trusting any of the above, said by the stack. --}}
-    @forelse ($this->answer()->cautions as $caution)
-        <x-design::note>{{ $caution }}</x-design::note>
-    @empty
-        <x-design::note>{{ __('stacks.line.no_cautions') }}</x-design::note>
-    @endforelse
-
-    <x-design::note>{{ __('stacks.line.changed_at_the_machine') }}</x-design::note>
-
-    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
+        <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
+    @else
+        <x-operator::what-stood-in-the-way
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
+            :went="$this->howItIsGoing()->went"
+            :goes="$this->goes()"
+        />
+    @endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

@@ -10,15 +10,12 @@ use Modules\Sdk\Api\SaysWhereItSits;
 /**
  * What the wire calls each field of the `pausing` envelope that no other envelope this module reads carries.
  *
- * The rest — `clients`, `client`, `was`, `now`, `offer`, `caution` and `rehearsed` — are
+ * The rest — `asked`, `clients`, `client`, `was`, `now`, `offer`, `caution` and `rehearsed` — are
  * shared, and named once in {@see \Modules\Sdk\Api\WireField}.
  */
 enum PausingField: string implements NamesAWireField
 {
     use SaysWhereItSits;
-
-    /** Which of pausing and resuming was asked for. */
-    case Asked = 'asked';
 
     /** Why a client could not be reached, in its own words where it gave any. */
     case Unreached = 'unreached';

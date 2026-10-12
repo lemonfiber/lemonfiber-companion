@@ -366,7 +366,7 @@ final readonly class WhatARefusalMeant
 
         return $obstacle->kind() !== KindOfObstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
             ? $met($obstacle)
-            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
+            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem), self::firstRemedy($problem)));
     }
 
     /**

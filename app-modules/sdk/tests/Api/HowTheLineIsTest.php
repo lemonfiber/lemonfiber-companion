@@ -12,6 +12,7 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AMonthlyCap;
 use Modules\Kernel\Api\HowTheLineIsShared;
+use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
@@ -69,6 +70,8 @@ function everythingItCouldKnow(): array
         'reached' => 'warning',
         'acting' => 'Nothing is being held back yet',
         'ratio' => 'Seeding back at a quarter slows the ratio',
+        'rhythm' => ['from' => '07:00', 'to' => '23:00'],
+        'zone' => 'Europe/Amsterdam',
     ];
 }
 
@@ -76,7 +79,7 @@ function everythingItCouldKnow(): array
 function everythingTheLineSays(HowTheLineIsShared $line): string
 {
     return sprintf(
-        '%s|%s|%s|%s|[%s]|[%s]|%s|%s|%s|%s',
+        '%s|%s|%s|%s|[%s]|[%s]|%s|%s|%s|%s|%s',
         $line->stands()->value,
         $line->means(),
         $line->downSays(),
@@ -96,25 +99,34 @@ function everythingTheLineSays(HowTheLineIsShared $line): string
         )->said,
         $line->spentCap(static fn(string $doing): TheWordCarriedOut => new TheWordCarriedOut($doing), static fn(): TheWordCarriedOut => new TheWordCarriedOut('unspent'))->said,
         $line->uploadCost(static fn(string $costs): TheWordCarriedOut => new TheWordCarriedOut($costs), static fn(): TheWordCarriedOut => new TheWordCarriedOut('no upload cost'))->said,
+        $line->hours(
+            static fn(TheHouseholdsHours $h): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s-%s %s', $h->starts(), $h->ends(), $h->zone())),
+            static fn(): TheWordCarriedOut => new TheWordCarriedOut('no hours'),
+        )->said,
     );
 }
 
 it('reads a line with nothing optional as knowing nothing optional', function (): void {
     expect(everythingTheLineSays(HowTheLineIs::in(bandwidthSaying(aPlainLine()))))
-        ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|unmeasured|uncapped|unspent|no upload cost');
+        ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|unmeasured|uncapped|unspent|no upload cost|no hours');
 });
 
 it('reads the capacity, how it was measured, the tunnel, the cap and what it does', function (): void {
     expect(everythingTheLineSays(HowTheLineIs::in(bandwidthSaying([...aPlainLine(), ...everythingItCouldKnow()]))))
-        ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|12500000/2500000 observed @1790100000 through|1000000000000 throttle warning|Nothing is being held back yet|Seeding back at a quarter slows the ratio');
+        ->toBe('limited|The stack takes a share and leaves the rest|Half of 100 Mbit/s|No limit|[Measured at night]|[Plex streams]|12500000/2500000 observed @1790100000 through|1000000000000 throttle warning|Nothing is being held back yet|Seeding back at a quarter slows the ratio|07:00-23:00 Europe/Amsterdam');
 });
 
 it('reads a cap of zero as a cap, and null as none declared', function (): void {
     $zero = HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'cap' => ['monthly' => 0, 'exceeded' => 'pause']]));
     $none = HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'cap' => null, 'capacity' => null, 'reached' => null, 'acting' => null, 'ratio' => null]));
 
-    expect(everythingTheLineSays($zero))->toEndWith('|unmeasured|0 pause uncounted|unspent|no upload cost')
-        ->and(everythingTheLineSays($none))->toEndWith('|unmeasured|uncapped|unspent|no upload cost');
+    expect(everythingTheLineSays($zero))->toEndWith('|unmeasured|0 pause uncounted|unspent|no upload cost|no hours')
+        ->and(everythingTheLineSays($none))->toEndWith('|unmeasured|uncapped|unspent|no upload cost|no hours');
+});
+
+it('reads hours with no zone said as hours read in no zone it names', function (): void {
+    expect(everythingTheLineSays(HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'rhythm' => ['from' => '22:00', 'to' => '06:00'], 'zone' => null]))))
+        ->toEndWith('|22:00-06:00 ');
 });
 
 it('reads every state the line can be in', function (WhereTheLineStands $stands): void {
@@ -154,6 +166,16 @@ it('refuses words it has no case for, naming what it reads', function (array $ov
     [['capacity' => ['down' => 1, 'up' => 1, 'source' => 'guessed', 'taken' => 1, 'through_tunnel' => false]], 'capacity.source'],
     [['cap' => ['monthly' => 1, 'exceeded' => 'explode']], 'cap.exceeded'],
     [['reached' => 'nearly'], 'reached'],
+]);
+
+it('refuses hours it cannot read, naming where', function (mixed $rhythm, mixed $zone, string $where): void {
+    expect(fn(): HowTheLineIsShared => HowTheLineIs::in(bandwidthSaying([...aPlainLine(), 'rhythm' => $rhythm, 'zone' => $zone])))
+        ->toThrow(BandwidthIsUnreadable::class, sprintf('`%s`', $where));
+})->with([
+    'hours that are not an object' => ['07:00-23:00', null, 'rhythm'],
+    'no start' => [['to' => '23:00'], null, 'rhythm.from'],
+    'a blank end' => [['from' => '07:00', 'to' => ' '], null, 'rhythm.to'],
+    'a zone that is not words' => [['from' => '07:00', 'to' => '23:00'], 3, 'zone'],
 ]);
 
 it('names every word it reads when it refuses one, each quoted, so the message is the whole set', function (): void {

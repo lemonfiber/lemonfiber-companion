@@ -867,4 +867,10 @@ enum WireField: string implements NamesAWireField
 
     /** The kinds of media an upgrade covers, and the kind of thing a request is for. */
     case Media = 'media';
+
+    /** Which of pausing and resuming was asked for, and what a download client was asked to hold a direction to. */
+    case Asked = 'asked';
+
+    /** How long a disturbance's clock runs for, and how long a lift of the line's limits has left or ran out ago. */
+    case Seconds = 'seconds';
 }
