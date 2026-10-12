@@ -12,7 +12,7 @@ use Tests\Support\Tree;
  *
  * The sibling of `EveryActionTheStackOffersTest`, which asks it of the kinds a
  * stack answers with. This asks it of what a stack can be told to do: every
- * action the SDK generates from the contract, each one a request class. Three
+ * action the SDK generates from the contract, each one a request class. Four
  * lists cover them between them, and each list is held to being true, so an
  * action the contract gains arrives unclassified and fails saying which.
  */
@@ -30,6 +30,17 @@ const SENT_THROUGH_THE_SDK = [
 ];
 
 /**
+ * Actions the app deliberately does not send, each with the requirement saying why.
+ *
+ * As narrow as its sibling's: an entry needs a requirement, not a judgement.
+ *
+ * @var array<string, string>
+ */
+const NOT_SENT_BECAUSE = [
+    'quality-reapply' => 'N24-R5 — its whole effect is overwriting a quality configuration the operator edited by hand, which the app does not offer (N19-R4)',
+];
+
+/**
  * Actions nobody has offered yet.
  *
  * Moving one out is the work: building the screen that sends it, or writing the
@@ -37,7 +48,7 @@ const SENT_THROUGH_THE_SDK = [
  */
 const NOT_SENT_YET = [
     'accept', 'adopt', 'bandwidth', 'diagnose', 'forget', 'household-allow', 'plugin-prove',
-    'quality-reapply', 'search', 'space', 'switch',
+    'search', 'space', 'switch',
 ];
 
 /**
@@ -73,21 +84,21 @@ function theAdapterNames(string $class): bool
 it('has looked at every action the contract lists', function (): void {
     $actions = everyActionTheContractLists();
     $sent = array_keys(array_filter($actions, theAdapterNames(...)));
-    $unclassified = array_values(array_diff(array_keys($actions), $sent, array_keys(SENT_THROUGH_THE_SDK), NOT_SENT_YET));
+    $unclassified = array_values(array_diff(array_keys($actions), $sent, array_keys(SENT_THROUGH_THE_SDK), array_keys(NOT_SENT_BECAUSE), NOT_SENT_YET));
 
     expect($actions)->not->toBe([], 'no action was found in the SDK, so this rule read nothing')
         ->and($unclassified)->toBe([], sprintf(
-            "These actions are neither sent nor waiting:\n  %s\n\nSend each, or name it in NOT_SENT_YET (N1-R2).\n",
+            "These actions are neither sent nor waiting:\n  %s\n\nSend each, name the requirement that keeps it off the phone in NOT_SENT_BECAUSE, or name it in NOT_SENT_YET (N1-R2).\n",
             implode("\n  ", $unclassified),
         ));
 });
 
 it('names as waiting only actions the app does not send, and only ones the contract lists', function (): void {
     $actions = everyActionTheContractLists();
-    $sentAfterAll = array_values(array_filter(NOT_SENT_YET, static fn(string $action): bool => array_key_exists($action, $actions) && theAdapterNames($actions[$action])));
-    $gone = array_values(array_diff([...NOT_SENT_YET, ...array_keys(SENT_THROUGH_THE_SDK)], array_keys($actions)));
+    $sentAfterAll = array_values(array_filter([...NOT_SENT_YET, ...array_keys(NOT_SENT_BECAUSE)], static fn(string $action): bool => array_key_exists($action, $actions) && theAdapterNames($actions[$action])));
+    $gone = array_values(array_diff([...NOT_SENT_YET, ...array_keys(NOT_SENT_BECAUSE), ...array_keys(SENT_THROUGH_THE_SDK)], array_keys($actions)));
 
-    expect($sentAfterAll)->toBe([], 'these are sent now; take them out of NOT_SENT_YET (N1-R2)')
+    expect($sentAfterAll)->toBe([], 'these are sent now; take them out of the list that says they are not (N1-R2)')
         ->and($gone)->toBe([], 'the contract no longer lists these; take them out (N1-R2)');
 });
 
