@@ -47,6 +47,7 @@ return [
         'document' => 'A whole file',
         'key' => 'A key lemonfiber makes for the plugin',
         'region' => 'A part of a file',
+        'secrets' => 'A service\'s own secrets file, readable by its owner alone',
     ],
     'proofs' => 'Proofs',
     'no_proofs' => 'It states no proofs',

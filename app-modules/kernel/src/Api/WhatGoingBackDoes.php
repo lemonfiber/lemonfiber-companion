@@ -43,6 +43,12 @@ enum WhatGoingBackDoes: string
     /** A key the change revoked is made good again. */
     case Reinstate = 'reinstate';
 
+    /** Put a setting in the settings store back to what it held. */
+    case Resettle = 'resettle';
+
+    /** Put a secret in the secret store back to the value it held. */
+    case Rehold = 'rehold';
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {

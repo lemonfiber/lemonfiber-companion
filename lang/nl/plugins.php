@@ -47,6 +47,7 @@ return [
         'document' => 'Een heel bestand',
         'key' => 'Een sleutel die lemonfiber voor de plug-in maakt',
         'region' => 'Een deel van een bestand',
+        'secrets' => 'Het eigen geheimenbestand van een dienst, alleen leesbaar voor de eigenaar',
     ],
     'proofs' => 'Bewijzen',
     'no_proofs' => 'Hij noemt geen bewijzen',

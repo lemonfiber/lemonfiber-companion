@@ -13,6 +13,7 @@ enum WhatAChangePuts: string
     case Document = 'document';
     case Key = 'key';
     case Region = 'region';
+    case Secrets = 'secrets';
 
     /** What it puts, as a catalogue key. */
     public function saidOnTheScreen(): string

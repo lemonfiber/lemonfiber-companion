@@ -199,6 +199,22 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The name of the key a revoke takes away or a reinstatement would make good again. `target` names what the change was against and `does` says a key is revoked or reinstated, and both are drawn; no requirement asks this app to name a key (`N1-R17`).',
         ],
         [
+            'path' => 'UndoEnvelope.reversed[].action.recorded',
+            'because' => 'What lemonfiber recorded in a setting of its own store, which a resettle checks is still there before it puts the setting back: the stack\'s check that the work is its own, and a value that can be a credential. A setting changed since is reported in `left` with why, which is read.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.earlier',
+            'because' => 'The fingerprint of the secret a rehold puts back. A fingerprint of a secret means nothing on a screen, and this app draws nothing a secret store holds (`N6-R7`).',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.filed',
+            'because' => 'The environment file\'s setting a secret goes back to, where it was moved out of one. `target` names what the change was against and `does` says the secret is put back, and both are drawn; the file\'s setting is the instruction the stack carries out with.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.kept',
+            'because' => 'The fingerprint of what lemonfiber kept, which a rehold checks is still there: the stack\'s check that the work is its own. A secret changed since is reported in `left` with why, which is read.',
+        ],
+        [
             'path' => 'UndoEnvelope.reversed[].action.previous',
             'because' => 'The version a repin would put back, for `UndoEnvelope.reversed[].action.current`\'s reason.',
         ],
