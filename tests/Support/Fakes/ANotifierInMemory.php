@@ -9,7 +9,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
-use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 
@@ -87,8 +87,8 @@ final class ANotifierInMemory implements Notifier
         }
 
         $this->told[] = sprintf('%s %s under %s', $notification->either(
-            plain: fn(WhatTheCoreDecided $says, StackId $about): Code
-                => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
+            plain: fn(WhatTheCoreDecided $says, StackName $called): Code
+                => Code::of(sprintf('plain %s %s', $says->shown(), $called->shown())),
             guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
         )->shown(), $notification->way()->value, $notification->filedUnder()->shown());
 

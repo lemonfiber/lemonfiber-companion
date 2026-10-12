@@ -5,14 +5,18 @@ declare(strict_types=1);
 use Lemonfiber\Native\Telling;
 use Lemonfiber\Native\WhyNothingWasTold;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhyNothingIsShown;
@@ -36,6 +40,12 @@ use Tests\Support\Fakes\ANotifierInMemory;
 // asserting it would either fail on the fake or be weakened to pass, and a
 // weakened contract is how a fake drifts.
 
+/** A stack this phone remembers as `$remembered` and calls `$called`. */
+function aStackToldAbout(string $remembered, string $called): Stack
+{
+    return Stack::of(StackId::rememberedAs($remembered), StackName::of($called), Address::of('https://192.168.1.42:8443'), Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS)));
+}
+
 /**
  * Which arm answered, as a word.
  *
@@ -52,7 +62,7 @@ function whatBecameOfIt(Shown $shown): string
 
 function somethingWorthSaying(): Notification
 {
-    return Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
+    return Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('backup.finished'));
 }
 
 /**
@@ -204,6 +214,8 @@ it('the locked wording names no stack', function (): void {
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('The loft')
+        ->and($shown[0]['body'])->not->toContain('The loft')
         ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('backup.finished');
@@ -219,6 +231,8 @@ it('names no stack while the lock stands, whatever the caller handed it', functi
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('The loft')
+        ->and($shown[0]['body'])->not->toContain('The loft')
         ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('backup.finished');
@@ -232,7 +246,8 @@ it('names the stack when the device is not locked', function (): void {
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
-        ->and($shown[0]['title'])->toContain('the-loft')
+        ->and($shown[0]['title'])->toContain('The loft')
+        ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->toContain('backup.finished');
 });
 
@@ -247,7 +262,7 @@ it('puts nothing on a notification but the catalogue\'s words, the stack it is a
     overAHandset($centre)->show(somethingWorthSaying()->whileLocked());
 
     expect(array_map(static fn(array $shown): array => [$shown['title'], $shown['body']], $centre->shown()))->toBe([
-        [$words->for('notifications.plain.onset_title', ['stack' => 'the-loft']), $words->for('notifications.plain.onset_body', ['code' => 'backup.finished'])],
+        [$words->for('notifications.plain.onset_title', ['stack' => 'The loft']), $words->for('notifications.plain.onset_body', ['code' => 'backup.finished'])],
         [$words->for('notifications.guarded.onset_title'), $words->for('notifications.guarded.onset_body')],
     ]);
 });
@@ -292,18 +307,18 @@ it('files an alert under its name, so its resolution replaces its onset in the r
     $centre = ANotificationCentreOnAHandset::allowed();
     $notifier = overAHandset($centre);
     $words = Catalogue::words();
-    $about = StackId::rememberedAs('the-loft');
+    $about = aStackToldAbout('the-loft', 'The loft');
 
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, 'disk.full-3')));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, 'disk.full-3')));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, 'disk.full-4')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, WhatTheCoreDecided::toSay('disk.full-3'))));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-4'))));
 
     $shown = $centre->shown();
 
     expect($shown[0]['id'])->toBe($shown[1]['id'])
         ->and($shown[2]['id'])->not->toBe($shown[0]['id'])
         ->and([$shown[1]['title'], $shown[1]['body']])->toBe([
-            $words->for('notifications.plain.resolved_title', ['stack' => 'the-loft']),
+            $words->for('notifications.plain.resolved_title', ['stack' => 'The loft']),
             $words->for('notifications.plain.resolved_body', ['code' => 'disk.full']),
         ]);
 });
@@ -311,13 +326,42 @@ it('files an alert under its name, so its resolution replaces its onset in the r
 it('files an alert the core gave no name under its kind, and keeps the resolution\'s words while locked', function (): void {
     $centre = ANotificationCentreOnAHandset::allowed();
     $words = Catalogue::words();
-    $resolved = Notification::ofAnAlert(StackId::rememberedAs('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, ' '));
+    $resolved = Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved));
 
     overAHandset($centre)->show($resolved->whileLocked());
-    overAHandset($centre)->show(Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('disk.full')));
+    overAHandset($centre)->show(Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('disk.full')));
 
     $shown = $centre->shown();
 
     expect($shown[0]['id'])->toBe($shown[1]['id'])
         ->and([$shown[0]['title'], $shown[0]['body']])->toBe([$words->for('notifications.guarded.resolved_title'), $words->for('notifications.guarded.resolved_body')]);
+});
+
+it('files the same alert name from two stacks apart, so one stack\'s resolution never clears another\'s onset', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = overAHandset($centre);
+    $loft = aStackToldAbout('the-loft', 'The loft');
+    $shed = aStackToldAbout('the-shed', 'The shed');
+
+    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, WhatTheCoreDecided::toSay('disk.full-3'))));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset))->whileLocked());
+    $notifier->show(Notification::fromTheCore($loft, WhatTheCoreDecided::toSay('disk.full')));
+
+    $ids = array_column($centre->shown(), 'id');
+
+    expect($ids[1])->not->toBe($ids[0])
+        ->and($ids[2])->not->toBe($ids[3]);
+});
+
+it('files a notification under a key that names neither its stack nor its alert', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+
+    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
+
+    $id = $centre->shown()[0]['id'];
+
+    expect($id)->not->toContain('the-loft')
+        ->and($id)->not->toContain('The loft')
+        ->and($id)->not->toContain('disk.full');
 });

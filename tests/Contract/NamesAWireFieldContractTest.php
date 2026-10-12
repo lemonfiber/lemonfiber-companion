@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Sdk\Api\Fields\AdoptionField;
+use Modules\Sdk\Api\Fields\AlertField;
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\AskableField;
@@ -83,6 +84,7 @@ function everyFieldNamedOnTheWire(): array
     return [
         ...WireField::cases(),
         ...AdoptionField::cases(),
+        ...AlertField::cases(),
         ...AlertsField::cases(),
         ...ArchivesField::cases(),
         ...BackupField::cases(),

@@ -35,9 +35,6 @@ use Tests\Support\Tree;
  * @var array<string, string> port => why nothing takes it
  */
 const NOTHING_TAKES_IT_YET = [
-    'Notifier' => 'N2-R19 — the adapter is written and local-only, and the screen that will raise '
-        . 'a notification is not. Bound now so the decision that it is `PlatformNotifier` and never '
-        . 'a push relay is recorded where every other binding is.',
     'Reaching' => 'A7 — the kernel\'s name for a way to reach a stack, so a capability can say it '
         . 'without naming the SDK. `Modules\Sdk\Api\Clients` extends it and is what every adapter '
         . 'that opens a connection takes, because those adapters call the client\'s own methods and '
@@ -51,7 +48,7 @@ const NOTHING_TAKES_IT_YET = [
  * number that may not rise, which is the whole of what makes the list mean
  * anything.
  */
-const HOW_MANY_MAY_WAIT = 2;
+const HOW_MANY_MAY_WAIT = 1;
 
 /**
  * Every port the composition root binds, by its short name.

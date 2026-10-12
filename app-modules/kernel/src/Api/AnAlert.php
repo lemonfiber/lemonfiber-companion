@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function trim;
-
 /**
  * One alert the core raised: what kind of event it is, which way it went, and the name that is the same on its onset and its resolution.
  *
@@ -17,10 +15,16 @@ final readonly class AnAlert
 {
     private function __construct(private WhatTheCoreDecided $kind, private WhichWayItWent $way, private WhatTheCoreDecided $filedUnder) {}
 
-    /** The alert, filed under its kind where its name is blank, as it is where the core recorded it before alerts carried one. */
-    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, string $id): self
+    /** The alert, filed under the name the core gave it. */
+    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, WhatTheCoreDecided $named): self
     {
-        return new self($kind, $way, trim($id) === '' ? $kind : WhatTheCoreDecided::toSay($id));
+        return new self($kind, $way, $named);
+    }
+
+    /** The alert, filed under its kind, as it is where the core recorded it before alerts carried a name. */
+    public static function unnamed(WhatTheCoreDecided $kind, WhichWayItWent $way): self
+    {
+        return new self($kind, $way, $kind);
     }
 
     /** What kind of event it is. */

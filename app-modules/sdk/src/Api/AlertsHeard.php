@@ -19,6 +19,8 @@ use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
+use function trim;
+
 /**
  * The `alert` events one wake of a stream carried, as the alerts the stack raised.
  *
@@ -47,12 +49,11 @@ final readonly class AlertsHeard
         }
 
         $moment = Required::text($data, AlertField::Moment, AlertIsUnreadable::missing(AlertField::Moment->value));
+        $kind = WhatTheCoreDecided::toSay(Required::text($data, WireField::Kind, AlertIsUnreadable::missing(WireField::Kind->value)));
+        $way = WhichWayItWent::tryFrom($moment)
+            ?? throw AlertIsUnreadable::word(AlertField::Moment->value, $moment, ...array_map(static fn(WhichWayItWent $way): string => $way->value, WhichWayItWent::cases()));
+        $named = trim(Optional::text($data, WireField::Id, AlertIsUnreadable::missing(WireField::Id->value)));
 
-        return AnAlert::raised(
-            WhatTheCoreDecided::toSay(Required::text($data, WireField::Kind, AlertIsUnreadable::missing(WireField::Kind->value))),
-            WhichWayItWent::tryFrom($moment)
-                ?? throw AlertIsUnreadable::word(AlertField::Moment->value, $moment, ...array_map(static fn(WhichWayItWent $way): string => $way->value, WhichWayItWent::cases())),
-            Optional::text($data, WireField::Id, AlertIsUnreadable::missing(WireField::Id->value)),
-        );
+        return $named === '' ? AnAlert::unnamed($kind, $way) : AnAlert::raised($kind, $way, WhatTheCoreDecided::toSay($named));
     }
 }

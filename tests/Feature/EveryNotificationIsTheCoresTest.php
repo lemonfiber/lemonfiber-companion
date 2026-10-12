@@ -10,9 +10,9 @@ use Tests\Support\Tree;
 // `Notification` is built only from a `WhatTheCoreDecided`, and that type is
 // made from a string by one named constructor. So the one call that could turn
 // a sentence of this app's into an alert is that constructor, called anywhere
-// but where the wire is read. Nothing reads a decision off the wire yet, so no
-// call site exists at all; the day one is written, it belongs to the module
-// that reads the stack.
+// but where the wire is read. The `alert` events a stack's stream carries are
+// read in the module that reads the stack, and that is the one place it is
+// called.
 
 /** Where the stack's answers are read, and so the one place a decision of the core's may be made. */
 const WHERE_THE_WIRE_IS_READ = 'app-modules/sdk/src/';

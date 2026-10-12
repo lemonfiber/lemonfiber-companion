@@ -14,7 +14,7 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
-use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 
@@ -50,9 +50,9 @@ final readonly class PlatformNotifier implements Notifier
      * What a notification's id is prefixed with.
      *
      * The bridge keys everything by a caller-chosen id, and an id that collides
-     * replaces the notification already showing. One per alert, by the name
-     * the core gives it, means its resolution replaces its onset rather than
-     * stacking — which is what an operator wants — while two different alerts
+     * replaces the notification already showing. One per alert of one stack
+     * ({@see Notification::filedAs()}) means its resolution replaces its onset
+     * rather than stacking, while two alerts, or one name from two stacks,
      * never overwrite each other.
      */
     private const string UNDER = 'lemonfiber';
@@ -100,9 +100,9 @@ final readonly class PlatformNotifier implements Notifier
         }
 
         return $this->whileTheLockStands($notification)->either(
-            plain: fn(WhatTheCoreDecided $says, StackId $about): Told => $this->centre->show(
+            plain: fn(WhatTheCoreDecided $says, StackName $called): Told => $this->centre->show(
                 $this->idFor($notification),
-                $this->words->for(sprintf('notifications.plain.%s_title', $notification->way()->value), ['stack' => $about->stored()]),
+                $this->words->for(sprintf('notifications.plain.%s_title', $notification->way()->value), ['stack' => $called->shown()]),
                 $this->words->for(sprintf('notifications.plain.%s_body', $notification->way()->value), ['code' => $says->shown()]),
             ),
             // No stack reaches this arm, so nothing here can name one. The
@@ -174,9 +174,9 @@ final readonly class PlatformNotifier implements Notifier
         };
     }
 
-    /** One id per thing filed under, so a later notification of it replaces the one showing rather than stacking another. */
+    /** One id per alert of one stack, so a later notification of it replaces the one showing rather than stacking another. */
     private function idFor(Notification $notification): string
     {
-        return sprintf('%s.%s', self::UNDER, $notification->filedUnder()->shown());
+        return sprintf('%s.%s', self::UNDER, $notification->filedAs());
     }
 }

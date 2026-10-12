@@ -913,8 +913,8 @@ function theAlertsAWakeHeard(Hearing $hearing): array
 
 it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
     $raised = TheAlerts::of(
-        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, 'vpn.tunnel-2'),
-        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, ''),
+        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('vpn.tunnel-2')),
+        AnAlert::unnamed(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved),
     );
 
     foreach (everyWayOfListening(

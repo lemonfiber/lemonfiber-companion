@@ -56,7 +56,7 @@ final readonly class WhatItListensWith
     public function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
     {
         foreach ($heard->theAlerts() as $alert) {
-            $this->notifier->show(Notification::ofAnAlert($stack->id(), $alert));
+            $this->notifier->show(Notification::ofAnAlert($stack, $alert));
         }
 
         $standings = $this->standings;

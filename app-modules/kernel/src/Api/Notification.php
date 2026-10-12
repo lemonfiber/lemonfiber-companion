@@ -8,6 +8,9 @@ use function array_any;
 
 use Closure;
 
+use function hash;
+use function sprintf;
+
 /**
  * Something the core decided an operator should be told, about one stack.
  *
@@ -50,6 +53,7 @@ final readonly class Notification
 {
     private function __construct(
         private StackId $about,
+        private StackName $called,
         private WhatTheCoreDecided $says,
         private bool $guarded,
         private WhichWayItWent $way,
@@ -59,13 +63,13 @@ final readonly class Notification
     /**
      * A notification the core decided on, for one stack.
      *
-     * The only constructor, and it takes no text. An adapter turning the core's
-     * decision into one of these has that decision and a stack and nothing else
-     * to hand over, which is that rule expressed as a signature.
+     * It takes no text. An adapter turning the core's decision into one of
+     * these has that decision and a stack and nothing else to hand over, which
+     * is that rule expressed as a signature.
      */
-    public static function fromTheCore(StackId $about, WhatTheCoreDecided $says): self
+    public static function fromTheCore(Stack $about, WhatTheCoreDecided $says): self
     {
-        return new self($about, $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: $says);
+        return new self($about->id(), $about->name(), $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: $says);
     }
 
     /**
@@ -74,9 +78,9 @@ final readonly class Notification
      * Its kind is what it says, and its name is what it is filed under, so the
      * resolution of a condition replaces the notification of its onset.
      */
-    public static function ofAnAlert(StackId $about, AnAlert $alert): self
+    public static function ofAnAlert(Stack $about, AnAlert $alert): self
     {
-        return new self($about, $alert->kind(), guarded: false, way: $alert->way(), filedUnder: $alert->filedUnder());
+        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, way: $alert->way(), filedUnder: $alert->filedUnder());
     }
 
     /**
@@ -105,7 +109,7 @@ final readonly class Notification
      */
     public function whileLocked(): self
     {
-        return new self($this->about, $this->says, guarded: true, way: $this->way, filedUnder: $this->filedUnder);
+        return new self($this->about, $this->called, $this->says, guarded: true, way: $this->way, filedUnder: $this->filedUnder);
     }
 
     /** Which way the condition it is about went: an onset, or its resolution. */
@@ -114,17 +118,30 @@ final readonly class Notification
         return $this->way;
     }
 
-    /** What it is filed under on the device, so a later one under the same replaces it rather than stacking: the alert's name, or the kind. */
+    /** What it is filed under among its stack's notifications: the alert's name, or the kind. */
     public function filedUnder(): WhatTheCoreDecided
     {
         return $this->filedUnder;
     }
 
     /**
+     * The key it is filed as on the device: its stack and what it is filed under, digested together.
+     *
+     * A later notification with the same key replaces this one, so only the
+     * same alert from the same stack does: alert names are each stack's own,
+     * and two stacks raising the same name never touch each other's. Digested
+     * so the platform's store holds no stack and no alert in the clear.
+     */
+    public function filedAs(): string
+    {
+        return hash('sha256', sprintf('%s|%s', $this->about->stored(), $this->filedUnder->shown()));
+    }
+
+    /**
      * What this notification may say, decided by whether the device is locked.
      *
      * The two arms take different arguments, and that asymmetry is the rule:
-     * `$plain` is given the stack it is about, `$guarded` is given only the
+     * `$plain` is given the name of the stack it is about, `$guarded` only the
      * code. A lock-screen renderer therefore has no stack to name, no service
      * to name and no reading to quote — not because it was told not to, but
      * because none of it arrived.
@@ -132,7 +149,7 @@ final readonly class Notification
      * @template TPlain of object
      * @template TGuarded of object
      *
-     * @param  Closure(WhatTheCoreDecided, StackId): TPlain  $plain
+     * @param  Closure(WhatTheCoreDecided, StackName): TPlain  $plain
      * @param  Closure(WhatTheCoreDecided): TGuarded  $guarded
      * @return TPlain|TGuarded
      */
@@ -140,6 +157,6 @@ final readonly class Notification
     {
         return $this->guarded
             ? $guarded($this->says)
-            : $plain($this->says, $this->about);
+            : $plain($this->says, $this->called);
     }
 }
