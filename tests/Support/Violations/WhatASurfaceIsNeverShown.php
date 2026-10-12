@@ -275,8 +275,8 @@ final readonly class WhatASurfaceIsNeverShown
             Fixture::edit(
                 'L7',
                 'app-modules/operator/resources/views/your-stacks.blade.php',
-                "{{ __('connection.pair') }}",
-                "{{ __('connection.pair_up') }}",
+                ":label=\"__('connection.pair')\"",
+                ":label=\"__('connection.pair_up')\"",
                 'every key the application names is in the catalogue',
                 'connection.pair_up',
             ),

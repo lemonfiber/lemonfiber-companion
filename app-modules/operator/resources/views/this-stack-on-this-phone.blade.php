@@ -8,7 +8,7 @@
          what is current when it is switched on. --}}
     <x-design::section :label="__('news.kinds_heading')">
         @forelse ($this->kindsOfNews() as $kind)
-            <x-design::toggle :label="__($kind->said)" :on="$kind->isMarked" tap="markAsNew('{{ $kind->kind }}')" />
+            <x-design::toggle :label="__($kind->said)" :on="$kind->isMarked" :tap="$this->tapping('markAsNew', $kind->kind)" />
         @empty
             {{-- Unreachable while the kinds are three: the list is every kind there is. --}}
         @endforelse
@@ -23,8 +23,8 @@
          stack and that the stack itself keeps running. --}}
     @if ($this->confirmingTheRemoval)
         <x-design::body>{{ __('settings.remove_confirm', ['name' => $this->stack()->name()->shown()]) }}</x-design::body>
-        <x-design::action label="{{ __('settings.remove') }}" tap="removeTheStack()" />
-        <x-design::action label="{{ __('settings.keep_it') }}" tap="keepTheStack()" tone="tonal" />
+        <x-design::action :label="__('settings.remove')" tap="removeTheStack()" />
+        <x-design::action :label="__('settings.keep_it')" tap="keepTheStack()" tone="tonal" />
     @endif
 
     @if ($this->removalRefused)

@@ -24,9 +24,9 @@
             {{-- The longer gloss is there for whoever asks, and does not lead. --}}
             @if ($word->isOpen)
                 <x-design::body>{{ $word->deep }}</x-design::body>
-                <x-design::link label="{{ __('stacks.words.less', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
+                <x-design::link :label="__('stacks.words.less', ['word' => $word->word])" :tap="$this->tapping('toggle', $place)" />
             @elseif ($word->deep !== '')
-                <x-design::link label="{{ __('stacks.words.more', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
+                <x-design::link :label="__('stacks.words.more', ['word' => $word->word])" :tap="$this->tapping('toggle', $place)" />
             @endif
         </x-design::card>
     @empty
@@ -47,10 +47,10 @@
         <x-design::body>{{ __($this->answer()->askingMet) }}</x-design::body>
     @endif
     @if ($this->answer()->mayAsk !== '')
-        <x-design::action label="{{ __('stacks.words.ask', ['word' => $this->answer()->mayAsk]) }}" tap="askTheStack()" tone="tonal" />
+        <x-design::action :label="__('stacks.words.ask', ['word' => $this->answer()->mayAsk])" tap="askTheStack()" tone="tonal" />
     @endif
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

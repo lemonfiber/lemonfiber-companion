@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use function array_any;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
@@ -84,6 +85,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class WhatKeepsRunningHere extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use LooksAgainWhileOpen;
     use OffersTheAppsSettings;

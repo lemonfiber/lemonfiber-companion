@@ -144,7 +144,7 @@
         @if ($this->answer()->record->suggestions !== [])
             <x-design::heading>{{ __('health.walkthrough.suggested') }}</x-design::heading>
             @forelse ($this->answer()->record->suggestions as $suggestion)
-                <x-operator::offered-action label="{{ __('health.walkthrough.walk_this', ['item' => $suggestion]) }}" tap="walkSuggested('{{ $loop->index }}')" :offer="$this->offered(WhatToWalk::called($suggestion))" drawn="link" />
+                <x-operator::offered-action :label="__('health.walkthrough.walk_this', ['item' => $suggestion])" :tap="$this->tapping('walkSuggested', $loop->index)" :offer="$this->offered(WhatToWalk::called($suggestion))" drawn="link" />
             @empty
                 <x-design::note>{{ __('health.walkthrough.nothing_suggested') }}</x-design::note>
             @endforelse
@@ -174,11 +174,11 @@
             />
             <x-design::note>{{ __('health.walkthrough.blank_picks') }}</x-design::note>
         </x-design::card>
-        <x-operator::offered-action label="{{ __('health.walkthrough.walk') }}" tap="walk()" :offer="$this->offered(WhatToWalk::called($this->looking))" />
+        <x-operator::offered-action :label="__('health.walkthrough.walk')" tap="walk()" :offer="$this->offered(WhatToWalk::called($this->looking))" />
     @endunless
 
     @if ($this->answer()->wasStarted)
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @endif
 </x-operator::content>
 @else

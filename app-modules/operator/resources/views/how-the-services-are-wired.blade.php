@@ -52,10 +52,10 @@
             @endif
         </x-design::card>
         @if ($this->choice->reading !== null)
-            <x-operator::offered-action label="{{ __('stacks.wiring.fills.agree') }}" tap="agree()" :offer="$this->offered(WhatToDoAboutWiring::Fill)" />
-            <x-design::action label="{{ __('stacks.wiring.fills.never_mind') }}" tap="letGo()" tone="tonal" />
+            <x-operator::offered-action :label="__('stacks.wiring.fills.agree')" tap="agree()" :offer="$this->offered(WhatToDoAboutWiring::Fill)" />
+            <x-design::action :label="__('stacks.wiring.fills.never_mind')" tap="letGo()" tone="tonal" />
         @else
-            <x-design::action label="{{ __('stacks.wiring.fills.close') }}" tap="letGo()" tone="tonal" />
+            <x-design::action :label="__('stacks.wiring.fills.close')" tap="letGo()" tone="tonal" />
         @endif
     @endif
     @if ($this->whatAnswersWhat() === null)
@@ -184,12 +184,12 @@
                  by hand, so it is offered as it is: the screen's one way
                  forward. --}}
             <x-design::note>{{ __('stacks.wiring.what_a_run_does') }}</x-design::note>
-            <x-operator::offered-action label="{{ __('stacks.wiring.wire') }}" tap="wire()" :offer="$this->offered(WhatToDoAboutWiring::Wire)" />
+            <x-operator::offered-action :label="__('stacks.wiring.wire')" tap="wire()" :offer="$this->offered(WhatToDoAboutWiring::Wire)" />
         @endif
 
         {{-- Asks for the services again, and after a run still being followed;
              what the stack said about a run stays. --}}
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @else
         {{-- Starting a run, or asking after one, met something in the way. --}}
         <x-operator::what-stood-in-the-way

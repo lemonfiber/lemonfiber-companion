@@ -11,8 +11,8 @@
     <x-design::title>{{ __($this->asking->doing()->askedOnTheScreen(), ['name' => $this->asking->named()]) }}</x-design::title>
     <x-design::body>{{ __($this->asking->doing()->meansOnTheScreen()) }}</x-design::body>
 
-    <x-operator::offered-action label="{{ __('health.go_ahead') }}" tap="agree()" :offer="$this->offered($this->asking->doing())" />
-    <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
+    <x-operator::offered-action :label="__('health.go_ahead')" tap="agree()" :offer="$this->offered($this->asking->doing())" />
+    <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
 @else
     <x-design::title>{{ __('stacks.what_keeps_running') }}</x-design::title>
 
@@ -120,14 +120,14 @@
                      with no manager draws neither: the stack has said it cannot
                      do this there. --}}
                 <x-operator::offered-action
-                    label="{{ __('stacks.handing_over.install', ['name' => $command->name]) }}"
-                    tap="wouldInstall('{{ $command->name }}')"
+                    :label="__('stacks.handing_over.install', ['name' => $command->name])"
+                    :tap="$this->tapping('wouldInstall', $command->name)"
                     :offer="$this->offered(HandingOver::Install)"
                     tone="tonal"
                 />
                 <x-operator::offered-action
-                    label="{{ __('stacks.handing_over.remove', ['name' => $command->name]) }}"
-                    tap="wouldRemove('{{ $command->name }}')"
+                    :label="__('stacks.handing_over.remove', ['name' => $command->name])"
+                    :tap="$this->tapping('wouldRemove', $command->name)"
                     :offer="$this->offered(HandingOver::Remove)"
                     tone="tonal"
                 />
@@ -147,12 +147,12 @@
          left and returned to. On both arms rather than the obstacle one, for
          the stuck screen's reason: somebody who has just started something at
          the machine is looking at a screen they want to ask again. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 
     {{-- A guard held by a screen of this app, apart from everything above:
          it outlives nothing, and it is never one of the hosted rows. --}}
     <x-design::note>{{ __('stacks.guard.apart') }}</x-design::note>
-    <x-design::action label="{{ __('stacks.guard.road_in') }}" :goes="$this->goes()->to(AStacksScreen::Guard)" tone="tonal" />
+    <x-design::action :label="__('stacks.guard.road_in')" :goes="$this->goes()->to(AStacksScreen::Guard)" tone="tonal" />
 @endif
 </x-operator::content>
 @else

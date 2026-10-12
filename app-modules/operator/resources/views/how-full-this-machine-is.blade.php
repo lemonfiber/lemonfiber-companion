@@ -86,8 +86,8 @@
             @endif
 
             <x-design::action
-                label="{{ __('stacks.room.stop_seeding') }}"
-                answers-to="{{ __('stacks.room.stop_seeding_that', ['download' => $download->name]) }}"
+                :label="__('stacks.room.stop_seeding')"
+                :answers-to="__('stacks.room.stop_seeding_that', ['download' => $download->name])"
                 :goes="$this->goes()->lettingGo($download->name)"
                 tone="tonal"
             />
@@ -98,7 +98,7 @@
 
     <x-design::note>{{ __('stacks.room.at_the_machine') }}</x-design::note>
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

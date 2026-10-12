@@ -5,4 +5,4 @@
     <x-design::strong>{{ __('household.preview.marked') }}</x-design::strong>
     <x-design::body>{{ __('household.preview.about') }}</x-design::body>
 </x-design::notice>
-<x-design::action label="{{ __('household.preview.back') }}" tap="backToTheSwitchboard()" tone="tonal" />
+<x-design::action :label="__('household.preview.back')" tap="backToTheSwitchboard()" tone="tonal" />

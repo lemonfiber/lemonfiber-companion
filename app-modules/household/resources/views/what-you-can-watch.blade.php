@@ -20,7 +20,7 @@
     @if (! $this->theirOwnWereStopped())
         {{-- Offered once: where their requests could not be asked for either,
              the Ask again below them asks for both. --}}
-        <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('household.ask_again')" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
     @endif
 @endif
 
@@ -35,7 +35,7 @@
     <x-design::notice tone="quiet">
         <x-household::what-stood-in-the-way :met="$this->theirOwn()->met" :remedy="$this->theirOwn()->remedy" :filling="$this->theirOwn()->filling()" :in-the-stacks-words="$this->theirOwn()->isInTheStacksWords()" />
     </x-design::notice>
-    <x-design::action label="{{ __('household.ask_again') }}" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('household.ask_again')" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
 @endif
 
 @if ($this->answer()->cameBack())
@@ -44,7 +44,7 @@
          kind it holds. A poster carries its title, its kind and its year, and
          says all three to a screen reader at once. --}}
     @if ($this->answer()->hasAHero())
-        <x-household::hero :poster="$this->answer()->hero" tap="play('{{ $this->answer()->hero->plays }}')" />
+        <x-household::hero :poster="$this->answer()->hero" :tap="$this->tapping('play', $this->answer()->hero->plays)" />
         @if ($this->playingSaid !== '')
             <x-design::note>{{ __($this->playingSaid) }}</x-design::note>
         @endif
@@ -61,7 +61,7 @@
         </x-design::section>
     @endforelse
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->isOutOfReach)
     {{-- Not an empty shelf, and drawn so it can never be mistaken for one. The
          library exists and could not be reached, which is the opposite thing
@@ -72,7 +72,7 @@
         <x-design::body>{{ __('household.shelf_is_out_of_reach_action') }}</x-design::body>
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->isSignedIn)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
@@ -81,9 +81,9 @@
         <x-household::what-stood-in-the-way :met="$this->answer()->met" :remedy="$this->answer()->remedy" :filling="$this->answer()->filling()" :in-the-stacks-words="$this->answer()->isInTheStacksWords()" />
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
     @if ($this->answer()->isPutRightInTheAppsSettings())
-        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
         @endif
@@ -92,7 +92,7 @@
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
     <x-design::body>{{ __('household.signed_out') }}</x-design::body>
-    <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
+    <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
 @endif
 </x-operator::content>
 

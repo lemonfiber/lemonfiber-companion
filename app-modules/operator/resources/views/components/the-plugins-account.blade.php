@@ -84,7 +84,7 @@
                 {{-- Given no device beyond every plugin's entry. --}}
             @endforelse
             @if ($shape->approval !== null && $install->agreeable)
-                <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->approved" tap="approve({{ $shape->approval }})" />
+                <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->approved" :tap="$tapping('approve', $shape->approval)" />
             @endif
         </x-operator::entry>
     @empty
@@ -117,7 +117,7 @@
                     <x-operator::note>{{ __('plugins.release', ['from' => $pair->from, 'why' => $pair->release]) }}</x-operator::note>
                 @endif
                 @if ($pair->approval !== null && $install->agreeable)
-                    <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->approved" tap="approve({{ $pair->approval }})" />
+                    <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->approved" :tap="$tapping('approve', $pair->approval)" />
                 @elseif ($pair->approval === null)
                     <x-operator::note>{{ __('plugins.stays_here') }}</x-operator::note>
                 @endif

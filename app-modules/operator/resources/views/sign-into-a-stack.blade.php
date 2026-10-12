@@ -8,7 +8,7 @@
         <x-design::body>{{ __($this->explained()) }}</x-design::body>
     @endif
     @if ($this->went()->isPutRightInTheAppsSettings())
-        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
         @endif
@@ -18,21 +18,21 @@
         {{-- Straight to what they came for, rather than telling them where to
              find it. An app that says "you can reach it from the main screen"
              is an app asking somebody to navigate on its behalf. --}}
-        <x-design::action label="{{ __($this->given->onwards()) }}" :goes="$this->onwardsTo()" />
+        <x-design::action :label="__($this->given->onwards())" :goes="$this->onwardsTo()" />
     @endif
 
     @if ($this->mayStartOver())
         {{-- The other half of a `Guided` standing. The remedy was instructions,
              and somebody who has gone and followed them comes back to a screen
              still holding what it was told before they did. --}}
-        <x-design::action label="{{ __('connection.start_over') }}" tap="startOver()" />
+        <x-design::action :label="__('connection.start_over')" tap="startOver()" />
     @endif
 
     @if ($this->mayPairAgain())
         {{-- A new code from the machine replaces the certificate pinned for
              this stack; the password field stays away, because whatever is
              answering is not the machine that was paired. --}}
-        <x-operator::action label="{{ __('connection.pair_again') }}" :goes="$this->pairAgainAt()" />
+        <x-operator::action :label="__('connection.pair_again')" :goes="$this->pairAgainAt()" />
     @endif
 
     @if ($this->mayTry())
@@ -56,13 +56,13 @@
                 secure
             />
 
-            <x-design::action label="{{ __($this->offerLabel()) }}" :disabled="! $this->mayOffer()" tap="offer()" />
+            <x-design::action :label="__($this->offerLabel())" :disabled="! $this->mayOffer()" tap="offer()" />
         </x-design::card>
 
         @if ($this->runsTheHouse)
-            <x-design::link label="{{ __('household.joining.invited') }}" tap="iWasInvited()" />
+            <x-design::link :label="__('household.joining.invited')" tap="iWasInvited()" />
         @else
-            <x-design::link label="{{ __('household.joining.runs_it') }}" tap="iRunTheHouse()" />
+            <x-design::link :label="__('household.joining.runs_it')" tap="iRunTheHouse()" />
         @endif
     @endif
 </x-operator::content>

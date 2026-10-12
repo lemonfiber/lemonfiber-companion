@@ -53,14 +53,14 @@
     @endforelse
 
     @if ($this->answer()->mayBeAgreedTo)
-        <x-operator::offered-action label="{{ __('stacks.reset.put_them_back') }}" tap="agree()" :offer="$this->offered(WhatToChange::BackToItsOwn)" />
+        <x-operator::offered-action :label="__('stacks.reset.put_them_back')" tap="agree()" :offer="$this->offered(WhatToChange::BackToItsOwn)" />
     @endif
 @endif
 
 @if ($this->wasAgreedTo())
-    <x-operator::action label="{{ __('stacks.reset.see_the_settings') }}" :goes="$this->goes()->to(AStacksScreen::Settings)" />
+    <x-operator::action :label="__('stacks.reset.see_the_settings')" :goes="$this->goes()->to(AStacksScreen::Settings)" />
 @endif
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 </x-operator::content>
 @else
     {{-- The stack could not be asked, so there is nothing to agree to and

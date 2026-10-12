@@ -53,7 +53,7 @@
         </x-design::card>
 
         <x-operator::offered-action
-            label="{{ __('household.turn_it_down') }}"
+            :label="__('household.turn_it_down')"
             :disabled="! $this->mayDecline() || $this->answer()->waitsForTheStack"
             tap="decline()"
             :offer="$this->offered(WhatWasDecided::Decline)"
@@ -61,7 +61,7 @@
         @if ($this->answer()->waitsForTheStack)
             <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
         @endif
-        <x-design::action label="{{ __('household.never_mind') }}" tap="neverMind()" tone="tonal" />
+        <x-design::action :label="__('household.never_mind')" tap="neverMind()" tone="tonal" />
     @else
     @forelse ($this->answer()->requests as $request)
         <x-design::card>
@@ -97,16 +97,16 @@
                      Turning one down is tonal because it opens a question
                      rather than settling one. --}}
                 <x-operator::offered-action
-                    label="{{ __('household.approve') }}"
-                    answers-to="{{ __('household.approve_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)]) }}"
-                    tap="approve('{{ $request->number }}')"
+                    :label="__('household.approve')"
+                    :answers-to="__('household.approve_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)])"
+                    :tap="$this->tapping('approve', $request->number)"
                     :offer="$this->offered(WhatWasDecided::Approve)"
                     :disabled="$this->answer()->waitsForTheStack"
                 />
                 <x-operator::offered-action
-                    label="{{ __('household.turn_down') }}"
-                    answers-to="{{ __('household.turn_down_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)]) }}"
-                    tap="wouldDecline('{{ $request->number }}')"
+                    :label="__('household.turn_down')"
+                    :answers-to="__('household.turn_down_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)])"
+                    :tap="$this->tapping('wouldDecline', $request->number)"
                     :offer="$this->offered(WhatWasDecided::Decline)"
                     tone="tonal"
                     :disabled="$this->answer()->waitsForTheStack"
@@ -129,7 +129,7 @@
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

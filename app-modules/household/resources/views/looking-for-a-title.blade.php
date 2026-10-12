@@ -11,13 +11,13 @@
         autocorrect="off"
         @submit="search()"
     />
-    <x-design::action label="{{ __('household.search.go') }}" tap="search()" :disabled="! $this->maySearch()" />
+    <x-design::action :label="__('household.search.go')" tap="search()" :disabled="! $this->maySearch()" />
 </native:column>
 
 @if (! $this->answer()->isSignedIn)
     <native:column class="w-full gap-2 px-6">
         <x-design::body>{{ __('household.signed_out') }}</x-design::body>
-        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
+        <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
     </native:column>
 @elseif (! $this->answer()->searched)
     {{-- Nothing asked yet, so nothing is said about the house: only what this
@@ -41,9 +41,9 @@
             <x-design::notice tone="unknown">
                 <x-household::what-stood-in-the-way :met="$this->answer()->stopped->met" :remedy="$this->answer()->stopped->remedy" :filling="$this->answer()->stopped->filling()" :in-the-stacks-words="$this->answer()->stopped->isInTheStacksWords()" />
             </x-design::notice>
-            <x-design::action label="{{ __('household.search.again') }}" tap="search()" tone="tonal" />
+            <x-design::action :label="__('household.search.again')" tap="search()" tone="tonal" />
             @if ($this->answer()->stopped->isPutRightInTheAppsSettings())
-                <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+                <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
                 @if ($this->theSettingsWouldNotOpen)
                     <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
                 @endif

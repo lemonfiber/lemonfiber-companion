@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -45,6 +46,7 @@ use function trim;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class TheKeysAppsHold extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

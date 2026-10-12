@@ -10,7 +10,7 @@
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('stacks.put_back.names_no_copy') }}</x-design::strong>
     </x-design::notice>
-    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
+    <x-design::action :label="__('stacks.copy.see_the_copies')" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words, and not a fault: nothing is listed,
          so nothing can be agreed to, and asking the same again is answered
@@ -18,7 +18,7 @@
     <x-design::heading>{{ __('stacks.put_back.would_not_list') }}</x-design::heading>
     <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
     <x-design::body>{{ __('stacks.put_back.same_answer') }}</x-design::body>
-    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
+    <x-design::action :label="__('stacks.copy.see_the_copies')" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
@@ -44,7 +44,7 @@
         <x-design::heading>{{ __('stacks.put_back.refused') }}</x-design::heading>
         <x-operator::refused-in-its-words :refused="$this->done()->refused" />
         <x-design::body>{{ __('stacks.put_back.same_answer') }}</x-design::body>
-        <x-design::action label="{{ __('stacks.put_back.look_again') }}" tap="lookAgain()" />
+        <x-design::action :label="__('stacks.put_back.look_again')" tap="lookAgain()" />
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: it may well have been put back, and the machine's
              health is where to look. --}}
@@ -71,11 +71,11 @@
             @endif
         </x-design::card>
 
-        <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
+        <x-design::action :label="__('stacks.copy.see_the_copies')" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
     @endif
 
     @if ($this->done()->refused === null)
-        <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+        <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @endif
 @else
     {{-- A rehearsal, and said to be one before anything else: nothing below
@@ -120,8 +120,8 @@
 
     <x-design::note>{{ __('stacks.put_back.only_while_stopped') }}</x-design::note>
 
-    <x-operator::offered-action label="{{ __('stacks.put_back.put_it_back') }}" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::PutBack)" />
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-operator::offered-action :label="__('stacks.put_back.put_it_back')" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::PutBack)" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

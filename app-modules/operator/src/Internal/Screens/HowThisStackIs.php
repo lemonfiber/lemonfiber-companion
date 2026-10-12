@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
@@ -89,6 +90,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
 final class HowThisStackIs extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use HearsHowTheStackIs;

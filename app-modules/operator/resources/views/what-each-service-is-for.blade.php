@@ -54,7 +54,7 @@
         <x-operator::note>{{ __('stacks.catalogue.nothing_dropped') }}</x-operator::note>
     @endforelse
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

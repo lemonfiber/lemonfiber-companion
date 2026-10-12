@@ -9,9 +9,9 @@
          screen that opens at its end is not; and every line back, once they
          were narrowed. --}}
     @if ($this->answer()->hasAnErrorFurtherDown)
-        <x-operator::quiet-action label="{{ __('health.show_from_the_first_error') }}" tap="showFromTheFirstError()" />
+        <x-operator::quiet-action :label="__('health.show_from_the_first_error')" tap="showFromTheFirstError()" />
     @elseif ($this->answer()->startsAtTheFirstError)
-        <x-operator::quiet-action label="{{ __('health.show_every_line') }}" tap="showEveryLine()" />
+        <x-operator::quiet-action :label="__('health.show_every_line')" tap="showEveryLine()" />
     @endif
 
     {{-- The code the road here carried, from a finding or from how the
@@ -61,8 +61,8 @@
                 {{-- A run of lines holding no letters, folded into one row
                      that opens to show them. --}}
                 <x-operator::quiet-action
-                    label="{{ trans_choice('health.decorative_lines', $line->folded) }}"
-                    tap="unfold({{ $line->fold }})"
+                    :label="trans_choice('health.decorative_lines', $line->folded)"
+                    :tap="$this->tapping('unfold', $line->fold)"
                 />
             @else
                 <native:column class="w-full gap-1">
@@ -112,7 +112,7 @@
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

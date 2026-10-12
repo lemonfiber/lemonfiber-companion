@@ -45,8 +45,8 @@
              that says what goes with it before anything is agreed to; nothing
              is put back from here. --}}
         <x-design::action
-            label="{{ __('stacks.record.put_back') }}"
-            answers-to="{{ __('stacks.record.put_back_that', ['did' => $moment->leadsWith, 'when' => trans_choice($moment->whenSaid, $moment->whenCount)]) }}"
+            :label="__('stacks.record.put_back')"
+            :answers-to="__('stacks.record.put_back_that', ['did' => $moment->leadsWith, 'when' => trans_choice($moment->whenSaid, $moment->whenCount)])"
             :goes="$this->goes()->puttingARunBack($moment->stamp)"
         />
     @empty
@@ -66,7 +66,7 @@
 
     {{-- On the answered arm too: somebody who has just changed something at
          the machine is looking at a screen they want to ask again. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

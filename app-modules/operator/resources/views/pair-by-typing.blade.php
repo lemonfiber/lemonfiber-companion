@@ -8,7 +8,7 @@
         {{-- Pairing is not signing in: the machine has been introduced and
              this device holds no session for it. So the way onwards is the
              password, not the report. --}}
-        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->onwardsTo()" />
+        <x-design::action :label="__('connection.sign_in')" :goes="$this->onwardsTo()" />
     @endif
 
     @unless ($this->went()->isPaired())
@@ -37,7 +37,7 @@
                 <x-design::verbatim>{{ $this->toCompare() }}</x-design::verbatim>
             @endif
 
-            <x-design::action label="{{ __('connection.it_matches') }}" :disabled="! $this->mayPair()" tap="confirm()" />
+            <x-design::action :label="__('connection.it_matches')" :disabled="! $this->mayPair()" tap="confirm()" />
         </x-design::card>
     @endunless
 
@@ -47,5 +47,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <x-design::link label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
+    <x-design::link :label="__('connection.back_to_your_stacks')" :goes="$this->theListIsAt()" />
 </x-operator::content>

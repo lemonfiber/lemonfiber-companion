@@ -19,7 +19,7 @@
         <x-design::note>{{ __('stacks.invitation.unrated_is', ['choice' => __($this->unratedChoice()->said)]) }}</x-design::note>
         <x-design::chips>
             @forelse ($this->unratedChoice()->offered as $choice)
-                <x-design::chip label="{{ __($choice->said) }}" tap="unratedIs('{{ $choice->word }}')" :chosen="$choice->chosen" />
+                <x-design::chip :label="__($choice->said)" :tap="$this->tapping('unratedIs', $choice->word)" :chosen="$choice->chosen" />
             @empty
                 {{-- Nothing: every case of the choice is always offered. --}}
             @endforelse
@@ -44,7 +44,7 @@
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.invitation.no_outcome', ['name' => $this->howItIsGoing()->askedFor]) }}</x-design::strong>
             </x-design::notice>
-            <x-design::action label="{{ __('stacks.invitation.start_again') }}" tap="startAgain()" />
+            <x-design::action :label="__('stacks.invitation.start_again')" tap="startAgain()" />
         @elseif ($this->howItIsGoing()->refusal !== '')
             {{-- The stack's answer, with the name it was about, drawn as the
                  reason it is rather than as something to try again. --}}
@@ -52,7 +52,7 @@
                 <x-design::strong>{{ __('stacks.invitation.refused', ['name' => $this->howItIsGoing()->askedFor]) }}</x-design::strong>
                 <x-design::body>{{ $this->howItIsGoing()->refusal }}</x-design::body>
             </x-design::notice>
-            <x-design::action label="{{ __('stacks.invitation.start_again') }}" tap="startAgain()" />
+            <x-design::action :label="__('stacks.invitation.start_again')" tap="startAgain()" />
         @elseif ($this->howItIsGoing()->invitation !== null)
             @if ($this->howItIsGoing()->invitation->rehearsed)
                 {{-- A rehearsal, said to be one before anything else, and never
@@ -98,7 +98,7 @@
             @endif
 
             @if ($this->howItIsGoing()->invitation->mayBeSent)
-                <x-operator::offered-action label="{{ __('stacks.invitation.send', ['name' => $this->howItIsGoing()->invitation->toHand->name]) }}" tap="send()" :offer="$this->offered(AskingThemIn::Invite)" />
+                <x-operator::offered-action :label="__('stacks.invitation.send', ['name' => $this->howItIsGoing()->invitation->toHand->name])" tap="send()" :offer="$this->offered(AskingThemIn::Invite)" />
             @endif
 
             @if ($this->howItIsGoing()->invitation->toHand->unjoinable !== '')
@@ -118,7 +118,7 @@
                     <x-design::card>
                         <x-design::strong>{{ __('stacks.invitation.to_join') }}</x-design::strong>
                         <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->joins }}</x-design::verbatim>
-                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->joinCode" missing="{{ __('stacks.invitation.no_code') }}" />
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->joinCode" :missing="__('stacks.invitation.no_code')" />
                         @if ($this->howItIsGoing()->invitation->toHand->joinCode !== [])
                             <x-design::note>{{ __('stacks.invitation.join_code') }}</x-design::note>
                         @endif
@@ -129,7 +129,7 @@
                     @if ($this->howItIsGoing()->invitation->toHand->caution !== '')
                         <x-design::note>{{ $this->howItIsGoing()->invitation->toHand->caution }}</x-design::note>
                     @endif
-                    <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->code" missing="{{ __('stacks.invitation.no_code') }}" />
+                    <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->code" :missing="__('stacks.invitation.no_code')" />
                     @if ($this->howItIsGoing()->invitation->toHand->code !== [])
                         <x-design::note>{{ __('stacks.invitation.code') }}</x-design::note>
                     @endif
@@ -138,13 +138,13 @@
                     <x-design::card>
                         <x-design::strong>{{ __('stacks.invitation.to_turn_down') }}</x-design::strong>
                         <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->declines }}</x-design::verbatim>
-                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->declineCode" missing="{{ __('stacks.invitation.no_code') }}" />
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->declineCode" :missing="__('stacks.invitation.no_code')" />
                         @if ($this->howItIsGoing()->invitation->toHand->declineCode !== [])
                             <x-design::note>{{ __('stacks.invitation.decline_code') }}</x-design::note>
                         @endif
                     </x-design::card>
                 @endif
-                <x-design::action label="{{ __('stacks.invitation.pass_on') }}" tap="passOn()" />
+                <x-design::action :label="__('stacks.invitation.pass_on')" tap="passOn()" />
                 @if ($this->passedOn !== '')
                     <x-design::note>{{ __($this->passedOn) }}</x-design::note>
                 @endif
@@ -172,9 +172,9 @@
                 @endforelse
             </x-design::section>
 
-            <x-design::action label="{{ __('stacks.invitation.start_again') }}" tap="startAgain()" tone="tonal" />
+            <x-design::action :label="__('stacks.invitation.start_again')" tap="startAgain()" tone="tonal" />
         @else
-            <x-operator::offered-action label="{{ __('stacks.invitation.what_would_it_grant') }}" tap="offer()" :offer="$this->offered(AskingThemIn::Invite)" />
+            <x-operator::offered-action :label="__('stacks.invitation.what_would_it_grant')" tap="offer()" :offer="$this->offered(AskingThemIn::Invite)" />
         @endif
     @else
         {{-- Asking, or asking after it, met something: said where the answer
@@ -196,17 +196,17 @@
             <x-design::note>{{ __($member->standingSaid) }}</x-design::note>
             @if ($this->member === $member->name)
                 <x-design::body>{{ __('stacks.invitation.taking_it_off_means', ['name' => $member->name]) }}</x-design::body>
-                <x-operator::offered-action label="{{ __('stacks.invitation.take_it_off', ['name' => $member->name]) }}" tap="takeThePasswordOff()" :offer="$this->offered(AskingThemIn::TakeThePasswordOff)" />
+                <x-operator::offered-action :label="__('stacks.invitation.take_it_off', ['name' => $member->name])" tap="takeThePasswordOff()" :offer="$this->offered(AskingThemIn::TakeThePasswordOff)" />
                 <x-design::action
-                    label="{{ __('stacks.invitation.never_mind') }}"
-                    answers-to="{{ __('stacks.invitation.never_mind_for', ['name' => $member->name]) }}"
+                    :label="__('stacks.invitation.never_mind')"
+                    :answers-to="__('stacks.invitation.never_mind_for', ['name' => $member->name])"
                     tap="neverMind()"
                     tone="tonal"
                 />
             @else
                 <x-operator::offered-action
-                    label="{{ __('stacks.invitation.would_take_it_off', ['name' => $member->name]) }}"
-                    tap="wouldTakeThePasswordOff('{{ $member->name }}')"
+                    :label="__('stacks.invitation.would_take_it_off', ['name' => $member->name])"
+                    :tap="$this->tapping('wouldTakeThePasswordOff', $member->name)"
                     :offer="$this->offered(AskingThemIn::TakeThePasswordOff)"
                     drawn="link"
                 />
@@ -214,14 +214,14 @@
             {{-- Connecting a device of theirs is its own screen, where the
                  code is shown only when it is asked for. --}}
             <x-design::link
-                label="{{ __('stacks.handoff.title') }}"
-                answers-to="{{ __('stacks.handoff.title_for', ['name' => $member->name]) }}"
+                :label="__('stacks.handoff.title')"
+                :answers-to="__('stacks.handoff.title_for', ['name' => $member->name])"
                 :goes="$this->goes()->connecting($member->name)"
             />
             {{-- Taking them out of the household is its own screen, where
                  what it would cost is read before anything is agreed to. --}}
             <x-design::link
-                label="{{ __('stacks.removal.would_take_them_out', ['name' => $member->name]) }}"
+                :label="__('stacks.removal.would_take_them_out', ['name' => $member->name])"
                 :goes="$this->goes()->takingOut($member->name)"
             />
         </x-design::card>
@@ -232,7 +232,7 @@
     {{-- Asking again reads who is in, and asks after work still being
          followed. It is not a retry of anything the stack refused, and is
          named for what it does. --}}
-    <x-design::action label="{{ __('stacks.invitation.ask_who_is_in_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('stacks.invitation.ask_who_is_in_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

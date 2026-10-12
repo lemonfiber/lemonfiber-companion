@@ -78,7 +78,7 @@
 
     <x-design::note>{{ __('stacks.line.changed_at_the_machine') }}</x-design::note>
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

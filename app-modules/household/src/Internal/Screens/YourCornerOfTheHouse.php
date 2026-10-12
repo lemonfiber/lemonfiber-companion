@@ -6,6 +6,7 @@ namespace Modules\Household\Internal\Screens;
 
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\Presenters\HowTheirLanguagesRead;
 use Modules\Household\Internal\ViewModels\AHouseToChooseAsShown;
 use Modules\Household\Internal\ViewModels\TheirLanguagesAsShown;
@@ -39,6 +40,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class YourCornerOfTheHouse extends NativeComponent
 {
+    use WritesItsTaps;
     use FindsItsWayAroundTheHouse;
     use DrawsItsTemplate;
 

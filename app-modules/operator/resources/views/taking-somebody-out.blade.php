@@ -8,7 +8,7 @@
     {{-- Opened on nobody, so there is nothing to ask about and nothing to
          agree to. Who is in is where somebody is chosen. --}}
     <x-operator::emphasis>{{ __('stacks.removal.names_nobody') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->to(AStacksScreen::Invite)" />
+    <x-operator::action :label="__('stacks.removal.back_to_who_is_in')" :goes="$this->goes()->to(AStacksScreen::Invite)" />
 @else
     <x-operator::heading>{{ __('stacks.removal.taking_out', ['name' => $this->answer()->name]) }}</x-operator::heading>
 
@@ -27,7 +27,7 @@
         @else
             <x-operator::emphasis>{{ __('stacks.removal.no_outcome', ['name' => $this->answer()->name]) }}</x-operator::emphasis>
         @endif
-        <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->name]) }}" tap="askAgain()" />
+        <x-operator::action :label="__('stacks.removal.read_again', ['name' => $this->answer()->name])" tap="askAgain()" />
     @elseif ($this->answer()->refusal !== '')
         {{-- The stack's answer, with the name it was about, drawn as the
              reason it is rather than as something to try again. --}}
@@ -68,16 +68,16 @@
         @endforelse
 
         @if (! $this->answer()->removal->carriedOut)
-            <x-operator::offered-action label="{{ __('stacks.removal.take_them_out', ['name' => $this->answer()->removal->name]) }}" tap="agree()" :offer="$this->offered(TakingThemOut::TakeThemOut)" />
+            <x-operator::offered-action :label="__('stacks.removal.take_them_out', ['name' => $this->answer()->removal->name])" tap="agree()" :offer="$this->offered(TakingThemOut::TakeThemOut)" />
         @elseif (! $this->answer()->removal->isDone)
             {{-- An account is still held on the request service, and the next
                  removal takes it: read what that would cost, and agree to it
                  again. --}}
-            <x-operator::action label="{{ __('stacks.removal.read_again', ['name' => $this->answer()->removal->name]) }}" tap="askAgain()" />
+            <x-operator::action :label="__('stacks.removal.read_again', ['name' => $this->answer()->removal->name])" tap="askAgain()" />
         @endif
     @endif
 
-    <x-operator::quiet-action label="{{ __('stacks.removal.back_to_who_is_in') }}" :goes="$this->goes()->to(AStacksScreen::Invite)" />
+    <x-operator::quiet-action :label="__('stacks.removal.back_to_who_is_in')" :goes="$this->goes()->to(AStacksScreen::Invite)" />
 @endif
 </x-operator::content>
 @else

@@ -14,7 +14,7 @@
         <x-design::strong>{{ trans_choice('stacks.help.lines', $this->window->value) }}</x-design::strong>
         <x-design::chips>
             @forelse ($this->windows() as $window)
-                <x-design::chip label="{{ trans_choice('stacks.help.take_lines', $window->value) }}" tap="chooseLines({{ $window->value }})" :chosen="$this->takes($window)" />
+                <x-design::chip :label="trans_choice('stacks.help.take_lines', $window->value)" :tap="$this->tapping('chooseLines', $window->value)" :chosen="$this->takes($window)" />
             @empty
                 {{-- The windows are this screen's own and there are always three. --}}
             @endforelse
@@ -28,8 +28,8 @@
             <x-design::strong>{{ __('stacks.help.filenames_replaced') }}</x-design::strong>
         @endif
         <x-design::chips>
-            <x-design::chip label="{{ __('stacks.help.replace_filenames') }}" tap="replaceFilenames()" :chosen="! $this->showsFilenames()" />
-            <x-design::chip label="{{ __('stacks.help.show_filenames') }}" tap="showFilenames()" :chosen="$this->showsFilenames()" />
+            <x-design::chip :label="__('stacks.help.replace_filenames')" tap="replaceFilenames()" :chosen="! $this->showsFilenames()" />
+            <x-design::chip :label="__('stacks.help.show_filenames')" tap="showFilenames()" :chosen="$this->showsFilenames()" />
         </x-design::chips>
     </x-design::card>
 
@@ -41,7 +41,7 @@
     <x-design::card>
         @forelse ($this->revealedNames() as $named)
             <x-design::strong>{{ __('stacks.help.reveals', ['name' => $named]) }}</x-design::strong>
-            <x-design::link label="{{ __('stacks.help.take_back', ['name' => $named]) }}" tap="takeBack('{{ $named }}')" />
+            <x-design::link :label="__('stacks.help.take_back', ['name' => $named])" :tap="$this->tapping('takeBack', $named)" />
         @empty
             <x-design::note>{{ __('stacks.help.reveals_nothing') }}</x-design::note>
         @endforelse
@@ -53,8 +53,8 @@
         <x-design::notice>
             <x-design::strong>{{ __('stacks.help.reveal_this', ['name' => $this->revealing]) }}</x-design::strong>
         </x-design::notice>
-        <x-design::action label="{{ __('stacks.help.reveal', ['name' => $this->revealing]) }}" tap="reveal()" tone="tonal" />
-        <x-design::action label="{{ __('stacks.help.keep_it_hidden') }}" tap="keepItHidden()" tone="tonal" />
+        <x-design::action :label="__('stacks.help.reveal', ['name' => $this->revealing])" tap="reveal()" tone="tonal" />
+        <x-design::action :label="__('stacks.help.keep_it_hidden')" tap="keepItHidden()" tone="tonal" />
     @else
         <x-design::card>
             <native:outlined-text-input
@@ -62,23 +62,23 @@
                 label="{{ __('stacks.help.setting_label') }}"
                 placeholder="{{ __('stacks.help.setting_placeholder') }}"
             />
-            <x-design::action label="{{ __('stacks.help.name_it') }}" tap="nameASetting()" tone="tonal" />
+            <x-design::action :label="__('stacks.help.name_it')" tap="nameASetting()" tone="tonal" />
         </x-design::card>
     @endif
 
-    <x-operator::offered-action label="{{ __('stacks.help.describe') }}" tap="describe()" :offer="$this->offered($this->chosen())" />
+    <x-operator::offered-action :label="__('stacks.help.describe')" tap="describe()" :offer="$this->offered($this->chosen())" />
 @elseif ($this->answer()->isWorking)
     <x-design::standing
         :said="__('stacks.help.gathering')"
         tone="working"
     />
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure: the stack no longer says what became of it. --}}
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('stacks.help.no_outcome') }}</x-design::strong>
     </x-design::notice>
-    <x-design::action label="{{ __('stacks.help.start_over') }}" tap="startOver()" />
+    <x-design::action :label="__('stacks.help.start_over')" tap="startOver()" />
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words, and not a fault: asking the same
          again is refused the same way, so the one road offered is back to
@@ -89,7 +89,7 @@
         <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
         <x-design::note>{{ __('stacks.help.refused_wrote_nothing') }}</x-design::note>
     </x-design::notice>
-    <x-design::action label="{{ __('stacks.help.start_over') }}" tap="startOver()" />
+    <x-design::action :label="__('stacks.help.start_over')" tap="startOver()" />
 @elseif ($this->answer()->bundle !== null)
     @if ($this->answer()->isWritten)
         <x-design::title>{{ __('stacks.help.written') }}</x-design::title>
@@ -138,10 +138,10 @@
         {{-- The operator's own act, below everything the bundle holds: the
              file goes to the phone's own sharing and they choose where it
              goes. This app sends it nowhere. --}}
-        <x-design::action label="{{ __('stacks.help.hand_over') }}" tap="handOver()" />
+        <x-design::action :label="__('stacks.help.hand_over')" tap="handOver()" />
     @else
         {{-- The second yes, on the description above and on nothing else. --}}
-        <x-operator::offered-action label="{{ __('stacks.help.write') }}" tap="write()" :offer="$this->offered($this->chosen())" />
+        <x-operator::offered-action :label="__('stacks.help.write')" tap="write()" :offer="$this->offered($this->chosen())" />
     @endif
 
     @if ($this->handing !== '')
@@ -151,7 +151,7 @@
         </x-design::card>
     @endif
 
-    <x-design::action label="{{ __('stacks.help.start_over') }}" tap="startOver()" tone="tonal" />
+    <x-design::action :label="__('stacks.help.start_over')" tap="startOver()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

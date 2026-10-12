@@ -97,22 +97,22 @@
                              the one thing somebody being read to cannot
                              check. --}}
                         <x-design::action
-                            label="{{ __('config.agree') }}"
-                            answers-to="{{ __('config.agree_to', ['key' => $setting->key]) }}"
-                            tap="agree('{{ $setting->key }}')"
+                            :label="__('config.agree')"
+                            :answers-to="__('config.agree_to', ['key' => $setting->key])"
+                            :tap="$this->tapping('agree', $setting->key)"
                         />
                     @endif
                 @else
                     <x-design::action
-                        label="{{ __('config.what_would_happen') }}"
-                        answers-to="{{ __('config.what_would_happen_to', ['key' => $setting->key]) }}"
-                        tap="wouldBe('{{ $setting->key }}')"
+                        :label="__('config.what_would_happen')"
+                        :answers-to="__('config.what_would_happen_to', ['key' => $setting->key])"
+                        :tap="$this->tapping('wouldBe', $setting->key)"
                     />
                 @endif
 
                 <x-design::action
-                    label="{{ __('config.never_mind') }}"
-                    answers-to="{{ __('config.never_mind_about', ['key' => $setting->key]) }}"
+                    :label="__('config.never_mind')"
+                    :answers-to="__('config.never_mind_about', ['key' => $setting->key])"
                     tap="never()"
                     tone="tonal"
                 />
@@ -132,9 +132,9 @@
                      one — absent rather than disabled, because a disabled
                      control still says *this is a thing you could do*. --}}
                 <x-operator::offered-action
-                    label="{{ __('config.change_this') }}"
-                    answers-to="{{ __('config.change_key', ['key' => $setting->key]) }}"
-                    tap="change('{{ $setting->key }}')"
+                    :label="__('config.change_this')"
+                    :answers-to="__('config.change_key', ['key' => $setting->key])"
+                    :tap="$this->tapping('change', $setting->key)"
                     :offer="$this->offered(WhatToChange::Setting)"
                     drawn="link"
                 />
@@ -168,7 +168,7 @@
          before anything is agreed to. Offered on every reading that came
          back: which files differ is the stack's to say, and this listing of
          settings does not. --}}
-    <x-design::action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->to(AStacksScreen::Reset)" tone="tonal" />
+    <x-design::action :label="__('config.put_it_all_back')" :goes="$this->goes()->to(AStacksScreen::Reset)" tone="tonal" />
 
     {{-- First-run setup, declined with the reason where somebody looking for
          it would look: a phone cannot perform the act that makes a phone
@@ -181,7 +181,7 @@
          screen puts it there: somebody who has just changed something in the
          stack scrolls to the end of what they were reading, and that is where
          they want to ask whether it took. --}}
-    <x-design::action label="{{ __('config.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('config.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

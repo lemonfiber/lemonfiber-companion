@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Wayfinding\Api;
 
-use function sprintf;
+use Modules\Design\Api\ATap;
 
 /**
  * One stack in the list the top bar's name opens, flattened for a template.
@@ -55,6 +55,6 @@ final readonly class AStackToChooseAsShown
     /** What pressing the row calls on the screen. */
     public function pressed(): string
     {
-        return $this->current ? 'stopChoosingAStack()' : sprintf("openTheStack('%s')", $this->id);
+        return $this->current ? 'stopChoosingAStack()' : ATap::calling('openTheStack', $this->id)->written();
     }
 }

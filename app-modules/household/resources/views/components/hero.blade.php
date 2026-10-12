@@ -28,14 +28,14 @@
      beside it: a Play that is not there would hide the one action this tile
      is for. --}}
 @if ($tap !== '')
-<x-design::action label="{{ __('household.title.play') }}" :answersTo="$playNamed" :tap="$tap" />
+<x-design::action :label="__('household.title.play')" :answersTo="$playNamed" :tap="$tap" />
 @else
-<x-design::action label="{{ __('household.title.play') }}" :answersTo="$playNamed" :disabled="true" />
+<x-design::action :label="__('household.title.play')" :answersTo="$playNamed" :disabled="true" />
 <x-design::note>{{ __('household.preview.cannot_play') }}</x-design::note>
 @endif
 @if ($poster->goes !== '')
-<x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" />
+<x-design::action :label="__('household.hero.more')" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" />
 @else
-<x-design::action label="{{ __('household.hero.more') }}" :answersTo="$moreNamed" tone="tonal" :disabled="true" />
+<x-design::action :label="__('household.hero.more')" :answersTo="$moreNamed" tone="tonal" :disabled="true" />
 @endif
 </native:column>

@@ -12,6 +12,7 @@ use function in_array;
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\ItsContent;
@@ -74,6 +75,7 @@ use function view;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class WhatThisServiceSaid extends NativeComponent
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;

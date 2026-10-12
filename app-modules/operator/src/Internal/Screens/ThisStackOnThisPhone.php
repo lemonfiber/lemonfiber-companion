@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\RemovingAStack;
 use Modules\Connection\Api\WhatBecameOfRemoving;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
@@ -33,6 +34,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class ThisStackOnThisPhone extends NativeComponent
 {
+    use WritesItsTaps;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;

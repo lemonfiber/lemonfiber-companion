@@ -11,8 +11,8 @@
     <x-design::title>{{ __('stacks.copy.about_to', ['scope' => __($this->askingAbout()->said, $this->askingAbout()->with)]) }}</x-design::title>
     <x-design::body>{{ __('stacks.copy.may_remove') }}</x-design::body>
 
-    <x-operator::offered-action label="{{ __('health.go_ahead') }}" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::Take)" />
-    <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
+    <x-operator::offered-action :label="__('health.go_ahead')" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::Take)" />
+    <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
 @elseif ($this->lastCopy()->wasAsked)
     @if (! $this->lastCopy()->went->cameBack())
         <x-operator::what-stood-in-the-way
@@ -77,10 +77,10 @@
             @endforelse
         </x-design::section>
 
-        <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
+        <x-design::action :label="__('stacks.copy.see_the_copies')" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
     @endif
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @else
     {{-- The whole stack, or one service on its own: each is a row, and
          tapping one asks before anything is taken. --}}
@@ -95,14 +95,14 @@
             <x-design::row
                 :headline="$service->name"
                 :answers-to="__('stacks.copy.only_this_service', ['name' => $service->name])"
-                tap="copyTheService('{{ $service->id->named() }}')"
+                :tap="$this->tapping('copyTheService', $service->id->named())"
             />
         @empty
             <x-design::row :headline="__('stacks.copy.no_services')" />
         @endforelse
     </x-design::section>
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

@@ -25,10 +25,10 @@
 
             @if ($key->mayBeRevoked && $this->revoking === $key->name)
                 <x-design::body>{{ __('stacks.keys.revoke_confirm', ['name' => $key->name]) }}</x-design::body>
-                <x-design::action label="{{ __('stacks.keys.revoke') }}" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="revoke()" />
-                <x-design::action label="{{ __('stacks.keys.keep_it') }}" :answers-to="__('stacks.keys.keep_it_named', ['name' => $key->name])" tap="keepIt()" tone="tonal" />
+                <x-design::action :label="__('stacks.keys.revoke')" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="revoke()" />
+                <x-design::action :label="__('stacks.keys.keep_it')" :answers-to="__('stacks.keys.keep_it_named', ['name' => $key->name])" tap="keepIt()" tone="tonal" />
             @elseif ($key->mayBeRevoked)
-                <x-design::action label="{{ __('stacks.keys.revoke') }}" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" tap="askToRevoke({{ $loop->index }})" tone="tonal" />
+                <x-design::action :label="__('stacks.keys.revoke')" :answers-to="__('stacks.keys.revoke_named', ['name' => $key->name])" :tap="$this->tapping('askToRevoke', $loop->index)" tone="tonal" />
             @endif
         </x-design::card>
     @empty
@@ -37,7 +37,7 @@
 
     <x-design::note>{{ __('stacks.keys.made_at_the_terminal') }}</x-design::note>
 
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

@@ -22,12 +22,12 @@
     @empty
         {{-- Every service taking a shape was allowed it, or none takes one. --}}
     @endforelse
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          work any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->typing)
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
     @if ($this->nothingWasScanned())
@@ -37,14 +37,14 @@
         </x-design::notice>
     @endif
     <x-operator::note>{{ __('device.camera_reason') }}</x-operator::note>
-    <x-design::action label="{{ __('plugins.scan_where_from') }}" tap="scanWhereItComesFrom()" tone="tonal" />
+    <x-design::action :label="__('plugins.scan_where_from')" tap="scanWhereItComesFrom()" tone="tonal" />
     {{-- The three shapes a source can take, under the one field. Which one
          was typed is the stack's to tell. --}}
     <x-operator::note>{{ __('plugins.source_catalogue') }}</x-operator::note>
     <x-operator::note>{{ __('plugins.source_directory') }}</x-operator::note>
     <x-operator::note>{{ __('plugins.source_git') }}</x-operator::note>
-    <x-operator::offered-action label="{{ __('plugins.rehearse') }}" tap="rehearse()" :offer="$this->offered(ExtendingIt::Install)" />
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::offered-action :label="__('plugins.rehearse')" tap="rehearse()" :offer="$this->offered(ExtendingIt::Install)" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->install !== null)
     @if ($this->answer()->install->isAReading)
         {{-- Said before anything else: nothing below has happened. --}}
@@ -58,11 +58,11 @@
     @if ($this->answer()->install->agreeable)
         {{-- The yes to the install, apart from every approval above. --}}
         <x-operator::note>{{ __('plugins.approvals_apart') }}</x-operator::note>
-        <x-operator::offered-action label="{{ __('plugins.install') }}" tap="agree()" :offer="$this->offered(ExtendingIt::Install)" />
+        <x-operator::offered-action :label="__('plugins.install')" tap="agree()" :offer="$this->offered(ExtendingIt::Install)" />
         <x-operator::note>{{ __('plugins.inputs_elsewhere') }}</x-operator::note>
     @endif
 
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->update !== null)
     @if ($this->answer()->update->isAReading)
         <x-operator::emphasis>{{ __('plugins.rehearsal') }}</x-operator::emphasis>
@@ -98,11 +98,11 @@
 
     @if ($this->answer()->update->install->agreeable)
         <x-operator::note>{{ __('plugins.approvals_apart') }}</x-operator::note>
-        <x-operator::offered-action label="{{ __('plugins.update') }}" tap="agree()" :offer="$this->offered(ExtendingIt::Update)" />
+        <x-operator::offered-action :label="__('plugins.update')" tap="agree()" :offer="$this->offered(ExtendingIt::Update)" />
         <x-operator::note>{{ __('plugins.inputs_elsewhere') }}</x-operator::note>
     @endif
 
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->removal !== null)
     @if ($this->answer()->removal->isAReading)
         <x-operator::emphasis>{{ __('plugins.rehearsal') }}</x-operator::emphasis>
@@ -131,27 +131,27 @@
     <x-operator::what-going-back-came-to :report="$this->answer()->removal->wentBack" />
 
     @if ($this->answer()->removal->agreeable)
-        <x-operator::offered-action label="{{ __('plugins.remove') }}" tap="agree()" :offer="$this->offered(ExtendingIt::Remove)" />
+        <x-operator::offered-action :label="__('plugins.remove')" tap="agree()" :offer="$this->offered(ExtendingIt::Remove)" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('plugins.back') }}" tap="backToThePlugins()" />
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @else
     @forelse ($this->answer()->installed as $at => $plugin)
         <x-operator::the-plugin :plugin="$plugin" />
         @if ($plugin->updatable)
-            <x-operator::offered-action label="{{ __('plugins.update_it', ['name' => $plugin->name]) }}" tap="updateOne({{ $at }})" :offer="$this->offered(ExtendingIt::Update)" />
+            <x-operator::offered-action :label="__('plugins.update_it', ['name' => $plugin->name])" :tap="$this->tapping('updateOne', $at)" :offer="$this->offered(ExtendingIt::Update)" />
         @else
             <x-operator::note>{{ __('plugins.no_source_to_update') }}</x-operator::note>
         @endif
-        <x-operator::offered-action label="{{ __('plugins.remove_it', ['name' => $plugin->name]) }}" tap="removeOne({{ $at }})" :offer="$this->offered(ExtendingIt::Remove)" />
+        <x-operator::offered-action :label="__('plugins.remove_it', ['name' => $plugin->name])" :tap="$this->tapping('removeOne', $at)" :offer="$this->offered(ExtendingIt::Remove)" />
     @empty
         {{-- The record answered and holds nothing. A record that could not be
              read never reaches this branch. --}}
         <x-design::body>{{ __('plugins.none') }}</x-design::body>
     @endforelse
 
-    <x-operator::offered-action label="{{ __('plugins.install_one') }}" tap="installOne()" :offer="$this->offered(ExtendingIt::Install)" />
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::offered-action :label="__('plugins.install_one')" tap="installOne()" :offer="$this->offered(ExtendingIt::Install)" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

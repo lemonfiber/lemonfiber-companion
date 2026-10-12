@@ -11,7 +11,7 @@
          the core's words where the core gave one; where it was pressed and
          did not play, or stopped, the household's words say why. --}}
     <x-household::poster :poster="$this->title()->title->poster" />
-    <x-design::action label="{{ __('household.title.play') }}" :answersTo="__('household.title.play_named', ['title' => $this->title()->title->poster->titled])" tap="play()" :disabled="! $this->title()->title->playing->canPlay" />
+    <x-design::action :label="__('household.title.play')" :answersTo="__('household.title.play_named', ['title' => $this->title()->title->poster->titled])" tap="play()" :disabled="! $this->title()->title->playing->canPlay" />
     <x-household::why-play-waits :playing="$this->title()->title->playing" />
     @if ($this->playingSaid !== '')
         <x-design::note>{{ __($this->playingSaid) }}</x-design::note>
@@ -41,7 +41,7 @@
             @if ($episode->about !== '')
                 <x-design::body>{{ $episode->about }}</x-design::body>
             @endif
-            <x-design::action label="{{ __('household.title.play') }}" :answers-to="__('household.title.play_named', ['title' => $episode->titled])" tap="playTheEpisode('{{ $episode->id }}')" :disabled="! $episode->playing->canPlay" tone="tonal" />
+            <x-design::action :label="__('household.title.play')" :answers-to="__('household.title.play_named', ['title' => $episode->titled])" :tap="$this->tapping('playTheEpisode', $episode->id)" :disabled="! $episode->playing->canPlay" tone="tonal" />
             <x-household::why-play-waits :playing="$episode->playing" />
         @empty
             {{-- A season the core lists with no episodes in it says so. --}}
@@ -54,22 +54,22 @@
     {{-- The core says it is not on this member's shelf: outside their limits,
          or not in the house. The two are one answer, and Home is where to go. --}}
     <x-design::body>{{ __('household.title.absent') }}</x-design::body>
-    <x-design::action label="{{ __('household.title.to_home') }}" :goes="$this->goes()->to(AStacksScreen::Shelf)" tone="tonal" />
+    <x-design::action :label="__('household.title.to_home')" :goes="$this->goes()->to(AStacksScreen::Shelf)" tone="tonal" />
 @elseif ($this->title()->isSignedIn)
     <x-design::notice tone="unknown">
         <x-household::what-stood-in-the-way :met="$this->title()->met" :remedy="$this->title()->remedy" :filling="$this->title()->filling()" :in-the-stacks-words="$this->title()->isInTheStacksWords()" />
     </x-design::notice>
 
-    <x-design::action label="{{ __('household.ask_again') }}" tap="askAgain()" />
+    <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
     @if ($this->title()->isPutRightInTheAppsSettings())
-        <x-design::action label="{{ __('connection.open_settings') }}" tap="openTheAppsSettings()" />
+        <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
         @endif
     @endif
 @else
     <x-design::body>{{ __('household.signed_out') }}</x-design::body>
-    <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->signIn()" />
+    <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
 @endif
 </x-operator::content>
 

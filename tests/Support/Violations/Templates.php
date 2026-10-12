@@ -148,6 +148,24 @@ final readonly class Templates
                     <native:text>This stack cannot be reached from here.</native:text>
                 </native:column>
                 BLADE, 'reads its text from the translator', 'english-sentence'),
+
+            Fixture::edit(
+                'F21',
+                'app-modules/operator/resources/views/what-keeps-running-here.blade.php',
+                ':tap="$this->tapping(\'wouldInstall\', $command->name)"',
+                'tap="wouldInstall(\'{{ $command->name }}\')"',
+                'writes no value into a tap',
+                'what-keeps-running-here.blade.php',
+            ),
+
+            Fixture::edit(
+                'F21',
+                'app-modules/household/src/Internal/Presenters/HowWhereTheyLeftOffReads.php',
+                'ATap::calling(\'resume\', $holding->id()->named())->written()',
+                'sprintf("resume(\'%s\')", $holding->id()->named())',
+                'writes no tap by formatting or joining a value into it',
+                'HowWhereTheyLeftOffReads.php',
+            ),
         ];
     }
 

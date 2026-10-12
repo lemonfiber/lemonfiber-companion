@@ -6,6 +6,7 @@ namespace Modules\Operator\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 
 use function view;
@@ -19,6 +20,8 @@ use function view;
  */
 final class ThePluginsAccount extends Component
 {
+    use WritesItsTaps;
+
     public function __construct(public readonly APluginInstallAsShown $install) {}
 
     public function render(): View

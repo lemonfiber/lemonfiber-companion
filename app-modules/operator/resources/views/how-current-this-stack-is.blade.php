@@ -58,11 +58,11 @@
 
     {{-- Drawn and not usable while the reading drawn is one the phone kept:
          an update is agreed to only against a fresh one. --}}
-    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
     @if ($this->answer()->waitsForTheStack)
         <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
     @endif
-    <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
+    <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
 @else
     @if ($this->answer()->waitsForTheStack)
         {{-- What the phone kept, said for what it is: how long ago it was
@@ -122,7 +122,7 @@
             {{-- Drawn whether or not it can be used, so a kept reading never
                  hides what a fresh one would offer; beside it, until then,
                  why it waits and how old the reading is. --}}
-            <x-operator::offered-action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->waitsForTheStack" />
+            <x-operator::offered-action :label="trans_choice('updates.take_them', $this->answer()->offer->changing()->count())" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->waitsForTheStack" />
             @if ($this->answer()->waitsForTheStack)
                 <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
             @endif
@@ -284,7 +284,7 @@
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. Tonal,
          because taking an update is the screen's one way forward. --}}
-    <x-design::action label="{{ __('health.ask_again') }}" tap="askAgain()" tone="tonal" />
+    <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

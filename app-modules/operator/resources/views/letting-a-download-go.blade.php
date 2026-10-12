@@ -8,7 +8,7 @@
     {{-- Opened on no download at all, so there is nothing to ask about and
          nothing to agree to. How full the machine is lists each one. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.names_no_download') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
+    <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the offer
          above it, so an offer cannot read as something that happened. --}}
@@ -25,29 +25,29 @@
              the machine is says whether it is still there. --}}
         <x-operator::emphasis>{{ __('stacks.let_go.no_outcome', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.no_outcome_action') }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
+        <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @elseif ($this->done()->wasRehearsed)
         {{-- A rehearsal, said to be one before anything else, and never
              worded as room freed: the client still holds all of it. --}}
         <x-operator::heading>{{ __('stacks.let_go.a_rehearsal') }}</x-operator::heading>
         <x-operator::emphasis>{{ __('stacks.let_go.rehearsed', ['download' => $this->done()->name]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.nothing_freed', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
+        <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @else
         <x-operator::emphasis>{{ __('stacks.let_go.let_go', ['download' => $this->done()->name]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.occupied', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
-        <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->to(AStacksScreen::Room)" />
+        <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->isWorking)
     {{-- The stack answers the question as work, so the offer may not be
          in yet. Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->hasEnded)
     <x-operator::emphasis>{{ __('stacks.let_go.offer_ended', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @else
     {{-- The offer: its own act, and what it costs, all of it before the yes.
          Nothing below has happened, and nothing is worded as though it had. --}}
@@ -70,8 +70,8 @@
 
     <x-design::body>{{ $this->answer()->goes }}</x-design::body>
 
-    <x-operator::offered-action label="{{ __('stacks.let_go.stop_it') }}" tap="agree()" :offer="$this->offered(WhatToDoWithADownload::StopSeeding)" />
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="askAgain()" />
+    <x-operator::offered-action :label="__('stacks.let_go.stop_it')" tap="agree()" :offer="$this->offered(WhatToDoWithADownload::StopSeeding)" />
+    <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>
 @else

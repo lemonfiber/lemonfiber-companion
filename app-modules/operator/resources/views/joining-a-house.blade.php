@@ -13,8 +13,8 @@
         <x-design::card>
             <x-design::verbatim>{{ $this->offeredAt }}</x-design::verbatim>
         </x-design::card>
-        <x-design::action label="{{ __('household.joining.it_is_yours') }}" tap="confirmTheHouse()" />
-        <x-operator::quiet-action label="{{ __('household.joining.it_is_not_yours') }}" tap="forgetTheHouse()" />
+        <x-design::action :label="__('household.joining.it_is_yours')" tap="confirmTheHouse()" />
+        <x-operator::quiet-action :label="__('household.joining.it_is_not_yours')" tap="forgetTheHouse()" />
     @elseif ($this->at === WhereTheWayInIs::FindingTheHouse)
         <x-design::title>{{ __($this->findsTheHouse()->said()) }}</x-design::title>
         <x-design::body>{{ __($this->findsTheHouse()->explained()) }}</x-design::body>
@@ -33,7 +33,7 @@
         @endif
 
         <x-design::note>{{ __('device.camera_reason') }}</x-design::note>
-        <x-design::action label="{{ __('household.joining.scan') }}" tap="findTheHouse()" />
+        <x-design::action :label="__('household.joining.scan')" tap="findTheHouse()" />
     @else
         @if ($this->choosing)
             <x-design::title>{{ __('household.joining.choosing') }}</x-design::title>
@@ -73,7 +73,7 @@
                 secure
             />
 
-            <x-design::action label="{{ $this->choosing ? __('household.joining.choose') : __('household.joining.sign_in') }}" tap="signIn()" />
+            <x-design::action :label="$this->choosing ? __('household.joining.choose') : __('household.joining.sign_in')" tap="signIn()" />
         </x-design::card>
     @endif
 </x-operator::content>

@@ -13,6 +13,7 @@ use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\DaysAsked;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\ItsContent;
@@ -43,6 +44,7 @@ use Native\Mobile\Edge\NativeComponent;
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeItOpensOver
 {
+    use WritesItsTaps;
     use HasAWayBack;
     use DrawsItsTemplate;
 
