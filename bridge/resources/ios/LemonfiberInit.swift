@@ -9,11 +9,12 @@ import Foundation
 /// happened to conceal itself. The task switcher does not wait for that.
 @objc public final class LemonfiberInit: NSObject {
     /// Install the observers that keep the window protected and the app locked
-    /// for the life of the app, and sweep whatever the last handover left in
-    /// the share cache.
+    /// for the life of the app, hear a tap on a notification, and sweep
+    /// whatever the last handover left in the share cache.
     @objc public static func install() {
         LemonfiberFunctions.install()
         TheLock.install()
+        TheTap.install()
         ShareCache.inThisAppsCaches()?.sweep()
     }
 }

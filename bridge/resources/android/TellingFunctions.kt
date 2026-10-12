@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -157,6 +158,9 @@ public object TellingFunctions {
                     .setSmallIcon(context.applicationInfo.icon)
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .apply {
+                        said.opens?.let { setContentIntent(context.tappingOpens(codeFor(said.id), it)) }
+                    }
                     .build(),
             )
 
@@ -459,9 +463,28 @@ public object TellingFunctions {
 }
 
 /**
+ * What a tap on one notification does: open this app at the link it was handed.
+ *
+ * Addressed to this package alone, so the platform never offers the link to
+ * another app, and only ever a link [TapRule] kept.
+ */
+private fun Context.tappingOpens(
+    code: Int,
+    opens: String,
+): PendingIntent =
+    PendingIntent.getActivity(
+        this,
+        code,
+        Intent(Intent.ACTION_VIEW, Uri.parse(opens))
+            .setPackage(packageName)
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+
+/**
  * What one notification says, as this bridge is willing to carry it.
  *
- * Three fields and no more. The vendor's own takes a sound, a badge, a
+ * Four fields and no more. The vendor's own takes a sound, a badge, a
  * subtitle, an arbitrary data payload and up to three action buttons; none of
  * that has a caller here, and every one of them is another place a value could
  * travel that the application never meant to send.
@@ -473,6 +496,8 @@ public data class WhatToSay(
     public val title: String,
     /** The line under it. */
     public val body: String,
+    /** The link a tap on it opens this app at, only ever one [TapRule] kept. */
+    public val opens: String? = null,
 ) {
     /** Where a notification is read out of what the bridge was handed. */
     public companion object {
@@ -492,7 +517,7 @@ public data class WhatToSay(
                 throw BridgeError.InvalidParameters("id, title and body are required")
             }
 
-            return WhatToSay(id, title, body)
+            return WhatToSay(id, title, body, TapRule.opens(parameters["opens"] as? String))
         }
 
         /** The identifier alone, for the calls that carry nothing else. */

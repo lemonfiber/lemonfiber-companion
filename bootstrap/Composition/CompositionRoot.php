@@ -45,6 +45,7 @@ use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
+use Modules\Device\Api\NotifyingWithinACap;
 use Modules\Device\Api\PlatformAppsSettings;
 use Modules\Device\Api\PlatformArtwork;
 use Modules\Device\Api\PlatformAuth;
@@ -58,6 +59,7 @@ use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\PlatformZone;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
+use Modules\Device\Internal\WhatWasToldLately;
 use Modules\Device\Internal\Words;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
@@ -343,16 +345,14 @@ final class CompositionRoot extends ServiceProvider
         // a third party reading what a stack said about somebody's home — and
         // NothingLeavesThisDeviceTest is the rule that refuses it. A local
         // notification is composed and shown on the device and never leaves it.
-        $this->app->bind(
-            Notifier::class,
-            // Named by class rather than built by a closure here. Both of this
-            // adapter's dependencies are concrete classes with no alternative —
-            // lemonfiber's own notification centre and the catalogue reader —
-            // so there is no implementation choice for a closure to state. The
-            // decision this line makes is the one that matters and is still
-            // written down: `Notifier` is `PlatformNotifier`.
-            PlatformNotifier::class,
-        );
+        // `Notifier` is `PlatformNotifier`, kept to a cap per stack. What the
+        // cap counts is one memory for the life of the process, so it counts
+        // across every screen.
+        $this->app->singleton(WhatWasToldLately::class);
+        $this->app->bind(Notifier::class, NotifyingWithinACap::class);
+        $this->app->when(NotifyingWithinACap::class)
+            ->needs(Notifier::class)
+            ->give(PlatformNotifier::class);
 
         // Bound for the same reason: a window is outside this process, and an
         // app holding one from launch would go on answering with the state it
@@ -389,7 +389,9 @@ final class CompositionRoot extends ServiceProvider
         // handset. This is only how an answer becomes a Lock.
         $this->app->bind(
             DeviceAuth::class,
-            // By class, for the reason given above the `Notifier` binding.
+            // By class rather than by a closure: its dependencies are concrete
+            // classes with no alternative, so there is no implementation choice
+            // for a closure to state.
             PlatformAuth::class,
         );
 

@@ -104,13 +104,13 @@ it('answers what the operator said to the prompt', function (): void {
 });
 
 it('sends what a notification says and nothing else', function (): void {
-    // Three fields. Every one the vendor's own carries beyond these — a sound,
+    // Four fields. Every one the vendor's own carries beyond these — a sound,
     // a badge, an arbitrary data payload, up to three action buttons — is
     // another place a value could travel that this application never meant to
     // send, and none of them has a caller here.
     $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Telling.Show', ['outcome' => 'shown']);
 
-    expect(whyTheCentreDidNot(new Telling()->show('lemonfiber.backup.finished', 'The loft', 'A backup finished')))
+    expect(whyTheCentreDidNot(new Telling()->show('lemonfiber.backup.finished', 'The loft', 'A backup finished', 'lemonfiber://stacks/the-loft')))
         ->toBeNull();
 
     $bridge->assertCalled(
@@ -119,6 +119,7 @@ it('sends what a notification says and nothing else', function (): void {
             'id' => 'lemonfiber.backup.finished',
             'title' => 'The loft',
             'body' => 'A backup finished',
+            'opens' => 'lemonfiber://stacks/the-loft',
         ],
     );
 });
@@ -142,7 +143,7 @@ it('reads each refusal the centre can answer with', function (): void {
             ['outcome' => 'withheld', 'because' => $word],
         );
 
-        expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c')))->toBe($meant, $word);
+        expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c', 'd')))->toBe($meant, $word);
     }
 });
 
@@ -152,14 +153,14 @@ it('reads a refusal it cannot explain as the device having refused', function ()
     // dialog on that machine could grant.
     FakeBridge::enable()->respondTo('Lemonfiber.Telling.Show', ['outcome' => 'withheld']);
 
-    expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c')))
+    expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c', 'd')))
         ->toBe(WhyNothingWasTold::TheDeviceRefused);
 });
 
 it('reads no answer at all as the device having refused', function (): void {
     FakeBridge::enable();
 
-    expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c')))
+    expect(whyTheCentreDidNot(new Telling()->show('a', 'b', 'c', 'd')))
         ->toBe(WhyNothingWasTold::TheDeviceRefused);
 });
 
@@ -352,7 +353,7 @@ it('does not send a payload it could not encode, and says so as nothing said', f
     // matters: the bridge was not called at all.
     $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Telling.Show', ['outcome' => 'told']);
 
-    expect(whyTheCentreDidNot(new Telling()->show('a', "\xB1", 'c')))
+    expect(whyTheCentreDidNot(new Telling()->show('a', "\xB1", 'c', 'd')))
         ->toBe(WhyNothingWasTold::TheDeviceRefused)
         ->and($bridge->calls)->toBe([]);
 });

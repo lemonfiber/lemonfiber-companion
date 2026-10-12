@@ -53,20 +53,21 @@ final readonly class Notification
         private StackName $called,
         private WhatTheCoreDecided $says,
         private bool $guarded,
-        private WhichWayItWent $way,
+        private HowItIsWorded $worded,
         private AnAlertsName $filedUnder,
+        private WhereATapLeads $leadsTo,
     ) {}
 
     /**
      * A notification the core decided on, for one stack.
      *
      * It takes no text. An adapter turning the core's decision into one of
-     * these has that decision and a stack and nothing else to hand over, which
-     * is that rule expressed as a signature.
+     * these has that decision, a stack and the screen a tap opens, and nothing
+     * else to hand over, which is that rule expressed as a signature.
      */
-    public static function fromTheCore(Stack $about, WhatTheCoreDecided $says): self
+    public static function fromTheCore(Stack $about, WhatTheCoreDecided $says, WhereATapLeads $leadsTo): self
     {
-        return new self($about->id(), $about->name(), $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: AnAlertsName::byItsKind($says));
+        return new self($about->id(), $about->name(), $says, guarded: false, worded: HowItIsWorded::Onset, filedUnder: AnAlertsName::byItsKind($says), leadsTo: $leadsTo);
     }
 
     /**
@@ -75,9 +76,20 @@ final readonly class Notification
      * Its kind is what it says, and its name is what it is filed under, so the
      * resolution of a condition replaces the notification of its onset.
      */
-    public static function ofAnAlert(Stack $about, AnAlert $alert): self
+    public static function ofAnAlert(Stack $about, AnAlert $alert, WhereATapLeads $leadsTo): self
     {
-        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, way: $alert->way(), filedUnder: $alert->filedUnder());
+        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, worded: HowItIsWorded::forAnAlert($alert->way()), filedUnder: $alert->filedUnder(), leadsTo: $leadsTo);
+    }
+
+    /**
+     * The one notification its stack has more to tell than is shown, standing in for this one.
+     *
+     * Filed once per stack, so each that follows replaces it rather than
+     * stacking, and leading where this one did.
+     */
+    public function beyondTheCap(): self
+    {
+        return new self($this->about, $this->called, $this->says, guarded: $this->guarded, worded: HowItIsWorded::MoreToTell, filedUnder: AnAlertsName::beyondTheCap(), leadsTo: $this->leadsTo);
     }
 
     /**
@@ -106,13 +118,19 @@ final readonly class Notification
      */
     public function whileLocked(): self
     {
-        return new self($this->about, $this->called, $this->says, guarded: true, way: $this->way, filedUnder: $this->filedUnder);
+        return new self($this->about, $this->called, $this->says, guarded: true, worded: $this->worded, filedUnder: $this->filedUnder, leadsTo: $this->leadsTo);
     }
 
-    /** Which way the condition it is about went: an onset, or its resolution. */
-    public function way(): WhichWayItWent
+    /** Which words it is shown in. */
+    public function worded(): HowItIsWorded
     {
-        return $this->way;
+        return $this->worded;
+    }
+
+    /** The screen a tap on it opens. */
+    public function leadsTo(): WhereATapLeads
+    {
+        return $this->leadsTo;
     }
 
     /**

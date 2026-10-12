@@ -209,7 +209,7 @@ it('tells the operator each alert another stack raised, filed under its name', f
 
     $screen->hearEachStack();
 
-    expect($notifier->told())->toBe([sprintf('plain vpn.down %s onset as %s', theShed()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theShed()->id()))]);
+    expect($notifier->told())->toBe([sprintf('plain vpn.down %s onset as %s opening lemonfiber://stacks/%s', theShed()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theShed()->id()), theShed()->id()->stored())]);
 });
 
 it('tells the operator each alert the screen\'s own stack raised, its resolution filed with its onset', function (): void {
@@ -230,8 +230,8 @@ it('tells the operator each alert the screen\'s own stack raised, its resolution
     $screen->listen();
 
     expect($notifier->told())->toBe([
-        sprintf('plain vpn.down %s onset as %s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id())),
-        sprintf('plain vpn.down %s resolved as %s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id())),
+        sprintf('plain vpn.down %s onset as %s opening lemonfiber://stacks/%s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id()), theCellar()->id()->stored()),
+        sprintf('plain vpn.down %s resolved as %s opening lemonfiber://stacks/%s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id()), theCellar()->id()->stored()),
     ]);
 });
 

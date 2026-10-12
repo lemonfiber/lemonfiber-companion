@@ -46,17 +46,6 @@ use function sprintf;
  */
 final readonly class PlatformNotifier implements Notifier
 {
-    /**
-     * What a notification's id is prefixed with.
-     *
-     * The bridge keys everything by a caller-chosen id, and an id that collides
-     * replaces the notification already showing. One per alert of one stack
-     * ({@see Notification::filedAs()}) means its resolution replaces its onset
-     * rather than stacking, while two alerts, or one name from two stacks,
-     * never overwrite each other.
-     */
-    private const string UNDER = 'lemonfiber';
-
     public function __construct(private Centre $centre, private Words $words, private DeviceAuth $lock) {}
 
     public function standing(): Asked
@@ -102,16 +91,18 @@ final readonly class PlatformNotifier implements Notifier
         return $this->whileTheLockStands($notification)->either(
             plain: fn(WhatTheCoreDecided $says, StackName $called): Told => $this->centre->show(
                 $this->idFor($notification),
-                $this->words->for(sprintf('notifications.plain.%s_title', $notification->way()->value), ['stack' => $called->shown()]),
-                $this->words->for(sprintf('notifications.plain.%s_body', $notification->way()->value), ['code' => $says->shown()]),
+                $this->words->for(sprintf('notifications.plain.%s_title', $notification->worded()->value), ['stack' => $called->shown()]),
+                $this->words->for(sprintf('notifications.plain.%s_body', $notification->worded()->value), ['code' => $says->shown()]),
+                $notification->leadsTo()->asALink(),
             ),
             // No stack reaches this arm, so nothing here can name one. The
             // wording is the guarded pair for the same reason — while the app
             // is locked it must hold on a screen anybody walking past can read.
             guarded: fn(): Told => $this->centre->show(
                 $this->idFor($notification),
-                $this->words->for(sprintf('notifications.guarded.%s_title', $notification->way()->value)),
-                $this->words->for(sprintf('notifications.guarded.%s_body', $notification->way()->value)),
+                $this->words->for(sprintf('notifications.guarded.%s_title', $notification->worded()->value)),
+                $this->words->for(sprintf('notifications.guarded.%s_body', $notification->worded()->value)),
+                $notification->leadsTo()->asALink(),
             ),
         )->either(
             done: static fn(): Shown => Shown::delivered(),
@@ -174,9 +165,16 @@ final readonly class PlatformNotifier implements Notifier
         };
     }
 
-    /** One id per alert of one stack, so a later notification of it replaces the one showing rather than stacking another. */
+    /**
+     * The id the bridge keys it by.
+     *
+     * An id that collides replaces the notification already showing. One per
+     * alert of one stack ({@see Notification::filedAs()}) means its resolution
+     * replaces its onset rather than stacking, while two alerts, or one name
+     * from two stacks, never overwrite each other.
+     */
     private function idFor(Notification $notification): string
     {
-        return sprintf('%s.%s', self::UNDER, $notification->filedAs());
+        return $notification->filedAs();
     }
 }

@@ -27,7 +27,7 @@ use Lemonfiber\Native\WhyNothingWasTold;
  */
 final class ANotificationCentreOnAHandset
 {
-    /** @var list<array{id: string, title: string, body: string}> */
+    /** @var list<array{id: string, title: string, body: string, opens: string}> */
     private array $shown = [];
 
     private int $prompts = 0;
@@ -121,6 +121,7 @@ final class ANotificationCentreOnAHandset
             'id' => $this->said($sent, 'id'),
             'title' => $this->said($sent, 'title'),
             'body' => $this->said($sent, 'body'),
+            'opens' => $this->said($sent, 'opens'),
         ];
 
         return ['outcome' => 'shown'];
@@ -129,7 +130,7 @@ final class ANotificationCentreOnAHandset
     /**
      * What this centre was asked to show, in order.
      *
-     * @return list<array{id: string, title: string, body: string}>
+     * @return list<array{id: string, title: string, body: string, opens: string}>
      */
     public function shown(): array
     {

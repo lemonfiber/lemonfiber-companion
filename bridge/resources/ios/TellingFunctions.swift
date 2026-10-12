@@ -118,6 +118,10 @@ enum TellingFunctions {
         content.title = said.title
         content.body = said.body
 
+        if let opens = said.opens {
+            content.userInfo = [TheTap.opens: opens]
+        }
+
         return content
     }
 
@@ -374,7 +378,7 @@ enum TellingFunctions {
 
 /// What one notification says, as this bridge is willing to carry it.
 ///
-/// Three fields and no more. The vendor's own takes a sound, a badge, a
+/// Four fields and no more. The vendor's own takes a sound, a badge, a
 /// subtitle, an arbitrary data payload and up to three action buttons; none of
 /// that has a caller here, and every one of them is another place a value could
 /// travel that the application never meant to send.
@@ -387,6 +391,9 @@ struct WhatToSay {
 
     /// The line under it.
     let body: String
+
+    /// The link a tap on it opens this app at, only ever one `TapRule` kept.
+    let opens: String?
 
     /// The three fields, or a refusal naming all of them at once.
     ///
@@ -405,6 +412,49 @@ struct WhatToSay {
             return nil
         }
 
-        return WhatToSay(id: id, title: title, body: body)
+        return WhatToSay(
+            id: id,
+            title: title,
+            body: body,
+            opens: TapRule.opens(parameters["opens"] as? String)
+        )
+    }
+}
+
+/// What a tap on a notification does: open this app at the link it carries.
+///
+/// The centre's delegate, installed as the app starts so a tap that launches
+/// the app is heard too. It reads the link back through `TapRule` rather than
+/// trusting what it stored, and hands it to the platform, which opens this app
+/// at it the way it opens any link under the app's own scheme.
+final class TheTap: NSObject, UNUserNotificationCenterDelegate, @unchecked Sendable {
+    /// Where in a notification the link is kept.
+    static let opens = "opens"
+
+    /// The one delegate, held here because the centre holds its delegate weakly.
+    private static let shared = TheTap()
+
+    /// Hear every tap from now on.
+    static func install() {
+        UNUserNotificationCenter.current().delegate = shared
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        defer { completionHandler() }
+
+        guard
+            let link = TapRule.opens(response.notification.request.content.userInfo[TheTap.opens] as? String),
+            let url = URL(string: link)
+        else {
+            return
+        }
+
+        Task { @MainActor in
+            UIApplication.shared.open(url)
+        }
     }
 }

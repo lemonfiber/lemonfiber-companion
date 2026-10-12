@@ -37,6 +37,12 @@ final readonly class AnAlertsName
         return new self($kind->shown());
     }
 
+    /** What a stack's one notification of having more to tell is filed under: a name no alert can have, since a blank one is refused. */
+    public static function beyondTheCap(): self
+    {
+        return new self('');
+    }
+
     /** The key it is filed as among every stack's notifications: digested with the stack, so the key holds neither in the clear. */
     public function filedFor(StackId $stack): string
     {

@@ -15,7 +15,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhereATapLeads;
 use Modules\News\Api\Noticing;
+use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * The ports a screen holding the stream reaches for, handed to it together.
@@ -45,7 +47,8 @@ final readonly class WhatItListensWith
      * Tell the operator each alert the stack raised, keep what a summary said, and hand back what was heard.
      *
      * Each alert goes to the notifier as it arrived, filed under its name, so
-     * a resolution replaces the onset it ends.
+     * a resolution replaces the onset it ends, and a tap on it opens the
+     * stack's health.
      *
      * Twice over: the word for the list, and the whole summary for the next
      * time the stack's screen opens. What either store answers is not looked
@@ -56,7 +59,7 @@ final readonly class WhatItListensWith
     public function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
     {
         foreach ($heard->theAlerts() as $alert) {
-            $this->notifier->show(Notification::ofAnAlert($stack, $alert));
+            $this->notifier->show(Notification::ofAnAlert($stack, $alert, WhereATapLeads::to(AStacksScreen::Health->forTheStack($stack->id()))));
         }
 
         $standings = $this->standings;
