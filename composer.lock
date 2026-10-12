@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "a5950aafae381003b86c3eda5b56568168101c90"
+                "reference": "9c08c390de59207a4d8ee8de402c9c27701a7c2b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/a5950aafae381003b86c3eda5b56568168101c90",
-                "reference": "a5950aafae381003b86c3eda5b56568168101c90",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/9c08c390de59207a4d8ee8de402c9c27701a7c2b",
+                "reference": "9c08c390de59207a4d8ee8de402c9c27701a7c2b",
                 "shasum": ""
             },
             "require": {
@@ -3255,7 +3255,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-11T21:38:07+00:00"
+            "time": "2026-10-12T20:18:31+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3449,7 +3449,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "b9b0ab86ac7c81754c272170217b9488fe4da3cf"
+                "reference": "729ee1e1aa086d1ee162c61f4fa5077436c890f7"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3462,7 +3462,7 @@
                     "floors": {
                         "coverage": 100,
                         "mutation": 0,
-                        "mutation-is-zero-because": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name."
+                        "mutation-is-zero-because": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name. `ATap` writes a value as the package parses it, and `ATapTest` reads every hostile value back through that parse."
                     },
                     "kind": "design"
                 }
