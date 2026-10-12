@@ -10,6 +10,7 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\HowItStands;
@@ -113,7 +114,7 @@ it('carries what answers what beside whichever arm it took and beside the newest
 });
 
 it('carries the alerts of the wake beside whatever else it heard, kept through naming and wiring, and none where it raised none', function (): void {
-    $alert = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('vpn.tunnel-2'));
+    $alert = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'));
     $links = TheLinks::of(WhatNothingFills::these());
     $newest = new TheNewestNamed(WhatTheStackListed::these(), WhatTheStackListed::these(), WhatTheStackListed::unread());
     $heard = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of($alert))->naming($newest)->wiredAs($links);

@@ -201,6 +201,7 @@ use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Sdk\Api\Wirers;
+use Psr\Log\NullLogger;
 
 use function str_repeat;
 
@@ -307,7 +308,7 @@ final readonly class EveryAdapterCallThatReads
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),
             'Keepers::handOver' => static fn(): object
                 => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
-            'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
+            'Listeners::howItIs' => static fn(): object => new Listeners($clients, new NullLogger())->howItIs($stack, $session),
             'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
             'Pictures::posterOfAHolding' => static fn(): object
                 => new Pictures($clients)->posterOfAHolding($stack, $session, Whose::member('sanne'), HoldingId::called('a1')),

@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Notification;
@@ -70,7 +71,7 @@ it('has nowhere to hold a credential, a name or a title', function (): void {
         'says' => WhatTheCoreDecided::class,
         'guarded' => 'bool',
         'way' => WhichWayItWent::class,
-        'filedUnder' => WhatTheCoreDecided::class,
+        'filedUnder' => AnAlertsName::class,
     ]);
 });
 
@@ -166,15 +167,15 @@ it('locking one notification does not unlock the original', function (): void {
 it('files a notification of the core\'s decision under that decision, as an onset', function (): void {
     $notification = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
 
-    expect($notification->filedUnder()->shown())->toBe('backup.finished')
+    expect($notification->filedAs())->toBe(AnAlertsName::byItsKind(WhatTheCoreDecided::toSay('backup.finished'))->filedFor(StackId::rememberedAs('the-loft')))
         ->and($notification->way())->toBe(WhichWayItWent::Onset);
 });
 
 it('files a notification of an alert under the alert\'s name, which way it went, locked or not', function (WhichWayItWent $way): void {
-    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), $way, WhatTheCoreDecided::toSay('vpn.tunnel-2')));
+    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), $way, AnAlertsName::of('vpn.tunnel#2')));
 
     foreach ([$notification, $notification->whileLocked()] as $told) {
-        expect($told->filedUnder()->shown())->toBe('vpn.tunnel-2')
+        expect($told->filedAs())->toBe(AnAlertsName::of('vpn.tunnel#2')->filedFor(StackId::rememberedAs('the-loft')))
             ->and($told->way())->toBe($way);
     }
 
@@ -185,7 +186,7 @@ it('files a notification of an alert under the alert\'s name, which way it went,
 })->with(WhichWayItWent::cases());
 
 it('is filed as one key for one alert of one stack, so a resolution replaces only its own stack\'s onset', function (): void {
-    $named = WhatTheCoreDecided::toSay('disk.full-3');
+    $named = AnAlertsName::of('disk.full#3');
     $onset = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, $named);
     $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, $named);
     $loft = Notification::ofAnAlert(aStackItTells('the-loft'), $onset);

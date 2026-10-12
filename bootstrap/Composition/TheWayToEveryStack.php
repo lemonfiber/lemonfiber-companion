@@ -195,9 +195,10 @@ final class TheWayToEveryStack extends ServiceProvider
         // The same answer, asked by a screen before it draws a button.
         $this->app->bind(KnowingWhatAStackOffers::class, Assessors::class);
 
-        // A silent reach is noted for a developer in a debug build's log, and
-        // in no other build: a release is handed a log that keeps nothing.
-        $this->app->when(ClientsThatAskTheDevice::class)
+        // A silent reach and a skipped alert are noted for a developer in a
+        // debug build's log, and in no other build: a release is handed a log
+        // that keeps nothing.
+        $this->app->when([ClientsThatAskTheDevice::class, Listeners::class])
             ->needs(LoggerInterface::class)
             ->give(static fn(): LoggerInterface => config(self::A_DEBUG_BUILD) === true ? logger() : new NullLogger());
 

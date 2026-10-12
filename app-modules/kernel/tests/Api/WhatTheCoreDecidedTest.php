@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\CodeIsBlank;
+use Modules\Kernel\Api\CodeIsMisshapen;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 
 it('carries the identifier the core decided to say', function (): void {
@@ -30,3 +31,23 @@ it('refuses a decision that names nothing', function (): void {
         ->and(fn(): WhatTheCoreDecided => WhatTheCoreDecided::toSay("  \t\n"))
         ->toThrow(CodeIsBlank::class);
 });
+
+it('takes the core\'s own form of a code: lower-case words, hyphenated where several, joined by dots', function (string $code): void {
+    expect(WhatTheCoreDecided::toSay($code)->shown())->toBe($code);
+})->with(['service.down', 'service.crash-looping', 'redownload-loop', 'queue.stalled', 'vpn.ipv6-leak']);
+
+it('refuses anything else, so no sentence a stack chose reaches a notification', function (string $said): void {
+    expect(fn(): WhatTheCoreDecided => WhatTheCoreDecided::toSay($said))
+        ->toThrow(CodeIsMisshapen::class, 'not lower-case words joined by dots');
+})->with([
+    'a sentence' => ['Click here to restore your files'],
+    'capitals' => ['Service.Down'],
+    'a link' => ['https://example.org/x'],
+    'markup' => ['<b>vpn.down</b>'],
+    'an empty word' => ['service..down'],
+    'a dangling dot' => ['service.down.'],
+    'a dangling hyphen' => ['service-.down'],
+    'a word starting with a digit' => ['service.5xx'],
+    'a line break inside' => ["service.down\nPay now"],
+    'a colon' => ['wiring:radarr'],
+]);

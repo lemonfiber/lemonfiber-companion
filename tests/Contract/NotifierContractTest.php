@@ -7,6 +7,7 @@ use Lemonfiber\Native\WhyNothingWasTold;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
@@ -309,9 +310,9 @@ it('files an alert under its name, so its resolution replaces its onset in the r
     $words = Catalogue::words();
     $about = aStackToldAbout('the-loft', 'The loft');
 
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, WhatTheCoreDecided::toSay('disk.full-3'))));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-4'))));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'))));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3'))));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#4'))));
 
     $shown = $centre->shown();
 
@@ -343,8 +344,8 @@ it('files the same alert name from two stacks apart, so one stack\'s resolution 
     $loft = aStackToldAbout('the-loft', 'The loft');
     $shed = aStackToldAbout('the-shed', 'The shed');
 
-    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
-    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, WhatTheCoreDecided::toSay('disk.full-3'))));
+    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'))));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3'))));
     $notifier->show(Notification::ofAnAlert($shed, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset))->whileLocked());
     $notifier->show(Notification::fromTheCore($loft, WhatTheCoreDecided::toSay('disk.full')));
 
@@ -357,7 +358,7 @@ it('files the same alert name from two stacks apart, so one stack\'s resolution 
 it('files a notification under a key that names neither its stack nor its alert', function (): void {
     $centre = ANotificationCentreOnAHandset::allowed();
 
-    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('disk.full-3'))));
+    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'))));
 
     $id = $centre->shown()[0]['id'];
 

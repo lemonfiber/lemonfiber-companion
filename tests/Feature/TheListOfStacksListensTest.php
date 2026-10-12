@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
@@ -194,7 +195,7 @@ it('keeps listening when the list is shut, and lets go when the screen stops', f
 
 it('tells the operator each alert another stack raised, filed under its name', function (): void {
     $notifier = ANotifierInMemory::allowed();
-    $raised = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('vpn.down-1'))));
+    $raised = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'))));
     $keychain = signedIntoBoth();
     $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
     $screen = new HowThisStackIs(
@@ -208,13 +209,13 @@ it('tells the operator each alert another stack raised, filed under its name', f
 
     $screen->hearEachStack();
 
-    expect($notifier->told())->toBe([sprintf('plain vpn.down %s onset under vpn.down-1', theShed()->name()->shown())]);
+    expect($notifier->told())->toBe([sprintf('plain vpn.down %s onset as %s', theShed()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theShed()->id()))]);
 });
 
 it('tells the operator each alert the screen\'s own stack raised, its resolution filed with its onset', function (): void {
     $notifier = ANotifierInMemory::allowed();
-    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, WhatTheCoreDecided::toSay('vpn.down-1'));
-    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, WhatTheCoreDecided::toSay('vpn.down-1'));
+    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'));
+    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsName::of('vpn.down#1'));
     $keychain = signedIntoBoth();
     $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
     $screen = new HowThisStackIs(
@@ -229,8 +230,8 @@ it('tells the operator each alert the screen\'s own stack raised, its resolution
     $screen->listen();
 
     expect($notifier->told())->toBe([
-        sprintf('plain vpn.down %s onset under vpn.down-1', theCellar()->name()->shown()),
-        sprintf('plain vpn.down %s resolved under vpn.down-1', theCellar()->name()->shown()),
+        sprintf('plain vpn.down %s onset as %s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id())),
+        sprintf('plain vpn.down %s resolved as %s', theCellar()->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor(theCellar()->id())),
     ]);
 });
 

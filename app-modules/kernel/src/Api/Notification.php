@@ -8,9 +8,6 @@ use function array_any;
 
 use Closure;
 
-use function hash;
-use function sprintf;
-
 /**
  * Something the core decided an operator should be told, about one stack.
  *
@@ -23,8 +20,8 @@ use function sprintf;
  * wrote. That is the difference between a rule and a habit: the words come from
  * the translator, keyed by the identifier.
  *
- * What it is filed under is an identifier the core declared too, so the alert's
- * resolution replaces its onset without the app naming anything.
+ * What it is filed under is the alert's name, which is never shown: it only
+ * keys the notification, with its stack, so a resolution replaces its onset.
  *
  * The identifier is a {@see WhatTheCoreDecided} and not a {@see Code}, and that
  * is the other half of the same requirement. Inventing a code the core never
@@ -57,7 +54,7 @@ final readonly class Notification
         private WhatTheCoreDecided $says,
         private bool $guarded,
         private WhichWayItWent $way,
-        private WhatTheCoreDecided $filedUnder,
+        private AnAlertsName $filedUnder,
     ) {}
 
     /**
@@ -69,7 +66,7 @@ final readonly class Notification
      */
     public static function fromTheCore(Stack $about, WhatTheCoreDecided $says): self
     {
-        return new self($about->id(), $about->name(), $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: $says);
+        return new self($about->id(), $about->name(), $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: AnAlertsName::byItsKind($says));
     }
 
     /**
@@ -118,23 +115,16 @@ final readonly class Notification
         return $this->way;
     }
 
-    /** What it is filed under among its stack's notifications: the alert's name, or the kind. */
-    public function filedUnder(): WhatTheCoreDecided
-    {
-        return $this->filedUnder;
-    }
-
     /**
-     * The key it is filed as on the device: its stack and what it is filed under, digested together.
+     * The key it is filed as on the device: its stack and its alert's name, digested together.
      *
      * A later notification with the same key replaces this one, so only the
      * same alert from the same stack does: alert names are each stack's own,
-     * and two stacks raising the same name never touch each other's. Digested
-     * so the platform's store holds no stack and no alert in the clear.
+     * and two stacks raising the same name never touch each other's.
      */
     public function filedAs(): string
     {
-        return hash('sha256', sprintf('%s|%s', $this->about->stored(), $this->filedUnder->shown()));
+        return $this->filedUnder->filedFor($this->about);
     }
 
     /**

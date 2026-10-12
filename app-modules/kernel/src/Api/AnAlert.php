@@ -13,10 +13,10 @@ namespace Modules\Kernel\Api;
  */
 final readonly class AnAlert
 {
-    private function __construct(private WhatTheCoreDecided $kind, private WhichWayItWent $way, private WhatTheCoreDecided $filedUnder) {}
+    private function __construct(private WhatTheCoreDecided $kind, private WhichWayItWent $way, private AnAlertsName $filedUnder) {}
 
     /** The alert, filed under the name the core gave it. */
-    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, WhatTheCoreDecided $named): self
+    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, AnAlertsName $named): self
     {
         return new self($kind, $way, $named);
     }
@@ -24,7 +24,7 @@ final readonly class AnAlert
     /** The alert, filed under its kind, as it is where the core recorded it before alerts carried a name. */
     public static function unnamed(WhatTheCoreDecided $kind, WhichWayItWent $way): self
     {
-        return new self($kind, $way, $kind);
+        return new self($kind, $way, AnAlertsName::byItsKind($kind));
     }
 
     /** What kind of event it is. */
@@ -40,7 +40,7 @@ final readonly class AnAlert
     }
 
     /** What a notification about it is filed under: its name, so a resolution replaces its onset, or its kind where it has no name. */
-    public function filedUnder(): WhatTheCoreDecided
+    public function filedUnder(): AnAlertsName
     {
         return $this->filedUnder;
     }
