@@ -210,8 +210,8 @@ it('asks nothing for a member\'s session, and says it is not theirs to ask', fun
     $owing = AMemberWhoIsOwed::owed(whatTheDefaultsAreTold());
     $screen = thePreview(watching: $watching, owing: $owing, whose: Whose::member('ada'));
 
-    expect($screen->shelf()->met)->toBe(KindOfObstacle::NotForThisAccount->said())
-        ->and($screen->allowance()->met)->toBe(KindOfObstacle::NotForThisAccount->said())
+    expect($screen->shelf()->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
+        ->and($screen->allowance()->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
         ->and($watching->askings())->toBe(0)
         ->and($owing->askings())->toBe(0);
 });

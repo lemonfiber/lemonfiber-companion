@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Category;
@@ -63,6 +64,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereAKeyStands;
+use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -600,6 +602,17 @@ it('every state a key can be in has a case', function (): void {
 
     expect($words)->not->toBe([], 'no state union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhereAKeyStands::cases()))->toBe($words);
+});
+
+it('every standing a member can have has a case', function (): void {
+    // A member's asking carries a `standing` of its own, so the member's is
+    // read from the member's own fields rather than from the whole envelope.
+    $members = WhatTheContractDeclares::fieldsOf(TheGeneratedEnvelopes::theGeneratedEnvelope('HouseholdEnvelope'))['members'][1];
+    $member = WhatTheContractDeclares::fieldsOf(WhatTheContractDeclares::inside($members, 'list<'));
+    $words = TheWireUnions::unionIn(sprintf('standing: %s', $member['standing'][1]), 'standing');
+
+    expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhereAMemberStands::cases()))->toBe($words);
 });
 
 it('every rating a device can be given has a case', function (): void {

@@ -7,12 +7,15 @@ use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
@@ -35,6 +38,7 @@ use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Tests\Support\AroundThePhone;
@@ -44,6 +48,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\NoticingWhatIsNew;
@@ -179,6 +184,32 @@ it('counts what is new of every kind beside What\'s new, and says it with the la
         ->and(trans_choice('news.new_on_tab', 4, ['tab' => __('navigation.menu.whats_new')]))->toBe('What\'s new, 4 new')
         ->and(trans_choice('news.new_on_tab', 3, ['tab' => __('navigation.menu.whats_new', locale: 'nl')], 'nl'))->toBe('Wat is nieuw, 3 nieuw');
 })->with(['updates', 'the words the menu opens']);
+
+it('offers What\'s new first on the health screen where anything is new, and nothing where nothing is', function (): void {
+    $stack = theStackWhoseNewIsCounted();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));
+    $screen = new HowThisStackIs(
+        AStackThatWasAsked::saying(Report::of(Overall::Healthy, Findings::of())),
+        $keychain,
+        AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
+        new AppsSettingsThatOpen(),
+        AroundThePhone::listening(theBarnSayingWhatIsNew(), $clock),
+    );
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $offered = trans_choice('news.new_on_tab', 4, ['tab' => __('navigation.menu.whats_new')]);
+
+    $screen->listen();
+    $before = WhatTheDeviceWouldDraw::by($screen)->offers();
+    $clock->moveTo(AScreenListening::secondsAfterOpening(2));
+    $screen->listen();
+    $after = WhatTheDeviceWouldDraw::by($screen)->offers();
+
+    expect($before)->not->toContain($offered)
+        ->and($after)->toContain($offered)
+        ->and($after[0] ?? null)->toBe($offered);
+});
 
 it('counts what is new on a screen that does not draw what answers what, whatever the stream says of the wiring', function (): void {
     $clock = FrozenClock::at(AScreenListening::secondsAfterOpening(0));

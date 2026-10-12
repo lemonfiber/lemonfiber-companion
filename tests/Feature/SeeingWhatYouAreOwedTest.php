@@ -152,8 +152,8 @@ it('draws a refusal as a refusal rather than as an empty reading', function (): 
 
     expect($refused->answer()->cameBack())->toBeFalse()
         ->and($refused->answer()->isSignedIn)->toBeTrue()
-        ->and($refused->answer()->met)->toBe('connection.not_for_this_account')
-        ->and($refused->answer()->remedy)->toBe('connection.not_for_this_account_action')
+        ->and($refused->answer()->met)->toBe('household.stood_in_the_way.not_for_this_account')
+        ->and($refused->answer()->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
         ->and($nothing->answer()->cameBack())->toBeTrue()
         ->and($nothing->answer()->sentences)->toBe([]);
 });
@@ -165,8 +165,8 @@ it('says nothing about entitlement that the core did not say', function (): void
     // them would be a second wording able to drift from the one beside it.
     $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount)));
 
-    expect($screen->answer()->met)->toEqual(KindOfObstacle::NotForThisAccount->said())
-        ->and($screen->answer()->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedy());
+    expect($screen->answer()->met)->toEqual(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
+        ->and($screen->answer()->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedyForTheHousehold());
 });
 
 it('a refused credential signs the device out and the session is let go of', function (): void {
@@ -345,8 +345,8 @@ it('draws a refusal as a refusal rather than as having asked for nothing', funct
 
     expect($refused->requests()->cameBack())->toBeFalse()
         ->and($refused->requests()->isSignedIn)->toBeTrue()
-        ->and($refused->requests()->met)->toBe('connection.not_for_this_account')
-        ->and($refused->requests()->remedy)->toBe('connection.not_for_this_account_action')
+        ->and($refused->requests()->met)->toBe('household.stood_in_the_way.not_for_this_account')
+        ->and($refused->requests()->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
         ->and($nothing->requests()->cameBack())->toBeTrue()
         ->and($nothing->requests()->rows)->toBe([]);
 });

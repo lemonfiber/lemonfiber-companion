@@ -3,6 +3,10 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+    @if ($this->newHere() > 0)
+        <x-design::action :label="trans_choice('news.new_on_tab', $this->newHere(), ['tab' => __('navigation.menu.whats_new')])" tap="openWhatsNew()" tone="tonal" />
+    @endif
+
     {{-- The one line, as the core computed it for every surface: the worst
          thing it named, in its words, beside the glyph of how the stack
          stands and that standing in a word, and the line's own sentence where

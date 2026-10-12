@@ -203,7 +203,7 @@ it('tells a member the house needs an update, never which software or version', 
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $said = implode("\n", WhatTheDeviceWouldDraw::by($screen)->said());
 
-    expect($said)->toContain(__('household.needs_an_update'))
+    expect($said)->toContain(__('household.stood_in_the_way.not_on_this_stack'))
         ->and($said)->not->toContain('lemonfiber')
         ->and($said)->not->toContain(__('connection.not_on_this_stack'));
 });

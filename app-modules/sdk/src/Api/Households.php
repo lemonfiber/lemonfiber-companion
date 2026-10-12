@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\WhatWasAskedFor;
 use Modules\Sdk\Internal\Wire;
@@ -160,7 +161,7 @@ final readonly class Households
     }
 
     /**
-     * One member, by name, joined or still invited, or a row refused by its position.
+     * One member, by name, joined or not and where they stand, or a row refused by its position.
      *
      * A member with no name, or no word on whether they have taken the account
      * up, is refused rather than dropped, for the reason every row here is.
@@ -171,13 +172,18 @@ final readonly class Households
             || ! array_key_exists(WireField::Name->value, $row)
             || ! is_string($row[WireField::Name->value])
             || ! array_key_exists(HouseholdField::Claimed->value, $row)
-            || ! is_bool($row[HouseholdField::Claimed->value])) {
+            || ! is_bool($row[HouseholdField::Claimed->value])
+            || ! array_key_exists(WireField::Standing->value, $row)
+            || ! is_string($row[WireField::Standing->value])) {
             throw HouseholdIsUnreadable::member($position);
         }
 
+        $stands = WhereAMemberStands::tryFrom($row[WireField::Standing->value])
+            ?? throw HouseholdIsUnreadable::memberStanding($row[WireField::Standing->value], $position);
+
         return $row[HouseholdField::Claimed->value]
-            ? AMember::joined($row[WireField::Name->value])
-            : AMember::stillInvited($row[WireField::Name->value]);
+            ? AMember::joined($row[WireField::Name->value], $stands)
+            : AMember::stillInvited($row[WireField::Name->value], $stands);
     }
 
     /**

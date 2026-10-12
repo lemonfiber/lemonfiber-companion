@@ -12,8 +12,8 @@ use function sprintf;
  * Every outcome of reaching a stack — an obstacle, a pairing, a sign-in, a
  * scanner that read nothing — is said by the line its stem names in the
  * `connection` group, and advised by the line beside it with `_action` on the
- * end; one met on the way to the stack is said to a member by the line under
- * the same stem in the household's group. The enums that name those outcomes
+ * end; a member is told each by the line under the same stem in the
+ * household's group, in the household's words. The enums that name those outcomes
  * hand their value here rather than each spelling the group and the suffix:
  * four spellings of one convention are four places a renamed group has to be
  * found.
@@ -27,10 +27,10 @@ final readonly class InTheConnectionCatalogue
     private const string REMEDY = 'connection.%s_action';
 
     /** The line that says what happened, as a member is told it: in the household's words. */
-    private const string SAID_TO_THE_HOUSEHOLD = 'household.out_of_reach.%s';
+    private const string SAID_TO_THE_HOUSEHOLD = 'household.stood_in_the_way.%s';
 
     /** The line that says what to do about it, as a member is told it. */
-    private const string REMEDY_FOR_THE_HOUSEHOLD = 'household.out_of_reach.%s_action';
+    private const string REMEDY_FOR_THE_HOUSEHOLD = 'household.stood_in_the_way.%s_action';
 
     private function __construct(private string $said, private string $remedy) {}
 

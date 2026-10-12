@@ -280,6 +280,12 @@ final class HowThisStackIs extends NativeComponent
         return $this->goes()->traceOf(WhatToFollow::called($item));
     }
 
+    /** How many things are new on this stack, which the screen offers first; none where nothing is. */
+    public function newHere(): int
+    {
+        return $this->howMuchIsNewHere()->howManyInAll();
+    }
+
     /**
      * What came back, asked once and held.
      *

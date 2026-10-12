@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\ViewModels;
 
-use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 
 /**
@@ -18,10 +17,8 @@ use Modules\Kernel\Api\Obstacle;
  * to draw them as they are rather than through the catalogue.
  *
  * **This app's lines otherwise**, for an obstacle met before the core
- * answered: the obstacle's sentences as the household is told them, and a
- * house too old for what a member opened said as the house needing an update,
- * because a member is never told which software runs it or which version, and
- * updating it is not theirs to do.
+ * answered: the obstacle's sentences as the household is told them, which
+ * never name the software the house runs or its version.
  */
 final readonly class WhatAMemberIsTold
 {
@@ -30,11 +27,7 @@ final readonly class WhatAMemberIsTold
     {
         $told = $why->whatTheHouseholdWasTold();
 
-        return match (true) {
-            $told->wasSaid() => $told->sentence(),
-            $why->is(KindOfObstacle::NotOnThisStack) => 'household.needs_an_update',
-            default => $why->saidToTheHousehold(),
-        };
+        return $told->wasSaid() ? $told->sentence() : $why->saidToTheHousehold();
     }
 
     /** The core's remedy, empty where it gave none, or the catalogue key for what to do about it. */
@@ -42,11 +35,7 @@ final readonly class WhatAMemberIsTold
     {
         $told = $why->whatTheHouseholdWasTold();
 
-        return match (true) {
-            $told->wasSaid() => $told->remedy(),
-            $why->is(KindOfObstacle::NotOnThisStack) => 'household.needs_an_update_action',
-            default => $why->remedyForTheHousehold(),
-        };
+        return $told->wasSaid() ? $told->remedy() : $why->remedyForTheHousehold();
     }
 
     /** Whether what the member is told is the core's text, drawn as it is, rather than keys to translate. */

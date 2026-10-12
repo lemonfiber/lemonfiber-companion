@@ -262,8 +262,9 @@ final readonly class UnreadOnEnvelopesAToL
         [
             'path' => 'CredentialsEnvelope.held[].from',
             'because' => 'Whose line the credential is: the stack\'s own, or an installed plugin\'s. `N9-R3` asks '
-                . 'who produced it, which `origin` answers; which plugin brought the service is a question about '
-                . 'provenance no requirement here asks, and it belongs beside the plugin, where `F7` draws it.',
+                . 'who produced it, which `origin` answers. `N25-R13` asks for a plugin\'s secrets on the plugin, '
+                . 'with whether each is held and where it came from, and that waits for the settings read the SDK '
+                . 'does not offer yet — `N1-R17`.',
         ],
         [
             'path' => 'CredentialsEnvelope.held[].location',
@@ -596,14 +597,6 @@ final readonly class UnreadOnEnvelopesAToL
             'path' => 'HouseholdEnvelope.members[].requests[].year',
             'because' => 'The year the title came out. `N2-R11` asks for enough to decide on, and the title '
                 . 'beside it is what a person recognises; no requirement asks for the year — `N1-R17`.',
-        ],
-        [
-            'path' => 'HouseholdEnvelope.members[].standing',
-            'because' => 'Where a member stands: invited, expired, active or suspended. No requirement asks a '
-                . 'screen here for it. The one that comes nearest, `N9-R7`, asks for an invitation that lapsed '
-                . 'to be told apart from one the invitee declined, and `declined` is not one of these four, so '
-                . 'reading `expired` alone would answer half of it and look like all of it. `N1-R17` has the '
-                . 'field wait for a requirement.',
         ],
         [
             'path' => 'JobEnvelope.action',

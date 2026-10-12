@@ -117,7 +117,7 @@ final readonly class Obstacle
      */
     public function remedy(): string
     {
-        return $this->versions instanceof TheVersionsSpoken && ! $this->versions->isTheStackNewer()
+        return $this->isFromAnOlderStack()
             ? InTheConnectionCatalogue::under(self::FROM_AN_OLDER_STACK)->remedy()
             : $this->kind->remedy();
     }
@@ -129,15 +129,16 @@ final readonly class Obstacle
     }
 
     /**
-     * The key for what a member can do about it.
+     * The key for what a member can do about it, in the household's words.
      *
-     * The household's words where the obstacle was met on the way to the
-     * stack or the answer could not be read, and {@see self::remedy()}
-     * everywhere else, which keeps the remedy a disagreement over versions owes.
+     * Where the versions disagree and the house is the older, it is the house
+     * that is updated, by whoever looks after it, and not this app.
      */
     public function remedyForTheHousehold(): string
     {
-        return $this->kind->isSaidInTheHouseholdsWords() ? $this->kind->remedyForTheHousehold() : $this->remedy();
+        return $this->isFromAnOlderStack()
+            ? InTheConnectionCatalogue::forTheHouseholdUnder(self::FROM_AN_OLDER_STACK)->remedy()
+            : $this->kind->remedyForTheHousehold();
     }
 
     /** Whether its remedy is a switch on this app's page in the phone's settings. */
@@ -180,5 +181,11 @@ final readonly class Obstacle
     public function standing(): Standing
     {
         return $this->kind->standing();
+    }
+
+    /** Whether the versions disagree with the stack the older, so the remedy is the machine's update. */
+    private function isFromAnOlderStack(): bool
+    {
+        return $this->versions instanceof TheVersionsSpoken && ! $this->versions->isTheStackNewer();
     }
 }

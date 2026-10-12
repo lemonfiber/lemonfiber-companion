@@ -23,6 +23,7 @@ use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
+use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
@@ -610,23 +611,37 @@ it('offers every way unrated material can go as a chip, the one chosen marked', 
         );
 });
 
-it('opens on who is in: joined, or an invitation still out, and asks once a frame', function (): void {
-    $inviting = AStackThatInvites::answering()->holding(TheMembers::of(AMember::joined('anna'), AMember::stillInvited('bob')));
+it('opens on who is in, each where they stand, a lapsed invitation told apart from a declined one, and asks once a frame', function (): void {
+    $inviting = AStackThatInvites::answering()->holding(TheMembers::of(
+        AMember::joined('anna'),
+        AMember::stillInvited('bob'),
+        AMember::stillInvited('cleo', WhereAMemberStands::Lapsed),
+        AMember::stillInvited('dirk', WhereAMemberStands::Declined),
+        AMember::joined('eva', WhereAMemberStands::Suspended),
+    ));
     $screen = theInvitationScreen($inviting);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
     $screen->answer();
 
     expect($drawn->said())->toContain(__('stacks.invitation.who_is_in'))
-        ->and($drawn->said())->toContain('anna')
-        ->and($drawn->said())->toContain(__('stacks.invitation.member.joined'))
-        ->and($drawn->said())->toContain('bob')
-        ->and($drawn->said())->toContain(__('stacks.invitation.member.still_invited'))
+        ->and($drawn->said())->toContain('anna', 'bob', 'cleo', 'dirk', 'eva')
+        ->and($drawn->said())->toContain(
+            __('stacks.invitation.member.active'),
+            __('stacks.invitation.member.invited'),
+            __('stacks.invitation.member.expired'),
+            __('stacks.invitation.member.declined'),
+            __('stacks.invitation.member.suspended'),
+        )
         ->and($drawn->offers())->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'anna']))
         ->and($drawn->offers())->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'bob']))
         ->and(array_map(static fn(AMemberAsShown $member): array => [$member->name, $member->standingSaid], $screen->answer()->members))->toBe([
-            ['anna', 'stacks.invitation.member.joined'],
-            ['bob', 'stacks.invitation.member.still_invited'],
+            ['anna', 'stacks.invitation.member.active'],
+            ['bob', 'stacks.invitation.member.invited'],
+            ['cleo', 'stacks.invitation.member.expired'],
+            ['dirk', 'stacks.invitation.member.declined'],
+            ['eva', 'stacks.invitation.member.suspended'],
         ])
+        ->and(__('stacks.invitation.member.expired'))->not->toBe(__('stacks.invitation.member.declined'))
         ->and($inviting->readings())->toBe(1);
 });
 

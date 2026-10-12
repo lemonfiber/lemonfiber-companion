@@ -276,11 +276,6 @@ enum KindOfObstacle: string
         self::ConnectionWasTurnedAway,
     ];
 
-    /** The kinds a member is told in the household's words rather than the operator's. */
-    private const array SAID_IN_THE_HOUSEHOLDS_WORDS = [
-        ...self::MET_ON_THE_WAY_TO_THE_STACK,
-        self::AnswerCouldNotBeRead,
-    ];
 
     /**
      * The key for what stood in the way.
@@ -322,27 +317,19 @@ enum KindOfObstacle: string
     /**
      * The key for what stood in the way, on a member's screen.
      *
-     * A member is told what an operator is, in the household's words, where
-     * the obstacle was met on the way to the stack or the answer could not be
-     * read: those sentences name a machine, an address and software, and a
-     * member has none of them to look at. Everything else is the same sentence
-     * on both sides.
+     * Every kind has a sentence of its own in the household's words: the
+     * operator's name a machine, an address, a certificate or a session, and a
+     * member has none of them to look at or put right.
      */
     public function saidToTheHousehold(): string
     {
-        return $this->isSaidInTheHouseholdsWords() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->said() : $this->said();
+        return InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->said();
     }
 
-    /** The key for what a member can do about it, in the household's words where {@see saidToTheHousehold()} is. */
+    /** The key for what a member can do about it, in the household's words. */
     public function remedyForTheHousehold(): string
     {
-        return $this->isSaidInTheHouseholdsWords() ? InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy() : $this->remedy();
-    }
-
-    /** Whether a member is told this in the household's words rather than the operator's. */
-    public function isSaidInTheHouseholdsWords(): bool
-    {
-        return in_array($this, self::SAID_IN_THE_HOUSEHOLDS_WORDS, strict: true);
+        return InTheConnectionCatalogue::forTheHouseholdUnder($this->value)->remedy();
     }
 
     /**

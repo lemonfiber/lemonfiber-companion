@@ -360,6 +360,16 @@ it('says which forms are running, and every form each service runs for', functio
         ->and($lines)->toContain(__('health.runs_for', ['forms' => 'hunt']));
 });
 
+it('draws a stack running part of itself on purpose as running, never as degraded or partial', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose()));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->overall)->toBe(HowTheStackIsRunning::Active->saidOnTheScreen())
+        ->and($drawn)->toContain(__(HowTheStackIsRunning::Active->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(HowTheStackIsRunning::Degraded->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(HowTheStackIsRunning::Partial->saidOnTheScreen()));
+});
+
 it('draws a service the forms left out as left out with why, and not as a service that is absent', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose()));
     $answer = $screen->answer();

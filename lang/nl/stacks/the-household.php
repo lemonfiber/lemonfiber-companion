@@ -207,8 +207,11 @@ return [
         'who_is_in' => 'Wie er al binnen is',
         'ask_who_is_in_again' => 'Bekijk opnieuw wie er binnen is',
         'member' => [
-            'joined' => 'In het huishouden',
-            'still_invited' => 'Uitgenodigd, en nog niet aangenomen',
+            'invited' => 'Uitgenodigd, en nog niet aangenomen',
+            'expired' => 'Uitgenodigd, en de uitnodiging verliep voordat die werd aangenomen',
+            'declined' => 'Uitgenodigd, en heeft de uitnodiging afgeslagen',
+            'active' => 'In het huishouden',
+            'suspended' => 'In het huishouden, met het account uitgeschakeld',
         ],
         'nobody_in' => 'Nog niemand heeft een account op de mediaserver',
         'would_take_it_off' => 'Laat :name een nieuw wachtwoord kiezen',

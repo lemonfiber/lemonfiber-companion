@@ -206,7 +206,7 @@ it('says a house out of reach as every member screen says it', function (): void
     $screen->signIn();
 
     expect($screen->stoodInTheWay())->toBe(WhatStoodInTheWayOfJoining::NoAnswer)
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.out_of_reach.no_answer'), __('household.out_of_reach.no_answer_action'));
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.stood_in_the_way.no_answer'), __('household.stood_in_the_way.no_answer_action'));
 });
 
 it('says nothing stood in the way before signing in, or once it worked', function (): void {
