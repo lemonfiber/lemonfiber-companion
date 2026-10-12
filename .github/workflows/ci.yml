@@ -331,8 +331,9 @@ jobs:
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.typecheck == 'true') }}
     # The one macOS image both Swift gates run on, so the harness and the
-    # typecheck read the same sources with the same compiler.
-    runs-on: &swift-runner macos-latest
+    # typecheck read the same sources with the same compiler; `swift` names the
+    # same image, and tests/Arch/TheWorkflowsSpellEverythingOutTest holds the two to it.
+    runs-on: macos-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -385,7 +386,7 @@ jobs:
     name: swift
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.swift == 'true') }}
-    runs-on: *swift-runner
+    runs-on: macos-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
