@@ -6,6 +6,7 @@ return [
     // A stack's refusal in its own words, on whichever screen asked.
     'refusal' => [
         'named' => 'It names :named',
+        'remedy' => 'What to do: :remedy',
     ],
 
     // How the machine shares its line with the household.
@@ -56,10 +57,90 @@ return [
         ],
         // Not a cap of nothing: no cap was declared.
         'uncapped' => 'No cap is declared',
+        'hours' => 'The household\'s hours',
+        'up_from' => 'Up from :from to :to',
+        'zone' => 'Read in :zone',
+        'no_hours' => 'No household hours are declared',
         'untouched' => 'Outside every limit',
         'nothing_untouched' => 'Nothing is outside the limits',
         'no_cautions' => 'The stack has nothing to add about this reading',
-        'changed_at_the_machine' => 'Limits and caps are changed at the machine, not from here',
+    ],
+
+    // Changing how the machine shares its line, rehearsed before it is applied.
+    'line_change' => [
+        'title' => 'Change how the line is shared',
+        'left_blank' => 'Leave a field empty to keep it as it is.',
+        'down' => 'Download limit',
+        'down_is' => 'A share of the measured line, such as 50%, a figure such as 2MiB, or unlimited',
+        'up' => 'Upload limit',
+        'up_is' => 'Left empty while the download changes, the stack sets the more careful upload limit itself',
+        'line' => 'What the line carries',
+        'line_is' => 'Download and upload, faster one first, such as 60MiB/6MiB, or none to measure it again',
+        'active' => 'The household\'s hours',
+        'active_is' => 'When the house is up and the stack is held back, such as 07:00-23:00, or none',
+        'cap' => 'Monthly cap',
+        'cap_is' => 'What the stack itself may move in a month, such as 500GiB, or none',
+        'exceeded_is' => 'At the cap: :choice',
+        'exceeded' => [
+            'pause' => 'Stop fetching',
+            'throttle' => 'Slow to a crawl',
+            'continue' => 'Carry on',
+        ],
+        'left_as_it_is' => 'As it is',
+        'lift' => [
+            'heading' => 'Lift the limits for a while',
+            'none' => 'No lift',
+            'offered' => [
+                'quarter_hour' => '15 minutes',
+                'hour' => 'An hour',
+                'four_hours' => 'Four hours',
+            ],
+            'minutes' => 'Minutes',
+            'minutes_are' => 'Up to four hours; the limits come back on their own',
+            'is_minutes' => 'Write the lift as a whole number of minutes',
+            'in_force' => [
+                'minutes' => '{0} The limits are lifted for less than a minute more|{1} The limits are lifted for one more minute|[2,*] The limits are lifted for :count more minutes',
+                'hours' => '{1} The limits are lifted for one more hour|[2,*] The limits are lifted for :count more hours',
+                'days' => '{1} The limits are lifted for one more day|[2,*] The limits are lifted for :count more days',
+            ],
+            'expired' => [
+                'minutes' => '{0} The lift ran out less than a minute ago|{1} The lift ran out a minute ago|[2,*] The lift ran out :count minutes ago',
+                'hours' => '{1} The lift ran out an hour ago|[2,*] The lift ran out :count hours ago',
+                'days' => '{1} The lift ran out a day ago|[2,*] The lift ran out :count days ago',
+            ],
+        ],
+        'nothing_asked' => 'Change at least one thing, or choose a lift',
+        'rehearse' => 'See what this change would do',
+        'apply' => 'Make this change',
+        'working' => 'The stack is asking the download clients',
+        'no_outcome' => 'The stack no longer has an answer for this. The line above is as it stands now.',
+        'start_again' => 'Start again',
+        'refused' => 'The stack did not make this change',
+        'did' => [
+            'rehearsed' => 'A rehearsal: nothing has changed yet. This is what the change would do.',
+            'applied' => 'Changed. This is what each download client then said.',
+            'only-read' => 'Nothing was changed. This is the line as it stands.',
+        ],
+        'clients' => 'Download clients',
+        'no_clients' => 'The stack runs no download client to limit',
+        'direction' => [
+            'down' => 'Download: :verdict',
+            'up' => 'Upload: :verdict',
+        ],
+        'verdict' => [
+            'unasked' => 'nothing asked of it',
+            'nothing-to-limit' => 'nothing to limit in this direction',
+            'holding' => 'keeping to its limit',
+            'ignored' => 'not using the limit it was given',
+            'overrunning' => 'moving faster than its limit',
+        ],
+        'missed' => 'This client is not keeping to what it was given',
+        'rate' => [
+            'asked' => 'Asked to hold to :figure :unit',
+            'accepted' => 'Says :figure :unit is in force',
+            'moving' => 'Moving :figure :unit now',
+        ],
+        'silent' => 'It did not answer: :said',
     ],
 
     // Asking for help: a support bundle, described before it is written.

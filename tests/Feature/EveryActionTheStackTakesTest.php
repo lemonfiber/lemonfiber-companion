@@ -47,7 +47,7 @@ const NOT_SENT_BECAUSE = [
  * requirement that says why the app does not.
  */
 const NOT_SENT_YET = [
-    'accept', 'adopt', 'bandwidth', 'diagnose', 'forget', 'household-allow', 'plugin-prove',
+    'accept', 'adopt', 'diagnose', 'forget', 'household-allow', 'plugin-prove',
     'search', 'space', 'switch',
 ];
 

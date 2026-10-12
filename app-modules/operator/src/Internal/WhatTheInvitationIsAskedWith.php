@@ -12,7 +12,6 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 
-use function preg_match;
 use function trim;
 
 /**
@@ -29,9 +28,6 @@ use function trim;
  */
 final readonly class WhatTheInvitationIsAskedWith
 {
-    /** An age as whole years, in digits and nothing else. */
-    private const string WHOLE_YEARS = '/\A[0-9]+\z/';
-
     private function __construct(private AnInvitationAskedFor|string $answer) {}
 
     /** The four fields as typed. */
@@ -44,7 +40,7 @@ final readonly class WhatTheInvitationIsAskedWith
             return new self('stacks.invitation.needs_a_name');
         }
 
-        if ($years !== '' && preg_match(self::WHOLE_YEARS, $years) !== 1) {
+        if ($years !== '' && ! WrittenAsAWholeNumber::is($years)) {
             return new self('stacks.invitation.age_is_a_number');
         }
 

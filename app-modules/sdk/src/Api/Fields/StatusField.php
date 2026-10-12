@@ -32,9 +32,6 @@ enum StatusField: string implements NamesAWireField
     /** The shape with a clock on it. */
     case Bounded = 'bounded';
 
-    /** How long that clock runs for. */
-    case Seconds = 'seconds';
-
     /** What a disturbance with no clock on it waits for. */
     case Until = 'until';
 

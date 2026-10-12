@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'refusal' => [
         'named' => 'Hij noemt :named',
+        'remedy' => 'Wat te doen: :remedy',
     ],
 
     'line' => [
@@ -49,10 +50,89 @@ return [
             'exceeded' => 'Deze maand heeft het bereikt',
         ],
         'uncapped' => 'Er is geen plafond opgegeven',
+        'hours' => 'De uren van het huishouden',
+        'up_from' => 'Wakker van :from tot :to',
+        'zone' => 'Gelezen in :zone',
+        'no_hours' => 'Er zijn geen uren van het huishouden opgegeven',
         'untouched' => 'Buiten elke limiet',
         'nothing_untouched' => 'Niets valt buiten de limieten',
         'no_cautions' => 'De stack heeft niets toe te voegen over deze meting',
-        'changed_at_the_machine' => 'Limieten en plafonds worden op de machine aangepast, niet hier',
+    ],
+
+    'line_change' => [
+        'title' => 'Aanpassen hoe de lijn wordt gedeeld',
+        'left_blank' => 'Laat een veld leeg om het te houden zoals het is.',
+        'down' => 'Downloadlimiet',
+        'down_is' => 'Een deel van de gemeten lijn, zoals 50%, een waarde zoals 2MiB, of unlimited',
+        'up' => 'Uploadlimiet',
+        'up_is' => 'Leeg terwijl de download verandert, kiest de stack zelf de voorzichtigere uploadlimiet',
+        'line' => 'Wat de lijn aankan',
+        'line_is' => 'Download en upload, de snelste eerst, zoals 60MiB/6MiB, of none om opnieuw te meten',
+        'active' => 'De uren van het huishouden',
+        'active_is' => 'Wanneer het huis wakker is en de stack wordt afgeremd, zoals 07:00-23:00, of none',
+        'cap' => 'Maandplafond',
+        'cap_is' => 'Wat de stack zelf in een maand mag verplaatsen, zoals 500GiB, of none',
+        'exceeded_is' => 'Bij het plafond: :choice',
+        'exceeded' => [
+            'pause' => 'Stoppen met ophalen',
+            'throttle' => 'Afremmen tot een slakkengang',
+            'continue' => 'Doorgaan',
+        ],
+        'left_as_it_is' => 'Zoals het is',
+        'lift' => [
+            'heading' => 'De limieten even opheffen',
+            'none' => 'Niet opheffen',
+            'offered' => [
+                'quarter_hour' => '15 minuten',
+                'hour' => 'Een uur',
+                'four_hours' => 'Vier uur',
+            ],
+            'minutes' => 'Minuten',
+            'minutes_are' => 'Hoogstens vier uur; daarna gelden de limieten vanzelf weer',
+            'is_minutes' => 'Schrijf het opheffen als een heel aantal minuten',
+            'in_force' => [
+                'minutes' => '{0} De limieten zijn nog minder dan een minuut opgeheven|{1} De limieten zijn nog een minuut opgeheven|[2,*] De limieten zijn nog :count minuten opgeheven',
+                'hours' => '{1} De limieten zijn nog een uur opgeheven|[2,*] De limieten zijn nog :count uur opgeheven',
+                'days' => '{1} De limieten zijn nog een dag opgeheven|[2,*] De limieten zijn nog :count dagen opgeheven',
+            ],
+            'expired' => [
+                'minutes' => '{0} Het opheffen liep minder dan een minuut geleden af|{1} Het opheffen liep een minuut geleden af|[2,*] Het opheffen liep :count minuten geleden af',
+                'hours' => '{1} Het opheffen liep een uur geleden af|[2,*] Het opheffen liep :count uur geleden af',
+                'days' => '{1} Het opheffen liep een dag geleden af|[2,*] Het opheffen liep :count dagen geleden af',
+            ],
+        ],
+        'nothing_asked' => 'Pas minstens één ding aan, of kies om de limieten op te heffen',
+        'rehearse' => 'Bekijk wat deze aanpassing zou doen',
+        'apply' => 'Voer deze aanpassing uit',
+        'working' => 'De stack vraagt het de downloadprogramma\'s',
+        'no_outcome' => 'De stack heeft hier geen antwoord meer op. De lijn hierboven is zoals hij nu is.',
+        'start_again' => 'Opnieuw beginnen',
+        'refused' => 'De stack heeft deze aanpassing niet uitgevoerd',
+        'did' => [
+            'rehearsed' => 'Een proef: er is nog niets veranderd. Dit is wat de aanpassing zou doen.',
+            'applied' => 'Aangepast. Dit zei elk downloadprogramma daarna.',
+            'only-read' => 'Er is niets veranderd. Dit is de lijn zoals hij is.',
+        ],
+        'clients' => 'Downloadprogramma\'s',
+        'no_clients' => 'De stack draait geen downloadprogramma om te begrenzen',
+        'direction' => [
+            'down' => 'Download: :verdict',
+            'up' => 'Upload: :verdict',
+        ],
+        'verdict' => [
+            'unasked' => 'er is niets van gevraagd',
+            'nothing-to-limit' => 'niets te begrenzen in deze richting',
+            'holding' => 'houdt zich aan de limiet',
+            'ignored' => 'gebruikt de gegeven limiet niet',
+            'overrunning' => 'gaat sneller dan de limiet',
+        ],
+        'missed' => 'Dit programma houdt zich niet aan wat het kreeg',
+        'rate' => [
+            'asked' => 'Gevraagd om :figure :unit aan te houden',
+            'accepted' => 'Zegt dat :figure :unit geldt',
+            'moving' => 'Verplaatst nu :figure :unit',
+        ],
+        'silent' => 'Het gaf geen antwoord: :said',
     ],
 
     // Om hulp vragen: een supportbundel, beschreven voordat hij wordt geschreven.

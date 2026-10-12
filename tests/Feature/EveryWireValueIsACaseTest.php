@@ -42,6 +42,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -443,6 +444,13 @@ it('everything reaching a cap can do has a case', function (): void {
 
     expect($words)->not->toBe([], 'no exceeded union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatACapDoes::cases()))->toBe($words);
+});
+
+it('everything that can become of a limit on a download client has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedBandwidthEnvelope(), 'verdict');
+
+    expect($words)->not->toBe([], 'no verdict union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatALimitCameTo::cases()))->toBe($words);
 });
 
 it('everywhere a month can stand against its cap has a case', function (): void {

@@ -211,7 +211,7 @@ enum AStacksScreen: string
     /** What this machine will tell its operator about. */
     case Told = '/stacks/{stack}/told';
 
-    /** How this machine shares its line with the household. */
+    /** How this machine shares its line with the household, and changing it. */
     case Line = '/stacks/{stack}/line';
 
     /** What this machine keeps, where, and why, and the copies it holds. */

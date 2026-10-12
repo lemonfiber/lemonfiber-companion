@@ -287,8 +287,9 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
             Router::native(AStacksScreen::Playing->value, WhatIsPlayingNow::class);
 
-            // How the line is shared. Its own screen, because *why is the
-            // internet slow* is asked by the household at the moment it is slow.
+            // How the line is shared, and changing it. Its own screen, because
+            // *why is the internet slow* is asked by the household at the moment
+            // it is slow.
             Router::native(AStacksScreen::Line->value, HowTheLineIsSharedHere::class);
 
             // What it keeps on the machine and the copies it holds: two

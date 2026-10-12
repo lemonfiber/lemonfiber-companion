@@ -48,6 +48,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -63,6 +64,7 @@ use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatSortItIs;
+use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -83,6 +85,7 @@ use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichRate;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
@@ -92,6 +95,7 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
+use Modules\Operator\Internal\HowLongALiftLasts;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
@@ -342,6 +346,22 @@ function everyDerivedKey(): array
         WhereTheMonthStands::class => aPairPerCase(
             WhereTheMonthStands::cases(),
             static fn(WhereTheMonthStands $month): array => [$month->saidOnTheScreen()],
+        ),
+        WhatALimitCameTo::class => aPairPerCase(
+            WhatALimitCameTo::cases(),
+            static fn(WhatALimitCameTo $verdict): array => [$verdict->saidOnTheScreen()],
+        ),
+        WhichRate::class => aPairPerCase(
+            WhichRate::cases(),
+            static fn(WhichRate $rate): array => [$rate->saidOnTheScreen()],
+        ),
+        WhatTheLineRunDid::class => aPairPerCase(
+            WhatTheLineRunDid::cases(),
+            static fn(WhatTheLineRunDid $did): array => [$did->saidOnTheScreen()],
+        ),
+        HowLongALiftLasts::class => aPairPerCase(
+            HowLongALiftLasts::cases(),
+            static fn(HowLongALiftLasts $length): array => [$length->saidOnTheScreen()],
         ),
         WhetherItGoesThroughTheTunnel::class => aPairPerCase(
             WhetherItGoesThroughTheTunnel::cases(),

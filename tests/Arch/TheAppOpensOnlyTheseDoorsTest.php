@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Forms;
@@ -258,6 +259,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     // sent under a key so a retry is one ask.
     'ask' => 'rehearses asking for a title a member found, and asks for it as that member once under one key',
     'downloads-resume' => 'rehearses letting every download client fetch again, and resumes them only against that rehearsal',
+    // Every part of a change to the line is sent as the operator wrote it, for
+    // the core to read. The yes sends the change the rehearsal was asked with,
+    // never what is in the fields when it is tapped.
+    'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
     // agreement built from the record's own rows for that run — and a run the
@@ -582,6 +587,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
         ...array_map(static fn(WhatToDoWithTheDownloads $downloads): string => $downloads->asked(), WhatToDoWithTheDownloads::cases()),
+        ...array_map(static fn(ChangingTheLine $line): string => $line->asked(), ChangingTheLine::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),

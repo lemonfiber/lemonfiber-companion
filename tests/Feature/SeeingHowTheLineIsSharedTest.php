@@ -22,7 +22,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatBecameOfTheLineChange;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
@@ -35,6 +37,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
+use Tests\Support\Fakes\AStackThatSharesItsLine;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -87,7 +90,7 @@ function theLineScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheLineIsSharedHere($rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheLineIsSharedHere(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheLineChange::ended()), $rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -281,5 +284,24 @@ it('draws where the line stands first, then each direction, the cap and what is 
         ->and($said)->toContain('Nothing is being held back yet')
         ->and($said)->toContain('Plex streams')
         ->and($said)->toContain('Measured at night')
-        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+        ->and($drawn->offers())->toBe([
+            __('stacks.line_change.exceeded.pause'),
+            __('stacks.line_change.exceeded.throttle'),
+            __('stacks.line_change.exceeded.continue'),
+            __('stacks.line_change.left_as_it_is'),
+            __('stacks.line_change.lift.offered.quarter_hour'),
+            __('stacks.line_change.lift.offered.hour'),
+            __('stacks.line_change.lift.offered.four_hours'),
+            __('stacks.line_change.lift.none'),
+            __('stacks.line_change.rehearse'),
+            __('health.ask_again'),
+        ]);
+});
+
+it('draws the household\'s hours and the zone they are read in, or that none are declared', function (): void {
+    $kept = WhatTheDeviceWouldDraw::by(theLineScreen(AStackThatRationsItsLine::with(aBareLine()->keepingHours(TheHouseholdsHours::from('07:00', '23:00', 'Europe/Amsterdam')))))->said();
+    $none = WhatTheDeviceWouldDraw::by(theLineScreen(AStackThatRationsItsLine::with(aBareLine())))->said();
+
+    expect($kept)->toContain(__('stacks.line.up_from', ['from' => '07:00', 'to' => '23:00']), __('stacks.line.zone', ['zone' => 'Europe/Amsterdam']))
+        ->and($none)->toContain(__('stacks.line.no_hours'));
 });

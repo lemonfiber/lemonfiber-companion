@@ -19,7 +19,8 @@ use function trim;
  *
  * **What the stack may not know is added, never defaulted.** A line nobody
  * measured has no {@see WhatTheLineCarries}; a stack with no cap has no
- * {@see AMonthlyCap}, which keeps *no cap* apart from *a cap of nothing*. Each
+ * {@see AMonthlyCap}, which keeps *no cap* apart from *a cap of nothing*; a
+ * stack with no hours declared has no {@see TheHouseholdsHours}. Each
  * is read through a fold, so a screen says which arm it is on rather than
  * testing for a blank.
  */
@@ -36,6 +37,7 @@ final readonly class HowTheLineIsShared
         private ?AMonthlyCap $cap = null,
         private ?Remark $spentCapDoes = null,
         private ?Remark $uploadCosts = null,
+        private ?TheHouseholdsHours $hours = null,
     ) {}
 
     /** Where the line stands, what that means, each direction's limit, and what surrounds them. */
@@ -53,25 +55,31 @@ final readonly class HowTheLineIsShared
     /** The same reading, with what the line was measured to carry. */
     public function measuredAt(WhatTheLineCarries $capacity): self
     {
-        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $capacity, $this->cap, $this->spentCapDoes, $this->uploadCosts);
+        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $capacity, $this->cap, $this->spentCapDoes, $this->uploadCosts, $this->hours);
     }
 
     /** The same reading, with the monthly cap that was declared. */
     public function cappedAt(AMonthlyCap $cap): self
     {
-        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $cap, $this->spentCapDoes, $this->uploadCosts);
+        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $cap, $this->spentCapDoes, $this->uploadCosts, $this->hours);
     }
 
     /** The same reading, saying what a spent cap is doing to the figures. */
     public function withASpentCapDoing(Remark $doing): self
     {
-        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $this->cap, $doing, $this->uploadCosts);
+        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $this->cap, $doing, $this->uploadCosts, $this->hours);
     }
 
     /** The same reading, saying what throttling the upload costs. */
     public function withUploadCosting(Remark $costs): self
     {
-        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $this->cap, $this->spentCapDoes, $costs);
+        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $this->cap, $this->spentCapDoes, $costs, $this->hours);
+    }
+
+    /** The same reading, with the household's hours that were declared. */
+    public function keepingHours(TheHouseholdsHours $hours): self
+    {
+        return new self($this->stands, $this->means, $this->downSays, $this->upSays, $this->cautions, $this->untouched, $this->capacity, $this->cap, $this->spentCapDoes, $this->uploadCosts, $hours);
     }
 
     /** Where the line stands. */
@@ -172,6 +180,22 @@ final readonly class HowTheLineIsShared
     public function uploadCost(Closure $costs, Closure $nothing): object
     {
         return $this->uploadCosts instanceof Remark ? $costs($this->uploadCosts->words()) : $nothing();
+    }
+
+    /**
+     * The household's hours, or that none were declared.
+     *
+     * @template TKept of object
+     * @template TNone of object
+     *
+     * @param Closure(TheHouseholdsHours): TKept $kept
+     * @param Closure(): TNone                   $none
+     *
+     * @return TKept|TNone
+     */
+    public function hours(Closure $kept, Closure $none): object
+    {
+        return $this->hours instanceof TheHouseholdsHours ? $kept($this->hours) : $none();
     }
 
     /** A word, refused where it is blank. */

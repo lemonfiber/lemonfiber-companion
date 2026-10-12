@@ -11,10 +11,12 @@ final readonly class ARefusalAsShown
      * @param string $said    the stack's one sentence
      * @param string $meaning what the sentence means, blank where the stack said no more
      * @param string $named   what the refusal named, blank where it named nothing
+     * @param string $remedy  what the stack says to do about it, blank where it gave no remedy
      */
     public function __construct(
         public string $said,
         public string $meaning,
         public string $named,
+        public string $remedy,
     ) {}
 }
