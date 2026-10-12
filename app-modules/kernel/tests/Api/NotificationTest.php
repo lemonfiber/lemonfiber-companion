@@ -7,10 +7,12 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatTheCoreDecided;
+use Modules\Kernel\Api\WhichWayItWent;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -18,9 +20,9 @@ use ReflectionNamedType;
 use function sprintf;
 
 it('is built from the core\'s decision and nothing else', function (): void {
-    // The requirement has two halves and this is the one a type can keep: there
-    // is exactly one way to make a notification, it takes a code the server
-    // declared, and it takes no text. An app wanting to say something of its own
+    // The requirement has two halves and this is the one a type can keep: each
+    // way to make a notification takes what the core declared — its decision,
+    // or one alert it raised — and no text. An app wanting to say something of its own
     // has nowhere to put the sentence.
     //
     // The other half — not calling the platform's alert directly — is a
@@ -34,13 +36,13 @@ it('is built from the core\'s decision and nothing else', function (): void {
         }
     }
 
-    expect($built)->toBe(['fromTheCore']);
+    expect($built)->toBe(['fromTheCore', 'ofAnAlert']);
 });
 
 it('has nowhere to hold a credential, a name or a title', function (): void {
     // All three are values the requirement forbids, and the defence is that
     // there is no field for any of them. Pinned over the constructor rather
-    // than argued in a comment: a fourth parameter taking a `string` is the
+    // than argued in a comment: a parameter taking a `string` is the
     // change that would quietly undo this, and it fails here the moment it is
     // written.
     $carries = [];
@@ -55,6 +57,8 @@ it('has nowhere to hold a credential, a name or a title', function (): void {
         'about' => StackId::class,
         'says' => WhatTheCoreDecided::class,
         'guarded' => 'bool',
+        'way' => WhichWayItWent::class,
+        'filedUnder' => WhatTheCoreDecided::class,
     ]);
 });
 
@@ -146,3 +150,24 @@ it('locking one notification does not unlock the original', function (): void {
 
     expect($ran->shown())->toBe('plain backup.finished the-loft');
 });
+
+it('files a notification of the core\'s decision under that decision, as an onset', function (): void {
+    $notification = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
+
+    expect($notification->filedUnder()->shown())->toBe('backup.finished')
+        ->and($notification->way())->toBe(WhichWayItWent::Onset);
+});
+
+it('files a notification of an alert under the alert\'s name, which way it went, locked or not', function (WhichWayItWent $way): void {
+    $notification = Notification::ofAnAlert(StackId::rememberedAs('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), $way, 'vpn.tunnel-2'));
+
+    foreach ([$notification, $notification->whileLocked()] as $told) {
+        expect($told->filedUnder()->shown())->toBe('vpn.tunnel-2')
+            ->and($told->way())->toBe($way);
+    }
+
+    expect($notification->either(
+        plain: static fn(WhatTheCoreDecided $says): WhatTheCoreDecided => $says,
+        guarded: static fn(): WhatTheCoreDecided => WhatTheCoreDecided::toSay('locked'),
+    )->shown())->toBe('vpn.down');
+})->with(WhichWayItWent::cases());

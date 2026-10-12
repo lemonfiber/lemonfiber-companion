@@ -29,11 +29,10 @@ use function trim;
  * that matched its own obstacles against the core's alerts would be deciding
  * which of them to raise — which is the half of that a type can keep.
  *
- * **Nothing builds one from the wire yet**, and that is a gap rather than an
- * oversight: the contract carries alert *preferences* and no decision this app
- * could render. The work stops there rather than approximating it
- * from a neighbouring endpoint, so {@see self::toSay()} is where that reading
- * will arrive when the contract carries it, and nothing invents one meanwhile.
+ * **Built from the wire from what an `alert` event carries**: its kind, which
+ * a notification says, and its name, which a notification is filed under
+ * (see {@see AnAlert}). {@see self::toSay()} is the one place either becomes
+ * this type.
  */
 final readonly class WhatTheCoreDecided
 {

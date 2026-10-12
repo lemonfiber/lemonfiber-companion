@@ -7,6 +7,7 @@ use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
@@ -31,6 +32,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheAlerts;
 use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheLinks;
@@ -40,8 +42,10 @@ use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
@@ -853,4 +857,93 @@ it('cannot hear a wiring it cannot read, and says so as an answer it could not r
 it('stands in for a stack with the wiring it says as the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('WiringEnvelope', aWiringSaid()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+/**
+ * One `alert` envelope as the core writes it, changed where a case says.
+ *
+ * @param  array<mixed> $changed
+ * @return array<string, mixed>
+ */
+function anAlertEnvelope(array $changed = []): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'alert',
+        'data' => [
+            'check' => 'vpn.tunnel',
+            'kind' => 'vpn.down',
+            'moment' => 'onset',
+            'severity' => 'critical',
+            'summary' => 'The tunnel dropped',
+            'meaning' => 'Downloads have stopped rather than leak',
+            'remedies' => ['Restart the gateway'],
+            'affected' => ['vpn.tunnel'],
+            'id' => 'vpn.tunnel-2',
+            ...$changed,
+        ],
+    ];
+}
+
+/**
+ * One `alert` event as the core frames it, changed where a case says.
+ *
+ * @param array<mixed> $changed
+ */
+function anAlertEvent(array $changed = []): string
+{
+    return anEvent('alert', json_encode(anAlertEnvelope($changed), JSON_THROW_ON_ERROR));
+}
+
+/**
+ * Every alert one wake heard, as one line each.
+ *
+ * @return list<string>
+ */
+function theAlertsAWakeHeard(Hearing $hearing): array
+{
+    $heard = [];
+
+    foreach ($hearing->howItIs(aStackToListenTo(), theSessionItListensWith())->theAlerts() as $alert) {
+        $heard[] = sprintf('%s %s under %s', $alert->kind()->shown(), $alert->way()->value, $alert->filedUnder()->shown());
+    }
+
+    return $heard;
+}
+
+it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
+    $raised = TheAlerts::of(
+        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, 'vpn.tunnel-2'),
+        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, ''),
+    );
+
+    foreach (everyWayOfListening(
+        [MockResponse::make(sprintf('%s%s', anAlertEvent(), anAlertEvent(['moment' => 'resolved', 'id' => null])))],
+        [WhatWasHeard::aSignOfLife()->alerting($raised)],
+    ) as $which => $make) {
+        expect(theAlertsAWakeHeard($make()))->toBe(['vpn.down onset under vpn.tunnel-2', 'vpn.down resolved under vpn.down'], $which);
+    }
+});
+
+it('hears no alert where a wake carried none', function (): void {
+    foreach (everyWayOfListening([MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))], [WhatWasHeard::said(theHealthySummary())]) as $which => $make) {
+        expect(theAlertsAWakeHeard($make()))->toBe([], $which);
+    }
+});
+
+it('cannot hear an alert it cannot read, and says so as an answer it could not read', function (array $changed): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(anAlertEvent($changed))]);
+
+    expect(whatWakesHear(new Listeners(new PinnedClients()), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value]);
+})->with([
+    'no kind' => [['kind' => ' ']],
+    'no way it went' => [['moment' => null]],
+    'a way this app does not read' => [['moment' => 'sideways']],
+    'a name that is not words' => [['id' => 7]],
+    'no payload' => [['kind' => null, 'moment' => null]],
+]);
+
+it('stands in for a stack with an alert the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('AlertEnvelope', anAlertEnvelope()))->toBe([]);
 });

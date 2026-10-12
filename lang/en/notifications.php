@@ -7,11 +7,15 @@ return [
     // type rather than at the call site. The guarded pair is what a
     // locked device may show: no stack, no service, no finding detail.
     'plain' => [
-        'title' => ':stack needs attention',
-        'body' => 'Open lemonfiber to see what it reported. Reference :code.',
+        'onset_title' => ':stack needs attention',
+        'onset_body' => 'Open lemonfiber to see what it reported. Reference :code.',
+        'resolved_title' => ':stack is back to normal',
+        'resolved_body' => 'What it reported has stopped. Reference :code.',
     ],
     'guarded' => [
-        'title' => 'A stack needs attention',
-        'body' => 'Unlock to see which one, and what it reported.',
+        'onset_title' => 'A stack needs attention',
+        'onset_body' => 'Unlock to see which one, and what it reported.',
+        'resolved_title' => 'A stack is back to normal',
+        'resolved_body' => 'Unlock to see which one.',
     ],
 ];

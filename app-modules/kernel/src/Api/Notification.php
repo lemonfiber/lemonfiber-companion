@@ -20,6 +20,9 @@ use Closure;
  * wrote. That is the difference between a rule and a habit: the words come from
  * the translator, keyed by the identifier.
  *
+ * What it is filed under is an identifier the core declared too, so the alert's
+ * resolution replaces its onset without the app naming anything.
+ *
  * The identifier is a {@see WhatTheCoreDecided} and not a {@see Code}, and that
  * is the other half of the same requirement. Inventing a code the core never
  * sends was never the work: this app already has codes — `Obstacle::code()`
@@ -49,6 +52,8 @@ final readonly class Notification
         private StackId $about,
         private WhatTheCoreDecided $says,
         private bool $guarded,
+        private WhichWayItWent $way,
+        private WhatTheCoreDecided $filedUnder,
     ) {}
 
     /**
@@ -60,7 +65,18 @@ final readonly class Notification
      */
     public static function fromTheCore(StackId $about, WhatTheCoreDecided $says): self
     {
-        return new self($about, $says, guarded: false);
+        return new self($about, $says, guarded: false, way: WhichWayItWent::Onset, filedUnder: $says);
+    }
+
+    /**
+     * A notification of one alert the core raised about one stack, filed under the alert's name.
+     *
+     * Its kind is what it says, and its name is what it is filed under, so the
+     * resolution of a condition replaces the notification of its onset.
+     */
+    public static function ofAnAlert(StackId $about, AnAlert $alert): self
+    {
+        return new self($about, $alert->kind(), guarded: false, way: $alert->way(), filedUnder: $alert->filedUnder());
     }
 
     /**
@@ -89,7 +105,19 @@ final readonly class Notification
      */
     public function whileLocked(): self
     {
-        return new self($this->about, $this->says, guarded: true);
+        return new self($this->about, $this->says, guarded: true, way: $this->way, filedUnder: $this->filedUnder);
+    }
+
+    /** Which way the condition it is about went: an onset, or its resolution. */
+    public function way(): WhichWayItWent
+    {
+        return $this->way;
+    }
+
+    /** What it is filed under on the device, so a later one under the same replaces it rather than stacking: the alert's name, or the kind. */
+    public function filedUnder(): WhatTheCoreDecided
+    {
+        return $this->filedUnder;
     }
 
     /**

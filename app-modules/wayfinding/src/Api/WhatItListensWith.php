@@ -9,6 +9,8 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Notification;
+use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheHealthSummary;
@@ -19,7 +21,8 @@ use Modules\News\Api\Noticing;
  * The ports a screen holding the stream reaches for, handed to it together.
  *
  * What hears the stream, the clock and whether anybody can see the screen,
- * where what was heard is kept, and what answers how much is new by it.
+ * where what was heard is kept, what answers how much is new by it, and where
+ * the alerts it carried are told to the operator.
  *
  * The traits that hold a stream are where they are used, and a screen is where
  * they arrive, so the screen is handed them in one value and a trait holding a
@@ -35,10 +38,14 @@ final readonly class WhatItListensWith
         public Standings $standings,
         public KeepingTheLastReading $keeping,
         public Noticing $noticing,
+        public Notifier $notifier,
     ) {}
 
     /**
-     * Keep what a summary said, with when it was heard, and hand back what was heard.
+     * Tell the operator each alert the stack raised, keep what a summary said, and hand back what was heard.
+     *
+     * Each alert goes to the notifier as it arrived, filed under its name, so
+     * a resolution replaces the onset it ends.
      *
      * Twice over: the word for the list, and the whole summary for the next
      * time the stack's screen opens. What either store answers is not looked
@@ -48,6 +55,10 @@ final readonly class WhatItListensWith
      */
     public function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
     {
+        foreach ($heard->theAlerts() as $alert) {
+            $this->notifier->show(Notification::ofAnAlert($stack->id(), $alert));
+        }
+
         $standings = $this->standings;
         $keeping = $this->keeping;
 

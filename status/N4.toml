@@ -30,4 +30,5 @@ requirement = [
   { id = "N4-R22", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
   { id = "N4-R23", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
   { id = "N4-R24", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "bootstrap/Composition/NativePHP/TheLockIsOnTheGlass.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
+  { id = "N4-R25", state = "partial", evidence = ["app-modules/sdk/src/Api/AlertsHeard.php", "app-modules/wayfinding/src/Api/WhatItListensWith.php", "app-modules/device/src/Api/PlatformNotifier.php", "tests/Contract/HearingContractTest.php", "tests/Feature/TheListOfStacksListensTest.php"] },
 ]

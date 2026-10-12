@@ -17,7 +17,7 @@ use Tests\Support\Tree;
 // survives a locale sweep: Laravel looks the key up, misses, falls back, misses
 // again, and renders the key. `notifications.plain.heading` appears on
 // somebody's phone as those words, because the line is called
-// `notifications.plain.title`. Nothing in the type system, the analyser or the
+// `notifications.plain.onset_title`. Nothing in the type system, the analyser or the
 // suite sees a string.
 //
 // Read over the text of the sources rather than by resolving anything at

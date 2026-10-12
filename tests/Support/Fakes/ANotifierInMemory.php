@@ -86,11 +86,11 @@ final class ANotifierInMemory implements Notifier
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
 
-        $this->told[] = $notification->either(
+        $this->told[] = sprintf('%s %s under %s', $notification->either(
             plain: fn(WhatTheCoreDecided $says, StackId $about): Code
                 => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
             guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
-        )->shown();
+        )->shown(), $notification->way()->value, $notification->filedUnder()->shown());
 
         return Shown::delivered();
     }

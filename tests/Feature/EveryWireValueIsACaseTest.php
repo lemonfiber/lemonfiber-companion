@@ -79,6 +79,7 @@ use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
+use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
@@ -430,6 +431,13 @@ it('every state the shared line can be in has a case', function (): void {
 
     expect($words)->not->toBe([], 'no restraint union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhereTheLineStands::cases()))->toBe($words);
+});
+
+it('every way an alert can have gone has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AlertEnvelope'), 'moment');
+
+    expect($words)->not->toBe([], 'no moment union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhichWayItWent::cases()))->toBe($words);
 });
 
 it('every way the line\'s capacity can have been arrived at has a case', function (): void {
