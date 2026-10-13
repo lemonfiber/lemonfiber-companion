@@ -68,6 +68,7 @@ use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
+use Modules\Kernel\Api\WhereTheForgettingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -791,6 +792,13 @@ it('everywhere taking lemonfiber off can have got has a case', function (): void
 
     expect($states)->not->toBe([], 'no state tag was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhereTheUninstallStands::cases()))->toBe($states);
+});
+
+it('everywhere removing what lemonfiber keeps can have got has a case', function (): void {
+    $states = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('StoredEnvelope'), 'state');
+
+    expect($states)->not->toBe([], 'no state tag was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhereTheForgettingStands::cases()))->toBe($states);
 });
 
 it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {

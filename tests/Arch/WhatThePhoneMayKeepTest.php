@@ -21,6 +21,7 @@ use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\ForgettingAgreed;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Offer;
@@ -106,6 +107,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     AResetAgreed::class,
     AFillAgreed::class,
     HostingAgreed::class,
+    ForgettingAgreed::class,
     TakingAnUpdate::class,
     Decided::class,
     WhatWasDecided::class,

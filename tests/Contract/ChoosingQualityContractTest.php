@@ -410,7 +410,7 @@ it('reads a choice for music as what its service made of it', function (): void 
 it('reads every way asking the music service can have gone', function (?array $outcome, string $said): void {
     expect(aChoiceAnsweredWith(whatAStackSaysOfAFormatChosen($outcome, 'rehearsed')))->toEndWith(sprintf('|rehearsed|%s', $said));
 })->with([
-    'nothing asked' => [null, 'quality.asked.not-asked|'],
+    'nothing asked' => [null, 'quality.asked.nothing-asked|'],
     'not ready' => [['state' => 'not-started'], 'quality.asked.not-started|'],
     'refused' => [['state' => 'failed', 'detail' => 'Lidarr said no'], 'quality.asked.failed|Lidarr said no'],
 ]);

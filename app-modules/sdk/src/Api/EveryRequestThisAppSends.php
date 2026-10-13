@@ -20,6 +20,7 @@ use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
+use Modules\Kernel\Api\ForgettingWhatIsKept;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -103,7 +104,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function actions(): array
     {
         $cases = [
-            ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
+            ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(),
             ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),

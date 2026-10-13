@@ -17,6 +17,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\TheRoots;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatIsBeside;
 use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
@@ -38,6 +39,7 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatForgets;
 use Tests\Support\Fakes\AStackThatListsItsCopies;
 use Tests\Support\Fakes\AStackThatSaysWhatItKeeps;
 use Tests\Support\Fakes\StacksInMemory;
@@ -90,7 +92,7 @@ function theKeepingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisMachineKeepsHere($storing, $copying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatThisMachineKeepsHere($storing, $copying, AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::ended()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -182,9 +184,7 @@ it('no copy taken and a list that could not be read are different sentences on t
         ->and($unreadDrawn)->toContain(__('stacks.keeps.copies_unread'))
         ->and($unreadDrawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($unreadDrawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->remedy()))
-        // Nothing to put back where nothing was listed: only taking a copy
-        // and asking again are offered.
-        ->and(WhatTheDeviceWouldDraw::by($unread)->offers())->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')])
+        ->and(WhatTheDeviceWouldDraw::by($unread)->offers())->toBe([__('stacks.keeps.take_a_copy'), __('stacks.forget.what_would_go'), __('health.ask_again')])
         ->and($unreadDrawn)->not->toContain(__('stacks.keeps.no_copies'))
         // What the stack keeps is still shown: the copies failing is theirs alone.
         ->and($unread->answer()->went->cameBack())->toBeTrue()
@@ -217,6 +217,7 @@ it('offers putting back each copy listed, taking a copy and asking again, and ne
         'lemonfiber-20260924-0300-full',
         'lemonfiber-20260923-0300-full',
         __('stacks.keeps.take_a_copy'),
+        __('stacks.forget.what_would_go'),
         __('health.ask_again'),
     ])
         ->and(array_keys($drawn->said(), __('stacks.keeps.put_back'), strict: true))->toHaveCount(2);
@@ -225,7 +226,7 @@ it('offers putting back each copy listed, taking a copy and asking again, and ne
 it('offers nothing to put back where no copy has been taken', function (): void {
     $offers = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->offers();
 
-    expect($offers)->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')]);
+    expect($offers)->toBe([__('stacks.keeps.take_a_copy'), __('stacks.forget.what_would_go'), __('health.ask_again')]);
 });
 
 it('a stack that could not be asked is not a machine keeping nothing, and its copies are not asked', function (): void {

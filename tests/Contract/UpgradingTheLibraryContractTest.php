@@ -158,7 +158,7 @@ function everyWayOfDescribingAnUpgrade(): array
 foreach (everyWayOfDescribingAnUpgrade() as $name => $build) {
     it(sprintf('%s describes an upgrade kind by kind, each at its own preset and cost, asking nothing', $name), function () use ($build): void {
         expect(howAnUpgradeReadsAsText($build()->whatItWouldComeTo(theMachineWhoseLibraryIsUpgraded(), theSessionAnUpgradeIsAskedOn())))
-            ->toBe('described:movies/Maximum/~15 GB/quality.asked.not-asked/;tv/Space-saving/~1 GB/quality.asked.not-asked/');
+            ->toBe('described:movies/Maximum/~15 GB/quality.asked.nothing-asked/;tv/Space-saving/~1 GB/quality.asked.nothing-asked/');
     });
 }
 

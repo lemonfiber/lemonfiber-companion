@@ -53,6 +53,7 @@ use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\ForgettingAgreed;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
@@ -90,12 +91,14 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAdoption;
+use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePlace;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheRoots;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\ThisDevice;
@@ -106,6 +109,8 @@ use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatGoesAndWhatStays;
+use Modules\Kernel\Api\WhatIsBeside;
+use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
@@ -117,6 +122,7 @@ use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheRemovalFound;
+use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
@@ -129,6 +135,7 @@ use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
+use Modules\Kernel\Api\WhereForgettingGot;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -161,6 +168,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
@@ -364,6 +372,12 @@ final readonly class EveryAdapterCallThatReads
                 => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
             'Acceptors::whatBecameOf' => static fn(): object
                 => new Acceptors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Forgetters::forget' => static fn(): object
+                => new Forgetters($clients, $entropy)->forget($stack, $session, ForgettingAgreed::after(TheForgetting::said(WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of()), WhereForgettingGot::unconfirmed()))),
+            'Forgetters::whatWouldGo' => static fn(): object
+                => new Forgetters($clients, $entropy)->whatWouldGo($stack, $session),
+            'Forgetters::whatBecameOf' => static fn(): object
+                => new Forgetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Allowers::rehearse' => static fn(): object
                 => new Allowers($clients, $entropy)->rehearse($stack, $session, AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)),
             'Allowers::carryOut' => static fn(): object

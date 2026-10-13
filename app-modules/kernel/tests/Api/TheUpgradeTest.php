@@ -62,7 +62,7 @@ it('says what became of asking a service, or that nothing was asked', function (
     $notReady = WhatBecameOfAskingIt::asked(WhereTheAskingStands::NotStarted);
     $failed = WhatBecameOfAskingIt::failed('Sonarr said no');
 
-    expect([$notAsked->saidOnTheScreen(), $notAsked->detail()])->toBe(['quality.asked.not-asked', ''])
+    expect([$notAsked->saidOnTheScreen(), $notAsked->detail()])->toBe(['quality.asked.nothing-asked', ''])
         ->and([$started->saidOnTheScreen(), $started->detail()])->toBe(['quality.asked.started', ''])
         ->and([$notReady->saidOnTheScreen()])->toBe(['quality.asked.not-started'])
         ->and([$failed->saidOnTheScreen(), $failed->detail()])->toBe(['quality.asked.failed', 'Sonarr said no']);

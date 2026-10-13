@@ -55,7 +55,7 @@ return [
     // What became of asking a service, whether to search again or to take a
     // format for music.
     'asked' => [
-        'not-asked' => 'Nothing has been asked of its service',
+        'nothing-asked' => 'Nothing has been asked of its service',
         'started' => 'Its service accepted, and is at it now',
         'not-started' => 'Its service had not finished starting, so nothing was asked of it',
         'failed' => 'Its service refused, or could not be reached',
