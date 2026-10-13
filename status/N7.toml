@@ -24,4 +24,5 @@ requirement = [
   { id = "N7-R16", state = "done", evidence = ["app-modules/kernel/src/Api/HowAConnectionEnded.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Contract/WiringTheServicesContractTest.php"] },
   { id = "N7-R17", state = "done", evidence = ["app-modules/kernel/src/Api/HowAConnectionEnded.php", "app-modules/operator/src/Internal/ViewModels/AConnectionAsShown.php", "app-modules/kernel/tests/Api/TheWiringTest.php", "tests/Contract/WiringTheServicesContractTest.php"] },
   { id = "N7-R18", state = "done", evidence = ["app-modules/kernel/src/Api/AMoveAgreed.php", "app-modules/kernel/src/Api/TheReplacement.php", "app-modules/kernel/tests/Api/AMoveAgreedTest.php", "tests/Arch/TheAppOpensOnlyTheseDoorsTest.php"] },
+  { id = "N7-R19", state = "done", evidence = ["app-modules/kernel/src/Api/WiringTheServices.php", "app-modules/sdk/src/Api/Wirers.php", "app-modules/operator/src/Internal/AdoptsTheEdits.php", "tests/Contract/WiringTheServicesContractTest.php", "tests/Feature/AdoptingTheEditsTest.php"] },
 ]

@@ -101,6 +101,9 @@ return [
     'wiring' => [
         'road_in' => 'How the services are wired to each other',
         'what_a_run_does' => 'A run changes nothing that is already right, and keeps what you changed by hand',
+        'what_adopting_does' => 'Adopting keeps the values you changed by hand as the way the stack is meant to be, so they are no longer told apart as changes',
+        'rehearse_adopting' => 'See what adopting your changes would do',
+        'adopt' => 'Adopt these changes',
         'wire' => 'Wire the services',
         'services' => 'The services a run wires to each other',
         'no_services' => 'This machine runs no service to wire',

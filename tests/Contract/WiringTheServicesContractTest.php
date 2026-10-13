@@ -25,6 +25,8 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Wirers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
+use Saloon\Http\Response;
 use Tests\Support\Fakes\AStackThatWires;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -241,4 +243,51 @@ it('a handle this app cannot read is an obstacle, never a run under way', functi
 it('stands in for a stack with a payload the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('SeedEnvelope', whatAStackSaysOfTheRun()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+it('rehearses adopting the operator\'s edits as a dry run, and adopts them without one', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([theHandleARunIsAnsweredWith(), theHandleARunIsAnsweredWith()]);
+    $wirers = new Wirers(new PinnedClients(), SequencedEntropy::counting());
+
+    $wirers->rehearseAdopting(aStackToWire(), Session::of('a-session-not-a-secret'));
+    $wirers->adopt(aStackToWire(), Session::of('a-session-not-a-secret'));
+    [$rehearsal, $yes] = array_map(static fn(Response $recorded): PendingRequest => $recorded->getPendingRequest(), $mock->getRecordedResponses());
+
+    expect($rehearsal->getUrl())->toEndWith('/api/actions/adopt')
+        ->and($rehearsal->body()?->all())->toBe(['dry_run' => true])
+        ->and($yes->getUrl())->toEndWith('/api/actions/adopt')
+        ->and($yes->body()?->all())->toBe([]);
+});
+
+it('reads what adopting would keep and wire, and what it kept, as the stack said', function (): void {
+    $wouldAdopt = MockResponse::make((string) json_encode(whatAStackSaysOfTheRun([
+        'assessment' => 'assessed',
+        'rehearsed' => true,
+        'wirings' => [
+            ['connection' => 'Sonarr into Jellyfin', 'severity' => ['severity' => 'informational'], 'state' => ['state' => 'would-adopt']],
+            ['connection' => 'SABnzbd into Sonarr', 'severity' => ['severity' => 'informational'], 'state' => ['state' => 'would-wire', 'ours' => 'http://sabnzbd:8080']],
+        ],
+    ])));
+    $adopted = MockResponse::make((string) json_encode(whatAStackSaysOfTheRun([
+        'assessment' => 'assessed',
+        'rehearsed' => false,
+        'wirings' => [['connection' => 'Sonarr into Jellyfin', 'severity' => ['severity' => 'informational'], 'state' => ['state' => 'adopted']]],
+    ])));
+    MockClient::destroyGlobal();
+    MockClient::global([$wouldAdopt, $adopted]);
+    $wirers = new Wirers(new PinnedClients(), SequencedEntropy::counting());
+
+    expect(everythingTheWiringSays($wirers->whatBecameOf(aStackToWire(), Session::of('a-session-not-a-secret'), Job::named('j-1'))))
+        ->toBe('assessed|rehearsed|Sonarr into Jellyfin would-adopt  |SABnzbd into Sonarr would-wire  ')
+        ->and(everythingTheWiringSays($wirers->whatBecameOf(aStackToWire(), Session::of('a-session-not-a-secret'), Job::named('j-1'))))
+        ->toBe('assessed|written|Sonarr into Jellyfin adopted  ');
+});
+
+it('the fake remembers adopting, rehearsed and made', function (): void {
+    $wiring = AStackThatWires::answering();
+    $wiring->rehearseAdopting(aStackToWire(), Session::of('a-session-not-a-secret'));
+    $wiring->adopt(aStackToWire(), Session::of('a-session-not-a-secret'));
+
+    expect($wiring->asked())->toBe(['rehearse-adopting', 'adopt']);
 });

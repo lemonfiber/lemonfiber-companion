@@ -124,5 +124,6 @@ it('carries lemonfiber\'s value beside the operator\'s, and refuses a conflict w
 
 it('asks for a wiring run and a choice of filler by lemonfiber\'s names for them', function (): void {
     expect(WhatToDoAboutWiring::Wire->asked())->toBe('seed')
-        ->and(WhatToDoAboutWiring::Fill->asked())->toBe('wiring-fill');
+        ->and(WhatToDoAboutWiring::Fill->asked())->toBe('wiring-fill')
+        ->and(WhatToDoAboutWiring::Adopt->asked())->toBe('adopt');
 });

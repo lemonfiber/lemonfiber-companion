@@ -35,6 +35,7 @@ use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 use Modules\Kernel\Api\WiringTheServices;
+use Modules\Operator\Internal\AdoptsTheEdits;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -100,6 +101,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
+    use AdoptsTheEdits;
 
     /** The handle of the run being followed, while there is one. */
     public ?string $following = null;
@@ -237,6 +239,8 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     public function wire(): void
     {
         $this->following = null;
+        $this->rehearsingAnAdoption = false;
+        $this->adoptionRehearsed = false;
         $this->going = $this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->wire($stack, $session),
         );
@@ -337,6 +341,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             },
             answered: function (TheWiring $wiring): TheWiringTurnedOutToBe {
                 $this->following = null;
+                $this->adoptionRehearsed = $this->rehearsingAnAdoption && $wiring->wasRehearsed();
 
                 return new HowTheWiringReads()->answered($wiring);
             },

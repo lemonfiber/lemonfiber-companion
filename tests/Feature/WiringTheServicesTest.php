@@ -261,7 +261,7 @@ it('shows what the service holds beside what lemonfiber would write, and offers 
         ->and($drawn->said())->toContain(__('stacks.wiring.yours', ['value' => '/mnt/downloads']))
         ->and($drawn->said())->toContain(__('stacks.wiring.ours', ['value' => '/downloads']))
         ->and($drawn->said())->toContain(__('stacks.wiring.ours', ['value' => '8989']))
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
 });
 
 it('says what a warning breaks and what puts it right, and nothing of the kind where nothing breaks', function (): void {
@@ -323,7 +323,7 @@ it('shows a request the stack turned down in its own words', function (): void {
         ->and($screen->following)->toBeNull()
         ->and($drawn->said())->toContain(__('stacks.wiring.refused'))
         ->and($drawn->said())->toContain('Nothing here to wire')
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
 
     $screen->again();
 
@@ -406,7 +406,7 @@ it('asking again before anything was drawn reads the services, and starts nothin
     $screen->again();
 
     expect($screen->going)->toBeNull()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')])
         ->and($supervising->askings())->toBe(1)
         ->and($wiring->asked())->toBe([]);
 });
@@ -476,7 +476,7 @@ it('draws an area the operator declared unmanaged as left alone in their words, 
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.drifted'))
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.failed'))
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.skipped'))
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
 });
 
 /** A link asking for a capability, each claimant with where it came from. */

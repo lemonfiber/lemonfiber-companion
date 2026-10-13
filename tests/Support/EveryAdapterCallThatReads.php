@@ -380,6 +380,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Forgetters($clients, $entropy)->whatWouldGo($stack, $session),
             'Forgetters::whatBecameOf' => static fn(): object
                 => new Forgetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Wirers::rehearseAdopting' => static fn(): object => new Wirers($clients, $entropy)->rehearseAdopting($stack, $session),
+            'Wirers::adopt' => static fn(): object => new Wirers($clients, $entropy)->adopt($stack, $session),
             'Switchers::rehearse' => static fn(): object
                 => new Switchers($clients, $entropy)->rehearse($stack, $session, TheFormsToSwitchTo::these(Form::called('media'))),
             'Switchers::carryOut' => static fn(): object

@@ -91,6 +91,9 @@ return [
     'wiring' => [
         'road_in' => 'Hoe de services met elkaar verbonden zijn',
         'what_a_run_does' => 'Een ronde verandert niets wat al goed staat, en houdt wat je zelf veranderde',
+        'what_adopting_does' => 'Overnemen houdt de waarden die je zelf veranderde aan als hoe de stack hoort te zijn, zodat ze niet langer als wijzigingen gelden',
+        'rehearse_adopting' => 'Bekijk wat het overnemen van je wijzigingen zou doen',
+        'adopt' => 'Deze wijzigingen overnemen',
         'wire' => 'Verbind de services',
         'services' => 'De services die een ronde met elkaar verbindt',
         'no_services' => 'Deze machine draait geen service om te verbinden',
