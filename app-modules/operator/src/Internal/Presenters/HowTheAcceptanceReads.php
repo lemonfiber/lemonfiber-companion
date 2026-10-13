@@ -61,7 +61,7 @@ final readonly class HowTheAcceptanceReads
             hasEnded: false,
             refused: null,
             answered: true,
-            accepted: new HowAWarningReads()->isAcceptedIn($report, $check),
+            accepted: new HowAWarningReads()->in($report, $check)->accepted,
         );
     }
 

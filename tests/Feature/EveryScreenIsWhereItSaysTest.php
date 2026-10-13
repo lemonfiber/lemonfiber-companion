@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AWordInUse;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
@@ -395,6 +396,13 @@ it('a screen that needs only a stack refuses to be handed a form either', functi
     expect(fn(): string => AStacksScreen::Health->forTheStacksForm(
         StackId::rememberedAs(Screens::aStackInTheUri()),
         Form::called('arr'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('a screen that needs only a stack refuses to be handed a check as well', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacksCheck(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        Check::of('vpn.contained'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 

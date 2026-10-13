@@ -119,10 +119,6 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
         $stack = $this->stack();
         $named = $this->named();
 
-        if ($named === '') {
-            return $this->answered ??= new HowAWarningReads()->notRaised();
-        }
-
         return $this->answered ??= $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheWarningTurnedOutToBe => $this->asking->about($stack, $session)->either(
                 said: static fn(Report $report): TheWarningTurnedOutToBe => new HowAWarningReads()->in($report, $named),
@@ -145,7 +141,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
             : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheAcceptance => $this->answering->whatBecameOf($stack, $session, Job::named($following)));
     }
 
-    /** The check the route names, which only finds a warning in what the stack reported; empty where it names none. */
+    /** The check the route names, which only finds a warning in what the stack reported. */
     private function named(): string
     {
         $named = $this->param('service');

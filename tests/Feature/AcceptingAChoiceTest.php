@@ -173,6 +173,33 @@ it('says what stood in the way, and lets go of a session the stack refused', fun
         ->and($refused->howItIsGoing()->went->isSignedIn)->toBeFalse();
 });
 
+it('asks the stack again for the warning when asked to look again', function (): void {
+    $asking = AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided)));
+    $screen = theAcceptingScreen($asking, anAcceptanceThatTakes());
+    $screen->answer();
+    $screen->again();
+    $screen->answer();
+
+    expect($asking->askings())->toBe(2);
+});
+
+it('says the session ended where it went while the acceptance was followed', function (): void {
+    $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $screen = new WhatAcceptingItCosts(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), anAcceptanceThatTakes(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => THE_CHOICE]);
+    $screen->accept();
+    $keychain->forget($stack->id());
+    $screen->whileItRuns();
+
+    $screen->again();
+
+    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
 it('is where the accept route goes', function (): void {
     $path = AStacksScreen::Accept->forTheStacksCheck(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE));
 

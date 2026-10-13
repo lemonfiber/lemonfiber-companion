@@ -30,24 +30,6 @@ final readonly class HowAWarningReads
         return $this->without(HowTheReadingWent::itCameBack());
     }
 
-    /** Whether the finding about this check in the report is accepted. */
-    public function isAcceptedIn(Report $report, string $check): bool
-    {
-        foreach ($report->findings() as $finding) {
-            if ($finding->check()->shown() === $check) {
-                return WhereAChoiceStands::of($finding) === WhereAChoiceStands::Accepted;
-            }
-        }
-
-        return false;
-    }
-
-    /** A route naming no check, which no report warns about. */
-    public function notRaised(): TheWarningTurnedOutToBe
-    {
-        return $this->without(HowTheReadingWent::itCameBack());
-    }
-
     public function met(Obstacle $why): TheWarningTurnedOutToBe
     {
         return $this->without(HowTheReadingWent::somethingStopped($why));
