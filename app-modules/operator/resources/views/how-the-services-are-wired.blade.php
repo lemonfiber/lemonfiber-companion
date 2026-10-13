@@ -177,6 +177,10 @@
                     <x-design::row :headline="__('stacks.wiring.nothing_unsupported')" />
                 @endforelse
             </x-design::section>
+
+            @if ($this->adoptionRehearsed)
+                <x-operator::offered-action :label="__('stacks.wiring.adopt')" tap="adopt()" :offer="$this->offered(WhatToDoAboutWiring::Adopt)" />
+            @endif
         @endif
 
         @if (! $this->howItIsGoing()->isWorking)
@@ -185,6 +189,8 @@
                  forward. --}}
             <x-design::note>{{ __('stacks.wiring.what_a_run_does') }}</x-design::note>
             <x-operator::offered-action :label="__('stacks.wiring.wire')" tap="wire()" :offer="$this->offered(WhatToDoAboutWiring::Wire)" />
+            <x-design::note>{{ __('stacks.wiring.what_adopting_does') }}</x-design::note>
+            <x-operator::offered-action :label="__('stacks.wiring.rehearse_adopting')" tap="rehearseAdopting()" tone="tonal" :offer="$this->offered(WhatToDoAboutWiring::Adopt)" />
         @endif
 
         {{-- Asks for the services again, and after a run still being followed;

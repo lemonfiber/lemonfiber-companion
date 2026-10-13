@@ -122,7 +122,7 @@ it('offers each claimant that does not answer already, only where two or more cl
 
     expect(array_map(static fn(ALinkAsShown $link): array => $link->choices, $links))->toBe([['plex', 'jellyfin'], ['jackett'], [], [], []])
         ->and(array_map(static fn(ALinkAsShown $link): string => $link->capability, $links))->toBe(['media-server', 'indexer', 'download-client', 'arr', ''])
-        ->and($drawn->offers())->toBe(['plex', 'jellyfin', 'jackett', __('stacks.wiring.wire'), __('health.ask_again')])
+        ->and($drawn->offers())->toBe(['plex', 'jellyfin', 'jackett', __('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')])
         ->and($drawn->said())->toContain(__('stacks.wiring.fills.choose'));
 });
 

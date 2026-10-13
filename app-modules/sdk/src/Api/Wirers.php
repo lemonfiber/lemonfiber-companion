@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\AdoptAction;
 use Lemonfiber\Sdk\Generated\SeedAction;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -29,9 +30,9 @@ use Modules\Sdk\Internal\WhatTheReachMet;
 /**
  * {@see WiringTheServices}, answered by asking the stack.
  *
- * Written the way {@see Scouts} asks and follows a move: `seed` takes nothing,
+ * Written the way {@see Scouts} asks and follows a move: `seed` and `adopt` take nothing,
  * answers with a handle under a fresh key, and {@see self::whatBecameOf()}
- * follows the handle to the `seed` envelope. A request the stack turned down
+ * follows the handle to the `seed` envelope each answers with. A request the stack turned down
  * keeps its sentence; a refused session and a machine that is not the one
  * paired stay the obstacles {@see WhatARefusalMeant} names.
  */
@@ -41,16 +42,17 @@ final readonly class Wirers implements WiringTheServices
 
     public function wire(Stack $stack, Session $session): WhatBecameOfTheWiring
     {
-        try {
-            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                new SeedAction(),
-                IdempotencyKey::from($this->entropy->nonce())->sent(),
-            ));
-        } catch (CertificateWasRefused|RequestFailed $why) {
-            return $this->refusal($why);
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
-            return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
-        }
+        return $this->sent($stack, $session, new SeedAction());
+    }
+
+    public function rehearseAdopting(Stack $stack, Session $session): WhatBecameOfTheWiring
+    {
+        return $this->sent($stack, $session, new AdoptAction()->rehearsed());
+    }
+
+    public function adopt(Stack $stack, Session $session): WhatBecameOfTheWiring
+    {
+        return $this->sent($stack, $session, new AdoptAction());
     }
 
     public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWiring
@@ -60,6 +62,20 @@ final readonly class Wirers implements WiringTheServices
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SeedIsUnreadable|TheWiringSaysNothing $why) {
+            return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    private function sent(Stack $stack, Session $session, SeedAction|AdoptAction $action): WhatBecameOfTheWiring
+    {
+        try {
+            return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
+                $action,
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            ));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return $this->refusal($why);
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
             return WhatBecameOfTheWiring::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

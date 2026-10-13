@@ -26,7 +26,7 @@ use function sprintf;
  */
 final class AStackThatWires implements WiringTheServices
 {
-    /** @var list<string> each thing asked, in order: `wire` or `after:<job>` */
+    /** @var list<string> each thing asked, in order: `wire`, `rehearse-adopting`, `adopt` or `after:<job>` */
     private array $asked = [];
 
     /** @param list<WhatBecameOfTheWiring> $answers */
@@ -53,6 +53,20 @@ final class AStackThatWires implements WiringTheServices
     public function wire(Stack $stack, Session $session): WhatBecameOfTheWiring
     {
         $this->asked[] = 'wire';
+
+        return $this->next();
+    }
+
+    public function rehearseAdopting(Stack $stack, Session $session): WhatBecameOfTheWiring
+    {
+        $this->asked[] = 'rehearse-adopting';
+
+        return $this->next();
+    }
+
+    public function adopt(Stack $stack, Session $session): WhatBecameOfTheWiring
+    {
+        $this->asked[] = 'adopt';
 
         return $this->next();
     }

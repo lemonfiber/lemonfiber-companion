@@ -20,6 +20,12 @@ interface WiringTheServices
     /** Start a wiring run. */
     public function wire(Stack $stack, Session $session): WhatBecameOfTheWiring;
 
+    /** Ask what adopting the operator's own edits as the expected state would keep and wire, writing nothing. */
+    public function rehearseAdopting(Stack $stack, Session $session): WhatBecameOfTheWiring;
+
+    /** Adopt the operator's own edits as the expected state, as the rehearsal on the screen described it. */
+    public function adopt(Stack $stack, Session $session): WhatBecameOfTheWiring;
+
     /** What became of the run, by the handle it answered with. */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWiring;
 }

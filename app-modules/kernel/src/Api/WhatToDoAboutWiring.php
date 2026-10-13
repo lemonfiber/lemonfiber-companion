@@ -19,12 +19,16 @@ enum WhatToDoAboutWiring: string implements AnAction
     /** Choose which service fills a capability, or work out what that would come to. */
     case Fill = 'fill';
 
+    /** Keep the operator's own edits as the way the stack is meant to be. */
+    case Adopt = 'adopt';
+
     /** lemonfiber's word for it, which this app's word is allowed to differ from. */
     public function asked(): string
     {
         return match ($this) {
             self::Wire => 'seed',
             self::Fill => 'wiring-fill',
+            self::Adopt => 'adopt',
         };
     }
 }
