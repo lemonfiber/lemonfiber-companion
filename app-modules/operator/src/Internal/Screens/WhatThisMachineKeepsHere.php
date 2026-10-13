@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Copying;
+use Modules\Kernel\Api\Forgetting;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -17,6 +18,8 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
+use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\ForgetsWhatIsKept;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
@@ -56,7 +59,7 @@ use function view;
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
-final class WhatThisMachineKeepsHere extends NativeComponent
+final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAnOutcome
 {
     use AsksTheStackAgain;
     use LooksAgainWhileOpen;
@@ -64,6 +67,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
+    use ForgetsWhatIsKept;
 
     /**
      * What came back, once the frame has asked.
@@ -78,6 +82,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     public function __construct(
         private readonly Storing $storing,
         private readonly Copying $copying,
+        protected readonly Forgetting $forgetting,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -89,6 +94,11 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     {
         $this->answered = null;
         $this->copiesFound = null;
+    }
+
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->howForgettingIsGoing()->isWorking;
     }
 
     public function render(): View

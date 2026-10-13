@@ -17,7 +17,7 @@ use function trim;
 final readonly class WhatBecameOfAskingIt
 {
     /** The catalogue word for a service nothing was asked of. */
-    private const string NOT_ASKED = 'not-asked';
+    private const string NOT_ASKED = 'nothing-asked';
 
     private function __construct(private string $word, private string $detail) {}
 

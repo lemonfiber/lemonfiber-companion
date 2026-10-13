@@ -25,4 +25,5 @@ requirement = [
   { id = "N13-R18", state = "done", evidence = ["app-modules/kernel/src/Api/WhatItCannotTake.php", "app-modules/kernel/src/Api/WhatWasLeftBehind.php", "app-modules/kernel/tests/Api/AnUninstallAgreedTest.php", "app-modules/kernel/tests/Api/WhatTakingItOffComesToTest.php"] },
   { id = "N13-R19", state = "done", evidence = ["app-modules/sdk/src/Api/Removers.php", "app-modules/operator/src/Internal/Screens/TakingSomebodyOut.php", "tests/Contract/RemovingSomebodyContractTest.php", "tests/Feature/TakingSomebodyOutTest.php"] },
   { id = "N13-R20", state = "done", evidence = ["app-modules/sdk/src/Api/Dismantlers.php", "app-modules/operator/src/Internal/Screens/TakingItOffThisMachine.php", "tests/Contract/TakingLemonfiberOffContractTest.php", "tests/Feature/TakingItOffThisMachineTest.php"] },
+  { id = "N13-R21", state = "done", evidence = ["app-modules/kernel/src/Api/ForgettingAgreed.php", "app-modules/sdk/src/Api/Forgetters.php", "app-modules/operator/src/Internal/ForgetsWhatIsKept.php", "tests/Contract/ForgettingContractTest.php", "tests/Feature/RemovingEverythingKeptTest.php"] },
 ]

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function array_map;
+use function implode;
+
 use InvalidArgumentException;
 
 use function sprintf;
@@ -45,6 +48,15 @@ final class StoredIsUnreadable extends InvalidArgumentException
             $position,
             $list->value,
             $field->value,
+        ));
+    }
+
+    public static function removal(string $said, string ...$accepted): self
+    {
+        return new self(sprintf(
+            'The stored envelope says removing everything went `%s`, and this app reads %s. Guessing which was meant is how a removal nobody agreed to gets reported as one they did.',
+            $said,
+            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $accepted)),
         ));
     }
 }

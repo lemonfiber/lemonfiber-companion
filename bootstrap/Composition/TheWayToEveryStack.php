@@ -31,6 +31,7 @@ use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\FetchingArtwork;
 use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\FollowingWhatIsPlaying;
+use Modules\Kernel\Api\Forgetting;
 use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
@@ -106,6 +107,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
@@ -353,6 +355,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(SharingTheLine::class, Linesmen::class);
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
         $this->app->bind(Accepting::class, Acceptors::class);
+        $this->app->bind(Forgetting::class, Forgetters::class);
 
         // What the stack keeps and the copies it holds, read beside the rest
         // and bound for the same reason.

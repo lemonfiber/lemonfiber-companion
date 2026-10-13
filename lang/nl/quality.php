@@ -55,7 +55,7 @@ return [
     // Wat er werd van het vragen aan een dienst, om opnieuw te zoeken of om
     // een formaat voor muziek over te nemen.
     'asked' => [
-        'not-asked' => 'Er is niets aan de dienst gevraagd',
+        'nothing-asked' => 'Er is niets aan de dienst gevraagd',
         'started' => 'De dienst stemde in en is ermee bezig',
         'not-started' => 'De dienst was nog niet klaar met opstarten, dus er is niets gevraagd',
         'failed' => 'De dienst weigerde, of was niet te bereiken',

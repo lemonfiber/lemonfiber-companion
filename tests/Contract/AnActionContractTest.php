@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
+use Modules\Kernel\Api\ForgettingWhatIsKept;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
@@ -62,7 +63,7 @@ use Modules\Sdk\Api\EveryRequestThisAppSends;
 function everyActionNamed(): array
 {
     return [
-        ...AcceptingAChoice::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
+        ...AcceptingAChoice::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
         ...AskingForIt::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),

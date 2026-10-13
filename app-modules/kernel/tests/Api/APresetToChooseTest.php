@@ -81,7 +81,7 @@ it('tells a choice answered with what is in force from one for music and from wh
     )->said;
 
     expect($arm(WhatTheChoiceCameTo::inForce($chosen)))->toBe('recorded')
-        ->and($arm(WhatTheChoiceCameTo::forMusic($made)))->toBe('Lossless rehearsed quality.asked.not-asked')
+        ->and($arm(WhatTheChoiceCameTo::forMusic($made)))->toBe('Lossless rehearsed quality.asked.nothing-asked')
         ->and($arm(WhatTheChoiceCameTo::met(Obstacle::of(KindOfObstacle::NotForThisAccount))))->toBe('not_for_this_account');
 });
 

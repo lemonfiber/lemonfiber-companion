@@ -24,6 +24,7 @@ use Lemonfiber\Sdk\Generated\AskedEnvelope;
 use Lemonfiber\Sdk\Generated\BandwidthAction;
 use Lemonfiber\Sdk\Generated\BandwidthEnvelope;
 use Lemonfiber\Sdk\Generated\DoctorEnvelope;
+use Lemonfiber\Sdk\Generated\ForgetAction;
 use Lemonfiber\Sdk\Generated\GrantEnvelope;
 use Lemonfiber\Sdk\Generated\HouseholdAllowAction;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
@@ -31,6 +32,7 @@ use Lemonfiber\Sdk\Generated\KeysEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
+use Lemonfiber\Sdk\Generated\StoredEnvelope;
 use Lemonfiber\Sdk\Generated\WatchedEnvelope;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\AskingForIt;
@@ -261,6 +263,7 @@ final readonly class WhatTheWireWouldAnswer
                 $asked->getRequest()->resolveEndpoint() === Api::action(BandwidthAction::ACTION) => new MockResponse(self::workNamedFor(BandwidthAction::ACTION), $status),
                 $asked->getRequest()->resolveEndpoint() === Api::action(HouseholdAllowAction::ACTION) => new MockResponse(self::workNamedFor(HouseholdAllowAction::ACTION), $status),
                 $asked->getRequest()->resolveEndpoint() === Api::action(AcceptAction::ACTION) => new MockResponse(self::workNamedFor(AcceptAction::ACTION), $status),
+                $asked->getRequest()->resolveEndpoint() === Api::action(ForgetAction::ACTION) => new MockResponse(self::workNamedFor(ForgetAction::ACTION), $status),
                 default => self::to(
                     $asked->getRequest()->resolveEndpoint(),
                     $status,
@@ -400,6 +403,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::job(BandwidthAction::ACTION) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(BandwidthEnvelope::KIND->value)),
             $endpoint === Api::job(HouseholdAllowAction::ACTION) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(HouseholdEnvelope::KIND->value)),
             $endpoint === Api::job(AcceptAction::ACTION) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(DoctorEnvelope::KIND->value)),
+            $endpoint === Api::job(ForgetAction::ACTION) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(StoredEnvelope::KIND->value)),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(GrantEnvelope::KIND->value))),
