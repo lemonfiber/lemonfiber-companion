@@ -81,4 +81,19 @@ enum WhatAnAnswerHolds: string
 
     /** Whether a picture is held under the key asked about. */
     case Holds = 'holds';
+
+    /** Where a phone key lives, or would. */
+    case Lives = 'lives';
+
+    /** A phone key's public half, its `SubjectPublicKeyInfo` DER in base64. */
+    case PublicKey = 'public_key';
+
+    /** An Android key attestation: each certificate's DER in base64, the key's own first. */
+    case Chain = 'chain';
+
+    /** An iOS App Attest attestation object, in base64. */
+    case Attestation = 'attestation';
+
+    /** A signature, its DER in base64. */
+    case Signature = 'signature';
 }

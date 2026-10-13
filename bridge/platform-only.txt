@@ -1,1 +1,3 @@
 RelayRule ios Android's ExoPlayer fetches every segment through DoorDataSource, so it needs no relay.
+PhoneKeyKeystore android iOS makes a key in the Secure Enclave or not at all, so there is no level to read, and App Attest answers with one object rather than a chain.
+PhoneKeyEnclave ios Android's Keystore hands the public half over already spelt as SubjectPublicKeyInfo, and BiometricPrompt numbers its errors in one domain.

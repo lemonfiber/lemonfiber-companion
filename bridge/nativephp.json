@@ -140,6 +140,30 @@
             "description": "Take one value out of the store, whether or not it was ever in"
         },
         {
+            "name": "Lemonfiber.PhoneKey.Where",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Where",
+            "ios": "PhoneKeyFunctions.Where",
+            "description": "Say where this phone could keep a key that proves its operator, in a secure chip, the Secure Enclave or the trusted environment, or why it could not"
+        },
+        {
+            "name": "Lemonfiber.PhoneKey.Make",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Make",
+            "ios": "PhoneKeyFunctions.Make",
+            "description": "Make that key in hardware, usable only after face or fingerprint, and answer its public half and the platform's attestation of where it lives"
+        },
+        {
+            "name": "Lemonfiber.PhoneKey.Sign",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Sign",
+            "ios": "PhoneKeyFunctions.Sign",
+            "description": "Sign a text with that key once the operator shows their face or fingerprint, and answer the signature or why there is none"
+        },
+        {
+            "name": "Lemonfiber.PhoneKey.Forget",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Forget",
+            "ios": "PhoneKeyFunctions.Forget",
+            "description": "Throw that key away, whether or not it was there"
+        },
+        {
             "name": "Lemonfiber.Link.Status",
             "android": "app.lemonfiber.native.LinkFunctions.Status",
             "ios": "LinkFunctions.Status",
