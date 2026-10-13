@@ -24,7 +24,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -120,7 +120,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
         $this->startAgain();
 
         $this->going = WhatTheAllowanceChangeIsAskedWith::from($this->who, $this->policy, $this->requests, $this->days)->either(
-            asked: fn(AnAllowanceChange $change): TheAllowanceChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheAllowanceChange {
+            asked: fn(AnAllowanceChange $change): TheAllowanceChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheWork {
                 $this->asked = $change;
 
                 return $this->choosing->rehearse($stack, $session, $change);
@@ -138,7 +138,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
         }
 
         $this->rehearsed = false;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheAllowanceChange => $this->choosing->carryOut($stack, $session, $change));
+        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->carryOut($stack, $session, $change));
     }
 
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
@@ -193,10 +193,10 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
 
         return $this->going ??= $following === null
             ? new HowTheAllowanceChangeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheAllowanceChange => $this->choosing->whatBecameOf($stack, $session, Job::named($following)));
+            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->whatBecameOf($stack, $session, Job::named($following)));
     }
 
-    /** @param Closure(Stack, Session): WhatBecameOfTheAllowanceChange $asking */
+    /** @param Closure(Stack, Session): WhatBecameOfTheWork<TheAllowanceAsChanged> $asking */
     private function put(Closure $asking): TheAllowanceChangeTurnedOutToBe
     {
         $stack = $this->stack();
@@ -207,7 +207,10 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
         );
     }
 
-    private function shown(WhatBecameOfTheAllowanceChange $became, Stack $stack): TheAllowanceChangeTurnedOutToBe
+    /**
+     * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $became
+     */
+    private function shown(WhatBecameOfTheWork $became, Stack $stack): TheAllowanceChangeTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job): TheAllowanceChangeTurnedOutToBe {

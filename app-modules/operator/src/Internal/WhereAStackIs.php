@@ -8,6 +8,7 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
@@ -125,6 +126,12 @@ final readonly class WhereAStackIs
     public function takingOut(string $named): string
     {
         return AStacksScreen::TakeOut->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /** Where accepting the warning this check raises is weighed, before anything is sent. */
+    public function accepting(string $check): string
+    {
+        return AStacksScreen::Accept->forTheStacksCheck($this->stack, Check::of($check));
     }
 
     /** Where somebody is asked in with their name already typed. */

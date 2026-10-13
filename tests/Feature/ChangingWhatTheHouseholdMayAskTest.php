@@ -22,7 +22,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\TheMembers;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
@@ -51,12 +51,19 @@ const WHAT_THE_REHEARSAL_SAYS = 'alex waits for you, and is counted against 5 re
 
 const WHAT_THE_CHANGE_SAYS = 'alex waits for you, and is counted against 5 requests every 7 days';
 
-function anAllowanceReported(WhetherItWasRehearsed $did, string $said): WhatBecameOfTheAllowanceChange
+/**
+ * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+ */
+function anAllowanceReported(WhetherItWasRehearsed $did, string $said): WhatBecameOfTheWork
 {
-    return WhatBecameOfTheAllowanceChange::answered(TheAllowanceAsChanged::said($did, Sentences::of(Sentence::of($said))));
+    return WhatBecameOfTheWork::answered(TheAllowanceAsChanged::said($did, Sentences::of(Sentence::of($said))));
 }
 
-function aStackThatChangesWhatIsAllowed(?WhatBecameOfTheAllowanceChange $rehearsal = null, ?WhatBecameOfTheAllowanceChange $change = null): AStackThatChoosesWhatIsAllowed
+/**
+ * @param WhatBecameOfTheWork<TheAllowanceAsChanged>|null $rehearsal
+ * @param WhatBecameOfTheWork<TheAllowanceAsChanged>|null $change
+ */
+function aStackThatChangesWhatIsAllowed(?WhatBecameOfTheWork $rehearsal = null, ?WhatBecameOfTheWork $change = null): AStackThatChoosesWhatIsAllowed
 {
     return AStackThatChoosesWhatIsAllowed::answering(
         $rehearsal ?? anAllowanceReported(WhetherItWasRehearsed::Rehearsed, WHAT_THE_REHEARSAL_SAYS),
@@ -252,7 +259,7 @@ it('sends no yes where nothing was rehearsed, or where the last answer was not a
 
 it('draws a refusal as the stack\'s own sentence and remedy, and offers starting again', function (): void {
     $why = ARefusalInItsWords::said('nobody called sam is in the household', '', WhatTheRefusalNamed::nothing(), 'Choose one of: alex, robin');
-    $screen = aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheAllowanceChange::refused($why)));
+    $screen = aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::refused($why)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(
@@ -269,17 +276,17 @@ it('draws a refusal as the stack\'s own sentence and remedy, and offers starting
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheAllowanceChange::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::ended())));
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.no_outcome'));
 });
 
 it('says what stood in the way of asking, and lets go of a session the stack refused', function (): void {
-    $screen = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheAllowanceChange::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $screen = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
-    $refused = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheAllowanceChange::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
+    $refused = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
 
     expect($refused->howItIsGoing()->went->isSignedIn)->toBeFalse();
 });

@@ -10,7 +10,8 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SharingTheLine;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\TheLineAsChanged;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 
 /**
  * A stack that rehearses a change to its line, takes a yes on, and says what became of each, as a test arranges.
@@ -36,9 +37,9 @@ final class AStackThatSharesItsLine implements SharingTheLine
     private array $followed = [];
 
     /**
-     * @param Closure(): WhatBecameOfTheLineChange    $rehearsing
-     * @param Closure(): WhatBecameOfTheLineChange    $carrying
-     * @param Closure(Job): WhatBecameOfTheLineChange $becoming
+     * @param Closure(): WhatBecameOfTheWork<TheLineAsChanged>    $rehearsing
+     * @param Closure(): WhatBecameOfTheWork<TheLineAsChanged>    $carrying
+     * @param Closure(Job): WhatBecameOfTheWork<TheLineAsChanged> $becoming
      */
     private function __construct(
         private readonly Closure $rehearsing,
@@ -46,41 +47,59 @@ final class AStackThatSharesItsLine implements SharingTheLine
         private readonly Closure $becoming,
     ) {}
 
-    /** A stack that takes both on, and says `$rehearsal` of the rehearsal and `$change` of the yes. */
-    public static function answering(WhatBecameOfTheLineChange $rehearsal, WhatBecameOfTheLineChange $change): self
+    /**
+     * A stack that takes both on, and says `$rehearsal` of the rehearsal and `$change` of the yes.
+     *
+     * @param WhatBecameOfTheWork<TheLineAsChanged> $rehearsal
+     * @param WhatBecameOfTheWork<TheLineAsChanged> $change
+     */
+    public static function answering(WhatBecameOfTheWork $rehearsal, WhatBecameOfTheWork $change): self
     {
         return new self(
-            static fn(): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::underway(Job::named(self::THE_REHEARSAL)),
-            static fn(): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::underway(Job::named(self::THE_CHANGE)),
-            static fn(Job $job): WhatBecameOfTheLineChange => $job->shown() === self::THE_CHANGE ? $change : $rehearsal,
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_REHEARSAL)),
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_CHANGE)),
+            static fn(Job $job): WhatBecameOfTheWork => $job->shown() === self::THE_CHANGE ? $change : $rehearsal,
         );
     }
 
-    /** A stack that answers asking either with `$said` at once, taking nothing on. */
-    public static function sayingAtOnce(WhatBecameOfTheLineChange $said): self
+    /**
+     * A stack that answers asking either with `$said` at once, taking nothing on.
+     *
+     * @param WhatBecameOfTheWork<TheLineAsChanged> $said
+     */
+    public static function sayingAtOnce(WhatBecameOfTheWork $said): self
     {
         return new self(
-            static fn(): WhatBecameOfTheLineChange => $said,
-            static fn(): WhatBecameOfTheLineChange => $said,
-            static fn(): WhatBecameOfTheLineChange => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
         );
     }
 
-    public function rehearse(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function rehearse(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheWork
     {
         $this->rehearsed[] = $change;
 
         return ($this->rehearsing)();
     }
 
-    public function carryOut(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function carryOut(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheWork
     {
         $this->carriedOut[] = $change;
 
         return ($this->carrying)();
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         $this->followed[] = $job;
 

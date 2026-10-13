@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AWordInUse;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
@@ -398,6 +399,13 @@ it('a screen that needs only a stack refuses to be handed a form either', functi
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 
+it('a screen that needs only a stack refuses to be handed a check as well', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacksCheck(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        Check::of('vpn.contained'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
 it('which builder a screen needs is read off its own pattern', function (): void {
     // Read rather than listed, so a case added with a second placeholder is
     // covered by both refusals without anybody remembering to add it to a list
@@ -409,5 +417,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'WordAbout', 'Trace']);
+        ->toBe(['Doing', 'Logs', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'WordAbout', 'Trace', 'Accept']);
 });

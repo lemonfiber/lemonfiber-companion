@@ -14,7 +14,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\TheLineAsChanged;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereALiftStands;
@@ -24,8 +24,12 @@ use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
 
-/** Which arm changing the line took, and what it carried there. */
-function whichArmTheLineChangeTook(WhatBecameOfTheLineChange $became): string
+/**
+ * Which arm the work took, and what it carried there.
+ *
+ * @param WhatBecameOfTheWork<TheLineAsChanged> $became
+ */
+function whichArmTheWorkTook(WhatBecameOfTheWork $became): string
 {
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('underway:%s', $job->shown())),
@@ -43,9 +47,9 @@ it('takes the arm for each state, and carries what each holds', function (): voi
         WhereALiftStands::none(),
     );
 
-    expect(whichArmTheLineChangeTook(WhatBecameOfTheLineChange::underway(Job::named('a-job'))))->toBe('underway:a-job')
-        ->and(whichArmTheLineChangeTook(WhatBecameOfTheLineChange::answered($line)))->toBe('answered:rehearsed')
-        ->and(whichArmTheLineChangeTook(WhatBecameOfTheLineChange::ended()))->toBe('ended')
-        ->and(whichArmTheLineChangeTook(WhatBecameOfTheLineChange::refused(ARefusalInItsWords::said('No download client to limit', '', WhatTheRefusalNamed::nothing()))))->toBe('refused:No download client to limit')
-        ->and(whichArmTheLineChangeTook(WhatBecameOfTheLineChange::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
+    expect(whichArmTheWorkTook(WhatBecameOfTheWork::underway(Job::named('a-job'))))->toBe('underway:a-job')
+        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::answered($line)))->toBe('answered:rehearsed')
+        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::ended()))->toBe('ended')
+        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::refused(ARefusalInItsWords::said('No download client to limit', '', WhatTheRefusalNamed::nothing()))))->toBe('refused:No download client to limit')
+        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

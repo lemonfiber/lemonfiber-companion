@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\ActionRequest;
 use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\AcceptingAChoice;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingForIt;
@@ -265,6 +266,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     // never what is in the fields when it is tapped.
     'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     'household-allow' => 'rehearses a change to what the household or one member may ask for, and makes it only as that rehearsal was asked',
+    'accept' => 'accepts one warning the stack\'s own report raises, named from that report, after what it costs is shown',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
     // agreement built from the record's own rows for that run — and a run the
@@ -591,6 +593,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoWithTheDownloads $downloads): string => $downloads->asked(), WhatToDoWithTheDownloads::cases()),
         ...array_map(static fn(ChangingTheLine $line): string => $line->asked(), ChangingTheLine::cases()),
         ...array_map(static fn(ChoosingWhatIsAllowed $allowed): string => $allowed->asked(), ChoosingWhatIsAllowed::cases()),
+        ...array_map(static fn(AcceptingAChoice $accepting): string => $accepting->asked(), AcceptingAChoice::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),

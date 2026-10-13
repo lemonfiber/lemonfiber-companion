@@ -11,6 +11,7 @@ use Illuminate\Support\ServiceProvider;
 use function logger;
 
 use Modules\Codes\Api\QrCodes;
+use Modules\Kernel\Api\Accepting;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Advising;
@@ -79,6 +80,7 @@ use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Welcoming;
 use Modules\Kernel\Api\WiringTheServices;
+use Modules\Sdk\Api\Acceptors;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
@@ -350,6 +352,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(Rationing::class, Quartermasters::class);
         $this->app->bind(SharingTheLine::class, Linesmen::class);
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
+        $this->app->bind(Accepting::class, Acceptors::class);
 
         // What the stack keeps and the copies it holds, read beside the rest
         // and bound for the same reason.

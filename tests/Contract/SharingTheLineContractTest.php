@@ -24,7 +24,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheLineAsChanged;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatALimitCameTo;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhereALiftStands;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -128,8 +128,9 @@ function aChangeToTheLineTakenOn(string $job): MockResponse
  * Both ways of changing the line, each set up to say the same of the rehearsal.
  *
  * @return array<string, Closure(): SharingTheLine>
+ * @param WhatBecameOfTheWork<TheLineAsChanged> $became
  */
-function everyWayOfChangingTheLine(MockResponse $answered, WhatBecameOfTheLineChange $became): array
+function everyWayOfChangingTheLine(MockResponse $answered, WhatBecameOfTheWork $became): array
 {
     return [
         'the fake' => static fn(): SharingTheLine => AStackThatSharesItsLine::answering($became, $became),
@@ -137,8 +138,12 @@ function everyWayOfChangingTheLine(MockResponse $answered, WhatBecameOfTheLineCh
     ];
 }
 
-/** What came of something asked, every part folded to one line. */
-function whatTheLineChangeCameTo(WhatBecameOfTheLineChange $became): string
+/**
+ * What came of something asked, every part folded to one line.
+ *
+ * @param WhatBecameOfTheWork<TheLineAsChanged> $became
+ */
+function whatTheLineChangeCameTo(WhatBecameOfTheWork $became): string
 {
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
@@ -161,7 +166,7 @@ function halfTheLine(): ALineChange
 }
 
 it('comes away from rehearsing with the job the stack named', function (): void {
-    foreach (everyWayOfChangingTheLine(aChangeToTheLineTakenOn(AStackThatSharesItsLine::THE_REHEARSAL), WhatBecameOfTheLineChange::ended()) as $which => $build) {
+    foreach (everyWayOfChangingTheLine(aChangeToTheLineTakenOn(AStackThatSharesItsLine::THE_REHEARSAL), WhatBecameOfTheWork::ended()) as $which => $build) {
         expect(whatTheLineChangeCameTo($build()->rehearse(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), halfTheLine())))
             ->toBe(sprintf('following %s', AStackThatSharesItsLine::THE_REHEARSAL), $which);
     }
@@ -170,7 +175,7 @@ it('comes away from rehearsing with the job the stack named', function (): void 
 it('reads what the work came to, the rehearsal labelled as one', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToItsLine()));
 
-    foreach (everyWayOfChangingTheLine($finished, WhatBecameOfTheLineChange::answered(theSameRehearsalOfTheLine())) as $which => $build) {
+    foreach (everyWayOfChangingTheLine($finished, WhatBecameOfTheWork::answered(theSameRehearsalOfTheLine())) as $which => $build) {
         expect(whatTheLineChangeCameTo($build()->whatBecameOf(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), Job::named(AStackThatSharesItsLine::THE_REHEARSAL))))
             ->toBe('rehearsed|Half of 100 Mbit/s|clients', $which);
     }
@@ -196,7 +201,7 @@ it('reads a refusal as the stack\'s own sentence and remedy, whether it refused 
 it('comes away with the obstacle where the stack could not be asked or read', function (MockResponse $answered, KindOfObstacle $kind): void {
     expect(whatTheLineChangeCameTo(aLinesmanAnswered($answered)->carryOut(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), halfTheLine())))->toBe($kind->name)
         ->and(whatTheLineChangeCameTo(aLinesmanAnswered($answered)->whatBecameOf(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))->toBe($kind->name)
-        ->and(whatTheLineChangeCameTo(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheLineChange::met(Obstacle::of($kind)))->carryOut(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), halfTheLine())))->toBe($kind->name);
+        ->and(whatTheLineChangeCameTo(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of($kind)))->carryOut(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), halfTheLine())))->toBe($kind->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'a stack that failed' => [MockResponse::make('{"error":"still asking"}', 500), KindOfObstacle::StackDidNotAnswer],
@@ -250,7 +255,7 @@ it('sends every part as written, the rehearsal as a dry run and the yes without 
 });
 
 it('the fake remembers each change rehearsed and carried out, and each handle followed', function (): void {
-    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheLineChange::answered(theSameRehearsalOfTheLine()), WhatBecameOfTheLineChange::ended());
+    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheLine()), WhatBecameOfTheWork::ended());
     $change = halfTheLine();
     $sharing->rehearse(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), $change);
     $sharing->carryOut(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), $change);

@@ -23,7 +23,7 @@ use Modules\Kernel\Api\SharingTheLine;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheLineAsChanged;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -140,7 +140,7 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
         $this->startAgain();
 
         $this->going = WhatTheLineChangeIsAskedWith::from($this->down, $this->up, $this->active, $this->line, $this->cap, $this->exceeded, $this->lift)->either(
-            asked: fn(ALineChange $change): TheLineChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheLineChange {
+            asked: fn(ALineChange $change): TheLineChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheWork {
                 $this->asked = $change;
 
                 return $this->sharing->rehearse($stack, $session, $change);
@@ -164,7 +164,7 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
         }
 
         $this->report = null;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheLineChange => $this->sharing->carryOut($stack, $session, $change));
+        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->sharing->carryOut($stack, $session, $change));
     }
 
     /**
@@ -213,13 +213,13 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
 
         return $this->going ??= $following === null
             ? new HowTheLineChangeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheLineChange => $this->sharing->whatBecameOf($stack, $session, Job::named($following)));
+            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->sharing->whatBecameOf($stack, $session, Job::named($following)));
     }
 
     /**
      * One act put to the stack, with the session this device holds for it.
      *
-     * @param Closure(Stack, Session): WhatBecameOfTheLineChange $asking
+     * @param Closure(Stack, Session): WhatBecameOfTheWork<TheLineAsChanged> $asking
      */
     private function put(Closure $asking): TheLineChangeTurnedOutToBe
     {
@@ -231,8 +231,12 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
         );
     }
 
-    /** What the stack said, as the screen draws it, holding what to follow or to agree to. */
-    private function shown(WhatBecameOfTheLineChange $became, Stack $stack): TheLineChangeTurnedOutToBe
+    /**
+     * What the stack said, as the screen draws it, holding what to follow or to agree to.
+     *
+     * @param WhatBecameOfTheWork<TheLineAsChanged> $became
+     */
+    private function shown(WhatBecameOfTheWork $became, Stack $stack): TheLineChangeTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job): TheLineChangeTurnedOutToBe {
