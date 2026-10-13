@@ -214,7 +214,7 @@ it('draws every button a screen sends an action from through the component that 
 });
 
 /**
- * The ports whose adapter reads or acts on a stack through the gate, by their short name.
+ * The ports whose adapter reads or acts on a stack through the gate, itself or through the work it asks, by their short name.
  *
  * @return list<string>
  */
@@ -223,7 +223,7 @@ function thePortsThatGoThroughTheGate(): array
     $ports = [];
 
     foreach (theAdaptersSources() as $source) {
-        if (str_contains($source, 'GatedClient::of(') && preg_match('/implements ([A-Za-z, ]+)\n/', $source, $implements) === 1) {
+        if ((str_contains($source, 'GatedClient::of(') || str_contains($source, 'new TheWorkAsked(')) && preg_match('/implements ([A-Za-z, ]+)\n/', $source, $implements) === 1) {
             foreach (explode(',', $implements[1]) as $port) {
                 $ports[] = trim($port);
             }

@@ -593,14 +593,15 @@ function adapterCallsThatAskNothing(): array
 it('asks every adapter call that reads a stack', function (): void {
     // The list above is written out, because each call needs its own
     // arguments. This holds it to the adapters: every public method of a class
-    // in `Modules\Sdk\Api` that opens a client, through the gate, itself or
-    // through the streams it holds, is one of the calls asked.
+    // in `Modules\Sdk\Api` that opens a client, through the gate, itself,
+    // through the streams it holds or through the work it asks, is one of the
+    // calls asked.
     $expected = [];
 
     foreach (Tree::filesUnder(Tree::at('app-modules/sdk/src/Api'), '.php') as $file) {
         $source = (string) file_get_contents($file);
 
-        if (! str_contains($source, 'GatedClient::of($this->clients') && ! str_contains($source, '$this->clients->client(') && ! str_contains($source, 'new TheStreamsHeld(')) {
+        if (! str_contains($source, 'GatedClient::of($this->clients') && ! str_contains($source, '$this->clients->client(') && ! str_contains($source, 'new TheStreamsHeld(') && ! str_contains($source, 'new TheWorkAsked(')) {
             continue;
         }
 
