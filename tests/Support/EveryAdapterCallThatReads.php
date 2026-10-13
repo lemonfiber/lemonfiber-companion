@@ -34,6 +34,7 @@ use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
@@ -296,6 +297,9 @@ final readonly class EveryAdapterCallThatReads
                 => new Extenders($clients, $entropy)->rehearseRemoving($stack, $session, APluginAsItArrives::held()),
             'Extenders::remove' => static fn(): object
                 => new Extenders($clients, $entropy)->remove($stack, $session, APluginRemovalAgreed::after(APluginAsItArrives::theRemovalReading(), APluginAsItArrives::held())),
+            'Extenders::readProving' => static fn(): object => new Extenders($clients, $entropy)->readProving($stack, $session, APluginAsItArrives::held()),
+            'Extenders::prove' => static fn(): object
+                => new Extenders($clients, $entropy)->prove($stack, $session, APluginProofAgreed::after(APluginAsItArrives::theProof(), APluginAsItArrives::held())),
             'Extenders::whatBecameOf' => static fn(): object
                 => new Extenders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Followers::tracedOn' => static fn(): object

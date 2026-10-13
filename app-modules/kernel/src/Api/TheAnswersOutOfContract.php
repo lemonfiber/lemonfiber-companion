@@ -36,6 +36,12 @@ final readonly class TheAnswersOutOfContract implements IteratorAggregate
         return new self(array_values(array_filter($this->answers, static fn(AnAnswerOutOfContract $answer): bool => $answer->isOf($plugin))));
     }
 
+    /** Whether any answer is held at all, which is what a proof again is offered for. */
+    public function holdsAny(): bool
+    {
+        return $this->answers !== [];
+    }
+
     /** @return Traversable<int, AnAnswerOutOfContract> */
     public function getIterator(): Traversable
     {

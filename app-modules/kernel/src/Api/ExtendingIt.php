@@ -22,6 +22,9 @@ enum ExtendingIt: string implements AnAction
     /** Take an installed plugin off the machine, rehearsed first. */
     case Remove = 'remove';
 
+    /** Ask an installed plugin's adapters their proofs again, after an answer outside their contract, read first. */
+    case Prove = 'prove';
+
     /**
      * lemonfiber's word for it.
      *
@@ -34,6 +37,7 @@ enum ExtendingIt: string implements AnAction
             self::Install => 'plugin-install',
             self::Update => 'plugin-update',
             self::Remove => 'plugin-remove',
+            self::Prove => 'plugin-prove',
         };
     }
 }

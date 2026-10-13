@@ -31,12 +31,32 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
         ],
         [
-            'path' => 'PluginsEnvelope.nonconforming[].at',
-            'because' => 'When an adapter answered outside its contract. What it answered, as which capability, and that the plugin fills none of it until it is proved again are drawn; the moment changes none of that, and the stack keeps the answer until a proof clears it.',
+            'path' => 'PluginsEnvelope.proof.kept[].at',
+            'because' => 'As `PluginsEnvelope.nonconforming[].at`: a proof again lists the same answers kept against the plugin, and what they say is drawn; when each was given changes none of it.',
         ],
         [
-            'path' => 'PluginsEnvelope.proof',
-            'because' => 'What proving a plugin again came to. It is filled only on an answer to proving one again, which this app does not offer, and no requirement asks it to.',
+            'path' => 'PluginsEnvelope.proof.proofs[].came_to.declared[].constraint',
+            'because' => 'As `PluginsEnvelope.install.proofs[].came_to.declared[].constraint`: a proof again carries the same proofs an install does, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.proof.proofs[].came_to.declared[].fixture',
+            'because' => 'As `PluginsEnvelope.install.proofs[].came_to.declared[].fixture`: a proof again carries the same proofs an install does, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.proof.proofs[].came_to.declared[].held',
+            'because' => 'As `PluginsEnvelope.install.proofs[].came_to.declared[].held`: a proof again carries the same proofs an install does, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.proof.proofs[].came_to.declared[].place',
+            'because' => 'As `PluginsEnvelope.install.proofs[].came_to.declared[].place`: a proof again carries the same proofs an install does, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.proof.proofs[].of',
+            'because' => 'As `PluginsEnvelope.install.proofs[].of`: a proof again carries the same proofs an install does, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.nonconforming[].at',
+            'because' => 'When an adapter answered outside its contract. What it answered, as which capability, and that the plugin fills none of it until it is proved again are drawn; the moment changes none of that, and the stack keeps the answer until a proof clears it.',
         ],
         [
             'path' => 'PluginsEnvelope.install.against',

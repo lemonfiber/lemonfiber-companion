@@ -53,8 +53,11 @@ enum PluginsField: string implements NamesAWireField
     /** Every proof that has to hold before a plugin is installed. */
     case Proofs = 'proofs';
 
-    /** A proof's id, which its verdict is reported against. */
+    /** A proof's id, which its verdict is reported against; and, on the envelope, what proving a plugin again came to. */
     case Proof = 'proof';
+
+    /** Whether proving a plugin again cleared every answer kept against it. */
+    case Cleared = 'cleared';
 
     /** What asking a proof came to; absent where it was not asked. */
     case CameTo = 'came_to';

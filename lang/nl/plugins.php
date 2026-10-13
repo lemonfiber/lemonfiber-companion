@@ -107,12 +107,14 @@ return [
         'install' => 'Bezig met installeren. Hij telt pas als geïnstalleerd als de machine hem heeft vastgelegd, zijn bewijzen hebben standgehouden en niets wat ze controleert stuk is gegaan',
         'update' => 'Bezig met bijwerken. De genoemde services stoppen, en hij telt pas als bijgewerkt als de nieuwe versie standhoudt',
         'remove' => 'Bezig met verwijderen. De genoemde services stoppen',
+        'prove' => 'Zijn adapters opnieuw om hun bewijzen vragen',
     ],
     'refused' => [
         'rehearse' => 'De machine wilde dit niet oefenen',
         'install' => 'De machine heeft hem niet geïnstalleerd',
         'update' => 'De machine heeft hem niet bijgewerkt',
         'remove' => 'De machine heeft hem niet verwijderd',
+        'prove' => 'De machine heeft hem niet opnieuw bewezen',
     ],
     'restored' => [
         'running' => 'Versie :version is terug, geplaatst en actief',
@@ -136,4 +138,12 @@ return [
     'update_it' => ':name bijwerken',
     'remove_it' => ':name verwijderen',
     'no_source_to_update' => 'Zijn register noemt geen bron, dus hij kan hier niet worden bijgewerkt',
+    'prove_it' => ':name opnieuw bewijzen',
+    'prove' => 'Opnieuw bewijzen',
+    'proof_reading' => 'Er is nog niets gevraagd. Dit is wat opnieuw bewijzen zou vragen',
+    'a_pass_clears' => 'Wat een geslaagd bewijs zou vrijgeven',
+    'kept_against_it' => 'Nog tegen hem bewaard, en niet gevuld',
+    'nothing_kept_against_it' => 'Er wordt niets tegen hem bewaard',
+    'proved_it' => 'Opnieuw bewezen: alles wat tegen hem bewaard werd, is vrijgegeven',
+    'not_proved' => 'Niet bewezen: wat tegen hem bewaard werd, blijft, en hij vult er niets van',
 ];

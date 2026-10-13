@@ -16,26 +16,7 @@
         <x-operator::note>{{ __('plugins.no_changes') }}</x-operator::note>
     @endforelse
 
-    {{-- Not asked is never passed, and could not conclude is never failed:
-         each proof says which it came to in its own words. --}}
-    <x-operator::heading>{{ __('plugins.proofs') }}</x-operator::heading>
-    @forelse ($install->proofs as $proof)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $proof->establishes }}</x-operator::emphasis>
-            <x-operator::note>{{ $proof->asks }}</x-operator::note>
-            @if ($proof->why !== '')
-                <x-design::body>{{ $proof->why }}</x-design::body>
-            @endif
-            <x-design::body>{{ __($proof->cameToSaid) }}</x-design::body>
-            @forelse ($proof->said as $said)
-                <x-operator::note>{{ $said }}</x-operator::note>
-            @empty
-                {{-- Nothing said with it, which is a proof not asked or one that held. --}}
-            @endforelse
-        </x-operator::entry>
-    @empty
-        <x-operator::note>{{ __('plugins.no_proofs') }}</x-operator::note>
-    @endforelse
+    <x-operator::the-proofs :proofs="$install->proofs" />
 
     <x-operator::heading>{{ __('plugins.overrides') }}</x-operator::heading>
     @forelse ($install->overrides as $override)

@@ -9,7 +9,7 @@ use Closure;
 use function trim;
 
 /**
- * What a stack says of its plugins: which are installed, how each one's source stands, what their adapters answered outside their contracts, and the install, update or removal it was asked about.
+ * What a stack says of its plugins: which are installed, how each one's source stands, what their adapters answered outside their contracts, and the install, update, removal or proof it was asked about.
  *
  * **The listing is what the record holds.** After a reading, or an act that
  * was put back, it is what it held before: something nobody recorded is
@@ -18,7 +18,7 @@ use function trim;
  * **The agreement is the reading's name**, and only a reading has one. It is
  * what a yes quotes, so the stack carries out what was shown or refuses a
  * reading that has moved on. An answer is about one act at most: an install,
- * an update and a removal are three accounts, never one.
+ * an update, a removal and a proof are four accounts, never one.
  */
 final readonly class ThePlugins
 {
@@ -26,7 +26,7 @@ final readonly class ThePlugins
         private TheInstalledPlugins $installed,
         private ThePluginSources $sources,
         private string $agreement,
-        private APluginInstall|AnUpdate|APluginRemoval|null $about,
+        private APluginInstall|AnUpdate|APluginRemoval|APluginReproof|null $about,
         private TheAnswersOutOfContract $outOfContract,
     ) {}
 
@@ -52,6 +52,12 @@ final readonly class ThePlugins
     public static function aboutAPluginRemoval(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginRemoval $removal): self
     {
         return new self($installed, $sources, trim($agreement), $removal, TheAnswersOutOfContract::these());
+    }
+
+    /** An answer about proving a plugin again, beside what the record holds. */
+    public static function aboutAReproof(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginReproof $proof): self
+    {
+        return new self($installed, $sources, trim($agreement), $proof, TheAnswersOutOfContract::these());
     }
 
     /** The answers that plugin's adapters gave outside their contracts, which it fills nothing for until it is proved again. */
@@ -118,6 +124,12 @@ final readonly class ThePlugins
         return $this->about instanceof APluginRemoval && $this->about->isAReading() && $this->about->plugin() === $plugin->id();
     }
 
+    /** Whether this is a reading of proving that plugin again, which a yes to proving it may quote. */
+    public function readsAProofOf(APlugin $plugin): bool
+    {
+        return $this->about instanceof APluginReproof && $this->about->isAReading() && $this->about->plugin() === $plugin->id();
+    }
+
     /**
      * Say what happens for the listing alone and for each act it can be about, and get back what you built.
      *
@@ -125,20 +137,23 @@ final readonly class ThePlugins
      * @template TInstall of object
      * @template TUpdate of object
      * @template TRemoval of object
+     * @template TProof of object
      *
      * @param Closure(): TListed                $listed
      * @param Closure(APluginInstall): TInstall $install
      * @param Closure(AnUpdate): TUpdate        $update
      * @param Closure(APluginRemoval): TRemoval       $removal
+     * @param Closure(APluginReproof): TProof          $proof
      *
-     * @return TListed|TInstall|TUpdate|TRemoval
+     * @return TListed|TInstall|TUpdate|TRemoval|TProof
      */
-    public function either(Closure $listed, Closure $install, Closure $update, Closure $removal): object
+    public function either(Closure $listed, Closure $install, Closure $update, Closure $removal, Closure $proof): object
     {
         return match (true) {
             $this->about instanceof APluginInstall => $install($this->about),
             $this->about instanceof AnUpdate => $update($this->about),
             $this->about instanceof APluginRemoval => $removal($this->about),
+            $this->about instanceof APluginReproof => $proof($this->about),
             default => $listed(),
         };
     }
