@@ -62,6 +62,9 @@ enum WhyNothingIsShown
      */
     case TheDeviceWouldNotShowIt;
 
+    /** The operator turned notifications off in the app's own settings, which is an answer and not a fault. */
+    case TheOperatorTurnedThemOff;
+
     /**
      * Whether asking the operator could change this answer.
      *

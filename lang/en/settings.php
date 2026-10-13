@@ -50,4 +50,11 @@ return [
         'fifteen_minutes' => '15 minutes',
         'one_hour' => '1 hour',
     ],
+    'notifications' => 'Notifications',
+    'notifications_on' => 'Tell me when a stack needs attention',
+    'notifications_allow' => 'Allow notifications',
+    'notifications_not_now' => 'Not now',
+    'notifications_declined' => 'Notifications are turned off for lemonfiber in your phone\'s settings. Turn them on there, then come back.',
+    'notifications_open_settings' => 'Open the phone\'s settings',
+    'notifications_would_not_open' => 'Your phone would not open its settings. Find lemonfiber there yourself.',
 ];

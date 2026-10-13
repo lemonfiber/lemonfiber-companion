@@ -100,6 +100,8 @@ it('takes a notifier nowhere but where it is answered and where a running app he
         Tree::at('app-modules/wayfinding/src/Api/WhatItListensWith.php'),
         Tree::at('app-modules/device/src/Api/PlatformNotifier.php'),
         Tree::at('app-modules/device/src/Api/NotifyingWithinACap.php'),
+        Tree::at('app-modules/connection/src/Api/NotifyingOnlyWhenTurnedOn.php'),
+        Tree::at('app-modules/connection/src/Api/TurningNotificationsOn.php'),
         Tree::at('bootstrap/Composition/CompositionRoot.php'),
     ];
 

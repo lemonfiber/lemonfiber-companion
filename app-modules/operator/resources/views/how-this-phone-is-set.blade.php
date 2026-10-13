@@ -25,6 +25,34 @@
 
     <x-design::note>{{ __('settings.lock_after_is') }}</x-design::note>
 
+    {{-- Whether the operator is told what a stack raises. Off until they turn
+         it on; turning it on says why first, and only its button asks the phone. --}}
+    @if ($this->offersNotifications())
+        <x-design::section :label="__('settings.notifications')">
+            <x-design::toggle :label="__('settings.notifications_on')" :on="$this->notificationsAreOn()" tap="toggleNotifications()" />
+        </x-design::section>
+
+        @if ($this->explainingNotifications)
+            <x-design::card>
+                <x-design::body>{{ __($this->whyNotifications()) }}</x-design::body>
+
+                @if ($this->notificationsDeclined)
+                    <x-design::body>{{ __('settings.notifications_declined') }}</x-design::body>
+                    <x-design::note>{{ __($this->withoutNotifications()) }}</x-design::note>
+                    <x-design::action :label="__('settings.notifications_open_settings')" tap="openTheAppsSettings()" />
+
+                    @if ($this->theSettingsWouldNotOpen)
+                        <x-design::note>{{ __('settings.notifications_would_not_open') }}</x-design::note>
+                    @endif
+                @else
+                    <x-design::action :label="__('settings.notifications_allow')" tap="allowNotifications()" />
+                @endif
+
+                <x-design::action :label="__('settings.notifications_not_now')" tap="notNow()" tone="tonal" />
+            </x-design::card>
+        @endif
+    @endif
+
     {{-- How long readings are kept. A count of days is said as that count;
          Other… opens a field for any count the offered ones do not name. --}}
     <x-design::section :label="__($this->speaksTo->kept())">

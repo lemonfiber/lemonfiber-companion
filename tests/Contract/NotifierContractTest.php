@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Lemonfiber\Native\Telling;
 use Lemonfiber\Native\WhyNothingWasTold;
+use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
+use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Device\Api\NotifyingWithinACap;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Internal\WhatWasToldLately;
@@ -17,6 +19,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\Stack;
@@ -31,6 +34,8 @@ use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\ANotificationCentreOnAHandset;
 use Tests\Support\Fakes\ANotifierInMemory;
+use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
 
 // The Notifier contract, run against the adapter and against the fake.
@@ -102,6 +107,19 @@ function keptToACap(Notifier $platform, FrozenClock $clock): NotifyingWithinACap
     return new NotifyingWithinACap($platform, $clock, new WhatWasToldLately());
 }
 
+/** A notifier kept to the operator's switch, set as `$notifying`, over `$within`. */
+function keptToTheSwitch(Notifier $within, Notifying $notifying): NotifyingOnlyWhenTurnedOn
+{
+    $kept = ConnectionSettingsInMemory::empty();
+    $seal = ASealInMemory::working();
+    $clock = FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT));
+    $switch = new TurningNotificationsOn($seal, $kept, ANotifierInMemory::allowed(), $clock);
+
+    $notifying === Notifying::On ? $switch->turnOn() : $switch->turnOff();
+
+    return new NotifyingOnlyWhenTurnedOn($within, $seal, $kept, $clock);
+}
+
 /** One alert of a stack's, named by its recurrence. */
 function anAlertOf(string $stack, int $recurrence): Notification
 {
@@ -145,6 +163,11 @@ function everyNotifier(Asked $standing): array
             Asked::Declined => ANotificationCentreOnAHandset::refused(),
             Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
         }), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT))),
+        'the adapter, kept to the switch and turned on' => fn(): Notifier => keptToTheSwitch(overAHandset(match ($standing) {
+            Asked::Granted => ANotificationCentreOnAHandset::allowed(),
+            Asked::Declined => ANotificationCentreOnAHandset::refused(),
+            Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
+        }), Notifying::On),
     ];
 }
 
@@ -462,4 +485,11 @@ it('shows a stack\'s notifications as they come again once a minute has passed',
     $titles = array_column($centre->shown(), 'title');
 
     expect(array_pop($titles))->toBe(Catalogue::words()->for('notifications.plain.onset_title', ['stack' => 'the-loft']));
+});
+
+it('shows nothing while the operator has notifications turned off, and says that is why', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+
+    expect(whatBecameOfIt(keptToTheSwitch(overAHandset($centre), Notifying::Off)->show(somethingWorthSaying())))->toBe(WhyNothingIsShown::TheOperatorTurnedThemOff->name)
+        ->and($centre->shown())->toBe([]);
 });

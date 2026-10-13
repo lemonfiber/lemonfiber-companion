@@ -8,6 +8,7 @@ use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
+use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -33,6 +35,8 @@ use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\ANotifierInMemory;
+use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
@@ -53,6 +57,8 @@ function thePhonesSettingsOver(
     ?LettingGoOfOldReadings $readings = null,
     ?ForgetsEverythingKept $everything = null,
     ?Stacks $stacks = null,
+    ?ANotifierInMemory $notifier = null,
+    ?TheAppsSettings $apps = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
     $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
@@ -63,6 +69,8 @@ function thePhonesSettingsOver(
         $readings ?? WhatThePhoneKeeps::nothingTooOld(),
         new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking),
         $stacks ?? StacksInMemory::working(),
+        new TurningNotificationsOn(ASealInMemory::working(), $kept, $notifier ?? ANotifierInMemory::unasked(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        $apps ?? new AppsSettingsThatOpen(),
     );
 }
 
@@ -375,3 +383,96 @@ it('speaks in its own words when opened from anywhere but a member\'s Profile', 
     'something that is not a word' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => true]],
     'a word it does not know' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => 'the_neighbours']],
 ]);
+
+it('offers notifications off until the operator turns them on, and asks the phone nothing to draw them', function (): void {
+    $notifier = ANotifierInMemory::unasked();
+    $drawn = WhatTheDeviceWouldDraw::by(thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier));
+
+    expect($drawn->said())->toContain(__('settings.notifications'))
+        ->and($drawn->said())->toContain(__('settings.notifications_on'))
+        ->and($drawn->said())->not->toContain(__('device.notifications_reason'))
+        ->and($notifier->timesAsked())->toBe(0);
+});
+
+it('says why before it asks the phone, saying it may tell late or not at all while closed, and asks only from its own button', function (): void {
+    $notifier = ANotifierInMemory::unasked();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
+
+    $screen->toggleNotifications();
+    $explained = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($notifier->timesAsked())->toBe(0)
+        ->and($explained->said())->toContain(__('device.notifications_reason'))
+        ->and(__('device.notifications_reason'))->toContain('late or not at all')
+        ->and($explained->said())->toContain(__('settings.notifications_allow'));
+
+    $screen->allowNotifications();
+
+    expect($notifier->timesAsked())->toBe(1)
+        ->and($screen->notificationsAreOn())->toBeTrue()
+        ->and($screen->explainingNotifications)->toBeFalse();
+});
+
+it('keeps notifications on when read again, and turns them off at once without asking anything', function (): void {
+    $notifier = ANotifierInMemory::unasked();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
+    $screen->toggleNotifications();
+    $screen->allowNotifications();
+    $screen->notifying = null;
+
+    expect($screen->notificationsAreOn())->toBeTrue();
+
+    $screen->toggleNotifications();
+    $screen->notifying = null;
+
+    expect($screen->notificationsAreOn())->toBeFalse()
+        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($notifier->timesAsked())->toBe(1);
+});
+
+it('says where to turn notifications on where the phone was told no, offers the phone\'s settings, and keeps them off', function (): void {
+    $notifier = ANotifierInMemory::refused();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier, apps: AppsSettingsThatOpen::wouldNot());
+
+    $screen->toggleNotifications();
+    $declined = WhatTheDeviceWouldDraw::by($screen);
+    $screen->openTheAppsSettings();
+
+    expect($declined->said())->toContain(__('settings.notifications_declined'))
+        ->and($declined->said())->toContain(__('settings.notifications_open_settings'))
+        ->and($declined->said())->toContain(__('device.notifications_alternative'))
+        ->and($declined->said())->not->toContain(__('settings.notifications_allow'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('settings.notifications_would_not_open'))
+        ->and($screen->notificationsAreOn())->toBeFalse()
+        ->and($notifier->timesAsked())->toBe(0);
+});
+
+it('keeps notifications off where the phone says no to the prompt, and says where to turn them on', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::refused());
+    $screen->explainingNotifications = true;
+
+    $screen->allowNotifications();
+
+    expect($screen->notificationsAreOn())->toBeFalse()
+        ->and($screen->notificationsDeclined)->toBeTrue()
+        ->and($screen->explainingNotifications)->toBeTrue();
+});
+
+it('closes the reason without asking anything when the operator says not now', function (): void {
+    $notifier = ANotifierInMemory::unasked();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
+    $screen->toggleNotifications();
+
+    $screen->notNow();
+
+    expect($screen->explainingNotifications)->toBeFalse()
+        ->and($screen->notificationsAreOn())->toBeFalse()
+        ->and($notifier->timesAsked())->toBe(0);
+});
+
+it('offers no notifications switch in a member\'s words', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $screen->speaksTo = WhoTheSettingsSpeakTo::AMember;
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('settings.notifications_on'));
+});

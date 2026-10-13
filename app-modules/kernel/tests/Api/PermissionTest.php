@@ -42,5 +42,6 @@ it('the app names what it asks for, and asks for nothing else', function (): voi
     expect(Permission::cases())->toBe([
         Permission::LocalNetwork,
         Permission::Camera,
+        Permission::Notifications,
     ]);
 });

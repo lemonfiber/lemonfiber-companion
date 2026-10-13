@@ -12,6 +12,7 @@ use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
+use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\DaysAsked;
@@ -22,9 +23,12 @@ use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Operator\Internal\ChoosesNotifications;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
+use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -34,8 +38,8 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The phone's own settings: the lock, readings, the order of the stacks and
- * what the phone keeps.
+ * The phone's own settings: the lock, notifications, readings, the order of
+ * the stacks and what the phone keeps.
  *
  * Each value is read once for the frame and held, and a choice is kept as it
  * is made, so what is drawn is always what is in force.
@@ -47,6 +51,8 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     use WritesItsTaps;
     use HasAWayBack;
     use DrawsItsTemplate;
+    use ChoosesNotifications;
+    use OffersTheAppsSettings;
 
     public const string TEMPLATE = 'operator::how-this-phone-is-set';
     /** How long the app may be away before the lock asks again, once read. */
@@ -87,6 +93,8 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
         private readonly LettingGoOfOldReadings $readings,
         private readonly ClearingWhatThePhoneKeeps $clearing,
         private readonly Stacks $stacks,
+        protected readonly TurningNotificationsOn $notifications,
+        protected readonly TheAppsSettings $settings,
     ) {}
 
     /** Speak in the words the screen it was opened from asked for: a member's Profile asks for household words. */

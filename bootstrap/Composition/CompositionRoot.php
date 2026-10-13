@@ -39,8 +39,10 @@ use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Connection\Api\KeepingReadingsFor;
+use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Api\ThisDeviceKept;
+use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
@@ -345,12 +347,16 @@ final class CompositionRoot extends ServiceProvider
         // a third party reading what a stack said about somebody's home — and
         // NothingLeavesThisDeviceTest is the rule that refuses it. A local
         // notification is composed and shown on the device and never leaves it.
-        // `Notifier` is `PlatformNotifier`, kept to a cap per stack. What the
-        // cap counts is one memory for the life of the process, so it counts
-        // across every screen.
+        // `Notifier` is `PlatformNotifier`, kept to a cap per stack and to the
+        // operator's switch. What the cap counts is one memory for the life of
+        // the process, so it counts across every screen. The switch asks the
+        // phone itself, so it is handed the notifier the phone answers.
         $this->app->singleton(WhatWasToldLately::class);
-        $this->app->bind(Notifier::class, NotifyingWithinACap::class);
-        $this->app->when(NotifyingWithinACap::class)
+        $this->app->bind(Notifier::class, NotifyingOnlyWhenTurnedOn::class);
+        $this->app->when(NotifyingOnlyWhenTurnedOn::class)
+            ->needs(Notifier::class)
+            ->give(NotifyingWithinACap::class);
+        $this->app->when([NotifyingWithinACap::class, TurningNotificationsOn::class])
             ->needs(Notifier::class)
             ->give(PlatformNotifier::class);
 
