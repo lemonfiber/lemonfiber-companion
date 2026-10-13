@@ -60,6 +60,26 @@ return [
         'none' => 'Deze stack heeft geen sleutels voor apps gemaakt',
         'made_at_the_terminal' => 'Een nieuwe sleutel maak je op de terminal van de stack.',
     ],
+
+    // De telefoonsleutels die een stack registreerde om een sleutel te maken, naast de sleutels voor apps.
+    'phone_keys' => [
+        'heading' => 'Telefoonsleutels',
+        'what_they_are' => 'Met een telefoonsleutel maakt een telefoon een sleutel voor een app met gezicht of vingerafdruk in plaats van het wachtwoord. Alleen de publieke helft staat op de stack.',
+        'lives' => [
+            'strongbox' => 'In de eigen beveiligingschip van de telefoon',
+            'enclave' => 'In de Secure Enclave van de iPhone, daar gezet door deze app',
+            'tee' => 'In het afgeschermde deel van de processor van de telefoon',
+        ],
+        'registered' => 'Geregistreerd :when',
+        'used' => 'Maakte voor het laatst een sleutel :when',
+        'never_used' => 'Heeft nog geen sleutel gemaakt',
+        'revoked' => 'Ingetrokken',
+        'revoked_when' => 'Ingetrokken :when',
+        'revoke_confirm' => 'De telefoon met :name kan er vanaf de volgende poging geen sleutels meer mee maken, en intrekken kan niet ongedaan worden. De sleutels die hij al maakte blijven werken.',
+        'not_revoked' => 'De stack heeft hem niet ingetrokken',
+        'unread' => 'De telefoonsleutels konden nu niet worden gelezen',
+        'none' => 'Geen telefoon heeft een sleutel bij deze stack geregistreerd',
+    ],
     'clients' => [
         'heading' => 'Waarop kijken',
         'support' => [

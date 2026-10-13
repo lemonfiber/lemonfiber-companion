@@ -17,17 +17,11 @@ enum KeysField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The keys, in the order they were minted. */
-    case Keys = 'keys';
-
     /** The stack's sentence on what a purpose in the listing is worth. */
     case Purposes = 'purposes';
 
     /** When a key was minted. */
     case Minted = 'minted';
-
-    /** When a key was last admitted, where it has been. */
-    case Used = 'used';
 
     /** Whether a household member minted a key for themselves. */
     case MemberMinted = 'member_minted';

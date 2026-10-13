@@ -6,6 +6,9 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AKeyForAnApp;
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\APhoneKey;
+use Modules\Kernel\Api\APhoneKeysName;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -16,12 +19,16 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheKeysForApps;
+use Modules\Kernel\Api\ThePhoneKeys;
 use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereAKeyStands;
+use Modules\Kernel\Api\WhereAPhoneKeyLives;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\TheKeysAppsHold;
 use Modules\Operator\Internal\ViewModels\AKeyAsShown;
+use Modules\Operator\Internal\ViewModels\APhoneKeyAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
@@ -29,6 +36,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsKeys;
+use Tests\Support\Fakes\AStackThatKeepsPhoneKeys;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheDevicePresses;
@@ -59,7 +67,16 @@ function threeKeysForApps(): TheKeysForApps
     );
 }
 
-function theKeysScreen(AStackThatKeepsKeys $keeping, ?AKeychainInMemory $keychain = null, bool $signedIn = true): TheKeysAppsHold
+/** A phone key standing in the phone's trusted environment, and one already revoked. */
+function twoPhoneKeys(): ThePhoneKeys
+{
+    return ThePhoneKeys::of(
+        APhoneKey::standing(APhoneKeysName::of('Galaxy A51 · 7f3a'), WhereAPhoneKeyLives::TrustedEnvironment, AMomentAsWritten::of('2026-10-01T09:00:00Z'), AMomentAsWritten::of('2026-10-11T08:30:00Z')),
+        APhoneKey::revoked(APhoneKeysName::of('old phone · 0001'), WhereAPhoneKeyLives::StrongBox, AMomentAsWritten::of('2026-09-01T09:00:00Z'), AMomentAsWritten::of(''), AMomentAsWritten::of('2026-10-02T09:00:00Z')),
+    );
+}
+
+function theKeysScreen(AStackThatKeepsKeys $keeping, ?AKeychainInMemory $keychain = null, bool $signedIn = true, ?AStackThatKeepsPhoneKeys $phoneKeys = null): TheKeysAppsHold
 {
     $stack = theStackWhoseKeysAreRead();
     $keychain ??= AKeychainInMemory::working();
@@ -68,7 +85,7 @@ function theKeysScreen(AStackThatKeepsKeys $keeping, ?AKeychainInMemory $keychai
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TheKeysAppsHold($keeping, $keychain, FrozenClock::at(Instant::atEpochSeconds(1_791_710_000)), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new TheKeysAppsHold($keeping, $phoneKeys ?? AStackThatKeepsPhoneKeys::listing(twoPhoneKeys()), $keychain, FrozenClock::at(Instant::atEpochSeconds(1_791_710_000)), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -198,4 +215,78 @@ it('offers signing in where the device holds no session, and lets go of one the 
 it('is reached from the access part of the operator\'s menu, beside the passwords', function (): void {
     expect(TheMenu::AppKeys->screen())->toBe(AStacksScreen::Keys)
         ->and(TheMenu::AppKeys->group())->toBe(WhereInTheMenu::Access);
+});
+
+it('lists the phone keys beside the keys for apps, on a frame of their own, with where each lives', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()));
+    $first = WhatTheDeviceWouldDraw::by($screen);
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+
+    expect($first->said())->not->toContain('Galaxy A51 · 7f3a')
+        ->and($drawn)->toContain(
+            aKeysLine('stacks.phone_keys.heading'),
+            'Galaxy A51 · 7f3a',
+            aKeysLine(WhereAPhoneKeyLives::TrustedEnvironment->saidOnTheScreen()),
+            'old phone · 0001',
+            aKeysLine('stacks.phone_keys.revoked'),
+        )
+        ->and(array_map(static fn(APhoneKeyAsShown $key): bool => $key->mayBeRevoked, $screen->phoneKeys()->keys ?? []))->toBe([true, false]);
+});
+
+it('asks before revoking a phone key, saying the phone can no longer make keys with it, and revokes it once confirmed', function (): void {
+    $phoneKeys = AStackThatKeepsPhoneKeys::listing(twoPhoneKeys());
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), phoneKeys: $phoneKeys);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    TheDevicePresses::on($screen, aKeysLine('stacks.keys.revoke_named', ['name' => 'Galaxy A51 · 7f3a']));
+    $asked = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->keepThePhoneKey();
+    $kept = $phoneKeys->revoked();
+    $screen->askToRevokeAPhoneKey(0);
+    $screen->revokeThePhoneKey();
+
+    expect($asked)->toContain(aKeysLine('stacks.phone_keys.revoke_confirm', ['name' => 'Galaxy A51 · 7f3a']))
+        ->and($kept)->toBe([])
+        ->and($phoneKeys->revoked())->toBe(['Galaxy A51 · 7f3a'])
+        ->and($screen->phoneKeys()?->keys[0]->mayBeRevoked)->toBeFalse();
+});
+
+it('asks nothing for a phone key row it does not have, one already revoked, or a confirm with nothing asked', function (): void {
+    $phoneKeys = AStackThatKeepsPhoneKeys::listing(twoPhoneKeys());
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), phoneKeys: $phoneKeys);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    $screen->askToRevokeAPhoneKey(1);
+    $screen->askToRevokeAPhoneKey(2);
+    $screen->revokeThePhoneKey();
+
+    expect($screen->revokingAPhoneKey)->toBe('')
+        ->and($phoneKeys->revoked())->toBe([]);
+});
+
+it('says a phone key revoke the stack refused in its words, beside the keys as they were', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), phoneKeys: AStackThatKeepsPhoneKeys::refusingToRevoke(twoPhoneKeys(), ARefusalInItsWords::said('No phone key is called that.', '', WhatTheRefusalNamed::nothing())));
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    $screen->askToRevokeAPhoneKey(0);
+    $screen->revokeThePhoneKey();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(aKeysLine('stacks.phone_keys.not_revoked'), 'No phone key is called that.', 'Galaxy A51 · 7f3a');
+});
+
+it('says the phone keys could not be read where the stack could not be asked, and asks both again when told to', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), phoneKeys: AStackThatKeepsPhoneKeys::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+    $screen->again();
+
+    expect($drawn)->toContain(aKeysLine('stacks.phone_keys.unread'))
+        ->and($screen->phoneKeysFound)->toBeNull()
+        ->and($screen->answered)->toBeNull();
+});
+
+it('says the session has ended for the phone keys where the device holds none', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), signedIn: false);
+
+    expect($screen->phoneKeys()?->went->isSignedIn)->toBeFalse();
 });

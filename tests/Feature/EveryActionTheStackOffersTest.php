@@ -39,7 +39,7 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'Asked', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Held', 'History', 'Hosting',
-    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Keys', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
+    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Watched', 'Wiring', 'Word',
@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'KeyClaim', 'MintedKey',
+    'Certificate', 'DeviceChallenge', 'DeviceKey', 'KeyClaim', 'MintedKey', 'Settings',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

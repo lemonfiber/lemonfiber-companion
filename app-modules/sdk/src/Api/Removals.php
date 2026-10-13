@@ -93,10 +93,10 @@ final readonly class Removals
      */
     private static function revoked(array $data): HowFarTheRemovalReached
     {
-        $said = self::text($data, RemovalField::Revoked);
+        $said = self::text($data, WireField::Revoked);
 
         return HowFarTheRemovalReached::tryFrom($said)
-            ?? throw RemovalIsUnreadable::word(RemovalField::Revoked, $said, ...array_map(static fn(HowFarTheRemovalReached $case): string => $case->value, HowFarTheRemovalReached::cases()));
+            ?? throw RemovalIsUnreadable::word(WireField::Revoked, $said, ...array_map(static fn(HowFarTheRemovalReached $case): string => $case->value, HowFarTheRemovalReached::cases()));
     }
 
     /**

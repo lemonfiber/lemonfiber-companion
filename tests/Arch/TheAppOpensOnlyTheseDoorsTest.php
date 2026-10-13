@@ -123,7 +123,7 @@ const DOORS_THE_APP_OPENS = [
     // it lets it go when it is left, rather than leaving it to lapse.
     'letGoOf' => 'ends a guard this app started, when the screen holding it is left',
 
-    'revokeKey' => 'revokes one integration key by its name, once the operator confirmed it stops working at once and cannot be undone',
+    'keys' => 'reaches the integration keys, to revoke one by its name once the operator confirmed it stops working at once and cannot be undone (`N29-R6`)',
 
     // The verbs below, and nothing else can reach it: it takes an action the
     // SDK generates from the contract, and the rule below holds the ones this

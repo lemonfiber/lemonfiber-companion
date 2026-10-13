@@ -879,4 +879,13 @@ enum WireField: string implements NamesAWireField
 
     /** How long a disturbance's clock runs for, and how long a lift of the line's limits has left or ran out ago. */
     case Seconds = 'seconds';
+
+    /** The keys a listing holds: integration keys in the order they were minted, phone keys in the order they were registered. */
+    case Keys = 'keys';
+
+    /** When a key was last used: an integration key last admitted, a phone key last proving a mint, where either has been. */
+    case Used = 'used';
+
+    /** How far taking somebody out got; and when a phone key was revoked, where it has been. */
+    case Revoked = 'revoked';
 }

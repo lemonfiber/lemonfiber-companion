@@ -16,6 +16,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\JobStanding;
+use Lemonfiber\Sdk\Keys;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
 use Lemonfiber\Sdk\Picture;
@@ -170,7 +171,7 @@ final readonly class GatedClient
     }
 
     /**
-     * Revoke the integration key of that name, answered with the listing as it stands after.
+     * The phone keys the stack lists, asked of the client directly, for {@see self::keys()}'s reason.
      *
      * @return Envelope<mixed>
      *
@@ -179,9 +180,18 @@ final readonly class GatedClient
      * @throws Unreachable
      * @throws UnreadableResponse
      */
-    public function revokeKey(string $name): Envelope
+    public function phoneKeys(): Envelope
     {
-        return $this->clients->client($this->stack, $this->session)->revokeKey($name);
+        return $this->clients->client($this->stack, $this->session)->read(Api::DEVICE_KEYS_ENDPOINT);
+    }
+
+    /**
+     * What the client does with keys, asked of it directly, for {@see self::keys()}'s reason: revoking an
+     * integration key or a phone key, each answered with its listing as it stands after.
+     */
+    public function keyring(): Keys
+    {
+        return $this->clients->client($this->stack, $this->session)->keys();
     }
 
     /**

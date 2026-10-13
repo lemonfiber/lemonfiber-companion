@@ -205,6 +205,28 @@ final readonly class WhatARefusalMeant
         RefusalCode::MembersMayNotMint,
         RefusalCode::ClaimNotOpen,
         RefusalCode::Unlinkable,
+        // Registering, challenging and revoking a phone key, refused for
+        // what was asked: each is said in the stack's words.
+        RefusalCode::NotADeviceName,
+        RefusalCode::DeviceNameTaken,
+        RefusalCode::PublicHalfTaken,
+        RefusalCode::NotP256,
+        RefusalCode::NoAttestation,
+        RefusalCode::AttestationUnverified,
+        RefusalCode::InSoftware,
+        RefusalCode::UntrustedApp,
+        RefusalCode::NotRegistered,
+        RefusalCode::ChallengeNotStanding,
+        RefusalCode::SignatureWrong,
+        RefusalCode::NoChallenge,
+        RefusalCode::AttestationRevoked,
+        // A core setting refused for what was asked of it.
+        RefusalCode::NoSuchSetting,
+        RefusalCode::ASecret,
+        RefusalCode::TakenElsewhere,
+        RefusalCode::UnwritableValue,
+        RefusalCode::SettingsMoved,
+        RefusalCode::AlreadyHolds,
         // An answer given for an offer or a listing that has since moved.
         // The stack's words say what moved, and the adapter following the
         // work it ended decides whether there is a fresh offer to read.

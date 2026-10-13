@@ -43,6 +43,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\KeepingKeysForApps;
+use Modules\Kernel\Api\KeepingPhoneKeys;
 use Modules\Kernel\Api\KeepingThePlace;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
 use Modules\Kernel\Api\Linking;
@@ -127,6 +128,7 @@ use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\Pausers;
+use Modules\Sdk\Api\PhoneKeyKeepers;
 use Modules\Sdk\Api\Pictures;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\PlaceKeepers;
@@ -404,6 +406,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // door, each read beside the rest and bound for the same reason.
         $this->app->bind(Safekeeping::class, Keyholders::class);
         $this->app->bind(KeepingKeysForApps::class, KeyKeepers::class);
+        $this->app->bind(KeepingPhoneKeys::class, PhoneKeyKeepers::class);
         $this->app->bind(Advising::class, Advisers::class);
         $this->app->bind(Welcoming::class, Doorkeepers::class);
         $this->app->bind(ReadingNews::class, Newsreaders::class);

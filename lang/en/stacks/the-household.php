@@ -67,6 +67,26 @@ return [
         'made_at_the_terminal' => 'A new key is made at the stack\'s terminal.',
     ],
 
+    // The phone keys a stack has registered to prove a mint, beside the keys for apps.
+    'phone_keys' => [
+        'heading' => 'Phone keys',
+        'what_they_are' => 'A phone key lets a phone make a key for an app with face or fingerprint instead of the password. Only its public half is on the stack.',
+        'lives' => [
+            'strongbox' => 'In the phone\'s own security chip',
+            'enclave' => 'In the iPhone\'s Secure Enclave, placed there by this app',
+            'tee' => 'In the phone\'s protected processor area',
+        ],
+        'registered' => 'Registered :when',
+        'used' => 'Last made a key :when',
+        'never_used' => 'Has not made a key yet',
+        'revoked' => 'Revoked',
+        'revoked_when' => 'Revoked :when',
+        'revoke_confirm' => 'The phone holding :name can no longer make keys with it, from the next attempt on, and a revoke cannot be undone. The keys it already made keep working.',
+        'not_revoked' => 'The stack did not revoke it',
+        'unread' => 'The phone keys could not be read just now',
+        'none' => 'No phone has registered a key with this stack',
+    ],
+
     // Which app to watch on, device by device.
     'clients' => [
         'heading' => 'What to watch on',

@@ -33,6 +33,7 @@ use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\APluginInstallAgreed;
 use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
@@ -189,6 +190,7 @@ use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Newsreaders;
 use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\Pausers;
+use Modules\Sdk\Api\PhoneKeyKeepers;
 use Modules\Sdk\Api\Pictures;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PlaceKeepers;
@@ -255,6 +257,8 @@ final readonly class EveryAdapterCallThatReads
             'Linkers::linkedOn' => static fn(): object => new Linkers($clients)->linkedOn($stack, $session),
             'KeyKeepers::listedOn' => static fn(): object => new KeyKeepers($clients)->listedOn($stack, $session),
             'KeyKeepers::revokedOn' => static fn(): object => new KeyKeepers($clients)->revokedOn($stack, $session, AKeysName::of('den')),
+            'PhoneKeyKeepers::listedOn' => static fn(): object => new PhoneKeyKeepers($clients)->listedOn($stack, $session),
+            'PhoneKeyKeepers::revokedOn' => static fn(): object => new PhoneKeyKeepers($clients)->revokedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a')),
             'Fillers::whatItWouldComeTo' => static fn(): object
                 => new Fillers($clients, $entropy)->whatItWouldComeTo($stack, $session, Capability::called('media-server'), ServiceId::called('plex')),
             'Fillers::choose' => static fn(): object
