@@ -28,6 +28,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -354,6 +355,10 @@ function everyDerivedKey(): array
         WhichRate::class => aPairPerCase(
             WhichRate::cases(),
             static fn(WhichRate $rate): array => [$rate->saidOnTheScreen()],
+        ),
+        HowTheHouseholdAsks::class => aPairPerCase(
+            HowTheHouseholdAsks::cases(),
+            static fn(HowTheHouseholdAsks $policy): array => [$policy->saidOnTheScreen()],
         ),
         WhatTheLineRunDid::class => aPairPerCase(
             WhatTheLineRunDid::cases(),

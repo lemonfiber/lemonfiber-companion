@@ -21,6 +21,7 @@ use Modules\Kernel\Api\AskingForTitles;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingQuality;
+use Modules\Kernel\Api\ChoosingWhatTheHouseholdMayAsk;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Encoding;
@@ -81,6 +82,7 @@ use Modules\Kernel\Api\WiringTheServices;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
+use Modules\Sdk\Api\Allowers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
@@ -347,6 +349,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // reason: one place decides whether a certificate is checked.
         $this->app->bind(Rationing::class, Quartermasters::class);
         $this->app->bind(SharingTheLine::class, Linesmen::class);
+        $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
 
         // What the stack keeps and the copies it holds, read beside the rest
         // and bound for the same reason.

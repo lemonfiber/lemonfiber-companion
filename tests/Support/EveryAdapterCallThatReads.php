@@ -25,6 +25,7 @@ use Modules\Kernel\Api\ALineChange;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\AnAllowanceChange;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -63,6 +64,7 @@ use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
@@ -135,11 +137,13 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
+use Modules\Kernel\Api\WhoAnAllowanceIsFor;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
+use Modules\Sdk\Api\Allowers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
@@ -355,6 +359,12 @@ final readonly class EveryAdapterCallThatReads
                 => new Linesmen($clients, $entropy)->carryOut($stack, $session, ALineChange::asked(ALift::none(), down: '50%')),
             'Linesmen::whatBecameOf' => static fn(): object
                 => new Linesmen($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Allowers::rehearse' => static fn(): object
+                => new Allowers($clients, $entropy)->rehearse($stack, $session, AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)),
+            'Allowers::carryOut' => static fn(): object
+                => new Allowers($clients, $entropy)->carryOut($stack, $session, AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)),
+            'Allowers::whatBecameOf' => static fn(): object
+                => new Allowers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Questions::about' => static fn(): object => new Questions($clients)->about($stack, $session),
             'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
             'Rehearsers::whatStarting' => static fn(): object

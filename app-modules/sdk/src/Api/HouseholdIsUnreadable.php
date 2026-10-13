@@ -38,6 +38,14 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    public static function finding(int $position): self
+    {
+        return new self(sprintf(
+            'Finding %d in the household envelope is not a sentence. What a change to the household came to is said there first, so a finding this app cannot show is refused rather than skipped.',
+            $position,
+        ));
+    }
+
     public static function member(int $position): self
     {
         return new self(sprintf(

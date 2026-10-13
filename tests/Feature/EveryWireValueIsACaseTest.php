@@ -24,6 +24,7 @@ use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -459,6 +460,13 @@ it('everything that can become of a limit on a download client has a case', func
 
     expect($words)->not->toBe([], 'no verdict union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatALimitCameTo::cases()))->toBe($words);
+});
+
+it('every way what the household asks for can be handled has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedHouseholdEnvelope(), 'policy');
+
+    expect($words)->not->toBe([], 'no policy union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(HowTheHouseholdAsks::cases()))->toBe($words);
 });
 
 it('everywhere a month can stand against its cap has a case', function (): void {

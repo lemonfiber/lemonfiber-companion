@@ -16,11 +16,11 @@ final readonly class WhatThisAppDoesNotRead
     /**
      * Why `rehearsed` goes unread on every report this app never asks to rehearse.
      *
-     * The one rehearsal this app asks for is a verb's, before its yes, and that
-     * report is a lifecycle, whose `rehearsed` is read. Every other action is sent
-     * without `dry_run`, so its report says `false` wherever this app reads it.
+     * An action this app rehearses before its yes has its `rehearsed` read where
+     * its report is read. Every other action is sent without `dry_run`, so its
+     * report says `false` wherever this app reads it.
      */
-    public const string NEVER_ASKED_FOR_A_REHEARSAL = 'Whether the report was a rehearsal. This app sends this action without `dry_run`, so the answer is always that it was not; the one rehearsal it asks for is a verb\'s, read from the lifecycle report.';
+    public const string NEVER_ASKED_FOR_A_REHEARSAL = 'Whether the report was a rehearsal. This app sends this action without `dry_run`, so the answer is always that it was not.';
 
     /**
      * Every row of the register.

@@ -34,4 +34,5 @@ requirement = [
   { id = "N2-R26", state = "done", evidence = ["tests/Feature/PreviewingTheMembersSideTest.php"] },
   { id = "N2-R27", state = "done", evidence = ["app-modules/kernel/src/Api/AnOffer.php", "tests/Contract/KeepingCurrentContractTest.php", "tests/Contract/SupervisingContractTest.php", "tests/Feature/FollowingWhatAVerbCameToTest.php", "tests/Feature/SeeingWhatAnUpdateTakenHereCameToTest.php"] },
   { id = "N2-R28", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatIsPlayingNow.php", "app-modules/sdk/src/Api/Players.php", "tests/Contract/FollowingWhatIsPlayingContractTest.php", "tests/Feature/SeeingWhatIsPlayingTest.php"] },
+  { id = "N2-R29", state = "done", evidence = ["app-modules/kernel/src/Api/AnAllowanceChange.php", "app-modules/sdk/src/Api/Allowers.php", "app-modules/operator/src/Internal/Screens/WhatTheHouseholdIsAllowed.php", "tests/Contract/ChoosingWhatTheHouseholdMayAskContractTest.php", "tests/Feature/ChangingWhatTheHouseholdMayAskTest.php"] },
 ]
