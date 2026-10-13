@@ -195,6 +195,13 @@ it('reads a removal it cannot read as an answer it could not read, never a short
     'a place left with no reason' => [['state' => 'done', 'gone' => [], 'left' => [['at' => '/srv/lemonfiber']]]],
 ]);
 
+it('reads a listing whose data is not an object as an answer it could not read', function (): void {
+    $finished = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'stored', 'data' => 'everything']));
+
+    expect(whatForgettingCameTo(aForgetterAnswered($finished)->whatBecameOf(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))
+        ->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);
+});
+
 it('reads a handle it cannot follow as an answer it could not read', function (): void {
     expect(whatForgettingCameTo(aForgetterAnswered(forgettingTakenOn(' '))->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'))))
         ->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);

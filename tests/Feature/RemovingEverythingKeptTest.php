@@ -150,6 +150,17 @@ it('draws what went and what was left, where the stack could still say', functio
     );
 });
 
+it('says the session ended where it went while what would go was asked', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theScreenThatForgets(aStackThatListsThenRemoves(), $keychain);
+    $screen->whatWouldGo();
+    $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
+    $screen->whileForgettingRuns();
+
+    expect($screen->howForgettingIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
 it('draws a refusal in the stack\'s own words, an outcome the stack no longer has, and what stood in the way before a yes', function (): void {
     $why = ARefusalInItsWords::said('this run cannot say where lemonfiber keeps its own files', '', WhatTheRefusalNamed::nothing(), 'Run this as the account that installed lemonfiber');
     $refused = theListShownToForget(AStackThatForgets::answering(WhatBecameOfForgetting::refused($why), WhatBecameOfForgetting::ended()));
