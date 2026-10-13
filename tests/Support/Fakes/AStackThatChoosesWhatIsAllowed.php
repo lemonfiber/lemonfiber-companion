@@ -10,7 +10,8 @@ use Modules\Kernel\Api\ChoosingWhatTheHouseholdMayAsk;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\TheAllowanceAsChanged;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 
 /**
  * A stack that rehearses a change to what the household may ask for, takes a yes on, and says what became of each, as a test arranges.
@@ -33,9 +34,9 @@ final class AStackThatChoosesWhatIsAllowed implements ChoosingWhatTheHouseholdMa
     private array $followed = [];
 
     /**
-     * @param Closure(): WhatBecameOfTheAllowanceChange    $rehearsing
-     * @param Closure(): WhatBecameOfTheAllowanceChange    $carrying
-     * @param Closure(Job): WhatBecameOfTheAllowanceChange $becoming
+     * @param Closure(): WhatBecameOfTheWork<TheAllowanceAsChanged>    $rehearsing
+     * @param Closure(): WhatBecameOfTheWork<TheAllowanceAsChanged>    $carrying
+     * @param Closure(Job): WhatBecameOfTheWork<TheAllowanceAsChanged> $becoming
      */
     private function __construct(
         private readonly Closure $rehearsing,
@@ -43,41 +44,59 @@ final class AStackThatChoosesWhatIsAllowed implements ChoosingWhatTheHouseholdMa
         private readonly Closure $becoming,
     ) {}
 
-    /** A stack that takes both on, and says `$rehearsal` of the rehearsal and `$change` of the yes. */
-    public static function answering(WhatBecameOfTheAllowanceChange $rehearsal, WhatBecameOfTheAllowanceChange $change): self
+    /**
+     * A stack that takes both on, and says `$rehearsal` of the rehearsal and `$change` of the yes.
+     *
+     * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $rehearsal
+     * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $change
+     */
+    public static function answering(WhatBecameOfTheWork $rehearsal, WhatBecameOfTheWork $change): self
     {
         return new self(
-            static fn(): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::underway(Job::named(self::THE_REHEARSAL)),
-            static fn(): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::underway(Job::named(self::THE_CHANGE)),
-            static fn(Job $job): WhatBecameOfTheAllowanceChange => $job->shown() === self::THE_CHANGE ? $change : $rehearsal,
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_REHEARSAL)),
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_CHANGE)),
+            static fn(Job $job): WhatBecameOfTheWork => $job->shown() === self::THE_CHANGE ? $change : $rehearsal,
         );
     }
 
-    /** A stack that answers asking either with `$said` at once, taking nothing on. */
-    public static function sayingAtOnce(WhatBecameOfTheAllowanceChange $said): self
+    /**
+     * A stack that answers asking either with `$said` at once, taking nothing on.
+     *
+     * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $said
+     */
+    public static function sayingAtOnce(WhatBecameOfTheWork $said): self
     {
         return new self(
-            static fn(): WhatBecameOfTheAllowanceChange => $said,
-            static fn(): WhatBecameOfTheAllowanceChange => $said,
-            static fn(): WhatBecameOfTheAllowanceChange => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
         );
     }
 
-    public function rehearse(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function rehearse(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheWork
     {
         $this->rehearsed[] = $change;
 
         return ($this->rehearsing)();
     }
 
-    public function carryOut(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function carryOut(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheWork
     {
         $this->carriedOut[] = $change;
 
         return ($this->carrying)();
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         $this->followed[] = $job;
 

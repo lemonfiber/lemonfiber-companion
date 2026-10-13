@@ -9,9 +9,17 @@ namespace Modules\Kernel\Api;
  */
 interface Accepting
 {
-    /** Accept the warning this check raises. */
-    public function accept(Stack $stack, Session $session, Check $check): WhatBecameOfTheAcceptance;
+    /**
+     * Accept the warning this check raises.
+     *
+     * @return WhatBecameOfTheWork<Report>
+     */
+    public function accept(Stack $stack, Session $session, Check $check): WhatBecameOfTheWork;
 
-    /** What became of it, by the handle it answered. */
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheAcceptance;
+    /**
+     * What became of it, by the handle it answered.
+     *
+     * @return WhatBecameOfTheWork<Report>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork;
 }

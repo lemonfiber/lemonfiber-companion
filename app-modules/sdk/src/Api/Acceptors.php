@@ -27,10 +27,11 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemedySaysNothing;
+use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfTheAcceptance;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -42,7 +43,10 @@ final readonly class Acceptors implements Accepting
 {
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
-    public function accept(Stack $stack, Session $session, Check $check): WhatBecameOfTheAcceptance
+    /**
+     * @return WhatBecameOfTheWork<Report>
+     */
+    public function accept(Stack $stack, Session $session, Check $check): WhatBecameOfTheWork
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
@@ -52,53 +56,64 @@ final readonly class Acceptors implements Accepting
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
-            return WhatBecameOfTheAcceptance::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheAcceptance
+    /**
+     * @return WhatBecameOfTheWork<Report>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ReportIsUnreadable|CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason $why) {
-            return WhatBecameOfTheAcceptance::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     /**
      * What the stack says about the work, with only `NoSuchJob` caught, for {@see Ushers::outcome()}'s reason.
+     *
+     * @return WhatBecameOfTheWork<Report>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheAcceptance
+    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): WhatBecameOfTheAcceptance => WhatBecameOfTheAcceptance::underway($job),
-                finished: static fn(Envelope $envelope): WhatBecameOfTheAcceptance => WhatBecameOfTheAcceptance::answered(Reports::in($envelope)),
-                ended: static fn(): WhatBecameOfTheAcceptance => WhatBecameOfTheAcceptance::ended(),
+                stillRunning: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway($job),
+                finished: static fn(Envelope $envelope): WhatBecameOfTheWork => WhatBecameOfTheWork::answered(Reports::in($envelope)),
+                ended: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::ended(),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheAcceptance::ended();
+            return WhatBecameOfTheWork::ended();
         }
     }
 
-    /** @param Envelope<mixed> $envelope */
-    private function underway(Envelope $envelope): WhatBecameOfTheAcceptance
+    /**
+     * @param Envelope<mixed> $envelope
+     * @return WhatBecameOfTheWork<Report>
+     */
+    private function underway(Envelope $envelope): WhatBecameOfTheWork
     {
         try {
-            return WhatBecameOfTheAcceptance::underway(Handles::in($envelope));
+            return WhatBecameOfTheWork::underway(Handles::in($envelope));
         } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
-            return WhatBecameOfTheAcceptance::met(WhatTheReachMet::byItself($why));
+            return WhatBecameOfTheWork::met(WhatTheReachMet::byItself($why));
         }
     }
 
-    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheAcceptance
+    /**
+     * @return WhatBecameOfTheWork<Report>
+     */
+    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheWork
     {
         return WhatARefusalMeant::inItsWords(
             $why,
-            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheAcceptance => WhatBecameOfTheAcceptance::refused($said),
-            met: static fn(Obstacle $met): WhatBecameOfTheAcceptance => WhatBecameOfTheAcceptance::met($met),
+            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheWork => WhatBecameOfTheWork::refused($said),
+            met: static fn(Obstacle $met): WhatBecameOfTheWork => WhatBecameOfTheWork::met($met),
         );
     }
 }

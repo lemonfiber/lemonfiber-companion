@@ -24,7 +24,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SharingTheLine;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\TheLineAsChanged;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -40,24 +41,33 @@ final readonly class Linesmen implements SharingTheLine
 {
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
-    public function rehearse(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function rehearse(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheWork
     {
         return $this->sent($stack, $session, $this->action($change)->rehearsed());
     }
 
-    public function carryOut(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function carryOut(Stack $stack, Session $session, ALineChange $change): WhatBecameOfTheWork
     {
         return $this->sent($stack, $session, $this->action($change));
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|BandwidthIsUnreadable|LineSaysNothing $why) {
-            return WhatBecameOfTheLineChange::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -75,7 +85,10 @@ final readonly class Linesmen implements SharingTheLine
         );
     }
 
-    private function sent(Stack $stack, Session $session, BandwidthAction $action): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    private function sent(Stack $stack, Session $session, BandwidthAction $action): WhatBecameOfTheWork
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
@@ -85,23 +98,25 @@ final readonly class Linesmen implements SharingTheLine
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
-            return WhatBecameOfTheLineChange::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     /**
      * What the stack says about the work, with only `NoSuchJob` caught, for {@see Ushers::outcome()}'s reason.
+     *
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheLineChange
+    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::underway($job),
-                finished: static fn(Envelope $envelope): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::answered(WhatTheLineCameTo::in($envelope)),
-                ended: static fn(): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::ended(),
+                stillRunning: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway($job),
+                finished: static fn(Envelope $envelope): WhatBecameOfTheWork => WhatBecameOfTheWork::answered(WhatTheLineCameTo::in($envelope)),
+                ended: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::ended(),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheLineChange::ended();
+            return WhatBecameOfTheWork::ended();
         }
     }
 
@@ -109,22 +124,26 @@ final readonly class Linesmen implements SharingTheLine
      * The handle an action was answered with, or the stack not having answered in a way this can follow.
      *
      * @param Envelope<mixed> $envelope
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
      */
-    private function underway(Envelope $envelope): WhatBecameOfTheLineChange
+    private function underway(Envelope $envelope): WhatBecameOfTheWork
     {
         try {
-            return WhatBecameOfTheLineChange::underway(Handles::in($envelope));
+            return WhatBecameOfTheWork::underway(Handles::in($envelope));
         } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
-            return WhatBecameOfTheLineChange::met(WhatTheReachMet::byItself($why));
+            return WhatBecameOfTheWork::met(WhatTheReachMet::byItself($why));
         }
     }
 
-    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheLineChange
+    /**
+     * @return WhatBecameOfTheWork<TheLineAsChanged>
+     */
+    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheWork
     {
         return WhatARefusalMeant::inItsWords(
             $why,
-            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::refused($said),
-            met: static fn(Obstacle $met): WhatBecameOfTheLineChange => WhatBecameOfTheLineChange::met($met),
+            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheWork => WhatBecameOfTheWork::refused($said),
+            met: static fn(Obstacle $met): WhatBecameOfTheWork => WhatBecameOfTheWork::met($met),
         );
     }
 }

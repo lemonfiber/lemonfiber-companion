@@ -27,7 +27,7 @@ use Modules\Kernel\Api\TheLineAsChanged;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatALimitCameTo;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -129,12 +129,17 @@ function aChangeToTheLineReported(WhatTheLineRunDid $did, ?WhereALiftStands $lif
     );
 }
 
-/** A stack that rehearses as `$rehearsal` and, on a yes, says `$change`. */
-function aStackThatChangesItsLine(?WhatBecameOfTheLineChange $rehearsal = null, ?WhatBecameOfTheLineChange $change = null): AStackThatSharesItsLine
+/**
+ * A stack that rehearses as `$rehearsal` and, on a yes, says `$change`.
+ *
+ * @param WhatBecameOfTheWork<TheLineAsChanged>|null $rehearsal
+ * @param WhatBecameOfTheWork<TheLineAsChanged>|null $change
+ */
+function aStackThatChangesItsLine(?WhatBecameOfTheWork $rehearsal = null, ?WhatBecameOfTheWork $change = null): AStackThatSharesItsLine
 {
     return AStackThatSharesItsLine::answering(
-        $rehearsal ?? WhatBecameOfTheLineChange::answered(aChangeToTheLineReported(WhatTheLineRunDid::Rehearsed)),
-        $change ?? WhatBecameOfTheLineChange::answered(aChangeToTheLineReported(WhatTheLineRunDid::Applied)),
+        $rehearsal ?? WhatBecameOfTheWork::answered(aChangeToTheLineReported(WhatTheLineRunDid::Rehearsed)),
+        $change ?? WhatBecameOfTheWork::answered(aChangeToTheLineReported(WhatTheLineRunDid::Applied)),
     );
 }
 
@@ -288,7 +293,7 @@ it('sends no yes where nothing was rehearsed, or where the last answer was not a
     $screen = theLineChangeScreen($sharing);
     $screen->apply();
 
-    $applied = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheLineChange::answered(aChangeToTheLineReported(WhatTheLineRunDid::Applied))));
+    $applied = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::answered(aChangeToTheLineReported(WhatTheLineRunDid::Applied))));
     $applied->apply();
 
     expect($sharing->carriedOut())->toBe([])
@@ -297,7 +302,7 @@ it('sends no yes where nothing was rehearsed, or where the last answer was not a
 
 it('draws a refusal as the stack\'s own sentence and remedy, and offers starting again', function (): void {
     $why = ARefusalInItsWords::said('half could not be read as a download limit', '', WhatTheRefusalNamed::nothing(), 'Write a download limit as 50%, 2MiB or unlimited');
-    $screen = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheLineChange::refused($why)));
+    $screen = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::refused($why)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(
@@ -314,13 +319,13 @@ it('draws a refusal as the stack\'s own sentence and remedy, and offers starting
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheLineChange::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::ended())));
 
     expect($drawn->said())->toContain(__('stacks.line_change.no_outcome'));
 });
 
 it('draws a lift in force and one that ran out, with the stack\'s words for it', function (WhereALiftStands $lift, string $key, int $count): void {
-    $screen = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheLineChange::answered(aChangeToTheLineReported(WhatTheLineRunDid::Rehearsed, $lift))));
+    $screen = aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::answered(aChangeToTheLineReported(WhatTheLineRunDid::Rehearsed, $lift))));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(trans_choice($key, $count), 'No limits until 21:10');
@@ -331,7 +336,7 @@ it('draws a lift in force and one that ran out, with the stack\'s words for it',
 
 it('says the stack runs no download client where it runs none', function (): void {
     $none = TheLineAsChanged::said(theLineAfterTheChange(), WhatTheLineRunDid::Rehearsed, WhereALiftStands::none());
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheLineChange::answered($none))));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::answered($none))));
 
     expect($drawn->said())->toContain(__('stacks.line_change.no_clients'));
 });
@@ -356,7 +361,7 @@ it('marks the chips chosen, and leaves a part as it is on its own chip', functio
 
 it('a refused credential signs this device out and lets the session go', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = theLineChangeScreen(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheLineChange::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
+    $screen = theLineChangeScreen(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
     $screen->down = '50%';
     $screen->rehearse();
 
@@ -365,7 +370,7 @@ it('a refused credential signs this device out and lets the session go', functio
 });
 
 it('a stack that is not answering leaves the session, and says what stood in the way', function (): void {
-    $screen = theLineChangeScreen(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheLineChange::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $screen = theLineChangeScreen(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $screen->down = '50%';
     $screen->rehearse();
 
@@ -394,7 +399,7 @@ it('draws what stood in the way of reading the line as it stands', function (): 
 
 it('asking again reads the line again, and follows the work on its own cadence', function (): void {
     $rationing = AStackThatRationsItsLine::with(theLineBeforeTheChange());
-    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheLineChange::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)), WhatBecameOfTheLineChange::ended());
+    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)), WhatBecameOfTheWork::ended());
     $screen = theLineChangeScreen($sharing, $rationing);
     $screen->answer();
     $screen->down = '50%';

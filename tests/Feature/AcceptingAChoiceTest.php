@@ -19,7 +19,7 @@ use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
-use Modules\Kernel\Api\WhatBecameOfTheAcceptance;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -73,7 +73,7 @@ function theAcceptingScreen(AStackThatWasAsked $asking, AStackThatAccepts $accep
 
 function anAcceptanceThatTakes(): AStackThatAccepts
 {
-    return AStackThatAccepts::answering(WhatBecameOfTheAcceptance::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Suppressed))));
+    return AStackThatAccepts::answering(WhatBecameOfTheWork::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Suppressed))));
 }
 
 it('offers accepting a warning on Health and leads to what it costs, and offers nothing for a failure', function (): void {
@@ -142,7 +142,7 @@ it('offers nothing to accept for a failure, a check the report does not raise, o
 ]);
 
 it('says so where the stack answered and its report does not show the warning accepted', function (): void {
-    $accepting = AStackThatAccepts::answering(WhatBecameOfTheAcceptance::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))));
+    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))));
     $screen = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), $accepting);
     $screen->accept();
     $screen->whileItRuns();
@@ -152,11 +152,11 @@ it('says so where the stack answered and its report does not show the warning ac
 
 it('draws a refusal in the stack\'s own words, and an outcome the stack no longer has', function (): void {
     $why = ARefusalInItsWords::said('Nothing in this run warns about vpn.contained', '', WhatTheRefusalNamed::nothing(), 'Answer one of the warnings this run raised');
-    $refused = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheAcceptance::refused($why)));
+    $refused = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheWork::refused($why)));
     $refused->accept();
     $refused->whileItRuns();
 
-    $ended = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheAcceptance::ended()));
+    $ended = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheWork::ended()));
     $ended->accept();
     $ended->whileItRuns();
 
@@ -166,7 +166,7 @@ it('draws a refusal in the stack\'s own words, and an outcome the stack no longe
 
 it('says what stood in the way, and lets go of a session the stack refused', function (): void {
     $met = theAcceptingScreen(AStackThatWasAsked::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), anAcceptanceThatTakes());
-    $refused = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::sayingAtOnce(WhatBecameOfTheAcceptance::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
+    $refused = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
     $refused->accept();
 
     expect(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))

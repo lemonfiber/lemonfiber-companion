@@ -25,7 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
-use Modules\Kernel\Api\WhatBecameOfTheAcceptance;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhereAChoiceStands;
@@ -119,7 +119,10 @@ function anAcceptanceTakenOn(string $job): MockResponse
     return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'accept', 'job' => $job]]), 202);
 }
 
-function whatAcceptingCameTo(WhatBecameOfTheAcceptance $became): string
+/**
+ * @param WhatBecameOfTheWork<Report> $became
+ */
+function whatAcceptingCameTo(WhatBecameOfTheWork $became): string
 {
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
@@ -139,7 +142,7 @@ function whatAcceptingCameTo(WhatBecameOfTheAcceptance $became): string
 }
 
 it('comes away from accepting with the job the stack named, and sends the check it was given', function (): void {
-    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheAcceptance::ended()), 'the adapter' => anAcceptorAnswered(anAcceptanceTakenOn(AStackThatAccepts::THE_ACCEPTANCE))] as $which => $accepting) {
+    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheWork::ended()), 'the adapter' => anAcceptorAnswered(anAcceptanceTakenOn(AStackThatAccepts::THE_ACCEPTANCE))] as $which => $accepting) {
         expect(whatAcceptingCameTo($accepting->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'))))
             ->toBe(sprintf('following %s', AStackThatAccepts::THE_ACCEPTANCE), $which);
     }
@@ -153,7 +156,7 @@ it('comes away from accepting with the job the stack named, and sends the check 
 it('reads the report the work came to, the accepted warning still a warning', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOnceAWarningIsAccepted()));
 
-    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheAcceptance::answered(theSameAcceptedReport())), 'the adapter' => anAcceptorAnswered($finished)] as $which => $accepting) {
+    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheWork::answered(theSameAcceptedReport())), 'the adapter' => anAcceptorAnswered($finished)] as $which => $accepting) {
         expect(whatAcceptingCameTo($accepting->whatBecameOf(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Job::named(AStackThatAccepts::THE_ACCEPTANCE))))
             ->toBe('vpn.contained=Accepted', $which);
     }
@@ -178,7 +181,7 @@ it('reads a refusal as the stack\'s own sentence and remedy, whether it refused 
 it('comes away with the obstacle where the stack could not be asked or read', function (MockResponse $answered, KindOfObstacle $kind): void {
     expect(whatAcceptingCameTo(anAcceptorAnswered($answered)->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'))))->toBe($kind->name)
         ->and(whatAcceptingCameTo(anAcceptorAnswered($answered)->whatBecameOf(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))->toBe($kind->name)
-        ->and(whatAcceptingCameTo(AStackThatAccepts::sayingAtOnce(WhatBecameOfTheAcceptance::met(Obstacle::of($kind)))->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'))))->toBe($kind->name);
+        ->and(whatAcceptingCameTo(AStackThatAccepts::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of($kind)))->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'))))->toBe($kind->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'a stack that failed' => [MockResponse::make('{"error":"still asking"}', 500), KindOfObstacle::StackDidNotAnswer],
@@ -198,7 +201,7 @@ it('reads a handle it cannot follow as an answer it could not read', function ()
 });
 
 it('the fake remembers each check accepted and each handle followed', function (): void {
-    $accepting = AStackThatAccepts::answering(WhatBecameOfTheAcceptance::ended());
+    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::ended());
     $accepting->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'));
     $accepting->whatBecameOf(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Job::named(AStackThatAccepts::THE_ACCEPTANCE));
 

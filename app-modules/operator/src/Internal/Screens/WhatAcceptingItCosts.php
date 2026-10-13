@@ -24,7 +24,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
-use Modules\Kernel\Api\WhatBecameOfTheAcceptance;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -96,7 +96,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
         }
 
         $this->accepting = $check;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheAcceptance => $this->answering->accept($stack, $session, Check::of($check)));
+        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->answering->accept($stack, $session, Check::of($check)));
     }
 
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
@@ -138,7 +138,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
 
         return $this->going ??= $following === null
             ? new HowTheAcceptanceReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheAcceptance => $this->answering->whatBecameOf($stack, $session, Job::named($following)));
+            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->answering->whatBecameOf($stack, $session, Job::named($following)));
     }
 
     /** The check the route names, which only finds a warning in what the stack reported. */
@@ -149,7 +149,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
         return is_string($named) ? trim($named) : '';
     }
 
-    /** @param Closure(Stack, Session): WhatBecameOfTheAcceptance $asking */
+    /** @param Closure(Stack, Session): WhatBecameOfTheWork<Report> $asking */
     private function put(Closure $asking): TheAcceptanceTurnedOutToBe
     {
         $stack = $this->stack();
@@ -160,7 +160,10 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
         );
     }
 
-    private function shown(WhatBecameOfTheAcceptance $became, Stack $stack): TheAcceptanceTurnedOutToBe
+    /**
+     * @param WhatBecameOfTheWork<Report> $became
+     */
+    private function shown(WhatBecameOfTheWork $became, Stack $stack): TheAcceptanceTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job): TheAcceptanceTurnedOutToBe {

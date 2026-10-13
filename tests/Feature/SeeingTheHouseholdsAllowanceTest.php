@@ -13,7 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Stacks\Api\AStacksScreen;
@@ -51,7 +51,7 @@ function theAllowanceScreen(AMemberWhoIsOwed $owing, ?AKeychainInMemory $keychai
 
     $screen = new WhatTheHouseholdIsAllowed(
         $owing,
-        AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheAllowanceChange::ended()),
+        AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::ended()),
         AStackThatInvites::answering(),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),

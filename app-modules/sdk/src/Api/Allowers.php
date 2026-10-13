@@ -26,7 +26,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\TheAllowanceAsChanged;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -40,24 +41,33 @@ final readonly class Allowers implements ChoosingWhatTheHouseholdMayAsk
 {
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
-    public function rehearse(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function rehearse(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheWork
     {
         return $this->sent($stack, $session, $this->action($change)->rehearsed());
     }
 
-    public function carryOut(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function carryOut(Stack $stack, Session $session, AnAllowanceChange $change): WhatBecameOfTheWork
     {
         return $this->sent($stack, $session, $this->action($change));
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable $why) {
-            return WhatBecameOfTheAllowanceChange::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
@@ -84,7 +94,10 @@ final readonly class Allowers implements ChoosingWhatTheHouseholdMayAsk
         );
     }
 
-    private function sent(Stack $stack, Session $session, HouseholdAllowAction $action): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    private function sent(Stack $stack, Session $session, HouseholdAllowAction $action): WhatBecameOfTheWork
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
@@ -94,42 +107,50 @@ final readonly class Allowers implements ChoosingWhatTheHouseholdMayAsk
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse $why) {
-            return WhatBecameOfTheAllowanceChange::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
     /**
      * What the stack says about the work, with only `NoSuchJob` caught, for {@see Ushers::outcome()}'s reason.
+     *
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
      */
-    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheAllowanceChange
+    private function outcome(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         try {
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
-                stillRunning: static fn(): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::underway($job),
-                finished: static fn(Envelope $envelope): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::answered(WhatTheAllowanceCameTo::in($envelope)),
-                ended: static fn(): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::ended(),
+                stillRunning: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway($job),
+                finished: static fn(Envelope $envelope): WhatBecameOfTheWork => WhatBecameOfTheWork::answered(WhatTheAllowanceCameTo::in($envelope)),
+                ended: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::ended(),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheAllowanceChange::ended();
+            return WhatBecameOfTheWork::ended();
         }
     }
 
-    /** @param Envelope<mixed> $envelope */
-    private function underway(Envelope $envelope): WhatBecameOfTheAllowanceChange
+    /**
+     * @param Envelope<mixed> $envelope
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    private function underway(Envelope $envelope): WhatBecameOfTheWork
     {
         try {
-            return WhatBecameOfTheAllowanceChange::underway(Handles::in($envelope));
+            return WhatBecameOfTheWork::underway(Handles::in($envelope));
         } catch (ApiVersionMismatch|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
-            return WhatBecameOfTheAllowanceChange::met(WhatTheReachMet::byItself($why));
+            return WhatBecameOfTheWork::met(WhatTheReachMet::byItself($why));
         }
     }
 
-    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheAllowanceChange
+    /**
+     * @return WhatBecameOfTheWork<TheAllowanceAsChanged>
+     */
+    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheWork
     {
         return WhatARefusalMeant::inItsWords(
             $why,
-            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::refused($said),
-            met: static fn(Obstacle $met): WhatBecameOfTheAllowanceChange => WhatBecameOfTheAllowanceChange::met($met),
+            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheWork => WhatBecameOfTheWork::refused($said),
+            met: static fn(Obstacle $met): WhatBecameOfTheWork => WhatBecameOfTheWork::met($met),
         );
     }
 }

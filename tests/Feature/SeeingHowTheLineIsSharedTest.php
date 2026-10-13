@@ -24,7 +24,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHouseholdsHours;
 use Modules\Kernel\Api\WhatACapDoes;
-use Modules\Kernel\Api\WhatBecameOfTheLineChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
@@ -90,7 +90,7 @@ function theLineScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheLineIsSharedHere(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheLineChange::ended()), $rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheLineIsSharedHere(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::ended()), $rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

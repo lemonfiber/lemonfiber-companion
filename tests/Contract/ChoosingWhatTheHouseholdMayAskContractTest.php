@@ -21,7 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAllowanceAsChanged;
-use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\WhoAnAllowanceIsFor;
 use Modules\Sdk\Api\Allowers;
@@ -99,8 +99,11 @@ function anAllowanceChangeTakenOn(string $job): MockResponse
     return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'household-allow', 'job' => $job]]), 202);
 }
 
-/** @return array<string, Closure(): ChoosingWhatTheHouseholdMayAsk> */
-function everyWayOfChoosingWhatIsAllowed(MockResponse $answered, WhatBecameOfTheAllowanceChange $became): array
+/**
+ * @return array<string, Closure(): ChoosingWhatTheHouseholdMayAsk>
+ * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $became
+ */
+function everyWayOfChoosingWhatIsAllowed(MockResponse $answered, WhatBecameOfTheWork $became): array
 {
     return [
         'the fake' => static fn(): ChoosingWhatTheHouseholdMayAsk => AStackThatChoosesWhatIsAllowed::answering($became, $became),
@@ -108,7 +111,10 @@ function everyWayOfChoosingWhatIsAllowed(MockResponse $answered, WhatBecameOfThe
     ];
 }
 
-function whatTheAllowanceChangeCameTo(WhatBecameOfTheAllowanceChange $became): string
+/**
+ * @param WhatBecameOfTheWork<TheAllowanceAsChanged> $became
+ */
+function whatTheAllowanceChangeCameTo(WhatBecameOfTheWork $became): string
 {
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
@@ -133,7 +139,7 @@ function everythingWaitsForEverybody(): AnAllowanceChange
 }
 
 it('comes away from rehearsing with the job the stack named', function (): void {
-    foreach (everyWayOfChoosingWhatIsAllowed(anAllowanceChangeTakenOn(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), WhatBecameOfTheAllowanceChange::ended()) as $which => $build) {
+    foreach (everyWayOfChoosingWhatIsAllowed(anAllowanceChangeTakenOn(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), WhatBecameOfTheWork::ended()) as $which => $build) {
         expect(whatTheAllowanceChangeCameTo($build()->rehearse(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), everythingWaitsForEverybody())))
             ->toBe(sprintf('following %s', AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), $which);
     }
@@ -142,7 +148,7 @@ it('comes away from rehearsing with the job the stack named', function (): void 
 it('reads what the work came to, the rehearsal labelled as one and the stack\'s sentences in its order', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfAnAllowanceChange()));
 
-    foreach (everyWayOfChoosingWhatIsAllowed($finished, WhatBecameOfTheAllowanceChange::answered(theSameRehearsalOfTheAllowance())) as $which => $build) {
+    foreach (everyWayOfChoosingWhatIsAllowed($finished, WhatBecameOfTheWork::answered(theSameRehearsalOfTheAllowance())) as $which => $build) {
         expect(whatTheAllowanceChangeCameTo($build()->whatBecameOf(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), Job::named(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL))))
             ->toBe('rehearsed|the household waits for you, and is counted against 5 requests every 7 days — rehearsed, and nothing was written', $which);
     }
@@ -175,7 +181,7 @@ it('reads a refusal as the stack\'s own sentence and remedy, whether it refused 
 it('comes away with the obstacle where the stack could not be asked or read', function (MockResponse $answered, KindOfObstacle $kind): void {
     expect(whatTheAllowanceChangeCameTo(anAllowerAnswered($answered)->carryOut(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), everythingWaitsForEverybody())))->toBe($kind->name)
         ->and(whatTheAllowanceChangeCameTo(anAllowerAnswered($answered)->whatBecameOf(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))->toBe($kind->name)
-        ->and(whatTheAllowanceChangeCameTo(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheAllowanceChange::met(Obstacle::of($kind)))->carryOut(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), everythingWaitsForEverybody())))->toBe($kind->name);
+        ->and(whatTheAllowanceChangeCameTo(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of($kind)))->carryOut(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), everythingWaitsForEverybody())))->toBe($kind->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'a stack that failed' => [MockResponse::make('{"error":"still asking"}', 500), KindOfObstacle::StackDidNotAnswer],
@@ -230,7 +236,7 @@ it('sends only what was named, the rehearsal as a dry run and the yes without on
 });
 
 it('the fake remembers each change rehearsed and carried out, and each handle followed', function (): void {
-    $choosing = AStackThatChoosesWhatIsAllowed::answering(WhatBecameOfTheAllowanceChange::answered(theSameRehearsalOfTheAllowance()), WhatBecameOfTheAllowanceChange::ended());
+    $choosing = AStackThatChoosesWhatIsAllowed::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheAllowance()), WhatBecameOfTheWork::ended());
     $change = everythingWaitsForEverybody();
     $choosing->rehearse(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), $change);
     $choosing->carryOut(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), $change);
