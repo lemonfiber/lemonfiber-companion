@@ -91,6 +91,8 @@ return [
             'reconfigure' => 'The service\'s own setting is put back',
             'revoke' => 'The key it made is revoked',
             'reinstate' => 'The key it revoked is made good again',
+            'revoke-device' => 'The phone key it registered is revoked',
+            'reinstate-device' => 'The phone key it revoked is made good again',
             'resettle' => 'The setting lemonfiber keeps is put back to what it held',
             'rehold' => 'The secret lemonfiber keeps is put back to what it held',
         ],

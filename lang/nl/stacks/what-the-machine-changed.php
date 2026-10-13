@@ -60,6 +60,8 @@ return [
             'reconfigure' => 'De eigen instelling van de dienst wordt teruggezet',
             'revoke' => 'De sleutel die het maakte wordt ingetrokken',
             'reinstate' => 'De sleutel die het introk wordt weer geldig',
+            'revoke-device' => 'De telefoonsleutel die het registreerde wordt ingetrokken',
+            'reinstate-device' => 'De telefoonsleutel die het introk wordt weer geldig',
             'resettle' => 'De instelling die lemonfiber bijhoudt wordt teruggezet naar wat ze was',
             'rehold' => 'Het geheim dat lemonfiber bewaart wordt teruggezet naar wat het was',
         ],

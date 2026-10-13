@@ -81,6 +81,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'DeviceKeysEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
             'path' => 'DoctorEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -305,6 +309,28 @@ final readonly class UnreadOnEnvelopesAToL
             'path' => 'KeysEnvelope.keys[].revoked',
             'because' => 'When a revoked key was revoked. The listing says a key is revoked by its `state`, '
                 . 'which is all `N29-R1` and `N29-R6` ask the screen to show; the moment is the journal\'s.',
+        ],
+        [
+            'path' => 'DeviceKeysEnvelope.revoked',
+            'because' => 'The name a revoke answered for. This app revokes one phone key it named, and the listing '
+                . 'that comes back shows that key as revoked (`N29-R7`), so the name come back is the one this app sent.',
+        ],
+        [
+            'path' => 'DeviceKeysEnvelope.keys[].app',
+            'because' => 'The app identity a phone key was registered from. `N29-R7` lists a phone key with where it '
+                . 'lives; which build made it is the stack\'s to check at registration (`C10-R29`), and its spelling '
+                . 'is a package and a certificate digest nobody acts on from a phone.',
+        ],
+        [
+            'path' => 'DeviceKeysEnvelope.keys[].fingerprint',
+            'because' => 'The digest of a phone key\'s public half. `N29-R7` names a phone key by the name it was '
+                . 'registered under; the digest tells two keys apart for a machine, not for an operator.',
+        ],
+        [
+            'path' => 'KeysEnvelope.keys[].proved_by',
+            'because' => 'The device key whose signature proved a key\'s mint. `N29-R1` lists a key by name, scope, '
+                . 'purpose, state, minting time and last use, and which phone proved it is the journal\'s, as the '
+                . 'password a mint was proved by is.',
         ],
         [
             'path' => 'KeysEnvelope.revoked',

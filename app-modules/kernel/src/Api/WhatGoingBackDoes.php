@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What putting one change back does, in the stack's word for it.
  *
- * Nine, and the contract closes the set, held to the wire by
+ * The contract closes the set, held to the wire by
  * `EveryWireValueIsACaseTest`. A word this app has no case for is refused at
  * the reading rather than drawn as the nearest one, for
  * {@see HowFarItGoesBack}'s reason.
@@ -42,6 +42,12 @@ enum WhatGoingBackDoes: string
 
     /** A key the change revoked is made good again. */
     case Reinstate = 'reinstate';
+
+    /** A device key the change registered is revoked. */
+    case RevokeDevice = 'revoke-device';
+
+    /** A device key the change revoked is made good again. */
+    case ReinstateDevice = 'reinstate-device';
 
     /** Put a setting in the settings store back to what it held. */
     case Resettle = 'resettle';

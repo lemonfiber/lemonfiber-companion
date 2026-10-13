@@ -17,9 +17,6 @@ enum RemovalField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** How far taking somebody out got: everywhere, the media server only, or nothing. */
-    case Revoked = 'revoked';
-
     /** Whether the request service holds an account for them at all. */
     case AsksThroughTheRequestService = 'asks-through-the-request-service';
 }

@@ -9,7 +9,6 @@ use function count;
 use function is_array;
 
 use Modules\Kernel\Api\HowAKeyIsScoped;
-use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\WireField;
 
 use function sprintf;
@@ -34,7 +33,7 @@ final readonly class KeysAsTheyRead
     {
         $data = $envelope['data'];
         $listing = is_array($data) ? $data : [];
-        $under = KeysField::Keys->value;
+        $under = WireField::Keys->value;
         $scoped = [];
 
         foreach (array_key_exists($under, $listing) && is_array($listing[$under]) ? $listing[$under] : [] as $key) {

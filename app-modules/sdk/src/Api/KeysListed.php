@@ -49,14 +49,14 @@ final readonly class KeysListed
             throw KeysAreUnreadable::missing(WireField::Data);
         }
 
-        if (! array_key_exists(KeysField::Keys->value, $data) || ! is_array($data[KeysField::Keys->value])) {
-            throw KeysAreUnreadable::missing(KeysField::Keys);
+        if (! array_key_exists(WireField::Keys->value, $data) || ! is_array($data[WireField::Keys->value])) {
+            throw KeysAreUnreadable::missing(WireField::Keys);
         }
 
         $keys = [];
         $position = 0;
 
-        foreach ($data[KeysField::Keys->value] as $row) {
+        foreach ($data[WireField::Keys->value] as $row) {
             $keys[] = self::one($row, $position);
             $position++;
         }
@@ -80,7 +80,7 @@ final readonly class KeysListed
     private static function one(mixed $row, int $position): AKeyForAnApp
     {
         if (! is_array($row)) {
-            throw KeysAreUnreadable::said(KeysField::Keys, $position);
+            throw KeysAreUnreadable::said(WireField::Keys, $position);
         }
 
         return AKeyForAnApp::listed(
@@ -89,7 +89,7 @@ final readonly class KeysListed
             self::purpose($row, $position),
             self::state($row, $position),
             AMomentAsWritten::byTheStack(self::text($row, KeysField::Minted, $position)),
-            AMomentAsWritten::byTheStack(self::optional($row, KeysField::Used, $position)),
+            AMomentAsWritten::byTheStack(self::optional($row, WireField::Used, $position)),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
+use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AKeysName;
@@ -12,6 +13,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\KeepingKeysForApps;
+use Modules\Kernel\Api\KeepingPhoneKeys;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -19,21 +21,22 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheKeysForApps;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasFoundOfTheKeys;
+use Modules\Operator\Internal\KeepsThePhoneKeys;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheKeysRead;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ViewModels\TheKeysTurnedOutToBe;
-use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+use function view;
 
 /**
- * The keys a stack has minted for apps: what each admits and is for, where it stands, and revoking one.
+ * The keys a stack has minted for apps: what each admits and is for, where it stands, and revoking one; and beside them its phone keys.
  *
  * A revoke is asked on this page first, where the question can say that the
  * key stops working at once and that a revoke cannot be undone. No secret is
@@ -51,8 +54,8 @@ final class TheKeysAppsHold extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
-    use DrawsItsTemplate;
-    use AsksAgain;
+    use ReadsAStackOnceAFrame;
+    use KeepsThePhoneKeys;
 
     public const string TEMPLATE = 'operator::the-keys-apps-hold';
 
@@ -68,6 +71,7 @@ final class TheKeysAppsHold extends NativeComponent
 
     public function __construct(
         private readonly KeepingKeysForApps $keeping,
+        protected readonly KeepingPhoneKeys $keepingPhoneKeys,
         private readonly SecureStorage $storage,
         private readonly Clock $clock,
         protected readonly TheWayAround $around,
@@ -75,10 +79,28 @@ final class TheKeysAppsHold extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** What came back, asked once per frame. */
+    public function again(): void
+    {
+        $this->answered = null;
+        $this->phoneKeysFound = null;
+    }
+
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
+    }
+
+    /** What came back, asked once and held. */
     public function answer(): TheKeysTurnedOutToBe
     {
-        return $this->answered ??= $this->sent(fn(Stack $stack, Session $session): WhatWasFoundOfTheKeys => $this->keeping->listedOn($stack, $session));
+        if (! $this->answered instanceof TheKeysTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->sent(fn(Stack $stack, Session $session): WhatWasFoundOfTheKeys => $this->keeping->listedOn($stack, $session));
+        }
+
+        return $this->answered;
     }
 
     /**

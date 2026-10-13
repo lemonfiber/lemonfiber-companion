@@ -72,6 +72,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
+use Modules\Kernel\Api\WhereAPhoneKeyLives;
 use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
@@ -419,6 +420,10 @@ function everyDerivedKey(): array
         WhereAKeyStands::class => aPairPerCase(
             WhereAKeyStands::cases(),
             static fn(WhereAKeyStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereAPhoneKeyLives::class => aPairPerCase(
+            WhereAPhoneKeyLives::cases(),
+            static fn(WhereAPhoneKeyLives $case): array => [$case->saidOnTheScreen()],
         ),
         WhereAMemberStands::class => aPairPerCase(
             WhereAMemberStands::cases(),

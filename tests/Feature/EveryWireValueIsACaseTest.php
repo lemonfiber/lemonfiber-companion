@@ -67,6 +67,7 @@ use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
+use Modules\Kernel\Api\WhereAPhoneKeyLives;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheForgettingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
@@ -627,6 +628,13 @@ it('every state a key can be in has a case', function (): void {
 
     expect($words)->not->toBe([], 'no state union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhereAKeyStands::cases()))->toBe($words);
+});
+
+it('everywhere a phone key can live has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('DeviceKeysEnvelope'), 'backing');
+
+    expect($words)->not->toBe([], 'no backing union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhereAPhoneKeyLives::cases()))->toBe($words);
 });
 
 it('every standing a member can have has a case', function (): void {

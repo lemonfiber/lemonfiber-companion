@@ -79,6 +79,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
+use Modules\Kernel\Api\WhereAPhoneKeyLives;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHandoffStands;
@@ -159,6 +160,7 @@ final readonly class TheWireUnions
         WhoMadeACredential::class => 'origin',
         WhatAKeyIsFor::class => 'purpose',
         WhereAKeyStands::class => 'state',
+        WhereAPhoneKeyLives::class => 'backing',
         WhereAMemberStands::class => 'standing',
         HowWellADeviceIsServed::class => 'support',
         WhereTheFrontDoorStands::class => 'standing',

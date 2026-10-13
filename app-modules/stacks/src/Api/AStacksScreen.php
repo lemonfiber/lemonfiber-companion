@@ -266,7 +266,7 @@ enum AStacksScreen: string
     /** The credentials this machine holds to let services in, and what uses each. */
     case Credentials = '/stacks/{stack}/credentials';
 
-    /** The keys a stack has minted for apps, each revocable by name. */
+    /** The keys a stack has minted for apps, and beside them the phone keys that may prove a mint, each revocable by name. */
     case Keys = '/stacks/{stack}/keys';
 
     /** Which app the household should watch on, device by device. */

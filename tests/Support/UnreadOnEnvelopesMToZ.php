@@ -407,6 +407,12 @@ final readonly class UnreadOnEnvelopesMToZ
                 . '`version` envelope.',
         ],
         [
+            'path' => 'VersionEnvelope.attestation_status',
+            'because' => 'When the list an Android phone key\'s attestation is checked against was taken. Whether '
+                . 'a phone key is accepted is the stack\'s decision at registration, and a refusal is shown in its '
+                . 'words (`N29-R9`); the date of the list behind it is nothing an operator acts on from a phone.',
+        ],
+        [
             'path' => 'VersionEnvelope.supported_schema',
             'because' => 'The generations of the stack\'s own definition this copy of lemonfiber reads. Whether '
                 . 'a definition is one it can read is the machine\'s decision, taken before anything is shown, '

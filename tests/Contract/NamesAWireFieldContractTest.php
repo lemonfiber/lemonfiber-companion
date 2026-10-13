@@ -16,6 +16,7 @@ use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Api\Fields\DashboardField;
+use Modules\Sdk\Api\Fields\DeviceKeysField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
@@ -96,6 +97,7 @@ function everyFieldNamedOnTheWire(): array
         ...ConfigField::cases(),
         ...CredentialsField::cases(),
         ...KeysField::cases(),
+        ...DeviceKeysField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),

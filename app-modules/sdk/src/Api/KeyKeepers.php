@@ -46,7 +46,7 @@ final readonly class KeyKeepers implements KeepingKeysForApps
     public function revokedOn(Stack $stack, Session $session, AKeysName $name): WhatWasFoundOfTheKeys
     {
         try {
-            return WhatWasFoundOfTheKeys::found(KeysListed::in(GatedClient::of($this->clients, $stack, $session)->revokeKey($name->shown())));
+            return WhatWasFoundOfTheKeys::found(KeysListed::in(GatedClient::of($this->clients, $stack, $session)->keyring()->revoke($name->shown())));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheKeys::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|KeysAreUnreadable $why) {
