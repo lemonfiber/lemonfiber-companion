@@ -120,27 +120,42 @@ function everythingAChangeAsks(AnAllowanceChange $change): string
     );
 }
 
-it('offers the whole household and each member by name, every policy, and a limit, and asks nothing yet', function (): void {
+it('offers the whole household or one member, every policy, and a limit, and asks nothing yet', function (): void {
     $choosing = aStackThatChangesWhatIsAllowed();
-    $drawn = WhatTheDeviceWouldDraw::by(theAllowanceChangeScreen($choosing));
+    $inviting = AStackThatInvites::answering()->holding(TheMembers::of(AMember::joined('alex'), AMember::joined('robin')));
+    $screen = theAllowanceChangeScreen($choosing, $inviting);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.title'), __('stacks.allowance_change.left_as_it_is'), 'Everything the household asks for arrives unseen.')
         ->and($drawn->offers())->toContain(
             __('stacks.allowance_change.everybody'),
-            'alex',
-            'robin',
+            __('stacks.allowance_change.one_member'),
             __(HowTheHouseholdAsks::Trusted->saidOnTheScreen()),
             __(HowTheHouseholdAsks::WithinALimit->saidOnTheScreen()),
             __(HowTheHouseholdAsks::EverythingWaits->saidOnTheScreen()),
             __('stacks.allowance_change.rehearse'),
         )
-        ->and($drawn->offers())->not->toContain(__('stacks.allowance_change.apply'))
-        ->and($choosing->rehearsed())->toBe([]);
+        ->and($drawn->offers())->not->toContain(__('stacks.allowance_change.apply'), 'alex')
+        ->and($choosing->rehearsed())->toBe([])
+        ->and($inviting->readings())->toBe(0);
+
+    $screen->forAMember();
+    $members = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($members->offers())->toContain('alex', 'robin')
+        ->and($inviting->readings())->toBe(1);
+
+    $screen->again();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($inviting->readings())->toBe(1);
 });
 
 it('offers only the whole household where the members could not be read, and says why', function (): void {
     $inviting = AStackThatInvites::answering()->readingAs(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
-    $drawn = WhatTheDeviceWouldDraw::by(theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed(), $inviting));
+    $screen = theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed(), $inviting);
+    $screen->forAMember();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.members_unread'))
         ->and($drawn->offers())->toContain(__('stacks.allowance_change.everybody'))

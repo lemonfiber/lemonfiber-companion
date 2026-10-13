@@ -269,6 +269,7 @@ return [
         'left_as_it_is' => 'Wat je niet kiest, blijft zoals het is.',
         'who' => 'Voor wie',
         'everybody' => 'Het hele huishouden',
+        'one_member' => 'Eén lid',
         'members_unread' => 'De leden konden niet worden gelezen, dus alleen het hele huishouden kan worden gekozen.',
         'policy_is' => 'Wat er gebeurt met wat wordt gevraagd: :choice',
         'policy' => [

@@ -19,6 +19,9 @@ trait ChoosesWhatIsAllowed
     /** The member the change is about, blank for the whole household. */
     public string $who = '';
 
+    /** Whether the change is about one member, which is when the members are read, on a frame of their own. */
+    public bool $choosingAMember = false;
+
     /** The policy as one of {@see HowTheHouseholdAsks}' words, blank to leave it. */
     public string $policy = '';
 
@@ -32,12 +35,14 @@ trait ChoosesWhatIsAllowed
     public function forEverybody(): void
     {
         $this->who = '';
+        $this->choosingAMember = false;
     }
 
     /** Make the change about the member by this name. */
     public function forSomebody(string $name): void
     {
         $this->who = $name;
+        $this->choosingAMember = true;
     }
 
     /** Choose a policy by its word, or anything else to leave it. */

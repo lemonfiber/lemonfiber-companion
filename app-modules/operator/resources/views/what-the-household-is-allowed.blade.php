@@ -23,16 +23,21 @@
     <x-design::card>
         <x-design::strong>{{ __('stacks.allowance_change.who') }}</x-design::strong>
         <x-design::chips>
-            <x-design::chip :label="__('stacks.allowance_change.everybody')" tap="forEverybody()" :chosen="$this->who === ''" />
-            @forelse ($this->whoMayBeChosen()->members as $name)
-                <x-design::chip :label="$name" :tap="$this->tapping('forSomebody', $name)" :chosen="$this->who === $name" />
-            @empty
-                {{-- Nothing: the whole household is always offered. --}}
-            @endforelse
+            <x-design::chip :label="__('stacks.allowance_change.everybody')" tap="forEverybody()" :chosen="! $this->choosingAMember" />
+            <x-design::chip :label="__('stacks.allowance_change.one_member')" tap="forAMember()" :chosen="$this->choosingAMember" />
         </x-design::chips>
-        @unless ($this->whoMayBeChosen()->membersRead)
-            <x-design::note>{{ __('stacks.allowance_change.members_unread') }}</x-design::note>
-        @endunless
+        @if ($this->choosingAMember)
+            <x-design::chips>
+                @forelse ($this->whoMayBeChosen()->members as $name)
+                    <x-design::chip :label="$name" :tap="$this->tapping('forSomebody', $name)" :chosen="$this->who === $name" />
+                @empty
+                    {{-- Nothing: the stack listed nobody, which the note below says where it could not read them. --}}
+                @endforelse
+            </x-design::chips>
+            @unless ($this->whoMayBeChosen()->membersRead)
+                <x-design::note>{{ __('stacks.allowance_change.members_unread') }}</x-design::note>
+            @endunless
+        @endif
     </x-design::card>
 
     <x-design::card>

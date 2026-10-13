@@ -71,7 +71,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     /** What came back, once the frame has asked. */
     public ?TheAllowanceTurnedOutToBe $answered = null;
 
-    /** Whom a change can be about, once the frame has asked. */
+    /** Each member a change can be about, once a frame of its own has asked. */
     public ?WhoToChooseAsShown $household = null;
 
     /** The change the rehearsal on the screen was asked with, which is the one a yes sends. */
@@ -98,6 +98,12 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     public function again(): void
     {
         $this->answered = null;
+    }
+
+    /** Make the change about one member, offering each by name. */
+    public function forAMember(): void
+    {
+        $this->choosingAMember = true;
         $this->household = null;
     }
 

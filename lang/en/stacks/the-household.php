@@ -282,6 +282,7 @@ return [
         'left_as_it_is' => 'Whatever you leave unchosen stays as it is.',
         'who' => 'For whom',
         'everybody' => 'The whole household',
+        'one_member' => 'One member',
         'members_unread' => 'The members could not be read, so only the whole household can be chosen.',
         'policy_is' => 'What happens to what is asked for: :choice',
         'policy' => [
