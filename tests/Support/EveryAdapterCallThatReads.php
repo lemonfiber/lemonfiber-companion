@@ -92,6 +92,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheForgetting;
+use Modules\Kernel\Api\TheFormsToSwitchTo;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePlace;
 use Modules\Kernel\Api\ThePresetsInForce;
@@ -209,6 +210,7 @@ use Modules\Sdk\Api\StartLines;
 use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
+use Modules\Sdk\Api\Switchers;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
@@ -378,6 +380,12 @@ final readonly class EveryAdapterCallThatReads
                 => new Forgetters($clients, $entropy)->whatWouldGo($stack, $session),
             'Forgetters::whatBecameOf' => static fn(): object
                 => new Forgetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Switchers::rehearse' => static fn(): object
+                => new Switchers($clients, $entropy)->rehearse($stack, $session, TheFormsToSwitchTo::these(Form::called('media'))),
+            'Switchers::carryOut' => static fn(): object
+                => new Switchers($clients, $entropy)->carryOut($stack, $session, TheFormsToSwitchTo::these(Form::called('media'))),
+            'Switchers::whatBecameOf' => static fn(): object
+                => new Switchers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Allowers::rehearse' => static fn(): object
                 => new Allowers($clients, $entropy)->rehearse($stack, $session, AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)),
             'Allowers::carryOut' => static fn(): object

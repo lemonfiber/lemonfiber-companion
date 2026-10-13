@@ -469,12 +469,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'them is a second answer about the same run and names nothing `N16-R6` asks to be named.',
         ],
         [
-            'path' => 'LifecycleEnvelope.switched',
-            'because' => 'What narrowing moved, where the command was a switch. Absent for every other action, '
-                . 'and this app offers no switch (`N2-R7` offers start, stop and restart), for the reason '
-                . '`StatusEnvelope.disturbs.switching` is not read.',
-        ],
-        [
             'path' => 'LifecycleEnvelope.plan.dropped',
             'because' => 'The profiles the verb left out, each with what it would need. `filtered` says the '
                 . 'same service by service, which is what the report draws, for `PreviewEnvelope.dropped`\'s '

@@ -6,18 +6,22 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\Switching;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPausingReads;
+use Modules\Operator\Internal\SwitchesTheForms;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
@@ -95,13 +99,15 @@ use function view;
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
-final class WhatThisStackRuns extends NativeComponent
+final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
 {
+    use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use SwitchesTheForms;
 
     /**
      * Whether what is not installed is opened out.
@@ -118,7 +124,13 @@ final class WhatThisStackRuns extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly KeepingWhatItRuns $kept,
+        protected readonly Switching $switching,
     ) {}
+
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->howTheSwitchIsGoing()->isWorking;
+    }
 
     /**
      * What came back, asked once per frame.

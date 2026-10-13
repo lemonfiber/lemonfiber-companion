@@ -22,4 +22,10 @@ enum LifecycleField: string implements NamesAWireField
 
     /** Host ports the verb wanted that another project on the machine already answers on. */
     case PortConflicts = 'port_conflicts';
+
+    /** What a switch moved: what it stopped, started and kept. */
+    case Switched = 'switched';
+
+    /** The command a switch stops what falls outside the new set with. */
+    case StopCommand = 'stop_command';
 }

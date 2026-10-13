@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
+use Modules\Kernel\Api\SwitchingTheForms;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
@@ -267,6 +268,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     // never what is in the fields when it is tapped.
     'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     'household-allow' => 'rehearses a change to what the household or one member may ask for, and makes it only as that rehearsal was asked',
+    'switch' => 'rehearses making the forms chosen from the stack\'s own list the active set, and makes it only as that rehearsal was asked',
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',
     'accept' => 'accepts one warning the stack\'s own report raises, named from that report, after what it costs is shown',
     // One run the record shows, named by its stamp. It takes no yes and offers
@@ -597,6 +599,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(ChoosingWhatIsAllowed $allowed): string => $allowed->asked(), ChoosingWhatIsAllowed::cases()),
         ...array_map(static fn(AcceptingAChoice $accepting): string => $accepting->asked(), AcceptingAChoice::cases()),
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),
+        ...array_map(static fn(SwitchingTheForms $switching): string => $switching->asked(), SwitchingTheForms::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),

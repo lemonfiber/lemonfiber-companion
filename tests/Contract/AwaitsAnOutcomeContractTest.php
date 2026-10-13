@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
+use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Native\Mobile\Edge\NativeComponent;
@@ -59,6 +60,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WatchingOneArrive::class,
     WhatIsAlreadyOnThisMachine::class,
     WhatThisMachineKeepsHere::class,
+    WhatThisStackRuns::class,
     WhatToDoWithThis::class,
     WhatAcceptingItCosts::class,
     WhatExtendsThisStack::class,

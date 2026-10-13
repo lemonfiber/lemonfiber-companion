@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
+use Modules\Kernel\Api\SwitchingTheForms;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
@@ -64,7 +65,7 @@ function everyActionNamed(): array
 {
     return [
         ...AcceptingAChoice::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
-        ...AskingForIt::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
+        ...AskingForIt::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none()),
