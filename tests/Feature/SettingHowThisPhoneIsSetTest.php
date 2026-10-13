@@ -398,7 +398,7 @@ it('says why before it asks the phone, saying it may tell late or not at all whi
     $notifier = ANotifierInMemory::unasked();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
 
-    $screen->toggleNotifications();
+    $screen->notificationsTurned(on: true);
     $explained = WhatTheDeviceWouldDraw::by($screen);
 
     expect($notifier->timesAsked())->toBe(0)
@@ -416,13 +416,17 @@ it('says why before it asks the phone, saying it may tell late or not at all whi
 it('keeps notifications on when read again, and turns them off at once without asking anything', function (): void {
     $notifier = ANotifierInMemory::unasked();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
-    $screen->toggleNotifications();
+    $screen->notificationsTurned(on: true);
     $screen->allowNotifications();
     $screen->notifying = null;
 
     expect($screen->notificationsAreOn())->toBeTrue();
 
-    $screen->toggleNotifications();
+    $screen->notificationsTurned(on: true);
+
+    expect($screen->explainingNotifications)->toBeFalse();
+
+    $screen->notificationsTurned(on: false);
     $screen->notifying = null;
 
     expect($screen->notificationsAreOn())->toBeFalse()
@@ -434,7 +438,7 @@ it('says where to turn notifications on where the phone was told no, offers the 
     $notifier = ANotifierInMemory::refused();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier, apps: AppsSettingsThatOpen::wouldNot());
 
-    $screen->toggleNotifications();
+    $screen->notificationsTurned(on: true);
     $declined = WhatTheDeviceWouldDraw::by($screen);
     $screen->openTheAppsSettings();
 
@@ -461,7 +465,7 @@ it('keeps notifications off where the phone says no to the prompt, and says wher
 it('closes the reason without asking anything when the operator says not now', function (): void {
     $notifier = ANotifierInMemory::unasked();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
-    $screen->toggleNotifications();
+    $screen->notificationsTurned(on: true);
 
     $screen->notNow();
 

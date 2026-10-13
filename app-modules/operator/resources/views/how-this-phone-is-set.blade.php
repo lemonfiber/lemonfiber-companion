@@ -29,7 +29,7 @@
          it on; turning it on says why first, and only its button asks the phone. --}}
     @if ($this->offersNotifications())
         <x-design::section :label="__('settings.notifications')">
-            <x-design::toggle :label="__('settings.notifications_on')" :on="$this->notificationsAreOn()" tap="toggleNotifications()" />
+            <x-design::toggle :label="__('settings.notifications_on')" :on="$this->notificationsAreOn()" :tap="$this->tapping('notificationsTurned')" />
         </x-design::section>
 
         @if ($this->explainingNotifications)

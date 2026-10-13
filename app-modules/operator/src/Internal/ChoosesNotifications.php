@@ -45,10 +45,19 @@ trait ChoosesNotifications
         return $this->notifying === Notifying::On;
     }
 
-    /** The operator tapped the switch: off turns them off at once, on opens the reason first. */
-    public function toggleNotifications(): void
+    /**
+     * The switch was turned on or off: off turns them off, on opens the reason first.
+     *
+     * Taken as the state the switch now shows, which the platform hands over,
+     * so the switch drawn again after a choice is a choice already made.
+     */
+    public function notificationsTurned(bool $on): void
     {
-        if ($this->notificationsAreOn()) {
+        if ($on === $this->notificationsAreOn()) {
+            return;
+        }
+
+        if (! $on) {
             $this->notifying = $this->notifications->turnOff();
 
             return;
