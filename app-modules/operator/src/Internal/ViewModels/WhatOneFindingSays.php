@@ -55,6 +55,7 @@ final readonly class WhatOneFindingSays
      * @param string   $underneath the technical detail the core added, or empty
      * @param WhereARowSaysItCameFrom $from who put the check there
      * @param string   $exited   the code the service it is about exited on, where the stack said, or empty
+     * @param string   $accepting the check a warning about a choice may be accepted for, or empty where nothing may be
      */
     public function __construct(
         public string $title,
@@ -69,6 +70,7 @@ final readonly class WhatOneFindingSays
         public string $underneath,
         public WhereARowSaysItCameFrom $from,
         public string $exited = '',
+        public string $accepting = '',
     ) {}
 
     /**

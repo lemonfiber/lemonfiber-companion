@@ -34,6 +34,7 @@ use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\TheKeysAppsHold;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
@@ -384,6 +385,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // Where one item got to, from whatever named it. A title can hold
             // a slash, so the segment takes the rest, as a word's does.
             Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where('service', '.+');
+            Router::native(AStacksScreen::Accept->value, WhatAcceptingItCosts::class)->where('service', '.+');
 
             // Watching one thing arrive, and the record of what was said about
             // it. Its own screen, because a walkthrough is started and then

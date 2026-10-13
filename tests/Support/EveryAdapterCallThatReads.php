@@ -141,6 +141,7 @@ use Modules\Kernel\Api\WhoAnAllowanceIsFor;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
+use Modules\Sdk\Api\Acceptors;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Allowers;
@@ -359,6 +360,10 @@ final readonly class EveryAdapterCallThatReads
                 => new Linesmen($clients, $entropy)->carryOut($stack, $session, ALineChange::asked(ALift::none(), down: '50%')),
             'Linesmen::whatBecameOf' => static fn(): object
                 => new Linesmen($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Acceptors::accept' => static fn(): object
+                => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
+            'Acceptors::whatBecameOf' => static fn(): object
+                => new Acceptors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Allowers::rehearse' => static fn(): object
                 => new Allowers($clients, $entropy)->rehearse($stack, $session, AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)),
             'Allowers::carryOut' => static fn(): object

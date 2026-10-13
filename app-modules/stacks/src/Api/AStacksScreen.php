@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
@@ -334,6 +335,9 @@ enum AStacksScreen: string
     /** Where one item got to, followed through the services by the name it is known by. */
     case Trace = '/stacks/{stack}/trace/{service}';
 
+    /** What accepting one warning about a choice costs, said before the operator accepts it; the second segment is the check. */
+    case Accept = '/stacks/{stack}/accept/{service}';
+
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
 
@@ -420,6 +424,20 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($word->said())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one check on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: a check is named by the stack.
+     */
+    public function forTheStacksCheck(StackId $stack, Check $check): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($check->shown())], $this->value);
     }
 
     /**

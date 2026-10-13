@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Repair;
 use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\AcceptingAChoice;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AnAction;
 use Modules\Kernel\Api\AskingForIt;
@@ -102,7 +103,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function actions(): array
     {
         $cases = [
-            ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
+            ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...HandingOver::cases(),
             ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),

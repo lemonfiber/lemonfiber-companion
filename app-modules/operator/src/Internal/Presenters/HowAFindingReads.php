@@ -15,6 +15,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
+use Modules\Kernel\Api\WhereAChoiceStands;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
@@ -65,6 +66,9 @@ use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
  */
 final readonly class HowAFindingReads
 {
+    /** The word a warning the operator accepted is drawn with: still a warning, answered. */
+    private const string ACCEPTED = 'health.choice.accepted';
+
     /**
      * @param array<string, string> $exits the code each check's service exited on, by the check, where the stack said
      */
@@ -84,6 +88,7 @@ final readonly class HowAFindingReads
         $because = $this->becauseOf($finding);
         $from = new HowAnOriginReads()->of($finding->origin());
         $exited = $this->exitedOf($finding);
+        $choice = WhereAChoiceStands::of($finding);
 
         return $said->either(
             nothingWrong: static fn(): WhatOneFindingSays => new WhatOneFindingSays(
@@ -110,9 +115,7 @@ final readonly class HowAFindingReads
             ): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
-                // One word for where it stands: what it costs, which says more
-                // than that it failed, and says it once.
-                verdict: $severity->saidOnTheScreen(),
+                verdict: $choice === WhereAChoiceStands::Accepted ? self::ACCEPTED : $severity->saidOnTheScreen(),
                 code: $code->shown(),
                 meaning: $meaning,
                 service: $service,
@@ -134,6 +137,7 @@ final readonly class HowAFindingReads
                 )->said,
                 from: $from,
                 exited: $exited,
+                accepting: $choice === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),

@@ -166,6 +166,14 @@
                 @endif
             @endif
 
+            @if ($finding->accepting !== '')
+                <x-design::link
+                    :label="__('health.choice.accept')"
+                    :answers-to="__('health.choice.accept_this', ['title' => $finding->title])"
+                    :goes="$this->goes()->accepting($finding->accepting)"
+                />
+            @endif
+
             {{-- The logs, from the finding already about this service, with
                  its code carried there and said above the lines; a check
                  about the machine itself has no scrollback to read. --}}
