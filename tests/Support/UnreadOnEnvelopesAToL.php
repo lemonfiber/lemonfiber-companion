@@ -108,10 +108,6 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
-            'path' => 'HouseholdEnvelope.rehearsed',
-            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
-        ],
-        [
             'path' => 'ImportEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -548,12 +544,6 @@ final readonly class UnreadOnEnvelopesAToL
         [
             'path' => 'LifecycleEnvelope.services[].profile',
             'because' => 'The compose profile a service belongs to, for `StatusEnvelope.services[].profile`\'s reason.',
-        ],
-        [
-            'path' => 'HouseholdEnvelope.findings',
-            'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
-                . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '
-                . 'string here has none of the three and is not something an operator can act on.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].access',

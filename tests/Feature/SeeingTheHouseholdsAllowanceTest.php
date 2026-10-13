@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatBecameOfTheAllowanceChange;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Stacks\Api\AStacksScreen;
@@ -22,6 +23,8 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatChoosesWhatIsAllowed;
+use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheRouterHolds;
@@ -46,7 +49,15 @@ function theAllowanceScreen(AMemberWhoIsOwed $owing, ?AKeychainInMemory $keychai
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheHouseholdIsAllowed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatTheHouseholdIsAllowed(
+        $owing,
+        AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheAllowanceChange::ended()),
+        AStackThatInvites::answering(),
+        $keychain,
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+    );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -61,7 +72,7 @@ it('draws what the core says the household may ask for, word for word and in its
 
     expect($drawn->said())->toContain('Anna can ask for two films a month; one is left.')
         ->and($drawn->said())->toContain('Everything Ben asks for waits for approval.')
-        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+        ->and($drawn->offers())->toContain(__('health.ask_again'));
 });
 
 it('says there is nothing to tell where the core said nothing', function (): void {

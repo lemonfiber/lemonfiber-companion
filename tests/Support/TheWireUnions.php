@@ -36,6 +36,7 @@ use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheNotesStand;
@@ -145,6 +146,7 @@ final readonly class TheWireUnions
         WhatACapDoes::class => 'exceeded',
         WhereTheMonthStands::class => 'reached',
         WhatALimitCameTo::class => 'verdict',
+        HowTheHouseholdAsks::class => 'policy',
         WhereTheRoomStands::class => 'level',
         WhatAVolumeHolds::class => 'role',
         WhatGettingItBackCosts::class => 'reclaim',

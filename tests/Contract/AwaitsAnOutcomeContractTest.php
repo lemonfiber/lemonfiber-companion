@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
+use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Native\Mobile\Edge\NativeComponent;
@@ -57,6 +58,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatIsAlreadyOnThisMachine::class,
     WhatToDoWithThis::class,
     WhatExtendsThisStack::class,
+    WhatTheHouseholdIsAllowed::class,
     WhatWouldBePutRight::class,
 ];
 
