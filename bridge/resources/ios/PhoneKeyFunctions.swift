@@ -40,6 +40,12 @@ enum PhoneKeyFunctions {
     /// What the prompt is captioned with where a caller sends no reason.
     private static let proveIt = "Prove it is you"
 
+    /// The word for a key that is held.
+    private static let held = "held"
+
+    /// The word for this phone's name.
+    private static let named = "named"
+
     /// How long the bridge thread waits for App Attest or the operator.
     private static let patience: TimeInterval = 300
 
@@ -310,6 +316,50 @@ enum PhoneKeyFunctions {
             NSLog("Lemonfiber phone key: %@", came.word)
 
             return BridgeResponse.success(data: Envelope.of(came.word).asAnswer())
+        }
+    }
+
+    /// `Lemonfiber.PhoneKey.Held` — whether the key under this alias is held.
+    ///
+    /// Asks nothing of the operator: the lookup may not raise the prompt, and a key that would
+    /// need it is held all the same.
+    class Held: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            let context = LAContext()
+
+            context.interactionNotAllowed = true
+
+            var asking = item(try alias(in: parameters))
+
+            asking[kSecReturnAttributes as String] = true
+            asking[kSecUseAuthenticationContext as String] = context
+
+            let found = SecItemCopyMatching(asking as CFDictionary, nil)
+
+            return BridgeResponse.success(
+                data: Envelope.of(PhoneKeyRule.held(status: found) ? held : ThrownAway.noneHeld.word)
+                    .asAnswer()
+            )
+        }
+    }
+
+    /// `Lemonfiber.PhoneKey.Model` — what this phone is called, for naming its key on a stack.
+    ///
+    /// The marketing name of the iPhone by its hardware identifier. It is never written to the log.
+    class Model: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            var system = utsname()
+
+            uname(&system)
+
+            let identifier = withUnsafeBytes(of: &system.machine) { bytes in
+                String(decoding: bytes.prefix { $0 != 0 }, as: UTF8.self)
+            }
+
+            return BridgeResponse.success(
+                data: Envelope.of(named, carrying: ["model": PhoneKeyRule.modelName(identifier: identifier)])
+                    .asAnswer()
+            )
         }
     }
 }

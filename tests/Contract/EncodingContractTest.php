@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Modules\Codes\Api\QrCodes;
+use Modules\Kernel\Api\AKeyClaim;
+use Modules\Kernel\Api\AKeysName;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\AScannableCode;
@@ -40,6 +43,14 @@ it('draws a pairing line as a square of dark and light', function (): void {
 
     foreach (['the fake' => ACodeOfWhatItWasGiven::working(), 'the adapter' => new QrCodes()] as $which => $encoding) {
         expect(isASquareWithSomethingInIt($encoding->codeFor($line)))->toBeTrue($which);
+    }
+});
+
+it('draws the link that collects a key as a square of dark and light', function (): void {
+    $claim = AKeyClaim::of(AKeysName::of('Home Assistant'), 'lemonfiber://key?claim=a-claim-collected-once', AMomentAsWritten::byTheStack('2026-10-13T21:10:00'));
+
+    foreach (['the fake' => ACodeOfWhatItWasGiven::working(), 'the adapter' => new QrCodes()] as $which => $encoding) {
+        expect(isASquareWithSomethingInIt($encoding->codeFor($claim)))->toBeTrue($which);
     }
 });
 

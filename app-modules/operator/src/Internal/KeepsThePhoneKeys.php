@@ -26,6 +26,7 @@ use function trim;
  * refuses is said in its words.
  *
  * The screen that uses it takes {@see \Modules\Kernel\Api\KeepingPhoneKeys} as a protected `$keepingPhoneKeys`,
+ * a {@see MintsFromThisPhone} as a protected `$mintsFromThisPhone`,
  * a {@see \Modules\Kernel\Api\Clock} as a private `$clock`, and reads its stack once a frame.
  *
  * @phpstan-require-extends NativeComponent
@@ -101,8 +102,8 @@ trait KeepsThePhoneKeys
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): ThePhoneKeysTurnedOutToBe => $asking($stack, $session)->either(
-                found: fn(ThePhoneKeys $keys): ThePhoneKeysTurnedOutToBe => $reads->these($keys, $this->clock->now()),
-                refused: fn(ARefusalInItsWords $why): ThePhoneKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(ThePhoneKeys::of(), $this->clock->now())),
+                found: fn(ThePhoneKeys $keys): ThePhoneKeysTurnedOutToBe => $reads->these($keys, $this->clock->now(), $this->mintsFromThisPhone->thisPhonesName($stack->id())),
+                refused: fn(ARefusalInItsWords $why): ThePhoneKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(ThePhoneKeys::of(), $this->clock->now(), '')),
                 met: $this->lettingGoIfRefused($stack, $reads->met(...)),
             ),
             notHeld: static fn(): ThePhoneKeysTurnedOutToBe => $reads->signedOut(),

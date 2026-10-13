@@ -28,13 +28,17 @@ final readonly class HowThePhoneKeysRead
         return new ThePhoneKeysTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), keys: [], refused: null);
     }
 
-    /** The stack answered, and these are its phone keys, each dated against `$now`. */
-    public function these(ThePhoneKeys $keys, Instant $now): ThePhoneKeysTurnedOutToBe
+    /**
+     * The stack answered, and these are its phone keys, each dated against `$now`.
+     *
+     * @param string $thisPhone the name this phone's key is registered under, which is marked, or empty
+     */
+    public function these(ThePhoneKeys $keys, Instant $now, string $thisPhone): ThePhoneKeysTurnedOutToBe
     {
         $shown = [];
 
         foreach ($keys as $key) {
-            $shown[] = $this->one($key, $now);
+            $shown[] = $this->one($key, $now, $thisPhone);
         }
 
         return new ThePhoneKeysTurnedOutToBe(went: HowTheReadingWent::itCameBack(), keys: $shown, refused: null);
@@ -53,7 +57,7 @@ final readonly class HowThePhoneKeysRead
     }
 
     /** One phone key, as the card that draws it. */
-    private function one(APhoneKey $key, Instant $now): APhoneKeyAsShown
+    private function one(APhoneKey $key, Instant $now, string $thisPhone): APhoneKeyAsShown
     {
         return new APhoneKeyAsShown(
             name: $key->name()->shown(),
@@ -62,6 +66,7 @@ final readonly class HowThePhoneKeysRead
             used: $this->ago($key->used(), $now),
             revoked: $this->ago($key->whenRevoked(), $now),
             mayBeRevoked: ! $key->wasRevoked(),
+            isThisPhone: $thisPhone !== '' && $key->name()->shown() === $thisPhone,
         );
     }
 

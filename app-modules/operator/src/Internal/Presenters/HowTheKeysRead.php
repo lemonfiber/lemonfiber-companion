@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AKeyForAnApp;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -46,6 +47,12 @@ final readonly class HowTheKeysRead
         }
 
         return new TheKeysTurnedOutToBe(went: HowTheReadingWent::itCameBack(), keys: $shown, purposes: $keys->purposes());
+    }
+
+    /** The stack refused a revoke, in its words: said beside the keys as they were shown. */
+    public function refused(ARefusalInItsWords $why, TheKeysTurnedOutToBe $shown): TheKeysTurnedOutToBe
+    {
+        return new TheKeysTurnedOutToBe(went: $shown->went, keys: $shown->keys, purposes: $shown->purposes, refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** It did not, and this is what the operator met. */

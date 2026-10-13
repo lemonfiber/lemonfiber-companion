@@ -38,6 +38,9 @@ enum KeptUnder: string
     /** The grant this device holds on a stack, to play through its door. */
     case Grant = 'lemonfiber.grant';
 
+    /** The name this phone's key is registered under on a stack. */
+    case PhoneKeysName = 'lemonfiber.phone-key-name';
+
     /** The key for one record beneath this one: the names in order, after a dot each. */
     public function beneath(string ...$names): string
     {

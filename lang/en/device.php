@@ -17,6 +17,7 @@ return [
     'camera_alternative' => 'You can type the pairing code instead.',
     'unlock' => 'Unlock',
     'unlock_reason' => 'Unlock lemonfiber to carry on.',
+    'phone_key_reason' => 'Confirm it is you, so this phone can vouch for you to your stack.',
     'permission_refused' => 'That permission was refused, and this screen still works without it.',
     'nothing_to_hand_over' => 'The report could not be prepared.',
     'nothing_to_hand_over_action' => 'Try asking for it again.',

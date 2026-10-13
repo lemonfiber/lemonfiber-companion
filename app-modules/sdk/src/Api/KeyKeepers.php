@@ -48,7 +48,11 @@ final readonly class KeyKeepers implements KeepingKeysForApps
         try {
             return WhatWasFoundOfTheKeys::found(KeysListed::in(GatedClient::of($this->clients, $stack, $session)->keyring()->revoke($name->shown())));
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatWasFoundOfTheKeys::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: WhatWasFoundOfTheKeys::refused(...),
+                met: WhatWasFoundOfTheKeys::met(...),
+            );
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|KeysAreUnreadable $why) {
             return WhatWasFoundOfTheKeys::met($this->clients->whatStoodInTheWay($stack, $why));
         }

@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AKeysName;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -16,12 +17,15 @@ use Modules\Kernel\Api\KeepingKeysForApps;
 use Modules\Kernel\Api\KeepingPhoneKeys;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheKeysForApps;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasFoundOfTheKeys;
 use Modules\Operator\Internal\KeepsThePhoneKeys;
+use Modules\Operator\Internal\MintsAKeyAsAClaim;
+use Modules\Operator\Internal\MintsFromThisPhone;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheKeysRead;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
@@ -36,7 +40,7 @@ use function trim;
 use function view;
 
 /**
- * The keys a stack has minted for apps: what each admits and is for, where it stands, and revoking one; and beside them its phone keys.
+ * The keys a stack has minted for apps: what each admits and is for, where it stands, revoking one and making one; and beside them its phone keys.
  *
  * A revoke is asked on this page first, where the question can say that the
  * key stops working at once and that a revoke cannot be undone. No secret is
@@ -56,6 +60,7 @@ final class TheKeysAppsHold extends NativeComponent
     use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
     use KeepsThePhoneKeys;
+    use MintsAKeyAsAClaim;
 
     public const string TEMPLATE = 'operator::the-keys-apps-hold';
 
@@ -77,6 +82,8 @@ final class TheKeysAppsHold extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly MintsFromThisPhone $mintsFromThisPhone,
+        protected readonly Sharing $sharing,
     ) {}
 
     public function again(): void
@@ -147,10 +154,14 @@ final class TheKeysAppsHold extends NativeComponent
     {
         $stack = $this->stack();
 
+        $reads = new HowTheKeysRead();
+        $shown = $this->answered;
+
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheKeysTurnedOutToBe => $asking($stack, $session)->either(
-                found: fn(TheKeysForApps $keys): TheKeysTurnedOutToBe => new HowTheKeysRead()->these($keys, $this->clock->now()),
-                met: $this->lettingGoIfRefused($stack, new HowTheKeysRead()->met(...)),
+                found: fn(TheKeysForApps $keys): TheKeysTurnedOutToBe => $reads->these($keys, $this->clock->now()),
+                refused: fn(ARefusalInItsWords $why): TheKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(TheKeysForApps::of(''), $this->clock->now())),
+                met: $this->lettingGoIfRefused($stack, $reads->met(...)),
             ),
             notHeld: static fn(): TheKeysTurnedOutToBe => new HowTheKeysRead()->signedOut(),
         );

@@ -9,6 +9,7 @@ return [
     'camera_alternative' => 'Je kunt de koppelingscode ook intypen.',
     'unlock' => 'Ontgrendelen',
     'unlock_reason' => 'Ontgrendel lemonfiber om verder te gaan.',
+    'phone_key_reason' => 'Bevestig dat jij het bent, zodat deze telefoon bij je stack voor je kan instaan.',
     'permission_refused' => 'Die toestemming is geweigerd, en dit scherm werkt ook zonder.',
     'nothing_to_hand_over' => 'Het rapport kon niet worden opgesteld.',
     'nothing_to_hand_over_action' => 'Vraag het opnieuw op.',

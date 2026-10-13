@@ -14,7 +14,6 @@ use Modules\Kernel\Api\APhoneKey;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\ThePhoneKeys;
 use Modules\Kernel\Api\WhereAPhoneKeyLives;
-use Modules\Sdk\Api\Fields\DeviceKeysField;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
@@ -86,9 +85,9 @@ final readonly class PhoneKeysListed
         }
 
         $name = APhoneKeysName::of(Required::text($row, WireField::Name, PhoneKeysAreUnreadable::entry(WireField::Name, $position)));
-        $backing = Required::text($row, DeviceKeysField::Backing, PhoneKeysAreUnreadable::entry(DeviceKeysField::Backing, $position));
+        $backing = Required::text($row, WireField::Backing, PhoneKeysAreUnreadable::entry(WireField::Backing, $position));
         $lives = WhereAPhoneKeyLives::tryFrom($backing) ?? throw PhoneKeysAreUnreadable::backing($backing, $position);
-        $registered = AMomentAsWritten::byTheStack(Required::text($row, DeviceKeysField::Registered, PhoneKeysAreUnreadable::entry(DeviceKeysField::Registered, $position)));
+        $registered = AMomentAsWritten::byTheStack(Required::text($row, WireField::Registered, PhoneKeysAreUnreadable::entry(WireField::Registered, $position)));
         $used = AMomentAsWritten::byTheStack(Optional::text($row, WireField::Used, PhoneKeysAreUnreadable::entry(WireField::Used, $position)));
         $revoked = Optional::text($row, WireField::Revoked, PhoneKeysAreUnreadable::entry(WireField::Revoked, $position));
 

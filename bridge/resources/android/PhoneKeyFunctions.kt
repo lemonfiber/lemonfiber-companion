@@ -3,6 +3,7 @@ package app.lemonfiber.native
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
+import android.provider.Settings
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyPermanentlyInvalidatedException
@@ -82,6 +83,15 @@ public object PhoneKeyFunctions {
 
     /** The word for one that was not. */
     private const val NOT_SIGNED = "not_signed"
+
+    /** The word for a key that is held. */
+    private const val HELD = "held"
+
+    /** The word for an answer about whether a key is held that could not be given. */
+    private const val UNKNOWN = "unknown"
+
+    /** The word for this phone's name. */
+    private const val NAMED = "named"
 
     /** What the prompt is titled with where a caller sends no reason. */
     private const val PROVE_IT = "Prove it is you"
@@ -420,6 +430,48 @@ public object PhoneKeyFunctions {
             } else {
                 Envelope.of(came.word).asAnswer()
             }
+        }
+    }
+
+    /**
+     * `Lemonfiber.PhoneKey.Held` — whether the key under this alias is held.
+     *
+     * Asks nothing of the operator. A Keystore that cannot be read is refused as `unknown`,
+     * never answered as holding nothing.
+     */
+    public class Held(
+        @Suppress("UnusedPrivateProperty") private val activity: FragmentActivity,
+    ) : BridgeFunction {
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> {
+            val alias = aliasIn(parameters)
+
+            return try {
+                val answered = if (keystore().containsAlias(alias)) HELD else ThrownAway.NONE_HELD.word
+
+                Envelope.of(answered).asAnswer()
+            } catch (failed: GeneralSecurityException) {
+                Log.d(TAG, "phone key: not read, ${failed.javaClass.simpleName}")
+
+                Envelope.refusing(UNKNOWN, WhyNoPhoneKey.FAILED.word).asAnswer()
+            }
+        }
+    }
+
+    /**
+     * `Lemonfiber.PhoneKey.Model` — what this phone is called, for naming its key on a stack.
+     *
+     * The name the owner gave the phone where it has one, its maker and model otherwise. It is
+     * never written to the log.
+     */
+    public class Model(
+        private val activity: FragmentActivity,
+    ) : BridgeFunction {
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> {
+            val named = Settings.Global.getString(activity.contentResolver, Settings.Global.DEVICE_NAME)
+
+            return Envelope
+                .of(NAMED, mapOf("model" to PhoneKeyRule.modelName(named, Build.MANUFACTURER, Build.MODEL)))
+                .asAnswer()
         }
     }
 }

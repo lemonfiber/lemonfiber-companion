@@ -26,18 +26,27 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAPhoneKeyLives;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WhyTheKeySignedNothing;
+use Modules\Kernel\Api\WhyThisPhoneHoldsNoKey;
 use Modules\Operator\Internal\Screens\TheKeysAppsHold;
 use Modules\Operator\Internal\ViewModels\AKeyAsShown;
 use Modules\Operator\Internal\ViewModels\APhoneKeyAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
+use Tests\Support\APhoneThatMints;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\APhoneKeyInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatInvites;
 use Tests\Support\Fakes\AStackThatKeepsKeys;
 use Tests\Support\Fakes\AStackThatKeepsPhoneKeys;
+use Tests\Support\Fakes\AStackThatMintsKeys;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheDevicePresses;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -76,16 +85,27 @@ function twoPhoneKeys(): ThePhoneKeys
     );
 }
 
-function theKeysScreen(AStackThatKeepsKeys $keeping, ?AKeychainInMemory $keychain = null, bool $signedIn = true, ?AStackThatKeepsPhoneKeys $phoneKeys = null): TheKeysAppsHold
+function theKeysScreen(AStackThatKeepsKeys $keeping, ?AKeychainInMemory $keychain = null, bool $signedIn = true, ?AStackThatKeepsPhoneKeys $phoneKeys = null, ?APhoneThatMints $minting = null, int $now = 1_791_710_000): TheKeysAppsHold
 {
     $stack = theStackWhoseKeysAreRead();
     $keychain ??= AKeychainInMemory::working();
+    $minting ??= APhoneThatMints::onAnAndroidPhone();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TheKeysAppsHold($keeping, $phoneKeys ?? AStackThatKeepsPhoneKeys::listing(twoPhoneKeys()), $keychain, FrozenClock::at(Instant::atEpochSeconds(1_791_710_000)), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new TheKeysAppsHold(
+        $keeping,
+        $phoneKeys ?? AStackThatKeepsPhoneKeys::listing(twoPhoneKeys()),
+        $keychain,
+        FrozenClock::at(Instant::atEpochSeconds($now)),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
+        new AppsSettingsThatOpen(),
+        AroundThePhone::listening(),
+        $minting->minting(),
+        $minting->sheet,
+    );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -117,7 +137,7 @@ it('lists each key with what it admits, what it is for, where it stands and who 
         aKeysLine('stacks.keys.never_used'),
         aKeysLine('stacks.keys.state.revoked'),
         aKeysLine('stacks.keys.admits.read'),
-        aKeysLine('stacks.keys.made_at_the_terminal'),
+        aKeysLine('stacks.mint.start'),
     );
 });
 
@@ -201,6 +221,22 @@ it('says a stack with no keys has none, and shows what stood in the way of a rev
 
     expect($none)->toContain(aKeysLine('stacks.keys.none'))
         ->and($refused->answer()->went->cameBack())->toBeFalse();
+});
+
+it('says an app key revoke the stack refused in its words, beside the keys as they were', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::refusingToRevoke(threeKeysForApps(), ARefusalInItsWords::said('No key is called that.', 'There is nothing to revoke.', WhatTheRefusalNamed::nothing())));
+    WhatTheDeviceWouldDraw::by($screen);
+    $screen->askToRevoke(0);
+    $screen->revoke();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $unread = theKeysScreen(AStackThatKeepsKeys::refusingToRevoke(threeKeysForApps(), ARefusalInItsWords::said('No key is called that.', '', WhatTheRefusalNamed::nothing())));
+    $unread->askToRevoke(0);
+    $unread->answered = null;
+    $unread->revoke();
+
+    expect($drawn)->toContain(aKeysLine('stacks.keys.not_revoked'), 'No key is called that.', 'There is nothing to revoke.', 'den')
+        ->and($unread->answered?->keys)->toBe([])
+        ->and($unread->answered?->refused?->said)->toBe('No key is called that.');
 });
 
 it('offers signing in where the device holds no session, and lets go of one the stack refused', function (): void {
@@ -289,4 +325,239 @@ it('says the session has ended for the phone keys where the device holds none', 
     $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), signedIn: false);
 
     expect($screen->phoneKeys()?->went->isSignedIn)->toBeFalse();
+});
+
+/** The screen with the form for a key open, its name typed. */
+function theFormForAKey(APhoneThatMints $minting, int $now = 1_791_925_200, bool $signedIn = true): TheKeysAppsHold
+{
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), signedIn: $signedIn, minting: $minting, now: $now);
+    $screen->startMinting();
+    $screen->mintName = 'Home Assistant';
+
+    return $screen;
+}
+
+/** A key made from this phone for the stack, so the next asks for face or fingerprint alone. */
+function aKeyMadeFrom(APhoneThatMints $minting): TheKeysAppsHold
+{
+    $screen = theFormForAKey($minting);
+    $screen->password = 'the operator password';
+    $screen->mint();
+
+    return $screen;
+}
+
+it('offers making a key where this phone can keep one, asking for the password the first time', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()));
+    $offered = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->startMinting();
+    $form = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($offered)->toContain(aKeysLine('stacks.mint.start'))
+        ->and($form)->toContain(aKeysLine('stacks.mint.heading'), aKeysLine('stacks.mint.first_from_this_phone'), aKeysLine('stacks.mint.admits.read'), aKeysLine('stacks.keys.purpose.mcp'))
+        ->and($screen->mayMint())->toBeFalse();
+});
+
+it('does not offer making a key where this phone cannot keep one, and says why and where a key is made', function (WhyThisPhoneHoldsNoKey $why, string $said): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), minting: APhoneThatMints::onAnAndroidPhone(APhoneKeyInMemory::keepingNone($why)));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->startMinting();
+
+    expect($drawn)->toContain(aKeysLine($said), aKeysLine('stacks.keys.made_at_the_terminal'))
+        ->and($drawn)->not->toContain(aKeysLine('stacks.mint.start'))
+        ->and($screen->minting)->toBeFalse();
+})->with([
+    'no hardware' => [WhyThisPhoneHoldsNoKey::NoHardware, 'stacks.mint.no_hardware'],
+    'no face or fingerprint' => [WhyThisPhoneHoldsNoKey::NoBiometric, 'stacks.mint.no_biometric'],
+    'only in software' => [WhyThisPhoneHoldsNoKey::InSoftware, 'stacks.mint.in_software'],
+    'nothing vouching' => [WhyThisPhoneHoldsNoKey::Unattested, 'stacks.mint.unattested'],
+    'something else' => [WhyThisPhoneHoldsNoKey::Failed, 'stacks.mint.could_not_make'],
+]);
+
+it('registers this phone once with the password, proves the mint with its key, and shows the link to collect it', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    $screen = aKeyMadeFrom($minting);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($minting->stack->claimed())->toBe(['Home Assistant'])
+        ->and($minting->stack->hasRegistered('Galaxy A51 · 7f3a'))->toBeTrue()
+        ->and($screen->password)->toBe('')
+        ->and($screen->minting)->toBeFalse()
+        ->and($drawn)->toContain(
+            aKeysLine('stacks.mint.claim_for', ['name' => 'Home Assistant']),
+            AStackThatMintsKeys::LINK,
+            trans_choice('stacks.mint.lapses', 10),
+            aKeysLine('stacks.mint.once'),
+        );
+});
+
+it('asks for face or fingerprint alone once this phone is registered, and marks this phone in the list', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    aKeyMadeFrom($minting);
+    $screen = theFormForAKey($minting);
+    $form = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+    $screen->mint();
+
+    expect($form)->toContain(aKeysLine('stacks.mint.with_face_or_fingerprint'), aKeysLine('stacks.phone_keys.this_phone'))
+        ->and($form)->not->toContain(aKeysLine('stacks.mint.first_from_this_phone'))
+        ->and($minting->stack->claimed())->toBe(['Home Assistant', 'Home Assistant'])
+        ->and(array_map(static fn(APhoneKeyAsShown $key): bool => $key->isThisPhone, $screen->phoneKeys()->keys ?? []))->toBe([true, false]);
+});
+
+it('makes a key for one member of the household, chosen from those who joined', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    $screen = theFormForAKey($minting);
+    $screen->password = 'the operator password';
+    $screen->admitting('member');
+    $waiting = $screen->mayMint();
+    $screen->admittingMember(1);
+    $screen->admittingMember(7);
+    $screen->mint();
+
+    expect($screen->mintMembers)->toBe(['ada', 'cy'])
+        ->and($waiting)->toBeFalse()
+        ->and($screen->mintMember)->toBe('cy')
+        ->and($minting->stack->claimed())->toBe(['Home Assistant']);
+});
+
+it('keeps what it admits and what it is for where a choice names nothing', function (): void {
+    $screen = theFormForAKey(APhoneThatMints::onAnAndroidPhone());
+    $screen->admitting('act');
+    $screen->admitting('everything');
+    $screen->meantFor('mcp');
+    $screen->meantFor('a toaster');
+
+    expect($screen->mintAdmits)->toBe('act')
+        ->and($screen->mintFor)->toBe('mcp')
+        ->and($screen->admitsAMembersOwn())->toBeFalse();
+});
+
+it('says nobody could be read where the household could not be asked', function (): void {
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), minting: APhoneThatMints::onAnAndroidPhone(household: AStackThatInvites::answering()->readingAs(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $screen->startMinting();
+    $screen->admitting('member');
+
+    expect($screen->mintMembers)->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aKeysLine('stacks.mint.no_members'));
+});
+
+it('sends nothing where face or fingerprint was not given, and keeps the form as it was', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    aKeyMadeFrom($minting);
+    $minting->phone->declining(WhyTheKeySignedNothing::Cancelled);
+    $screen = theFormForAKey($minting);
+    $screen->mint();
+
+    expect($minting->stack->claimed())->toBe(['Home Assistant'])
+        ->and($screen->minting)->toBeTrue()
+        ->and($screen->mintName)->toBe('Home Assistant')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aKeysLine('stacks.mint.cancelled'));
+});
+
+it('throws this phone\'s key away where it no longer works or the stack no longer knows it, so the password is asked again', function (WhyTheKeySignedNothing|string $what, string $said): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    aKeyMadeFrom($minting);
+
+    if ($what instanceof WhyTheKeySignedNothing) {
+        $minting->phone->declining($what);
+    }
+
+    if (is_string($what)) {
+        $minting->stack->revoke($what);
+    }
+
+    $screen = theFormForAKey($minting);
+    $screen->mint();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aKeysLine($said))
+        ->and($screen->needsThePassword())->toBeTrue()
+        ->and($minting->names->keepsAnythingOf(theStackWhoseKeysAreRead()->id()))->toBeFalse();
+})->with([
+    'a new face or fingerprint' => [WhyTheKeySignedNothing::Gone, 'stacks.mint.gone'],
+    'revoked on the stack' => ['Galaxy A51 · 7f3a', 'stacks.mint.unregistered'],
+]);
+
+it('throws this phone\'s new key away where the phone would not keep the name it was registered under', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone(names: PhoneKeysNamesKeptInMemory::refusing());
+    $screen = aKeyMadeFrom($minting);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aKeysLine('stacks.mint.failed'))
+        ->and($minting->stack->claimed())->toBe([])
+        ->and($minting->phone->keepsAnythingOf(theStackWhoseKeysAreRead()->id()))->toBeFalse();
+});
+
+it('says something went wrong where the phone could not sign', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    aKeyMadeFrom($minting);
+    $minting->phone->declining(WhyTheKeySignedNothing::Failed);
+    $screen = theFormForAKey($minting);
+    $screen->mint();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aKeysLine('stacks.mint.failed'));
+});
+
+it('says a refused mint in the stack\'s words, and a stack it could not ask as what stood in the way', function (): void {
+    $refusing = APhoneThatMints::onAnAndroidPhone(stack: AStackThatMintsKeys::refusing(ARefusalInItsWords::said('Serve the stack so another machine can reach it.', 'A claim is collected from another machine.', WhatTheRefusalNamed::nothing())));
+    $refused = aKeyMadeFrom($refusing);
+    $unreached = aKeyMadeFrom(APhoneThatMints::onAnAndroidPhone(stack: AStackThatMintsKeys::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+
+    expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(aKeysLine('stacks.mint.no_key_made'), 'Serve the stack so another machine can reach it.')
+        ->and(WhatTheDeviceWouldDraw::by($unreached)->said())->toContain(aKeysLine('stacks.mint.no_key_made'))
+        ->and($unreached->minted?->met?->cameBack())->toBeFalse()
+        ->and($refusing->names->keepsAnythingOf(theStackWhoseKeysAreRead()->id()))->toBeFalse();
+});
+
+it('says the session has ended where the device holds none, and sends nothing without a name', function (): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    $screen = theFormForAKey($minting, signedIn: false);
+    $screen->password = 'the operator password';
+    $screen->mint();
+    $unnamed = theFormForAKey($minting);
+    $unnamed->mintName = ' ';
+    $unnamed->mint();
+
+    expect($screen->minted?->said)->toBe('connection.session_has_ended')
+        ->and($unnamed->minted)->toBeNull()
+        ->and($minting->stack->claimed())->toBe([]);
+});
+
+it('passes the link on through the share sheet, and says where it could not', function (): void {
+    $passing = APhoneThatMints::onAnAndroidPhone();
+    $passed = aKeyMadeFrom($passing);
+    $passed->passOnTheLink();
+    $refused = aKeyMadeFrom(APhoneThatMints::onAnAndroidPhone(sheet: AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer)));
+    $refused->passOnTheLink();
+    $nothing = theFormForAKey(APhoneThatMints::onAnAndroidPhone());
+    $nothing->passOnTheLink();
+
+    expect($passing->sheet->handed()?->text())->toBe(AStackThatMintsKeys::LINK)
+        ->and($passing->sheet->handed()?->named())->toBe('Home Assistant')
+        ->and($passed->linkPassedOn)->toBe('stacks.mint.passed_on')
+        ->and($refused->linkPassedOn)->toBe('stacks.mint.not_passed_on')
+        ->and($nothing->linkPassedOn)->toBe('');
+});
+
+it('lets the link go once the screen comes back to the front, and says a lapsed link collects nothing', function (): void {
+    $screen = aKeyMadeFrom(APhoneThatMints::onAnAndroidPhone());
+    $screen->onResume();
+    $lapsed = theFormForAKey(APhoneThatMints::onAnAndroidPhone(), now: 1_791_926_000);
+    $lapsed->password = 'the operator password';
+    $lapsed->mint();
+    $form = theFormForAKey(APhoneThatMints::onAnAndroidPhone());
+    $form->onResume();
+
+    expect($screen->minted)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(AStackThatMintsKeys::LINK)
+        ->and(WhatTheDeviceWouldDraw::by($lapsed)->said())->toContain(aKeysLine('stacks.mint.lapsed'))
+        ->and(WhatTheDeviceWouldDraw::by($lapsed)->said())->not->toContain(AStackThatMintsKeys::LINK)
+        ->and($form->minting)->toBeTrue();
+});
+
+it('puts the form away when told to', function (): void {
+    $screen = theFormForAKey(APhoneThatMints::onAnAndroidPhone());
+    $screen->password = 'typed';
+    $screen->stopMinting();
+
+    expect($screen->minting)->toBeFalse()
+        ->and($screen->password)->toBe('');
 });

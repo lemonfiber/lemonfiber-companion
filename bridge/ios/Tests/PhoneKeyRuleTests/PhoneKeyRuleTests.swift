@@ -5,7 +5,7 @@ import Testing
 
 // Whether this phone may keep a key, and the words for what became of one.
 //
-// The same six cases as `PhoneKeyRuleTest.kt`. Spelling the public half and reading an error by its
+// The same eight cases as `PhoneKeyRuleTest.kt`. Spelling the public half and reading an error by its
 // domain are iOS's alone and are asked in `PhoneKeyEnclaveTests`.
 
 @Test("a key lives in hardware where the phone has some and a face or fingerprint guards it")
@@ -43,6 +43,17 @@ func aKeyStillThereIsNotGone() {
 func noKeyIsToldFromOneThrownAway() {
     #expect(PhoneKeyRule.thrownAway(status: PhoneKeyRule.success) == .forgotten)
     #expect(PhoneKeyRule.thrownAway(status: PhoneKeyRule.itemNotFound) == .noneHeld)
+}
+
+@Test("a phone is called what its owner knows it as")
+func aPhoneIsCalledByItsModel() {
+    #expect(PhoneKeyRule.modelName(identifier: "iPhone13,1") == "iPhone 12 mini")
+}
+
+@Test("a phone with no better name is called what the platform says it is")
+func anUnknownPhoneIsAnIPhone() {
+    #expect(PhoneKeyRule.modelName(identifier: "iPhone99,9") == PhoneKeyRule.anyIPhone)
+    #expect(PhoneKeyRule.modelName(identifier: "") == "iPhone")
 }
 
 @Test("every word is the one the wire carries")

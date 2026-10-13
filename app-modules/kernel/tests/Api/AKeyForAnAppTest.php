@@ -11,12 +11,14 @@ use function iterator_to_array;
 use Modules\Kernel\Api\AKeyForAnApp;
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\KeySaysNothing;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheKeysForApps;
 use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasFoundOfTheKeys;
 use Modules\Kernel\Api\WhereAKeyStands;
 
@@ -74,12 +76,15 @@ it('keeps the listing in the stack\'s order with its sentence on purposes', func
         ->and($keys)->toHaveCount(2);
 });
 
-it('answers with the listing or with what stood in the way', function (): void {
+it('answers with the listing, a refused revoke in the stack\'s words, or with what stood in the way', function (): void {
     $keys = TheKeysForApps::of('A purpose is what the minter said.');
     $why = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
+    $refusal = ARefusalInItsWords::said('No key is called that.', '', WhatTheRefusalNamed::nothing());
     $found = static fn(TheKeysForApps $listed): TheWordCarriedOut => new TheWordCarriedOut($listed === $keys ? 'found' : 'another listing');
+    $refused = static fn(ARefusalInItsWords $said): TheWordCarriedOut => new TheWordCarriedOut($said === $refusal ? 'refused' : 'another refusal');
     $met = static fn(Obstacle $obstacle): TheWordCarriedOut => new TheWordCarriedOut($obstacle === $why ? 'met' : 'another obstacle');
 
-    expect(WhatWasFoundOfTheKeys::found($keys)->either($found, $met)->said)->toBe('found')
-        ->and(WhatWasFoundOfTheKeys::met($why)->either($found, $met)->said)->toBe('met');
+    expect(WhatWasFoundOfTheKeys::found($keys)->either($found, $refused, $met)->said)->toBe('found')
+        ->and(WhatWasFoundOfTheKeys::refused($refusal)->either($found, $refused, $met)->said)->toBe('refused')
+        ->and(WhatWasFoundOfTheKeys::met($why)->either($found, $refused, $met)->said)->toBe('met');
 });

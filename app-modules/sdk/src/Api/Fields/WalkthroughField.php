@@ -32,9 +32,6 @@ enum WalkthroughField: string implements NamesAWireField
     /** Whether what was asked for was already here. */
     case AlreadyHere = 'already_here';
 
-    /** What the import did with the file. */
-    case Link = 'link';
-
     /** Where a finished walkthrough leaves the operator. */
     case Handover = 'handover';
 

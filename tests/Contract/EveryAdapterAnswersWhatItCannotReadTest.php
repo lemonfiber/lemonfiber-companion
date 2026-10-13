@@ -70,7 +70,9 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * listing a restore answers without a yes, and a finished restore, what a
  * start, a stop or a restart came to, both what stopping seeding would cost
  * and what it came to, what taking somebody out came to, what taking
- * lemonfiber off came to, and a choice of filler, read or made.
+ * lemonfiber off came to, and a choice of filler, read or made. Registering a
+ * phone's key, a challenge for a mint and a mint as a claim are each given the
+ * envelope the stack answers that request with.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -103,6 +105,9 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Switchers::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Fillers::') => sprintf('%sSubstitutionEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'KeyMinters::registeredOn' => sprintf('%sDeviceKeyEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'KeyMinters::challengedOn' => sprintf('%sDeviceChallengeEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'KeyMinters::claimedOn' => sprintf('%sKeyClaimEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

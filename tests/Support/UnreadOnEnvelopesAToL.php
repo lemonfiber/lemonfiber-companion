@@ -327,6 +327,31 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'registered under; the digest tells two keys apart for a machine, not for an operator.',
         ],
         [
+            'path' => 'DeviceKeyEnvelope.app',
+            'because' => 'The app identity a phone key was just registered from, which is this app: the stack checked it '
+                . 'at registration (`C10-R29`), and the phone has nothing to do with its spelling.',
+        ],
+        [
+            'path' => 'DeviceKeyEnvelope.fingerprint',
+            'because' => 'The digest of the public half this phone just sent. It tells two keys apart for a machine; '
+                . 'the phone knows its own key by the name it registered it under (`N29-R7`).',
+        ],
+        [
+            'path' => 'DeviceChallengeEnvelope.expires',
+            'because' => 'When a challenge stops being good. The phone signs it at once, behind face or fingerprint, '
+                . 'and a challenge that lapsed meanwhile is refused by the core in its own words (`N29-R9`).',
+        ],
+        [
+            'path' => 'KeyClaimEnvelope.scope',
+            'because' => 'What the key minted as a claim admits, which the operator chose a moment ago and this app sent; '
+                . 'the screen shows the link and when it lapses (`N29-R4`).',
+        ],
+        [
+            'path' => 'KeyClaimEnvelope.purpose',
+            'because' => 'What the key minted as a claim is for, which the operator chose a moment ago and this app sent; '
+                . 'the screen shows the link and when it lapses (`N29-R4`).',
+        ],
+        [
             'path' => 'KeysEnvelope.keys[].proved_by',
             'because' => 'The device key whose signature proved a key\'s mint. `N29-R1` lists a key by name, scope, '
                 . 'purpose, state, minting time and last use, and which phone proved it is the journal\'s, as the '

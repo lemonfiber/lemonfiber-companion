@@ -144,6 +144,12 @@ enum Call: string
     /** Throw that key away, whether or not it was there. */
     case PhoneKeyForget = 'Lemonfiber.PhoneKey.Forget';
 
+    /** Say whether that key is held, without asking the operator for anything. */
+    case PhoneKeyHeld = 'Lemonfiber.PhoneKey.Held';
+
+    /** Answer what this phone is called, for naming its key on a stack. Asks nothing of anybody. */
+    case PhoneKeyModel = 'Lemonfiber.PhoneKey.Model';
+
     /**
      * Offer a report to whoever the operator picks, and answer whether the
      * sheet was reached.
