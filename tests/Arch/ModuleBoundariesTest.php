@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\View\Component;
+use Modules\Device\Internal\WhatWasToldLately;
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
@@ -116,6 +117,11 @@ const MUTABLE_BY_DESIGN = [
     // same answer without asking the stack on every frame. Asking again and
     // removing the stack let go of it, which is a mutation; it is never kept.
     WhatEachStackOffers::class,
+    // When each stack's notifications were shown over the last minute, held in
+    // memory for the life of the process so the cap on them counts across every
+    // screen. Counting is a mutation; it is never kept, and it forgets what is
+    // older than the minute it counts.
+    WhatWasToldLately::class,
 ];
 
 foreach ($modules as $module) {

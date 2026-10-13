@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\LockAfter;
+use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Unsealed;
@@ -90,3 +91,13 @@ it('reads no id where none was drawn or the core would not accept it', function 
     'a number' => ['{"plays_as":12345678}'],
     'too short' => ['{"plays_as":"short"}'],
 ]);
+
+it('reads whether notifications are on back in the shape it was written in', function (Notifying $notifying): void {
+    $settings = ThePhonesSettings::standard()->notifying($notifying);
+
+    expect(TheSettingsAsKept::read(Shape::One, TheSettingsAsKept::written($settings))->notifying)->toBe($notifying);
+})->with(Notifying::cases());
+
+it('reads notifications as off where it cannot make them out, as a phone kept before there was a switch', function (string $written): void {
+    expect(TheSettingsAsKept::read(Shape::One, Unsealed::of($written))->notifying)->toBe(Notifying::Off);
+})->with(['{"lock_after":"Immediately"}', '{"notifying":true}', '{"notifying":"loudly"}']);

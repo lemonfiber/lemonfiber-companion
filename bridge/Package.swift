@@ -55,6 +55,11 @@ let package = Package(
             path: "ios/Tests/CaptureRuleTests"
         ),
         .testTarget(
+            name: "TapRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/TapRuleTests"
+        ),
+        .testTarget(
             name: "LockRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LockRuleTests"

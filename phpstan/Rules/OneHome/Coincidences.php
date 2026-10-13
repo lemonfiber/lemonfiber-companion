@@ -11,7 +11,7 @@ use Lemonfiber\Native\Handover;
 use Lemonfiber\Native\Link;
 use Lemonfiber\Native\Scanning;
 use Lemonfiber\Native\Telling;
-use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\NotifyingWithinACap;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Internal\WhatAStackWouldSay;
@@ -54,7 +54,6 @@ final readonly class Coincidences
 {
     /** @var array<class-string, array<string, string>> by class, each constant and what it means */
     public const array OF = [
-        PlatformNotifier::class => ['UNDER' => 'the group notifications are filed under on the phone'],
         SystemEntropy::class => ['BYTES' => 'the bytes of randomness a nonce is drawn from'],
         Nonce::class => ['SHORTEST' => 'the fewest characters a nonce may have'],
         AStandInStack::class => ['IS_ANSWERING' => 'the status a working stand-in answers with, written as a stack writes it'],
@@ -70,6 +69,7 @@ final readonly class Coincidences
         ARatio::class => ['HUNDREDTHS' => 'the hundredths in a ratio of one'],
         HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
         SomethingStillComing::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
+        NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
         PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the field of a kept record that holds the handle'],
         KeptInAShape::class => ['SHAPE' => 'the field of a kept record that says which shape it was written in'],

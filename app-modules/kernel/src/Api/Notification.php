@@ -20,6 +20,9 @@ use Closure;
  * wrote. That is the difference between a rule and a habit: the words come from
  * the translator, keyed by the identifier.
  *
+ * What it is filed under is the alert's name, which is never shown: it only
+ * keys the notification, with its stack, so a resolution replaces its onset.
+ *
  * The identifier is a {@see WhatTheCoreDecided} and not a {@see Code}, and that
  * is the other half of the same requirement. Inventing a code the core never
  * sends was never the work: this app already has codes — `Obstacle::code()`
@@ -47,20 +50,46 @@ final readonly class Notification
 {
     private function __construct(
         private StackId $about,
+        private StackName $called,
         private WhatTheCoreDecided $says,
         private bool $guarded,
+        private HowItIsWorded $worded,
+        private AnAlertsName $filedUnder,
+        private WhereATapLeads $leadsTo,
     ) {}
 
     /**
      * A notification the core decided on, for one stack.
      *
-     * The only constructor, and it takes no text. An adapter turning the core's
-     * decision into one of these has that decision and a stack and nothing else
-     * to hand over, which is that rule expressed as a signature.
+     * It takes no text. An adapter turning the core's decision into one of
+     * these has that decision, a stack and the screen a tap opens, and nothing
+     * else to hand over, which is that rule expressed as a signature.
      */
-    public static function fromTheCore(StackId $about, WhatTheCoreDecided $says): self
+    public static function fromTheCore(Stack $about, WhatTheCoreDecided $says, WhereATapLeads $leadsTo): self
     {
-        return new self($about, $says, guarded: false);
+        return new self($about->id(), $about->name(), $says, guarded: false, worded: HowItIsWorded::Onset, filedUnder: AnAlertsName::byItsKind($says), leadsTo: $leadsTo);
+    }
+
+    /**
+     * A notification of one alert the core raised about one stack, filed under the alert's name.
+     *
+     * Its kind is what it says, and its name is what it is filed under, so the
+     * resolution of a condition replaces the notification of its onset.
+     */
+    public static function ofAnAlert(Stack $about, AnAlert $alert, WhereATapLeads $leadsTo): self
+    {
+        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, worded: HowItIsWorded::forAnAlert($alert->way()), filedUnder: $alert->filedUnder(), leadsTo: $leadsTo);
+    }
+
+    /**
+     * The one notification its stack has more to tell than is shown, standing in for this one.
+     *
+     * Filed once per stack, so each that follows replaces it rather than
+     * stacking, and leading where this one did.
+     */
+    public function beyondTheCap(): self
+    {
+        return new self($this->about, $this->called, $this->says, guarded: $this->guarded, worded: HowItIsWorded::MoreToTell, filedUnder: AnAlertsName::beyondTheCap(), leadsTo: $this->leadsTo);
     }
 
     /**
@@ -89,14 +118,38 @@ final readonly class Notification
      */
     public function whileLocked(): self
     {
-        return new self($this->about, $this->says, guarded: true);
+        return new self($this->about, $this->called, $this->says, guarded: true, worded: $this->worded, filedUnder: $this->filedUnder, leadsTo: $this->leadsTo);
+    }
+
+    /** Which words it is shown in. */
+    public function worded(): HowItIsWorded
+    {
+        return $this->worded;
+    }
+
+    /** The screen a tap on it opens. */
+    public function leadsTo(): WhereATapLeads
+    {
+        return $this->leadsTo;
+    }
+
+    /**
+     * The key it is filed as on the device: its stack and its alert's name, digested together.
+     *
+     * A later notification with the same key replaces this one, so only the
+     * same alert from the same stack does: alert names are each stack's own,
+     * and two stacks raising the same name never touch each other's.
+     */
+    public function filedAs(): string
+    {
+        return $this->filedUnder->filedFor($this->about);
     }
 
     /**
      * What this notification may say, decided by whether the device is locked.
      *
      * The two arms take different arguments, and that asymmetry is the rule:
-     * `$plain` is given the stack it is about, `$guarded` is given only the
+     * `$plain` is given the name of the stack it is about, `$guarded` only the
      * code. A lock-screen renderer therefore has no stack to name, no service
      * to name and no reading to quote — not because it was told not to, but
      * because none of it arrived.
@@ -104,7 +157,7 @@ final readonly class Notification
      * @template TPlain of object
      * @template TGuarded of object
      *
-     * @param  Closure(WhatTheCoreDecided, StackId): TPlain  $plain
+     * @param  Closure(WhatTheCoreDecided, StackName): TPlain  $plain
      * @param  Closure(WhatTheCoreDecided): TGuarded  $guarded
      * @return TPlain|TGuarded
      */
@@ -112,6 +165,6 @@ final readonly class Notification
     {
         return $this->guarded
             ? $guarded($this->says)
-            : $plain($this->says, $this->about);
+            : $plain($this->says, $this->called);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function preg_match;
 use function trim;
 
 /**
@@ -29,14 +30,16 @@ use function trim;
  * that matched its own obstacles against the core's alerts would be deciding
  * which of them to raise — which is the half of that a type can keep.
  *
- * **Nothing builds one from the wire yet**, and that is a gap rather than an
- * oversight: the contract carries alert *preferences* and no decision this app
- * could render. The work stops there rather than approximating it
- * from a neighbouring endpoint, so {@see self::toSay()} is where that reading
- * will arrive when the contract carries it, and nothing invents one meanwhile.
+ * **Built from the wire from what an `alert` event carries**: its kind, which
+ * a notification says, and its name, which a notification is filed under
+ * (see {@see AnAlert}). {@see self::toSay()} is the one place either becomes
+ * this type.
  */
 final readonly class WhatTheCoreDecided
 {
+    /** The core's own form of a code: lower-case words, hyphenated where they are several, joined by dots. */
+    private const string A_CODE = '/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*\z/';
+
     private function __construct(private string $code) {}
 
     /**
@@ -46,6 +49,10 @@ final readonly class WhatTheCoreDecided
      * shows beside an alert and what somebody searches for afterwards, and an
      * empty one reads as a rendering fault rather than as a core that sent
      * nothing.
+     *
+     * Anything not in the core's own form of a code is refused too, so a
+     * sentence a stack chose never reaches a notification: what is shown
+     * beside an alert is a code or nothing.
      */
     public static function toSay(string $code): self
     {
@@ -53,6 +60,10 @@ final readonly class WhatTheCoreDecided
 
         if ($trimmed === '') {
             throw CodeIsBlank::inAnAlert();
+        }
+
+        if (preg_match(self::A_CODE, $trimmed) !== 1) {
+            throw CodeIsMisshapen::inAnAlert();
         }
 
         return new self($trimmed);

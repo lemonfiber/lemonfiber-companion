@@ -7,21 +7,27 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function implode;
 use function it;
+use function iterator_to_array;
 
+use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheAlerts;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhichWayItWent;
 
 use function sprintf;
 
@@ -105,4 +111,15 @@ it('carries what answers what beside whichever arm it took and beside the newest
         ->and(theWordForWhatWasNamed($theOtherWay))->toBe('named 2.4.0')
         ->and(theWordForWhichArmWasHeard($both))->toBe('alive')
         ->and(theWordForWhatAnswersWhat(WhatWasHeard::aSignOfLife()))->toBe('said nothing of the wiring');
+});
+
+it('carries the alerts of the wake beside whatever else it heard, kept through naming and wiring, and none where it raised none', function (): void {
+    $alert = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'));
+    $links = TheLinks::of(WhatNothingFills::these());
+    $newest = new TheNewestNamed(WhatTheStackListed::these(), WhatTheStackListed::these(), WhatTheStackListed::unread());
+    $heard = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of($alert))->naming($newest)->wiredAs($links);
+
+    expect(iterator_to_array($heard->theAlerts(), preserve_keys: false))->toBe([$alert])
+        ->and(theWordForWhichArmWasHeard($heard))->toBe('alive')
+        ->and(iterator_to_array(WhatWasHeard::aSignOfLife()->theAlerts(), preserve_keys: false))->toBe([]);
 });

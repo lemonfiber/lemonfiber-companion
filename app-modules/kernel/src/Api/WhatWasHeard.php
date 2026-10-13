@@ -29,6 +29,7 @@ final readonly class WhatWasHeard
         private ?Obstacle $why,
         private ?TheNewestNamed $newest = null,
         private ?TheLinks $links = null,
+        private ?TheAlerts $alerts = null,
     ) {}
 
     public static function nothing(): self
@@ -59,13 +60,25 @@ final readonly class WhatWasHeard
     /** The same, with the newest of each kind the stack named in this wake. */
     public function naming(TheNewestNamed $newest): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links);
+        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links, $this->alerts);
     }
 
     /** The same, with what answers what as the stack said it in this wake. */
     public function wiredAs(TheLinks $links): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links, $this->alerts);
+    }
+
+    /** The same, with the alerts the stack raised in this wake. */
+    public function alerting(TheAlerts $alerts): self
+    {
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $alerts);
+    }
+
+    /** The alerts the stack raised in this wake, none where it raised none. */
+    public function theAlerts(): TheAlerts
+    {
+        return $this->alerts ?? TheAlerts::none();
     }
 
     /**

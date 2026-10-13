@@ -20,13 +20,14 @@ use Native\Mobile\Edge\NativeComponent;
  * open over the screen it opened is what the operator would see first on
  * coming back.
  *
- * **It listens while it is open**, by the list of stacks' own rules, so each
- * row says how its stack stands now rather than a word that has gone out of
- * date. Its first frame is drawn from what was kept, and every way it closes
- * lets go. Whether the screen already holds its own stack's stream it says
+ * **It listens to every stack, open or shut**, by the list of stacks' own
+ * rules, so each alert any stack the operator is signed in to raises is told
+ * while the app runs, and each row says how its stack stands now rather than
+ * a word that has gone out of date. Its first frame is drawn from what was
+ * kept. Whether the screen already holds its own stack's stream it says
  * through {@see holdsItsStacksStream()}, and that stack is then not asked
- * twice; the screen's own `stop()` lets the list go with everything else it
- * holds, through {@see letTheListOfStacksGo()}.
+ * twice; the screen's own `stop()` lets every stack go with everything else
+ * it holds, through {@see letTheListOfStacksGo()}.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -36,11 +37,11 @@ trait ChoosesAStack
     public bool $choosingAStack = false;
 
     /**
-     * What the list has heard from each stack while it was open.
+     * What has been heard from each stack.
      *
      * `public` because it is what the component's property syncing writes.
      */
-    public ?WhatEachStackSaidSoFar $heardWhileChoosing = null;
+    public ?WhatEachStackSaidSoFar $heardFromEachStack = null;
 
     public function chooseAStack(): void
     {
@@ -50,36 +51,27 @@ trait ChoosesAStack
     public function stopChoosingAStack(): void
     {
         $this->choosingAStack = false;
-        $this->letTheListOfStacksGo();
     }
 
-    /**
-     * Take what each stack's subscription has delivered while the list is open.
-     *
-     * Nothing while it is shut, so a screen with the list closed reaches no stack.
-     */
+    /** Take what each stack's subscription has delivered, the list open or shut. */
     #[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]
-    public function hearEachStackWhileChoosing(): void
+    public function hearEachStack(): void
     {
-        if (! $this->choosingAStack) {
-            return;
-        }
-
-        $this->heardWhileChoosing = $this->around->heardWhileChoosing(
-            $this->heardWhileChoosingSoFar(),
+        $this->heardFromEachStack = $this->around->heardFromEachStack(
+            $this->heardFromEachStackSoFar(),
             $this->stack(),
             $this->holdsItsStacksStream(),
         );
     }
 
-    /** Open the stack this phone calls `$id`, where choosing it leads, which lets go as the screen stops. */
+    /** Open the stack this phone calls `$id`, where choosing it leads. */
     public function openTheStack(string $id): void
     {
         $this->choosingAStack = false;
         $this->navigate($this->around->choosingLeadsTo($this->around->stack(StackId::rememberedAs($id))));
     }
 
-    /** Begin pairing another stack, which lets go as the screen stops. */
+    /** Begin pairing another stack. */
     public function addAStack(): void
     {
         $this->choosingAStack = false;
@@ -99,19 +91,19 @@ trait ChoosesAStack
     abstract protected function holdsItsStacksStream(): bool;
 
     /**
-     * Every subscription the list holds let go of, and what each held kept as no longer current.
+     * Every subscription to each stack let go of, and what each held kept as no longer current.
      *
      * The screen calls it from its own `stop()`, whenever it stops being the
-     * one in front. The list stays open, and a return opens its subscriptions
-     * again at once.
+     * one in front. The list stays as it was, and a return opens the
+     * subscriptions again at once.
      */
     private function letTheListOfStacksGo(): void
     {
-        $this->heardWhileChoosing = $this->around->stopHearingWhileChoosing($this->heardWhileChoosingSoFar());
+        $this->heardFromEachStack = $this->around->stopHearingEachStack($this->heardFromEachStackSoFar());
     }
 
-    private function heardWhileChoosingSoFar(): WhatEachStackSaidSoFar
+    private function heardFromEachStackSoFar(): WhatEachStackSaidSoFar
     {
-        return $this->heardWhileChoosing ??= WhatEachStackSaidSoFar::nothingYet();
+        return $this->heardFromEachStack ??= WhatEachStackSaidSoFar::nothingYet();
     }
 }

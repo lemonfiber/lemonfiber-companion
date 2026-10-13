@@ -141,12 +141,12 @@ final readonly class TheWayAround
     }
 
     /**
-     * What the list of stacks has heard after this wake, from every stack but one whose stream the screen already holds.
+     * What has been heard after this wake from every stack but one whose stream the screen already holds.
      *
-     * Only while the list is open, and on its own subscriptions, so what the
-     * screen underneath holds is neither asked twice nor let go of.
+     * On subscriptions of its own, so what the screen holds is neither asked
+     * twice nor let go of.
      */
-    public function heardWhileChoosing(WhatEachStackSaidSoFar $heard, Stack $current, bool $itsStreamIsHeld): WhatEachStackSaidSoFar
+    public function heardFromEachStack(WhatEachStackSaidSoFar $heard, Stack $current, bool $itsStreamIsHeld): WhatEachStackSaidSoFar
     {
         $stacks = [];
 
@@ -159,8 +159,8 @@ final readonly class TheWayAround
         return $this->hearing->after($heard, ...$stacks);
     }
 
-    /** Every subscription the list of stacks holds let go of, because it closed or cannot be seen. */
-    public function stopHearingWhileChoosing(WhatEachStackSaidSoFar $heard): WhatEachStackSaidSoFar
+    /** Every subscription to each stack let go of, because the screen stopped or cannot be seen. */
+    public function stopHearingEachStack(WhatEachStackSaidSoFar $heard): WhatEachStackSaidSoFar
     {
         return $this->hearing->letGo($heard);
     }

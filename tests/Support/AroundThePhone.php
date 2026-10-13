@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
+use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
@@ -24,6 +25,7 @@ use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
@@ -66,6 +68,7 @@ final readonly class AroundThePhone
         ?Capture $capture = null,
         ?WhereTheOperatorWas $was = null,
         ?KnowingWhatAStackOffers $offering = null,
+        ?Notifier $notifier = null,
     ): TheWayAround {
         $standings ??= StandingsInMemory::working();
         $clock ??= FrozenClock::at(Instant::atEpochSeconds(self::NOW));
@@ -77,7 +80,7 @@ final readonly class AroundThePhone
             $standings,
             $clock,
             $storage,
-            new HearingEachStack(self::listening($hearing, $clock, $capture, $standings), $storage),
+            new HearingEachStack(self::listening($hearing, $clock, $capture, $standings, notifier: $notifier), $storage),
             $was ?? WhereTheOperatorWasInMemory::nowhere(),
             $offering ?? AStackThatOffers::everything(),
         );
@@ -97,6 +100,7 @@ final readonly class AroundThePhone
         ?Standings $standings = null,
         ?KeepingTheLastReading $keeping = null,
         ?Noticing $noticing = null,
+        ?Notifier $notifier = null,
     ): WhatItListensWith {
         return new WhatItListensWith(
             $hearing ?? AStackThatSpeaksUp::holdingOpen(),
@@ -105,6 +109,7 @@ final readonly class AroundThePhone
             $standings ?? StandingsInMemory::working(),
             $keeping ?? WhatThePhoneKeeps::nothingYet(),
             $noticing ?? NoticingWhatIsNew::fromNothing(),
+            $notifier ?? ANotifierInMemory::allowed(),
         );
     }
 }

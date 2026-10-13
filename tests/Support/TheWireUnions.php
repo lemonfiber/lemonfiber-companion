@@ -90,6 +90,7 @@ use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
+use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
@@ -175,6 +176,7 @@ final readonly class TheWireUnions
         WhereTheWalkthroughIs::class => 'state',
         WhichWalk::class => 'shape',
         HowTheImportLinked::class => 'link',
+        WhichWayItWent::class => 'moment',
         WhyTheWalkthroughStopped::class => 'reason',
         WhatToDoNext::class => 'next',
         HowDriftWasJudged::class => 'assessment',

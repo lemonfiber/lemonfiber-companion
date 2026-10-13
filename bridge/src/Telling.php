@@ -70,10 +70,15 @@ final readonly class Telling
         return WhatTheOperatorSaid::orNothingSaid($this->outcomeOf(Call::Ask));
     }
 
-    /** Put something in front of the operator now, or say why not. */
-    public function show(string $id, string $title, string $body): Told
+    /**
+     * Put something in front of the operator now, or say why not.
+     *
+     * `$opens` is the link a tap on it opens the app at, under the app's own
+     * scheme; each native half refuses to open any other.
+     */
+    public function show(string $id, string $title, string $body, string $opens): Told
     {
-        return $this->told(Call::Show, ['id' => $id, 'title' => $title, 'body' => $body]);
+        return $this->told(Call::Show, ['id' => $id, 'title' => $title, 'body' => $body, 'opens' => $opens]);
     }
 
     /**

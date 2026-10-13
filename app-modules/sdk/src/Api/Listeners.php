@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Exception\StreamInterrupted;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\AlertEnvelope;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Generated\NewsEnvelope;
 use Lemonfiber\Sdk\Generated\WiringEnvelope;
@@ -32,6 +33,7 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatArrivedOnTheStream;
+use Psr\Log\LoggerInterface;
 
 /**
  * The one place this application holds a stack's event stream open.
@@ -51,7 +53,9 @@ use Modules\Sdk\Internal\WhatArrivedOnTheStream;
  * which it says when a listener arrives and whenever it changes. The last
  * `wiring` event rides beside it the same way: what answers what, said when a
  * listener arrives and whenever it changes, in the envelope its own reading
- * answers with. The wait for
+ * answers with. Every `alert` event rides beside them too, each one the core
+ * raised, for the operator to be told of; one it cannot read is skipped and
+ * noted rather than refusing the wake. The wait for
  * the next event is spent between calls, on the screen's cadence, rather than
  * inside one.
  *
@@ -99,7 +103,7 @@ final class Listeners implements Hearing
 
     private readonly TheStreamsHeld $streams;
 
-    public function __construct(private readonly Clients $clients)
+    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes)
     {
         $this->streams = new TheStreamsHeld($clients);
     }
@@ -152,6 +156,7 @@ final class Listeners implements Hearing
         $latest = $arrived->theLast(DashboardEnvelope::KIND);
         $newest = $arrived->theLast(NewsEnvelope::KIND);
         $wiring = $arrived->theLast(WiringEnvelope::KIND);
+        $alerts = AlertsHeard::in($this->notes, ...$arrived->every(AlertEnvelope::KIND));
 
         if ($arrived->ended) {
             $this->letGoOf($stack);
@@ -169,6 +174,8 @@ final class Listeners implements Hearing
         };
 
         $heard = $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
+
+        $heard = $heard->alerting($alerts);
 
         return $wiring instanceof ServerEvent ? $heard->wiredAs(Links::in(new EnvelopeReader()->read($wiring->data))) : $heard;
     }

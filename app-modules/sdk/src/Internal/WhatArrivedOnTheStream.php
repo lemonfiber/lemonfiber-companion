@@ -37,4 +37,22 @@ final readonly class WhatArrivedOnTheStream
 
         return $latest;
     }
+
+    /**
+     * Every event of one kind, in the order they arrived.
+     *
+     * @return list<ServerEvent>
+     */
+    public function every(Kind $kind): array
+    {
+        $every = [];
+
+        foreach ($this->events as $event) {
+            if ($event->kind === $kind->value) {
+                $every[] = $event;
+            }
+        }
+
+        return $every;
+    }
 }

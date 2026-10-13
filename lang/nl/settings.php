@@ -48,4 +48,11 @@ return [
         'fifteen_minutes' => '15 minuten',
         'one_hour' => '1 uur',
     ],
+    'notifications' => 'Meldingen',
+    'notifications_on' => 'Laat me weten wanneer een stack aandacht nodig heeft',
+    'notifications_allow' => 'Meldingen toestaan',
+    'notifications_not_now' => 'Niet nu',
+    'notifications_declined' => 'Meldingen staan uit voor lemonfiber in de instellingen van je telefoon. Zet ze daar aan en kom dan terug.',
+    'notifications_open_settings' => 'Open de instellingen van je telefoon',
+    'notifications_would_not_open' => 'Je telefoon wilde zijn instellingen niet openen. Zoek lemonfiber daar zelf op.',
 ];

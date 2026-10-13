@@ -15,4 +15,6 @@ return [
     'the_device_would_not_offer' => 'Deze telefoon bood geen manier aan om het te versturen.',
     'the_device_would_not_offer_action' => 'Het rapport staat hierboven; je kunt het met de hand overnemen.',
     'share_diagnostics' => 'Stuur een rapport naar wie je helpt',
+    'notifications_reason' => 'lemonfiber laat je weten wanneer een stack aandacht nodig heeft, en wanneer hij weer in orde is. Het hoort je stacks terwijl het open is. Als het gesloten is, beslist je telefoon wanneer het mag luisteren, dus het kan je laat of helemaal niet iets laten weten.',
+    'notifications_alternative' => 'Zonder meldingen open je lemonfiber om te zien hoe elke stack ervoor staat.',
 ];

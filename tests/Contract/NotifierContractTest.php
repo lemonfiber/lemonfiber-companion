@@ -4,21 +4,39 @@ declare(strict_types=1);
 
 use Lemonfiber\Native\Telling;
 use Lemonfiber\Native\WhyNothingWasTold;
+use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
+use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Device\Api\NotifyingWithinACap;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Internal\WhatWasToldLately;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnAlert;
+use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Notifying;
+use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Shown;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCoreDecided;
+use Modules\Kernel\Api\WhereATapLeads;
+use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhyNothingIsShown;
 use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\ANotificationCentreOnAHandset;
 use Tests\Support\Fakes\ANotifierInMemory;
+use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\ConnectionSettingsInMemory;
+use Tests\Support\Fakes\FrozenClock;
 
 // The Notifier contract, run against the adapter and against the fake.
 //
@@ -33,6 +51,12 @@ use Tests\Support\Fakes\ANotifierInMemory;
 // this" belongs to the adapter's own assertions further down — a contract
 // asserting it would either fail on the fake or be weakened to pass, and a
 // weakened contract is how a fake drifts.
+
+/** A stack this phone remembers as `$remembered` and calls `$called`. */
+function aStackToldAbout(string $remembered, string $called): Stack
+{
+    return Stack::of(StackId::rememberedAs($remembered), StackName::of($called), Address::of('https://192.168.1.42:8443'), Fingerprint::of(str_repeat('b', Fingerprint::CHARACTERS)));
+}
 
 /**
  * Which arm answered, as a word.
@@ -50,7 +74,7 @@ function whatBecameOfIt(Shown $shown): string
 
 function somethingWorthSaying(): Notification
 {
-    return Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
+    return Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('backup.finished'), WhereATapLeads::to('/stacks/the-loft'));
 }
 
 /**
@@ -72,6 +96,38 @@ function overAHandset(ANotificationCentreOnAHandset $centre, ?DeviceAuth $lock =
         ->respondTo('Lemonfiber.Telling.Show', $centre->show(...));
 
     return new PlatformNotifier(new Telling(), Catalogue::words(), $lock ?? ADeviceThatKnowsYou::unlocked());
+}
+
+/** The moment the cases kept to a cap begin at. */
+const NOTIFYING_AT = 1_790_000_000;
+
+/** A notifier kept to a cap, with a memory of its own, over `$platform`. */
+function keptToACap(Notifier $platform, FrozenClock $clock): NotifyingWithinACap
+{
+    return new NotifyingWithinACap($platform, $clock, new WhatWasToldLately());
+}
+
+/** A notifier kept to the operator's switch, set as `$notifying`, over `$within`. */
+function keptToTheSwitch(Notifier $within, Notifying $notifying): NotifyingOnlyWhenTurnedOn
+{
+    $kept = ConnectionSettingsInMemory::empty();
+    $seal = ASealInMemory::working();
+    $clock = FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT));
+    $switch = new TurningNotificationsOn($seal, $kept, ANotifierInMemory::allowed(), $clock);
+
+    $notifying === Notifying::On ? $switch->turnOn() : $switch->turnOff();
+
+    return new NotifyingOnlyWhenTurnedOn($within, $seal, $kept, $clock);
+}
+
+/** One alert of a stack's, named by its recurrence. */
+function anAlertOf(string $stack, int $recurrence): Notification
+{
+    return Notification::ofAnAlert(
+        aStackToldAbout($stack, $stack),
+        AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of(sprintf('disk.full#%d', $recurrence))),
+        WhereATapLeads::to(sprintf('/stacks/%s', $stack)),
+    );
 }
 
 /**
@@ -102,6 +158,16 @@ function everyNotifier(Asked $standing): array
             Asked::Declined => ANotificationCentreOnAHandset::refused(),
             Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
         }),
+        'the adapter, kept to a cap' => fn(): Notifier => keptToACap(overAHandset(match ($standing) {
+            Asked::Granted => ANotificationCentreOnAHandset::allowed(),
+            Asked::Declined => ANotificationCentreOnAHandset::refused(),
+            Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
+        }), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT))),
+        'the adapter, kept to the switch and turned on' => fn(): Notifier => keptToTheSwitch(overAHandset(match ($standing) {
+            Asked::Granted => ANotificationCentreOnAHandset::allowed(),
+            Asked::Declined => ANotificationCentreOnAHandset::refused(),
+            Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
+        }), Notifying::On),
     ];
 }
 
@@ -202,6 +268,8 @@ it('the locked wording names no stack', function (): void {
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('The loft')
+        ->and($shown[0]['body'])->not->toContain('The loft')
         ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('backup.finished');
@@ -217,6 +285,8 @@ it('names no stack while the lock stands, whatever the caller handed it', functi
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('The loft')
+        ->and($shown[0]['body'])->not->toContain('The loft')
         ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->not->toContain('backup.finished');
@@ -230,7 +300,8 @@ it('names the stack when the device is not locked', function (): void {
     $shown = $centre->shown();
 
     expect($shown)->toHaveCount(1)
-        ->and($shown[0]['title'])->toContain('the-loft')
+        ->and($shown[0]['title'])->toContain('The loft')
+        ->and($shown[0]['title'])->not->toContain('the-loft')
         ->and($shown[0]['body'])->toContain('backup.finished');
 });
 
@@ -245,8 +316,8 @@ it('puts nothing on a notification but the catalogue\'s words, the stack it is a
     overAHandset($centre)->show(somethingWorthSaying()->whileLocked());
 
     expect(array_map(static fn(array $shown): array => [$shown['title'], $shown['body']], $centre->shown()))->toBe([
-        [$words->for('notifications.plain.title', ['stack' => 'the-loft']), $words->for('notifications.plain.body', ['code' => 'backup.finished'])],
-        [$words->for('notifications.guarded.title'), $words->for('notifications.guarded.body')],
+        [$words->for('notifications.plain.onset_title', ['stack' => 'The loft']), $words->for('notifications.plain.onset_body', ['code' => 'backup.finished'])],
+        [$words->for('notifications.guarded.onset_title'), $words->for('notifications.guarded.onset_body')],
     ]);
 });
 
@@ -284,4 +355,141 @@ it('keys a repeat of the same code onto the same notification', function (): voi
 
     expect($shown)->toHaveCount(2)
         ->and($shown[0]['id'])->toBe($shown[1]['id']);
+});
+
+it('files an alert under its name, so its resolution replaces its onset in the resolution\'s words', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = overAHandset($centre);
+    $words = Catalogue::words();
+    $about = aStackToldAbout('the-loft', 'The loft');
+
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#4')), WhereATapLeads::to('/stacks/the-loft')));
+
+    $shown = $centre->shown();
+
+    expect($shown[0]['id'])->toBe($shown[1]['id'])
+        ->and($shown[2]['id'])->not->toBe($shown[0]['id'])
+        ->and([$shown[1]['title'], $shown[1]['body']])->toBe([
+            $words->for('notifications.plain.resolved_title', ['stack' => 'The loft']),
+            $words->for('notifications.plain.resolved_body', ['code' => 'disk.full']),
+        ]);
+});
+
+it('files an alert the core gave no name under its kind, and keeps the resolution\'s words while locked', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $words = Catalogue::words();
+    $resolved = Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved), WhereATapLeads::to('/stacks/the-loft'));
+
+    overAHandset($centre)->show($resolved->whileLocked());
+    overAHandset($centre)->show(Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('disk.full'), WhereATapLeads::to('/stacks/the-loft')));
+
+    $shown = $centre->shown();
+
+    expect($shown[0]['id'])->toBe($shown[1]['id'])
+        ->and([$shown[0]['title'], $shown[0]['body']])->toBe([$words->for('notifications.guarded.resolved_title'), $words->for('notifications.guarded.resolved_body')]);
+});
+
+it('files the same alert name from two stacks apart, so one stack\'s resolution never clears another\'s onset', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = overAHandset($centre);
+    $loft = aStackToldAbout('the-loft', 'The loft');
+    $shed = aStackToldAbout('the-shed', 'The shed');
+
+    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset), WhereATapLeads::to('/stacks/the-loft'))->whileLocked());
+    $notifier->show(Notification::fromTheCore($loft, WhatTheCoreDecided::toSay('disk.full'), WhereATapLeads::to('/stacks/the-loft')));
+
+    $ids = array_column($centre->shown(), 'id');
+
+    expect($ids[1])->not->toBe($ids[0])
+        ->and($ids[2])->not->toBe($ids[3]);
+});
+
+it('files a notification under a key that names neither its stack nor its alert', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+
+    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+
+    $id = $centre->shown()[0]['id'];
+
+    expect($id)->not->toContain('the-loft')
+        ->and($id)->not->toContain('The loft')
+        ->and($id)->not->toContain('disk.full');
+});
+
+it('shows a stack\'s first notifications within a minute as they come, and every one after as one that replaces itself', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToACap(overAHandset($centre), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT)));
+
+    for ($recurrence = 1; $recurrence <= NotifyingWithinACap::AT_MOST + 3; $recurrence++) {
+        $notifier->show(anAlertOf('the-loft', $recurrence));
+    }
+
+    $ids = array_column($centre->shown(), 'id');
+    $beyond = array_slice($ids, NotifyingWithinACap::AT_MOST);
+
+    expect(array_unique(array_slice($ids, 0, NotifyingWithinACap::AT_MOST)))->toHaveCount(NotifyingWithinACap::AT_MOST)
+        ->and(array_unique($beyond))->toBe([$beyond[0]])
+        ->and(array_intersect($beyond, array_slice($ids, 0, NotifyingWithinACap::AT_MOST)))->toBe([])
+        ->and(array_column($centre->shown(), 'title')[NotifyingWithinACap::AT_MOST])->toBe(Catalogue::words()->for('notifications.plain.more_title', ['stack' => 'the-loft']))
+        ->and(array_column($centre->shown(), 'opens')[NotifyingWithinACap::AT_MOST])->toBe('lemonfiber://stacks/the-loft');
+});
+
+it('says a stack has more to tell without naming it while the lock stands', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToACap(overAHandset($centre, ADeviceThatKnowsYou::refusing()), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT)));
+
+    for ($recurrence = 1; $recurrence <= NotifyingWithinACap::AT_MOST + 1; $recurrence++) {
+        $notifier->show(anAlertOf('the-loft', $recurrence));
+    }
+
+    $summary = $centre->shown()[NotifyingWithinACap::AT_MOST];
+
+    expect([$summary['title'], $summary['body']])->toBe([Catalogue::words()->for('notifications.guarded.more_title'), Catalogue::words()->for('notifications.guarded.more_body')])
+        ->and($summary['title'])->not->toContain('the-loft');
+});
+
+it('counts each stack apart, so one stack\'s flood never touches another\'s notifications', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToACap(overAHandset($centre), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT)));
+
+    for ($recurrence = 1; $recurrence <= NotifyingWithinACap::AT_MOST + 2; $recurrence++) {
+        $notifier->show(anAlertOf('the-loft', $recurrence));
+    }
+
+    $notifier->show(anAlertOf('the-shed', 1));
+
+    $ids = array_column($centre->shown(), 'id');
+    $titles = array_column($centre->shown(), 'title');
+    $shed = array_pop($ids);
+
+    expect($shed)->not->toBeIn($ids)
+        ->and(array_pop($titles))->toBe(Catalogue::words()->for('notifications.plain.onset_title', ['stack' => 'the-shed']));
+});
+
+it('shows a stack\'s notifications as they come again once a minute has passed', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $clock = FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT));
+    $notifier = keptToACap(overAHandset($centre), $clock);
+
+    for ($recurrence = 1; $recurrence <= NotifyingWithinACap::AT_MOST + 1; $recurrence++) {
+        $notifier->show(anAlertOf('the-loft', $recurrence));
+    }
+
+    $clock->moveTo(Instant::atEpochSeconds(NOTIFYING_AT + SecondsIn::AMinute->value));
+    $notifier->show(anAlertOf('the-loft', 99));
+
+    $titles = array_column($centre->shown(), 'title');
+
+    expect(array_pop($titles))->toBe(Catalogue::words()->for('notifications.plain.onset_title', ['stack' => 'the-loft']));
+});
+
+it('shows nothing while the operator has notifications turned off, and says that is why', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+
+    expect(whatBecameOfIt(keptToTheSwitch(overAHandset($centre), Notifying::Off)->show(somethingWorthSaying())))->toBe(WhyNothingIsShown::TheOperatorTurnedThemOff->name)
+        ->and($centre->shown())->toBe([]);
 });

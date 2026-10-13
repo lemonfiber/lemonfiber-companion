@@ -34,6 +34,14 @@ enum Permission: string
     case Camera = 'camera';
 
     /**
+     * Telling the operator what a stack raised.
+     *
+     * Asked only where the operator turns notifications on in the app's own
+     * settings, after the app has said why.
+     */
+    case Notifications = 'notifications';
+
+    /**
      * Whether the app still works with this one declined.
      *
      * Every permission is optional with a working
@@ -49,7 +57,7 @@ enum Permission: string
     public function hasAnAlternative(): bool
     {
         return match ($this) {
-            self::LocalNetwork, self::Camera => true,
+            self::LocalNetwork, self::Camera, self::Notifications => true,
         };
     }
 

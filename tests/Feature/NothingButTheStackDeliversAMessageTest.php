@@ -15,9 +15,9 @@ use Tests\Support\Tree;
 // plane in all but name, so the absence is held at each place one would enter:
 // a package that reaches a push service, the platform's push facade, the switch
 // NativePHP's build reads to keep the push entitlement, the Firebase files its
-// build copies in, and this app's own native manifest. And because the app
-// subscribes to no back-end and raises nothing yet, nothing on it promises
-// delivery while it is not running.
+// build copies in, and this app's own native manifest. The app raises what a
+// stack's own stream carried while the app runs, and subscribes to no back-end,
+// so nothing on it promises delivery while it is not running.
 
 /**
  * Every PHP file the application ships, configuration included.
@@ -94,10 +94,14 @@ it('declares no push dependency, background mode or registration in its own nati
         ->and($registering)->toBe([]);
 });
 
-it('takes a notifier nowhere but where it is answered, so nothing subscribes, asks to notify or promises delivery while the app is not running', function (): void {
+it('takes a notifier nowhere but where it is answered and where a running app hears its stacks, so nothing subscribes, asks to notify or promises delivery while the app is not running', function (): void {
     $answered = [
         Tree::at('app-modules/kernel/src/Api/Notifier.php'),
+        Tree::at('app-modules/wayfinding/src/Api/WhatItListensWith.php'),
         Tree::at('app-modules/device/src/Api/PlatformNotifier.php'),
+        Tree::at('app-modules/device/src/Api/NotifyingWithinACap.php'),
+        Tree::at('app-modules/connection/src/Api/NotifyingOnlyWhenTurnedOn.php'),
+        Tree::at('app-modules/connection/src/Api/TurningNotificationsOn.php'),
         Tree::at('bootstrap/Composition/CompositionRoot.php'),
     ];
 

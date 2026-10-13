@@ -160,6 +160,46 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'What the upload limit comes to. Carried in the `says` sentence, for `down.limit`\'s reason.',
         ],
         [
+            'path' => 'AlertEnvelope.summary',
+            'because' => 'The stack\'s one sentence on what happened. A notification is worded from this app\'s '
+                . 'own words for the alert\'s kind, plain or guarded, because a sentence the stack wrote can name '
+                . 'a requested title or a member, which no notification may carry (`N4-R10`). The same condition, '
+                . 'while it stands, is an affected item of the health summary, sentence and all.',
+        ],
+        [
+            'path' => 'AlertEnvelope.meaning',
+            'because' => 'What the condition means for the household. Read from the health summary\'s affected '
+                . 'item while the condition stands, on the screen that tapping the notification opens; a '
+                . 'notification carries only what it is filed and worded by (`N4-R10`).',
+        ],
+        [
+            'path' => 'AlertEnvelope.remedies',
+            'because' => 'What to do about it. Read from the health summary\'s affected item, for `meaning`\'s '
+                . 'reason: the remedies are offered on the stack\'s own screen, not in a notification.',
+        ],
+        [
+            'path' => 'AlertEnvelope.affected',
+            'because' => 'Which other checks the condition reaches. Read from the health summary as each affected '
+                . 'item\'s `downstream`, for `meaning`\'s reason.',
+        ],
+        [
+            'path' => 'AlertEnvelope.check',
+            'because' => 'The check that raised it. A notification is filed under the alert\'s `id`, which an '
+                . 'onset and its resolution share, and worded by its `kind`; the check is named on the health '
+                . 'summary\'s affected item.',
+        ],
+        [
+            'path' => 'AlertEnvelope.severity',
+            'because' => 'How much the condition matters. The core decides what is worth a notification before '
+                . 'it raises one (`N4-R11`), so every alert that reaches this app is told the same way; the '
+                . 'severity of a standing condition is read from the health summary.',
+        ],
+        [
+            'path' => 'AlertEnvelope.exit',
+            'because' => 'The exit code the check ended with. A detail of the check, for `check`\'s reason, and '
+                . 'read from the health summary\'s affected item.',
+        ],
+        [
             'path' => 'AlertsEnvelope.changed',
             'because' => 'Whether the call that answered changed what the operator is told about. This app '
                 . 'reads the setting and never changes it — what is heard about is the core\'s decision, '
