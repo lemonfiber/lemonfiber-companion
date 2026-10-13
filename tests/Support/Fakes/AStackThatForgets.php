@@ -10,7 +10,8 @@ use Modules\Kernel\Api\ForgettingAgreed;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\WhatBecameOfForgetting;
+use Modules\Kernel\Api\TheForgetting;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 
 /**
  * A stack that lists what removing everything would take, takes a yes on, and says what became of each, as a test arranges.
@@ -29,9 +30,9 @@ final class AStackThatForgets implements Forgetting
     private array $agreed = [];
 
     /**
-     * @param Closure(): WhatBecameOfForgetting    $listing
-     * @param Closure(): WhatBecameOfForgetting    $removing
-     * @param Closure(Job): WhatBecameOfForgetting $becoming
+     * @param Closure(): WhatBecameOfTheWork<TheForgetting>    $listing
+     * @param Closure(): WhatBecameOfTheWork<TheForgetting>    $removing
+     * @param Closure(Job): WhatBecameOfTheWork<TheForgetting> $becoming
      */
     private function __construct(
         private readonly Closure $listing,
@@ -39,41 +40,59 @@ final class AStackThatForgets implements Forgetting
         private readonly Closure $becoming,
     ) {}
 
-    /** A stack that takes both on, and says `$listed` of the listing and `$removed` of the yes. */
-    public static function answering(WhatBecameOfForgetting $listed, WhatBecameOfForgetting $removed): self
+    /**
+     * A stack that takes both on, and says `$listed` of the listing and `$removed` of the yes.
+     *
+     * @param WhatBecameOfTheWork<TheForgetting> $listed
+     * @param WhatBecameOfTheWork<TheForgetting> $removed
+     */
+    public static function answering(WhatBecameOfTheWork $listed, WhatBecameOfTheWork $removed): self
     {
         return new self(
-            static fn(): WhatBecameOfForgetting => WhatBecameOfForgetting::underway(Job::named(self::THE_LISTING)),
-            static fn(): WhatBecameOfForgetting => WhatBecameOfForgetting::underway(Job::named(self::THE_REMOVAL)),
-            static fn(Job $job): WhatBecameOfForgetting => $job->shown() === self::THE_REMOVAL ? $removed : $listed,
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_LISTING)),
+            static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway(Job::named(self::THE_REMOVAL)),
+            static fn(Job $job): WhatBecameOfTheWork => $job->shown() === self::THE_REMOVAL ? $removed : $listed,
         );
     }
 
-    /** A stack that answers asking either with `$said` at once, taking nothing on. */
-    public static function sayingAtOnce(WhatBecameOfForgetting $said): self
+    /**
+     * A stack that answers asking either with `$said` at once, taking nothing on.
+     *
+     * @param WhatBecameOfTheWork<TheForgetting> $said
+     */
+    public static function sayingAtOnce(WhatBecameOfTheWork $said): self
     {
         return new self(
-            static fn(): WhatBecameOfForgetting => $said,
-            static fn(): WhatBecameOfForgetting => $said,
-            static fn(): WhatBecameOfForgetting => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
+            static fn(): WhatBecameOfTheWork => $said,
         );
     }
 
-    public function whatWouldGo(Stack $stack, Session $session): WhatBecameOfForgetting
+    /**
+     * @return WhatBecameOfTheWork<TheForgetting>
+     */
+    public function whatWouldGo(Stack $stack, Session $session): WhatBecameOfTheWork
     {
         $this->asked++;
 
         return ($this->listing)();
     }
 
-    public function forget(Stack $stack, Session $session, ForgettingAgreed $agreed): WhatBecameOfForgetting
+    /**
+     * @return WhatBecameOfTheWork<TheForgetting>
+     */
+    public function forget(Stack $stack, Session $session, ForgettingAgreed $agreed): WhatBecameOfTheWork
     {
         $this->agreed[] = $agreed;
 
         return ($this->removing)();
     }
 
-    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfForgetting
+    /**
+     * @return WhatBecameOfTheWork<TheForgetting>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         return ($this->becoming)($job);
     }

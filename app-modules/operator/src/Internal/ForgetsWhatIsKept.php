@@ -13,7 +13,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheForgetting;
-use Modules\Kernel\Api\WhatBecameOfForgetting;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
 use Native\Mobile\Attributes\Poll;
@@ -45,7 +45,7 @@ trait ForgetsWhatIsKept
         $this->shownToForget = null;
         $this->forgettingAgreed = false;
         $this->forgettingFollowed = null;
-        $this->forgettingGoing = $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfForgetting => $this->forgetting->whatWouldGo($stack, $session));
+        $this->forgettingGoing = $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->forgetting->whatWouldGo($stack, $session));
     }
 
     /** Remove everything, against the list on the screen; nothing is sent without that list. */
@@ -60,7 +60,7 @@ trait ForgetsWhatIsKept
         $agreed = ForgettingAgreed::after($shown);
         $this->shownToForget = null;
         $this->forgettingAgreed = true;
-        $this->forgettingGoing = $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfForgetting => $this->forgetting->forget($stack, $session, $agreed));
+        $this->forgettingGoing = $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->forgetting->forget($stack, $session, $agreed));
     }
 
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
@@ -77,10 +77,10 @@ trait ForgetsWhatIsKept
 
         return $this->forgettingGoing ??= $following === null
             ? new HowForgettingReads()->notAsked()
-            : $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfForgetting => $this->forgetting->whatBecameOf($stack, $session, Job::named($following)));
+            : $this->forgettingPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->forgetting->whatBecameOf($stack, $session, Job::named($following)));
     }
 
-    /** @param Closure(Stack, Session): WhatBecameOfForgetting $asking */
+    /** @param Closure(Stack, Session): WhatBecameOfTheWork<TheForgetting> $asking */
     private function forgettingPut(Closure $asking): TheForgettingTurnedOutToBe
     {
         $stack = $this->stack();
@@ -91,7 +91,10 @@ trait ForgetsWhatIsKept
         );
     }
 
-    private function forgettingShown(WhatBecameOfForgetting $became, Stack $stack): TheForgettingTurnedOutToBe
+    /**
+     * @param WhatBecameOfTheWork<TheForgetting> $became
+     */
+    private function forgettingShown(WhatBecameOfTheWork $became, Stack $stack): TheForgettingTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job): TheForgettingTurnedOutToBe {

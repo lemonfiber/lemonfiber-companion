@@ -12,7 +12,7 @@ use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
 use Modules\Kernel\Api\TheRoots;
-use Modules\Kernel\Api\WhatBecameOfForgetting;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatIsBeside;
 use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -41,11 +41,14 @@ function whatWouldGoFromTheLoft(): WhatThisMachineKeeps
     );
 }
 
-function aStackThatListsThenRemoves(?WhatBecameOfForgetting $removed = null): AStackThatForgets
+/**
+ * @param WhatBecameOfTheWork<TheForgetting>|null $removed
+ */
+function aStackThatListsThenRemoves(?WhatBecameOfTheWork $removed = null): AStackThatForgets
 {
     return AStackThatForgets::answering(
-        WhatBecameOfForgetting::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::unconfirmed())),
-        $removed ?? WhatBecameOfForgetting::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
+        WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::unconfirmed())),
+        $removed ?? WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
     );
 }
 
@@ -127,7 +130,7 @@ it('sends no yes without the list on the screen', function (): void {
     $forgetting = aStackThatListsThenRemoves();
     theScreenThatForgets($forgetting)->forgetEverything();
 
-    $notAListing = AStackThatForgets::answering(WhatBecameOfForgetting::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::notAsked())), WhatBecameOfForgetting::ended());
+    $notAListing = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::notAsked())), WhatBecameOfTheWork::ended());
     $screen = theListShownToForget($notAListing);
     $screen->forgetEverything();
 
@@ -137,7 +140,7 @@ it('sends no yes without the list on the screen', function (): void {
 });
 
 it('draws what went and what was left, where the stack could still say', function (): void {
-    $done = WhatBecameOfForgetting::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::done(ThePlacesGone::of('/home/op/.config/lemonfiber'), APathLeft::at('/home/op/.local/share/lemonfiber', 'permission denied'))));
+    $done = WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::done(ThePlacesGone::of('/home/op/.config/lemonfiber'), APathLeft::at('/home/op/.local/share/lemonfiber', 'permission denied'))));
     $screen = theListShownToForget(aStackThatListsThenRemoves($done));
     $screen->forgetEverything();
     $screen->whileForgettingRuns();
@@ -163,9 +166,9 @@ it('says the session ended where it went while what would go was asked', functio
 
 it('draws a refusal in the stack\'s own words, an outcome the stack no longer has, and what stood in the way before a yes', function (): void {
     $why = ARefusalInItsWords::said('this run cannot say where lemonfiber keeps its own files', '', WhatTheRefusalNamed::nothing(), 'Run this as the account that installed lemonfiber');
-    $refused = theListShownToForget(AStackThatForgets::answering(WhatBecameOfForgetting::refused($why), WhatBecameOfForgetting::ended()));
-    $ended = theListShownToForget(AStackThatForgets::answering(WhatBecameOfForgetting::ended(), WhatBecameOfForgetting::ended()));
-    $met = theScreenThatForgets(AStackThatForgets::sayingAtOnce(WhatBecameOfForgetting::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $refused = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::refused($why), WhatBecameOfTheWork::ended()));
+    $ended = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()));
+    $met = theScreenThatForgets(AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $met->whatWouldGo();
 
     expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('stacks.forget.refused'), 'this run cannot say where lemonfiber keeps its own files')

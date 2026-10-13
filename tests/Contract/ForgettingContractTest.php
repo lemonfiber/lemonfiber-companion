@@ -21,7 +21,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
 use Modules\Kernel\Api\TheRoots;
-use Modules\Kernel\Api\WhatBecameOfForgetting;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatIsBeside;
 use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
@@ -109,7 +109,10 @@ function forgettingTakenOn(string $job): MockResponse
     return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'forget', 'job' => $job]]), 202);
 }
 
-function whatForgettingCameTo(WhatBecameOfForgetting $became): string
+/**
+ * @param WhatBecameOfTheWork<TheForgetting> $became
+ */
+function whatForgettingCameTo(WhatBecameOfTheWork $became): string
 {
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
@@ -133,7 +136,7 @@ function whatForgettingCameTo(WhatBecameOfForgetting $became): string
 }
 
 it('comes away from asking what would go with the job the stack named', function (): void {
-    foreach (['the fake' => AStackThatForgets::answering(WhatBecameOfForgetting::ended(), WhatBecameOfForgetting::ended()), 'the adapter' => aForgetterAnswered(forgettingTakenOn(AStackThatForgets::THE_LISTING))] as $which => $forgetting) {
+    foreach (['the fake' => AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()), 'the adapter' => aForgetterAnswered(forgettingTakenOn(AStackThatForgets::THE_LISTING))] as $which => $forgetting) {
         expect(whatForgettingCameTo($forgetting->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'))))
             ->toBe(sprintf('following %s', AStackThatForgets::THE_LISTING), $which);
     }
@@ -141,7 +144,7 @@ it('comes away from asking what would go with the job the stack named', function
 
 it('reads the listing of what would go, and what went once it was agreed to', function (array $removal, WhereForgettingGot $got, string $said): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfForgetting($removal)));
-    $fake = AStackThatForgets::answering(WhatBecameOfForgetting::answered(TheForgetting::said(whatTheLoftListsToForget(), $got)), WhatBecameOfForgetting::ended());
+    $fake = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatTheLoftListsToForget(), $got)), WhatBecameOfTheWork::ended());
 
     foreach (['the fake' => $fake, 'the adapter' => aForgetterAnswered($finished)] as $which => $forgetting) {
         expect(whatForgettingCameTo($forgetting->whatBecameOf(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), Job::named(AStackThatForgets::THE_LISTING))))
@@ -176,7 +179,7 @@ it('reads a refusal as the stack\'s own sentence and remedy, whether it refused 
 it('comes away with the obstacle where the stack could not be asked or read', function (MockResponse $answered, KindOfObstacle $kind): void {
     expect(whatForgettingCameTo(aForgetterAnswered($answered)->forget(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), ForgettingAgreed::after(theListingOfWhatWouldGo()))))->toBe($kind->name)
         ->and(whatForgettingCameTo(aForgetterAnswered($answered)->whatBecameOf(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))->toBe($kind->name)
-        ->and(whatForgettingCameTo(AStackThatForgets::sayingAtOnce(WhatBecameOfForgetting::met(Obstacle::of($kind)))->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'))))->toBe($kind->name);
+        ->and(whatForgettingCameTo(AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of($kind)))->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'))))->toBe($kind->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'a stack that failed' => [MockResponse::make('{"error":"still asking"}', 500), KindOfObstacle::StackDidNotAnswer],
@@ -231,7 +234,7 @@ it('asks without the yes first, and sends the yes only against the listing', fun
 });
 
 it('the fake remembers each asking and each yes', function (): void {
-    $forgetting = AStackThatForgets::answering(WhatBecameOfForgetting::ended(), WhatBecameOfForgetting::ended());
+    $forgetting = AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
     $agreed = ForgettingAgreed::after(theListingOfWhatWouldGo());
     $forgetting->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'));
     $forgetting->forget(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), $agreed);
