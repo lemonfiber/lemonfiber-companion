@@ -17,6 +17,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
@@ -186,16 +187,20 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         );
     }
 
-    /** Ask what updating the plugin in that row would do. A row it does not have, or a plugin with no source to fetch, asks nothing. */
-    public function updateOne(int $which): void
+    /**
+     * Ask what updating, removing or proving again the plugin in that row would do, by the act's word.
+     *
+     * A row it does not have, a word that is not one of those three, a plugin with no source to fetch, or one nothing is kept against, asks nothing.
+     */
+    public function actOnTheRow(string $act, int $which): void
     {
-        $this->rehearseOnTheRow($which, ExtendingIt::Update);
-    }
+        $asked = ExtendingIt::tryFrom($act);
 
-    /** Ask what removing the plugin in that row would do. A row it does not have asks nothing. */
-    public function removeOne(int $which): void
-    {
-        $this->rehearseOnTheRow($which, ExtendingIt::Remove);
+        if (! $asked instanceof ExtendingIt || $asked === ExtendingIt::Install) {
+            return;
+        }
+
+        $this->rehearseOnTheRow($which, $asked);
     }
 
     /**
@@ -306,29 +311,27 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $approved = PluginLines::under('approved', ...$this->approved);
         $subject = $this->subject;
 
-        if ($act === ExtendingIt::Install || ! $subject instanceof APlugin) {
-            $agreed = APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), $approved);
+        $agreed = match (true) {
+            $act === ExtendingIt::Install || ! $subject instanceof APlugin => APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), $approved),
+            $act === ExtendingIt::Update => APluginUpdateAgreed::after($rehearsal, $subject, $approved),
+            $act === ExtendingIt::Prove => APluginProofAgreed::after($rehearsal, $subject),
+            default => APluginRemovalAgreed::after($rehearsal, $subject),
+        };
 
-            return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->install($stack, $session, $agreed);
-        }
-
-        if ($act === ExtendingIt::Update) {
-            $agreed = APluginUpdateAgreed::after($rehearsal, $subject, $approved);
-
-            return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->update($stack, $session, $agreed);
-        }
-
-        $removal = APluginRemovalAgreed::after($rehearsal, $subject);
-
-        return fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->remove($stack, $session, $removal);
+        return fn(Stack $stack, Session $session): HowExtendingItIsGoing => match (true) {
+            $agreed instanceof APluginInstallAgreed => $this->extending->install($stack, $session, $agreed),
+            $agreed instanceof APluginUpdateAgreed => $this->extending->update($stack, $session, $agreed),
+            $agreed instanceof APluginProofAgreed => $this->extending->prove($stack, $session, $agreed),
+            default => $this->extending->remove($stack, $session, $agreed),
+        };
     }
 
     /**
-     * Rehearse updating or removing the plugin in that row of the listing last read.
+     * Rehearse updating, removing or proving again the plugin in that row of the listing last read.
      *
      * Nothing is asked while other work is followed, for a row the listing
-     * does not have, or for an update of a plugin whose record names no
-     * source to fetch again.
+     * does not have, for an update of a plugin whose record names no
+     * source to fetch again, or for proving a plugin nothing is kept against.
      */
     private function rehearseOnTheRow(int $which, ExtendingIt $act): void
     {
@@ -340,7 +343,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
             $at++;
         }
 
-        if (is_string($this->following) || ! $chosen instanceof APlugin || ($act === ExtendingIt::Update && ! $chosen->canBeUpdated())) {
+        if (is_string($this->following) || ! $chosen instanceof APlugin || ($act === ExtendingIt::Update && ! $chosen->canBeUpdated()) || ($act === ExtendingIt::Prove && ! ($this->listing?->answersOutOfContractOf($chosen)->holdsAny() ?? false))) {
             return;
         }
 
@@ -348,9 +351,11 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->act = $act->value;
         $this->subject = $chosen;
         $this->answered = $this->put(
-            fn(Stack $stack, Session $session): HowExtendingItIsGoing => $act === ExtendingIt::Update
-                ? $this->extending->rehearseUpdating($stack, $session, $chosen)
-                : $this->extending->rehearseRemoving($stack, $session, $chosen),
+            fn(Stack $stack, Session $session): HowExtendingItIsGoing => match (true) {
+                $act === ExtendingIt::Update => $this->extending->rehearseUpdating($stack, $session, $chosen),
+                $act === ExtendingIt::Prove => $this->extending->readProving($stack, $session, $chosen),
+                default => $this->extending->rehearseRemoving($stack, $session, $chosen),
+            },
         );
     }
 

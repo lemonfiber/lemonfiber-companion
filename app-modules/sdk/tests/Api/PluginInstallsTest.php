@@ -116,6 +116,7 @@ function howTheProofsCameOut(ThePlugins $plugins): string
         },
         update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
         removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+        proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
     )->said;
 }
 
@@ -267,6 +268,7 @@ it('reads an update whose old version needed no putting back, sent as null or le
             install: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an install'),
             update: static fn(AnUpdate $update): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s [%s]', $update->restored()->wasNeeded() ? 'restored' : 'nothing to restore', $update->stopped())),
             removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+            proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
         )->said;
 
         expect($read)->toBe('nothing to restore []', (string) $which);
@@ -353,6 +355,7 @@ it('reads an adapter that is not a table as no adapter', function (): void {
         },
         update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
         removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+        proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
     )->said;
 
     expect($adapters)->toBe('[]');
@@ -392,6 +395,7 @@ it('reads every check an install broke or left unsettled by its title, an agreem
         },
         update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
         removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+        proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
     )->said;
 
     expect($read)->toBe('broke Sonarr answers|unsettled The VPN is up|not reviewed|not held')

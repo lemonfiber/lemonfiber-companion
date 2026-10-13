@@ -20,4 +20,5 @@ requirement = [
   { id = "N25-R12", state = "open" },
   { id = "N25-R13", state = "open" },
   { id = "N25-R14", state = "open" },
+  { id = "N25-R15", state = "done", evidence = ["app-modules/kernel/src/Api/APluginReproof.php", "app-modules/sdk/src/Api/PluginInstalls.php", "app-modules/operator/src/Internal/Screens/WhatExtendsThisStack.php", "tests/Contract/ExtendingTheStackContractTest.php", "tests/Feature/ProvingAPluginAgainTest.php"] },
 ]

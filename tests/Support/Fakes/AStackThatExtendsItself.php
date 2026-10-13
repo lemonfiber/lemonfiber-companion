@@ -10,6 +10,7 @@ use function implode;
 
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
@@ -104,6 +105,20 @@ final class AStackThatExtendsItself implements ExtendingTheStack
     public function remove(Stack $stack, Session $session, APluginRemovalAgreed $agreed): HowExtendingItIsGoing
     {
         $this->asked[] = sprintf('remove:%s:%s', $agreed->plugin(), $agreed->agreement());
+
+        return $this->next();
+    }
+
+    public function readProving(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('read proving:%s', $plugin->id());
+
+        return $this->next();
+    }
+
+    public function prove(Stack $stack, Session $session, APluginProofAgreed $agreed): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('prove:%s:%s', $agreed->plugin(), $agreed->agreement());
 
         return $this->next();
     }

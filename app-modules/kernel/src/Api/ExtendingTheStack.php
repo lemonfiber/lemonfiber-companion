@@ -43,6 +43,12 @@ interface ExtendingTheStack
     /** Remove it, as the rehearsal the operator was shown said it would. */
     public function remove(Stack $stack, Session $session, APluginRemovalAgreed $agreed): HowExtendingItIsGoing;
 
-    /** What became of a rehearsal, an install, an update or a removal, by the handle it answered with. */
+    /** Ask what proving this plugin again would ask, asking nothing of its adapters. */
+    public function readProving(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing;
+
+    /** Prove it again, as the reading the operator was shown said it would. */
+    public function prove(Stack $stack, Session $session, APluginProofAgreed $agreed): HowExtendingItIsGoing;
+
+    /** What became of a rehearsal, an install, an update, a removal or a proof, by the handle it answered with. */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowExtendingItIsGoing;
 }

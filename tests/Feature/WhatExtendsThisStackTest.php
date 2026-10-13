@@ -451,9 +451,9 @@ it('offers to update and to remove each plugin by its name, and says where one c
     $extending = AStackThatExtendsItself::listing(ThePlugins::listed(TheInstalledPlugins::these($sourceless), ThePluginSources::these(), TheAnswersOutOfContract::these()));
     $screen = thePluginsListed($extending);
     $cannot = WhatTheDeviceWouldDraw::by($screen);
-    $screen->updateOne(0);
-    $screen->updateOne(4);
-    $screen->removeOne(4);
+    $screen->actOnTheRow('update', 0);
+    $screen->actOnTheRow('update', 4);
+    $screen->actOnTheRow('remove', 4);
 
     expect($drawn->offers())->toContain(aPluginsLine('plugins.update_it', ['name' => 'Tdarr']))
         ->and($drawn->offers())->toContain(aPluginsLine('plugins.remove_it', ['name' => 'Tdarr']))
@@ -467,7 +467,7 @@ it('offers to update and to remove each plugin by its name, and says where one c
 it('rehearses an update and draws it as a rehearsal: from and to, what stops, what comes off, and the new version', function (): void {
     $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateReading()));
     $screen = thePluginsListed($extending);
-    $screen->updateOne(0);
+    $screen->actOnTheRow('update', 0);
     $running = WhatTheDeviceWouldDraw::by($screen);
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -495,7 +495,7 @@ it('sends the update with the reading\'s name and each approval, and says a new 
         HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateNotHeld()),
     );
     $screen = thePluginsListed($extending);
-    $screen->updateOne(0);
+    $screen->actOnTheRow('update', 0);
     $screen->whileItRuns();
     $screen->answer();
     $screen->approve(0);
@@ -520,7 +520,7 @@ it('rehearses a removal with what it would leave unfilled, and says one whose re
         HowExtendingItIsGoing::done(APluginAsItArrives::thePartialRemoval()),
     );
     $screen = thePluginsListed($extending);
-    $screen->removeOne(0);
+    $screen->actOnTheRow('remove', 0);
     $screen->whileItRuns();
     $reading = WhatTheDeviceWouldDraw::by($screen);
     $screen->agree();
@@ -543,7 +543,7 @@ it('says removed only where the record was written, with what stayed on the mach
         HowExtendingItIsGoing::done(APluginAsItArrives::theRemoval()),
     );
     $screen = thePluginsListed($extending);
-    $screen->removeOne(0);
+    $screen->actOnTheRow('remove', 0);
     $screen->whileItRuns();
     $screen->answer();
     $screen->agree();
@@ -562,7 +562,7 @@ it('draws a removal the stack refuses after the yes as its refusal, said as a re
         aPluginRefusal('The offer moved on'),
     );
     $screen = thePluginsListed($extending);
-    $screen->removeOne(0);
+    $screen->actOnTheRow('remove', 0);
     $screen->whileItRuns();
     $screen->answer();
     $screen->agree();

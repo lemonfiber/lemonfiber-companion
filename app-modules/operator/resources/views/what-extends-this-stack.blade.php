@@ -135,15 +135,37 @@
     @endif
 
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
+@elseif ($this->answer()->proof !== null)
+    <x-operator::emphasis>{{ __($this->answer()->proof->headline) }}</x-operator::emphasis>
+
+    {{-- Which capability a pass would clear, and, where the proof did not
+         hold, the stack's reason it stays unfilled. --}}
+    <x-operator::heading>{{ $this->answer()->proof->isAReading ? __('plugins.a_pass_clears') : __('plugins.kept_against_it') }}</x-operator::heading>
+    @forelse ($this->answer()->proof->kept as $answer)
+        <x-design::body>{{ __('plugins.answered_out_of_contract', ['capability' => $answer->capability, 'operation' => $answer->operation, 'why' => $answer->why]) }}</x-design::body>
+    @empty
+        <x-operator::note>{{ __('plugins.nothing_kept_against_it') }}</x-operator::note>
+    @endforelse
+
+    <x-operator::the-proofs :proofs="$this->answer()->proof->proofs" />
+
+    @if ($this->answer()->proof->agreeable)
+        <x-operator::offered-action :label="__('plugins.prove')" tap="agree()" :offer="$this->offered(ExtendingIt::Prove)" />
+    @endif
+
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @else
     @forelse ($this->answer()->installed as $at => $plugin)
         <x-operator::the-plugin :plugin="$plugin" />
         @if ($plugin->updatable)
-            <x-operator::offered-action :label="__('plugins.update_it', ['name' => $plugin->name])" :tap="$this->tapping('updateOne', $at)" :offer="$this->offered(ExtendingIt::Update)" />
+            <x-operator::offered-action :label="__('plugins.update_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'update', $at)" :offer="$this->offered(ExtendingIt::Update)" />
         @else
             <x-operator::note>{{ __('plugins.no_source_to_update') }}</x-operator::note>
         @endif
-        <x-operator::offered-action :label="__('plugins.remove_it', ['name' => $plugin->name])" :tap="$this->tapping('removeOne', $at)" :offer="$this->offered(ExtendingIt::Remove)" />
+        <x-operator::offered-action :label="__('plugins.remove_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'remove', $at)" :offer="$this->offered(ExtendingIt::Remove)" />
+        @unless ($plugin->outOfContract === [])
+            <x-operator::offered-action :label="__('plugins.prove_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'prove', $at)" :offer="$this->offered(ExtendingIt::Prove)" />
+        @endunless
     @empty
         {{-- The record answered and holds nothing. A record that could not be
              read never reaches this branch. --}}

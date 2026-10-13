@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
+use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Obstacle;
@@ -15,6 +16,7 @@ use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
+use Modules\Operator\Internal\ViewModels\APluginReproofAsShown;
 use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
@@ -80,6 +82,7 @@ final readonly class HowExtendingItReads
             install: null,
             update: null,
             removal: null,
+            proof: null,
         );
     }
 
@@ -103,6 +106,7 @@ final readonly class HowExtendingItReads
             install: static fn(APluginInstall $install): APluginInstallAsShown => $rows->install($install, $approved, $agreeable),
             update: static fn(AnUpdate $update): APluginUpdateAsShown => $rows->update($update, $approved, $agreeable),
             removal: static fn(APluginRemoval $removal): APluginRemovalAsShown => $rows->removal($removal, $agreeable),
+            proof: static fn(APluginReproof $proof): APluginReproofAsShown => $rows->reproof($proof, $agreeable),
         );
 
         return new WhatExtendsItTurnedOutToBe(
@@ -119,6 +123,7 @@ final readonly class HowExtendingItReads
             install: $account instanceof APluginInstallAsShown ? $account : null,
             update: $account instanceof APluginUpdateAsShown ? $account : null,
             removal: $account instanceof APluginRemovalAsShown ? $account : null,
+            proof: $account instanceof APluginReproofAsShown ? $account : null,
         );
     }
 
@@ -133,6 +138,7 @@ final readonly class HowExtendingItReads
             ExtendingIt::Install => 'plugins.working.install',
             ExtendingIt::Update => 'plugins.working.update',
             ExtendingIt::Remove => 'plugins.working.remove',
+            ExtendingIt::Prove => 'plugins.working.prove',
         };
     }
 
@@ -147,6 +153,7 @@ final readonly class HowExtendingItReads
             ExtendingIt::Install => 'plugins.refused.install',
             ExtendingIt::Update => 'plugins.refused.update',
             ExtendingIt::Remove => 'plugins.refused.remove',
+            ExtendingIt::Prove => 'plugins.refused.prove',
         };
     }
 
@@ -173,6 +180,7 @@ final readonly class HowExtendingItReads
             install: null,
             update: null,
             removal: null,
+            proof: null,
         );
     }
 }

@@ -107,12 +107,14 @@ return [
         'install' => 'Installing. It counts as installed only once the machine has recorded it, its proofs have held and nothing it checks broke',
         'update' => 'Updating. The services it names stop, and it counts as updated only once the new version holds',
         'remove' => 'Removing. The services it names stop',
+        'prove' => 'Asking its adapters their proofs again',
     ],
     'refused' => [
         'rehearse' => 'The machine would not rehearse this',
         'install' => 'The machine did not install it',
         'update' => 'The machine did not update it',
         'remove' => 'The machine did not remove it',
+        'prove' => 'The machine did not prove it again',
     ],
     'restored' => [
         'running' => 'Version :version is back, placed and running',
@@ -136,4 +138,12 @@ return [
     'update_it' => 'Update :name',
     'remove_it' => 'Remove :name',
     'no_source_to_update' => 'Its record names no source, so it cannot be updated from here',
+    'prove_it' => 'Prove :name again',
+    'prove' => 'Prove it again',
+    'proof_reading' => 'Nothing has been asked yet. This is what proving it again would ask',
+    'a_pass_clears' => 'What a pass would clear',
+    'kept_against_it' => 'Still kept against it, and unfilled',
+    'nothing_kept_against_it' => 'Nothing is kept against it',
+    'proved_it' => 'Proved again: every answer kept against it is cleared',
+    'not_proved' => 'Not proved: what was kept against it stays, and it fills none of it',
 ];

@@ -14,10 +14,12 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\PluginInstallAction;
+use Lemonfiber\Sdk\Generated\PluginProveAction;
 use Lemonfiber\Sdk\Generated\PluginRemoveAction;
 use Lemonfiber\Sdk\Generated\PluginUpdateAction;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
@@ -121,6 +123,16 @@ final readonly class Extenders implements ExtendingTheStack
         return $this->asked($stack, $session, new PluginRemoveAction(offer: $agreed->agreement(), plugin: $agreed->plugin()));
     }
 
+    public function readProving(Stack $stack, Session $session, APlugin $plugin): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginProveAction(plugin: $plugin->id()));
+    }
+
+    public function prove(Stack $stack, Session $session, APluginProofAgreed $agreed): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginProveAction(offer: $agreed->agreement(), plugin: $agreed->plugin()));
+    }
+
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowExtendingItIsGoing
     {
         try {
@@ -142,7 +154,7 @@ final readonly class Extenders implements ExtendingTheStack
      * A refusal of the asking itself is the stack's answer about the plugin,
      * kept in its words as one of the work would be.
      */
-    private function asked(Stack $stack, Session $session, PluginInstallAction|PluginUpdateAction|PluginRemoveAction $action): HowExtendingItIsGoing
+    private function asked(Stack $stack, Session $session, PluginInstallAction|PluginUpdateAction|PluginRemoveAction|PluginProveAction $action): HowExtendingItIsGoing
     {
         try {
             $envelope = GatedClient::of($this->clients, $stack, $session)->act(

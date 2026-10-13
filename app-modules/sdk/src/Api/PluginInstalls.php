@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\PluginsEnvelope;
 use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\ASourceAsked;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
@@ -23,6 +24,8 @@ use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Internal\PluginInstallReports;
 use Modules\Sdk\Internal\PluginRecords;
 use Modules\Sdk\Internal\PluginUpdatesAndRemovals;
+use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\WhatAProofsVerdictWas;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -63,6 +66,7 @@ final readonly class PluginInstalls
             self::carries($data, PluginsField::Install) => ThePlugins::aboutAnInstall($installed, $sources, $agreement, PluginInstallReports::in(self::table($data, PluginsField::Install))),
             self::carries($data, PluginsField::Update) => ThePlugins::aboutAnUpdate($installed, $sources, $agreement, PluginUpdatesAndRemovals::update(self::table($data, PluginsField::Update))),
             self::carries($data, WireField::Removal) => ThePlugins::aboutAPluginRemoval($installed, $sources, $agreement, PluginUpdatesAndRemovals::removal(self::table($data, WireField::Removal))),
+            self::carries($data, PluginsField::Proof) => ThePlugins::aboutAReproof($installed, $sources, $agreement, self::reproof(self::table($data, PluginsField::Proof))),
             default => ThePlugins::listed($installed, $sources, $outOfContract),
         };
     }
@@ -164,19 +168,45 @@ final readonly class PluginInstalls
             return TheAnswersOutOfContract::these();
         }
 
+        return self::answersIn($data, PluginsField::Nonconforming);
+    }
+
+    /**
+     * Proving a plugin again: each proof, the answers kept against it, and whether its adapters were asked and cleared them.
+     *
+     * @param array<mixed> $proof
+     */
+    private static function reproof(array $proof): APluginReproof
+    {
+        return APluginReproof::reported(
+            Required::text($proof, PluginsField::Plugin, PluginsAreUnreadable::missing(PluginsField::Plugin)),
+            WhatAProofsVerdictWas::proofs($proof),
+            self::answersIn($proof, WireField::Kept),
+            Required::flag($proof, WireField::Asked, PluginsAreUnreadable::missing(WireField::Asked)),
+            Required::flag($proof, PluginsField::Cleared, PluginsAreUnreadable::missing(PluginsField::Cleared)),
+        );
+    }
+
+    /**
+     * Each answer outside a contract listed under that field, refused rather than dropped.
+     *
+     * @param array<mixed> $table
+     */
+    private static function answersIn(array $table, NamesAWireField $list): TheAnswersOutOfContract
+    {
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, PluginsField::Nonconforming) as $row) {
+        foreach (self::rows($table, $list) as $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry(PluginsField::Nonconforming, PluginsField::Plugin, $position);
+                throw PluginsAreUnreadable::entry($list, PluginsField::Plugin, $position);
             }
 
             $found[] = AnAnswerOutOfContract::of(
-                self::text($row, PluginsField::Nonconforming, PluginsField::Plugin, $position),
-                self::text($row, PluginsField::Nonconforming, WireField::Capability, $position),
-                self::text($row, PluginsField::Nonconforming, WireField::Operation, $position),
-                self::text($row, PluginsField::Nonconforming, WireField::Why, $position),
+                self::text($row, $list, PluginsField::Plugin, $position),
+                self::text($row, $list, WireField::Capability, $position),
+                self::text($row, $list, WireField::Operation, $position),
+                self::text($row, $list, WireField::Why, $position),
             );
             $position++;
         }

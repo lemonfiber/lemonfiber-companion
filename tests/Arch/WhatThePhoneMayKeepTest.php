@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARemovalAgreed;
@@ -103,6 +104,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     APluginInstallAgreed::class,
     APluginUpdateAgreed::class,
     APluginRemovalAgreed::class,
+    APluginProofAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,
     AFillAgreed::class,

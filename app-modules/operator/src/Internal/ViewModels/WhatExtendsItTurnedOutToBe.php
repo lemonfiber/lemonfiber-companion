@@ -29,6 +29,7 @@ final readonly class WhatExtendsItTurnedOutToBe
      * @param APluginInstallAsShown|null $install     an install's account, where the answer is about one
      * @param APluginUpdateAsShown|null  $update      an update's account, where the answer is about one
      * @param APluginRemovalAsShown|null $removal     a removal's account, where the answer is about one
+     * @param APluginReproofAsShown|null $proof       what proving a plugin again would ask or came to, where the answer is about that
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -44,5 +45,6 @@ final readonly class WhatExtendsItTurnedOutToBe
         public ?APluginInstallAsShown $install,
         public ?APluginUpdateAsShown $update,
         public ?APluginRemovalAsShown $removal,
+        public ?APluginReproofAsShown $proof,
     ) {}
 }

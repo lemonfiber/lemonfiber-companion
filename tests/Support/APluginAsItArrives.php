@@ -16,6 +16,7 @@ use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
+use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARecipe;
@@ -321,6 +322,45 @@ final readonly class APluginAsItArrives
     public static function aRemovalOnTheWire(): array
     {
         return [...self::aRemovalReadingOnTheWire(), 'removed' => true, 'went_back' => self::wentBackOnTheWire(rehearsed: false)];
+    }
+
+    /**
+     * Proving Tdarr again: before its adapters are asked, after a pass, or after a proof that did not hold.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aProofOnTheWire(bool $asked = false, bool $cleared = false): array
+    {
+        $proof = ['proof' => 'answers', 'establishes' => 'It answers on its port', 'asks' => 'GET /api/status', 'why' => 'A service that does not answer is not running', 'of' => 'tdarr'];
+
+        return [
+            'plugin' => 'tdarr',
+            'proofs' => [$asked ? [...$proof, 'came_to' => $cleared ? ['outcome' => 'passed'] : ['outcome' => 'failed', 'faults' => ['It answered with a field its contract does not have']]] : $proof],
+            'kept' => $cleared ? [] : [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => '2026-10-12T20:00:00Z']],
+            'asked' => $asked,
+            'cleared' => $cleared,
+        ];
+    }
+
+    /** Proving Tdarr again, as this app holds it. */
+    public static function theProof(bool $asked = false, bool $cleared = false): ThePlugins
+    {
+        return ThePlugins::aboutAReproof(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            $asked ? '' : self::AGREEMENT,
+            APluginReproof::reported(
+                'tdarr',
+                TheProofs::these(self::proof(match (true) {
+                    ! $asked => WhatAProofCameTo::notAsked(),
+                    $cleared => WhatAProofCameTo::passed(),
+                    default => WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered with a field its contract does not have')),
+                })),
+                $cleared ? TheAnswersOutOfContract::these() : TheAnswersOutOfContract::these(AnAnswerOutOfContract::of('tdarr', 'transcoding', 'queue', 'It answered with a field its contract does not have')),
+                asked: $asked,
+                cleared: $cleared,
+            ),
+        );
     }
 
     /** The update's reading, as this app holds it. */

@@ -12,12 +12,14 @@ use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
+use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
+use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
@@ -27,6 +29,7 @@ use Modules\Operator\Internal\ViewModels\APluginAsShown;
 use Modules\Operator\Internal\ViewModels\APluginChangeAsShown;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
+use Modules\Operator\Internal\ViewModels\APluginReproofAsShown;
 use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
 use Modules\Operator\Internal\ViewModels\AProofAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeAsShown;
@@ -93,17 +96,7 @@ final readonly class HowAPluginAccountReads
             $changes[] = new APluginChangeAsShown(path: $change->path(), putsSaid: $change->puts()->saidOnTheScreen());
         }
 
-        $proofs = [];
-
-        foreach ($install->proofs() as $proof) {
-            $proofs[] = new AProofAsShown(
-                establishes: $proof->establishes(),
-                asks: $proof->asks(),
-                why: $proof->why(),
-                cameToSaid: $proof->cameTo()->says()->saidOnTheScreen(),
-                said: $this->lines($proof->cameTo()->said()),
-            );
-        }
+        $proofs = $this->proofs($install->proofs());
 
         $overrides = [];
 
@@ -205,6 +198,23 @@ final readonly class HowAPluginAccountReads
         );
     }
 
+    /** What proving a plugin again would ask, or came to; the kept answers say which capability a pass would clear. */
+    public function reproof(APluginReproof $proof, bool $agreeable): APluginReproofAsShown
+    {
+        return new APluginReproofAsShown(
+            plugin: $proof->plugin(),
+            isAReading: $proof->isAReading(),
+            agreeable: $agreeable,
+            headline: match (true) {
+                $proof->isAReading() => 'plugins.proof_reading',
+                $proof->wasCleared() => 'plugins.proved_it',
+                default => 'plugins.not_proved',
+            },
+            proofs: $this->proofs($proof->proofs()),
+            kept: $this->outOfContract($proof->kept()),
+        );
+    }
+
     /**
      * Each service left unapproved to take its privileged shape, as a refusal names it.
      *
@@ -294,6 +304,28 @@ final readonly class HowAPluginAccountReads
         }
 
         return $listed;
+    }
+
+    /**
+     * Each proof, what it asks, what it establishes, and what it came to.
+     *
+     * @return list<AProofAsShown>
+     */
+    private function proofs(TheProofs $proofs): array
+    {
+        $shown = [];
+
+        foreach ($proofs as $proof) {
+            $shown[] = new AProofAsShown(
+                establishes: $proof->establishes(),
+                asks: $proof->asks(),
+                why: $proof->why(),
+                cameToSaid: $proof->cameTo()->says()->saidOnTheScreen(),
+                said: $this->lines($proof->cameTo()->said()),
+            );
+        }
+
+        return $shown;
     }
 
     /**

@@ -268,6 +268,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     // never what is in the fields when it is tapped.
     'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     'household-allow' => 'rehearses a change to what the household or one member may ask for, and makes it only as that rehearsal was asked',
+    'plugin-prove' => 'reads what proving a plugin again would ask, and proves it only carrying back the offer that reading named',
     'adopt' => 'rehearses keeping the operator\'s own edits as the expected state, and adopts them only against that rehearsal',
     'switch' => 'rehearses making the forms chosen from the stack\'s own list the active set, and makes it only as that rehearsal was asked',
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',

@@ -5,10 +5,13 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APluginActWasNotRehearsed;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginInstallAgreed;
+use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\APluginRemovalAgreed;
+use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -183,6 +186,22 @@ function everythingAPluginRemovalSays(APluginRemoval $removal): string
     ]);
 }
 
+/** Everything proving a plugin again says, folded to lines. */
+function everythingAProofSays(APluginReproof $proof): string
+{
+    $lines = [sprintf('proof of %s, %s, %s', $proof->plugin(), $proof->isAReading() ? 'a reading' : 'asked', $proof->wasCleared() ? 'cleared' : 'not cleared')];
+
+    foreach ($proof->proofs() as $one) {
+        $lines[] = sprintf('proves %s by %s: %s', $one->establishes(), $one->asks(), $one->cameTo()->says()->value);
+    }
+
+    foreach ($proof->kept() as $kept) {
+        $lines[] = sprintf('kept %s/%s: %s', $kept->capability(), $kept->operation(), $kept->why());
+    }
+
+    return implode("\n", $lines);
+}
+
 /** Everything the stack says of its plugins, folded to lines, so two answers can be compared. */
 function everythingThePluginsSay(ThePlugins $plugins): string
 {
@@ -225,6 +244,7 @@ function everythingThePluginsSay(ThePlugins $plugins): string
         install: static fn(APluginInstall $install): TheWordCarriedOut => new TheWordCarriedOut(everythingTheInstallSays($install)),
         update: static fn(AnUpdate $update): TheWordCarriedOut => new TheWordCarriedOut(everythingTheUpdateSays($update)),
         removal: static fn(APluginRemoval $removal): TheWordCarriedOut => new TheWordCarriedOut(everythingAPluginRemovalSays($removal)),
+        proof: static fn(APluginReproof $proof): TheWordCarriedOut => new TheWordCarriedOut(everythingAProofSays($proof)),
     )->said;
 
     return implode("\n", $lines);
@@ -614,6 +634,44 @@ it('says the stack has no outcome for work it no longer knows, and work still go
         ->and(everythingExtendingItSays(AStackThatExtendsItself::listing(APluginAsItArrives::theListing())->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1'))))->toBe('ended');
 });
 
+/** @param list<string> $said */
+it('reads what proving a plugin again would ask, and what it came to once asked', function (bool $asked, bool $cleared, array $said): void {
+    $read = MockResponse::make((string) json_encode(APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire($asked, $cleared))));
+
+    foreach (everyWayOfExtendingIt(APluginAsItArrives::theProof($asked, $cleared), aPluginJob(), $read) as $which => $make) {
+        $extending = $make();
+
+        expect(everythingExtendingItSays($extending->readProving(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated())))->toBe('underway j-1', $which)
+            ->and(array_slice(explode("\n", everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1')))), -count($said)))->toBe($said, $which);
+    }
+})->with([
+    'a reading' => [false, false, [sprintf('agreement %s', APluginAsItArrives::AGREEMENT), 'proof of tdarr, a reading, not cleared', 'proves It answers on its port by GET /api/status: not_asked', 'kept transcoding/queue: It answered with a field its contract does not have']],
+    'a proof that held' => [true, true, ['agreement ', 'proof of tdarr, asked, cleared', 'proves It answers on its port by GET /api/status: passed']],
+    'a proof that did not hold' => [true, false, ['agreement ', 'proof of tdarr, asked, not cleared', 'proves It answers on its port by GET /api/status: failed', 'kept transcoding/queue: It answered with a field its contract does not have']],
+]);
+
+it('asks a proof again with the plugin alone, and the yes carrying back the offer the reading named', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = [$asked->getRequest()->resolveEndpoint(), $asked->body()?->all(), $asked->headers()->get('Idempotency-Key') !== null];
+
+            return aPluginJob();
+        },
+    ]);
+
+    $extending = new Extenders(new PinnedClients(), SequencedEntropy::counting());
+    $extending->readProving(aStackToExtend(), theSessionPluginsAreAskedOn(), aTdarrThatCanBeUpdated());
+    $extending->prove(aStackToExtend(), theSessionPluginsAreAskedOn(), APluginProofAgreed::after(APluginAsItArrives::theProof(), aTdarrThatCanBeUpdated()));
+
+    expect($sent)->toBe([
+        ['/api/actions/plugin-prove', ['offer' => null, 'plugin' => 'tdarr'], true],
+        ['/api/actions/plugin-prove', ['offer' => APluginAsItArrives::AGREEMENT, 'plugin' => 'tdarr'], true],
+    ])
+        ->and(static fn(): APluginProofAgreed => APluginProofAgreed::after(APluginAsItArrives::theProof(asked: true), aTdarrThatCanBeUpdated()))->toThrow(APluginActWasNotRehearsed::class);
+});
+
 it('stands in for a stack with payloads the contract would accept', function (): void {
     foreach ([
         APluginAsItArrives::theAnswer(null),
@@ -626,6 +684,9 @@ it('stands in for a stack with payloads the contract would accept', function ():
         APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aRemovalReadingOnTheWire()),
         APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aPartialRemovalOnTheWire()),
         APluginAsItArrives::theAnswerAbout('removal', APluginAsItArrives::aRemovalOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire()),
+        APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire(asked: true, cleared: true)),
+        APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire(asked: true)),
     ] as $answer) {
         expect(WhatTheContractAccepts::complaintsAbout('PluginsEnvelope', $answer))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
