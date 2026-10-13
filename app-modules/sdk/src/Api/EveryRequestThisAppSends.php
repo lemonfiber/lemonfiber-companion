@@ -23,6 +23,7 @@ use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\ForgettingWhatIsKept;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\MovingInBy;
+use Modules\Kernel\Api\SwitchingTheForms;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
@@ -105,7 +106,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     {
         $cases = [
             ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(),
-            ...MovingInBy::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
+            ...MovingInBy::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),
             ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),

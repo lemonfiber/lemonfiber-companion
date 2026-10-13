@@ -48,7 +48,7 @@ const NOT_SENT_BECAUSE = [
  */
 const NOT_SENT_YET = [
     'adopt', 'diagnose', 'plugin-prove',
-    'search', 'space', 'switch',
+    'search', 'space',
 ];
 
 /**

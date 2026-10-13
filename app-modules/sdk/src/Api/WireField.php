@@ -186,6 +186,12 @@ enum WireField: string implements NamesAWireField
     case Stopped = 'stopped';
 
     /**
+     * Started: whether an install started the command it acted on, on the
+     * `hosting` envelope, and what a switch started, on the `lifecycle`.
+     */
+    case Started = 'started';
+
+    /**
      * What is gone: what became of an answered offer to stop seeding, absent
      * where the offer is all there is, and what taking lemonfiber off removed,
      * by the name its reading gave it.

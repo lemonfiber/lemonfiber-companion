@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\SwitchingTheForms')
 @use('Modules\Kernel\Api\WhatToDoWithTheDownloads')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
@@ -91,6 +92,85 @@
                  again* fixes. --}}
             <x-design::body>{{ __('health.no_forms_at_all') }}</x-design::body>
         @endforelse
+
+        @unless ($this->forms()->names === [])
+            <x-operator::heading>{{ __('stacks.switch.title') }}</x-operator::heading>
+            <x-design::body>{{ __('stacks.switch.what_it_does') }}</x-design::body>
+            <x-design::chips>
+                @forelse ($this->forms()->names as $form)
+                    <x-design::chip :label="$form" :tap="$this->tapping('toggleForm', $form)" :chosen="in_array($form, $this->switchingTo, true)" />
+                @empty
+                    {{-- Unreachable: drawn only where the stack declares forms. --}}
+                @endforelse
+            </x-design::chips>
+
+            @if ($this->howTheSwitchIsGoing()->notAskable !== '')
+                <x-design::notice>
+                    <x-design::strong>{{ __($this->howTheSwitchIsGoing()->notAskable) }}</x-design::strong>
+                </x-design::notice>
+            @endif
+
+            @if ($this->howTheSwitchIsGoing()->went->cameBack())
+                @if ($this->howTheSwitchIsGoing()->isWorking)
+                    <x-design::standing :said="__('stacks.switch.working')" tone="working" />
+                @elseif ($this->howTheSwitchIsGoing()->hasEnded)
+                    <x-design::notice tone="unknown">
+                        <x-design::strong>{{ __('stacks.switch.no_outcome') }}</x-design::strong>
+                    </x-design::notice>
+                @elseif ($this->howTheSwitchIsGoing()->refused !== null)
+                    <x-design::notice>
+                        <x-design::strong>{{ __('stacks.switch.refused') }}</x-design::strong>
+                        <x-operator::refused-in-its-words :refused="$this->howTheSwitchIsGoing()->refused" />
+                    </x-design::notice>
+                @elseif ($this->howTheSwitchIsGoing()->change !== null)
+                    <x-design::notice>
+                        <x-design::strong>{{ __($this->howTheSwitchIsGoing()->change->didSaid) }}</x-design::strong>
+                    </x-design::notice>
+                    <x-design::section :label="__('stacks.switch.stops')">
+                        @forelse ($this->howTheSwitchIsGoing()->change->stopped as $name)
+                            <x-design::row :headline="$name" />
+                        @empty
+                            <x-design::row :headline="__('stacks.switch.nothing_stops')" />
+                        @endforelse
+                    </x-design::section>
+                    <x-design::section :label="__('stacks.switch.starts')">
+                        @forelse ($this->howTheSwitchIsGoing()->change->started as $name)
+                            <x-design::row :headline="$name" />
+                        @empty
+                            <x-design::row :headline="__('stacks.switch.nothing_starts')" />
+                        @endforelse
+                    </x-design::section>
+                    <x-design::section :label="__('stacks.switch.keeps')">
+                        @forelse ($this->howTheSwitchIsGoing()->change->kept as $name)
+                            <x-design::row :headline="$name" :supporting="__('stacks.switch.not_restarted')" />
+                        @empty
+                            <x-design::row :headline="__('stacks.switch.nothing_kept')" />
+                        @endforelse
+                    </x-design::section>
+                    @if ($this->howTheSwitchIsGoing()->change->stopCommand !== '')
+                        <x-design::note>{{ __('stacks.switch.stopped_with') }}</x-design::note>
+                        <x-design::verbatim>{{ $this->howTheSwitchIsGoing()->change->stopCommand }}</x-design::verbatim>
+                    @endif
+                    @if ($this->howTheSwitchIsGoing()->change->mayBeApplied)
+                        <x-operator::offered-action :label="__('stacks.switch.apply')" tap="makeTheSwitch()" :offer="$this->offered(SwitchingTheForms::Switch)" />
+                    @endif
+                @endif
+
+                @unless ($this->howTheSwitchIsGoing()->isWorking)
+                    <x-operator::offered-action :label="__('stacks.switch.rehearse')" tap="rehearseTheSwitch()" tone="tonal" :offer="$this->offered(SwitchingTheForms::Switch)" />
+                @endunless
+            @else
+                <x-design::notice tone="unknown">
+                    <x-design::strong>{{ __('stacks.switch.unread') }}</x-design::strong>
+                    @if ($this->howTheSwitchIsGoing()->went->isSignedIn)
+                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->went->met, $this->howTheSwitchIsGoing()->went->filling()) }}</x-design::body>
+                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->went->remedy, $this->howTheSwitchIsGoing()->went->filling()) }}</x-design::body>
+                    @else
+                        <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
+                    @endif
+                </x-design::notice>
+            @endif
+        @endunless
     @endif
 
     {{-- What the stack could run and no running form asked for, folded away

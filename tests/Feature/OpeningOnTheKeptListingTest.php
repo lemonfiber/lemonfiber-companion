@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -32,6 +33,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
+use Tests\Support\Fakes\AStackThatSwitches;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatIsKeptOfServices;
@@ -105,6 +107,7 @@ function theAtticsServices(AStackThatSupervises $stack, KeepingWhatItRuns $kept,
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
         $kept,
+        AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::ended()),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

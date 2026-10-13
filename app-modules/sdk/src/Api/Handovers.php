@@ -52,7 +52,7 @@ final readonly class Handovers
         $changed = self::changed($data);
         $name = self::word($changed);
         $row = self::row($data, $name);
-        $started = self::flag($changed, HostingField::Started);
+        $started = self::flag($changed, WireField::Started);
 
         if (self::flag($changed, WireField::Installed)) {
             return self::installed($changed, $row, $name);
@@ -84,7 +84,7 @@ final readonly class Handovers
             return WhatTheHandoverDid::installingWithNowhereSaid(
                 name: $name,
                 rehearsed: self::flag($changed, WireField::Rehearsed),
-                started: self::flag($changed, HostingField::Started),
+                started: self::flag($changed, WireField::Started),
                 standing: self::standing($row),
                 touched: self::touched($changed),
             );
@@ -93,7 +93,7 @@ final readonly class Handovers
         return WhatTheHandoverDid::installing(
             name: $name,
             rehearsed: self::flag($changed, WireField::Rehearsed),
-            started: self::flag($changed, HostingField::Started),
+            started: self::flag($changed, WireField::Started),
             standing: self::standing($row),
             output: $output,
             touched: self::touched($changed),

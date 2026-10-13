@@ -281,7 +281,9 @@ final readonly class UnreadOnEnvelopesMToZ
         ],
         [
             'path' => 'StatusEnvelope.disturbs.switching',
-            'because' => 'The same, for switching. A verb this surface does not offer.',
+            'because' => 'What switching would take away, read off the status. A switch is offered by its own '
+                . 'rehearsal, which names each service it would stop, start and keep (`N18-R11`); this bound '
+                . 'beside it would be a second statement of the same cost, able to disagree with the first.',
         ],
         [
             'path' => 'StatusEnvelope.services[].profile',

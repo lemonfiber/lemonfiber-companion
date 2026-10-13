@@ -44,9 +44,6 @@ enum HostingField: string implements NamesAWireField
      */
     case Output = 'output';
 
-    /** Whether an install started the command, which only installing does. */
-    case Started = 'started';
-
     /** Every file an install wrote or a removal took back. */
     case Touched = 'touched';
 

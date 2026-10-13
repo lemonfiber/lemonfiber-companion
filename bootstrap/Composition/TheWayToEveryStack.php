@@ -71,6 +71,7 @@ use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\Switching;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
@@ -148,6 +149,7 @@ use Modules\Sdk\Api\StartLines;
 use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
+use Modules\Sdk\Api\Switchers;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
@@ -356,6 +358,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
         $this->app->bind(Accepting::class, Acceptors::class);
         $this->app->bind(Forgetting::class, Forgetters::class);
+        $this->app->bind(Switching::class, Switchers::class);
 
         // What the stack keeps and the copies it holds, read beside the rest
         // and bound for the same reason.
