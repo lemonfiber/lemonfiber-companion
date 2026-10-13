@@ -42,21 +42,29 @@ final readonly class HowAWarningReads
 
     private function of(Finding $finding): TheWarningTurnedOutToBe
     {
-        $stands = WhereAChoiceStands::of($finding);
-
         return $finding->said()->either(
             nothingWrong: fn(): TheWarningTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
-            wentWrong: fn(Code $code, string $meaning, Remedies $remedies): TheWarningTurnedOutToBe => $stands === WhereAChoiceStands::NotAChoice
-                ? $this->without(HowTheReadingWent::itCameBack())
-                : new TheWarningTurnedOutToBe(
-                    went: HowTheReadingWent::itCameBack(),
-                    title: $finding->title(),
-                    meaning: $meaning,
-                    remedies: $remedies,
-                    check: $stands === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
-                    accepted: $stands === WhereAChoiceStands::Accepted,
-                ),
+            wentWrong: fn(Code $code, string $meaning, Remedies $remedies): TheWarningTurnedOutToBe => $this->raised($finding, $meaning, $remedies),
             couldNotSay: fn(): TheWarningTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
+        );
+    }
+
+    /** A finding that went wrong, drawn as a choice only where it is one, and offered only where it is unanswered. */
+    private function raised(Finding $finding, string $meaning, Remedies $remedies): TheWarningTurnedOutToBe
+    {
+        $stands = WhereAChoiceStands::of($finding);
+
+        if ($stands === WhereAChoiceStands::NotAChoice) {
+            return $this->without(HowTheReadingWent::itCameBack());
+        }
+
+        return new TheWarningTurnedOutToBe(
+            went: HowTheReadingWent::itCameBack(),
+            title: $finding->title(),
+            meaning: $meaning,
+            remedies: $remedies,
+            check: $stands === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
+            accepted: $stands === WhereAChoiceStands::Accepted,
         );
     }
 
