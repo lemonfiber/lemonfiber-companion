@@ -125,6 +125,25 @@ enum Call: string
     /** Take one value out, whether or not it was ever in. */
     case Forget = 'Lemonfiber.Storage.Forget';
 
+    /** Say where this phone could keep the key that proves its operator, or why it could not. Asks nothing of anybody. */
+    case PhoneKeyWhere = 'Lemonfiber.PhoneKey.Where';
+
+    /**
+     * Make that key in hardware, replacing any under the same alias, and answer its public half
+     * and the platform's attestation of where it lives.
+     */
+    case PhoneKeyMake = 'Lemonfiber.PhoneKey.Make';
+
+    /**
+     * Sign a text with that key once the operator shows their face or fingerprint.
+     *
+     * Answers once the prompt is down, as a scan does, so the signature comes back in the answer.
+     */
+    case PhoneKeySign = 'Lemonfiber.PhoneKey.Sign';
+
+    /** Throw that key away, whether or not it was there. */
+    case PhoneKeyForget = 'Lemonfiber.PhoneKey.Forget';
+
     /**
      * Offer a report to whoever the operator picks, and answer whether the
      * sheet was reached.

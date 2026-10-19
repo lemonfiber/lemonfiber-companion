@@ -42,6 +42,7 @@ let package = Package(
                 "PlayerFunctions.swift",
                 "ArtworkImages.swift",
                 "ArtworkFunctions.swift",
+                "PhoneKeyFunctions.swift",
             ]
         ),
         .testTarget(
@@ -188,6 +189,16 @@ let package = Package(
             name: "ExtraSubtitlesTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/ExtraSubtitlesTests"
+        ),
+        .testTarget(
+            name: "PhoneKeyRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PhoneKeyRuleTests"
+        ),
+        .testTarget(
+            name: "PhoneKeyEnclaveTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PhoneKeyEnclaveTests"
         ),
         .testTarget(
             name: "RelayRuleTests",

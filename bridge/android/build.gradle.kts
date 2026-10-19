@@ -101,6 +101,7 @@ sourceSets {
             "PlayerActivity.kt",
             "PlayerFunctions.kt",
             "ArtworkFunctions.kt",
+            "PhoneKeyFunctions.kt",
         )
     }
     test {
