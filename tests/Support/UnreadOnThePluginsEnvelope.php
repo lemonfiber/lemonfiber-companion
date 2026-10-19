@@ -271,6 +271,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Every core capability the plugin\'s services fill. Removing a plugin reads it, to say what would be left unfilled (`N25-R6`), and removal comes with updating, after installing.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.run_proofs',
+            'because' => 'The proofs that run the image\'s own program, as the plugin declares them, kept so a proof again can run them without its source. What running one came to arrives in `proofs` beside the others, which is what is read and drawn.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.recipes[].steps[].adapter.owner',
             'because' => 'Whose adapter a step reaches through, which the contract fixes to lemonfiber. The screen says each adapter is lemonfiber\'s and not the plugin\'s (`N20-R6`), the one answer the field can give.',
         ],
@@ -313,6 +317,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.installed[].provides',
             'because' => 'Every core capability the plugin\'s services fill. Removing a plugin reads it, to say what would be left unfilled (`N25-R6`), and removal comes with updating, after installing.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].run_proofs',
+            'because' => 'As `PluginsEnvelope.install.would.run_proofs`: what a proof again runs is answered in that proof\'s own account, which is read and drawn (`N25-R15`).',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].recipes[].steps[].adapter.owner',
@@ -673,6 +681,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.provides',
             'because' => 'As `PluginsEnvelope.install.would.provides`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.run_proofs',
+            'because' => 'As `PluginsEnvelope.install.would.run_proofs`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.recipes[].steps[].adapter.owner',
