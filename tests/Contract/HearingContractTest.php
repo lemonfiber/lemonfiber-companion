@@ -11,9 +11,6 @@ use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
-use Modules\Kernel\Api\AServiceReadingIt;
-use Modules\Kernel\Api\ASetting;
-use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Check;
@@ -31,7 +28,6 @@ use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -41,10 +37,6 @@ use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
-use Modules\Kernel\Api\TheSecretsRead;
-use Modules\Kernel\Api\TheServicesReadingIt;
-use Modules\Kernel\Api\TheServicesSettings;
-use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatNothingFills;
@@ -55,7 +47,6 @@ use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoPutItThere;
-use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
 use Psr\Log\NullLogger;
@@ -65,6 +56,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\NotesKeptInMemory;
+use Tests\Support\TheStreamListenedTo;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
@@ -84,23 +76,6 @@ use Tests\Support\WhereEachOpenResumed;
 afterEach(function (): void {
     MockClient::destroyGlobal();
 });
-
-/** A stack to listen to, reachable and pinned so the adapter will build a client. */
-function aStackToListenTo(): Stack
-{
-    return Stack::of(
-        StackId::of(Nonce::of(str_repeat('c', Nonce::SHORTEST))),
-        StackName::of('The attic'),
-        Address::of('https://192.168.1.43:8443'),
-        Fingerprint::of(str_repeat('d', Fingerprint::CHARACTERS)),
-    );
-}
-
-/** The session it is listened to with. */
-function theSessionItListensWith(): Session
-{
-    return Session::of('a-session-not-a-secret');
-}
 
 /**
  * The health summary a stack with a filling disk sends.
@@ -162,12 +137,6 @@ function aDashboardCarrying(array $health, array $stuck = []): array
     ];
 }
 
-/** One event as the core frames it. */
-function anEvent(string $kind, string $data): string
-{
-    return sprintf("id: run-1\nevent: %s\ndata: %s\n\n", $kind, $data);
-}
-
 /**
  * One dashboard event carrying one health summary, and what stopped moving.
  *
@@ -176,7 +145,7 @@ function anEvent(string $kind, string $data): string
  */
 function aDashboardEvent(array $health, array $stuck = []): string
 {
-    return anEvent('dashboard', json_encode(aDashboardCarrying($health, $stuck), JSON_THROW_ON_ERROR));
+    return TheStreamListenedTo::anEvent('dashboard', json_encode(aDashboardCarrying($health, $stuck), JSON_THROW_ON_ERROR));
 }
 
 /** The summary both implementations answer with, where a filling stack speaks. */
@@ -218,26 +187,6 @@ function aStoppedQueueRow(): array
 function theHealthySummary(): TheHealthSummary
 {
     return TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing());
-}
-
-/**
- * Both ways of listening, each set up to hear the same thing.
- *
- * @param  list<MockResponse>  $streams  what the far end answers each time the adapter opens the stream
- * @param  list<WhatWasHeard>  $script   what the fake is scripted to answer, wake by wake
- * @return array<string, Closure(): Hearing>
- */
-function everyWayOfListening(array $streams, array $script): array
-{
-    return [
-        'the fake' => static fn(): Hearing => AStackThatSpeaksUp::thenEnding(...$script),
-        'the adapter' => static function () use ($streams): Hearing {
-            MockClient::destroyGlobal();
-            MockClient::global($streams);
-
-            return new Listeners(new PinnedClients(), new NullLogger());
-        },
-    ];
 }
 
 /** Every field of what was heard, as one line, whichever arm it took. */
@@ -301,16 +250,16 @@ function whatWakesHear(Hearing $hearing, int $wakes): array
     $heard = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard[] = whatWasHeardAsAWord($hearing->howItIs(aStackToListenTo(), theSessionItListensWith()));
+        $heard[] = whatWasHeardAsAWord($hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession()));
     }
 
     return $heard;
 }
 
 it('hears the summary a stack says, and then that the stream ended', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aDashboardEvent(whatAFillingStackSaysOfItsHealth()))],
-        [WhatWasHeard::said(theFillingSummary())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theFillingSummary())]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 2))->toBe([
             'degraded, 1 wanting, worst "The disk is nearly full", {disk.space/warning/The disk is nearly full/New downloads will start failing soon/[Make room|Add a disk]/[Imports are failing]}',
@@ -324,9 +273,9 @@ it('hears a healthy stack name nothing as its worst, whether it leaves the name 
     unset($leftOut['worst']);
 
     foreach ([whatAHealthyStackSaysOfItsHealth(), $leftOut] as $health) {
-        foreach (everyWayOfListening(
+        foreach (TheStreamListenedTo::everyWay(
             [MockResponse::make(aDashboardEvent($health))],
-            [WhatWasHeard::said(theHealthySummary())],
+            AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())]),
         ) as $which => $make) {
             expect(whatWakesHear($make(), 1))->toBe(['healthy, 0 wanting, worst "", {}'], $which);
         }
@@ -334,19 +283,19 @@ it('hears a healthy stack name nothing as its worst, whether it leaves the name 
 });
 
 it('hears only the last summary of everything that arrived since the last wake', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s', aDashboardEvent(whatAFillingStackSaysOfItsHealth()), aDashboardEvent(whatAHealthyStackSaysOfItsHealth())))],
-        [WhatWasHeard::said(theHealthySummary())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 1))->toBe(['healthy, 0 wanting, worst "", {}'], $which);
     }
 });
 
 it('hears a sign of life in a heartbeat, and in an event that is not a summary', function (): void {
-    foreach ([": beat\n\n", anEvent('step', '{"api_version":1,"kind":"step","data":{}}')] as $said) {
-        foreach (everyWayOfListening(
+    foreach ([": beat\n\n", TheStreamListenedTo::anEvent('step', '{"api_version":1,"kind":"step","data":{}}')] as $said) {
+        foreach (TheStreamListenedTo::everyWay(
             [MockResponse::make($said)],
-            [WhatWasHeard::aSignOfLife()],
+            AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()]),
         ) as $which => $make) {
             expect(whatWakesHear($make(), 2))->toBe(['alive', 'closed'], $which);
         }
@@ -354,9 +303,9 @@ it('hears a sign of life in a heartbeat, and in an event that is not a summary',
 });
 
 it('hears nothing from a stream that has said nothing yet', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make('')],
-        [WhatWasHeard::nothing()],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::nothing()]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 2))->toBe(['nothing', 'closed'], $which);
     }
@@ -375,7 +324,7 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     ];
 
     foreach ($table as [$answered, $why]) {
-        foreach (everyWayOfListening($answered, [WhatWasHeard::met($why)]) as $which => $make) {
+        foreach (TheStreamListenedTo::everyWay($answered, AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::met($why)])) as $which => $make) {
             expect(whatWakesHear($make(), 1))->toBe([$why->kind()->value], sprintf('%s, %s', $which, $why->kind()->value));
         }
     }
@@ -388,15 +337,15 @@ it('cannot hear a summary it cannot read, and says so as an answer it could not 
     $aRowForNothing = [...aStoppedQueueRow(), 'items' => 0];
 
     foreach ([
-        anEvent('dashboard', 'not json at all'),
+        TheStreamListenedTo::anEvent('dashboard', 'not json at all'),
         aDashboardEvent($unknownWord),
         aDashboardEvent($belowNothing),
         aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [$anUnknownStall]),
         aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [$aRowForNothing]),
     ] as $said) {
-        foreach (everyWayOfListening(
+        foreach (TheStreamListenedTo::everyWay(
             [MockResponse::make($said)],
-            [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
+            AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))]),
         ) as $which => $make) {
             expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
         }
@@ -404,12 +353,12 @@ it('cannot hear a summary it cannot read, and says so as an answer it could not 
 });
 
 it('closes when let go of, and opens again the next time it is asked', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [
             MockResponse::make(aDashboardEvent(whatAFillingStackSaysOfItsHealth())),
             MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
         ],
-        [WhatWasHeard::said(theFillingSummary()), WhatWasHeard::said(theHealthySummary())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theFillingSummary()), WhatWasHeard::said(theHealthySummary())]),
     ) as $which => $make) {
         $hearing = $make();
 
@@ -452,8 +401,8 @@ it('holds one stream for each stack it is asked about, and opens neither again',
     $stack = MockClient::global([MockResponse::make(''), MockResponse::make('')]);
     $hearing = new Listeners(new PinnedClients(), new NullLogger());
 
-    foreach ([aStackToListenTo(), anotherStackToListenTo(), aStackToListenTo(), anotherStackToListenTo()] as $asked) {
-        $hearing->howItIs($asked, theSessionItListensWith());
+    foreach ([TheStreamListenedTo::aStack(), anotherStackToListenTo(), TheStreamListenedTo::aStack(), anotherStackToListenTo()] as $asked) {
+        $hearing->howItIs($asked, TheStreamListenedTo::theSession());
     }
 
     $stack->assertSentCount(2);
@@ -464,9 +413,9 @@ it('leaves every other stack\'s stream open when one stack could not be heard', 
     $stack = MockClient::global([MockResponse::make(''), MockResponse::make('{"error":"gone"}', 500)]);
     $hearing = new Listeners(new PinnedClients(), new NullLogger());
 
-    $first = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
-    $second = $hearing->howItIs(anotherStackToListenTo(), theSessionItListensWith());
-    $again = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+    $first = $hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
+    $second = $hearing->howItIs(anotherStackToListenTo(), TheStreamListenedTo::theSession());
+    $again = $hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
 
     // The first stack's stream is the one it opened: a mocked stream ends once
     // its bytes are read, and a stream opened again would have been a third
@@ -500,7 +449,7 @@ it('resumes a stream it could not read after the last event it carried, and forg
     // let go of every stream starts again from the start.
     MockClient::destroyGlobal();
     $stack = MockClient::global([
-        MockResponse::make(anEvent('dashboard', 'not an envelope')),
+        MockResponse::make(TheStreamListenedTo::anEvent('dashboard', 'not an envelope')),
         MockResponse::make(''),
         MockResponse::make(''),
     ]);
@@ -560,9 +509,9 @@ it('stands in for a stack with dashboards the contract would accept', function (
 it('hears what stopped moving with the summary, in the order the stack sent it', function (): void {
     $slow = ['stall' => 'slow', 'name' => 'Dune', 'items' => 1, 'blocking' => null, 'held_for' => 600];
 
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [aStoppedQueueRow(), $slow]))],
-        [WhatWasHeard::said(TheHealthSummary::of(
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(TheHealthSummary::of(
             HowItStands::Healthy,
             0,
             '',
@@ -570,7 +519,7 @@ it('hears what stopped moving with the summary, in the order the stack sent it',
                 AStoppage::of(HowItStopped::RepeatedImportFailure, 'Permission denied on /media/films', 20, 'Access to the path is denied.', 10_800),
                 AStoppage::of(HowItStopped::Slow, 'Dune', 1, '', 600),
             ),
-        ))],
+        ))]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 1))->toBe([
             'healthy, 0 wanting, worst "", {}, stopped {repeated-import-failure/Permission denied on /media/films/20/Access to the path is denied./10800s;slow/Dune/1//600s}',
@@ -606,13 +555,13 @@ function aNewestNamed(array $changed = []): array
  */
 function aNewsEvent(array $changed = []): string
 {
-    return anEvent('news', json_encode(aNewestNamed($changed), JSON_THROW_ON_ERROR));
+    return TheStreamListenedTo::anEvent('news', json_encode(aNewestNamed($changed), JSON_THROW_ON_ERROR));
 }
 
 /** One news event carrying something other than a record as its data. */
 function aNewsEventWhoseDataIs(string $data): string
 {
-    return anEvent('news', json_encode([...aNewestNamed(), 'data' => $data], JSON_THROW_ON_ERROR));
+    return TheStreamListenedTo::anEvent('news', json_encode([...aNewestNamed(), 'data' => $data], JSON_THROW_ON_ERROR));
 }
 
 /** What both implementations answer with, where a stack names that newest. */
@@ -667,7 +616,7 @@ function whatWakesHearNamed(Hearing $hearing, int $wakes): array
     $named = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+        $heard = $hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
         $named[] = sprintf('%s; %s', whatWasHeardAsAWord($heard), whatWasNamedAsAWord($heard));
     }
 
@@ -675,9 +624,9 @@ function whatWakesHearNamed(Hearing $hearing, int $wakes): array
 }
 
 it('hears what a stack names as newest beside the summary, and nothing named where it names nothing', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s', aDashboardEvent(whatAHealthyStackSaysOfItsHealth()), aNewsEvent()))],
-        [WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())]),
     ) as $which => $make) {
         expect(whatWakesHearNamed($make(), 2))->toBe([
             'healthy, 0 wanting, worst "", {}; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]',
@@ -687,27 +636,27 @@ it('hears what a stack names as newest beside the summary, and nothing named whe
 });
 
 it('hears what a stack names as newest on its own as a sign of life, and only the last of it', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s', aNewsEvent(['updates' => ['2.3.0']]), aNewsEvent()))],
-        [WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed())]),
     ) as $which => $make) {
         expect(whatWakesHearNamed($make(), 1))->toBe(['alive; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]'], $which);
     }
 });
 
 it('hears a kind the stack could not read as unread, whatever its list holds', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aNewsEvent(['unread' => ['updates'], 'updates' => []]))],
-        [WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed(updatesRead: false))],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->naming(theNewestThatStackNamed(updatesRead: false))]),
     ) as $which => $make) {
         expect(whatWakesHearNamed($make(), 1))->toBe(['alive; updates unread, requests [12|9], problems [disk.space@1759400000]'], $which);
     }
 });
 
 it('cannot hear a newest it cannot read, and says so as an answer it could not read', function (array $changed): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aNewsEvent($changed))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
@@ -724,9 +673,9 @@ it('cannot hear a newest it cannot read, and says so as an answer it could not r
 ]);
 
 it('cannot hear a newest whose data is not a record, and says so as an answer it could not read', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aNewsEventWhoseDataIs('nothing new'))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
@@ -767,7 +716,7 @@ function aWiringSaid(string $answering = 'qbittorrent', array $changed = []): ar
  */
 function aWiringEvent(string $answering = 'qbittorrent', array $changed = []): string
 {
-    return anEvent('wiring', json_encode(aWiringSaid($answering, $changed), JSON_THROW_ON_ERROR));
+    return TheStreamListenedTo::anEvent('wiring', json_encode(aWiringSaid($answering, $changed), JSON_THROW_ON_ERROR));
 }
 
 /** What both implementations answer with, where a stack says that wiring. */
@@ -824,7 +773,7 @@ function whatWakesHearWired(Hearing $hearing, int $wakes): array
     $wired = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+        $heard = $hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
         $wired[] = sprintf('%s; %s; %s', whatWasHeardAsAWord($heard), whatWasNamedAsAWord($heard), whatWasWiredAsAWord($heard));
     }
 
@@ -832,9 +781,9 @@ function whatWakesHearWired(Hearing $hearing, int $wakes): array
 }
 
 it('hears what answers what beside the summary and the newest, and nothing wired where it says nothing of it', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s%s', aDashboardEvent(whatAHealthyStackSaysOfItsHealth()), aNewsEvent(), aWiringEvent()))],
-        [WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())->wiredAs(theWiringThatStackSaid())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())->naming(theNewestThatStackNamed())->wiredAs(theWiringThatStackSaid())]),
     ) as $which => $make) {
         expect(whatWakesHearWired($make(), 2))->toBe([
             'healthy, 0 wanting, worst "", {}; updates [2.5.0|2.4.0], requests [12|9], problems [disk.space@1759400000]; wired [sonarr asks download-client of qbittorrent], unfilled [lidarr lacks music-tagger]',
@@ -844,18 +793,18 @@ it('hears what answers what beside the summary and the newest, and nothing wired
 });
 
 it('hears what answers what on its own as a sign of life, and only the last of it', function (): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s', aWiringEvent('transmission'), aWiringEvent()))],
-        [WhatWasHeard::aSignOfLife()->wiredAs(theWiringThatStackSaid())],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->wiredAs(theWiringThatStackSaid())]),
     ) as $which => $make) {
         expect(whatWakesHearWired($make(), 1))->toBe(['alive; nothing named; wired [sonarr asks download-client of qbittorrent], unfilled [lidarr lacks music-tagger]'], $which);
     }
 });
 
 it('cannot hear a wiring it cannot read, and says so as an answer it could not read', function (array $changed): void {
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(aWiringEvent(changed: $changed))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))]),
     ) as $which => $make) {
         expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
     }
@@ -867,88 +816,6 @@ it('cannot hear a wiring it cannot read, and says so as an answer it could not r
 
 it('stands in for a stack with the wiring it says as the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('WiringEnvelope', aWiringSaid()))
-        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
-});
-
-/**
- * The settings a stack's stream says, changed where a case says.
- *
- * @param  array<mixed>         $changed
- * @return array<string, mixed>
- */
-function theSettingsSaid(array $changed = []): array
-{
-    return [
-        'api_version' => 1,
-        'kind' => 'settings',
-        'data' => [
-            'rehearsed' => false,
-            'settings' => [['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES']], 'value' => 'Belgium']],
-            'secrets' => [],
-            ...$changed,
-        ],
-    ];
-}
-
-/**
- * One settings event as the core frames it.
- *
- * @param array<mixed> $changed
- */
-function aSettingsEvent(array $changed = []): string
-{
-    return anEvent('settings', json_encode(theSettingsSaid($changed), JSON_THROW_ON_ERROR));
-}
-
-/** Every setting what was heard says, as one line. */
-function whatWasSettledAsAWord(WhatWasHeard $heard): string
-{
-    return $heard->theSettings(
-        said: static function (TheServicesSettings $settings): TheWordCarriedOut {
-            $said = [];
-
-            foreach ($settings->settings() as $setting) {
-                $said[] = sprintf('%s=%s', $setting->name(), $setting->value()->said());
-            }
-
-            return new TheWordCarriedOut(implode('|', $said));
-        },
-        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing settled'),
-    )->said;
-}
-
-it('hears the settings the stream says as a sign of life, only the last of them, and nothing settled where it says none', function (): void {
-    $settled = TheServicesSettings::of(
-        TheSettingsRead::these(ASetting::read('vpn.countries', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'SERVER_COUNTRIES', ASettingValue::nothing())), ASettingValue::value('Belgium'))),
-        TheSecretsRead::these(),
-    );
-
-    foreach (everyWayOfListening(
-        [MockResponse::make(sprintf('%s%s', aSettingsEvent(['settings' => []]), aSettingsEvent()))],
-        [WhatWasHeard::aSignOfLife()->settledAs($settled)],
-    ) as $which => $make) {
-        $hearing = $make();
-
-        expect(array_map(whatWasSettledAsAWord(...), [$hearing->howItIs(aStackToListenTo(), theSessionItListensWith()), $hearing->howItIs(aStackToListenTo(), theSessionItListensWith())]))
-            ->toBe(['vpn.countries=Belgium', 'nothing settled'], $which);
-    }
-});
-
-it('cannot hear settings it cannot read, and says so as an answer it could not read', function (array $changed): void {
-    foreach (everyWayOfListening(
-        [MockResponse::make(aSettingsEvent($changed))],
-        [WhatWasHeard::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
-    ) as $which => $make) {
-        expect(whatWakesHear($make(), 1))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value], $which);
-    }
-})->with([
-    'settings that are not a list' => [['settings' => 'all of them']],
-    'a setting with no name' => [['settings' => [['name' => ' ', 'whose' => ['of' => 'core'], 'readers' => []]]]],
-    'a reader with no service' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => ' ', 'variable' => 'DOMAIN']]]]]],
-]);
-
-it('stands in for a stack with the settings it says as the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('SettingsEnvelope', theSettingsSaid()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
 
@@ -985,7 +852,7 @@ function anAlertEnvelope(array $changed = []): array
  */
 function anAlertEvent(array $changed = []): string
 {
-    return anEvent('alert', json_encode(anAlertEnvelope($changed), JSON_THROW_ON_ERROR));
+    return TheStreamListenedTo::anEvent('alert', json_encode(anAlertEnvelope($changed), JSON_THROW_ON_ERROR));
 }
 
 /**
@@ -995,7 +862,7 @@ function anAlertEvent(array $changed = []): string
  */
 function theAlertsAWakeHeard(Hearing $hearing): array
 {
-    return iterator_to_array($hearing->howItIs(aStackToListenTo(), theSessionItListensWith())->theAlerts(), preserve_keys: false);
+    return iterator_to_array($hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->theAlerts(), preserve_keys: false);
 }
 
 it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
@@ -1004,16 +871,16 @@ it('hears every alert a wake carried, in order, beside whatever else it said', f
         AnAlert::unnamed(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved),
     ];
 
-    foreach (everyWayOfListening(
+    foreach (TheStreamListenedTo::everyWay(
         [MockResponse::make(sprintf('%s%s', anAlertEvent(), anAlertEvent(['moment' => 'resolved', 'id' => null])))],
-        [WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(...$raised))],
+        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(...$raised))]),
     ) as $which => $make) {
         expect(theAlertsAWakeHeard($make()))->toEqual($raised, $which);
     }
 });
 
 it('hears no alert where a wake carried none', function (): void {
-    foreach (everyWayOfListening([MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))], [WhatWasHeard::said(theHealthySummary())]) as $which => $make) {
+    foreach (TheStreamListenedTo::everyWay([MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))], AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())])) as $which => $make) {
         expect(theAlertsAWakeHeard($make()))->toBe([], $which);
     }
 });
@@ -1023,7 +890,7 @@ it('skips an alert it cannot read, notes why without what the stack sent, and st
     MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent($changed), anAlertEvent()))]);
     $notes = new NotesKeptInMemory();
 
-    $heard = new Listeners(new PinnedClients(), $notes)->howItIs(aStackToListenTo(), theSessionItListensWith());
+    $heard = new Listeners(new PinnedClients(), $notes)->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
 
     expect(whatWasHeardAsAWord($heard))->toBe('alive')
         ->and(iterator_to_array($heard->theAlerts(), preserve_keys: false))
