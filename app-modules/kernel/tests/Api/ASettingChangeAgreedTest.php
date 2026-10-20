@@ -17,12 +17,13 @@ use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
+use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 
 /** A run of one change, as the stack reported it. */
 function aRunOfOneChange(ASettingChange $change, WhatTheSettingRunDid $did): TheSettingAsChanged
 {
-    return TheSettingAsChanged::said($change, ASettingValue::nothing(), Services::none(), Services::none(), $did, AnOffer::named('an-offer'), '', '', TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these()));
+    return TheSettingAsChanged::said($change, ASettingValue::nothing(), WhatTheChangeReaches::said(Services::none(), Services::none(), '', ''), $did, AnOffer::named('an-offer'), TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these()));
 }
 
 it('agrees to the change a rehearsal described, carrying its offer back', function (): void {

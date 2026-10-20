@@ -76,10 +76,10 @@ final readonly class HowASettingChangeReads
                 value: $report->value()->said(),
                 wasSet: $report->was()->isHeld(),
                 was: $report->was()->said(),
-                restarts: $this->listed($report->restarts()),
-                regenerates: $this->listed($report->regenerates()),
-                consequence: $report->consequence(),
-                unrestarted: $report->unrestarted(),
+                restarts: $this->listed($report->reaches()->restarts()),
+                regenerates: $this->listed($report->reaches()->regenerates()),
+                consequence: $report->reaches()->consequence(),
+                unrestarted: $report->reaches()->unrestarted(),
             ),
         );
     }

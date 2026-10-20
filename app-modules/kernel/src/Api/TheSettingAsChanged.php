@@ -5,48 +5,35 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * What a run of a setting's action came to: the change, what it regenerates and restarts, what the run did, and every setting after it.
+ * What a run of a setting's action came to: the change, what it held before, what it reaches, what the run did, and every setting after it.
  */
 final readonly class TheSettingAsChanged
 {
     private function __construct(
-        private string $setting,
-        private ASettingValue $value,
+        private ASettingChange $change,
         private ASettingValue $was,
-        private Services $regenerates,
-        private Services $restarts,
+        private WhatTheChangeReaches $reaches,
         private WhatTheSettingRunDid $did,
         private AnOffer $offer,
-        private string $consequence,
-        private string $unrestarted,
         private TheServicesSettings $settings,
     ) {}
 
     /** The report, as the stack wrote it. */
-    public static function said(
-        ASettingChange $change,
-        ASettingValue $was,
-        Services $regenerates,
-        Services $restarts,
-        WhatTheSettingRunDid $did,
-        AnOffer $offer,
-        string $consequence,
-        string $unrestarted,
-        TheServicesSettings $settings,
-    ): self {
-        return new self($change->setting(), $change->value(), $was, $regenerates, $restarts, $did, $offer, $consequence, $unrestarted, $settings);
+    public static function said(ASettingChange $change, ASettingValue $was, WhatTheChangeReaches $reaches, WhatTheSettingRunDid $did, AnOffer $offer, TheServicesSettings $settings): self
+    {
+        return new self($change, $was, $reaches, $did, $offer, $settings);
     }
 
     /** The setting, by its name. */
     public function setting(): string
     {
-        return $this->setting;
+        return $this->change->setting();
     }
 
     /** What it is to hold, or nothing where it goes back to its default. */
     public function value(): ASettingValue
     {
-        return $this->value;
+        return $this->change->value();
     }
 
     /** What it held before. */
@@ -55,16 +42,10 @@ final readonly class TheSettingAsChanged
         return $this->was;
     }
 
-    /** Every service whose entry the change regenerates. */
-    public function regenerates(): Services
+    /** What the change reaches beyond the setting. */
+    public function reaches(): WhatTheChangeReaches
     {
-        return $this->regenerates;
-    }
-
-    /** Every running service the change restarts. */
-    public function restarts(): Services
-    {
-        return $this->restarts;
+        return $this->reaches;
     }
 
     /** What the run did. */
@@ -79,18 +60,6 @@ final readonly class TheSettingAsChanged
         return $this->offer;
     }
 
-    /** What the change costs, in the stack's words, or blank where it costs nothing. */
-    public function consequence(): string
-    {
-        return $this->consequence;
-    }
-
-    /** Why the services it restarts were not restarted, in the stack's words, or blank where they were. */
-    public function unrestarted(): string
-    {
-        return $this->unrestarted;
-    }
-
     /** Every setting and secret after the run. */
     public function settings(): TheServicesSettings
     {
@@ -100,6 +69,9 @@ final readonly class TheSettingAsChanged
     /** Whether this is a rehearsal of that change. */
     public function rehearses(ASettingChange $change): bool
     {
-        return $this->did === WhatTheSettingRunDid::Rehearsed && $this->setting === $change->setting() && $this->value->said() === $change->value()->said() && $this->value->isHeld() === $change->value()->isHeld();
+        return $this->did === WhatTheSettingRunDid::Rehearsed
+            && $this->change->how() === $change->how()
+            && $this->change->setting() === $change->setting()
+            && $this->change->value()->said() === $change->value()->said();
     }
 }

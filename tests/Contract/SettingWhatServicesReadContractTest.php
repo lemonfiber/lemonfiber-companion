@@ -29,6 +29,7 @@ use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
 use Modules\Kernel\Api\WhereASecretCameFrom;
@@ -134,12 +135,9 @@ function theSameRehearsalOfASetting(): TheSettingAsChanged
     return TheSettingAsChanged::said(
         ASettingChange::toHold('vpn.countries', 'Germany'),
         ASettingValue::value('Belgium'),
-        Services::these(ServiceId::called('gluetun')),
-        Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), '', ''),
         WhatTheSettingRunDid::Rehearsed,
         AnOffer::named('settings-set:vpn.countries:7'),
-        '',
-        '',
         theSameSettingsTheServicesRead(),
     );
 }
@@ -268,11 +266,11 @@ function whatTheSettingChangeCameTo(WhatBecameOfTheWork $became): string
             $report->setting(),
             $report->value()->isHeld() ? $report->value()->said() : 'default',
             $report->was()->isHeld() ? $report->was()->said() : 'default',
-            theServicesSaid($report->regenerates()),
-            theServicesSaid($report->restarts()),
+            theServicesSaid($report->reaches()->regenerates()),
+            theServicesSaid($report->reaches()->restarts()),
             $report->offer()->either(named: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut($named), none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no offer'))->said,
-            $report->consequence(),
-            $report->unrestarted(),
+            $report->reaches()->consequence(),
+            $report->reaches()->unrestarted(),
             iterator_count($report->settings()->settings()),
         )),
         ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
@@ -484,7 +482,7 @@ it('rehearses as a dry run carrying no offer, and the yes carries the offer that
 it('puts a setting back to its default with settings-clear, naming no value', function (): void {
     $tuners = aTunerAnswered(aChangeToASettingTakenOn('a'), aChangeToASettingTakenOn('b'));
     $back = ASettingChange::backToDefault('vpn.countries');
-    $rehearsal = TheSettingAsChanged::said($back, ASettingValue::value('Belgium'), Services::none(), Services::none(), WhatTheSettingRunDid::Rehearsed, AnOffer::none(), '', '', theSameSettingsTheServicesRead());
+    $rehearsal = TheSettingAsChanged::said($back, ASettingValue::value('Belgium'), WhatTheChangeReaches::said(Services::none(), Services::none(), '', ''), WhatTheSettingRunDid::Rehearsed, AnOffer::none(), theSameSettingsTheServicesRead());
 
     $tuners->rehearse(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), $back);
     $tuners->carryOut(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), ASettingChangeAgreed::after($rehearsal, $back));

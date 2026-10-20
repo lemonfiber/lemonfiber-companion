@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Internal\APath;
@@ -41,15 +42,12 @@ final readonly class WhatTheSettingCameTo
         return TheSettingAsChanged::said(
             $value->isHeld() ? ASettingChange::toHold($setting, $value->said()) : ASettingChange::backToDefault($setting),
             SettingsRows::held($change, WireField::Was, $at),
-            SettingsRows::services(Required::rows($change, SettingsField::Regenerates, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Regenerates->value))), APath::beneath($at, SettingsField::Regenerates->value)),
-            SettingsRows::services(Required::rows($change, SettingsField::Restarts, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Restarts->value))), APath::beneath($at, SettingsField::Restarts->value)),
+            WhatTheChangeReaches::said(SettingsRows::services(Required::rows($change, SettingsField::Regenerates, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Regenerates->value))), APath::beneath($at, SettingsField::Regenerates->value)), SettingsRows::services(Required::rows($change, SettingsField::Restarts, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Restarts->value))), APath::beneath($at, SettingsField::Restarts->value)), trim(Optional::text($change, WireField::Consequence, SettingsAreUnreadable::missing(APath::beneath($at, WireField::Consequence->value)))), trim(Optional::text($change, SettingsField::Unrestarted, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Unrestarted->value))))),
             WhatTheSettingRunDid::said(
                 Required::flag($data, WireField::Rehearsed, SettingsAreUnreadable::missing(WireField::Rehearsed->value)),
                 Required::flag($change, WireField::Applied, SettingsAreUnreadable::missing(APath::beneath($at, WireField::Applied->value))),
             ),
             AnOffer::named(Required::text($change, WireField::Agreement, SettingsAreUnreadable::missing(APath::beneath($at, WireField::Agreement->value)))),
-            trim(Optional::text($change, WireField::Consequence, SettingsAreUnreadable::missing(APath::beneath($at, WireField::Consequence->value)))),
-            trim(Optional::text($change, SettingsField::Unrestarted, SettingsAreUnreadable::missing(APath::beneath($at, SettingsField::Unrestarted->value)))),
             TheSettingsListed::in($envelope),
         );
     }

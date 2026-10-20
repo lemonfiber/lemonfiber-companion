@@ -37,6 +37,7 @@ use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
@@ -122,12 +123,9 @@ function aChangeToTheCountries(WhatTheSettingRunDid $did, ?ASettingChange $chang
     return TheSettingAsChanged::said(
         $change,
         ASettingValue::value('Belgium'),
-        Services::these(ServiceId::called('gluetun')),
-        $restarts ?? Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), $restarts ?? Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), $consequence, $unrestarted),
         $did,
         AnOffer::named('settings-set:vpn.countries:7'),
-        $consequence,
-        $unrestarted,
         theMachinesSettings($did === WhatTheSettingRunDid::Applied ? 'Germany' : 'Belgium'),
     );
 }
