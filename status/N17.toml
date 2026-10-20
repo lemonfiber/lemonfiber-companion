@@ -8,7 +8,13 @@
 requirement = [
   { id = "N17-R1", state = "done", evidence = ["app-modules/kernel/src/Api/Notifier.php", "app-modules/device/src/Api/PlatformNotifier.php", "tests/Feature/NothingButTheStackDeliversAMessageTest.php"] },
   { id = "N17-R2", state = "done", evidence = ["app-modules/kernel/src/Api/Notifier.php", "tests/Arch/NothingOpensAConnectionByHandTest.php", "tests/Feature/NothingButTheStackDeliversAMessageTest.php"] },
+  { id = "N17-R3", state = "open" },
+  { id = "N17-R4", state = "open" },
+  { id = "N17-R5", state = "open" },
   { id = "N17-R6", state = "done", evidence = ["tests/Arch/TheAppOpensOnlyTheseDoorsTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
+  { id = "N17-R7", state = "open" },
   { id = "N17-R8", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/device/src/Api/PlatformNotifier.php", "app-modules/kernel/tests/Api/NotificationTest.php", "tests/Contract/NotifierContractTest.php"] },
   { id = "N17-R9", state = "done", evidence = ["app-modules/kernel/src/Api/Notification.php", "app-modules/kernel/src/Api/WhatTheCoreDecided.php", "app-modules/kernel/tests/Api/NotificationTest.php", "tests/Feature/EveryNotificationIsTheCoresTest.php"] },
+  { id = "N17-R10", state = "open" },
+  { id = "N17-R11", state = "open" },
 ]

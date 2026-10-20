@@ -12,6 +12,8 @@ requirement = [
   { id = "N19-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AResetAgreed.php", "app-modules/kernel/src/Api/ResettingTheConfiguration.php", "tests/Feature/AnOperatorsChangeGoesBackOnlyWithEverythingTest.php", "tests/Feature/FollowingWhatAVerbCameToTest.php"] },
   { id = "N19-R5", state = "partial", evidence = ["app-modules/kernel/src/Api/WhereAConnectionStands.php", "app-modules/kernel/src/Api/WhatBecameOfIt.php", "tests/Feature/WiringTheServicesTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
   { id = "N19-R6", state = "done", evidence = ["app-modules/kernel/src/Api/Stance.php", "app-modules/kernel/src/Api/WhatBecameOfIt.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php", "tests/Feature/SeeingWhatWouldBePutRightTest.php"] },
+  { id = "N19-R7", state = "open" },
+  { id = "N19-R8", state = "open" },
   { id = "N19-R9", state = "done", evidence = ["app-modules/kernel/src/Api/AStackEditCannotBeShown.php", "app-modules/sdk/src/Api/LifecycleIsUnreadable.php", "app-modules/sdk/tests/Api/LifecyclesTest.php", "tests/Arch/WhatTheContractDoesNotCarryTest.php"] },
   { id = "N19-R10", state = "done", evidence = ["tests/Arch/TheAppOpensOnlyTheseDoorsTest.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
 ]
