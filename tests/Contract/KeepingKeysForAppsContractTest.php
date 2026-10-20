@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AKeyForAnApp;
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KeepingKeysForApps;
@@ -19,6 +20,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheKeysForApps;
 use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasFoundOfTheKeys;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Sdk\Api\KeyKeepers;
@@ -120,6 +122,7 @@ function everythingTheKeysSay(WhatWasFoundOfTheKeys $found): string
 
             return new TheWordCarriedOut(implode("\n", $lines));
         },
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s', $why->summary())),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
@@ -174,11 +177,11 @@ it('tells a session that has ended from a stack that is not answering, and a key
     }
 });
 
-it('says a revoke the stack refused as what stood in the way', function (): void {
+it('says a revoke the stack refused in its words, and one it could not be asked as what stood in the way', function (): void {
     $answered = MockResponse::make(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'KEY-10', 'summary' => 'No key is called that.', 'meaning' => 'There is nothing to revoke.', 'severity' => 'error', 'state' => 'actionable', 'remedies' => []]], 404);
 
     $ways = [
-        'the fake' => static fn(): KeepingKeysForApps => AStackThatKeepsKeys::refusingToRevoke(theSameKeys(), Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
+        'the fake' => static fn(): KeepingKeysForApps => AStackThatKeepsKeys::refusingToRevoke(theSameKeys(), ARefusalInItsWords::said('No key is called that.', 'There is nothing to revoke.', WhatTheRefusalNamed::nothing())),
         'the adapter' => static function () use ($answered): KeepingKeysForApps {
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
@@ -188,6 +191,20 @@ it('says a revoke the stack refused as what stood in the way', function (): void
     ];
 
     foreach ($ways as $which => $make) {
+        expect(everythingTheKeysSay($make()->revokedOn(aStackKeepingKeys(), Session::of('a-session-not-a-secret'), AKeysName::of('gone'))))->toBe('refused: No key is called that.', $which);
+    }
+
+    $unanswered = [
+        'the fake' => static fn(): KeepingKeysForApps => AStackThatKeepsKeys::refusingToRevoke(theSameKeys(), Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
+        'the adapter' => static function (): KeepingKeysForApps {
+            MockClient::destroyGlobal();
+            MockClient::global([MockResponse::make('{"error":"gone"}', 500)]);
+
+            return new KeyKeepers(new PinnedClients());
+        },
+    ];
+
+    foreach ($unanswered as $which => $make) {
         expect(everythingTheKeysSay($make()->revokedOn(aStackKeepingKeys(), Session::of('a-session-not-a-secret'), AKeysName::of('gone'))))->toBe(KindOfObstacle::StackDidNotAnswer->value, $which);
     }
 });

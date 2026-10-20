@@ -16,7 +16,7 @@ use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Api\Fields\DashboardField;
-use Modules\Sdk\Api\Fields\DeviceKeysField;
+use Modules\Sdk\Api\Fields\DeviceChallengeField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
@@ -29,6 +29,7 @@ use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
+use Modules\Sdk\Api\Fields\KeyClaimField;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\LogField;
@@ -97,7 +98,8 @@ function everyFieldNamedOnTheWire(): array
         ...ConfigField::cases(),
         ...CredentialsField::cases(),
         ...KeysField::cases(),
-        ...DeviceKeysField::cases(),
+        ...DeviceChallengeField::cases(),
+        ...KeyClaimField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),

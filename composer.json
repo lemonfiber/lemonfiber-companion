@@ -49,6 +49,7 @@
         "psr/log": "^3.0"
     },
     "require-dev": {
+        "ext-openssl": "*",
         "ext-simplexml": "*",
         "ext-tokenizer": "*",
         "ergebnis/composer-normalize": "^2.53",

@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use Closure;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\AChallengeToSign;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
@@ -20,12 +21,14 @@ use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AKeysName;
+use Modules\Kernel\Api\AKeyToMint;
 use Modules\Kernel\Api\ALift;
 use Modules\Kernel\Api\ALineChange;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnAllowanceChange;
+use Modules\Kernel\Api\AnAttestation;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -34,17 +37,20 @@ use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APhoneKeysName;
+use Modules\Kernel\Api\APhoneKeyToRegister;
 use Modules\Kernel\Api\APluginInstallAgreed;
 use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\AProofOfThisPhone;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
+use Modules\Kernel\Api\ATextToSign;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Capability;
@@ -52,6 +58,7 @@ use Modules\Kernel\Api\Change;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\ConnectionsReverted;
+use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
@@ -109,6 +116,8 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
+use Modules\Kernel\Api\WhatAKeyAdmits;
+use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatGoesAndWhatStays;
@@ -181,6 +190,7 @@ use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\KeyKeepers;
+use Modules\Sdk\Api\KeyMinters;
 use Modules\Sdk\Api\Linesmen;
 use Modules\Sdk\Api\Linkers;
 use Modules\Sdk\Api\Listeners;
@@ -259,6 +269,9 @@ final readonly class EveryAdapterCallThatReads
             'KeyKeepers::revokedOn' => static fn(): object => new KeyKeepers($clients)->revokedOn($stack, $session, AKeysName::of('den')),
             'PhoneKeyKeepers::listedOn' => static fn(): object => new PhoneKeyKeepers($clients)->listedOn($stack, $session),
             'PhoneKeyKeepers::revokedOn' => static fn(): object => new PhoneKeyKeepers($clients)->revokedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a')),
+            'KeyMinters::registeredOn' => static fn(): object => new KeyMinters($clients)->registeredOn($stack, $session, APhoneKeyToRegister::of(APhoneKeysName::of('Galaxy A51 · 7f3a'), 'a public half', AnAttestation::fromAndroid('the leaf', 'the root')), Credential::of('the operator password')),
+            'KeyMinters::challengedOn' => static fn(): object => new KeyMinters($clients)->challengedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a'), AKeyToMint::of(AKeysName::of('den'), WhatAKeyAdmits::reading(), WhatAKeyIsFor::HomeAssistant)),
+            'KeyMinters::claimedOn' => static fn(): object => new KeyMinters($clients)->claimedOn($stack, $session, AKeyToMint::of(AKeysName::of('den'), WhatAKeyAdmits::reading(), WhatAKeyIsFor::HomeAssistant), AProofOfThisPhone::of(APhoneKeysName::of('Galaxy A51 · 7f3a'), AChallengeToSign::of('a-challenge', ATextToSign::saying('a text')), 'a signature')),
             'Fillers::whatItWouldComeTo' => static fn(): object
                 => new Fillers($clients, $entropy)->whatItWouldComeTo($stack, $session, Capability::called('media-server'), ServiceId::called('plex')),
             'Fillers::choose' => static fn(): object

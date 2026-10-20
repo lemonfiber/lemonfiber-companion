@@ -54,6 +54,7 @@ use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Device\Api\PlatformPlayer;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
@@ -75,9 +76,11 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\ForgetsOldReadings;
+use Modules\Kernel\Api\HoldingAPhoneKey;
 use Modules\Kernel\Api\HoldingArtwork;
 use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\KeepingTheGrant;
+use Modules\Kernel\Api\KeepingThePhoneKeysName;
 use Modules\Kernel\Api\KeepsReadingsFor;
 use Modules\Kernel\Api\KnowingThisDevice;
 use Modules\Kernel\Api\LocalZone;
@@ -113,6 +116,7 @@ use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 use Modules\Vault\Api\PlatformGrants;
 use Modules\Vault\Api\PlatformKeychain;
+use Modules\Vault\Api\PlatformPhoneKeysNames;
 use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
@@ -401,6 +405,9 @@ final class CompositionRoot extends ServiceProvider
             PlatformAuth::class,
         );
 
+        // The key this phone holds to prove its operator to each stack.
+        $this->app->bind(HoldingAPhoneKey::class, PlatformPhoneKeys::class);
+
         // Which theme is on the glass, for an element handed a colour as a
         // value. The one instance the composition root paints, for the reason
         // `WhatEachStackLastNamed` is a singleton: it holds what one screen
@@ -452,6 +459,13 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             KeepingTheGrant::class,
             static fn(): KeepingTheGrant => new PlatformGrants(new PlatformStore()),
+        );
+
+        // The name this phone's key is registered under on each stack, in the
+        // same store. A keeper of the stack, so Remove from phone lets it go.
+        $this->app->bind(
+            KeepingThePhoneKeysName::class,
+            static fn(): KeepingThePhoneKeysName => new PlatformPhoneKeysNames(new PlatformStore()),
         );
 
         // Where the operator was: the stack last on view and the tab last used
@@ -561,10 +575,11 @@ final class CompositionRoot extends ServiceProvider
 
         // Every keeper of one stack, asked as one when the stack is removed
         // from the phone: the pairing first, so the stack leaves every list at
-        // once, then the session, the readings and the markers. What was begun
-        // is recorded in the same secure store as the pairing it removes.
+        // once, then the session, the readings, the markers and the phone's
+        // key for it. What was begun is recorded in the same secure store as
+        // the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

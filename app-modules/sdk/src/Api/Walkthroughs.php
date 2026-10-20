@@ -201,14 +201,14 @@ final readonly class Walkthroughs
      */
     private static function link(array $data): ?HowTheImportLinked
     {
-        if (self::absent($data, WalkthroughField::Link)) {
+        if (self::absent($data, WireField::Link)) {
             return null;
         }
 
-        $said = self::text($data, WalkthroughField::Link);
+        $said = self::text($data, WireField::Link);
 
         return HowTheImportLinked::tryFrom($said)
-            ?? throw WalkthroughIsUnreadable::word(WalkthroughField::Link, $said, ...array_map(static fn(HowTheImportLinked $case): string => $case->value, HowTheImportLinked::cases()));
+            ?? throw WalkthroughIsUnreadable::word(WireField::Link, $said, ...array_map(static fn(HowTheImportLinked $case): string => $case->value, HowTheImportLinked::cases()));
     }
 
     /**

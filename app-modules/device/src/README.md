@@ -17,6 +17,7 @@ implements one kernel port over the platform:
 | `PlatformAuth` | `DeviceAuth` |
 | `PlatformPlayer` | `Playing` |
 | `PlatformArtwork` | `HoldingArtwork` |
+| `PlatformPhoneKeys` | `HoldingAPhoneKey` |
 
 The phone's features are reached through `nativephp/mobile` and this
 application's `lemonfiber/bridge` plugin. Secure storage is in `vault`.

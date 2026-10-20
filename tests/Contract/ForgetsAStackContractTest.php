@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
+use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AGrant;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\HearIn;
@@ -44,6 +46,7 @@ use Modules\Services\Api\KeepingWhatItRuns;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Vault\Api\PlatformGrants;
 use Modules\Vault\Api\PlatformKeychain;
+use Modules\Vault\Api\PlatformPhoneKeysNames;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
@@ -52,12 +55,15 @@ use Modules\Watching\Api\KeepingTheirLanguages;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\APhoneKeyInMemory;
+use Tests\Support\Fakes\APhoneKeyOnAHandset;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\GrantsKeptInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
+use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -128,6 +134,10 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake place' => WhereTheOperatorWasInMemory::nowhere(),
         'the platform grants' => new PlatformGrants(APlatformStore::working()),
         'the fake grants' => GrantsKeptInMemory::working(),
+        'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::working()),
+        'the fake phone key names' => PhoneKeysNamesKeptInMemory::working(),
+        'the phone\'s keys' => APhoneKeyOnAHandset::onAnAndroidPhone()->theAdapterOverIt(),
+        'the fake phone\'s keys' => APhoneKeyInMemory::onAnAndroidPhone(),
         'what each stack offers' => new Assessors(new PinnedClients(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackOffers()),
     ];
 
@@ -213,6 +223,8 @@ function keepAMarkerFor(ForgetsAStack $keeper, Stack $stack): bool
         $keeper instanceof PlatformWhereTheOperatorWas, $keeper instanceof WhereTheOperatorWasInMemory => $keeper->wasOn($kept, WhichTab::Services),
         $keeper instanceof PlatformWorkLeftRunning, $keeper instanceof WorkLeftRunningInMemory => $keeper->remember($kept, KindOfWork::Walkthrough, Job::named('a-walk')),
         $keeper instanceof PlatformGrants, $keeper instanceof GrantsKeptInMemory => $keeper->keepTheGrant($kept, TheGrantIsFor::of(Whose::member('ada'), ThisDevice::named('this-device')), AGrant::of(str_repeat('0', 32), Instant::atEpochSeconds(1))),
+        $keeper instanceof PlatformPhoneKeysNames, $keeper instanceof PhoneKeysNamesKeptInMemory => $keeper->keepTheName($kept, APhoneKeysName::of('Galaxy A51 · 7f3a')),
+        $keeper instanceof PlatformPhoneKeys, $keeper instanceof APhoneKeyInMemory => $keeper->madeFor($kept),
         default => null,
     };
 
@@ -260,6 +272,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
         'the platform grants' => new PlatformGrants(APlatformStore::refusing()),
+        'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'what it runs, whose keys cannot be read' => new KeepingWhatItRuns(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),

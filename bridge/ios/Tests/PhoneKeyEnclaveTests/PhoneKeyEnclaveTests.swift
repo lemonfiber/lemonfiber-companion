@@ -31,3 +31,11 @@ func aCodeIsReadInItsOwnDomain() {
             == .failed)
     #expect(PhoneKeyRule.whyNotSigned(domain: "", code: 0) == .failed)
 }
+
+@Test("a key is held unless the keychain finds none")
+func aKeyIsHeldUnlessNoneIsFound() {
+    #expect(PhoneKeyRule.held(status: PhoneKeyRule.success))
+    #expect(PhoneKeyRule.held(status: -25308))
+    #expect(PhoneKeyRule.held(status: PhoneKeyRule.authFailed))
+    #expect(!PhoneKeyRule.held(status: PhoneKeyRule.itemNotFound))
+}

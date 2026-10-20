@@ -20,5 +20,5 @@ namespace Modules\Kernel\Api;
 interface Encoding
 {
     /** What the stack handed over, as squares to draw. */
-    public function codeFor(AnAddressToHand|APairingLine|AClientToHandOver $handed): AScannableCode;
+    public function codeFor(AnAddressToHand|APairingLine|AClientToHandOver|AKeyClaim $handed): AScannableCode;
 }

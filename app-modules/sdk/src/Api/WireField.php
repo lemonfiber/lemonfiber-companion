@@ -888,4 +888,13 @@ enum WireField: string implements NamesAWireField
 
     /** How far taking somebody out got; and when a phone key was revoked, where it has been. */
     case Revoked = 'revoked';
+
+    /** Where a phone key lives, as its attestation said: on the listing, and on a key just registered. */
+    case Backing = 'backing';
+
+    /** When a phone key was registered: on the listing, and on a key just registered. */
+    case Registered = 'registered';
+
+    /** What an import did with the file, on a walkthrough; and the link that collects a key minted as a claim, once. */
+    case Link = 'link';
 }

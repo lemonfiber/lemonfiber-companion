@@ -164,6 +164,18 @@
             "description": "Throw that key away, whether or not it was there"
         },
         {
+            "name": "Lemonfiber.PhoneKey.Held",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Held",
+            "ios": "PhoneKeyFunctions.Held",
+            "description": "Say whether that key is held, without asking the operator for anything"
+        },
+        {
+            "name": "Lemonfiber.PhoneKey.Model",
+            "android": "app.lemonfiber.native.PhoneKeyFunctions.Model",
+            "ios": "PhoneKeyFunctions.Model",
+            "description": "Answer what this phone is called, for naming its key on a stack"
+        },
+        {
             "name": "Lemonfiber.Link.Status",
             "android": "app.lemonfiber.native.LinkFunctions.Status",
             "ios": "LinkFunctions.Status",

@@ -96,4 +96,7 @@ enum WhatAnAnswerHolds: string
 
     /** A signature, its DER in base64. */
     case Signature = 'signature';
+
+    /** What this phone is called. */
+    case Model = 'model';
 }

@@ -16,6 +16,7 @@ final readonly class APhoneKeyAsShown
      * @param AgoAsShown $used         when it last proved a mint, unsaid where it never has
      * @param AgoAsShown $revoked      when it was revoked, unsaid where it stands
      * @param bool       $mayBeRevoked whether it still stands, so revoking it is offered
+     * @param bool       $isThisPhone  whether it is the key this phone holds for the stack
      */
     public function __construct(
         public string $name,
@@ -24,5 +25,6 @@ final readonly class APhoneKeyAsShown
         public AgoAsShown $used,
         public AgoAsShown $revoked,
         public bool $mayBeRevoked,
+        public bool $isThisPhone,
     ) {}
 }

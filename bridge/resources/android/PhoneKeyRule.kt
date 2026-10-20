@@ -104,6 +104,18 @@ public object PhoneKeyRule {
             else -> ThrownAway.NONE_HELD
         }
 
+    /**
+     * What this phone is called: the name its owner gave it, or its maker and model where
+     * it has none.
+     */
+    public fun modelName(
+        deviceName: String?,
+        manufacturer: String,
+        model: String,
+    ): String =
+        deviceName?.trim()?.takeIf { it.isNotEmpty() }
+            ?: "${manufacturer.trim().replaceFirstChar { it.titlecase() }} ${model.trim()}".trim()
+
     /** Where a key may live, or why it may not. */
     public sealed interface Either {
         /** It may live there. */

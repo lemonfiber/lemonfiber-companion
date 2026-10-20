@@ -199,3 +199,41 @@ it('never reads a key the phone would not throw away as gone', function (array $
 it('reads a machine that is not a handset as holding no key to throw away', function (): void {
     expect(new PhoneKeys()->forget('a stack'))->toBe(WhatForgettingAKeyFound::NoneHeld);
 });
+
+it('asks whether the key named is held', function (string $outcome, bool $held): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.PhoneKey.Held', ['outcome' => $outcome]);
+
+    expect(new PhoneKeys()->holds('a stack'))->toBe($held);
+
+    $bridge->assertCalled('Lemonfiber.PhoneKey.Held', static fn(array $sent): bool => $sent === ['alias' => 'a stack']);
+})->with([
+    'held' => ['held', true],
+    'none held' => ['none_held', false],
+    'a phone that could not tell' => ['unknown', true],
+    'a word it does not know' => ['the moon is full', true],
+]);
+
+it('reads a machine that is not a handset as holding no key', function (): void {
+    expect(new PhoneKeys()->holds('a stack'))->toBeFalse();
+});
+
+it('asks what this phone is called, carrying nothing', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.PhoneKey.Model', ['outcome' => 'named', 'model' => ' Galaxy A51 ']);
+
+    expect(new PhoneKeys()->model())->toBe('Galaxy A51');
+
+    $bridge->assertCalled('Lemonfiber.PhoneKey.Model');
+});
+
+it('reads a phone that names nothing as having no name', function (array $answer): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.PhoneKey.Model', $answer);
+
+    expect(new PhoneKeys()->model())->toBe('');
+})->with([
+    'no model' => [['outcome' => 'named']],
+    'another word' => [['outcome' => 'cannot', 'model' => 'Galaxy A51']],
+]);
+
+it('reads a machine that is not a handset as having no name', function (): void {
+    expect(new PhoneKeys()->model())->toBe('');
+});

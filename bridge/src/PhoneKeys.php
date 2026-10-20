@@ -11,6 +11,8 @@ use function sodium_base642bin;
 
 use SodiumException;
 
+use function trim;
+
 /**
  * The key that proves this phone's operator to a stack, as this application is willing to use one.
  *
@@ -93,6 +95,28 @@ final readonly class PhoneKeys
             HowThePhoneKeyAnswered::in($said) === HowThePhoneKeyAnswered::NoneHeld => WhatForgettingAKeyFound::NoneHeld,
             default => WhatForgettingAKeyFound::Failed,
         };
+    }
+
+    /**
+     * Whether a key is held under this alias, asking nothing of the operator.
+     *
+     * Only a phone that says it holds none holds none: one that could not tell is read as
+     * holding one. Off a handset nothing is held.
+     */
+    public function holds(string $alias): bool
+    {
+        $said = WhatTheBridgeAnswered::to(Call::PhoneKeyHeld, ['alias' => $alias]);
+
+        return $said->outcome() !== null && HowThePhoneKeyAnswered::in($said) !== HowThePhoneKeyAnswered::NoneHeld;
+    }
+
+    /** What this phone is called, for naming its key on a stack; empty where it says nothing. */
+    public function model(): string
+    {
+        $said = WhatTheBridgeAnswered::toNothing(Call::PhoneKeyModel);
+        $model = $said->word(WhatAnAnswerHolds::Model);
+
+        return HowThePhoneKeyAnswered::in($said) === HowThePhoneKeyAnswered::Named && is_string($model) ? trim($model) : '';
     }
 
     /**

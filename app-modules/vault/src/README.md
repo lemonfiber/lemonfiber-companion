@@ -11,6 +11,7 @@ class implements one kernel port over it:
 | `PlatformWorkLeftRunning` | `WorkLeftRunning`, the handle of work a screen left running on each stack |
 | `PlatformSealKeys` | `HoldsTheSealKeys`, the two keys what the phone keeps is sealed under |
 | `PlatformGrants` | `KeepingTheGrant`, the grant this device plays with on each stack |
+| `PlatformPhoneKeysNames` | `KeepingThePhoneKeysName`, the name this phone's key is registered under on each stack |
 
 The store is reached through the `lemonfiber/bridge` plugin. Nothing this
 module keeps is written to a file.
@@ -22,6 +23,7 @@ identifier and `<kind>` is a `KindOfWork`, such as `walkthrough`:
 |---|---|
 | `lemonfiber.session.<stack>` | The session for one stack, and whose it is |
 | `lemonfiber.grant.<stack>` | The grant this device plays with on one stack, and when it lapses, with a shape number |
+| `lemonfiber.phone-key-name.<stack>` | The name this phone's key is registered under on one stack |
 | `lemonfiber.stacks` | Every paired stack: its identifier, name, address and pinned fingerprint, with a shape number |
 | `lemonfiber.standings` | The word each stack's one line last said and when, with a shape number |
 | `lemonfiber.left-running.<kind>.<stack>` | The handle of the work of one kind left running on one stack, with a shape number |

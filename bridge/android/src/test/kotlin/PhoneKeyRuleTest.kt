@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 /**
  * Whether this phone may keep a key, and the words for what became of one.
  *
- * The same six cases as `PhoneKeyRuleTests.swift`. Reading the security level a key was
+ * The same eight cases as `PhoneKeyRuleTests.swift`. Reading the security level a key was
  * made at, and its attestation chain, are Android's alone and are asked in
  * `PhoneKeyKeystoreTest`.
  */
@@ -57,6 +57,17 @@ class PhoneKeyRuleTest {
     fun `a key that was never there is told from one thrown away`() {
         assertEquals(ThrownAway.FORGOTTEN, PhoneKeyRule.thrownAway(heldBefore = true, heldAfter = false))
         assertEquals(ThrownAway.NONE_HELD, PhoneKeyRule.thrownAway(heldBefore = false, heldAfter = false))
+    }
+
+    @Test
+    fun `a phone is called what its owner knows it as`() {
+        assertEquals("Galaxy A51", PhoneKeyRule.modelName(" Galaxy A51 ", "samsung", "SM-A515F"))
+    }
+
+    @Test
+    fun `a phone with no better name is called what the platform says it is`() {
+        assertEquals("Samsung SM-A515F", PhoneKeyRule.modelName(null, "samsung", "SM-A515F"))
+        assertEquals("Samsung SM-A515F", PhoneKeyRule.modelName("  ", "samsung", "SM-A515F"))
     }
 
     @Test
