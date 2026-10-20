@@ -153,7 +153,8 @@ it('opens on what is installed, each with what vouches for it and how its source
         ->and($drawn->said())->toContain(aPluginsLine('plugins.source.unreachable', ['why' => 'The catalogue did not answer']))
         ->and($drawn->said())->toContain(aPluginsLine('plugins.signed', ['signed' => 'the catalogue key SHA256:abc']))
         ->and($drawn->said())->toContain(aPluginsLine('plugins.licence', ['licence' => 'GPL-3.0']))
-        ->and($drawn->offers())->toContain(aPluginsLine('plugins.install_one'));
+        ->and($drawn->offers())->toContain(aPluginsLine('plugins.install_one'))
+        ->and($drawn->offers())->toContain(aPluginsLine('plugins.settings.open', ['name' => 'Tdarr']));
 });
 
 it('says no plugins are installed where the record holds none, and that the record could not be read where it could not', function (): void {

@@ -38,6 +38,4 @@ enum WiringField: string implements NamesAWireField
     /** The claimants not chosen, where a choice is recorded. */
     case Over = 'over';
 
-    /** Who chose, where a choice is recorded. */
-    case Whose = 'whose';
 }

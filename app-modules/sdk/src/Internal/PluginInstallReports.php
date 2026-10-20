@@ -145,11 +145,11 @@ final readonly class PluginInstallReports
 
         foreach (self::rows($install, PluginsField::Overrides) as $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry(PluginsField::Overrides, PluginsField::Setting, $position);
+                throw PluginsAreUnreadable::entry(PluginsField::Overrides, WireField::Setting, $position);
             }
 
             $found[] = ASettingItOverrides::of(
-                self::text($row, PluginsField::Overrides, PluginsField::Setting, $position),
+                self::text($row, PluginsField::Overrides, WireField::Setting, $position),
                 self::text($row, PluginsField::Overrides, WireField::Why, $position),
             );
             $position++;

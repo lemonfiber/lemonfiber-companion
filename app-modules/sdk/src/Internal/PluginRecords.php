@@ -13,6 +13,7 @@ use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
 use Modules\Kernel\Api\AValueItCarries;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheValuesItCarries;
@@ -54,7 +55,31 @@ final readonly class PluginRecords
             self::optional($row, WireField::Name),
             self::vouched($row),
             TheRecipes::these(...self::recipes($row, $position)),
+            ...self::services($row),
         );
+    }
+
+    /**
+     * Each service the plugin placed, by its id, in the record's order.
+     *
+     * @param  array<mixed>    $row
+     * @return list<ServiceId>
+     */
+    private static function services(array $row): array
+    {
+        $found = [];
+        $at = 0;
+
+        foreach (self::rows($row, WireField::Services) as $placed) {
+            if (! is_array($placed)) {
+                throw PluginsAreUnreadable::entry(WireField::Services, WireField::Service, $at);
+            }
+
+            $found[] = ServiceId::called(self::text($placed, WireField::Services, WireField::Service, $at));
+            $at++;
+        }
+
+        return $found;
     }
 
     /**

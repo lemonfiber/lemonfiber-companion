@@ -897,4 +897,19 @@ enum WireField: string implements NamesAWireField
 
     /** What an import did with the file, on a walkthrough; and the link that collects a key minted as a claim, once. */
     case Link = 'link';
+
+    /** Who chose a wiring, where a choice is recorded; and whose a setting or a secret is. */
+    case Whose = 'whose';
+
+    /** Which kind of category a line of the space account is; and which kind of owner a setting has. */
+    case Of = 'of';
+
+    /** Everything the stack is set to, on the `config` envelope; and every setting the services read, on the `settings` envelope. */
+    case Settings = 'settings';
+
+    /** The difference a configuration review is about; and the change to one setting the services read. */
+    case Change = 'change';
+
+    /** One bundled setting a plugin changes; and the setting a settings change is about. */
+    case Setting = 'setting';
 }

@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AFoundTitle;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
@@ -155,6 +156,15 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
         StackId::rememberedAs(A_MACHINE),
         SomebodyInTheHousehold::called('anna'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Plugins->forTheStacksPlugin(
+        StackId::rememberedAs(A_MACHINE),
+        APluginId::called('gluetun'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('puts a plugin where a service would go, encoded, beneath the plugins', function (): void {
+    expect(AStacksScreen::PluginSettings->forTheStacksPlugin(StackId::rememberedAs(A_MACHINE), APluginId::called('a plugin/2')))
+        ->toBe(sprintf('/stacks/%s/plugins/a%%20plugin%%2F2', A_MACHINE));
 });
 
 it('puts a member of the household where a service would go, encoded', function (): void {

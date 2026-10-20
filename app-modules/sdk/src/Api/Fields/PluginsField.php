@@ -86,9 +86,6 @@ enum PluginsField: string implements NamesAWireField
     /** Every bundled setting a plugin declares it will change. */
     case Overrides = 'overrides';
 
-    /** One bundled setting a plugin changes. */
-    case Setting = 'setting';
-
     /** What a change puts at its path. */
     case Puts = 'puts';
 

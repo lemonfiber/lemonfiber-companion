@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function implode;
 use function in_array;
 
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheGuardSaw;
+use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AFormToGuardAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -44,7 +44,7 @@ final readonly class HowAGuardReads
             }
         }
 
-        return new WhatTheGuardWouldGuard($forms, implode(', ', $named), $named !== []);
+        return new WhatTheGuardWouldGuard($forms, Listed::these(...$named), $named !== []);
     }
 
     /** Nothing was started from this screen, so there is nothing to follow. */
@@ -131,6 +131,6 @@ final readonly class HowAGuardReads
         string $stoppedSaid = '',
         string $said = '',
     ): HowTheGuardWent {
-        return new HowTheGuardWent($went, $wasAsked, $isGuarding, $endedSaid, $forms, implode(', ', $forms), $stoppedSaid, $said);
+        return new HowTheGuardWent($went, $wasAsked, $isGuarding, $endedSaid, $forms, Listed::these(...$forms), $stoppedSaid, $said);
     }
 }

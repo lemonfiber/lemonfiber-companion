@@ -17,15 +17,10 @@ enum ConfigField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Everything the stack is set to, as the `config` envelope lists it. */
-    case Settings = 'settings';
-
     /** One setting's name. */
     case Key = 'key';
 
     /** A proposed change, read against what is in force, and where it stands. */
     case Review = 'review';
 
-    /** The difference a review is about, as it would be applied. */
-    case Change = 'change';
 }

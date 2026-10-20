@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_any;
 use function array_values;
 
 use ArrayIterator;
@@ -53,6 +54,12 @@ final readonly class Services implements IteratorAggregate
     public function isEmpty(): bool
     {
         return $this->services === [];
+    }
+
+    /** Whether this service is among them. */
+    public function includes(ServiceId $service): bool
+    {
+        return array_any($this->services, static fn(ServiceId $named): bool => $named->isTheSameAs($service));
     }
 
     /** @return Traversable<int, ServiceId> */

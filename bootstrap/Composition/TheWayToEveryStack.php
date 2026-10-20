@@ -68,6 +68,7 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\SelfChecking;
+use Modules\Kernel\Api\SettingWhatServicesRead;
 use Modules\Kernel\Api\SharingTheLine;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\StoppingSeeding;
@@ -155,6 +156,7 @@ use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\Switchers;
 use Modules\Sdk\Api\TheirOwn;
+use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
@@ -359,6 +361,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // reason: one place decides whether a certificate is checked.
         $this->app->bind(Rationing::class, Quartermasters::class);
         $this->app->bind(SharingTheLine::class, Linesmen::class);
+        $this->app->bind(SettingWhatServicesRead::class, Tuners::class);
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
         $this->app->bind(Accepting::class, Acceptors::class);
         $this->app->bind(Forgetting::class, Forgetters::class);

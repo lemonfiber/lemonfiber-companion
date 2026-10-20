@@ -7,6 +7,7 @@ namespace Modules\Stacks\Api;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AFoundTitle;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Check;
@@ -318,6 +319,9 @@ enum AStacksScreen: string
     /** The plugins that extend this machine, and installing one, rehearsed before it is agreed to. */
     case Plugins = '/stacks/{stack}/plugins';
 
+    /** One plugin's settings and secrets, and changing a setting, rehearsed before it is agreed to. */
+    case PluginSettings = '/stacks/{stack}/plugins/{service}';
+
     /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
     case Uninstall = '/stacks/{stack}/uninstall';
 
@@ -498,6 +502,16 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
+    }
+
+    /** The path to a screen about one of the stack's plugins, by its id, encoded for {@see self::forTheStacksTitle()}'s reason. */
+    public function forTheStacksPlugin(StackId $stack, APluginId $plugin): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($plugin->named())], $this->value);
     }
 
     /**

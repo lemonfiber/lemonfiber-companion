@@ -47,9 +47,6 @@ enum SpaceField: string implements NamesAWireField
     /** Where the room on a machine went, one line per category. */
     case Consumption = 'consumption';
 
-    /** Which kind of category a line of the account is. */
-    case Of = 'of';
-
     /** What a set of files occupies. */
     case Tally = 'tally';
 

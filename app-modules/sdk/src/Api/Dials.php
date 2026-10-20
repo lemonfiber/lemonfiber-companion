@@ -83,7 +83,7 @@ final readonly class Dials
     {
         $data = ConfigEnvelope::in(Wire::checked($envelope))->data;
         $review = self::table($data, ConfigField::Review);
-        $change = self::proposed(self::table($review, ConfigField::Change));
+        $change = self::proposed(self::table($review, WireField::Change));
         $stance = self::stance($review);
 
         // Read off the stance rather than off the presence of a refusal. A
@@ -225,11 +225,11 @@ final readonly class Dials
      */
     private static function listing(mixed $data): array
     {
-        if (! is_array($data) || ! array_key_exists(ConfigField::Settings->value, $data)) {
-            throw SettingIsUnreadable::missing(ConfigField::Settings);
+        if (! is_array($data) || ! array_key_exists(WireField::Settings->value, $data)) {
+            throw SettingIsUnreadable::missing(WireField::Settings);
         }
 
-        $listed = $data[ConfigField::Settings->value];
+        $listed = $data[WireField::Settings->value];
 
         if (! is_array($listed)) {
             throw SettingIsUnreadable::notAList();

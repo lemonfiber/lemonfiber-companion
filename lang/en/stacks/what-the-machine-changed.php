@@ -95,6 +95,7 @@ return [
             'reinstate-device' => 'The phone key it revoked is made good again',
             'resettle' => 'The setting lemonfiber keeps is put back to what it held',
             'rehold' => 'The secret lemonfiber keeps is put back to what it held',
+            'leave' => 'Your own overlay is left as it stands',
         ],
     ],
 ];

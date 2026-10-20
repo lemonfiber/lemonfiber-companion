@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Check;
@@ -150,6 +151,12 @@ final readonly class WhereAStackIs
     public function puttingBack(string $named): string
     {
         return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
+    }
+
+    /** One plugin's settings and secrets, by the id it is installed under. */
+    public function aPluginsSettings(string $plugin): string
+    {
+        return AStacksScreen::PluginSettings->forTheStacksPlugin($this->stack, APluginId::called($plugin));
     }
 
     /** Putting back one run the record shows, by the stamp it keeps it under. */

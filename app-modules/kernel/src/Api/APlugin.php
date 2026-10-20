@@ -8,7 +8,7 @@ use function array_values;
 use function trim;
 
 /**
- * One plugin, installed or as an install would settle it: what it is, what vouches for it, and its recipes.
+ * One plugin, installed or as an install would settle it: what it is, what vouches for it, its recipes and the services it placed.
  *
  * Its id is the name it is installed and recorded under. Its own name is the
  * author's, and empty where the record does not keep one: a name made up here
@@ -22,10 +22,11 @@ final readonly class APlugin
         private string $name,
         private WhatVouchesForAPlugin $vouched,
         private TheRecipes $recipes,
+        private Services $services,
     ) {}
 
-    /** The plugin; a blank id or version is refused. */
-    public static function named(string $id, string $version, string $name, WhatVouchesForAPlugin $vouched, TheRecipes $recipes): self
+    /** The plugin, with each service it placed; a blank id or version is refused. */
+    public static function named(string $id, string $version, string $name, WhatVouchesForAPlugin $vouched, TheRecipes $recipes, ServiceId ...$services): self
     {
         foreach (['plugin' => $id, 'version' => $version] as $field => $said) {
             if (trim($said) === '') {
@@ -33,7 +34,7 @@ final readonly class APlugin
             }
         }
 
-        return new self($id, $version, trim($name), $vouched, $recipes);
+        return new self($id, $version, trim($name), $vouched, $recipes, Services::these(...$services));
     }
 
     /** The name it is installed under. */
@@ -64,6 +65,12 @@ final readonly class APlugin
     public function canBeUpdated(): bool
     {
         return $this->vouched->source() !== '';
+    }
+
+    /** Each service it placed, in the record's order. */
+    public function services(): Services
+    {
+        return $this->services;
     }
 
     /** Every recipe, in the manifest's order. */

@@ -214,8 +214,8 @@ final readonly class WhereTheRoomIs
     private static function line(array $row, string $where): ALineOfTheAccount
     {
         $category = self::object($row, self::path($where, WireField::Category), WireField::Category);
-        $of = self::text($category, self::path($where, WireField::Category, SpaceField::Of), SpaceField::Of);
-        $about = WhatALineIsAbout::tryFrom($of) ?? throw SpaceIsUnreadable::word(self::path($where, WireField::Category, SpaceField::Of), $of, ...array_map(static fn(WhatALineIsAbout $case): string => $case->value, WhatALineIsAbout::cases()));
+        $of = self::text($category, self::path($where, WireField::Category, WireField::Of), WireField::Of);
+        $about = WhatALineIsAbout::tryFrom($of) ?? throw SpaceIsUnreadable::word(self::path($where, WireField::Category, WireField::Of), $of, ...array_map(static fn(WhatALineIsAbout $case): string => $case->value, WhatALineIsAbout::cases()));
         $tally = self::object($row, self::path($where, SpaceField::Tally), SpaceField::Tally);
         $occupies = WhatItOccupies::counted(
             self::count($tally, self::path($where, SpaceField::Tally, SpaceField::Logical), SpaceField::Logical),

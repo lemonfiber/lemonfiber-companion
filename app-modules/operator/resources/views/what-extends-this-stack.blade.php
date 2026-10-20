@@ -157,6 +157,7 @@
 @else
     @forelse ($this->answer()->installed as $at => $plugin)
         <x-operator::the-plugin :plugin="$plugin" />
+        <x-operator::quiet-action :label="__('plugins.settings.open', ['name' => $plugin->name])" :goes="$this->goes()->aPluginsSettings($plugin->id)" />
         @if ($plugin->updatable)
             <x-operator::offered-action :label="__('plugins.update_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'update', $at)" :offer="$this->offered(ExtendingIt::Update)" />
         @else

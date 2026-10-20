@@ -56,6 +56,14 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'SettingsEnvelope.unvetted',
+            'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
+        ],
+        [
+            'path' => 'SettingsEnvelope.settings[].environment',
+            'because' => 'The environment file\'s key a setting is held under. A setting is listed and changed by its name, with each service and the variable it reads it into (`N25-R12`); where the stack writes it is the stack\'s.',
+        ],
+        [
             'path' => 'SpaceEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -78,6 +86,10 @@ final readonly class UnreadOnEnvelopesMToZ
         [
             'path' => 'UninstallEnvelope.rehearsed',
             'because' => 'Whether taking lemonfiber off was only rehearsed. `N13-R10` asks for that rehearsal, and the `uninstall` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
+        ],
+        [
+            'path' => 'UpdateEnvelope.unvetted',
+            'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
         ],
         [
             'path' => 'UpdateEnvelope.rehearsed',
