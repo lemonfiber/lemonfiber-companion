@@ -1,0 +1,13 @@
+# What this app implements of N31, one row per requirement (OPS-R74).
+#
+# `done` means the requirement is met in full by what is here, `partial` that this
+# repository holds its part and the rest lives elsewhere, `open` that nothing here
+# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# request that changes whether a requirement is met changes its row.
+
+requirement = [
+  { id = "N31-R1", state = "open" },
+  { id = "N31-R2", state = "open" },
+  { id = "N31-R3", state = "open" },
+  { id = "N31-R4", state = "open" },
+]
