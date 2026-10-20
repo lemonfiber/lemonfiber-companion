@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use function count;
-use function implode;
 
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AWordAskedAbout;
 use Modules\Operator\Internal\ViewModels\AWordAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -86,7 +86,7 @@ final readonly class HowTheWordsRead
             word: $word->word(),
             short: $word->short(),
             deep: $word->deep(),
-            alsoCalled: implode(', ', $names),
+            alsoCalled: Listed::these(...$names),
             isOpen: $word->deep() !== '' && $open !== '' && $word->explains(AWordInUse::named($open)),
         );
     }

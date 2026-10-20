@@ -16,6 +16,7 @@ use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
+use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\JoiningAHouse;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
@@ -365,6 +366,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // The plugins that extend the machine. Its own screen, because an
             // install is rehearsed, agreed to in two parts and followed.
             Router::native(AStacksScreen::Plugins->value, WhatExtendsThisStack::class);
+            Router::native(AStacksScreen::PluginSettings->value, HowThisPluginIsSet::class);
 
             // Taking lemonfiber off the machine. Its own screen, because each
             // removal is read and agreed to on its own, and the last of them

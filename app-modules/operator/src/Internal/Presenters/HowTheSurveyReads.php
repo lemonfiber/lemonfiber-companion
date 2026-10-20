@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function implode;
-
 use Modules\Kernel\Api\AMode;
 use Modules\Kernel\Api\AProjectStanding;
 use Modules\Kernel\Api\AServiceStanding;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheSurvey;
+use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AModeAsShown;
 use Modules\Operator\Internal\ViewModels\AProjectAsFound;
@@ -63,7 +62,7 @@ final readonly class HowTheSurveyReads
                     because: $because,
                     cost: $cost,
                     remedy: $remedy,
-                    filesystems: implode(', ', $filesystems),
+                    filesystems: Listed::these(...$filesystems),
                 ),
                 links: TheLinkingCostAsShown::nothing(...),
             ),
@@ -100,7 +99,7 @@ final readonly class HowTheSurveyReads
 
         return new AServiceAsFound(
             service: $service->service(),
-            ports: implode(', ', $ports),
+            ports: Listed::these(...$ports),
             portsSaid: $ports === [] ? 'stacks.already_here.no_ports' : 'stacks.already_here.ports',
             runningSaid: $service->isRunning() ? 'stacks.already_here.running' : 'stacks.already_here.stopped',
             adoptableSaid: $service->isAdoptable() ? 'stacks.already_here.adoptable' : 'stacks.already_here.not_adoptable',

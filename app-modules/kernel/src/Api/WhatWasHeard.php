@@ -15,8 +15,8 @@ use Closure;
  * subscription is closed, by the stack or by the app. Or it could not be opened
  * or read, and the obstacle says why.
  *
- * **What the stack named as newest rides beside any of them, and so does what
- * answers what.** Each arrives on the same stream, when a listener arrives and
+ * **What the stack named as newest rides beside any of them, and so do what
+ * answers what and the settings.** Each arrives on the same stream, when a listener arrives and
  * whenever it changes, so each is carried apart from the five rather than as a
  * sixth: a summary, the newest of each kind and the wiring can arrive in one
  * wake, and none of them is lost.
@@ -30,6 +30,7 @@ final readonly class WhatWasHeard
         private ?TheNewestNamed $newest = null,
         private ?TheLinks $links = null,
         private ?TheAlerts $alerts = null,
+        private ?TheServicesSettings $settings = null,
     ) {}
 
     public static function nothing(): self
@@ -60,19 +61,40 @@ final readonly class WhatWasHeard
     /** The same, with the newest of each kind the stack named in this wake. */
     public function naming(TheNewestNamed $newest): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links, $this->alerts);
+        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links, $this->alerts, $this->settings);
     }
 
     /** The same, with what answers what as the stack said it in this wake. */
     public function wiredAs(TheLinks $links): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links, $this->alerts);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links, $this->alerts, $this->settings);
     }
 
     /** The same, with the alerts the stack raised in this wake. */
     public function alerting(TheAlerts $alerts): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $alerts);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $alerts, $this->settings);
+    }
+
+    /** The same, with every setting the services read as the stack said them in this wake. */
+    public function settledAs(TheServicesSettings $settings): self
+    {
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $this->alerts, $settings);
+    }
+
+    /**
+     * Every setting the services read as the stack said them in this wake, where it said them.
+     *
+     * @template T of object
+     *
+     * @param Closure(TheServicesSettings): T $said
+     * @param Closure(): T                    $nothing
+     *
+     * @return T
+     */
+    public function theSettings(Closure $said, Closure $nothing): object
+    {
+        return $this->settings instanceof TheServicesSettings ? $said($this->settings) : $nothing();
     }
 
     /** The alerts the stack raised in this wake, none where it raised none. */

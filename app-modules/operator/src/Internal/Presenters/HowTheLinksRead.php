@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use function count;
-use function implode;
 
 use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -18,6 +17,7 @@ use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
+use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AClaimantAsShown;
 use Modules\Operator\Internal\ViewModels\ALinkAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -33,9 +33,6 @@ use Modules\Operator\Internal\WhatTheCatalogueNames;
  */
 final readonly class HowTheLinksRead
 {
-    /** What stands between two services named on one line. */
-    private const string BETWEEN = ', ';
-
     /** How many claimants it takes for there to be a choice between them. */
     private const int A_CHOICE = 2;
 
@@ -83,7 +80,7 @@ final readonly class HowTheLinksRead
             $named[] = $service->named();
         }
 
-        return implode(self::BETWEEN, $named);
+        return Listed::these(...$named);
     }
 
     /** One link, on the arm it was reached by. */

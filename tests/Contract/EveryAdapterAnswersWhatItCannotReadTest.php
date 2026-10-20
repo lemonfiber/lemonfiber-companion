@@ -69,7 +69,7 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * upgrade the envelopes each is answered with. So are a finished copy, the
  * listing a restore answers without a yes, and a finished restore, what a
  * start, a stop or a restart came to, both what stopping seeding would cost
- * and what it came to, what taking somebody out came to, what taking
+ * and what it came to, what a change to a setting the services read came to, what taking somebody out came to, what taking
  * lemonfiber off came to, and a choice of filler, read or made. Registering a
  * phone's key, a challenge for a mint and a mint as a claim are each given the
  * envelope the stack answers that request with.
@@ -99,6 +99,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Pausers::whatBecameOf' => sprintf('%sPausingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Linesmen::whatBecameOf' => sprintf('%sBandwidthEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Tuners::whatBecameOf' => sprintf('%sSettingsEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Allowers::whatBecameOf' => sprintf('%sHouseholdEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Acceptors::whatBecameOf' => sprintf('%sDoctorEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Forgetters::whatBecameOf' => sprintf('%sStoredEnvelope', AN_ENVELOPE_BY_NAME),

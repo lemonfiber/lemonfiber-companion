@@ -7,6 +7,7 @@ namespace Lemonfiber\Companion\PHPStan\Rules\OneHome;
 use function array_keys;
 
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
+use Bootstrap\Composition\NativePHP\TheTheme;
 use Lemonfiber\Native\Handover;
 use Lemonfiber\Native\Link;
 use Lemonfiber\Native\Scanning;
@@ -88,6 +89,7 @@ final readonly class Coincidences
             'LABELLED' => "the prop EDGE carries a control's words on",
         ],
         WhereAnExpressionPoints::class => ['PAYLOAD' => 'the property an SDK envelope carries its payload on'],
+        TheTheme::class => ['THE_FACE_WHERE_NONE_IS_NAMED' => "mobile-ui's alias for the face a text that names none is set in"],
     ];
 
     /**

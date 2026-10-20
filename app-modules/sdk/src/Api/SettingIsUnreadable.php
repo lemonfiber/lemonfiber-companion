@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use InvalidArgumentException;
-use Modules\Sdk\Api\Fields\ConfigField;
 
 use function sprintf;
 
@@ -38,7 +37,7 @@ final class SettingIsUnreadable extends InvalidArgumentException
     {
         return new self(sprintf(
             'The config envelope\'s `%s` is not a list of settings. This answer did not come from a lemonfiber of a version this app can read.',
-            ConfigField::Settings->value,
+            WireField::Settings->value,
         ));
     }
 
@@ -55,7 +54,7 @@ final class SettingIsUnreadable extends InvalidArgumentException
     {
         return new self(sprintf(
             'The config envelope\'s `%s` has something at position %d that is not a setting. This answer did not come from a lemonfiber of a version this app can read.',
-            ConfigField::Settings->value,
+            WireField::Settings->value,
             $position,
         ));
     }

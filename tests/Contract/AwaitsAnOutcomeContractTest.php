@@ -11,6 +11,7 @@ use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
+use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\PairingAPhone;
 use Modules\Operator\Internal\Screens\PausingTheDownloads;
@@ -48,6 +49,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     HowCurrentThisStackIs::class,
     HowTheLineIsSharedHere::class,
     HowTheServicesAreWired::class,
+    HowThisPluginIsSet::class,
     LettingADownloadGo::class,
     PausingTheDownloads::class,
     PairingAPhone::class,

@@ -146,8 +146,8 @@ final readonly class Links
      */
     private static function chosen(array $settled, int $position): WhatSettledIt
     {
-        $said = self::text($settled, WiringField::Wired, WiringField::Whose, $position);
-        $whose = WhoSettledIt::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WiringField::Whose, $said, $position);
+        $said = self::text($settled, WiringField::Wired, WireField::Whose, $position);
+        $whose = WhoSettledIt::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WireField::Whose, $said, $position);
         $why = ! array_key_exists(WireField::Why->value, $settled) || $settled[WireField::Why->value] === null
             ? WhyItWasChosen::unstated()
             : WhyItWasChosen::stated(self::text($settled, WiringField::Wired, WireField::Why, $position));

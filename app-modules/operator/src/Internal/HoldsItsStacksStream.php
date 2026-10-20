@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\News\Api\HowMuchIsNew;
 use Modules\Operator\Internal\Presenters\HowTheTabsAreMarked;
@@ -62,7 +63,9 @@ use Native\Mobile\Edge\NativeComponent;
  * **What answers what is handed to the screen that draws it.** The stream says
  * it when a listener arrives and whenever it changes, and the last of it waits
  * in {@see $whatAnswersWhatHeard} for a screen that draws it to take; every
- * other screen leaves it there. It is kept nowhere on the phone.
+ * other screen leaves it there. It is kept nowhere on the phone. Every setting
+ * the services read is handed on the same way, to the screen listing a
+ * plugin's settings.
  *
  * **It reads the screen's own `$listening` and `$storage`.** That is the
  * coupling, stated here because a trait cannot declare it: the ports the
@@ -86,6 +89,9 @@ trait HoldsItsStacksStream
 
     /** What answers what as the stream last said it, until a screen that draws it takes it. */
     protected ?TheLinks $whatAnswersWhatHeard = null;
+
+    /** Every setting the services read as the stream last said them, until a screen that draws them takes them. */
+    protected ?TheServicesSettings $settingsHeard = null;
 
     /**
      * Take what the subscription has delivered, or let go of it.
@@ -113,6 +119,7 @@ trait HoldsItsStacksStream
         $thisWake = $this->heardFrom($stack, $now);
         $this->noticeTheNewest($thisWake, $stack);
         $this->handOnWhatAnswersWhat($thisWake);
+        $this->handOnTheSettings($thisWake);
         $held = $held->after($thisWake, $now);
 
         if ($held->hasGoneQuiet($now)) {
@@ -217,6 +224,19 @@ trait HoldsItsStacksStream
         $heard->whatAnswersWhat(
             said: function (TheLinks $links) use ($heard): WhatWasHeard {
                 $this->whatAnswersWhatHeard = $links;
+
+                return $heard;
+            },
+            nothing: static fn(): WhatWasHeard => $heard,
+        );
+    }
+
+    /** Hold every setting the services read, where this wake said them, for a screen that draws them. */
+    private function handOnTheSettings(WhatWasHeard $heard): void
+    {
+        $heard->theSettings(
+            said: function (TheServicesSettings $settings) use ($heard): WhatWasHeard {
+                $this->settingsHeard = $settings;
 
                 return $heard;
             },

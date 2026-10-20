@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AnAction;
 use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
@@ -90,7 +91,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
             Api::EXPLAIN_ENDPOINT, Api::FORMS_ENDPOINT, Api::FRONT_DOOR_ENDPOINT, Api::HELD_ENDPOINT,
             Api::HISTORY_ENDPOINT, Api::HOSTING_ENDPOINT, Api::LOGS_ENDPOINT, Api::MIGRATION_ENDPOINT,
             Api::NEWS_ENDPOINT, Api::OUTBOUND_ENDPOINT, Api::PLAYING_ENDPOINT, Api::PLUGINS_ENDPOINT, Api::POSTER_ENDPOINT, Api::PROVENANCE_ENDPOINT, Api::QUALITY_ENDPOINT,
-            Api::REQUESTS_ENDPOINT, Api::SPACE_ENDPOINT, Api::STATUS_ENDPOINT, Api::STORED_ENDPOINT,
+            Api::REQUESTS_ENDPOINT, Api::SETTINGS_ENDPOINT, Api::SPACE_ENDPOINT, Api::STATUS_ENDPOINT, Api::STORED_ENDPOINT,
             Api::STUCK_ENDPOINT, Api::TRACE_ENDPOINT, Api::UNINSTALL_ENDPOINT, Api::UPDATE_ENDPOINT,
             Api::VERSION_ENDPOINT, Api::WATCHING_ENDPOINT, Api::WIRING_ENDPOINT, OneTitle::asDeclared(),
         ];
@@ -105,7 +106,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function actions(): array
     {
         $cases = [
-            ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(),
+            ...AcceptingAChoice::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(),
             ...MovingInBy::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),

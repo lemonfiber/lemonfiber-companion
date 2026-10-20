@@ -33,6 +33,7 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
@@ -50,6 +51,9 @@ use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
+use Modules\Kernel\Api\ASettingChange;
+use Modules\Kernel\Api\ASettingChangeAgreed;
+use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\ATextToSign;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
@@ -109,6 +113,10 @@ use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\TheRoots;
+use Modules\Kernel\Api\TheSecretsRead;
+use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\ThisDevice;
@@ -134,6 +142,7 @@ use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheRemovalFound;
+use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
@@ -225,6 +234,7 @@ use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\Switchers;
 use Modules\Sdk\Api\TheirOwn;
+use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
@@ -391,6 +401,16 @@ final readonly class EveryAdapterCallThatReads
                 => new Linesmen($clients, $entropy)->carryOut($stack, $session, ALineChange::asked(ALift::none(), down: '50%')),
             'Linesmen::whatBecameOf' => static fn(): object
                 => new Linesmen($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Tuners::readOn' => static fn(): object => new Tuners($clients, $entropy)->readOn($stack, $session),
+            'Tuners::rehearse' => static fn(): object
+                => new Tuners($clients, $entropy)->rehearse($stack, $session, ASettingChange::toHold('vpn.countries', 'NL')),
+            'Tuners::carryOut' => static fn(): object
+                => new Tuners($clients, $entropy)->carryOut($stack, $session, ASettingChangeAgreed::after(
+                    TheSettingAsChanged::said(ASettingChange::backToDefault('vpn.countries'), ASettingValue::value('NL'), Services::none(), Services::none(), WhatTheSettingRunDid::Rehearsed, AnOffer::named('an-offer'), '', '', TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these())),
+                    ASettingChange::backToDefault('vpn.countries'),
+                )),
+            'Tuners::whatBecameOf' => static fn(): object
+                => new Tuners($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Acceptors::accept' => static fn(): object
                 => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
             'Acceptors::whatBecameOf' => static fn(): object

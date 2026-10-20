@@ -331,6 +331,9 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a name that is not text' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'name' => 3])), $unreadable],
         'a review that is neither yes nor no' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'declared' => ['reviewed' => 'yes']])), $unreadable],
         'a blank version' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'version' => ' '])), $unreadable],
+        'services that are not a list' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => 'tdarr'])), $unreadable],
+        'a service that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => ['tdarr']])), $unreadable],
+        'a service placed with no id' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => [['service' => ' ']]])), $unreadable],
     ];
 }
 
@@ -338,6 +341,19 @@ it('refuses every answer about plugins it cannot read, rather than salvaging it'
     foreach (everyPluginsAnswerThatCannotBeRead() as $which => [$answer, $refusal]) {
         expect(static fn(): ThePlugins => PluginInstalls::in($answer))->toThrow($refusal, null, $which);
     }
+});
+
+it('reads each service an installed plugin placed, by its id, in the record\'s order', function (): void {
+    $plugins = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'installed' => [[...APluginAsItArrives::onTheWire(), 'services' => [['service' => 'tdarr'], ['service' => 'tdarr-node']]]]]));
+    $placed = [];
+
+    foreach ($plugins->installed() as $plugin) {
+        foreach ($plugin->services() as $service) {
+            $placed[] = $service->named();
+        }
+    }
+
+    expect($placed)->toBe(['tdarr', 'tdarr-node']);
 });
 
 it('reads an adapter that is not a table as no adapter', function (): void {

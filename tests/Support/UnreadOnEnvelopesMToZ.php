@@ -56,6 +56,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'SettingsEnvelope.settings[].environment',
+            'because' => 'The environment file\'s key a setting is held under. A setting is listed and changed by its name, with each service and the variable it reads it into (`N25-R12`); where the stack writes it is the stack\'s.',
+        ],
+        [
             'path' => 'SpaceEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingForIt;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
@@ -269,6 +270,8 @@ const VERBS_THE_APP_ASKS_FOR = [
     'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     'household-allow' => 'rehearses a change to what the household or one member may ask for, and makes it only as that rehearsal was asked',
     'plugin-prove' => 'reads what proving a plugin again would ask, and proves it only carrying back the offer that reading named',
+    'settings-set' => 'rehearses giving one setting a plugin\'s services read a value of the operator\'s, and writes it only carrying back the offer that rehearsal named; a secret is never named',
+    'settings-clear' => 'rehearses putting one setting a plugin\'s services read back to its default, and writes it only carrying back the offer that rehearsal named',
     'adopt' => 'rehearses keeping the operator\'s own edits as the expected state, and adopts them only against that rehearsal',
     'switch' => 'rehearses making the forms chosen from the stack\'s own list the active set, and makes it only as that rehearsal was asked',
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',
@@ -598,6 +601,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
         ...array_map(static fn(WhatToDoWithTheDownloads $downloads): string => $downloads->asked(), WhatToDoWithTheDownloads::cases()),
         ...array_map(static fn(ChangingTheLine $line): string => $line->asked(), ChangingTheLine::cases()),
+        ...array_map(static fn(ChangingASetting $setting): string => $setting->asked(), ChangingASetting::cases()),
         ...array_map(static fn(ChoosingWhatIsAllowed $allowed): string => $allowed->asked(), ChoosingWhatIsAllowed::cases()),
         ...array_map(static fn(AcceptingAChoice $accepting): string => $accepting->asked(), AcceptingAChoice::cases()),
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),

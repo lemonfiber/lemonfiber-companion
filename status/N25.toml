@@ -17,8 +17,8 @@ requirement = [
   { id = "N25-R9", state = "done", evidence = ["app-modules/operator/resources/views/what-extends-this-stack.blade.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
   { id = "N25-R10", state = "done", evidence = ["app-modules/sdk/src/Api/Extenders.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
   { id = "N25-R11", state = "done", evidence = ["app-modules/kernel/src/Api/APrivilegedShape.php", "app-modules/sdk/src/Internal/PluginInstallReports.php", "app-modules/sdk/tests/Api/PluginInstallsTest.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
-  { id = "N25-R12", state = "open" },
-  { id = "N25-R13", state = "open" },
-  { id = "N25-R14", state = "open" },
+  { id = "N25-R12", state = "done", evidence = ["app-modules/kernel/src/Api/SettingWhatServicesRead.php", "app-modules/sdk/src/Api/Tuners.php", "app-modules/operator/src/Internal/Screens/HowThisPluginIsSet.php", "tests/Contract/SettingWhatServicesReadContractTest.php", "tests/Feature/ChangingAPluginsSettingTest.php"] },
+  { id = "N25-R13", state = "done", evidence = ["app-modules/kernel/src/Api/ASecret.php", "app-modules/sdk/src/Api/TheSettingsListed.php", "app-modules/operator/resources/views/how-this-plugin-is-set.blade.php", "tests/Feature/ChangingAPluginsSettingTest.php"] },
+  { id = "N25-R14", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowThisPluginIsSet.php", "app-modules/operator/src/Providers/OperatorServiceProvider.php"] },
   { id = "N25-R15", state = "done", evidence = ["app-modules/kernel/src/Api/APluginReproof.php", "app-modules/sdk/src/Api/PluginInstalls.php", "app-modules/operator/src/Internal/Screens/WhatExtendsThisStack.php", "tests/Contract/ExtendingTheStackContractTest.php", "tests/Feature/ProvingAPluginAgainTest.php"] },
 ]

@@ -51,6 +51,7 @@ use Modules\Sdk\Api\Fields\ResetField;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
+use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StopSeedingField;
@@ -132,6 +133,7 @@ function everyFieldNamedOnTheWire(): array
         ...ResetField::cases(),
         ...RestoreField::cases(),
         ...SeedField::cases(),
+        ...SettingsField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),

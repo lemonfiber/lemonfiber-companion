@@ -19,6 +19,7 @@ use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\ARunAgreedTo;
+use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Decided;
@@ -105,6 +106,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     APluginUpdateAgreed::class,
     APluginRemovalAgreed::class,
     APluginProofAgreed::class,
+    ASettingChangeAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,
     AFillAgreed::class,
