@@ -13,6 +13,9 @@ namespace Tests\Support;
  */
 final readonly class WhatThisAppDoesNotRead
 {
+    /** Why the operator's own overlay, beside any envelope that carries it, is not read. */
+    public const string THE_OPERATORS_OVERLAY = 'The operator\'s own overlay and every service it changes, which lemonfiber merges over the project and vets nothing of. It is written at the machine and is the operator\'s, and no requirement asks the app to show it.';
+
     /**
      * Why `rehearsed` goes unread on every report this app never asks to rehearse.
      *

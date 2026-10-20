@@ -501,6 +501,10 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
         ],
         [
+            'path' => 'LifecycleEnvelope.unvetted',
+            'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
+        ],
+        [
             'path' => 'LifecycleEnvelope.action',
             'because' => 'The Compose subcommand that was run. The screen judges the report against the verb the '
                 . 'operator agreed to, which it sent and holds; reading the subcommand to decide would put a '

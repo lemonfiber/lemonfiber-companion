@@ -31,6 +31,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
         ],
         [
+            'path' => 'PluginsEnvelope.unvetted',
+            'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
+        ],
+        [
             'path' => 'PluginsEnvelope.proof.kept[].at',
             'because' => 'As `PluginsEnvelope.nonconforming[].at`: a proof again lists the same answers kept against the plugin, and what they say is drawn; when each was given changes none of it.',
         ],

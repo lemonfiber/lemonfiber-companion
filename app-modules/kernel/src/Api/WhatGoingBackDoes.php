@@ -55,6 +55,9 @@ enum WhatGoingBackDoes: string
     /** Put a secret in the secret store back to the value it held. */
     case Rehold = 'rehold';
 
+    /** The operator's own overlay is left as it stands, beyond what lemonfiber puts back. */
+    case Leave = 'leave';
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {
