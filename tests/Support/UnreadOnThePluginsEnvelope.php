@@ -31,6 +31,18 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'The SHA-256 of the manifest the plugin was installed from. Whether it was reviewed, where it came from, its revision and what signed it are drawn (`N25-R8`); matching the digest against the catalogue is the stack\'s check, and not one the operator is asked to make.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.tree',
+            'because' => 'The digest of the plugin\'s tree it was installed from, for `PluginsEnvelope.install.would.manifest`\'s reason: where it came from, its revision and what signed it are drawn (`N25-R8`), and matching a digest is the stack\'s check.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].tree',
+            'because' => 'As `PluginsEnvelope.install.would.tree`: the record keeps the digest of the tree it was installed from, and matching it is the stack\'s check.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.tree',
+            'because' => 'As `PluginsEnvelope.install.would.tree`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
             'path' => 'PluginsEnvelope.unvetted',
             'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
         ],
@@ -157,6 +169,18 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.install.reversed.reversed[].action.kept',
             'because' => 'For `UndoEnvelope.reversed[].action.kept`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.from',
+            'because' => 'For `UndoEnvelope.reversed[].action.from`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.to',
+            'because' => 'For `UndoEnvelope.reversed[].action.to`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.volume',
+            'because' => 'For `UndoEnvelope.reversed[].action.volume`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
         ],
         [
             'path' => 'PluginsEnvelope.install.verified.broke[].before',
@@ -391,6 +415,18 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.kept`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
         ],
         [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.from',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.from`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.to',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.to`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.volume',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.volume`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
             'path' => 'PluginsEnvelope.rehearsed',
             'because' => 'Whether the run was a dry run of the whole stack. A plugin install asked without an offer is its reading and leaves this false; a reading is told by nothing having been recorded or put back, which is read.',
         ],
@@ -465,6 +501,18 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.went_back.reversed[].action.kept',
             'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.kept`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.from',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.from`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.to',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.to`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.volume',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.volume`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.against',
@@ -561,6 +609,18 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.kept',
             'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.kept`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.from',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.from`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.to',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.to`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.volume',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.volume`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.verified.broke[].before',

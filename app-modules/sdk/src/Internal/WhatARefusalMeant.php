@@ -192,6 +192,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::RegistryRefused,
         RefusalCode::NothingToProve,
         RefusalCode::StrangerReplacing,
+        RefusalCode::ProjectEdited,
+        RefusalCode::RootRefused,
         // Minting, collecting and revoking a key for an app, refused for
         // what was asked: a claim that collects nothing is one of them, and
         // ends no session whatever status it came with.

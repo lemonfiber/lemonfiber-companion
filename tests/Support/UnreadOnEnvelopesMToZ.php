@@ -80,6 +80,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The setting a choice of filler is recorded under, in lemonfiber\'s own spelling of it. The screen says the same thing in the operator\'s terms, from the capability and the service that would answer it.',
         ],
         [
+            'path' => 'SubstitutionEnvelope.unvetted',
+            'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
+        ],
+        [
             'path' => 'StoredEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
@@ -233,6 +237,18 @@ final readonly class UnreadOnEnvelopesMToZ
         [
             'path' => 'UndoEnvelope.reversed[].action.field',
             'because' => 'The field of a service\'s own resource a reconfigure puts back. `target` names the service and `does` says its own setting went back, and both are drawn; a service that did not answer is reported in `left` with why, which is read.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.from',
+            'because' => 'Where a move back puts a service\'s state again. `target` names what the change was against and `does` says its state went back, and both are drawn; the path is on a machine the operator has no filesystem in front of.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.to',
+            'because' => 'Where a moved service\'s state is, or where a kept copy of a volume is, for `UndoEnvelope.reversed[].action.from`\'s reason.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.volume',
+            'because' => 'The volume a kept copy was taken from. `target` names what the change was against and `does` says the copy is kept and the volume was never changed, and both are drawn; no requirement asks this app to name a volume (`N1-R17`).',
         ],
         [
             'path' => 'WatchEnvelope.would',
@@ -603,6 +619,14 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'whether what they are waiting for is among them. `E1-R12` has an update report these '
                 . 'before it runs; no `N2` requirement asks the app to, and the downloads screen is where an '
                 . 'operator reads what is in flight.',
+        ],
+        [
+            'path' => 'UpdateEnvelope.moves',
+            'because' => 'Each part this release installs as a plugin that the stack still runs as its own service, a move in place a confirmed update takes. No `N` requirement says how a move in place is confirmed: `N2-R17` names the services `changes` lists, which is read. Raise it against the spec before reading it, which is `N1-R17`.',
+        ],
+        [
+            'path' => 'UpdateEnvelope.moved',
+            'because' => 'Each move in place a run took, or could not take and why. `N2-R18` reports how an update ended for each service in `applied`, which is read; no `N` requirement asks what became of a move in place. Raise it against the spec before reading it, which is `N1-R17`.',
         ],
         [
             'path' => 'MigrationEnvelope.linking.links',
