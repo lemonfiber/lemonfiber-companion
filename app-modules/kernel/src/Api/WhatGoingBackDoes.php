@@ -31,6 +31,12 @@ enum WhatGoingBackDoes: string
     /** A file lemonfiber wrote over is written back to what it held before. */
     case Rewind = 'rewind';
 
+    /** A service's state is moved back to where it was, from where it was moved to. */
+    case MoveBack = 'move-back';
+
+    /** A copy of a volume is kept where it is, the volume itself never having changed. */
+    case KeepCopy = 'keep-copy';
+
     /** A service is pinned back to the version it was standing on. */
     case Repin = 'repin';
 

@@ -56,6 +56,8 @@ return [
             'delete' => 'Wat het aanmaakte wordt gewist',
             'withdraw' => 'Wat lemonfiber in het bestand schreef wordt eruit gehaald',
             'rewind' => 'Het bestand dat lemonfiber overschreef krijgt terug wat erin stond',
+            'move-back' => 'De gegevens van de dienst gaan terug naar waar ze stonden',
+            'keep-copy' => 'De kopie van het volume blijft bewaard, en het volume zelf is nooit veranderd',
             'repin' => 'Teruggezet op de versie waarop het stond',
             'reconfigure' => 'De eigen instelling van de dienst wordt teruggezet',
             'revoke' => 'De sleutel die het maakte wordt ingetrokken',
