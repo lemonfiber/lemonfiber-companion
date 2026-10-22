@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function array_any;
+use function array_key_exists;
 use function file_get_contents;
+use function hash;
 use function is_string;
 
 use PhpParser\Node\Name\FullyQualified;
@@ -46,19 +48,7 @@ final readonly class Imports
      */
     public static function of(string $file): array
     {
-        $source = file_get_contents($file);
-
-        if (! is_string($source)) {
-            return [];
-        }
-
-        $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($source);
-
-        if ($statements === null) {
-            return [];
-        }
-
-        return [...self::imported($statements), ...self::writtenOut($statements)];
+        return self::read($file)['names'];
     }
 
     /**
@@ -73,18 +63,81 @@ final readonly class Imports
      */
     public static function declaredName(string $file): string
     {
+        return self::read($file)['declared'];
+    }
+
+    /**
+     * Every class, interface, trait and enum the file declares, by short name.
+     *
+     * {@see declaredName()} reads the first one, which is the right answer to
+     * the question it is asked — which class does this path name — and an
+     * honest one only for as long as there is exactly one to choose from. This
+     * is what `W6` is checked with, so that the assumption the rest of this
+     * class rests on is stated somewhere rather than left implicit.
+     *
+     * Anonymous classes are left out: they have no name to compare against a
+     * path, nothing can autoload one, and `new class {}` inside a method is not
+     * a second declaration in the sense that matters.
+     *
+     * @return list<string>
+     */
+    public static function declaredNames(string $file): array
+    {
+        return self::read($file)['declaredNames'];
+    }
+
+    /**
+     * Whether any of these names starts with the given namespace.
+     *
+     * Compared with a trailing separator so that `Native\Mobile` does not match
+     * a hypothetical `Native\MobileSomething`, and the namespace itself is
+     * accepted for the case where the name is the namespace.
+     *
+     * @param list<string> $names
+     */
+    public static function anyUnder(array $names, string $namespace): bool
+    {
+        return array_any($names, fn(string $name): bool => $name === $namespace || str_starts_with($name, sprintf('%s\\', $namespace)));
+    }
+
+    /**
+     * What one file names and declares, parsed once for each source it has had.
+     *
+     * Keyed by the source rather than the path, so a file rewritten during a
+     * run is read again.
+     *
+     * @return array{names: list<string>, declared: string, declaredNames: list<string>}
+     */
+    private static function read(string $file): array
+    {
+        /** @var array<string, array{names: list<string>, declared: string, declaredNames: list<string>}> $readings */
+        static $readings = [];
+
         $source = file_get_contents($file);
+        $nothing = ['names' => [], 'declared' => '', 'declaredNames' => []];
 
         if (! is_string($source)) {
-            return '';
+            return $nothing;
+        }
+
+        $key = hash('xxh128', $source);
+
+        if (array_key_exists($key, $readings)) {
+            return $readings[$key];
         }
 
         $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($source);
 
-        if ($statements === null) {
-            return '';
-        }
+        return $readings[$key] = $statements === null ? $nothing : [
+            'names' => [...self::imported($statements), ...self::writtenOut($statements)],
+            'declared' => self::declaredIn($statements),
+            'declaredNames' => self::declaredNamesIn($statements),
+        ];
+    }
 
+    /** @param array<Stmt> $statements */
+    private static function declaredIn(array $statements): string
+    {
         $finder = new NodeFinder();
 
         /** @var ClassLike|null $declaration */
@@ -105,34 +158,12 @@ final readonly class Imports
     }
 
     /**
-     * Every class, interface, trait and enum the file declares, by short name.
-     *
-     * {@see declaredName()} reads the first one, which is the right answer to
-     * the question it is asked — which class does this path name — and an
-     * honest one only for as long as there is exactly one to choose from. This
-     * is what `W6` is checked with, so that the assumption the rest of this
-     * class rests on is stated somewhere rather than left implicit.
-     *
-     * Anonymous classes are left out: they have no name to compare against a
-     * path, nothing can autoload one, and `new class {}` inside a method is not
-     * a second declaration in the sense that matters.
+     * @param array<Stmt> $statements
      *
      * @return list<string>
      */
-    public static function declaredNames(string $file): array
+    private static function declaredNamesIn(array $statements): array
     {
-        $source = file_get_contents($file);
-
-        if (! is_string($source)) {
-            return [];
-        }
-
-        $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($source);
-
-        if ($statements === null) {
-            return [];
-        }
-
         $names = [];
 
         /** @var list<ClassLike> $declarations */
@@ -145,21 +176,6 @@ final readonly class Imports
         }
 
         return $names;
-    }
-
-
-    /**
-     * Whether any of these names starts with the given namespace.
-     *
-     * Compared with a trailing separator so that `Native\Mobile` does not match
-     * a hypothetical `Native\MobileSomething`, and the namespace itself is
-     * accepted for the case where the name is the namespace.
-     *
-     * @param list<string> $names
-     */
-    public static function anyUnder(array $names, string $namespace): bool
-    {
-        return array_any($names, fn(string $name): bool => $name === $namespace || str_starts_with($name, sprintf('%s\\', $namespace)));
     }
 
     /**

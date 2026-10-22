@@ -335,7 +335,7 @@ const ASKS_NOTHING_UNTIL_TAPPED = [
 it('a screen that asks nothing on open still offers the act that asks', function (): void {
     withNoStackRunning();
 
-    $drawn = whatEachScreenDrewOf(AStandInStack::NotAnswering);
+    $drawn = whatEachScreenDrewOf(AStandInStack::NotAnswering, array_keys(ASKS_NOTHING_UNTIL_TAPPED));
 
     foreach (array_keys(ASKS_NOTHING_UNTIL_TAPPED) as $name) {
         expect($drawn)->toHaveKey($name)
