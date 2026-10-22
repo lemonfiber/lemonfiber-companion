@@ -121,7 +121,7 @@ final readonly class PluginInstalls
 
         foreach (self::rows($data, WireField::Installed) as $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry(WireField::Installed, PluginsField::Plugin, $position);
+                throw PluginsAreUnreadable::entry(WireField::Installed, WireField::Plugin, $position);
             }
 
             $found[] = PluginRecords::of($row, WireField::Installed, $position);
@@ -150,7 +150,7 @@ final readonly class PluginInstalls
                 throw PluginsAreUnreadable::entry(PluginsField::Sources, WireField::Standing, $position);
             }
 
-            $found[] = ASourceAsked::of(self::text($row, PluginsField::Sources, PluginsField::Plugin, $position), self::standing($row[WireField::Standing->value], $position));
+            $found[] = ASourceAsked::of(self::text($row, PluginsField::Sources, WireField::Plugin, $position), self::standing($row[WireField::Standing->value], $position));
             $position++;
         }
 
@@ -179,7 +179,7 @@ final readonly class PluginInstalls
     private static function reproof(array $proof): APluginReproof
     {
         return APluginReproof::reported(
-            Required::text($proof, PluginsField::Plugin, PluginsAreUnreadable::missing(PluginsField::Plugin)),
+            Required::text($proof, WireField::Plugin, PluginsAreUnreadable::missing(WireField::Plugin)),
             WhatAProofsVerdictWas::proofs($proof),
             self::answersIn($proof, WireField::Kept),
             Required::flag($proof, WireField::Asked, PluginsAreUnreadable::missing(WireField::Asked)),
@@ -199,11 +199,11 @@ final readonly class PluginInstalls
 
         foreach (self::rows($table, $list) as $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry($list, PluginsField::Plugin, $position);
+                throw PluginsAreUnreadable::entry($list, WireField::Plugin, $position);
             }
 
             $found[] = AnAnswerOutOfContract::of(
-                self::text($row, $list, PluginsField::Plugin, $position),
+                self::text($row, $list, WireField::Plugin, $position),
                 self::text($row, $list, WireField::Capability, $position),
                 self::text($row, $list, WireField::Operation, $position),
                 self::text($row, $list, WireField::Why, $position),

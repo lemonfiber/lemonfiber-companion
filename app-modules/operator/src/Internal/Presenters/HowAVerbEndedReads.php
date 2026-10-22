@@ -99,6 +99,7 @@ final readonly class HowAVerbEndedReads
             leftOut: new HowWhatWasLeftOutReads()->of($report->leftOut()),
             portsHeld: $this->portsHeld($report->portsHeld()),
             editsKept: new HowAStackEditReads()->these($report->editsKept()),
+            movesOnOffer: new HowAMoveInPlaceReads()->offered($report->movesInPlace(), HowAMoveInPlaceReads::ON_OFFER),
             commandSaid: $this->commandSaid($ran, $rehearsed),
             command: $command,
         );
@@ -172,6 +173,7 @@ final readonly class HowAVerbEndedReads
             leftOut: [],
             portsHeld: [],
             editsKept: [],
+            movesOnOffer: [],
             commandSaid: null,
             command: '',
         );

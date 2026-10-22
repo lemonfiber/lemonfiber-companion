@@ -7,6 +7,9 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AMoveInPlace;
+use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Form;
@@ -16,6 +19,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\TheHoldSaysNothing;
+use Modules\Kernel\Api\TheMovesInPlace;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -145,4 +149,15 @@ it('keeps the services it waited for whichever way it was built', function (): v
 
     expect(aRestartReported($down)->amountingTo(HowTheStackIsRunning::Partial)->whatDidNotComeBack())->toHaveCount(1)
         ->and(aRestartDeclined('On battery.', $down)->whatDidNotComeBack())->toHaveCount(1);
+});
+
+it('names the moves in place on offer, whatever it is told before or after', function (): void {
+    $moves = TheMovesInPlace::these(AMoveInPlace::of(ServiceId::called('jellyfin'), APluginId::called('plugin-jellyfin')));
+    $named = aRestartReported()->amountingTo(HowTheStackIsRunning::Active)->offering(AnOffer::named('3f2a91c0'))->naming($moves);
+
+    expect(aRestartReported()->movesInPlace())->toHaveCount(0)
+        ->and($named->movesInPlace())->toBe($moves)
+        ->and(aRestartReported()->naming($moves)->amountingTo(HowTheStackIsRunning::Active)->offering(AnOffer::none())->movesInPlace())->toBe($moves)
+        ->and($named->offer())->toEqual(AnOffer::named('3f2a91c0'))
+        ->and(whatItAmountsTo($named))->toBe(whatItAmountsTo(aRestartReported()->amountingTo(HowTheStackIsRunning::Active)));
 });

@@ -22,6 +22,7 @@ final readonly class HowTheLastUpdateWent
      * @param list<WhatOneServiceTookItSays>  $applied            what became of each service it touched, those not where the operator wanted them first
      * @param int                             $didNotArrive       how many of those are not where the operator wanted them
      * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
+     * @param list<AMoveInPlaceAsShown>       $moved              what became of each move in place it tried
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -31,5 +32,6 @@ final readonly class HowTheLastUpdateWent
         public array $applied,
         public int $didNotArrive,
         public bool $anythingUnanswered,
+        public array $moved,
     ) {}
 }

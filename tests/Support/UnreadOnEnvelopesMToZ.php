@@ -621,14 +621,6 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'operator reads what is in flight.',
         ],
         [
-            'path' => 'UpdateEnvelope.moves',
-            'because' => 'Each part this release installs as a plugin that the stack still runs as its own service, a move in place a confirmed update takes. No `N` requirement says how a move in place is confirmed: `N2-R17` names the services `changes` lists, which is read. Raise it against the spec before reading it, which is `N1-R17`.',
-        ],
-        [
-            'path' => 'UpdateEnvelope.moved',
-            'because' => 'Each move in place a run took, or could not take and why. `N2-R18` reports how an update ended for each service in `applied`, which is read; no `N` requirement asks what became of a move in place. Raise it against the spec before reading it, which is `N1-R17`.',
-        ],
-        [
             'path' => 'MigrationEnvelope.linking.links',
             'because' => 'Whether imports can be hardlinks across the existing layout. It is false whenever '
                 . '`linking` is sent at all, because a layout that links is not reported, so the presence of '

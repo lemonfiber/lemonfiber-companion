@@ -56,6 +56,16 @@ return [
     // release the stack has nothing to say about.
     'delivers_unsaid' => 'The stack did not say what this one changes',
 
+    'moves' => [
+        'heading' => 'Moving in place',
+        'would_take' => ':plugin will take the place of :service, keeping its data and settings',
+        'on_offer' => ':plugin can take the place of :service',
+        'an_update_takes_it' => 'Starting the stack does not move it. Taking the update does.',
+        'took' => ':plugin now runs in place of :service',
+        'did_not_take' => ':plugin did not take the place of :service, which runs as before',
+        'why_unsaid' => 'The stack did not say why.',
+    ],
+
     'would_be_noticed' => 'The household will see the difference',
     'would_not_be_noticed' => 'Nobody will notice this one',
 ];

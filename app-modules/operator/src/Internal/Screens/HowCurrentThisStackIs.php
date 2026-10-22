@@ -22,7 +22,9 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowAMoveInPlaceReads;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
+use Modules\Operator\Internal\ViewModels\AMoveInPlaceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
@@ -221,6 +223,18 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     public function wouldChange(): int
     {
         return $this->asking instanceof TakingAnUpdate ? $this->asking->changing()->count() : 0;
+    }
+
+    /**
+     * The moves in place the pending question would take.
+     *
+     * @return list<AMoveInPlaceAsShown>
+     */
+    public function wouldMove(): array
+    {
+        return $this->asking instanceof TakingAnUpdate
+            ? new HowAMoveInPlaceReads()->offered($this->asking->movesInPlace(), HowAMoveInPlaceReads::WOULD_TAKE)
+            : [];
     }
 
     /** How many of those the stack said nothing will put back. */

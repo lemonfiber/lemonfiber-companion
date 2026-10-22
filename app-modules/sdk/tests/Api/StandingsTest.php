@@ -466,3 +466,48 @@ it('reads the stack files the operator edited, which the update leaves as they s
 
     expect($read)->toBe(['compose.yaml:2']);
 });
+
+it('reads each move in place an update would take', function (): void {
+    $upkeep = Standings::in(anUpkeepSaying(whatAStackSaysAboutItsUpkeep(differently: ['moves' => [
+        ['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin'],
+    ]])));
+    $read = [];
+
+    foreach ($upkeep->movesInPlace() as $move) {
+        $read[] = sprintf('%s:%s', $move->service()->named(), $move->plugin()->named());
+    }
+
+    expect($read)->toBe(['jellyfin:plugin-jellyfin'])
+        ->and($upkeep->whatBecameOfTheMoves())->toHaveCount(0);
+});
+
+it('reads what became of each move in place an update tried, taken or not and why', function (): void {
+    $upkeep = Standings::in(anUpkeepSaying(whatAStackSaysAboutItsUpkeep(differently: ['moved' => [
+        ['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin', 'taken' => true],
+        ['service' => 'sonarr', 'plugin' => 'plugin-sonarr', 'taken' => false, 'why' => 'The plugin would not install.'],
+        ['service' => 'radarr', 'plugin' => 'plugin-radarr', 'taken' => false, 'why' => null],
+    ]])));
+    $read = [];
+
+    foreach ($upkeep->whatBecameOfTheMoves() as $went) {
+        $read[] = sprintf('%s:%s:%s:%s', $went->move()->service()->named(), $went->move()->plugin()->named(), $went->wasTaken() ? 'taken' : 'not taken', $went->why());
+    }
+
+    expect($read)->toBe([
+        'jellyfin:plugin-jellyfin:taken:',
+        'sonarr:plugin-sonarr:not taken:The plugin would not install.',
+        'radarr:plugin-radarr:not taken:',
+    ])->and($upkeep->movesInPlace())->toHaveCount(0);
+});
+
+it('refuses a list of moves in place it cannot read', function (string $field, mixed $moves): void {
+    expect(static fn(): Upkeep => Standings::in(anUpkeepSaying(whatAStackSaysAboutItsUpkeep(differently: [$field => $moves]))))
+        ->toThrow(UpkeepIsUnreadable::class, sprintf('`%s`', $field));
+})->with([
+    'moves, not a list' => ['moves', 'jellyfin'],
+    'moves, a move with no service' => ['moves', [['plugin' => 'plugin-jellyfin']]],
+    'moved, not a list' => ['moved', 'jellyfin'],
+    'moved, a move that is not a table' => ['moved', ['jellyfin']],
+    'moved, a move that does not say whether it was taken' => ['moved', [['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin']]],
+    'moved, a reason that is not text' => ['moved', [['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin', 'taken' => false, 'why' => 7]]],
+]);

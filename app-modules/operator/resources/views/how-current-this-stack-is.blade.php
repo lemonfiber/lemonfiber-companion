@@ -31,6 +31,8 @@
         @endforelse
     </x-design::section>
 
+    <x-operator::moves-in-place :moves="$this->wouldMove()" />
+
     @if ($this->asking()->cannotBeWhollyUndone())
         {{-- Between the list and the buttons, which is where it has to be:
              an operator who has read what moves tonight and not yet agreed.
@@ -247,6 +249,8 @@
                  not know about, and sends somebody to a different place. --}}
             <x-design::body>{{ __('updates.unanswered') }}</x-design::body>
         @endif
+
+        <x-operator::moves-in-place :moves="$this->lastUpdate()->moved" />
 
         @forelse ($this->lastUpdate()->applied as $took)
             <x-design::card>

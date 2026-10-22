@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\LifecycleField;
+use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\StackEditsSent;
@@ -69,7 +70,8 @@ final readonly class Lifecycles
             : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits, self::command($data));
 
         return self::condition($data, $report)
-            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, LifecycleIsUnreadable::missing(WireField::Offer))));
+            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, LifecycleIsUnreadable::missing(WireField::Offer))))
+            ->naming(MovesInPlaceSent::offered($data, LifecycleIsUnreadable::missing(WireField::Moves)));
     }
 
     /**

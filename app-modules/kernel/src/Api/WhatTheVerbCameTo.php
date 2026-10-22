@@ -35,6 +35,7 @@ final readonly class WhatTheVerbCameTo
         private TheCommandLine|string $ranOrWhyNot,
         private ?HowTheStackIsRunning $condition = null,
         private ?AnOffer $offer = null,
+        private ?TheMovesInPlace $moves = null,
     ) {}
 
     /** What the stack reported of a verb it ran, with the command it ran it with. */
@@ -68,13 +69,25 @@ final readonly class WhatTheVerbCameTo
     /** The same report, with what the stack says those services amount to. */
     public function amountingTo(HowTheStackIsRunning $condition): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition, $this->offer);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition, $this->offer, $this->moves);
     }
 
     /** The same report, under the name the stack gave what a rehearsal of it offers, which a yes carries back. */
     public function offering(AnOffer $offer): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $offer);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $offer, $this->moves);
+    }
+
+    /** The same report, naming the moves in place on offer, which a start names and an update takes. */
+    public function naming(TheMovesInPlace $moves): self
+    {
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $this->offer, $moves);
+    }
+
+    /** The moves in place on offer, which this verb did not take. */
+    public function movesInPlace(): TheMovesInPlace
+    {
+        return $this->moves ?? TheMovesInPlace::none();
     }
 
     /** The name the stack gave what a rehearsal of it offers, or none. */

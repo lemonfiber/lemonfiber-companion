@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Internal\Changelogs;
 use Modules\Sdk\Internal\Changes;
 use Modules\Sdk\Internal\Endings;
+use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
@@ -58,7 +59,11 @@ final readonly class Standings
         $edits = StackEditsSent::in($data, WireField::StackEdits);
 
         $upkeep = Upkeep::reported($pins, $history, $changing, $stuck, $went, $notes, $edits)
-            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, UpkeepIsUnreadable::missing(WireField::Offer))));
+            ->offering(AnOffer::named(Optional::text($data, WireField::Offer, UpkeepIsUnreadable::missing(WireField::Offer))))
+            ->moving(
+                MovesInPlaceSent::offered($data, UpkeepIsUnreadable::missing(WireField::Moves)),
+                MovesInPlaceSent::tried($data, UpkeepIsUnreadable::missing(WireField::Moved)),
+            );
 
         return $inUse instanceof Release ? $upkeep->runningOn($inUse) : $upkeep;
     }
