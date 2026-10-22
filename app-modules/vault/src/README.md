@@ -9,6 +9,8 @@ class implements one kernel port over it:
 | `PlatformStacks` | `Stacks`, the stacks this device is paired with |
 | `PlatformStandings` | `Standings`, the word each stack's one line last said |
 | `PlatformWorkLeftRunning` | `WorkLeftRunning`, the handle of work a screen left running on each stack |
+| `PlatformWhereTheOperatorWas` | `WhereTheOperatorWas`, the stack last on view and the tab last used on each |
+| `PlatformWhereHearingLeftOff` | `WhereHearingLeftOff`, the last event each stack's stream carried, which a stream opened later resumes after |
 | `PlatformSealKeys` | `HoldsTheSealKeys`, the two keys what the phone keeps is sealed under |
 | `PlatformGrants` | `KeepingTheGrant`, the grant this device plays with on each stack |
 | `PlatformPhoneKeysNames` | `KeepingThePhoneKeysName`, the name this phone's key is registered under on each stack |
@@ -27,5 +29,7 @@ identifier and `<kind>` is a `KindOfWork`, such as `walkthrough`:
 | `lemonfiber.stacks` | Every paired stack: its identifier, name, address and pinned fingerprint, with a shape number |
 | `lemonfiber.standings` | The word each stack's one line last said and when, with a shape number |
 | `lemonfiber.left-running.<kind>.<stack>` | The handle of the work of one kind left running on one stack, with a shape number |
+| `lemonfiber.where-left-off` | The stack last on view and the tab last used on each, with a shape number |
+| `lemonfiber.heard-to.<stack>` | The last event one stack's stream carried to this phone, with a shape number |
 | `lemonfiber.seal.data` | The key every kept value is sealed under, as hex, asked to be readable only while the device is unlocked |
 | `lemonfiber.seal.stack` | The key a stack's identity is hashed under, as hex, asked to be readable only while the device is unlocked |

@@ -41,6 +41,9 @@ enum KeptUnder: string
     /** The name this phone's key is registered under on a stack. */
     case PhoneKeysName = 'lemonfiber.phone-key-name';
 
+    /** The last event a stack's stream carried to this phone, per stack. */
+    case WhereHearingLeftOff = 'lemonfiber.heard-to';
+
     /** The key for one record beneath this one: the names in order, after a dot each. */
     public function beneath(string ...$names): string
     {

@@ -7,6 +7,7 @@ use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
@@ -34,6 +35,7 @@ use Modules\Services\Internal\Store\ListingsInTheDatabase;
 use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereHearingLeftOff;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Watching\Internal\Store\LanguagesInTheDatabase;
@@ -45,8 +47,10 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
+use Tests\Support\WhereItResumes;
 
 // The ForgetsEverythingKept contract, run against every store and against all
 // of them together.
@@ -211,6 +215,28 @@ it('forgets where the operator was on every stack, and says how many', function 
         expect($was->forgetEverything()->howMany())->toBe(2, $which)
             ->and($was->wasLastOn(aStackWithMarkers('b')->id()))->toBeFalse($which)
             ->and($was->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+it('forgets where every stack\'s stream left off, and says how many', function (): void {
+    $store = APlatformStore::working();
+    $stacks = new PlatformStacks($store);
+
+    foreach (['a', 'b'] as $seed) {
+        $stacks->remember(aStackWithMarkers($seed));
+    }
+
+    foreach ([
+        'the platform store' => new PlatformWhereHearingLeftOff($store, $stacks),
+        'the fake' => WhereHearingLeftOffInMemory::nowhere(),
+    ] as $which => $leftOff) {
+        foreach (['a', 'b'] as $seed) {
+            $leftOff->heardTo(aStackWithMarkers($seed)->id(), AnEventHeard::named(sprintf('run-%s', $seed)));
+        }
+
+        expect($leftOff->forgetEverything()->howMany())->toBe(2, $which)
+            ->and(WhereItResumes::said($leftOff->leftOffAt(aStackWithMarkers('b')->id())))->toBe('from-the-start', $which)
+            ->and($leftOff->forgetEverything()->howMany())->toBe(0, $which);
     }
 });
 

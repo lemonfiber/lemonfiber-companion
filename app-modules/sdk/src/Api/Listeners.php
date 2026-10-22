@@ -33,6 +33,7 @@ use Modules\Kernel\Api\StoppageSaysNothing;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
 use Modules\Kernel\Api\VersionIsBlank;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhereHearingLeftOff;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatArrivedOnTheStream;
@@ -77,11 +78,15 @@ use Psr\Log\LoggerInterface;
  * any of them, so the next attempt opens a new connection, and every other
  * stack's stream stays open.
  *
- * **A stream opened again resumes where the last one left off.** Where the
- * stream let go of carried event identifiers, the one opened in its place asks
- * for what came after the last of them, so what the stack said in between is
- * heard rather than skipped. Letting go of every stream forgets where each left
- * off.
+ * **A stream opened again resumes where the last one left off.** Every wake
+ * that carried an event notes the last one in {@see WhereHearingLeftOff}, and
+ * every stream opens asking for what came after it, so the alerts a stack
+ * raised while this phone was not listening are heard when it listens again:
+ * after a stream that broke, after another screen, after the app was away, and
+ * after a launch. They arrive as the stack hands them back, and only `alert`
+ * events among them are told. A stack that no longer holds all of what came
+ * after hands back nothing, and does not say so, so nothing here calls what
+ * arrived everything.
  *
  * **A stream that ends is said to have ended once.** The call that finds the
  * end hands back what arrived before it, and the next hands back `closed`
@@ -107,9 +112,9 @@ final class Listeners implements Hearing
 
     private readonly TheStreamsHeld $streams;
 
-    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes)
+    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes, WhereHearingLeftOff $leftOff)
     {
-        $this->streams = new TheStreamsHeld($clients);
+        $this->streams = new TheStreamsHeld($clients, $leftOff);
     }
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard

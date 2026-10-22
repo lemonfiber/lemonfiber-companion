@@ -55,4 +55,5 @@ return [
     'notifications_declined' => 'Meldingen staan uit voor lemonfiber in de instellingen van je telefoon. Zet ze daar aan en kom dan terug.',
     'notifications_open_settings' => 'Open de instellingen van je telefoon',
     'notifications_would_not_open' => 'Je telefoon wilde zijn instellingen niet openen. Zoek lemonfiber daar zelf op.',
+    'notifications_may_be_missing' => 'Als lemonfiber weer opengaat, laat het je weten wat elke stack nog had van wat hij meldde terwijl je weg was. Een stack zegt niet of dat alles was, dus er kan iets ontbreken. Open een stack om te zien hoe hij er nu voor staat.',
 ];

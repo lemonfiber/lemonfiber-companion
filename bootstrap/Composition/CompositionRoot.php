@@ -96,6 +96,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheLocalNetwork;
+use Modules\Kernel\Api\WhereHearingLeftOff;
 use Modules\Kernel\Api\WhereTheOperatorWas;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\News\Api\Noticing;
@@ -120,6 +121,7 @@ use Modules\Vault\Api\PlatformPhoneKeysNames;
 use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereHearingLeftOff;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Watching\Api\KeepingTheirLanguages;
@@ -476,6 +478,14 @@ final class CompositionRoot extends ServiceProvider
             static fn(): WhereTheOperatorWas => new PlatformWhereTheOperatorWas(new PlatformStore()),
         );
 
+        // The last event each stack's stream carried, in the same store and
+        // bound the same way. A marker, so it goes with Clear saved data and
+        // with Remove from phone.
+        $this->app->bind(
+            WhereHearingLeftOff::class,
+            static fn(): WhereHearingLeftOff => new PlatformWhereHearingLeftOff(new PlatformStore(), new PlatformStacks(new PlatformStore())),
+        );
+
         // The two keys that seal what the phone keeps, in the same store and
         // bound the same way. Beside the session rather than beside the data
         // they seal: a key kept in the application's own files would sit next
@@ -565,7 +575,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -579,7 +589,7 @@ final class CompositionRoot extends ServiceProvider
         // key for it. What was begun is recorded in the same secure store as
         // the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

@@ -32,6 +32,10 @@
             <x-design::toggle :label="__('settings.notifications_on')" :on="$this->notificationsAreOn()" :tap="$this->tapping('notificationsTurned')" />
         </x-design::section>
 
+        @if ($this->notificationsAreOn())
+            <x-design::note>{{ __('settings.notifications_may_be_missing') }}</x-design::note>
+        @endif
+
         @if ($this->explainingNotifications)
             <x-design::card>
                 <x-design::body>{{ __($this->whyNotifications()) }}</x-design::body>
