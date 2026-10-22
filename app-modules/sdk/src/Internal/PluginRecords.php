@@ -50,7 +50,7 @@ final readonly class PluginRecords
     public static function of(array $row, NamesAWireField $list, int $position): APlugin
     {
         return APlugin::named(
-            self::text($row, $list, PluginsField::Plugin, $position),
+            self::text($row, $list, WireField::Plugin, $position),
             self::text($row, $list, WireField::Version, $position),
             self::optional($row, WireField::Name),
             self::vouched($row),

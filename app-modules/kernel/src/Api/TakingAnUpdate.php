@@ -26,6 +26,7 @@ final readonly class TakingAnUpdate implements AnAction
         private Services $changing,
         private Services $cannotBePutBack,
         private AnOffer $offer,
+        private TheMovesInPlace $moves,
     ) {}
 
     /**
@@ -41,7 +42,7 @@ final readonly class TakingAnUpdate implements AnAction
             throw NothingToTake::from($upkeep->againstThePins());
         }
 
-        return new self($upkeep->changing(), $upkeep->cannotBePutBack(), $upkeep->offer());
+        return new self($upkeep->changing(), $upkeep->cannotBePutBack(), $upkeep->offer(), $upkeep->movesInPlace());
     }
 
     /**
@@ -102,6 +103,12 @@ final readonly class TakingAnUpdate implements AnAction
     public function cannotBePutBack(): Services
     {
         return $this->cannotBePutBack;
+    }
+
+    /** The moves in place it would take, carried for the reason {@see changing()} is. */
+    public function movesInPlace(): TheMovesInPlace
+    {
+        return $this->moves;
     }
 
     /**

@@ -71,6 +71,7 @@ final readonly class HowTheLastUpdateReads
             applied: $applied,
             didNotArrive: $report->howItWent()->thatDidNotArrive()->count(),
             anythingUnanswered: $report->howItWent()->anythingUnanswered(),
+            moved: new HowAMoveInPlaceReads()->tried($report->whatBecameOfTheMoves()),
         );
     }
 
@@ -89,6 +90,7 @@ final readonly class HowTheLastUpdateReads
             applied: [],
             didNotArrive: 0,
             anythingUnanswered: false,
+            moved: [],
         );
     }
 }

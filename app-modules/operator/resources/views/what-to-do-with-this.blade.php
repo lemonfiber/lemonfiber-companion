@@ -213,6 +213,8 @@
         </x-design::card>
 
         <x-operator::edits-kept :edits="$this->whatItCameTo()->editsKept" />
+
+        <x-operator::moves-in-place :moves="$this->whatItCameTo()->movesOnOffer" :after="__('updates.moves.an_update_takes_it')" />
     @endif
 
     @if ($this->thing()->isAForm)

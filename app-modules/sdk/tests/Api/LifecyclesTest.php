@@ -267,3 +267,33 @@ it('refuses a list of edited files it cannot read', function (mixed $edits): voi
     'a file with no diff' => [[['path' => 'compose.yaml']]],
     'a file that is not one' => [['compose.yaml']],
 ]);
+
+it('reads each move in place a start names, the service and the plugin that would take its place', function (): void {
+    $report = Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'moves' => [
+        ['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin'],
+        ['service' => 'sonarr', 'plugin' => 'plugin-sonarr'],
+    ]]));
+    $read = [];
+
+    foreach ($report->movesInPlace() as $move) {
+        $read[] = sprintf('%s:%s', $move->service()->named(), $move->plugin()->named());
+    }
+
+    expect($read)->toBe(['jellyfin:plugin-jellyfin', 'sonarr:plugin-sonarr']);
+});
+
+it('reads no move in place where the stack sent none', function (): void {
+    expect(Lifecycles::in(lifecycleSaying(aRestartInFull()))->movesInPlace())->toHaveCount(0)
+        ->and(Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'moves' => null]))->movesInPlace())->toHaveCount(0);
+});
+
+it('refuses a list of moves in place it cannot read', function (mixed $moves): void {
+    expect(static fn(): WhatTheVerbCameTo => Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'moves' => $moves])))
+        ->toThrow(LifecycleIsUnreadable::class, '`moves`');
+})->with([
+    'not a list' => ['jellyfin'],
+    'a table rather than a list' => [['jellyfin' => ['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin']]],
+    'a move that is not a table' => [['jellyfin']],
+    'a move with no plugin' => [[['service' => 'jellyfin']]],
+    'a move with a blank service' => [[['service' => ' ', 'plugin' => 'plugin-jellyfin']]],
+]);

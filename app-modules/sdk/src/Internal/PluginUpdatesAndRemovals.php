@@ -46,7 +46,7 @@ final readonly class PluginUpdatesAndRemovals
         }
 
         return AnUpdate::reported(
-            self::text($update, PluginsField::Plugin),
+            self::text($update, WireField::Plugin),
             TheVersionsItMovesBetween::of(self::text($update, WireField::From), self::text($update, WireField::To)),
             self::words($update, PluginsField::Interrupts),
             PluginInstallReports::in($update[PluginsField::Install->value]),
@@ -68,7 +68,7 @@ final readonly class PluginUpdatesAndRemovals
         }
 
         return APluginRemoval::reported(
-            self::text($removal, PluginsField::Plugin),
+            self::text($removal, WireField::Plugin),
             self::words($removal, PluginsField::Interrupts),
             TheCapabilitiesLeftUnfilled::these(...self::leaves($removal)),
             $removal[WireField::Removed->value],

@@ -20,9 +20,6 @@ enum PluginsField: string implements NamesAWireField
     /** What an install would do, or did, where the answer is about one. */
     case Install = 'install';
 
-    /** A plugin's id, the name it is installed under. */
-    case Plugin = 'plugin';
-
     /** The commit a plugin was installed at, where it came from a git source. */
     case Revision = 'revision';
 

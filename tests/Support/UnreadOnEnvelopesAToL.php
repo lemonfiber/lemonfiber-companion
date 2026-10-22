@@ -518,10 +518,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'spec before reading it, which is `N1-R17`.',
         ],
         [
-            'path' => 'LifecycleEnvelope.moves',
-            'because' => 'Each part this release installs as a plugin that the stack still runs as its own service, a move in place every start names and none takes. A move in place is taken by an update, and no `N` requirement asks a verb to carry the offer. Raise it against the spec before reading it, which is `N1-R17`.',
-        ],
-        [
             'path' => 'LifecycleEnvelope.swept',
             'because' => 'Every network the engine held for the project that the project no longer declares, taken away before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network: what `N16-R6` asks a start to name is what did not come back, which is read.',
         ],

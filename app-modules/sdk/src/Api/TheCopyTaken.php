@@ -112,7 +112,7 @@ final readonly class TheCopyTaken
         $pace = $data[BackupField::Pace->value];
 
         return HowACopyPaced::measured(
-            moved: self::bytes($pace, BackupField::Moved),
+            moved: self::bytes($pace, WireField::Moved),
             budget: self::bytes($pace, BackupField::Budget),
             brisk: self::flag($pace, BackupField::Brisk),
         );

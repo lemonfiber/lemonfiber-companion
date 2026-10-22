@@ -32,6 +32,8 @@ final readonly class Upkeep
         private TheStackEdits $edits,
         private ?Release $inUse,
         private AnOffer $offer,
+        private TheMovesInPlace $moves,
+        private WhatBecameOfTheMovesInPlace $moved,
     ) {}
 
     /**
@@ -51,19 +53,37 @@ final readonly class Upkeep
         HowTheNotesStand $notes,
         TheStackEdits $edits,
     ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $edits, null, AnOffer::none());
+        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $edits, null, AnOffer::none(), TheMovesInPlace::none(), WhatBecameOfTheMovesInPlace::none());
     }
 
     /** The same reading, where the stack named the release that is running. */
     public function runningOn(Release $inUse): self
     {
-        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $inUse, $this->offer);
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $inUse, $this->offer, $this->moves, $this->moved);
     }
 
     /** The same reading, under the name the stack gave what it offers, which a yes to it carries back. */
     public function offering(AnOffer $offer): self
     {
-        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $this->inUse, $offer);
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $this->inUse, $offer, $this->moves, $this->moved);
+    }
+
+    /** The same reading, with the moves in place on offer and what became of each one a run tried. */
+    public function moving(TheMovesInPlace $moves, WhatBecameOfTheMovesInPlace $moved): self
+    {
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $this->inUse, $this->offer, $moves, $moved);
+    }
+
+    /** The moves in place a confirmed update would take. */
+    public function movesInPlace(): TheMovesInPlace
+    {
+        return $this->moves;
+    }
+
+    /** What became of each move in place the last applied update tried. */
+    public function whatBecameOfTheMoves(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->moved;
     }
 
     /** The name the stack gave what it offers, or none. */

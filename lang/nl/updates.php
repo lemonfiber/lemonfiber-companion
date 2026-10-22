@@ -48,6 +48,16 @@ return [
     'no_history' => 'De stack noemde geen releases.',
     'delivers_unsaid' => 'De stack heeft niet gezegd wat deze verandert',
 
+    'moves' => [
+        'heading' => 'Op zijn plaats overzetten',
+        'would_take' => ':plugin neemt de plaats in van :service, met behoud van de gegevens en instellingen',
+        'on_offer' => ':plugin kan de plaats innemen van :service',
+        'an_update_takes_it' => 'Het starten van de stack zet het niet over. Het nemen van de update wel.',
+        'took' => ':plugin draait nu in plaats van :service',
+        'did_not_take' => ':plugin heeft de plaats van :service niet ingenomen, die draait zoals eerst',
+        'why_unsaid' => 'De stack zei niet waarom.',
+    ],
+
     'would_be_noticed' => 'Het huishouden ziet het verschil',
     'would_not_be_noticed' => 'Hier merkt niemand iets van',
 ];

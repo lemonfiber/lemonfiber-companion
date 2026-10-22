@@ -722,6 +722,15 @@ enum WireField: string implements NamesAWireField
     /** The stack files the operator edited, kept as they set them by a start or an update. */
     case StackEdits = 'stack_edits';
 
+    /** The moves in place on offer, named by a start and taken by a confirmed update. */
+    case Moves = 'moves';
+
+    /** A plugin's id: the name it is installed under, and the plugin a move in place puts in a service's place. */
+    case Plugin = 'plugin';
+
+    /** The bytes a copy came to, and what became of each move in place an update tried. */
+    case Moved = 'moved';
+
     /**
      * What a service that has ended exited with, absent while it runs: on a
      * service in the listing, and on an item of the health summary that is a

@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AMoveInPlace;
+use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
@@ -12,9 +15,12 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheMovesInPlace;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Modules\Kernel\Api\WhatBecameOfAMoveInPlace;
+use Modules\Kernel\Api\WhatBecameOfTheMovesInPlace;
 use Tests\Support\TheWordCarriedOut;
 
 /** A release in the record, standing or withdrawn. */
@@ -143,4 +149,20 @@ it('keeps everything it read when it is told which release is running', function
             named: static fn(Release $release): TheWordCarriedOut => new TheWordCarriedOut($release->version()),
             unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
         )->said)->toBe('unstated');
+});
+
+it('keeps the moves in place and what became of them, whatever else it is told', function (): void {
+    $move = AMoveInPlace::of(ServiceId::called('jellyfin'), APluginId::called('plugin-jellyfin'));
+    $moves = TheMovesInPlace::these($move);
+    $moved = WhatBecameOfTheMovesInPlace::these(WhatBecameOfAMoveInPlace::notTaken($move, 'The plugin would not install.'));
+    $reading = aReadingWhosePinsSay(AgainstThePins::UpdatesAvailable, Services::these(ServiceId::called('sonarr')));
+    $told = $reading->moving($moves, $moved)->runningOn(aReleaseInTheRecord('4.1.1'))->offering(AnOffer::named('3f2a91c0'));
+
+    expect($told->movesInPlace())->toBe($moves)
+        ->and($told->whatBecameOfTheMoves())->toBe($moved)
+        ->and($reading->movesInPlace())->toHaveCount(0)
+        ->and($reading->whatBecameOfTheMoves())->toHaveCount(0)
+        ->and($reading->offering(AnOffer::named('3f2a91c0'))->moving($moves, $moved)->offer())->toEqual(AnOffer::named('3f2a91c0'))
+        ->and($reading->moving($moves, $moved)->changing())->toEqual($reading->changing())
+        ->and($reading->moving($moves, $moved)->hasSomethingToOffer())->toBeTrue();
 });

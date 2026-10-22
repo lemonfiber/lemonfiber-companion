@@ -7,6 +7,8 @@ namespace Modules\Operator\Tests\Internal\Presenters;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AMoveInPlace;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\AStackEdit;
@@ -18,6 +20,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheCommandLine;
+use Modules\Kernel\Api\TheMovesInPlace;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -29,6 +32,7 @@ use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
 use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
+use Modules\Operator\Internal\ViewModels\AMoveInPlaceAsShown;
 use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceLeftOutAsShown;
@@ -54,6 +58,7 @@ function aVerbWithNoReport(HowTheReadingWent $went, bool $wasAsked = true, bool 
         leftOut: [],
         portsHeld: [],
         editsKept: [],
+        movesOnOffer: [],
         commandSaid: null,
         command: '',
     );
@@ -72,7 +77,8 @@ function aRestartThatLeftOneBehind(WhetherItWasRehearsed $was): WhatTheVerbCameT
         ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media-server')),
         TheStackEdits::these(AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n")),
         TheCommandLine::of('docker', 'compose', 'up', '-d'),
-    )->amountingTo(HowTheStackIsRunning::Partial);
+    )->amountingTo(HowTheStackIsRunning::Partial)
+        ->naming(TheMovesInPlace::these(AMoveInPlace::of(ServiceId::called('jellyfin'), APluginId::called('plugin-jellyfin'))));
 }
 
 it('holds nothing of a report in every state that has none', function (): void {
@@ -104,6 +110,7 @@ it('draws a restart that left one behind whole, naming it with where it stood', 
             new ADiffLineAsShown('stacks.edits.theirs', 'image: mine'),
             new ADiffLineAsShown('stacks.edits.lemonfibers', 'image: ours'),
         ])],
+        movesOnOffer: [new AMoveInPlaceAsShown('updates.moves.on_offer', 'jellyfin', 'plugin-jellyfin', owesAReason: false, because: '')],
         commandSaid: 'stacks.command.ran',
         command: 'docker compose up -d',
     ));

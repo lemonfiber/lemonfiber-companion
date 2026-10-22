@@ -23,8 +23,6 @@ enum BackupField: string implements NamesAWireField
     /** How the copy's size stood against the time a copy is meant to take. */
     case Pace = 'pace';
 
-    /** The bytes the copy came to. */
-    case Moved = 'moved';
 
     /** The bytes a copy can come to and still finish in a minute. */
     case Budget = 'budget';

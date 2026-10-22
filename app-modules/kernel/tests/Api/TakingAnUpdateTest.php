@@ -8,15 +8,19 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AMoveInPlace;
 use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheMovesInPlace;
 use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatBecameOfTheMovesInPlace;
 use Tests\Support\TheWordCarriedOut;
 
 /** An update to `jellyfin`, offered under the name it is given. */
@@ -60,4 +64,11 @@ it('is asked for by the name lemonfiber gives the action, before and after there
 
     expect($taking->asked())->toBe('update')
         ->and(TakingAnUpdate::named())->toBe('update');
+});
+
+it('carries the moves in place the operator read', function (): void {
+    $moves = TheMovesInPlace::these(AMoveInPlace::of(ServiceId::called('jellyfin'), APluginId::called('plugin-jellyfin')));
+
+    expect(TakingAnUpdate::offeredBy(anUpdateOffered(AnOffer::none())->moving($moves, WhatBecameOfTheMovesInPlace::none()))->movesInPlace())->toBe($moves)
+        ->and(TakingAnUpdate::offeredBy(anUpdateOffered(AnOffer::none()))->movesInPlace())->toHaveCount(0);
 });
