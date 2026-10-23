@@ -8,11 +8,13 @@
 # `BridgeFunction`, everything touching UIKit — before the app build does.
 #
 # The NativePHP half is read from the installed `vendor/nativephp/mobile`, so
-# the bridge is checked against the package the app is built with. One stand-in
-# is written here: `NativeElementBridge`, NativePHP's renderer, which the files
-# below name and the bridge's own renderer sends its events through. The real
+# the bridge is checked against the package the app is built with. Two stand-ins
+# are written here. `NativeElementBridge`, NativePHP's renderer, which the files
+# below name and the bridge's own renderer sends its events through: the real
 # one draws in the rest of the renderer and, through it, the PHP runtime's
-# headers, which the package does not ship.
+# headers, which the package does not ship. And `AppUpdateManager`, which tells
+# a wake where the app's PHP lives: the real one draws in ZIPFoundation and the
+# app itself.
 #
 # The deployment target and language mode are read from NativePHP's Xcode
 # project, which is the target the bridge is compiled into.
@@ -64,6 +66,13 @@ language=$(setting SWIFT_VERSION)
 stand_in=$(mktemp -d)
 trap 'rm -rf "${stand_in}"' EXIT
 
+cat > "${stand_in}/AppUpdateManager.swift" <<'SWIFT'
+final class AppUpdateManager {
+    static let shared = AppUpdateManager()
+    func getAppPath() -> String { "" }
+}
+SWIFT
+
 cat > "${stand_in}/NativeElementBridge.swift" <<'SWIFT'
 final class NativeElementBridge {
     static func registerRegion(_ region: UnsafeMutableRawPointer) {}
@@ -82,6 +91,7 @@ xcrun --sdk iphonesimulator swiftc \
     -typecheck \
     bridge/resources/ios/*.swift \
     "${nativephp[@]}" \
+    "${stand_in}/AppUpdateManager.swift" \
     "${stand_in}/NativeElementBridge.swift"
 
 echo "Every Swift file the bridge ships compiles."
