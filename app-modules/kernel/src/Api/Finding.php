@@ -47,6 +47,7 @@ final readonly class Finding
         private WhoPutItThere $origin,
         private AboutWhat $about,
         private Because $because,
+        private WhetherCheckingDisturbs $disturbing,
     ) {}
 
     /**
@@ -79,6 +80,7 @@ final readonly class Finding
             $origin,
             AboutWhat::theMachine(),
             Because::nothingElse(),
+            WhetherCheckingDisturbs::not(),
         );
     }
 
@@ -106,6 +108,7 @@ final readonly class Finding
             $this->origin,
             $about,
             $this->because,
+            $this->disturbing,
         );
     }
 
@@ -128,6 +131,28 @@ final readonly class Finding
             $this->origin,
             $this->about,
             $because,
+            $this->disturbing,
+        );
+    }
+
+    /**
+     * The same finding, said to be unverified because checking it disturbs something, with the check that would.
+     *
+     * Set as the other two are: a fact the read adds about the finding, not
+     * something the check established.
+     */
+    public function disturbing(ACheckThatDisturbs $check): self
+    {
+        return new self(
+            $this->check,
+            $this->category,
+            $this->title,
+            $this->conclusion,
+            $this->said,
+            $this->origin,
+            $this->about,
+            $this->because,
+            WhetherCheckingDisturbs::so($check),
         );
     }
 
@@ -195,5 +220,11 @@ final readonly class Finding
     public function whatExplainsIt(): Because
     {
         return $this->because;
+    }
+
+    /** Whether it waits on a check that disturbs something, and which. */
+    public function whetherCheckingDisturbs(): WhetherCheckingDisturbs
+    {
+        return $this->disturbing;
     }
 }

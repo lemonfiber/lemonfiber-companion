@@ -36,6 +36,7 @@ final readonly class TheHealthSummary implements IteratorAggregate
         private string $worst,
         private WhatStoppedMoving $stopped,
         private array $affected,
+        private DownloadsMoving $moving,
     ) {}
 
     /**
@@ -55,7 +56,19 @@ final readonly class TheHealthSummary implements IteratorAggregate
             throw SummaryCountsBelowNothing::wanting($wantingAttention);
         }
 
-        return new self($standing, $wantingAttention, $worst, $stopped, array_values($affected));
+        return new self($standing, $wantingAttention, $worst, $stopped, array_values($affected), DownloadsMoving::these());
+    }
+
+    /**
+     * The same summary, with the downloads the stack said are moving.
+     *
+     * Added as the read adds it rather than as another argument: a summary the
+     * phone kept says nothing about them, because a download moves on long
+     * before a kept summary is opened again.
+     */
+    public function moving(DownloadsMoving $moving): self
+    {
+        return new self($this->standing, $this->wantingAttention, $this->worst, $this->stopped, $this->affected, $moving);
     }
 
     public function standing(): HowItStands
@@ -77,6 +90,12 @@ final readonly class TheHealthSummary implements IteratorAggregate
     public function stopped(): WhatStoppedMoving
     {
         return $this->stopped;
+    }
+
+    /** The downloads the stack said are moving, or none where it said none or could not say. */
+    public function downloadsMoving(): DownloadsMoving
+    {
+        return $this->moving;
     }
 
     /** @return Traversable<int, AnAffectedItem> */

@@ -78,7 +78,7 @@ final readonly class Costs
             throw RosterIsUnreadable::missing(StatusField::Bound);
         }
 
-        return $one[StatusField::Bound->value] === StatusField::Bounded->value
+        return HowADisturbanceIsBound::tryFrom(is_string($one[StatusField::Bound->value]) ? $one[StatusField::Bound->value] : '') === HowADisturbanceIsBound::Bounded
             ? WhatItTakesAway::atMost(self::forHowLong($one, $verb))
             : WhatItTakesAway::until(self::waitingFor($one, $verb));
     }

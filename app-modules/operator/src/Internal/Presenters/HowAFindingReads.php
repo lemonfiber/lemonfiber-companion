@@ -89,6 +89,7 @@ final readonly class HowAFindingReads
         $from = new HowAnOriginReads()->of($finding->origin());
         $exited = $this->exitedOf($finding);
         $choice = WhereAChoiceStands::of($finding);
+        $runnable = $this->runnableOf($finding);
 
         return $said->either(
             nothingWrong: static fn(): WhatOneFindingSays => new WhatOneFindingSays(
@@ -104,6 +105,7 @@ final readonly class HowAFindingReads
                 underneath: '',
                 from: $from,
                 exited: $exited,
+                runnable: $runnable,
             ),
             wentWrong: static fn(
                 Code $code,
@@ -138,6 +140,7 @@ final readonly class HowAFindingReads
                 from: $from,
                 exited: $exited,
                 accepting: $choice === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
+                runnable: $runnable,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
@@ -157,6 +160,7 @@ final readonly class HowAFindingReads
                 underneath: '',
                 from: $from,
                 exited: $exited,
+                runnable: $runnable,
             ),
         );
     }
@@ -174,6 +178,15 @@ final readonly class HowAFindingReads
         $check = $finding->check()->shown();
 
         return array_key_exists($check, $this->exits) ? $this->exits[$check] : '';
+    }
+
+    /** The check a run that disturbs is offered for, or empty where the finding waits on none. */
+    private function runnableOf(Finding $finding): string
+    {
+        return $finding->whetherCheckingDisturbs()->either(
+            so: static fn(): AsText => AsText::of($finding->check()->shown()),
+            not: static fn(): AsText => AsText::nothing(),
+        )->said;
     }
 
     private function serviceOf(Finding $finding): string

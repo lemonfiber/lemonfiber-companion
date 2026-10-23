@@ -7,6 +7,7 @@ namespace Tests\Support;
 use Closure;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AChallengeToSign;
+use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
@@ -181,6 +182,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\CheckRunners;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
@@ -419,6 +421,10 @@ final readonly class EveryAdapterCallThatReads
                 => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
             'Acceptors::whatBecameOf' => static fn(): object
                 => new Acceptors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'CheckRunners::run' => static fn(): object
+                => new CheckRunners($clients, $entropy)->run($stack, $session, ACheckThatDisturbs::boundedTo('The tunnel goes down', 'vpn.killswitch', 30)),
+            'CheckRunners::whatBecameOf' => static fn(): object
+                => new CheckRunners($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Forgetters::forget' => static fn(): object
                 => new Forgetters($clients, $entropy)->forget($stack, $session, ForgettingAgreed::after(TheForgetting::said(WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of()), WhereForgettingGot::unconfirmed()))),
             'Forgetters::whatWouldGo' => static fn(): object

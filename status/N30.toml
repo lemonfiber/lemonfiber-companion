@@ -6,9 +6,9 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "N30-R1", state = "open" },
-  { id = "N30-R2", state = "open" },
-  { id = "N30-R3", state = "open" },
+  { id = "N30-R1", state = "done", evidence = ["app-modules/kernel/src/Api/ACheckThatDisturbs.php", "app-modules/sdk/src/Internal/TheCheckThatDisturbs.php", "app-modules/operator/src/Internal/Presenters/HowAFindingReads.php", "app-modules/sdk/tests/Api/ReportsTest.php", "tests/Feature/RunningACheckThatDisturbsTest.php"] },
+  { id = "N30-R2", state = "done", evidence = ["app-modules/operator/resources/views/what-running-a-check-disturbs.blade.php", "app-modules/sdk/src/Internal/TheDownloadsMoving.php", "app-modules/operator/src/Internal/Presenters/HowACheckThatDisturbsReads.php", "tests/Feature/RunningACheckThatDisturbsTest.php"] },
+  { id = "N30-R3", state = "done", evidence = ["app-modules/kernel/src/Api/RunningACheck.php", "app-modules/sdk/src/Api/CheckRunners.php", "app-modules/operator/src/Internal/Screens/WhatRunningACheckDisturbs.php", "tests/Contract/RunningACheckContractTest.php", "tests/Feature/RunningACheckThatDisturbsTest.php"] },
   { id = "N30-R4", state = "open" },
   { id = "N30-R5", state = "open" },
   { id = "N30-R6", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowTheLineIsSharedHere.php", "app-modules/operator/src/Internal/ChoosesHowTheLineIsShared.php", "app-modules/sdk/src/Api/Linesmen.php", "tests/Feature/ChangingHowTheLineIsSharedTest.php", "tests/Contract/SharingTheLineContractTest.php"] },

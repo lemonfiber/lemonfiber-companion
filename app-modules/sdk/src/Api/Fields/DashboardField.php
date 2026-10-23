@@ -36,6 +36,12 @@ enum DashboardField: string implements NamesAWireField
     /** What stopped moving in the queue, by kind, worst first. */
     case Stuck = 'stuck';
 
+    /** The downloads moving, as a panel. */
+    case Transfers = 'transfers';
+
+    /** Whether a panel's source answered. */
+    case Panel = 'panel';
+
     /** What a service said was in a stopped row's way, in its own words. */
     case Blocking = 'blocking';
 

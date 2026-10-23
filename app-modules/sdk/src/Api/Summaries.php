@@ -21,6 +21,7 @@ use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Sdk\Api\Fields\DashboardField;
 use Modules\Sdk\Internal\StoppedRows;
+use Modules\Sdk\Internal\TheDownloadsMoving;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -54,7 +55,7 @@ final readonly class Summaries
             self::worst($health),
             StoppedRows::in($data),
             ...self::affected($health),
-        );
+        )->moving(TheDownloadsMoving::in($data));
     }
 
     /** @param Envelope<mixed> $envelope */

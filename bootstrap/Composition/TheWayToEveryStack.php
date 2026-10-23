@@ -65,6 +65,7 @@ use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\ResettingTheConfiguration;
+use Modules\Kernel\Api\RunningACheck;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\SelfChecking;
@@ -96,6 +97,7 @@ use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Assessors;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\CheckRunners;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\ClientsThatAskTheDevice;
@@ -370,6 +372,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(SettingWhatServicesRead::class, Tuners::class);
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
         $this->app->bind(Accepting::class, Acceptors::class);
+        $this->app->bind(RunningACheck::class, CheckRunners::class);
         $this->app->bind(Forgetting::class, Forgetters::class);
         $this->app->bind(Switching::class, Switchers::class);
 

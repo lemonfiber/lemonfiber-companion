@@ -166,6 +166,14 @@
                 @endif
             @endif
 
+            @if ($finding->runnable !== '')
+                <x-design::link
+                    :label="__('health.disturbs.run')"
+                    :answers-to="__('health.disturbs.run_this', ['title' => $finding->title])"
+                    :goes="$this->goes()->running($finding->runnable)"
+                />
+            @endif
+
             @if ($finding->accepting !== '')
                 <x-design::link
                     :label="__('health.choice.accept')"

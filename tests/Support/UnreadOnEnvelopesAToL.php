@@ -412,10 +412,6 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'Whether the core\'s own view of the stack is live, degraded or disconnected. The summary\'s word is already `unknown` where the core cannot tell, and whether this app\'s own reading is current is decided by the stream\'s heartbeat, which is about the connection this app holds rather than about the core\'s.',
         ],
         [
-            'path' => 'DashboardEnvelope.transfers',
-            'because' => 'Downloads in flight, with their speed and time left. No companion requirement asks for them, and a figure that moves every second is one this app would draw two seconds late at best.',
-        ],
-        [
             'path' => 'DashboardEnvelope.vpn',
             'because' => 'The tunnel\'s exit and whether traffic leaves through it. VPN verification reaches this app as findings in the doctor report, and a failed one as an affected item of the health summary.',
         ],
@@ -754,11 +750,32 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'mark a declined fix. Raise it against the spec before reading it, which is `N1-R17`.',
         ],
         [
-            'path' => 'DoctorEnvelope.findings[].disruptive',
-            'because' => 'What checking a finding disturbs, where the read left it unverified for that reason, and how a '
-                . 'diagnosis is asked to run it. `N30-R1` asks for it: such a finding offers running that check, '
-                . 'narrowed as the stack names it, with what it disturbs and its bound stated first (`N30-R2`). '
-                . 'Unread today because the diagnosis screen offers no check that disturbs the running system.',
+            'path' => 'DashboardEnvelope.transfers.data[].eta',
+            'because' => 'How long a moving download has left. A run that disturbs names each download it '
+                . 'interrupts by what it is (`N30-R2`), and no requirement asks how far off each one is; a figure '
+                . 'that moves every second is one this app would draw late.',
+        ],
+        [
+            'path' => 'DashboardEnvelope.transfers.data[].progress',
+            'because' => 'How far along a moving download is. A run that disturbs names each download it '
+                . 'interrupts by what it is (`N30-R2`), and no requirement asks how far along it got.',
+        ],
+        [
+            'path' => 'DashboardEnvelope.transfers.data[].protocol',
+            'because' => 'How a moving download is fetched. A run that disturbs names each download it '
+                . 'interrupts by what it is (`N30-R2`), and no requirement asks how it arrives.',
+        ],
+        [
+            'path' => 'DashboardEnvelope.transfers.data[].speed',
+            'because' => 'How fast a moving download is coming. A run that disturbs names each download it '
+                . 'interrupts by what it is (`N30-R2`); a speed moves every second, and no requirement asks for '
+                . 'it beside the name.',
+        ],
+        [
+            'path' => 'DashboardEnvelope.transfers.data.reason',
+            'because' => 'Why the stack could not say which downloads are moving. A run that disturbs names '
+                . 'the downloads the stack reported moving (`N30-R2`); where it could report none, there is '
+                . 'nothing to name, and no requirement asks the reason beside a check about to run.',
         ],
     ];
 }

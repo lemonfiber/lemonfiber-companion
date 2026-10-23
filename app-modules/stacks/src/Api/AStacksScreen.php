@@ -342,6 +342,9 @@ enum AStacksScreen: string
     /** What accepting one warning about a choice costs, said before the operator accepts it; the second segment is the check. */
     case Accept = '/stacks/{stack}/accept/{service}';
 
+    /** Running a check the stack leaves unverified because it disturbs something, said before it runs; the second segment is the check. */
+    case Run = '/stacks/{stack}/run/{service}';
+
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
 
