@@ -1,7 +1,7 @@
 package app.lemonfiber.native
 
+import android.content.Context
 import android.util.Log
-import androidx.fragment.app.FragmentActivity
 import com.nativephp.mobile.bridge.BridgeFunction
 import java.net.Inet4Address
 import java.net.Inet6Address
@@ -81,11 +81,11 @@ public object ResolveFunctions {
     /**
      * Answer what one name resolves to.
      *
-     * The activity is what the plugin's registration hands every function, and
+     * The context is what the plugin's registration hands every function, and
      * this one has no use for it: the resolver is the system's.
      */
     public class Resolve(
-        @Suppress("UnusedPrivateProperty") private val activity: FragmentActivity,
+        @Suppress("UnusedPrivateProperty") private val context: Context,
     ) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             val rule = asFound(parameters["host"] as? String ?: "")

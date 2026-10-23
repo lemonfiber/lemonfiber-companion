@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\Sealed;
+use Modules\Kernel\Api\WakingWhileAway;
 
 /**
  * Whether the operator turned notifications on, and the one place the phone is asked for them.
@@ -19,12 +20,16 @@ use Modules\Kernel\Api\Sealed;
  * choice only where the phone said yes, so what is kept is never on while the
  * phone would show nothing. The screen says why before it calls this; nothing
  * else in the app asks.
+ *
+ * While they are on, the platform is asked to wake the app from time to time
+ * while it is away, so what a stack raised meanwhile is heard then; turning
+ * them off stops that.
  */
 final readonly class TurningNotificationsOn
 {
     private TheSettingsHeld $settings;
 
-    public function __construct(Sealed $seal, SettingsKept $kept, private Notifier $notifier, Clock $clock)
+    public function __construct(Sealed $seal, SettingsKept $kept, private Notifier $notifier, Clock $clock, private WakingWhileAway $waking)
     {
         $this->settings = new TheSettingsHeld($seal, $kept, $clock);
     }
@@ -41,22 +46,24 @@ final readonly class TurningNotificationsOn
         return $this->notifier->standing();
     }
 
-    /** Ask the phone where it may still be asked, keep notifications on where it said yes, and answer what it said. */
+    /** Ask the phone where it may still be asked, keep notifications on and ask to be woken where it said yes, and answer what it said. */
     public function turnOn(): Asked
     {
         $asked = $this->notifier->ask();
 
         if ($asked->mayProceed()) {
             $this->settings->keep($this->settings->current()->notifying(Notifying::On));
+            $this->waking->ask();
         }
 
         return $asked;
     }
 
-    /** Turn notifications off, and answer what is now in force. */
+    /** Turn notifications off and stop being woken, and answer what is now in force. */
     public function turnOff(): Notifying
     {
         $this->settings->keep($this->settings->current()->notifying(Notifying::Off));
+        $this->waking->stop();
 
         return Notifying::Off;
     }

@@ -3,7 +3,6 @@ package app.lemonfiber.native
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.fragment.app.FragmentActivity
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.nativephp.mobile.bridge.BridgeError
@@ -174,9 +173,9 @@ public object StorageFunctions {
      * one is asking for something this platform cannot give, and the honest
      * thing is to write down which it got rather than to pretend.
      */
-    public class Keep(private val activity: FragmentActivity) : BridgeFunction {
+    public class Keep(private val context: Context) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
-            val (store, rule) = opened(activity)
+            val (store, rule) = opened(context)
             val value =
                 parameters["value"] as? String
                     ?: throw BridgeError.InvalidParameters("value is required")
@@ -202,9 +201,9 @@ public object StorageFunctions {
      * is the function where the difference costs the most: a launch reading a
      * refusal as an empty store offers to pair a machine that is already paired.
      */
-    public class Read(private val activity: FragmentActivity) : BridgeFunction {
+    public class Read(private val context: Context) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
-            val (store, rule) = opened(activity)
+            val (store, rule) = opened(context)
 
             if (store == null || !rule.mayProceed) {
                 return refusing(rule)
@@ -222,9 +221,9 @@ public object StorageFunctions {
      * session is the one operation that must always work — including on the
      * device where keeping it did not.
      */
-    public class Forget(private val activity: FragmentActivity) : BridgeFunction {
+    public class Forget(private val context: Context) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
-            val (store, rule) = opened(activity)
+            val (store, rule) = opened(context)
 
             if (store == null || !rule.mayProceed) {
                 return refusing(rule)

@@ -20,7 +20,7 @@ use Modules\Sdk\Api\Listeners;
  * Each stack's event stream held open for one screen, and where each let go of left off.
  *
  * What every adapter reading the stream shares: a connection per stack, opened
- * pinned through {@see Clients} with a wait of {@see Listeners::NO_LONGER_THAN_MS},
+ * pinned through {@see Clients} with a wait of {@see Listeners::NO_LONGER_THAN_MS} unless handed another,
  * kept between calls, and resuming after the last event the stream before it
  * carried. What each adapter reads out of what arrived is its own.
  *
@@ -43,7 +43,8 @@ final class TheStreamsHeld
 
     private WhereTheStreamsLeftOff $leftOff;
 
-    public function __construct(private readonly Clients $clients, private readonly ?WhereHearingLeftOff $kept = null)
+    /** @param int $noLongerThanMs how long each read may wait for bytes that have not arrived, in milliseconds */
+    public function __construct(private readonly Clients $clients, private readonly ?WhereHearingLeftOff $kept = null, private readonly int $noLongerThanMs = Listeners::NO_LONGER_THAN_MS)
     {
         $this->leftOff = WhereTheStreamsLeftOff::nowhere();
     }
@@ -88,7 +89,7 @@ final class TheStreamsHeld
 
         return new AStreamHeldOpen(
             $this->clients->client($stack, $session)
-                ->eventSource(Duration::ofMilliseconds(Listeners::NO_LONGER_THAN_MS))
+                ->eventSource(Duration::ofMilliseconds($this->noLongerThanMs))
                 ->open($after),
             new SseParser($after),
         );

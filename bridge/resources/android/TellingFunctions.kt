@@ -82,16 +82,17 @@ public object TellingFunctions {
      * something to show, and the reason the rule takes one fact rather than
      * three.
      */
-    private fun rule(activity: Activity): NotificationRule =
+    private fun rule(context: Context): NotificationRule =
         NotificationRule(
-            wouldAppear = NotificationManagerCompat.from(activity).areNotificationsEnabled(),
+            wouldAppear = NotificationManagerCompat.from(context).areNotificationsEnabled(),
             permissionIsAsked = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
             wouldExplain =
-                ActivityCompat.shouldShowRequestPermissionRationale(
-                    activity,
-                    Manifest.permission.POST_NOTIFICATIONS,
-                ),
-            everAsked = settings(activity).getBoolean(EVER_ASKED, false),
+                context is Activity &&
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS,
+                    ),
+            everAsked = settings(context).getBoolean(EVER_ASKED, false),
         )
 
     /** Where this plugin keeps what only it can know. */
@@ -260,9 +261,9 @@ public object TellingFunctions {
      * without raising a dialog has no way to obey one, because reading becomes
      * asking and somebody who already refused gets asked again.
      */
-    public class Standing(private val activity: FragmentActivity) : BridgeFunction {
+    public class Standing(private val context: Context) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> =
-            Envelope.of(rule(activity).said.word).asAnswer()
+            Envelope.of(rule(context).said.word).asAnswer()
     }
 
     /**
@@ -296,14 +297,14 @@ public object TellingFunctions {
     }
 
     /** `Lemonfiber.Telling.Show` — put something in front of the operator now. */
-    public class Show(private val activity: FragmentActivity) : BridgeFunction {
+    public class Show(private val context: Context) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             val said = WhatToSay.from(parameters)
 
             return when {
-                !rule(activity).mayShow -> Envelope.refusing("withheld", "not_permitted").asAnswer()
-                !channelIsOpen(activity) -> Envelope.refusing("withheld", "no_such_channel").asAnswer()
-                else -> post(activity, said)
+                !rule(context).mayShow -> Envelope.refusing("withheld", "not_permitted").asAnswer()
+                !channelIsOpen(context) -> Envelope.refusing("withheld", "no_such_channel").asAnswer()
+                else -> post(context, said)
             }
         }
     }

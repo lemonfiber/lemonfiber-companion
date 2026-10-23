@@ -43,6 +43,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WakesInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -59,17 +60,19 @@ function thePhonesSettingsOver(
     ?Stacks $stacks = null,
     ?ANotifierInMemory $notifier = null,
     ?TheAppsSettings $apps = null,
+    ?WakesInMemory $wakes = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
+    $wakes ??= WakesInMemory::thatWake();
     $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
 
     return new HowThisPhoneIsSet(
         $locking,
         $keychain ?? AKeychainInMemory::working(),
         $readings ?? WhatThePhoneKeeps::nothingTooOld(),
-        new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking),
+        new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking, $wakes),
         $stacks ?? StacksInMemory::working(),
-        new TurningNotificationsOn(ASealInMemory::working(), $kept, $notifier ?? ANotifierInMemory::unasked(), FrozenClock::at(Instant::atEpochSeconds(0))),
+        new TurningNotificationsOn(ASealInMemory::working(), $kept, $notifier ?? ANotifierInMemory::unasked(), FrozenClock::at(Instant::atEpochSeconds(0)), $wakes),
         $apps ?? new AppsSettingsThatOpen(),
     );
 }
@@ -268,13 +271,16 @@ it('asks on this screen before it clears saved data, and keeps it when told to',
 
 it('clears every reading, setting and marker, and draws every setting at its standard', function (): void {
     $device = ADeviceThatKnowsYou::unlocked();
+    $wakes = WakesInMemory::thatWake();
     $kept = ConnectionSettingsInMemory::empty();
     [$readings, $store] = readingsADayAndSixtyDaysOld($kept);
     $stack = StackId::of(Nonce::of(str_repeat('e', Nonce::SHORTEST)));
     $standings = StandingsInMemory::working()->lastHeard($stack, HowItStands::Healthy, Instant::atEpochSeconds(WHEN_THE_SETTINGS_OPEN));
     $left = WorkLeftRunningInMemory::working()->leftBefore($stack, KindOfWork::Walkthrough, Job::named('a-walk'));
-    $screen = thePhonesSettingsOver($device, $kept, readings: $readings, everything: new EveryStoreThePhoneKeeps($kept, $store, $standings, $left));
+    $screen = thePhonesSettingsOver($device, $kept, readings: $readings, everything: new EveryStoreThePhoneKeeps($kept, $store, $standings, $left), notifier: ANotifierInMemory::unasked(), wakes: $wakes);
 
+    $screen->notificationsTurned(on: true);
+    $screen->allowNotifications();
     $screen->lockAfterIs(LockAfter::OneHour->name);
     $screen->keepReadingsFor(KeptFor::NinetyDays->name);
     $screen->askToClear();
@@ -286,7 +292,8 @@ it('clears every reading, setting and marker, and draws every setting at its sta
         ->and($device->allowedAway())->toBe(0)
         ->and($store->forgetEverything()->howMany())->toBe(0)
         ->and($standings->forgetEverything()->howMany())->toBe(0)
-        ->and($left->forgetEverything()->howMany())->toBe(0);
+        ->and($left->forgetEverything()->howMany())->toBe(0)
+        ->and($wakes->isAsked())->toBeFalse();
 });
 
 /** Two stacks on the phone, the loft paired first. */
@@ -396,12 +403,14 @@ it('offers notifications off until the operator turns them on, and asks the phon
 
 it('says why before it asks the phone, saying it may tell late or not at all while closed, and asks only from its own button', function (): void {
     $notifier = ANotifierInMemory::unasked();
-    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
+    $wakes = WakesInMemory::thatWake();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier, wakes: $wakes);
 
     $screen->notificationsTurned(on: true);
     $explained = WhatTheDeviceWouldDraw::by($screen);
 
     expect($notifier->timesAsked())->toBe(0)
+        ->and($wakes->isAsked())->toBeFalse()
         ->and($explained->said())->toContain(__('device.notifications_reason'))
         ->and(__('device.notifications_reason'))->toContain('late or not at all')
         ->and($explained->said())->toContain(__('settings.notifications_allow'));
@@ -410,12 +419,14 @@ it('says why before it asks the phone, saying it may tell late or not at all whi
 
     expect($notifier->timesAsked())->toBe(1)
         ->and($screen->notificationsAreOn())->toBeTrue()
-        ->and($screen->explainingNotifications)->toBeFalse();
+        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($wakes->isAsked())->toBeTrue();
 });
 
 it('keeps notifications on when read again, and turns them off at once without asking anything', function (): void {
     $notifier = ANotifierInMemory::unasked();
-    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier);
+    $wakes = WakesInMemory::thatWake();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier, wakes: $wakes);
     $screen->notificationsTurned(on: true);
     $screen->allowNotifications();
     $screen->notifying = null;
@@ -431,7 +442,8 @@ it('keeps notifications on when read again, and turns them off at once without a
 
     expect($screen->notificationsAreOn())->toBeFalse()
         ->and($screen->explainingNotifications)->toBeFalse()
-        ->and($notifier->timesAsked())->toBe(1);
+        ->and($notifier->timesAsked())->toBe(1)
+        ->and($wakes->isAsked())->toBeFalse();
 });
 
 it('says where to turn notifications on where the phone was told no, offers the phone\'s settings, and keeps them off', function (): void {
@@ -452,12 +464,14 @@ it('says where to turn notifications on where the phone was told no, offers the 
 });
 
 it('keeps notifications off where the phone says no to the prompt, and says where to turn them on', function (): void {
-    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::refused());
+    $wakes = WakesInMemory::thatWake();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::refused(), wakes: $wakes);
     $screen->explainingNotifications = true;
 
     $screen->allowNotifications();
 
     expect($screen->notificationsAreOn())->toBeFalse()
+        ->and($wakes->isAsked())->toBeFalse()
         ->and($screen->notificationsDeclined)->toBeTrue()
         ->and($screen->explainingNotifications)->toBeTrue();
 });

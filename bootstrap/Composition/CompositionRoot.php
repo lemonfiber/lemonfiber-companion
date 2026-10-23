@@ -38,6 +38,7 @@ use Lemonfiber\Native\Player\Player as ThePlayer;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
+use Lemonfiber\Native\Wakes as TheWakes;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
 use Modules\Connection\Api\TheLock;
@@ -59,6 +60,7 @@ use Modules\Device\Api\PlatformPlayer;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\PlatformShare;
+use Modules\Device\Api\PlatformWakes;
 use Modules\Device\Api\PlatformZone;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
@@ -96,6 +98,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheLocalNetwork;
+use Modules\Kernel\Api\WakingWhileAway;
 use Modules\Kernel\Api\WhereHearingLeftOff;
 use Modules\Kernel\Api\WhereTheOperatorWas;
 use Modules\Kernel\Api\WorkLeftRunning;
@@ -342,6 +345,11 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             LocalZone::class,
             static fn(): LocalZone => new PlatformZone(new ThePhonesClock()),
+        );
+
+        $this->app->bind(
+            WakingWhileAway::class,
+            static fn(): WakingWhileAway => new PlatformWakes(new TheWakes()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

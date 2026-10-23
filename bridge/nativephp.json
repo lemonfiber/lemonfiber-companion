@@ -258,6 +258,18 @@
             "android": "app.lemonfiber.native.ArtworkFunctions.LetGo",
             "ios": "ArtworkFunctions.LetGo",
             "description": "Let go of every picture held for a stack, as its session ends or it is removed"
+        },
+        {
+            "name": "Lemonfiber.Wakes.Ask",
+            "android": "app.lemonfiber.native.WakeFunctions.Ask",
+            "ios": "WakeFunctions.Ask",
+            "description": "Ask the platform to wake the app whenever it chooses while the app is away, so it can hear its stacks then"
+        },
+        {
+            "name": "Lemonfiber.Wakes.Stop",
+            "android": "app.lemonfiber.native.WakeFunctions.Stop",
+            "ios": "WakeFunctions.Stop",
+            "description": "Stop asking, and take back any wake the platform still holds"
         }
     ],
     "components": [
@@ -297,7 +309,8 @@
                 "androidx.media3:media3-exoplayer-hls:1.10.1",
                 "androidx.media3:media3-exoplayer-dash:1.10.1",
                 "androidx.media3:media3-session:1.10.1",
-                "androidx.media3:media3-ui:1.10.1"
+                "androidx.media3:media3-ui:1.10.1",
+                "androidx.work:work-runtime:2.10.0"
             ]
         },
         "receivers": [
@@ -342,10 +355,14 @@
             "NSBonjourServices": [
                 "_lemonfiber._tcp"
             ],
-            "NSCameraUsageDescription": "lemonfiber uses the camera only to read a code you are shown. Nothing it sees is stored or sent anywhere."
+            "NSCameraUsageDescription": "lemonfiber uses the camera only to read a code you are shown. Nothing it sees is stored or sent anywhere.",
+            "BGTaskSchedulerPermittedIdentifiers": [
+                "app.lemonfiber.wake"
+            ]
         },
         "background_modes": [
-            "audio"
+            "audio",
+            "fetch"
         ]
     }
 }
