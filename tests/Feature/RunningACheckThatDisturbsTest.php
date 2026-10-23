@@ -13,6 +13,8 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
@@ -174,4 +176,35 @@ it('says the stack did not run it, in its own words, and that it has no outcome 
 it('says the stack is not reporting a check the route names', function (): void {
     expect(WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchThatHeld())), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), check: 'disk.space'))->said())
         ->toContain(__('health.disturbs.not_found'));
+});
+
+it('runs a check the stack gives no bound for as it was shown, with no bound', function (): void {
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified(null))), $running)->run();
+
+    expect($running->ran())->toBe(['vpn']);
+});
+
+it('sends the yes once, however often it is tapped while the stack runs it', function (): void {
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $screen = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), $running);
+    $screen->run();
+    $screen->run();
+
+    expect($running->ran())->toBe(['vpn']);
+});
+
+it('says what stood in the way of a run, and asks the stack again only when told to', function (): void {
+    $asking = AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified()));
+    $screen = theRunningScreen($asking, AStackThatRunsChecks::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $screen->run();
+
+    expect($screen->howItIsGoing()->went->cameBack())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('health.disturbs.run_it'))
+        ->and($asking->askings())->toBe(1);
+
+    $screen->again();
+    $screen->answer();
+
+    expect($asking->askings())->toBe(2);
 });
