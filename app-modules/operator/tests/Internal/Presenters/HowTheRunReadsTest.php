@@ -12,6 +12,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Operator\Internal\Presenters\HowTheRunReads;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 
 /**
@@ -21,7 +22,7 @@ use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
  */
 function everythingTheRunHolds(TheRunTurnedOutToBe $run): array
 {
-    return [$run->went->cameBack(), $run->went->isSignedIn, $run->isWorking, $run->hasEnded, $run->refused !== null, $run->answered];
+    return [$run->went->cameBack(), $run->went->isSignedIn, $run->isWorking, $run->hasEnded, $run->refused instanceof ARefusalAsShown, $run->answered];
 }
 
 it('says each state of a run apart, and only its own', function (): void {
