@@ -13,6 +13,7 @@ use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\SealKey;
 use Modules\Kernel\Api\WhyNothingIsSealed;
 use Modules\Vault\Api\PlatformSealKeys;
+use Modules\Vault\Internal\KeptUnder;
 
 use function sprintf;
 use function str_repeat;
@@ -48,7 +49,8 @@ it('keeps each key under its own name, prefixed so nothing else in the store col
     $keys->readOrKeep(SealKey::TheDataKey, KeyMaterial::of(A_KEY_TO_KEEP));
     $keys->readOrKeep(SealKey::TheStackKey, KeyMaterial::of(A_KEY_TO_KEEP));
 
-    expect($store->keysHeld())->toBe(['lemonfiber.seal.data', 'lemonfiber.seal.stack']);
+    expect($store->keysHeld())->toBe(['lemonfiber.seal.data', 'lemonfiber.seal.stack'])
+        ->and($store->askedReadable('lemonfiber.seal.data'))->toBe(KeptUnder::SealKeys->readable());
 });
 
 it('writes a key as lowercase hex, and reads that back as the same key', function (): void {

@@ -8,7 +8,6 @@ use function json_decode;
 use function json_encode;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\StackId;
@@ -51,7 +50,7 @@ final readonly class PlatformWhereHearingLeftOff implements WhereHearingLeftOff
             return false;
         }
 
-        return $this->store->keep($this->keyFor($stack), $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep($this->keyFor($stack), $written, KeptUnder::WhereHearingLeftOff->readable())->either(
             done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
         )->held;

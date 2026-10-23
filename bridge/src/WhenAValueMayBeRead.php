@@ -20,16 +20,18 @@ enum WhenAValueMayBeRead: string
     /**
      * Only while the device is unlocked.
      *
-     * The narrowest, and the right one for a session token: a value nothing can
-     * read while the phone is in somebody else's hand and locked.
+     * The narrowest, and the right one for anything nothing reads in the
+     * background: a value nothing can read while the phone is in somebody
+     * else's hand and locked.
      */
     case WhileUnlocked = 'while_unlocked';
 
     /**
      * From the first unlock after a restart until the next one.
      *
-     * What a value needs if anything reads it in the background. Wider than the
-     * above, which is why it is asked for rather than assumed.
+     * What a value needs if anything reads it in the background, as a wake while
+     * the app is away does. Wider than the above, which is why it is asked for
+     * rather than assumed.
      */
     case AfterFirstUnlock = 'after_first_unlock';
 

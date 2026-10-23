@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Forgotten;
@@ -157,7 +156,7 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
             return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
         }
 
-        return $this->store->keep(KeptUnder::Stacks->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::Stacks->value, $written, KeptUnder::Stacks->readable())->either(
             done: static fn(): Remembered => Remembered::safely(),
             refused: static fn(WhyNothingWasKept $why): Remembered => Remembered::refused(self::meaning($why)),
         );
@@ -279,7 +278,7 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
             return false;
         }
 
-        return $this->store->keep(KeptUnder::Stacks->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::Stacks->value, $written, KeptUnder::Stacks->readable())->either(
             done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
         )->held;

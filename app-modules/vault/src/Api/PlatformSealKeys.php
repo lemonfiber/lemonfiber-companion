@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\KeyHeld;
@@ -26,11 +25,11 @@ use function sodium_hex2bin;
  * file, preferences, the framework's own key beside the database — is absent
  * from this class rather than guarded against.
  *
- * **Kept at the narrowest accessibility there is.** A key is readable only
- * while the device is unlocked, because nothing reads what the phone keeps in
- * the background. The store answers back which it gave, and that answer is not
- * read here, for the reason `PlatformKeychain` gives: nothing this class
- * decides turns on it.
+ * **Readable from the first unlock after the phone starts.** A wake while the
+ * app is away opens what was sealed, and comes with the phone locked, so a key
+ * is kept as {@see KeptUnder::readable()} says. The store answers back which it
+ * gave, and that answer is not read here, for the reason `PlatformKeychain`
+ * gives: nothing this class decides turns on it.
  *
  * **A key is written as hex.** The store keeps strings and a key is bytes, and
  * `sodium_bin2hex` is the encoding whose time does not depend on the bytes it
@@ -72,7 +71,7 @@ final readonly class PlatformSealKeys implements HoldsTheSealKeys
     private function kept(SealKey $which, KeyMaterial $fresh): KeyHeld
     {
         return $this->store
-            ->keep($this->nameOf($which), sodium_bin2hex($fresh->bytes()), WhenAValueMayBeRead::WhileUnlocked)
+            ->keep($this->nameOf($which), sodium_bin2hex($fresh->bytes()), KeptUnder::SealKeys->readable())
             ->either(
                 done: static fn(): KeyHeld => KeyHeld::madeAfresh($fresh),
                 refused: static fn(WhyNothingWasKept $why): KeyHeld => KeyHeld::refused(self::meaning($why)),

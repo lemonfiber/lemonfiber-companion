@@ -10,7 +10,6 @@ use function json_decode;
 use function json_encode;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
@@ -80,7 +79,7 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
             return WhatAReturnFinds::nothing();
         }
 
-        return $this->store->keep($this->keyFor($stack, $work), $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep($this->keyFor($stack, $work), $written, KeptUnder::WorkLeftRunning->readable())->either(
             done: static fn(): WhatAReturnFinds => WhatAReturnFinds::theJob($job),
             refused: static fn(): WhatAReturnFinds => WhatAReturnFinds::nothing(),
         );

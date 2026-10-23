@@ -21,6 +21,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Vault\Api\PlatformStacks;
+use Modules\Vault\Internal\KeptUnder;
 
 use function sprintf;
 use function str_repeat;
@@ -88,7 +89,8 @@ it('writes the address down deliberately, rather than by serialising the type', 
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack(at: 'https://192.168.1.77'));
 
-    expect($store->whatIsUnder(UNDER))->toContain('192.168.1.77');
+    expect($store->whatIsUnder(UNDER))->toContain('192.168.1.77')
+        ->and($store->askedReadable(UNDER))->toBe(KeptUnder::Stacks->readable());
 });
 
 it('carries the version of the shape it was written in', function (): void {

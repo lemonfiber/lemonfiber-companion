@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 use Lemonfiber\Native\Wrote;
 use Modules\Kernel\Api\AGrant;
@@ -51,7 +50,7 @@ final readonly class PlatformGrants implements KeepingTheGrant
 
     public function keepTheGrant(StackId $stack, TheGrantIsFor $for, AGrant $grant): Kept
     {
-        return $this->kept($this->store->keep($this->keyFor($stack), TheGrantAsWritten::written($for, $grant), WhenAValueMayBeRead::WhileUnlocked));
+        return $this->kept($this->store->keep($this->keyFor($stack), TheGrantAsWritten::written($for, $grant), KeptUnder::Grant->readable()));
     }
 
     public function letTheGrantGo(StackId $stack): Kept

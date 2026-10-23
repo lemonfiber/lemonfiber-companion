@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\ArtworkGoesWithTheSession;
+use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Nonce;
@@ -294,6 +295,7 @@ it('the adapter keeps a session where the platform keeps things', function (): v
     expect($keychain->isAvailable())->toBeTrue();
     expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('kept');
     expect($store->keysHeld())->toBe([sprintf('lemonfiber.session.%s', A_PAIRED_STACK)]);
+    expect($store->askedReadable(sprintf('lemonfiber.session.%s', A_PAIRED_STACK)))->toBe(WhenAValueMayBeRead::AfterFirstUnlock);
 });
 
 it('the adapter gives each stack its own key', function (): void {
