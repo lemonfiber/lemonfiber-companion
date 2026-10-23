@@ -127,20 +127,18 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
         $stack = $this->stack();
         $covers = $this->covers();
 
-        if (! $covers instanceof WhatARunCovers) {
-            return $this->answered ??= new HowARunOfChecksReads()->unknown();
-        }
-
         return $this->answered ??= $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheChecksTurnedOutToBe => $this->asking->about($stack, $session)->either(
-                said: static fn(Report $report): TheChecksTurnedOutToBe => new HowARunOfChecksReads()->before($report, $covers),
-                met: function (Obstacle $why) use ($stack, $covers): TheChecksTurnedOutToBe {
+                said: static fn(Report $report): TheChecksTurnedOutToBe => $covers instanceof WhatARunCovers
+                    ? new HowARunOfChecksReads()->before($report, $covers)
+                    : new HowARunOfChecksReads()->unknown(),
+                met: function (Obstacle $why) use ($stack): TheChecksTurnedOutToBe {
                     $this->letGoOfTheSession($why, $stack);
 
-                    return new HowARunOfChecksReads()->met($why, $covers);
+                    return new HowARunOfChecksReads()->met($why);
                 },
             ),
-            notHeld: static fn(): TheChecksTurnedOutToBe => new HowARunOfChecksReads()->signedOut($covers),
+            notHeld: static fn(): TheChecksTurnedOutToBe => new HowARunOfChecksReads()->signedOut(),
         );
     }
 

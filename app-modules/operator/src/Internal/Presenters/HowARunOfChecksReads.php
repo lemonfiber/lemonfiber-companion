@@ -100,15 +100,21 @@ final readonly class HowARunOfChecksReads
     }
 
     /** It did not answer, and this is what the operator met. */
-    public function met(Obstacle $why, WhatARunCovers $covers): TheChecksTurnedOutToBe
+    public function met(Obstacle $why): TheChecksTurnedOutToBe
     {
-        return $this->drawn(HowTheReadingWent::somethingStopped($why), $covers, [], []);
+        return $this->without(HowTheReadingWent::somethingStopped($why));
     }
 
     /** This device no longer holds a session for that stack. */
-    public function signedOut(WhatARunCovers $covers): TheChecksTurnedOutToBe
+    public function signedOut(): TheChecksTurnedOutToBe
     {
-        return $this->drawn(HowTheReadingWent::theSessionEnded(), $covers, [], []);
+        return $this->without(HowTheReadingWent::theSessionEnded());
+    }
+
+    /** Nothing to draw but what the reading came to. */
+    private function without(HowTheReadingWent $went): TheChecksTurnedOutToBe
+    {
+        return new TheChecksTurnedOutToBe(went: $went, titleSaid: '', familySaid: '', disturbing: [], found: [], runnable: false);
     }
 
     /** The findings this run covers, in the order they arrived. */

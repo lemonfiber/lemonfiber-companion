@@ -136,7 +136,7 @@ it('offers nothing to run on a route that names no run this app knows', function
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($running->ran())->toBe([])
-        ->and($asking->askings())->toBe(0)
+        ->and($asking->askings())->toBe(1)
         ->and($drawn->said())->toContain(__(HowARunOfChecksReads::UNKNOWN))
         ->and($drawn->offers())->not->toContain(__('health.run_every.run_it'));
 });
