@@ -338,3 +338,46 @@ it('says the stack did not ask the indexers, in its own words', function (): voi
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.trace.search_refused'), 'Every indexer has spent its daily allowance');
 });
+
+it('sends a search once, however often it is tapped while the indexers are asked', function (): void {
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching);
+    $screen->search();
+    $screen->search();
+
+    expect($searching->searched())->toBe(['Dune']);
+});
+
+it('says the stack has no answer for a search it no longer knows, and what stood in the way of one', function (): void {
+    $ended = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::answering(WhatBecameOfTheWork::ended()));
+    $ended->search();
+    $ended->whileItRuns();
+    $met = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $met->search();
+
+    expect(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('health.trace.search_no_outcome'))
+        ->and($met->howTheSearchIsGoing()->went->cameBack())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toContain(__('health.trace.search'));
+});
+
+it('asks the indexers nothing once the session has ended', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), keychain: $keychain, named: 'Dune', searching: $searching);
+    $screen->answer();
+    $keychain->forget(theStackWhoseItemIsFollowed()->id());
+    $screen->search();
+
+    expect($searching->searched())->toBe([])
+        ->and($screen->howTheSearchIsGoing()->went->isSignedIn)->toBeFalse();
+});
+
+it('follows no season below none', function (): void {
+    $tracing = AStackThatTraces::with(aFilmThatArrived());
+    $screen = theTraceScreen($tracing, named: 'Dune');
+    $screen->followSeason(-1);
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->season)->toBeNull()
+        ->and($tracing->followed())->toBe('Dune');
+});
