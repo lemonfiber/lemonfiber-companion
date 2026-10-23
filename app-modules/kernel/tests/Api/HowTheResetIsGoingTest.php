@@ -34,7 +34,7 @@ function howTheResetIsGoingReads(HowTheResetIsGoing $going): string
 }
 
 it('takes the arm for each state, and carries the report, the refusal and the obstacle', function (): void {
-    $reset = TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'));
+    $reset = TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'), 'reset-1');
 
     expect(howTheResetIsGoingReads(HowTheResetIsGoing::stillRunning()))->toBe('running')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::done($reset)))->toBe('done:1')

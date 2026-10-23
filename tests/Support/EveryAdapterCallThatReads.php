@@ -122,6 +122,7 @@ use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyAdmits;
@@ -170,6 +171,7 @@ use Modules\Kernel\Api\WhoAnAllowanceIsFor;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
+use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Sdk\Api\Acceptors;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
@@ -458,6 +460,8 @@ final readonly class EveryAdapterCallThatReads
                     asksThroughTheRequestService: false,
                     revoked: HowFarTheRemovalReached::Nothing,
                     findings: WhatTheRemovalFound::of(),
+                    watchHistory: 'Her watch history goes with her account.',
+                    offer: 'removal-anna',
                 ))),
             'Removers::whatBecameOf' => static fn(): object
                 => new Removers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
@@ -473,7 +477,7 @@ final readonly class EveryAdapterCallThatReads
                 => new Reversers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Resetters::wouldRevert' => static fn(): object => new Resetters($clients, $entropy)->wouldRevert($stack, $session),
             'Resetters::revert' => static fn(): object
-                => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent')))),
+                => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'), 'reset-1'))),
             'Resetters::whatBecameOf' => static fn(): object
                 => new Resetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
@@ -608,6 +612,8 @@ final readonly class EveryAdapterCallThatReads
             WhatMusicIsSetTo::unset(),
             WhatBecameOfTheChoice::Held,
             customised: false,
+            offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')),
+            changes: '',
         ));
     }
 

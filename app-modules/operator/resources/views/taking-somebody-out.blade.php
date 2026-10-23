@@ -49,13 +49,15 @@
         @endif
 
         {{-- What goes with them: their requests, destroyed rather than handed
-             to anybody, and whether there is an account on the request
-             service to take at all. --}}
+             to anybody, their watch history as the stack says it, and
+             whether there is an account on the request service to take at
+             all. --}}
         @if ($this->answer()->removal->carriedOut)
             <x-design::body>{{ trans_choice('stacks.removal.requests_went', $this->answer()->removal->requests) }}</x-design::body>
         @else
             <x-design::body>{{ trans_choice('stacks.removal.requests_go', $this->answer()->removal->requests) }}</x-design::body>
         @endif
+        <x-design::body>{{ $this->answer()->removal->watchHistory }}</x-design::body>
         <x-design::body>{{ __($this->answer()->removal->asksSaid) }}</x-design::body>
 
         {{-- What the stack found, in its own words, before the yes and after

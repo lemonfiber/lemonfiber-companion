@@ -17,11 +17,13 @@ use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\ThereIsNothingToAgreeTo;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
+use Modules\Kernel\Api\WordsToChooseFrom;
 
 use function sprintf;
 
@@ -30,7 +32,7 @@ use Tests\Support\TheWordCarriedOut;
 /** An answer about quality that became what is given. */
 function anAnswerThatBecame(WhatBecameOfTheChoice $became): TheQualityChosen
 {
-    return TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), $became, customised: false);
+    return TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), $became, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '');
 }
 
 it('keeps the preset and the kind as named, trimmed', function (): void {
@@ -73,6 +75,7 @@ it('tells a choice answered with what is in force from one for music and from wh
         AFormatInForce::reported('music', 'Lossless', 'Nothing thrown away', 'FLAC', '~300 MB', 'Some players convert it'),
         WhatBecameOfTheChoice::Rehearsed,
         WhatBecameOfAskingIt::notAsked(),
+        'What is fetched from now on, and nothing already here',
     );
     $arm = static fn(WhatTheChoiceCameTo $came): string => $came->either(
         inForce: static fn(TheQualityChosen $read): TheWordCarriedOut => new TheWordCarriedOut($read->became()->value),
@@ -88,4 +91,13 @@ it('tells a choice answered with what is in force from one for music and from wh
 it('asks for each act about quality by lemonfiber\'s name for it', function (): void {
     expect(WhatToDoAboutQuality::Choose->asked())->toBe('quality-set')
         ->and(WhatToDoAboutQuality::Upgrade->asked())->toBe('quality-upgrade');
+});
+
+it('keeps what a choice for music changes, and refuses a choice silent on it', function (): void {
+    $format = AFormatInForce::reported('music', 'Lossless', 'Nothing thrown away', 'FLAC', '~300 MB', 'Some players convert it');
+
+    expect(AFormatChoiceMade::reported($format, WhatBecameOfTheChoice::Recorded, WhatBecameOfAskingIt::notAsked(), 'What is fetched from now on')->changes())
+        ->toBe('What is fetched from now on')
+        ->and(static fn(): AFormatChoiceMade => AFormatChoiceMade::reported($format, WhatBecameOfTheChoice::Recorded, WhatBecameOfAskingIt::notAsked(), ' '))
+        ->toThrow(QualitySaysNothing::class, 'its `changes` blank');
 });

@@ -240,6 +240,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::RestartMoved,
         RefusalCode::UpdateMoved,
         RefusalCode::PausingMoved,
+        RefusalCode::RemovalMoved,
+        RefusalCode::ResetMoved,
         RefusalCode::AnotherReading,
     ];
 
@@ -301,6 +303,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::StepFailed,
         RefusalCode::PathNotPlain,
         RefusalCode::ValueWithheld,
+        RefusalCode::NothingToRun,
+        RefusalCode::ManifestUnkept,
         RefusalCode::CatalogueReplaced,
         RefusalCode::NewestUnkept,
         RefusalCode::NoSuchFiller,

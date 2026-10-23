@@ -84,6 +84,8 @@ function whatTakingAnnaOutCosts(int $requests = 3, string ...$findings): ARemova
         asksThroughTheRequestService: true,
         revoked: HowFarTheRemovalReached::Nothing,
         findings: WhatTheRemovalFound::of(...$findings),
+        watchHistory: 'Her watch history goes with her account.',
+        offer: 'removal-anna',
     );
 }
 
@@ -96,6 +98,7 @@ function annaTakenOut(HowFarTheRemovalReached $revoked, int $requests = 3, strin
         asksThroughTheRequestService: true,
         revoked: $revoked,
         findings: WhatTheRemovalFound::of(...$findings),
+        watchHistory: 'Her watch history went with her account.',
     );
 }
 
@@ -138,7 +141,7 @@ function everythingTheRemovalScreenHolds(TheRemovalTurnedOutToBe $shown): array
         'hasEnded' => $shown->hasEnded,
         'refusal' => $shown->refusal,
         'removal' => $shown->removal instanceof ARemovalAsShown
-            ? [$shown->removal->name, $shown->removal->carriedOut, $shown->removal->revokedSaid, $shown->removal->isDone, $shown->removal->requests, $shown->removal->asksSaid, $shown->removal->findings]
+            ? [$shown->removal->name, $shown->removal->carriedOut, $shown->removal->revokedSaid, $shown->removal->isDone, $shown->removal->requests, $shown->removal->asksSaid, $shown->removal->watchHistory, $shown->removal->findings]
             : null,
     ];
 }
@@ -193,6 +196,7 @@ it('draws what taking them out would cost, said to be only that, and offers the 
         ->and($drawn->said())->toContain(__('stacks.removal.revoked.nothing', ['name' => 'Anna']))
         ->and($drawn->said())->toContain(aCountedLineOfTheRemoval('stacks.removal.requests_go', 3))
         ->and($drawn->said())->toContain(__('stacks.removal.asks'))
+        ->and($drawn->said())->toContain('Her watch history goes with her account.')
         ->and($drawn->said())->toContain('The request service answered slowly')
         ->and($drawn->offers())->toContain(__('stacks.removal.take_them_out', ['name' => 'Anna']))
         ->and($drawn->offers())->toContain(__('stacks.removal.back_to_who_is_in'))
@@ -200,7 +204,7 @@ it('draws what taking them out would cost, said to be only that, and offers the 
 });
 
 it('says it when they have no requests to lose and no account on the request service', function (): void {
-    $described = ARemoval::described(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: false, revoked: HowFarTheRemovalReached::Nothing, findings: WhatTheRemovalFound::of());
+    $described = ARemoval::described(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: false, revoked: HowFarTheRemovalReached::Nothing, findings: WhatTheRemovalFound::of(), watchHistory: 'She has no watch history to lose.', offer: 'removal-anna');
     $drawn = WhatTheDeviceWouldDraw::by(annasCostReadOn(AStackThatTakesThemOut::answering(...theRemovalWorkThenIts($described))));
 
     expect($drawn->said())->toContain(aCountedLineOfTheRemoval('stacks.removal.requests_go', 0))
@@ -223,7 +227,7 @@ it('takes them out by the name the stack answered under, and draws everywhere as
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna', 'after:j-1'])
+    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna:removal-anna', 'after:j-1'])
         ->and($screen->answer()->removal?->isDone)->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.removal.revoked.everywhere', ['name' => 'Anna']))
         ->and($drawn->said())->toContain(aCountedLineOfTheRemoval('stacks.removal.requests_went', 1))
@@ -253,7 +257,7 @@ it('never draws the media server alone as done, shows what the stack found after
     $screen->again();
     $screen->answer();
 
-    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna', 'after:j-1', 'would:anna'])
+    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna:removal-anna', 'after:j-1', 'would:anna'])
         ->and($screen->agreed)->toBeFalse();
 });
 
@@ -303,7 +307,7 @@ it('says whether they were taken out could not be read where the yes met somethi
     $screen->again();
     $screen->answer();
 
-    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna', 'would:anna']);
+    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna:removal-anna', 'would:anna']);
 });
 
 it('asks after the same work again where following it met something, without drawing a yes it never sent', function (): void {
@@ -400,17 +404,17 @@ it('holds each state and only its own', function (): void {
         ->and(everythingTheRemovalScreenHolds($nobody->answer()))->toBe(nothingHeldOfTheRemoval(['name' => '', 'namesNobody' => true]))
         ->and(everythingTheRemovalScreenHolds($cost->answer()))->toBe(nothingHeldOfTheRemoval([
             'name' => 'Anna',
-            'removal' => ['Anna', false, 'stacks.removal.revoked.nothing', false, 2, 'stacks.removal.asks', ['Slow']],
+            'removal' => ['Anna', false, 'stacks.removal.revoked.nothing', false, 2, 'stacks.removal.asks', 'Her watch history goes with her account.', ['Slow']],
         ]))
         ->and(everythingTheRemovalScreenHolds($done->answer()))->toBe(nothingHeldOfTheRemoval([
             'name' => 'Anna',
             'wasAgreed' => true,
-            'removal' => ['Anna', true, 'stacks.removal.revoked.everywhere', true, 2, 'stacks.removal.asks', []],
+            'removal' => ['Anna', true, 'stacks.removal.revoked.everywhere', true, 2, 'stacks.removal.asks', 'Her watch history went with her account.', []],
         ]));
 });
 
 it('never draws a reading nobody agreed to as done, whatever reach it names', function (): void {
-    $everywhere = ARemoval::described(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of());
+    $everywhere = ARemoval::described(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of(), watchHistory: 'Her watch history goes with her account.', offer: 'removal-anna');
     $screen = annasCostReadOn(AStackThatTakesThemOut::answering(...theRemovalWorkThenIts($everywhere)));
 
     expect($screen->answer()->removal?->isDone)->toBeFalse()
@@ -427,7 +431,7 @@ it('sends the yes once, however often it is tapped while the stack works', funct
     $screen->agree();
     $screen->agree();
 
-    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna']);
+    expect($removing->asked())->toBe(['would:anna', 'after:j-1', 'remove:Anna:removal-anna']);
 });
 
 it('lets go of the reading when the cost is asked again, so a refusal leaves nothing to agree to', function (): void {

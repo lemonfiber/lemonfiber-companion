@@ -16,6 +16,7 @@ final readonly class ARemovalAsShown
      * @param bool         $isDone        whether they are out everywhere, which is the only reach drawn as done
      * @param int          $requests      how many of their requests go with them
      * @param string       $asksSaid      the catalogue key for whether the request service holds an account for them
+     * @param string       $watchHistory  what it does, or did, to their watch history, in the stack's words
      * @param list<string> $findings      what the stack found, each in its own words
      */
     public function __construct(
@@ -25,6 +26,7 @@ final readonly class ARemovalAsShown
         public bool $isDone,
         public int $requests,
         public string $asksSaid,
+        public string $watchHistory,
         public array $findings,
     ) {}
 }

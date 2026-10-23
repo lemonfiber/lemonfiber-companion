@@ -22,6 +22,8 @@ use Modules\Kernel\Api\TheStackEdits;
  */
 final readonly class WhatAResetSays
 {
+    /** The name the stack gives the preview, which the yes quotes. */
+    public const string OFFER = 'reset-compose-2';
     /** The diff of the one file whose lines differ. */
     private const string THE_DIFF = "- image: sonarr:4.0.1\n+ image: sonarr:4.0.0\n";
 
@@ -41,6 +43,7 @@ final readonly class WhatAResetSays
                 ['path' => 'env/sonarr.env', 'diff' => ''],
             ],
             'reverted_connections' => ['sonarr → qbittorrent'],
+            'offer' => self::OFFER,
             ...$changed,
         ]];
     }
@@ -48,7 +51,7 @@ final readonly class WhatAResetSays
     /** What that envelope previews, as the kernel holds it. */
     public static function previewed(): TheReset
     {
-        return TheReset::previewed(self::edits(), ConnectionsReverted::these('sonarr → qbittorrent'));
+        return TheReset::previewed(self::edits(), ConnectionsReverted::these('sonarr → qbittorrent'), self::OFFER);
     }
 
     /** What that envelope reports carried out, as the kernel holds it. */

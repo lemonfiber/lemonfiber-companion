@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function count;
+use function trim;
 
 /**
  * Putting the configuration back: previewed, or carried out.
@@ -14,6 +15,9 @@ use function count;
  * edits go, each with the lines that change, and the connections that go with
  * them. The two are two constructors rather than a flag a caller passes, so
  * which one a screen holds is decided where the stack's answer is read.
+ *
+ * A preview carries the name the stack gave it, which the yes quotes back so
+ * the stack refuses a yes given for files that have moved since.
  */
 final readonly class TheReset
 {
@@ -21,18 +25,23 @@ final readonly class TheReset
         private TheStackEdits $edits,
         private ConnectionsReverted $connections,
         private bool $carriedOut,
+        private string $offer,
     ) {}
 
-    /** What putting the configuration back would revert; nothing was written. */
-    public static function previewed(TheStackEdits $edits, ConnectionsReverted $connections): self
+    /** What putting the configuration back would revert, under the name the stack gave the preview; nothing was written. */
+    public static function previewed(TheStackEdits $edits, ConnectionsReverted $connections, string $offer): self
     {
-        return new self($edits, $connections, carriedOut: false);
+        if (trim($offer) === '') {
+            throw ThereIsNothingToAgreeTo::unnamed();
+        }
+
+        return new self($edits, $connections, carriedOut: false, offer: trim($offer));
     }
 
     /** What putting the configuration back reverted, the operator having said yes. */
     public static function carriedOut(TheStackEdits $edits, ConnectionsReverted $connections): self
     {
-        return new self($edits, $connections, carriedOut: true);
+        return new self($edits, $connections, carriedOut: true, offer: '');
     }
 
     /** Whether it was carried out rather than only previewed. */
@@ -51,6 +60,16 @@ final readonly class TheReset
     public function connections(): ConnectionsReverted
     {
         return $this->connections;
+    }
+
+    /**
+     * The name the stack gave the preview, which a yes quotes; `''` once carried out.
+     *
+     * Published because {@see AResetAgreed} carries it back, and for nothing else.
+     */
+    public function offer(): string
+    {
+        return $this->offer;
     }
 
     /** Whether it reverts no file and no connection. */

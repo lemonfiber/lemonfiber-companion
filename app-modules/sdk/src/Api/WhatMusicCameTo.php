@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\MusicEnvelope;
 use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Sdk\Api\Fields\MusicField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatAQualityAnswerCarries;
 use Modules\Sdk\Internal\Wire;
 
@@ -46,6 +47,7 @@ final readonly class WhatMusicCameTo
             WhatAQualityAnswerCarries::format($data[MusicField::Choice->value], $kind, MusicField::Choice),
             WhatAQualityAnswerCarries::became($data, $kind),
             WhatAQualityAnswerCarries::asking($data, $kind),
+            Required::text($data, WireField::Changes, QualityIsUnreadable::missing($kind, WireField::Changes)),
         );
     }
 

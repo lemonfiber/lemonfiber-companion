@@ -129,6 +129,7 @@ function whatTheseVerbsCostOnTheWire(): array
         'restarting' => ['bound' => 'bounded', 'seconds' => 180],
         'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
         'switching' => ['bound' => 'bounded', 'seconds' => 180],
+        'fetching' => ['bound' => 'bounded', 'seconds' => 1800],
     ];
 }
 

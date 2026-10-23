@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Generated\ResetEnvelope;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\TheReset;
 use Modules\Sdk\Api\Fields\ResetField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
 
@@ -25,6 +26,8 @@ use Modules\Sdk\Internal\Wire;
  * remembered from what was asked, for {@see WhatAnUpgradeComesTo}'s reason: a
  * screen told *carried out* on the strength of having asked would say so of a
  * reset the stack only previewed.
+ *
+ * Only a preview has its `offer` read, because only a preview is agreed to.
  *
  * Every file is read by {@see StackEditsSent}, with its path and its diff, and
  * every connection by its name. A diff may be empty, which is how the stack
@@ -51,7 +54,7 @@ final readonly class WhatAResetReverts
 
         return self::confirmed($data)
             ? TheReset::carriedOut($edits, $connections)
-            : TheReset::previewed($edits, $connections);
+            : TheReset::previewed($edits, $connections, Required::text($data, WireField::Offer, ResetIsUnreadable::missing(WireField::Offer)));
     }
 
     /**

@@ -93,7 +93,7 @@ function aStackPreviewingTheReset(?HowTheResetIsGoing $after = null): AStackThat
 /** A preview that would revert nothing at all. */
 function aPreviewRevertingNothing(): TheReset
 {
-    return TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these());
+    return TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these(), 'reset-1');
 }
 
 /**
@@ -262,8 +262,8 @@ it('says a preview reverting no file, or no connection, says so', function (TheR
         ->and($drawn->said())->not->toContain(__($notSaid))
         ->and($drawn->offers())->toContain(__('stacks.reset.put_them_back'));
 })->with([
-    'no file' => [TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent')), 'stacks.reset.would_revert_no_file', 'stacks.reset.would_revert_no_connection'],
-    'no connection' => [TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these()), 'stacks.reset.would_revert_no_connection', 'stacks.reset.would_revert_no_file'],
+    'no file' => [TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'), 'reset-1'), 'stacks.reset.would_revert_no_file', 'stacks.reset.would_revert_no_connection'],
+    'no connection' => [TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these(), 'reset-1'), 'stacks.reset.would_revert_no_connection', 'stacks.reset.would_revert_no_file'],
 ]);
 
 it('says plainly that nothing would change, and offers nothing to agree to', function (): void {
@@ -401,6 +401,7 @@ it('sends the yes only after the preview, and says it is putting the configurati
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($resetting->agreed())->toHaveCount(1)
+        ->and($resetting->agreed()[0]->offer())->toBe(WhatAResetSays::OFFER)
         ->and($screen->wasAgreedTo())->toBeTrue()
         ->and($screen->isWorking())->toBeTrue()
         ->and(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: true, changed: ['isWorking' => true]))

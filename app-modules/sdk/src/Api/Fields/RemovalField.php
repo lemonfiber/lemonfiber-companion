@@ -19,4 +19,7 @@ enum RemovalField: string implements NamesAWireField
 
     /** Whether the request service holds an account for them at all. */
     case AsksThroughTheRequestService = 'asks-through-the-request-service';
+
+    /** What removing them does to their watch history, in the stack's words. */
+    case WatchHistory = 'watch-history';
 }

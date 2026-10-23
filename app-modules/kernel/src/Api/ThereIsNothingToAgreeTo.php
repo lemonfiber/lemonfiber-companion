@@ -72,4 +72,10 @@ final class ThereIsNothingToAgreeTo extends InvalidArgumentException
     {
         return new self('A reset was agreed to against a preview that reverts nothing, and a yes to nothing is not asked for.');
     }
+
+    /** The preview arrived without the name the stack gave it, so no yes could quote it. */
+    public static function unnamed(): self
+    {
+        return new self('A reset preview arrived without the name the stack gave it, and a yes that quotes no preview is not one to send.');
+    }
 }

@@ -63,7 +63,7 @@ final class AStackThatTakesThemOut implements RemovingSomebody
 
     public function remove(Stack $stack, Session $session, ARemovalAgreed $agreed): WhatBecameOfTheRemoval
     {
-        $this->asked[] = sprintf('remove:%s', $agreed->who()->name());
+        $this->asked[] = sprintf('remove:%s:%s', $agreed->who()->name(), $agreed->offer());
 
         return $this->next();
     }

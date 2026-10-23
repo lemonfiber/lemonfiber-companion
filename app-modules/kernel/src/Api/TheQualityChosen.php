@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function trim;
+
 /**
  * The quality in force on one stack, and what the stack did with the choice it was last asked about.
  *
@@ -17,16 +19,37 @@ final readonly class TheQualityChosen
         private WhatMusicIsSetTo $music,
         private WhatBecameOfTheChoice $became,
         private bool $customised,
+        private WhatAChoiceMayBeMadeFrom $offered,
+        private string $changes,
     ) {}
 
-    /** What the stack reported. */
+    /**
+     * What the stack reported.
+     *
+     * `$changes` is what the choice changes, in the stack's words, where the
+     * answer is to one, and empty where it is a reading of what is in force.
+     */
     public static function reported(
         ThePresetsInForce $presets,
         WhatMusicIsSetTo $music,
         WhatBecameOfTheChoice $became,
         bool $customised,
+        WhatAChoiceMayBeMadeFrom $offered,
+        string $changes,
     ): self {
-        return new self($presets, $music, $became, $customised);
+        return new self($presets, $music, $became, $customised, $offered, trim($changes));
+    }
+
+    /** What a choice may be made from, in the stack's words. */
+    public function offered(): WhatAChoiceMayBeMadeFrom
+    {
+        return $this->offered;
+    }
+
+    /** What the choice changes, in the stack's words, or empty where the answer is to no choice. */
+    public function changes(): string
+    {
+        return $this->changes;
     }
 
     /** The presets in force, the overall choice first. */

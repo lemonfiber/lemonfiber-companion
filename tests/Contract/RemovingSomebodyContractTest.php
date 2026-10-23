@@ -65,6 +65,8 @@ function whatTakingAnnaOutWouldCost(): ARemoval
         asksThroughTheRequestService: true,
         revoked: HowFarTheRemovalReached::Nothing,
         findings: WhatTheRemovalFound::of(),
+        watchHistory: 'Her watch history goes with her account.',
+        offer: 'removal-anna-3',
     );
 }
 
@@ -77,6 +79,7 @@ function theSameRemoval(): ARemoval
         asksThroughTheRequestService: true,
         revoked: HowFarTheRemovalReached::MediaServerOnly,
         findings: WhatTheRemovalFound::of('The request service did not answer, so her account there is still held'),
+        watchHistory: 'Her watch history went with her account.',
     );
 }
 
@@ -98,6 +101,8 @@ function whatAStackSaysOfTheRemoval(): array
             'asks-through-the-request-service' => true,
             'revoked' => 'media-server-only',
             'findings' => ['The request service did not answer, so her account there is still held'],
+            'watch-history' => 'Her watch history went with her account.',
+            'offer' => 'removal-anna-3',
         ],
     ];
 }
@@ -136,13 +141,14 @@ function everythingTheRemovalSays(WhatBecameOfTheRemoval $became): string
             }
 
             return new TheWordCarriedOut(sprintf(
-                '%s|%s|%d|%s|%s|%s',
+                '%s|%s|%d|%s|%s|%s|%s',
                 $removal->who()->name(),
                 $removal->wasCarriedOut() ? 'carried out' : 'described',
                 $removal->requests(),
                 $removal->asksThroughTheRequestService() ? 'asks' : 'does not ask',
                 $removal->revoked()->value,
                 implode(',', $findings),
+                $removal->watchHistory(),
             ));
         },
         ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
@@ -161,7 +167,7 @@ it('takes somebody out, and follows the work to how far it reached', function ()
         $finished = $removing->whatBecameOf(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), Job::named('j-1'));
 
         expect(everythingTheRemovalSays($started))->toBe('underway j-1', $which)
-            ->and(everythingTheRemovalSays($finished))->toBe('Anna|carried out|3|asks|media-server-only|The request service did not answer, so her account there is still held', $which);
+            ->and(everythingTheRemovalSays($finished))->toBe('Anna|carried out|3|asks|media-server-only|The request service did not answer, so her account there is still held|Her watch history went with her account.', $which);
     }
 });
 
@@ -177,15 +183,15 @@ it('asks what taking somebody out would cost, answered with the work to follow',
 it('reads a reading nobody agreed to as described, and a removal as carried out', function (): void {
     $handle = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'remove']]), 202);
     $body = whatAStackSaysOfTheRemoval();
-    $body['data'] = ['name' => 'Anna', 'confirmed' => false, 'requests' => 0, 'asks-through-the-request-service' => false, 'revoked' => 'nothing', 'findings' => []];
+    $body['data'] = ['name' => 'Anna', 'confirmed' => false, 'requests' => 0, 'asks-through-the-request-service' => false, 'revoked' => 'nothing', 'findings' => [], 'watch-history' => 'Her watch history stays.', 'offer' => 'removal-anna-0'];
     $removing = everyWayOfTakingSomebodyOut($handle, MockResponse::make((string) json_encode($body)))['the adapter']();
     $removing->wouldRemove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), SomebodyInTheHousehold::called('anna'));
 
     expect(everythingTheRemovalSays($removing->whatBecameOf(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), Job::named('j-1'))))
-        ->toBe('Anna|described|0|does not ask|nothing|');
+        ->toBe('Anna|described|0|does not ask|nothing||Her watch history stays.');
 });
 
-it('sends the name without a yes for the cost and with one for the removal, each under a key of its own', function (): void {
+it('sends the name alone for the cost, and with the reading it agrees to for the removal, each under a key of its own', function (): void {
     $sent = [];
     MockClient::destroyGlobal();
     MockClient::global([
@@ -205,8 +211,8 @@ it('sends the name without a yes for the cost and with one for the removal, each
     $removing->remove(aStackToTakeSomebodyOutOf(), theSessionSomebodyIsTakenOutOn(), ARemovalAgreed::after(whatTakingAnnaOutWouldCost()));
 
     expect($sent)->toBe([
-        ['/api/actions/remove', ['name' => 'anna', 'confirm' => false], true],
-        ['/api/actions/remove', ['name' => 'Anna', 'confirm' => true], true],
+        ['/api/actions/remove', ['name' => 'anna', 'offer' => null], true],
+        ['/api/actions/remove', ['name' => 'Anna', 'offer' => 'removal-anna-3'], true],
     ]);
 });
 

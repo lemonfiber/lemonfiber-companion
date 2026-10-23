@@ -14,15 +14,17 @@ use Modules\Kernel\Api\RemovalWasNotDescribed;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\WhatTheRemovalFound;
 
-it('names the person the reading was answered under', function (): void {
+it('names the person and the reading it was answered under', function (): void {
     $who = SomebodyInTheHousehold::called('Anna');
-    $described = ARemoval::described($who, 1, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Nothing, findings: WhatTheRemovalFound::of());
+    $described = ARemoval::described($who, 1, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Nothing, findings: WhatTheRemovalFound::of(), watchHistory: 'Their watch history goes with their account.', offer: 'removal-anna-7');
+    $agreed = ARemovalAgreed::after($described);
 
-    expect(ARemovalAgreed::after($described)->who())->toBe($who);
+    expect($agreed->who())->toBe($who)
+        ->and($agreed->offer())->toBe('removal-anna-7');
 });
 
 it('refuses an answer that was already carried out', function (): void {
-    $done = ARemoval::carriedOut(SomebodyInTheHousehold::called('Anna'), 1, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of());
+    $done = ARemoval::carriedOut(SomebodyInTheHousehold::called('Anna'), 1, asksThroughTheRequestService: true, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of(), watchHistory: 'Their watch history goes with their account.');
 
     expect(fn(): ARemovalAgreed => ARemovalAgreed::after($done))->toThrow(RemovalWasNotDescribed::class, 'already been carried out');
 });

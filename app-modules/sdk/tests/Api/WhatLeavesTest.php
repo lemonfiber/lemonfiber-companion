@@ -221,7 +221,7 @@ it('refuses a recorded service whose destination is not text', function (): void
 });
 
 it('judges the payload these cases are built on against the contract', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()]]]))
+    expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()], 'on_behalf' => []]]))
         ->toBe([]);
 });
 
