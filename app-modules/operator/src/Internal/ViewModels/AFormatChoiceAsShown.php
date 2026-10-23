@@ -13,11 +13,13 @@ final readonly class AFormatChoiceAsShown
      * @param string $becameSaid  the catalogue key for what became of the choice
      * @param string $appliedSaid the catalogue key for what became of asking the music service
      * @param string $detail      the service's own account of why it refused, or empty
+     * @param string $changes     what the choice changes, in the stack's words
      */
     public function __construct(
         public AFormatAsShown $format,
         public string $becameSaid,
         public string $appliedSaid,
         public string $detail,
+        public string $changes,
     ) {}
 }

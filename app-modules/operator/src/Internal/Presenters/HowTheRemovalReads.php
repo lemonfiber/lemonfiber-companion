@@ -79,6 +79,7 @@ final readonly class HowTheRemovalReads
                 isDone: $removal->wasCarriedOut() && $removal->revoked()->isDone(),
                 requests: $removal->requests(),
                 asksSaid: $removal->asksThroughTheRequestService() ? 'stacks.removal.asks' : 'stacks.removal.does_not_ask',
+                watchHistory: $removal->watchHistory(),
                 findings: $findings,
             ),
         );

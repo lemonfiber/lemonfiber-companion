@@ -37,10 +37,11 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * writes lemonfiber's back. The stack answers both with a handle, and both
  * finish as the `reset` envelope, told apart by its `confirmed`.
  *
- * **The yes quotes nothing.** The action takes `confirm` and no other
- * argument, so the stack reverts every edit it finds when the yes arrives.
- * What it reverted is what its report says, and the report is what the screen
- * draws after the yes.
+ * **The yes quotes the preview.** It is sent as `offer`, the name the stack
+ * gave the preview the operator agreed to, so the stack refuses it where the
+ * files have moved since rather than revert what it finds now. What it
+ * reverted is what its report says, and the report is what the screen draws
+ * after the yes.
  *
  * The preview carries no key, because it changes nothing; the yes carries one,
  * because it does.
@@ -61,7 +62,7 @@ final readonly class Resetters implements ResettingTheConfiguration
 
         try {
             return Underway::as(Handles::in($client->act(
-                new ResetAction(confirm: false),
+                new ResetAction(),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {
@@ -77,7 +78,7 @@ final readonly class Resetters implements ResettingTheConfiguration
 
         try {
             return Underway::as(Handles::in($client->act(
-                new ResetAction(confirm: true),
+                new ResetAction(offer: $agreed->offer()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             )));
         } catch (CertificateWasRefused|RequestFailed $why) {

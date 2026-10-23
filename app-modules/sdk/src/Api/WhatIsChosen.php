@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
+use function array_values;
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -14,7 +15,9 @@ use Lemonfiber\Sdk\Generated\QualityEnvelope;
 use Modules\Kernel\Api\APresetInForce;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
+use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Internal\WhatAQualityAnswerCarries;
 use Modules\Sdk\Internal\Wire;
@@ -30,6 +33,9 @@ use function trim;
  * **Every word is the stack's, unchanged.** A preset, what it means and what
  * an hour of it costs are drawn as they came; nothing here names a preset or
  * works out a size.
+ *
+ * What a choice may be made from is read off every answer, and what a choice
+ * changes off the answer to one, where the stack says it.
  *
  * `overwritten` is not read: it is carried only where a preset was put back
  * over a hand-edit, and this app never asks for that.
@@ -55,6 +61,8 @@ final readonly class WhatIsChosen
             self::music($data),
             WhatAQualityAnswerCarries::became($data, $kind),
             self::customised($data),
+            self::offered($data),
+            self::changes($data),
         );
     }
 
@@ -137,6 +145,69 @@ final readonly class WhatIsChosen
         }
 
         return WhatMusicIsSetTo::set(WhatAQualityAnswerCarries::format($music, QualityEnvelope::KIND->value, QualityField::Music));
+    }
+
+    /**
+     * What a choice may be made from, each list in the stack's order.
+     *
+     * @param array<mixed> $data
+     */
+    private static function offered(array $data): WhatAChoiceMayBeMadeFrom
+    {
+        if (! array_key_exists(WireField::Offered->value, $data) || ! is_array($data[WireField::Offered->value])) {
+            throw QualityIsUnreadable::missing(QualityEnvelope::KIND->value, WireField::Offered);
+        }
+
+        $offered = $data[WireField::Offered->value];
+
+        return WhatAChoiceMayBeMadeFrom::of(
+            WordsToChooseFrom::under(QualityField::Presets->value, ...self::words($offered, QualityField::Presets)),
+            WordsToChooseFrom::under(QualityField::Formats->value, ...self::words($offered, QualityField::Formats)),
+            WordsToChooseFrom::under(QualityField::MediaTypes->value, ...self::words($offered, QualityField::MediaTypes)),
+        );
+    }
+
+    /**
+     * One list of words under what is offered.
+     *
+     * @param  array<mixed>  $offered
+     * @return list<string>
+     */
+    private static function words(array $offered, QualityField $field): array
+    {
+        if (! array_key_exists($field->value, $offered) || ! is_array($offered[$field->value])) {
+            throw QualityIsUnreadable::missing(QualityEnvelope::KIND->value, $field);
+        }
+
+        $words = [];
+
+        foreach (array_values($offered[$field->value]) as $position => $word) {
+            if (! is_string($word) || trim($word) === '') {
+                throw QualityIsUnreadable::entry(QualityEnvelope::KIND->value, WireField::Offered, $field, $position);
+            }
+
+            $words[] = $word;
+        }
+
+        return $words;
+    }
+
+    /**
+     * What the choice changes, in the stack's words, or nothing where the answer is to no choice.
+     *
+     * @param array<mixed> $data
+     */
+    private static function changes(array $data): string
+    {
+        if (! array_key_exists(WireField::Changes->value, $data) || $data[WireField::Changes->value] === null) {
+            return '';
+        }
+
+        if (! is_string($data[WireField::Changes->value])) {
+            throw QualityIsUnreadable::missing(QualityEnvelope::KIND->value, WireField::Changes);
+        }
+
+        return $data[WireField::Changes->value];
     }
 
     /**

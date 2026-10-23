@@ -754,5 +754,80 @@ final readonly class UnreadOnThePluginsEnvelope
             'path' => 'PluginsEnvelope.update.install.would.services[].takes_data',
             'because' => 'As `PluginsEnvelope.installed[].services[].takes_data`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
+        [
+            'path' => 'PluginsEnvelope.demand',
+            'because' => 'What running one of a plugin\'s demand recipes came to. Nothing this app sends asks for a recipe '
+                . 'by name, so no answer it reads carries one, and no `N` requirement offers running one. Raise it '
+                . 'against the spec before reading it, which is `N1-R17`.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.verified.broke[].now.disruptive',
+            'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health '
+                . 'screen lists it, and the health screen draws the whole finding.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.verified.unsettled[].now.disruptive',
+            'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health '
+                . 'screen lists it, and the health screen draws the whole finding.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.recipes[].inputs',
+            'because' => 'Every value a recipe asks the operator for when it runs. The screen says under every install and '
+                . 'update that this app gives a recipe no values of the operator\'s, and that a plugin whose recipes '
+                . 'ask for one is installed at the web console or the terminal; no `N` requirement asks the app to '
+                . 'take them.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.recipes[].on',
+            'because' => 'When a recipe runs: during the install, or only when asked for by name. The screen draws every '
+                . 'recipe the plugin declares, each step in the order it gives (`N20-R5`), and no `N` requirement '
+                . 'asks it to say when one runs. Raise it against the spec before reading it, which is `N1-R17`.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.request_proofs',
+            'because' => 'The proofs that ask one of the plugin\'s services a question, as the plugin declares them, kept '
+                . 'so a proof again can ask without its source. What asking one came to arrives in `proofs` beside '
+                . 'the others, which is what is read and drawn.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].recipes[].inputs',
+            'because' => 'As `PluginsEnvelope.install.would.recipes[].inputs`: the record an install would settle is the '
+                . 'record of an installed plugin, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].recipes[].on',
+            'because' => 'As `PluginsEnvelope.install.would.recipes[].on`: the record an install would settle is the '
+                . 'record of an installed plugin, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].request_proofs',
+            'because' => 'As `PluginsEnvelope.installed[].run_proofs`: what a proof again asks is answered in that proof\'s '
+                . 'own account, which is read and drawn (`N25-R15`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.verified.broke[].now.disruptive',
+            'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health '
+                . 'screen lists it, and the health screen draws the whole finding.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.verified.unsettled[].now.disruptive',
+            'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health '
+                . 'screen lists it, and the health screen draws the whole finding.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.recipes[].inputs',
+            'because' => 'As `PluginsEnvelope.install.would.recipes[].inputs`: an update carries the new version\'s install '
+                . 'account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.recipes[].on',
+            'because' => 'As `PluginsEnvelope.install.would.recipes[].on`: an update carries the new version\'s install '
+                . 'account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.request_proofs',
+            'because' => 'As `PluginsEnvelope.install.would.request_proofs`: an update carries the new version\'s install '
+                . 'account whole, and the one reader reads both.',
+        ],
     ];
 }

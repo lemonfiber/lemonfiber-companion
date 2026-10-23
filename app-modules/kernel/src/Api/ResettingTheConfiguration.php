@@ -10,9 +10,10 @@ namespace Modules\Kernel\Api;
  *
  * One conversation, so one port, for the reason {@see KeepingCurrent} gives.
  *
- * **Both halves are work the stack names.** Unconfirmed, `reset` compares the
- * operator's files and connections with lemonfiber's own and changes nothing;
- * confirmed, it writes lemonfiber's back. The stack answers each with a job,
+ * **Both halves are work the stack names.** Without a yes, `reset` compares
+ * the operator's files and connections with lemonfiber's own and changes
+ * nothing; with the yes, which quotes the preview agreed to, it writes
+ * lemonfiber's back. The stack answers each with a job,
  * so each answers {@see Underway} here and the report is asked after by the
  * handle.
  *

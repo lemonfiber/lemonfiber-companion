@@ -10,6 +10,7 @@ use Modules\Kernel\Api\APresetInForce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
+use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Operator\Internal\ViewModels\AFormatAsShown;
 use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\APresetAsShown;
@@ -58,6 +59,10 @@ final readonly class HowTheQualityReads
             becameSaid: $chosen->became()->saidOnTheScreen(),
             heldBecause: $chosen->became() === WhatBecameOfTheChoice::Held ? $held : [],
             customised: $chosen->customised(),
+            offeredPresets: $this->words($chosen->offered()->presets()),
+            offeredFormats: $this->words($chosen->offered()->formats()),
+            offeredKinds: $this->words($chosen->offered()->kinds()),
+            changes: $chosen->changes(),
         );
     }
 
@@ -75,6 +80,7 @@ final readonly class HowTheQualityReads
             becameSaid: $made->became()->saidOnTheScreen(),
             appliedSaid: $made->applied()->saidOnTheScreen(),
             detail: $made->applied()->detail(),
+            changes: $made->changes(),
         );
     }
 
@@ -105,6 +111,22 @@ final readonly class HowTheQualityReads
         );
     }
 
+    /**
+     * One list of words a choice may be made from, as the rows a template joins.
+     *
+     * @return list<string>
+     */
+    private function words(WordsToChooseFrom $offered): array
+    {
+        $words = [];
+
+        foreach ($offered as $word) {
+            $words[] = $word;
+        }
+
+        return $words;
+    }
+
     /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): TheQualityTurnedOutToBe
     {
@@ -115,6 +137,10 @@ final readonly class HowTheQualityReads
             becameSaid: '',
             heldBecause: [],
             customised: false,
+            offeredPresets: [],
+            offeredFormats: [],
+            offeredKinds: [],
+            changes: '',
         );
     }
 }

@@ -19,12 +19,14 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheUpgrade;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\ViewModels\APresetAsShown;
 use Modules\Stacks\Api\AStacksScreen;
@@ -81,6 +83,8 @@ function theQualityThatBecame(WhatBecameOfTheChoice $became, bool $customised = 
         $music ?? WhatMusicIsSetTo::set(theFormatForMusic()),
         $became,
         $customised,
+        WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets', 'Balanced', 'Maximum'), WordsToChooseFrom::under('formats', 'Lossless'), WordsToChooseFrom::under('media_types', 'tv', 'movies', 'music')),
+        $became === WhatBecameOfTheChoice::Recorded ? 'What is fetched from now on, and nothing already here' : '',
     );
 }
 
@@ -185,7 +189,7 @@ it('says no format is chosen for music where none is', function (): void {
 });
 
 it('says a stack with no preset in force reports none', function (): void {
-    $screen = theQualityScreen(AStackThatChoosesQuality::with(TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false)));
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '')));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('quality.no_presets'));
 });
@@ -221,8 +225,18 @@ it('chooses what was typed, for one kind of media, and draws what the stack reco
 
     expect([$choosing->chosen()?->preset(), $choosing->chosen()?->kind(), $choosing->confirmations()])->toBe(['maximum', 'movies', 0])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('quality.became.recorded'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('What is fetched from now on, and nothing already here')
         ->and($screen->mayConfirm())->toBeFalse()
         ->and($choosing->readings())->toBe(0);
+});
+
+it('lists what a choice may be made from under the fields it is typed into, in the stack\'s words', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown))))->said();
+
+    expect($drawn)->toContain(__('quality.choose.presets', ['presets' => 'Balanced, Maximum']))
+        ->and($drawn)->toContain(__('quality.choose.formats', ['formats' => 'Lossless']))
+        ->and($drawn)->toContain(__('quality.choose.kinds', ['kinds' => 'tv, movies, music']))
+        ->and($drawn)->not->toContain('What is fetched from now on, and nothing already here');
 });
 
 it('chooses for everything where no kind was typed', function (): void {
@@ -281,7 +295,7 @@ it('offers no yes where nothing was held, and a yes tapped without one asks noth
 });
 
 it('says a held choice came with no preset named as the reason, where none was', function (): void {
-    $held = TheQualityChosen::reported(ThePresetsInForce::of(theOverallPreset()), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Held, customised: false);
+    $held = TheQualityChosen::reported(ThePresetsInForce::of(theOverallPreset()), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Held, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '');
     $screen = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::with($held)), 'maximum');
 
     $screen->choose();
@@ -320,7 +334,7 @@ it('labels a rehearsed choice as a rehearsal and never as recorded', function ()
 });
 
 it('draws what choosing a format for music did, and reads what is in force again', function (): void {
-    $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Rehearsed, WhatBecameOfAskingIt::failed('Lidarr would not answer'));
+    $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Rehearsed, WhatBecameOfAskingIt::failed('Lidarr would not answer'), 'What is fetched for music from now on');
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown), WhatTheChoiceCameTo::forMusic($made));
     $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
 
@@ -330,6 +344,7 @@ it('draws what choosing a format for music did, and reads what is in force again
     expect($drawn)->toContain(__('quality.became.rehearsed'))
         ->and($drawn)->toContain(__('quality.asked.failed'))
         ->and($drawn)->toContain('Lidarr would not answer')
+        ->and($drawn)->toContain('What is fetched for music from now on')
         ->and($screen->music?->format->format)->toBe('Lossless')
         ->and($screen->music?->detail)->toBe('Lidarr would not answer')
         ->and($choosing->readings())->toBe(1)
@@ -337,7 +352,7 @@ it('draws what choosing a format for music did, and reads what is in force again
 });
 
 it('draws no line about asking the music service where it said nothing', function (): void {
-    $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Recorded, WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started));
+    $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Recorded, WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started), 'What is fetched for music from now on');
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown), WhatTheChoiceCameTo::forMusic($made));
     $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
 

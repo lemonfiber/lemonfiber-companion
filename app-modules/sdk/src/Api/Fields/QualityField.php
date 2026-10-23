@@ -34,4 +34,13 @@ enum QualityField: string implements NamesAWireField
 
     /** Whether the quality configuration was edited by hand since the stack wrote it. */
     case Customised = 'customised';
+
+    /** Every resolution preset a choice may be made from. */
+    case Presets = 'presets';
+
+    /** Every format music may take. */
+    case Formats = 'formats';
+
+    /** Every kind of media a choice may be made for apart from everything at once. */
+    case MediaTypes = 'media_types';
 }

@@ -746,5 +746,19 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'person. The house\'s default, and a member is owed what applies to them rather than what '
                 . 'applies by default — which `to_hand_over` already says to them in the core\'s own words.',
         ],
+        [
+            'path' => 'DashboardEnvelope.health.affected[].acknowledged',
+            'because' => 'Whether the operator declined the item\'s fix, which the stack remembers so it stops '
+                . 'offering that fix until the fault clears and comes back. The item stands and is counted '
+                . 'either way, and the summary draws it as it draws every other; no `N` requirement asks it to '
+                . 'mark a declined fix. Raise it against the spec before reading it, which is `N1-R17`.',
+        ],
+        [
+            'path' => 'DoctorEnvelope.findings[].disruptive',
+            'because' => 'What checking a finding disturbs, where the read left it unverified for that reason, and how a '
+                . 'diagnosis is asked to run it. `N30-R1` asks for it: such a finding offers running that check, '
+                . 'narrowed as the stack names it, with what it disturbs and its bound stated first (`N30-R2`). '
+                . 'Unread today because the diagnosis screen offers no check that disturbs the running system.',
+        ],
     ];
 }

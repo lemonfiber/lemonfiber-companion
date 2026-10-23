@@ -656,5 +656,27 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'is drawn with the service asking, what it reaches and where each service it reaches came '
                 . 'from; no requirement asks where the one asking came from.',
         ],
+        [
+            'path' => 'OutboundEnvelope.on_behalf',
+            'because' => 'Every request lemonfiber makes on an installed plugin\'s behalf, with the plugin, its purpose and '
+                . 'its destination. `N10-R1` keeps lemonfiber\'s own connections apart from the services\', and '
+                . '`N10-R2` has each of lemonfiber\'s shown with the switch that turns it off, which these do not '
+                . 'carry. Whether they are drawn with lemonfiber\'s own, and how without a switch, is a decision for '
+                . 'the screen not yet taken.',
+        ],
+        [
+            'path' => 'StatusEnvelope.disturbs.fetching',
+            'because' => 'What fetching a form\'s images would take away. `N2-R24` has the app say before a fetch that it '
+                . 'may take long and use a lot of the line, under `N2-R8`\'s rule that a disruptive action states '
+                . 'the bound the stack reported. Unread today because the fetch states the first two in the app\'s '
+                . 'catalogue words and not yet this bound.',
+        ],
+        [
+            'path' => 'TraceEnvelope.searchable',
+            'because' => 'What a search would spend to tell nothing at the quality from nothing at all, where the trace '
+                . 'stopped at `monitored` with that open. `N31-R1` asks for it: such a trace offers asking the '
+                . 'indexers, and `N31-R2` states this spend before the search is sent. Unread today because the '
+                . 'trace screen offers no search.',
+        ],
     ];
 }

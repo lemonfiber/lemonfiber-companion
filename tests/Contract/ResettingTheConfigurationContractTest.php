@@ -213,6 +213,8 @@ it('a report this app cannot read is an answer it could not read, never a shorte
     'no connections' => [['reverted_connections' => 'sonarr']],
     'a connection that is not text' => [['reverted_connections' => [3]]],
     'a connection with no name' => [['reverted_connections' => [' ']]],
+    'a preview whose offer is blank' => [['offer' => ' ']],
+    'a preview whose offer is not text' => [['offer' => 3]],
 ]);
 
 it('a report missing a part altogether is an answer it could not read, never a shorter report', function (string $missing): void {
@@ -223,7 +225,7 @@ it('a report missing a part altogether is an answer it could not read, never a s
     MockClient::global([MockResponse::make((string) json_encode($envelope))]);
 
     expect(whatBecameOfResetting(new Resetters(new PinnedClients(), SequencedEntropy::counting())))->toEqual(KindOfObstacle::AnswerCouldNotBeRead->name);
-})->with(['confirmed', 'reverted', 'reverted_connections']);
+})->with(['confirmed', 'reverted', 'reverted_connections', 'offer']);
 
 it('a reset the stack refused is its refusal, in its words, with what it named', function (): void {
     $refused = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => [

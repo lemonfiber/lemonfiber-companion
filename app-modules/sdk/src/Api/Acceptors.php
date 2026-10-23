@@ -25,6 +25,9 @@ use Modules\Sdk\Internal\TheWorkAsked;
 
 /**
  * Accepting a warning through the SDK: the `accept` action for one check, and following it to the report it answers with.
+ *
+ * The checks that disturb the running system are left out of the run it
+ * answers with: accepting a warning is not agreeing to them.
  */
 final readonly class Acceptors implements Accepting
 {
@@ -35,7 +38,7 @@ final readonly class Acceptors implements Accepting
      */
     public function accept(Stack $stack, Session $session, Check $check): WhatBecameOfTheWork
     {
-        return $this->work()->sent($stack, $session, new AcceptAction(check: $check->shown()));
+        return $this->work()->sent($stack, $session, new AcceptAction(disruptive: false, check: $check->shown()));
     }
 
     /**

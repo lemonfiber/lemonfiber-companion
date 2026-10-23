@@ -75,21 +75,21 @@ it('asks what putting the configuration back would revert without a yes, under a
     // Without the yes the stack compares and writes nothing. The key is
     // there as on every action.
     expect($sent->getUrl())->toEndWith('/api/actions/reset')
-        ->and($sent->body()?->all())->toBe(['confirm' => false])
+        ->and($sent->body()?->all())->toBe(['offer' => null])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->not->toBeNull();
 });
 
 it('puts the configuration back with the yes, under a key', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
-    $previewed = TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these());
+    $previewed = TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these(), 'reset-compose-1');
 
     new Resetters(new PinnedClients(), SequencedEntropy::counting())->revert(theStackTheResetterAsks(), Session::of('a-session-not-a-secret'), AResetAgreed::to($previewed));
 
     $sent = theRequestTheResetterSent($mock);
 
     expect($sent->getUrl())->toEndWith('/api/actions/reset')
-        ->and($sent->body()?->all())->toBe(['confirm' => true])
+        ->and($sent->body()?->all())->toBe(['offer' => 'reset-compose-1'])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBe(SequencedEntropy::counting()->nonce()->shown());
 });
 

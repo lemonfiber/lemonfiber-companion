@@ -12,16 +12,13 @@ namespace Modules\Kernel\Api;
  * something. So the yes follows what the operator was shown file by file, and
  * reading a preview builds nothing a port would carry out.
  *
- * It carries nothing further because the wire takes nothing further: the
- * stack reverts every edit it finds when the yes arrives, and its report says
- * which those were.
+ * It carries the name the stack gave the preview, which the yes quotes, so
+ * the stack refuses a yes given for files that have moved since rather than
+ * revert what it finds now.
  */
 final readonly class AResetAgreed
 {
-    private function __construct()
-    {
-        // Nothing to hold: being built at all, by `to()`, is the whole proof.
-    }
+    private function __construct(private string $offer) {}
 
     /** The preview agreed to; one carried out, or one reverting nothing, is refused. */
     public static function to(TheReset $previewed): self
@@ -34,6 +31,12 @@ final readonly class AResetAgreed
             throw ThereIsNothingToAgreeTo::nothingToRevert();
         }
 
-        return new self();
+        return new self($previewed->offer());
+    }
+
+    /** The name of the preview agreed to, which the yes quotes. */
+    public function offer(): string
+    {
+        return $this->offer;
     }
 }

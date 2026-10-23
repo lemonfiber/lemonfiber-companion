@@ -83,16 +83,16 @@ it('refuses a connection with no name', function (): void {
 it('says whether it was carried out, what it reverts, and whether that is anything', function (): void {
     $edits = TheStackEdits::these(anEditOfTheCompose());
     $connections = ConnectionsReverted::these('sonarr → qbittorrent');
-    $previewed = TheReset::previewed($edits, $connections);
+    $previewed = TheReset::previewed($edits, $connections, 'reset-1');
     $carriedOut = TheReset::carriedOut($edits, $connections);
 
-    expect([$previewed->wasCarriedOut(), $previewed->edits(), $previewed->connections(), $previewed->changesNothing()])->toBe([false, $edits, $connections, false])
-        ->and([$carriedOut->wasCarriedOut(), $carriedOut->edits(), $carriedOut->connections(), $carriedOut->changesNothing()])->toBe([true, $edits, $connections, false]);
+    expect([$previewed->wasCarriedOut(), $previewed->edits(), $previewed->connections(), $previewed->changesNothing(), $previewed->offer()])->toBe([false, $edits, $connections, false, 'reset-1'])
+        ->and([$carriedOut->wasCarriedOut(), $carriedOut->edits(), $carriedOut->connections(), $carriedOut->changesNothing(), $carriedOut->offer()])->toBe([true, $edits, $connections, false, '']);
 });
 
 it('changes nothing only where it reverts no file and no connection', function (TheStackEdits $edits, ConnectionsReverted $connections, bool $nothing): void {
-    expect(TheReset::previewed($edits, $connections)->changesNothing())->toBe($nothing)
-        ->and(TheReset::previewed($edits, $connections)->mayBeAgreedTo())->toBe(! $nothing);
+    expect(TheReset::previewed($edits, $connections, 'reset-1')->changesNothing())->toBe($nothing)
+        ->and(TheReset::previewed($edits, $connections, 'reset-1')->mayBeAgreedTo())->toBe(! $nothing);
 })->with([
     'neither' => [TheStackEdits::these(), ConnectionsReverted::these(), true],
     'a file only' => [TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these(), false],
@@ -103,9 +103,14 @@ it('may be agreed to only as a preview that would revert something', function ()
     $edits = TheStackEdits::these(anEditOfTheCompose());
 
     expect(TheReset::carriedOut($edits, ConnectionsReverted::these())->mayBeAgreedTo())->toBeFalse()
-        ->and(AResetAgreed::to(TheReset::previewed($edits, ConnectionsReverted::these())))->toBeInstanceOf(AResetAgreed::class)
+        ->and(AResetAgreed::to(TheReset::previewed($edits, ConnectionsReverted::these(), ' reset-1 '))->offer())->toBe('reset-1')
         ->and(static fn(): AResetAgreed => AResetAgreed::to(TheReset::carriedOut($edits, ConnectionsReverted::these())))
         ->toThrow(ThereIsNothingToAgreeTo::class, 'agreed to against one already carried out')
-        ->and(static fn(): AResetAgreed => AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these())))
+        ->and(static fn(): AResetAgreed => AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these(), 'reset-1')))
         ->toThrow(ThereIsNothingToAgreeTo::class, 'a preview that reverts nothing');
+});
+
+it('refuses a preview the stack left unnamed, which no yes could quote', function (): void {
+    expect(static fn(): TheReset => TheReset::previewed(TheStackEdits::these(anEditOfTheCompose()), ConnectionsReverted::these(), ' '))
+        ->toThrow(ThereIsNothingToAgreeTo::class, 'without the name the stack gave it');
 });

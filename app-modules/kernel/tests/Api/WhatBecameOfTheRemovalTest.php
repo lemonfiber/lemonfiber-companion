@@ -34,7 +34,7 @@ function theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval $became): strin
 }
 
 it('takes the arm it was made on, and carries what it was made with', function (): void {
-    $removal = ARemoval::carriedOut(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: false, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of());
+    $removal = ARemoval::carriedOut(SomebodyInTheHousehold::called('Anna'), 0, asksThroughTheRequestService: false, revoked: HowFarTheRemovalReached::Everywhere, findings: WhatTheRemovalFound::of(), watchHistory: 'Their watch history goes with their account.');
 
     expect(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::underway(Job::named('j-1'))))->toBe('underway:j-1')
         ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::answered($removal)))->toBe('answered:Anna')

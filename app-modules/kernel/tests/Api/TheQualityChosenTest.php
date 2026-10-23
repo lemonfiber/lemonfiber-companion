@@ -15,9 +15,11 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\QualitySaysNothing;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatWasFoundOfTheQuality;
+use Modules\Kernel\Api\WordsToChooseFrom;
 
 use function sprintf;
 
@@ -100,15 +102,15 @@ it('tells music with a format from music with none', function (): void {
 it('keeps everything the quality was reported with', function (): void {
     $presets = ThePresetsInForce::of(aPresetSaying());
     $music = WhatMusicIsSetTo::unset();
-    $chosen = TheQualityChosen::reported($presets, $music, WhatBecameOfTheChoice::Held, customised: true);
+    $chosen = TheQualityChosen::reported($presets, $music, WhatBecameOfTheChoice::Held, customised: true, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '');
 
     expect([$chosen->presets(), $chosen->music(), $chosen->became(), $chosen->customised()])
         ->toBe([$presets, $music, WhatBecameOfTheChoice::Held, true])
-        ->and(TheQualityChosen::reported($presets, $music, WhatBecameOfTheChoice::Shown, customised: false)->customised())->toBeFalse();
+        ->and(TheQualityChosen::reported($presets, $music, WhatBecameOfTheChoice::Shown, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '')->customised())->toBeFalse();
 });
 
 it('tells the quality found from what stood in the way', function (): void {
-    $chosen = TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false);
+    $chosen = TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Shown, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '');
     $found = static fn(WhatWasFoundOfTheQuality $answer): string => $answer->either(
         found: static fn(TheQualityChosen $read): TheWordCarriedOut => new TheWordCarriedOut($read === $chosen ? 'found' : 'another'),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
@@ -121,4 +123,11 @@ it('tells the quality found from what stood in the way', function (): void {
 it('keys what became of a choice by the stack\'s own word', function (): void {
     expect(WhatBecameOfTheChoice::Held->saidOnTheScreen())->toBe('quality.became.held')
         ->and(WhatBecameOfTheChoice::WouldReapply->saidOnTheScreen())->toBe('quality.became.would-reapply');
+});
+
+it('keeps what a choice may be made from, and what a choice changes trimmed', function (): void {
+    $offered = WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets', 'Balanced'), WordsToChooseFrom::under('formats', 'Lossless'), WordsToChooseFrom::under('media_types', 'movies'));
+    $chosen = TheQualityChosen::reported(ThePresetsInForce::of(), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Recorded, customised: false, offered: $offered, changes: ' What is fetched from now on ');
+
+    expect([$chosen->offered(), $chosen->changes()])->toBe([$offered, 'What is fetched from now on']);
 });

@@ -7,6 +7,10 @@
     {{-- What became of the choice, first: a rehearsal and a held choice each
          say so in words of their own, so neither reads as recorded. --}}
     <x-design::heading>{{ __($this->answer()->becameSaid) }}</x-design::heading>
+    {{-- What a choice changes, as the stack says it, under what became of it. --}}
+    @if ($this->answer()->changes !== '')
+        <x-design::body>{{ $this->answer()->changes }}</x-design::body>
+    @endif
 
     @if ($this->mayConfirm())
         {{-- Why it was held is what the stack said playing each held preset
@@ -72,14 +76,16 @@
             <x-design::strong>{{ __($this->music->becameSaid) }}</x-design::strong>
             <x-design::body>{{ $this->music->format->format }}</x-design::body>
             <x-design::note>{{ __($this->music->appliedSaid) }}</x-design::note>
+            <x-design::body>{{ $this->music->changes }}</x-design::body>
             @if ($this->music->detail !== '')
                 <x-design::note>{{ $this->music->detail }}</x-design::note>
             @endif
         </x-design::card>
     @endif
 
-    {{-- Choosing, in the stack's words: it takes the name or refuses it. The
-         two fields and the button that sends them are one card. --}}
+    {{-- Choosing, in the stack's words: what it offers is listed under each
+         field, and it takes a name or refuses it. The two fields and the
+         button that sends them are one card. --}}
     <x-design::heading>{{ __('quality.choose.heading') }}</x-design::heading>
     <x-design::card>
         <native:outlined-text-input
@@ -87,11 +93,14 @@
             label="{{ __('quality.choose.preset') }}"
             supporting="{{ __('quality.choose.preset_help') }}"
         />
+        <x-design::note>{{ __('quality.choose.presets', ['presets' => implode(', ', $this->answer()->offeredPresets)]) }}</x-design::note>
+        <x-design::note>{{ __('quality.choose.formats', ['formats' => implode(', ', $this->answer()->offeredFormats)]) }}</x-design::note>
         <native:outlined-text-input
             native:model="kind"
             label="{{ __('quality.choose.kind') }}"
             supporting="{{ __('quality.choose.kind_help') }}"
         />
+        <x-design::note>{{ __('quality.choose.kinds', ['kinds' => implode(', ', $this->answer()->offeredKinds)]) }}</x-design::note>
         <x-operator::offered-action :label="__('quality.choose.act')" tap="choose()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     </x-design::card>
 

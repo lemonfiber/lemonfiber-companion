@@ -35,9 +35,12 @@ return [
     'choose' => [
         'heading' => 'Choose a preset',
         'preset' => 'Preset, or a format for music',
-        'preset_help' => 'In the stack\'s words, as it names them above',
+        'preset_help' => 'In the stack\'s words, as it names them below',
+        'presets' => 'Presets: :presets',
+        'formats' => 'Formats for music: :formats',
         'kind' => 'Kind of media',
         'kind_help' => 'Leave empty to choose for everything',
+        'kinds' => 'Kinds of media: :kinds',
         'act' => 'Choose',
     ],
 

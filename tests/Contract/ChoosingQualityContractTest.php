@@ -20,9 +20,11 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
+use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -117,6 +119,7 @@ function whatAStackSaysOfItsQuality(
             'music' => $music,
             'disposition' => $disposition,
             'customised' => $customised,
+            'offered' => ['presets' => ['Standard', 'Maximum'], 'formats' => ['mp3', 'flac'], 'media_types' => ['movies', 'tv']],
         ],
     ];
 }
@@ -162,7 +165,7 @@ function whatAStackSaysOfAFormatChosen(?array $outcome = ['state' => 'started'],
     return [
         'api_version' => 1,
         'kind' => 'music',
-        'data' => ['choice' => aFormatOnTheWire(), 'disposition' => $disposition, 'outcome' => $outcome, 'rehearsed' => false],
+        'data' => ['choice' => aFormatOnTheWire(), 'disposition' => $disposition, 'outcome' => $outcome, 'rehearsed' => false, 'changes' => 'What is fetched from now on, and nothing already here'],
     ];
 }
 
@@ -173,7 +176,7 @@ function whatAStackSaysOfAFormatChosen(?array $outcome = ['state' => 'started'],
  */
 function aFormatChoiceData(): array
 {
-    return ['choice' => aFormatOnTheWire(), 'disposition' => 'recorded', 'outcome' => ['state' => 'started']];
+    return ['choice' => aFormatOnTheWire(), 'disposition' => 'recorded', 'outcome' => ['state' => 'started'], 'rehearsed' => false, 'changes' => 'What is fetched from now on, and nothing already here'];
 }
 
 /** The quality a fake stands in with, the same as the adapter's answer above. */
@@ -187,6 +190,8 @@ function theQualityTheFakeHolds(): TheQualityChosen
         WhatMusicIsSetTo::unset(),
         WhatBecameOfTheChoice::Shown,
         customised: false,
+        offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets', 'Standard', 'Maximum'), WordsToChooseFrom::under('formats', 'mp3', 'flac'), WordsToChooseFrom::under('media_types', 'movies', 'tv')),
+        changes: '',
     );
 }
 
@@ -208,12 +213,16 @@ function theQualityAsText(TheQualityChosen $chosen): string
     }
 
     return sprintf(
-        '%s|%s|%s|%s',
+        '%s|%s|%s/%s/%s|%s|%s|%s',
         implode(';', $presets),
         $chosen->music()->either(
             set: static fn(AFormatInForce $format): TheWordCarriedOut => new TheWordCarriedOut(theFormatAsText($format)),
             unset: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no music'),
         )->said,
+        implode(',', iterator_to_array($chosen->offered()->presets(), preserve_keys: false)),
+        implode(',', iterator_to_array($chosen->offered()->formats(), preserve_keys: false)),
+        implode(',', iterator_to_array($chosen->offered()->kinds(), preserve_keys: false)),
+        $chosen->changes(),
         $chosen->became()->value,
         $chosen->customised() ? 'edited' : 'as written',
     );
@@ -240,8 +249,9 @@ function howAChoiceCameBackAsText(WhatTheChoiceCameTo $came): string
     return $came->either(
         inForce: static fn(TheQualityChosen $chosen): TheWordCarriedOut => new TheWordCarriedOut(theQualityAsText($chosen)),
         forMusic: static fn(AFormatChoiceMade $made): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
-            'music:%s|%s|%s|%s',
+            'music:%s|%s|%s|%s|%s',
             theFormatAsText($made->format()),
+            $made->changes(),
             $made->became()->value,
             $made->applied()->saidOnTheScreen(),
             $made->applied()->detail(),
@@ -289,6 +299,8 @@ function aChoiceHeldFor(APresetToChoose $asked): AHeldChoice
         WhatMusicIsSetTo::unset(),
         WhatBecameOfTheChoice::Held,
         customised: false,
+        offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')),
+        changes: '',
     ));
 }
 
@@ -310,7 +322,7 @@ foreach (everyWayOfReadingTheQuality() as $name => $build) {
         expect(howTheQualityReadsAsText($build()))->toBe(
             'everything/Balanced/Looks right on a TV/1080p, good encodes/~2 GB/Plays directly on most devices/direct;'
             . 'movies/Maximum/Looks right on a TV/1080p, good encodes/~2 GB/Plays directly on most devices/here'
-            . '|no music|shown|as written',
+            . '|no music|Standard,Maximum/mp3,flac/movies,tv||shown|as written',
         );
     });
 }
@@ -404,7 +416,7 @@ it('reads a choice answered with the quality in force, held or recorded', functi
 
 it('reads a choice for music as what its service made of it', function (): void {
     expect(aChoiceAnsweredWith(whatAStackSaysOfAFormatChosen(), APresetToChoose::named('lossless', 'music')))
-        ->toBe('music:music/Lossless/CD quality, nothing thrown away/FLAC/~300 MB/Some players need it converted|recorded|quality.asked.started|');
+        ->toBe('music:music/Lossless/CD quality, nothing thrown away/FLAC/~300 MB/Some players need it converted|What is fetched from now on, and nothing already here|recorded|quality.asked.started|');
 });
 
 it('reads every way asking the music service can have gone', function (?array $outcome, string $said): void {
@@ -423,6 +435,8 @@ it('refuses a choice answer it cannot read rather than drawing part of one', fun
     'an outcome that is not a table' => [[...whatAStackSaysOfAFormatChosen(), 'data' => [...aFormatChoiceData(), 'outcome' => 'started']]],
     'a choice that is not a table' => [[...whatAStackSaysOfAFormatChosen(), 'data' => [...aFormatChoiceData(), 'choice' => 'Lossless']]],
     'a music answer whose data is not a table' => [['api_version' => 1, 'kind' => 'music', 'data' => 'Lossless']],
+    'a music answer silent on what it changes' => [[...whatAStackSaysOfAFormatChosen(), 'data' => [...aFormatChoiceData(), 'changes' => ' ']]],
+    'a music answer with no word on what it changes' => [[...whatAStackSaysOfAFormatChosen(), 'data' => array_diff_key(aFormatChoiceData(), ['changes' => true])]],
     'an answer of another kind' => [['api_version' => 1, 'kind' => 'config', 'data' => []]],
 ]);
 

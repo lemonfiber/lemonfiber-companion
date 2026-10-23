@@ -88,6 +88,7 @@ function whatAStackSaysLeavesIt(string $reachOfTheFirst = 'registry'): array
                 ['service' => 'gluetun', 'destination' => '', 'purpose' => 'Nothing of its own', 'recorded' => true, 'origin' => ['origin' => 'bundled']],
                 ['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record of what this service reaches', 'recorded' => false, 'origin' => ['named' => 'my-plugin', 'origin' => 'plugin']],
             ],
+            'on_behalf' => [],
         ],
     ];
 }
@@ -99,7 +100,7 @@ function whatAStackSaysLeavesIt(string $reachOfTheFirst = 'registry'): array
  */
 function whatAStackSendingNothingSays(): array
 {
-    return ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [], 'theirs' => []]];
+    return ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [], 'theirs' => [], 'on_behalf' => []]];
 }
 
 /**

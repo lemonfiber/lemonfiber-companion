@@ -36,8 +36,9 @@ use Modules\Sdk\Internal\WhatTheReachMet;
  * handle that {@see self::whatBecameOf()} follows to the removal.
  *
  * **One action read twice.** Without the yes, `remove` says what taking them
- * out would cost and takes nobody out; with it, it takes them out. The yes
- * carries a key, because it changes the household; the reading does not.
+ * out would cost and takes nobody out; with it, it takes them out. The yes is
+ * the name of the reading agreed to, sent as `offer`, and carries a key,
+ * because it changes the household; the reading does neither.
  *
  * **A refusal keeps the stack's sentence**, for {@see Ushers}' reason: a name
  * it cannot find, or the account it signs in with, is turned down at a status
@@ -66,7 +67,7 @@ final readonly class Removers implements RemovingSomebody
     {
         try {
             return $this->underway(GatedClient::of($this->clients, $stack, $session)->act(
-                new RemoveAction(name: $agreed->who()->name(), confirm: true),
+                new RemoveAction(name: $agreed->who()->name(), offer: $agreed->offer()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
         } catch (CertificateWasRefused|RequestFailed $why) {

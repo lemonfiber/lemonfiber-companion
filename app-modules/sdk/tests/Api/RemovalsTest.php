@@ -44,6 +44,8 @@ function aPlainRemoval(): array
         'asks-through-the-request-service' => true,
         'revoked' => 'nothing',
         'findings' => [],
+        'watch-history' => 'Her watch history goes with her account.',
+        'offer' => 'removal-anna-2',
     ];
 }
 
@@ -62,25 +64,27 @@ function everythingTheRemovalCarries(array $data): string
     }
 
     return sprintf(
-        '%s|%s|%d|%s|%s|%s',
+        '%s|%s|%d|%s|%s|%s|%s|%s',
         $removal->who()->name(),
         $removal->wasCarriedOut() ? 'carried out' : 'described',
         $removal->requests(),
         $removal->asksThroughTheRequestService() ? 'asks' : 'does not ask',
         $removal->revoked()->value,
         implode(',', $findings),
+        $removal->watchHistory(),
+        $removal->offer(),
     );
 }
 
 it('reads what taking somebody out would cost, and what it did', function (): void {
-    $done = [...aPlainRemoval(), 'confirmed' => true, 'revoked' => 'media-server-only', 'asks-through-the-request-service' => false, 'findings' => ['The request service did not answer']];
+    $done = [...aPlainRemoval(), 'confirmed' => true, 'revoked' => 'media-server-only', 'asks-through-the-request-service' => false, 'findings' => ['The request service did not answer'], 'watch-history' => 'Her watch history went with her account.'];
 
-    expect(everythingTheRemovalCarries(aPlainRemoval()))->toBe('Anna|described|2|asks|nothing|')
-        ->and(everythingTheRemovalCarries($done))->toBe('Anna|carried out|2|does not ask|media-server-only|The request service did not answer');
+    expect(everythingTheRemovalCarries(aPlainRemoval()))->toBe('Anna|described|2|asks|nothing||Her watch history goes with her account.|removal-anna-2')
+        ->and(everythingTheRemovalCarries($done))->toBe('Anna|carried out|2|does not ask|media-server-only|The request service did not answer|Her watch history went with her account.|');
 });
 
 it('reads how far it reached as the stack wrote it, whatever confirmed says beside it', function (): void {
-    expect(everythingTheRemovalCarries([...aPlainRemoval(), 'revoked' => 'everywhere']))->toBe('Anna|described|2|asks|everywhere|');
+    expect(everythingTheRemovalCarries([...aPlainRemoval(), 'revoked' => 'everywhere']))->toBe('Anna|described|2|asks|everywhere||Her watch history goes with her account.|removal-anna-2');
 });
 
 it('refuses a payload that is not a table', function (): void {
@@ -95,6 +99,8 @@ it('refuses a missing or wrongly typed field, naming it', function (): void {
         'asks-through-the-request-service' => 'no',
         'revoked' => ' ',
         'findings' => 'none',
+        'watch-history' => ' ',
+        'offer' => 3,
     ];
 
     foreach ($spoiled as $field => $value) {

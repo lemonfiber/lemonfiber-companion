@@ -29,7 +29,8 @@ use function trim;
  * refusing anything the kernel would refuse, with {@see RemovalIsUnreadable}.
  *
  * **`confirmed` decides which constructor answers**, so a reading nobody
- * agreed to is never read as somebody taken out. **How far it reached is read
+ * agreed to is never read as somebody taken out. Only a reading has its
+ * `offer` read, because only a reading is agreed to. **How far it reached is read
  * as the stack wrote it**, whatever `confirmed` says beside it: a reach this
  * app worked out from the other would be a second opinion about whether
  * somebody is still in the household.
@@ -54,10 +55,11 @@ final readonly class Removals
         $asks = self::yesOrNo($data, RemovalField::AsksThroughTheRequestService);
         $revoked = self::revoked($data);
         $findings = WhatTheRemovalFound::of(...self::findings($data));
+        $watchHistory = self::text($data, RemovalField::WatchHistory);
 
         return self::yesOrNo($data, WireField::Confirmed)
-            ? ARemoval::carriedOut($who, $requests, $asks, $revoked, $findings)
-            : ARemoval::described($who, $requests, $asks, $revoked, $findings);
+            ? ARemoval::carriedOut($who, $requests, $asks, $revoked, $findings, $watchHistory)
+            : ARemoval::described($who, $requests, $asks, $revoked, $findings, $watchHistory, self::text($data, WireField::Offer));
     }
 
     /**
