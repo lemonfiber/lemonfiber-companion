@@ -26,7 +26,6 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
-use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -34,8 +33,8 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowACheckThatDisturbsReads;
 use Modules\Operator\Internal\Presenters\HowTheRunReads;
+use Modules\Operator\Internal\SaysWhatARunInterrupts;
 use Modules\Operator\Internal\ViewModels\TheCheckTurnedOutToBe;
-use Modules\Operator\Internal\ViewModels\TheDownloadsMovingAsShown;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
@@ -69,6 +68,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use SaysWhatARunInterrupts;
 
     public const string TEMPLATE = 'operator::what-running-a-check-disturbs';
 
@@ -174,23 +174,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         $now = $this->listening->clock->now();
 
         return AgoAsShown::from(HowLongAgo::since($ran, $now), $ran, $now);
-    }
-
-    /**
-     * The downloads the stack said are moving in what this screen last heard, which a run interrupts.
-     *
-     * Only from a summary heard now: a kept one names none, because a
-     * download moves on long before it is opened again.
-     *
-     * @return list<string>
-     */
-    public function downloadsMoving(): array
-    {
-        return $this->heardSoFar()->summary(
-            none: static fn(): TheDownloadsMovingAsShown => TheDownloadsMovingAsShown::none(),
-            current: static fn(TheHealthSummary $summary): TheDownloadsMovingAsShown => TheDownloadsMovingAsShown::in($summary),
-            asOf: static fn(): TheDownloadsMovingAsShown => TheDownloadsMovingAsShown::none(),
-        )->names;
     }
 
     /** The check the route names, which only finds a finding in what the stack reported. */

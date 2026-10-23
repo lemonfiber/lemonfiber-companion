@@ -128,6 +128,7 @@ use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatGoesAndWhatStays;
@@ -424,6 +425,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Acceptors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'CheckRunners::run' => static fn(): object
                 => new CheckRunners($clients, $entropy)->run($stack, $session, ACheckThatDisturbs::boundedTo('The tunnel goes down', 'vpn.killswitch', 30)),
+            'CheckRunners::runEvery' => static fn(): object
+                => new CheckRunners($clients, $entropy)->runEvery($stack, $session, WhatARunCovers::everyCheck()),
             'CheckRunners::whatBecameOf' => static fn(): object
                 => new CheckRunners($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Searchers::search' => static fn(): object

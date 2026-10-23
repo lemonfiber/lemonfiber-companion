@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 
@@ -345,6 +346,9 @@ enum AStacksScreen: string
     /** Running a check the stack leaves unverified because it disturbs something, said before it runs; the second segment is the check. */
     case Run = '/stacks/{stack}/run/{service}';
 
+    /** Running every check, or every check of one family, the ones that disturb included, said before it runs; the second segment is what it covers. */
+    case RunChecks = '/stacks/{stack}/run-every/{service}';
+
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
 
@@ -445,6 +449,16 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($check->shown())], $this->value);
+    }
+
+    /** This screen's path, for a run of every check, or of one family's, on one machine. */
+    public function forTheStacksChecks(StackId $stack, WhatARunCovers $covers): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $covers->word()], $this->value);
     }
 
     /**

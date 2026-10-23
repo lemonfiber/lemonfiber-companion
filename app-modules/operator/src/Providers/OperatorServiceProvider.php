@@ -47,6 +47,7 @@ use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
+use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
@@ -391,6 +392,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where('service', '.+');
             Router::native(AStacksScreen::Accept->value, WhatAcceptingItCosts::class)->where('service', '.+');
             Router::native(AStacksScreen::Run->value, WhatRunningACheckDisturbs::class)->where('service', '.+');
+            Router::native(AStacksScreen::RunChecks->value, WhatRunningChecksDisturbs::class);
 
             // Watching one thing arrive, and the record of what was said about
             // it. Its own screen, because a walkthrough is started and then
