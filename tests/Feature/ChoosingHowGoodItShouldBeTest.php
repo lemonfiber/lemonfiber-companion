@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\ViewModels\APresetAsShown;
+use Modules\Operator\Internal\ViewModels\AStacksWordOnAChip;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
@@ -83,7 +84,7 @@ function theQualityThatBecame(WhatBecameOfTheChoice $became, bool $customised = 
         $music ?? WhatMusicIsSetTo::set(theFormatForMusic()),
         $became,
         $customised,
-        WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets', 'Balanced', 'Maximum'), WordsToChooseFrom::under('formats', 'Lossless'), WordsToChooseFrom::under('media_types', 'tv', 'movies', 'music')),
+        WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets', 'balanced', 'maximum'), WordsToChooseFrom::under('formats', 'lossless'), WordsToChooseFrom::under('media_types', 'tv', 'movies', 'music')),
         $became === WhatBecameOfTheChoice::Recorded ? 'What is fetched from now on, and nothing already here' : '',
     );
 }
@@ -133,8 +134,8 @@ function theQualityScreen(
     return $screen;
 }
 
-/** The screen with a preset and a kind typed in. */
-function typedIntoTheQualityScreen(ChoosingHowGood $screen, string $preset, string $kind = ''): ChoosingHowGood
+/** The screen as a frame carries it after a preset and a kind were tapped. */
+function chosenOnTheQualityScreen(ChoosingHowGood $screen, string $preset, string $kind = ''): ChoosingHowGood
 {
     $screen->__syncProperty('preset', $preset);
     $screen->__syncProperty('kind', $kind);
@@ -201,6 +202,13 @@ it('shows a hand-edited configuration as respected, and offers nothing that woul
     expect($drawn)->toContain(__('quality.customised'))
         ->and($drawn)->toContain(__('quality.not_put_back'))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([
+            __('quality.choose.everything'),
+            'tv',
+            'movies',
+            'music',
+            'balanced',
+            'maximum',
+            'lossless',
             __('quality.choose.act'),
             __('quality.upgrade.describe'),
             __('health.ask_again'),
@@ -214,12 +222,12 @@ it('says nothing of a hand-edit where there is none', function (): void {
         ->and($drawn)->not->toContain(__('quality.not_put_back'));
 });
 
-it('chooses what was typed, for one kind of media, and draws what the stack recorded', function (): void {
+it('chooses what was tapped, for one kind of media, and draws what the stack recorded', function (): void {
     $choosing = AStackThatChoosesQuality::with(
         theQualityThatBecame(WhatBecameOfTheChoice::Shown),
         WhatTheChoiceCameTo::inForce(theQualityThatBecame(WhatBecameOfTheChoice::Recorded)),
     );
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), ' maximum ', 'movies');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), ' maximum ', 'movies');
 
     $screen->choose();
 
@@ -230,27 +238,104 @@ it('chooses what was typed, for one kind of media, and draws what the stack reco
         ->and($choosing->readings())->toBe(0);
 });
 
-it('lists what a choice may be made from under the fields it is typed into, in the stack\'s words', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown))))->said();
+/**
+ * Each chip's word, marked with a star where it is the one chosen.
+ *
+ * @param list<AStacksWordOnAChip> $chips
+ *
+ * @return list<string>
+ */
+function chipsAsMarked(array $chips): array
+{
+    return array_map(static fn(AStacksWordOnAChip $chip): string => sprintf('%s%s', $chip->word, $chip->chosen ? '*' : ''), $chips);
+}
 
-    expect($drawn)->toContain(__('quality.choose.presets', ['presets' => 'Balanced, Maximum']))
-        ->and($drawn)->toContain(__('quality.choose.formats', ['formats' => 'Lossless']))
-        ->and($drawn)->toContain(__('quality.choose.kinds', ['kinds' => 'tv, movies, music']))
-        ->and($drawn)->not->toContain('What is fetched from now on, and nothing already here');
+it('offers the stack\'s kinds, presets and formats as chips, everything chosen until a kind is tapped', function (): void {
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)));
+    $offers = WhatTheDeviceWouldDraw::by($screen)->offers();
+
+    expect($offers)->toContain(__('quality.choose.everything'))
+        ->and($offers)->toContain('tv')
+        ->and($offers)->toContain('movies')
+        ->and($offers)->toContain('music')
+        ->and($offers)->toContain('balanced')
+        ->and($offers)->toContain('maximum')
+        ->and($offers)->toContain('lossless')
+        ->and($screen->choosesForEverything())->toBeTrue()
+        ->and(array_map(static fn(AStacksWordOnAChip $chip): bool => $chip->chosen, $screen->kindsToChooseFrom()))->toBe([false, false, false])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain('What is fetched from now on, and nothing already here');
 });
 
-it('chooses for everything where no kind was typed', function (): void {
+it('marks the kind and the preset or format tapped, and choosing sends them', function (): void {
+    $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown), WhatTheChoiceCameTo::inForce(theQualityThatBecame(WhatBecameOfTheChoice::Recorded)));
+    $screen = theQualityScreen($choosing);
+
+    $screen->kindIs('movies');
+    $screen->presetIs('maximum');
+
+    expect(chipsAsMarked($screen->kindsToChooseFrom()))->toBe(['tv', 'movies*', 'music'])
+        ->and(chipsAsMarked($screen->presetsToChooseFrom()))->toBe(['balanced', 'maximum*'])
+        ->and($screen->choosesForEverything())->toBeFalse();
+
+    $screen->choose();
+
+    expect([$choosing->chosen()?->preset(), $choosing->chosen()?->kind()])->toBe(['maximum', 'movies']);
+});
+
+it('takes a preset and a format as one choice, so tapping one unmarks the other', function (): void {
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)));
+
+    $screen->presetIs('maximum');
+    $screen->presetIs('lossless');
+
+    expect(array_map(static fn(AStacksWordOnAChip $chip): bool => $chip->chosen, $screen->presetsToChooseFrom()))->toBe([false, false])
+        ->and(array_map(static fn(AStacksWordOnAChip $chip): bool => $chip->chosen, $screen->formatsToChooseFrom()))->toBe([true])
+        ->and($screen->preset)->toBe('lossless');
+});
+
+it('chooses nothing for a word the stack did not offer, and everything for a kind it did not', function (): void {
+    $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown)));
+    $screen->kindIs('movies');
+    $screen->presetIs('maximum');
+
+    $screen->presetIs('ultra');
+    $screen->kindIs('anime');
+
+    expect([$screen->preset, $screen->kind, $screen->choosesForEverything()])->toBe(['', '', true]);
+
+    $screen->kindIs('tv');
+    $screen->kindIs('');
+
+    expect($screen->choosesForEverything())->toBeTrue();
+});
+
+it('says the stack offers none where it offers no preset or no format', function (): void {
+    $offeringNothing = TheQualityChosen::reported(
+        ThePresetsInForce::of(theOverallPreset()),
+        WhatMusicIsSetTo::set(theFormatForMusic()),
+        WhatBecameOfTheChoice::Shown,
+        customised: false,
+        offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')),
+        changes: '',
+    );
+    $screen = theQualityScreen(AStackThatChoosesQuality::with($offeringNothing));
+
+    expect(array_values(array_filter(WhatTheDeviceWouldDraw::by($screen)->said(), static fn(string $line): bool => $line === __('quality.choose.none_offered'))))->toHaveCount(2)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('quality.choose.everything'));
+});
+
+it('chooses for everything where no kind was tapped', function (): void {
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Recorded));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'balanced');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'balanced');
 
     $screen->choose();
 
     expect($choosing->chosen()?->isForEverything())->toBeTrue();
 });
 
-it('asks nothing where no preset was typed', function (): void {
+it('asks nothing where no preset was tapped', function (): void {
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), '  ', 'movies');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), '  ', 'movies');
 
     $screen->choose();
 
@@ -262,7 +347,7 @@ it('shows a held choice with why it was held, and confirming is a tap of its own
         theQualityThatBecame(WhatBecameOfTheChoice::Shown),
         WhatTheChoiceCameTo::inForce(theQualityThatBecame(WhatBecameOfTheChoice::Held)),
     );
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'maximum', 'movies');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'maximum', 'movies');
 
     $screen->choose();
     $held = WhatTheDeviceWouldDraw::by($screen);
@@ -296,7 +381,7 @@ it('offers no yes where nothing was held, and a yes tapped without one asks noth
 
 it('says a held choice came with no preset named as the reason, where none was', function (): void {
     $held = TheQualityChosen::reported(ThePresetsInForce::of(theOverallPreset()), WhatMusicIsSetTo::unset(), WhatBecameOfTheChoice::Held, customised: false, offered: WhatAChoiceMayBeMadeFrom::of(WordsToChooseFrom::under('presets'), WordsToChooseFrom::under('formats'), WordsToChooseFrom::under('media_types')), changes: '');
-    $screen = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::with($held)), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::with($held)), 'maximum');
 
     $screen->choose();
 
@@ -323,7 +408,7 @@ it('labels a rehearsed choice as a rehearsal and never as recorded', function ()
         theQualityThatBecame(WhatBecameOfTheChoice::Shown),
         WhatTheChoiceCameTo::inForce(theQualityThatBecame(WhatBecameOfTheChoice::Rehearsed)),
     );
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'maximum');
 
     $screen->choose();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -336,7 +421,7 @@ it('labels a rehearsed choice as a rehearsal and never as recorded', function ()
 it('draws what choosing a format for music did, and reads what is in force again', function (): void {
     $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Rehearsed, WhatBecameOfAskingIt::failed('Lidarr would not answer'), 'What is fetched for music from now on');
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown), WhatTheChoiceCameTo::forMusic($made));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
 
     $screen->choose();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -354,7 +439,7 @@ it('draws what choosing a format for music did, and reads what is in force again
 it('draws no line about asking the music service where it said nothing', function (): void {
     $made = AFormatChoiceMade::reported(theFormatForMusic(), WhatBecameOfTheChoice::Recorded, WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started), 'What is fetched for music from now on');
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown), WhatTheChoiceCameTo::forMusic($made));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'lossless', 'music');
 
     $screen->choose();
 
@@ -445,7 +530,7 @@ it('asks nothing about an upgrade once the session has ended', function (): void
 
 it('says what stood in the way of a choice rather than that it was not made', function (): void {
     $choosing = AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'maximum');
 
     $screen->choose();
 
@@ -456,7 +541,7 @@ it('says what stood in the way of a choice rather than that it was not made', fu
 
 it('lets the session go when a choice is refused on the credential', function (): void {
     $keychain = AKeychainInMemory::working();
-    $screen = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain), 'maximum');
 
     $screen->choose();
 
@@ -466,7 +551,7 @@ it('lets the session go when a choice is refused on the credential', function ()
 
 it('asks nothing when choosing once the session has ended', function (): void {
     $choosing = AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown));
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing, signedIn: false), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing, signedIn: false), 'maximum');
 
     $screen->choose();
 
@@ -505,7 +590,7 @@ it('asks the machine once a frame, and again when asked to, forgetting every yes
         theQualityThatBecame(WhatBecameOfTheChoice::Shown),
         WhatTheChoiceCameTo::inForce(theQualityThatBecame(WhatBecameOfTheChoice::Held)),
     );
-    $screen = typedIntoTheQualityScreen(theQualityScreen($choosing), 'maximum');
+    $screen = chosenOnTheQualityScreen(theQualityScreen($choosing), 'maximum');
 
     $screen->answer();
     $screen->answer();
@@ -537,9 +622,8 @@ it('the way here and the way back are routes', function (): void {
         ->and(NativeRouter::resolve(TheMenu::Quality->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
-it('renders its own view, with what was typed', function (): void {
-    $view = typedIntoTheQualityScreen(theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))), 'maximum', 'movies')->render();
+it('renders its own view', function (): void {
+    $view = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)))->render();
 
-    expect($view->name())->toBe('operator::choosing-how-good')
-        ->and([$view->getData()['preset'] ?? null, $view->getData()['kind'] ?? null])->toBe(['maximum', 'movies']);
+    expect($view->name())->toBe('operator::choosing-how-good');
 });
