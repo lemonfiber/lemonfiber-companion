@@ -48,6 +48,7 @@ const NOT_SENT_BECAUSE = [
  */
 const NOT_SENT_YET = [
     'diagnose',
+    'plugin-run',
     'search', 'space',
 ];
 
