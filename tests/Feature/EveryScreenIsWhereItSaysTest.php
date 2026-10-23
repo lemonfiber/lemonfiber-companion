@@ -408,6 +408,13 @@ it('a screen that needs only a stack refuses to be handed a check as well', func
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 
+it('a screen that needs only a stack refuses to be handed a run of checks as well', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacksChecks(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        WhatARunCovers::everyCheck(),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
 it('which builder a screen needs is read off its own pattern', function (): void {
     // Read rather than listed, so a case added with a second placeholder is
     // covered by both refusals without anybody remembering to add it to a list

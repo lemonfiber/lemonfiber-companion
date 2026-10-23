@@ -150,6 +150,7 @@ it('lists every check a run of all would run that disturbs something, with the s
         ->and($drawn->said())->toContain(__(HowARunOfChecksReads::EVERY), __('health.run_every.what'), 'The tunnel goes down while traffic is tested', __('health.for_at_most', ['seconds' => 30]), 'A search of each indexer is spent', __('health.disturbs.no_bound'), __('health.run_every.not_a_rehearsal'))
         ->and($drawn->said())->not->toContain(__('health.run_every.disturbs_nothing'))
         ->and($drawn->offers())->toContain(__('health.run_every.run_it'))
+        ->and($screen->ranAgo()->said)->toBe('')
         ->and($running->ran())->toBe([]);
 });
 
