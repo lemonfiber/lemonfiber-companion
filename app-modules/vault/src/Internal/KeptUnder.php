@@ -6,6 +6,8 @@ namespace Modules\Vault\Internal;
 
 use function implode;
 
+use Lemonfiber\Native\WhenAValueMayBeRead;
+
 /**
  * The keys this module keeps things under in the platform's secure store.
  *
@@ -43,6 +45,23 @@ enum KeptUnder: string
 
     /** The last event a stack's stream carried to this phone, per stack. */
     case WhereHearingLeftOff = 'lemonfiber.heard-to';
+
+    /**
+     * When what is kept under this key may be read again.
+     *
+     * A wake while the app is away reads the stacks, the session for each, the
+     * seal keys and where hearing left off, and on a phone in a pocket the wake
+     * comes with the phone locked. Those four are readable from the first unlock
+     * after the phone starts, as Android's store keeps everything; the rest only
+     * while the phone is unlocked.
+     */
+    public function readable(): WhenAValueMayBeRead
+    {
+        return match ($this) {
+            self::Stacks, self::Session, self::SealKeys, self::WhereHearingLeftOff => WhenAValueMayBeRead::AfterFirstUnlock,
+            self::Standings, self::WorkLeftRunning, self::WhereTheOperatorWas, self::Grant, self::PhoneKeysName => WhenAValueMayBeRead::WhileUnlocked,
+        };
+    }
 
     /** The key for one record beneath this one: the names in order, after a dot each. */
     public function beneath(string ...$names): string

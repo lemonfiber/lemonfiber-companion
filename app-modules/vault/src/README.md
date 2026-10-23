@@ -31,5 +31,11 @@ identifier and `<kind>` is a `KindOfWork`, such as `walkthrough`:
 | `lemonfiber.left-running.<kind>.<stack>` | The handle of the work of one kind left running on one stack, with a shape number |
 | `lemonfiber.where-left-off` | The stack last on view and the tab last used on each, with a shape number |
 | `lemonfiber.heard-to.<stack>` | The last event one stack's stream carried to this phone, with a shape number |
-| `lemonfiber.seal.data` | The key every kept value is sealed under, as hex, asked to be readable only while the device is unlocked |
-| `lemonfiber.seal.stack` | The key a stack's identity is hashed under, as hex, asked to be readable only while the device is unlocked |
+| `lemonfiber.seal.data` | The key every kept value is sealed under, as hex |
+| `lemonfiber.seal.stack` | The key a stack's identity is hashed under, as hex |
+
+A wake while the app is away reads the sessions, the stacks, the seal keys and
+where each stream left off, with the phone locked, so those are asked to be
+readable from the first unlock after the phone starts. Everything else is asked
+to be readable only while the phone is unlocked. `KeptUnder::readable()` says
+which.

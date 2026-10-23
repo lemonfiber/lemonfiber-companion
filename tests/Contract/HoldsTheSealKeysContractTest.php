@@ -138,11 +138,11 @@ it('makes a key afresh where the one it held has gone', function (): void {
 // Beyond the contract: what the adapter asks the device's store for, over
 // `nativephp/mobile`'s own bridge double, so the real call is what runs.
 
-it('PlatformSealKeys asks for a key to be readable only while the device is unlocked', function (): void {
+it('PlatformSealKeys asks for a key to be readable from the first unlock, so a wake on a locked phone can open what it sealed', function (): void {
     FakeBridge::disable();
     $bridge = FakeBridge::enable()
         ->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'nothing'])
-        ->respondTo('Lemonfiber.Storage.Keep', ['outcome' => 'kept', 'readable' => 'while_unlocked']);
+        ->respondTo('Lemonfiber.Storage.Keep', ['outcome' => 'kept', 'readable' => 'after_first_unlock']);
 
     new PlatformSealKeys(new Storage())->readOrKeep(SealKey::TheDataKey, KeyMaterial::of(THE_FIRST_KEY_MADE));
 
@@ -150,7 +150,7 @@ it('PlatformSealKeys asks for a key to be readable only while the device is unlo
         'Lemonfiber.Storage.Keep',
         static fn(array $sent): bool => $sent['key'] === 'lemonfiber.seal.data'
             && $sent['value'] === THE_FIRST_KEY_MADE_AS_HEX
-            && $sent['readable'] === 'while_unlocked',
+            && $sent['readable'] === 'after_first_unlock',
     );
 
     FakeBridge::disable();

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 use Lemonfiber\Native\Wrote;
 use Modules\Kernel\Api\APhoneKeysName;
@@ -43,7 +42,7 @@ final readonly class PlatformPhoneKeysNames implements KeepingThePhoneKeysName
 
     public function keepTheName(StackId $stack, APhoneKeysName $name): Kept
     {
-        return $this->kept($this->store->keep($this->keyFor($stack), $name->shown(), WhenAValueMayBeRead::WhileUnlocked));
+        return $this->kept($this->store->keep($this->keyFor($stack), $name->shown(), KeptUnder::PhoneKeysName->readable()));
     }
 
     public function letTheNameGo(StackId $stack): Kept

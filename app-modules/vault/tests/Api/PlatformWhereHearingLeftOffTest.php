@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformWhereHearingLeftOff;
+use Modules\Vault\Internal\KeptUnder;
 
 use function sprintf;
 use function str_repeat;
@@ -51,7 +52,8 @@ it('writes the event with the shape it reads, under a key for the stack', functi
     new PlatformWhereHearingLeftOff($store, new PlatformStacks($store))->heardTo(aStackWhoseStreamLeftOff(), AnEventHeard::named('run-41'));
 
     expect($store->keysHeld())->toBe([whereHearingIsKeptFor(aStackWhoseStreamLeftOff())])
-        ->and($store->whatIsUnder(whereHearingIsKeptFor(aStackWhoseStreamLeftOff())))->toBe('{"shape":1,"after":"run-41"}');
+        ->and($store->whatIsUnder(whereHearingIsKeptFor(aStackWhoseStreamLeftOff())))->toBe('{"shape":1,"after":"run-41"}')
+        ->and($store->askedReadable(whereHearingIsKeptFor(aStackWhoseStreamLeftOff())))->toBe(KeptUnder::WhereHearingLeftOff->readable());
 });
 
 it('reads back what an earlier launch wrote, which is the point of the store', function (): void {

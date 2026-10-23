@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 
 use function mb_strpos;
@@ -38,13 +37,13 @@ use function sprintf;
  * pairing overwrites the first, and the first stack starts answering with
  * somebody else's credential.
  *
- * **Sessions are kept at the narrowest accessibility there is.** A session
- * token is readable only while the device is unlocked, because nothing in this
- * application reads one in the background and the wider setting exists for
- * things that do. The bridge answers back which it actually gave, and the two
- * differ on Android — that answer is not read here because nothing this class
- * decides turns on it, and inventing a use for it would be worse than letting
- * the caller who needs it ask.
+ * **Sessions are readable from the first unlock after the phone starts.** A
+ * wake while the app is away signs in to each stack with its session, and
+ * comes with the phone locked, so a session is kept as
+ * {@see KeptUnder::readable()} says. The bridge answers back which it actually
+ * gave, and the two differ on Android — that answer is not read here because
+ * nothing this class decides turns on it, and inventing a use for it would be
+ * worse than letting the caller who needs it ask.
  */
 final readonly class PlatformKeychain implements SecureStorage
 {
@@ -63,7 +62,7 @@ final readonly class PlatformKeychain implements SecureStorage
     public function keep(StackId $stack, Session $session, Whose $whose): Kept
     {
         return $this->store
-            ->keep($this->keyFor($stack), $this->written($session, $whose), WhenAValueMayBeRead::WhileUnlocked)
+            ->keep($this->keyFor($stack), $this->written($session, $whose), KeptUnder::Session->readable())
             ->either(
                 done: static fn(): Kept => Kept::safely(),
                 refused: static fn(WhyNothingWasKept $why): Kept => Kept::refused(WhatARefusalToKeepMeans::of($why)),

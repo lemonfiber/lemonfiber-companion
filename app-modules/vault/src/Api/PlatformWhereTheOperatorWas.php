@@ -7,7 +7,6 @@ namespace Modules\Vault\Api;
 use function count;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhereTheOperatorWas;
@@ -97,7 +96,7 @@ final readonly class PlatformWhereTheOperatorWas implements WhereTheOperatorWas
             return false;
         }
 
-        return $this->store->keep(KeptUnder::WhereTheOperatorWas->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::WhereTheOperatorWas->value, $written, KeptUnder::WhereTheOperatorWas->readable())->either(
             done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
         )->held;

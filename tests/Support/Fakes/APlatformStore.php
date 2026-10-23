@@ -47,6 +47,9 @@ final class APlatformStore implements Keeps
     /** @var array<string, string> */
     private array $held = [];
 
+    /** @var array<string, WhenAValueMayBeRead> what each key was last kept as readable, as it was asked */
+    private array $askedFor = [];
+
     private function __construct(
         private readonly ?WhyNothingWasKept $refusing,
         private readonly ?WhenAValueMayBeRead $grants,
@@ -113,6 +116,7 @@ final class APlatformStore implements Keeps
         }
 
         $this->held[$key] = $value;
+        $this->askedFor[$key] = $when;
 
         return Wrote::done($this->grants ?? $when);
     }
@@ -169,6 +173,12 @@ final class APlatformStore implements Keeps
         $this->held[$key] = $value;
 
         return $this;
+    }
+
+    /** When an adapter asked what it kept under one key to be readable, or nothing where it kept nothing there. */
+    public function askedReadable(string $key): ?WhenAValueMayBeRead
+    {
+        return $this->askedFor[$key] ?? null;
     }
 
     /** What is under one key, for a test to check what an adapter wrote. */

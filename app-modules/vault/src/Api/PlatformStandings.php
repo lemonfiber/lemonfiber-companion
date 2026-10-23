@@ -13,7 +13,6 @@ use function json_decode;
 use function json_encode;
 
 use Lemonfiber\Native\Keeps;
-use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
@@ -135,7 +134,7 @@ final readonly class PlatformStandings implements Standings
             return false;
         }
 
-        return $this->store->keep(KeptUnder::Standings->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::Standings->value, $written, KeptUnder::Standings->readable())->either(
             done: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
         )->held;
