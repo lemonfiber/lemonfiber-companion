@@ -518,6 +518,14 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'spec before reading it, which is `N1-R17`.',
         ],
         [
+            'path' => 'LifecycleEnvelope.passing',
+            'because' => 'Why the pass service was left out of the project a start wrote, where the stream guard is '
+                . 'filled and it was. No `N` requirement asks what a verb came to to carry it: `N18-R3` has a '
+                . 'service filtered out of a form shown with its reason, which is read off `plan.filtered`, and '
+                . 'the pass service is lemonfiber\'s own, placed beside the guard rather than brought by a form. '
+                . 'Raise it against the spec before reading it, which is `N1-R17`.',
+        ],
+        [
             'path' => 'LifecycleEnvelope.swept',
             'because' => 'Every network the engine held for the project that the project no longer declares, taken away before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network: what `N16-R6` asks a start to name is what did not come back, which is read.',
         ],
