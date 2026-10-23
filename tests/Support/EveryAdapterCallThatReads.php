@@ -231,6 +231,7 @@ use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
+use Modules\Sdk\Api\Searchers;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\StartLines;
@@ -425,6 +426,10 @@ final readonly class EveryAdapterCallThatReads
                 => new CheckRunners($clients, $entropy)->run($stack, $session, ACheckThatDisturbs::boundedTo('The tunnel goes down', 'vpn.killswitch', 30)),
             'CheckRunners::whatBecameOf' => static fn(): object
                 => new CheckRunners($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Searchers::search' => static fn(): object
+                => new Searchers($clients, $entropy)->search($stack, $session, WhatToFollow::calledInSeason('Severance', 2)),
+            'Searchers::whatBecameOf' => static fn(): object
+                => new Searchers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Forgetters::forget' => static fn(): object
                 => new Forgetters($clients, $entropy)->forget($stack, $session, ForgettingAgreed::after(TheForgetting::said(WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of()), WhereForgettingGot::unconfirmed()))),
             'Forgetters::whatWouldGo' => static fn(): object

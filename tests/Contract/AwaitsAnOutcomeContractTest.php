@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Fakes\AScreenUnderTheLock;
 
@@ -67,6 +68,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatToDoWithThis::class,
     WhatAcceptingItCosts::class,
     WhatRunningACheckDisturbs::class,
+    WhereThisGotTo::class,
     WhatExtendsThisStack::class,
     WhatTheHouseholdIsAllowed::class,
     WhatWouldBePutRight::class,

@@ -16,8 +16,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatWasFoundOfTheTrace;
-use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Internal\GatedClient;
+use Modules\Sdk\Internal\TheTraceAsked;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -34,7 +34,7 @@ final readonly class Followers implements Tracing
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            $envelope = $client->read(Api::TRACE_ENDPOINT, [TraceField::Term->value => $following->term()]);
+            $envelope = $client->read(Api::TRACE_ENDPOINT, TheTraceAsked::for($following)->query());
 
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.

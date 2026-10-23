@@ -13,6 +13,10 @@ use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatWasFoundOfTheTrace;
 use Modules\Kernel\Api\WhereItGotTo;
 
+use function sprintf;
+
+use Tests\Support\TheWordCarriedOut;
+
 /**
  * A stack where a test says where an item got to, and which remembers what it was asked to follow.
  *
@@ -76,7 +80,10 @@ final class AStackThatTraces implements Tracing
     public function tracedOn(Stack $stack, Session $session, WhatToFollow $following): WhatWasFoundOfTheTrace
     {
         $this->askedAbout = $stack;
-        $this->followed = $following->term();
+        $this->followed = $following->either(
+            narrowed: static fn(int $season): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s, season %d', $following->term(), $season)),
+            whole: static fn(): TheWordCarriedOut => new TheWordCarriedOut($following->term()),
+        )->said;
         $this->askings++;
 
         // The session is read and the value dropped, for

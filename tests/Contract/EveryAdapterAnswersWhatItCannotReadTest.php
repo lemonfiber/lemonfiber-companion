@@ -102,6 +102,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Tuners::whatBecameOf' => sprintf('%sSettingsEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Allowers::whatBecameOf' => sprintf('%sHouseholdEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Acceptors::whatBecameOf', $which === 'CheckRunners::whatBecameOf' => sprintf('%sDoctorEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Searchers::whatBecameOf' => sprintf('%sTraceEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Forgetters::whatBecameOf' => sprintf('%sStoredEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Switchers::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),

@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\SearchingTheIndexers')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -11,6 +12,10 @@
         <x-design::title>{{ __('health.trace.nothing_asked_for', ['item' => $this->answer()->item]) }}</x-design::title>
     @else
         <x-design::title>{{ __('health.trace.following', ['item' => $this->answer()->item]) }}</x-design::title>
+        @if ($this->season !== null)
+            <x-design::note>{{ __('health.trace.in_season', ['season' => $this->season]) }}</x-design::note>
+            <x-operator::quiet-action :label="__('health.trace.every_season')" tap="followEverySeason()" />
+        @endif
 
         {{-- How sure, first: a guess drawn as fact is worse than a marked one. --}}
         @if ($this->answer()->isUncertain)
@@ -37,6 +42,42 @@
             </x-design::notice>
         @endif
 
+        {{-- Asking the indexers, only where the stack says a search would
+             settle this trace: what it spends and covers first, in the
+             stack's words, and the search on a separate yes. --}}
+        @if ($this->howTheSearchIsGoing()->went->cameBack())
+            @if ($this->howTheSearchIsGoing()->isWorking)
+                <x-design::standing :said="__('health.trace.searching')" tone="working" />
+            @elseif ($this->howTheSearchIsGoing()->hasEnded)
+                <x-design::notice tone="unknown">
+                    <x-design::strong>{{ __('health.trace.search_no_outcome') }}</x-design::strong>
+                </x-design::notice>
+            @elseif ($this->howTheSearchIsGoing()->refused !== null)
+                <x-design::notice>
+                    <x-design::strong>{{ __('health.trace.search_refused') }}</x-design::strong>
+                    <x-operator::refused-in-its-words :refused="$this->howTheSearchIsGoing()->refused" />
+                </x-design::notice>
+            @elseif ($this->howTheSearchIsGoing()->answered)
+                <x-design::note>{{ __('health.trace.searched') }}</x-design::note>
+            @endif
+
+            @if ($this->answer()->searchSpends !== '' && ! $this->howTheSearchIsGoing()->isWorking)
+                <x-design::notice>
+                    <x-design::strong>{{ __('health.trace.search_would_settle') }}</x-design::strong>
+                    <x-design::body>{{ __('health.trace.search_spends', ['spends' => $this->answer()->searchSpends]) }}</x-design::body>
+                    <x-design::body>{{ __('health.trace.search_covers', ['covers' => $this->answer()->searchCovers]) }}</x-design::body>
+                </x-design::notice>
+                <x-design::note>{{ __('health.trace.search_not_a_rehearsal') }}</x-design::note>
+                <x-operator::offered-action :label="__('health.trace.search')" tap="search()" :offer="$this->offered(SearchingTheIndexers::Search)" />
+            @endif
+        @else
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->howTheSearchIsGoing()->went"
+                :goes="$this->goes()"
+            />
+        @endif
+
         {{-- For a series, what is here and what is not, season by season: a
              series reads as imported the moment one episode lands. --}}
         @if ($this->answer()->here->series !== null)
@@ -52,6 +93,9 @@
                     @empty
                         <x-design::note>{{ __('health.trace.season_all_here') }}</x-design::note>
                     @endforelse
+                    @if ($this->season !== $season->season)
+                        <x-operator::quiet-action :label="__('health.trace.follow_season', ['season' => $season->season])" :tap="$this->tapping('followSeason', $season->season)" />
+                    @endif
                 </x-design::card>
             @empty
                 <x-design::body>{{ __('health.trace.no_seasons') }}</x-design::body>

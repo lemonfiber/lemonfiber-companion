@@ -16,6 +16,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\TraceEnvelope;
 use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
+use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\ASeriesCounted;
 use Modules\Kernel\Api\AStageItReached;
 use Modules\Kernel\Api\HowFarItGot;
@@ -32,6 +33,7 @@ use Modules\Kernel\Api\WhatTheTraceFound;
 use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Kernel\Api\WhereTheServicesDisagree;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Internal\TheSearchThatSettles;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -83,7 +85,7 @@ final readonly class Traces
             return WhereItGotTo::nothingAskedFor($item);
         }
 
-        return WhereItGotTo::followed($item, WhatTheTraceFound::traced(
+        $found = WhatTheTraceFound::traced(
             self::sure($data),
             HowFarItGot::reached(self::stage($data, TraceField::Furthest), self::stages($data), self::optional($data, WireField::Stall)),
             self::history($data),
@@ -92,6 +94,11 @@ final readonly class Traces
                 self::rows($data, WireField::Findings),
             )),
             self::here($data),
+        );
+
+        return WhereItGotTo::followed($item, TheSearchThatSettles::in($data)->either(
+            so: static fn(ASearchThatSettles $search): WhatTheTraceFound => $found->settledBy($search),
+            not: static fn(): WhatTheTraceFound => $found,
         ));
     }
 
