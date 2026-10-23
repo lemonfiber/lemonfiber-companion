@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OurRequests;
+use Modules\Kernel\Api\RequestsOnAPluginsBehalf;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -34,7 +37,7 @@ use Tests\Support\Fakes\AStackThatSaysWhatLeavesIt;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
-// Everything that leaves this machine, in two lists.
+// Everything that leaves this machine, in three lists.
 //
 // Here rather than in the operator module's own tests because a screen renders,
 // and rendering needs the application.
@@ -50,7 +53,7 @@ function theStackWhoseConnectionsAreRead(): Stack
     );
 }
 
-/** Two of lemonfiber's requests and three services, one of each kind of answer. */
+/** Two of lemonfiber's requests, one made for a plugin, and three services, one of each kind of answer. */
 function aMachineThatSendsThings(): WhatLeavesThisMachine
 {
     return WhatLeavesThisMachine::of(
@@ -58,6 +61,7 @@ function aMachineThatSendsThings(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Registry, WhereItGoes::to('ghcr.io', 'lscr.io'), 'To fetch the images the stack runs', 'The name and version of each image', WhetherItIsAllowed::Allowed, 'registry.pull', 'No service can be installed or updated'),
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
+        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server')),
         TheirRequests::of(
             ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
             ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own', WhoPutItThere::bundled()),
@@ -85,12 +89,35 @@ function theLeavingScreen(
     return $screen;
 }
 
-it('lemonfiber\'s requests and the services\' come back as two lists', function (): void {
+it('lemonfiber\'s requests, those it makes for a plugin, and the services\' come back as three lists', function (): void {
     $answer = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()
         ->and($answer->ours)->toHaveCount(2)
+        ->and($answer->onBehalf)->toHaveCount(1)
         ->and($answer->theirs)->toHaveCount(3);
+});
+
+it('a request made for a plugin is drawn under its own heading, naming the plugin, why and where', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()));
+    $plex = $screen->answer()->onBehalf[0];
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect([$plex->plugin, $plex->destination, $plex->purpose])->toBe(['plex', 'plex.tv', 'To claim the media server'])
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.heading'))
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.for', ['plugin' => 'plex']))
+        ->and($drawn)->toContain('To claim the media server')
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.goes_to', ['destination' => 'plex.tv']))
+        ->and($drawn)->not->toContain(__('stacks.outbound.on_behalf.none'));
+});
+
+it('a machine sending nothing for a plugin says so under that heading', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(WhatLeavesThisMachine::of(OurRequests::of(), RequestsOnAPluginsBehalf::of(), TheirRequests::of())));
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('stacks.outbound.on_behalf.heading'))
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.none'));
 });
 
 it('each of lemonfiber\'s requests says why, what it sends, where, its switch and what turning it off costs', function (): void {
@@ -121,10 +148,11 @@ it('a service says where it goes, that it goes nowhere, or that nobody knows —
 });
 
 it('a machine sending nothing is an answer rather than a gap', function (): void {
-    $answer = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of())))->answer();
+    $answer = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(WhatLeavesThisMachine::of(OurRequests::of(), RequestsOnAPluginsBehalf::of(), TheirRequests::of())))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()
         ->and($answer->ours)->toBe([])
+        ->and($answer->onBehalf)->toBe([])
         ->and($answer->theirs)->toBe([]);
 });
 
@@ -134,6 +162,7 @@ it('a stack that could not be asked is not a machine sending nothing', function 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($answer->ours)->toBe([])
+        ->and($answer->onBehalf)->toBe([])
         ->and($answer->theirs)->toBe([]);
 });
 
@@ -149,6 +178,7 @@ it('a session that has ended is not a machine sending nothing', function (): voi
     expect($answer->went->isSignedIn)->toBeFalse()
         ->and($answer->went->met)->toBe('')
         ->and($answer->ours)->toBe([])
+        ->and($answer->onBehalf)->toBe([])
         ->and($answer->theirs)->toBe([]);
 });
 
@@ -216,6 +246,7 @@ function aMachineWithAPluginsService(WhoPutItThere $second): WhatLeavesThisMachi
 {
     return WhatLeavesThisMachine::of(
         OurRequests::of(),
+        RequestsOnAPluginsBehalf::of(),
         TheirRequests::of(
             ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
             ARequestOfTheirs::unrecorded(ServiceId::called('plex'), $second),

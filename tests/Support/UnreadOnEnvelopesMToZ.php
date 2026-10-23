@@ -656,13 +656,5 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'is drawn with the service asking, what it reaches and where each service it reaches came '
                 . 'from; no requirement asks where the one asking came from.',
         ],
-        [
-            'path' => 'OutboundEnvelope.on_behalf',
-            'because' => 'Every request lemonfiber makes on an installed plugin\'s behalf, with the plugin, its purpose and '
-                . 'its destination. `N10-R1` keeps lemonfiber\'s own connections apart from the services\', and '
-                . '`N10-R2` has each of lemonfiber\'s shown with the switch that turns it off, which these do not '
-                . 'carry. Whether they are drawn with lemonfiber\'s own, and how without a switch, is a decision for '
-                . 'the screen not yet taken.',
-        ],
     ];
 }

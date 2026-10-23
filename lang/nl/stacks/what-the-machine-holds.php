@@ -51,6 +51,12 @@ return [
             'cost' => 'Als het uit staat: :cost',
             'none' => 'lemonfiber verstuurt zelf niets',
         ],
+        'on_behalf' => [
+            'heading' => 'Namens een plugin',
+            'for' => 'Voor de plugin :plugin',
+            'goes_to' => 'Naar :destination',
+            'none' => 'lemonfiber verstuurt niets namens een plugin',
+        ],
         'theirs' => [
             'heading' => 'Wat de diensten versturen',
             'reaches' => 'Bereikt :destination',

@@ -32,12 +32,13 @@ use Native\Mobile\Edge\NativeComponent;
  * The question somebody asks when they want to know what their machine says to
  * the world while nobody is watching: every request lemonfiber makes on its
  * own account — why, what it carries, what switches it off and what that
- * costs — and, apart from them, what each of the stack's services reaches.
+ * costs — and, apart from them, what it sends on an installed plugin's
+ * behalf and what each of the stack's services reaches.
  *
- * **Two lists, never one.** What lemonfiber sends is this product's to answer
- * for and to switch off; what a service sends is that service's doing, and
- * merged into one list a reader could not tell which connections they can stop
- * from here.
+ * **Three lists, never one.** What lemonfiber sends is this product's to answer
+ * for and to switch off; what it sends for a plugin is that plugin's asking;
+ * what a service sends is that service's doing. Merged into one list, a reader
+ * could not tell which connections they can stop from here.
  *
  * **It asks once, when the frame is built, and holds what came back**, which is
  * {@see WhereThisComesFrom}'s shape, and it switches nothing off: that is a
