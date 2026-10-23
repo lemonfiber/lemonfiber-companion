@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use Closure;
-
 use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACheckThatDisturbs;
-use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowLongAgo;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
-use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ItsContent;
-use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\RunningACheck;
@@ -29,19 +22,16 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsARunOfChecks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
-use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowACheckThatDisturbsReads;
-use Modules\Operator\Internal\Presenters\HowTheRunReads;
 use Modules\Operator\Internal\SaysWhatARunInterrupts;
 use Modules\Operator\Internal\ViewModels\TheCheckTurnedOutToBe;
-use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -69,6 +59,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     use FindsItsWayAround;
     use DrawsItsTemplate;
     use SaysWhatARunInterrupts;
+    use FollowsARunOfChecks;
 
     public const string TEMPLATE = 'operator::what-running-a-check-disturbs';
 
@@ -77,14 +68,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
 
     /** The check a yes was sent for, empty until one is. */
     public string $running = '';
-
-    /** The handle of the run being followed, where there is one. */
-    public ?string $following = null;
-
-    /** When the run's report came back, in whole seconds since the epoch, or nought before one has. */
-    public int $ranAt = 0;
-
-    public ?TheRunTurnedOutToBe $going = null;
 
     public function __construct(
         private readonly Asking $asking,
@@ -121,19 +104,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->run($stack, $session, $check));
     }
 
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->isWorking) {
-            $this->going = null;
-        }
-    }
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->isWorking;
-    }
-
     /** The finding as the stack last reported it, asked once per frame. */
     public function answer(): TheCheckTurnedOutToBe
     {
@@ -154,26 +124,10 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         );
     }
 
-    public function howItIsGoing(): TheRunTurnedOutToBe
+    /** The finding drawn again from the report the run came back with. */
+    protected function cameBackWith(Report $report): void
     {
-        $following = $this->following;
-
-        return $this->going ??= $following === null
-            ? new HowTheRunReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->whatBecameOf($stack, $session, Job::named($following)));
-    }
-
-    /** How long ago the run's report came back, or nothing before one has. */
-    public function ranAgo(): AgoAsShown
-    {
-        if ($this->ranAt === 0) {
-            return AgoAsShown::unsaid();
-        }
-
-        $ran = Instant::atEpochSeconds($this->ranAt);
-        $now = $this->listening->clock->now();
-
-        return AgoAsShown::from(HowLongAgo::since($ran, $now), $ran, $now);
+        $this->answered = new HowACheckThatDisturbsReads()->in($report, $this->running);
     }
 
     /** The check the route names, which only finds a finding in what the stack reported. */
@@ -182,52 +136,5 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         $named = $this->param('service');
 
         return is_string($named) ? trim($named) : '';
-    }
-
-    /** @param Closure(Stack, Session): WhatBecameOfTheWork<Report> $asking */
-    private function put(Closure $asking): TheRunTurnedOutToBe
-    {
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): TheRunTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
-            notHeld: static fn(): TheRunTurnedOutToBe => new HowTheRunReads()->signedOut(),
-        );
-    }
-
-    /**
-     * @param WhatBecameOfTheWork<Report> $became
-     */
-    private function shown(WhatBecameOfTheWork $became, Stack $stack): TheRunTurnedOutToBe
-    {
-        return $became->either(
-            underway: function (Job $job): TheRunTurnedOutToBe {
-                $this->following = $job->shown();
-
-                return new HowTheRunReads()->running();
-            },
-            answered: function (Report $report): TheRunTurnedOutToBe {
-                $this->following = null;
-                $this->ranAt = $this->listening->clock->now()->epochSeconds();
-                $this->answered = new HowACheckThatDisturbsReads()->in($report, $this->running);
-
-                return new HowTheRunReads()->answered();
-            },
-            ended: function (): TheRunTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheRunReads()->ended();
-            },
-            refused: function (ARefusalInItsWords $why): TheRunTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheRunReads()->refused($why);
-            },
-            met: function (Obstacle $why) use ($stack): TheRunTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowTheRunReads()->met($why);
-            },
-        );
     }
 }
