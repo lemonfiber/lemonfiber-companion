@@ -135,6 +135,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Accept->forTheStacksCheck($this->stack, Check::of($check));
     }
 
+    /** Where running this check, which disturbs something, is weighed before anything is sent. */
+    public function running(string $check): string
+    {
+        return AStacksScreen::Run->forTheStacksCheck($this->stack, Check::of($check));
+    }
+
     /** Where somebody is asked in with their name already typed. */
     public function inviting(string $named): string
     {

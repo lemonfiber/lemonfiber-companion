@@ -6,11 +6,13 @@ namespace Modules\Sdk\Tests\Api;
 
 use function array_map;
 use function expect;
+use function implode;
 use function it;
 use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\CheckGaveNoReason;
@@ -752,4 +754,62 @@ it('refuses a finding whose plugin is named in blanks as the report\'s own refus
 
     expect(fn(): Report => Reports::in(doctorSaying($data)))
         ->toThrow(ReportIsUnreadable::class, 'Finding 0 cannot say where its check came from. It names nobody');
+});
+
+/**
+ * A finding left unverified because checking it disturbs something, with its `disruptive` as a case says.
+ *
+ * @return array<string, mixed>
+ */
+function aFindingThatDisturbs(mixed $disruptive): array
+{
+    return [
+        ...aFinding('vpn.killswitch', 'vpn', 'Traffic stops when the tunnel drops', ['outcome' => 'skipped', 'reason' => 'Checking it takes the tunnel down']),
+        'disruptive' => $disruptive,
+    ];
+}
+
+/** What a run's one finding says about the check that disturbs, as one line. */
+function whatCheckingItDisturbs(Report $report): string
+{
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->whetherCheckingDisturbs()->either(
+            so: static fn(ACheckThatDisturbs $check): Code => Code::of(sprintf('%s|%s|%s', $check->disturbs(), $check->narrowedTo(), $check->either(
+                bounded: static fn(int $seconds): Code => Code::of(sprintf('%d seconds', $seconds)),
+                unbounded: static fn(): Code => Code::of('no bound'),
+            )->shown())),
+            not: static fn(): Code => Code::of('nothing to run'),
+        )->shown();
+    }
+
+    return implode(';', $said);
+}
+
+it('reads what checking a finding disturbs, the check a diagnosis runs it under, and its bound or that it has none', function (): void {
+    $bounded = ['disturbs' => 'The tunnel goes down', 'only' => 'vpn.killswitch', 'bounded' => 30];
+    $unbounded = ['disturbs' => 'One query of each indexer', 'only' => 'indexers'];
+
+    expect(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs($bounded)])))))->toBe('The tunnel goes down|vpn.killswitch|30 seconds')
+        ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs($unbounded)])))))->toBe('One query of each indexer|indexers|no bound')
+        ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs([...$unbounded, 'bounded' => null])])))))->toBe('One query of each indexer|indexers|no bound')
+        ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs(null)])))))->toBe('nothing to run')
+        ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aWholeRun()))))->toBe('nothing to run;nothing to run');
+});
+
+it('refuses a finding whose check that disturbs it cannot read, naming the finding', function (mixed $disruptive, string $said): void {
+    expect(static fn(): Report => Reports::in(doctorSaying(aRun('degraded', [aPass(), aFindingThatDisturbs($disruptive)]))))
+        ->toThrow(ReportIsUnreadable::class, sprintf('Finding 1 has no `%s`', $said));
+})->with([
+    'not a table' => ['the tunnel', 'disruptive'],
+    'nothing said it disturbs' => [['only' => 'vpn.killswitch'], 'disturbs'],
+    'a blank word for what it disturbs' => [['disturbs' => ' ', 'only' => 'vpn.killswitch'], 'disturbs'],
+    'no check to run it under' => [['disturbs' => 'The tunnel goes down'], 'only'],
+    'a bound that is not a number' => [['disturbs' => 'The tunnel goes down', 'only' => 'vpn.killswitch', 'bounded' => '30'], 'bounded'],
+    'a bound below none' => [['disturbs' => 'The tunnel goes down', 'only' => 'vpn.killswitch', 'bounded' => -1], 'bounded'],
+]);
+
+it('reads only payloads the contract would accept as a finding that disturbs', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('DoctorEnvelope', ['api_version' => 1, 'kind' => 'doctor', 'data' => aRun('degraded', [aFindingThatDisturbs(['disturbs' => 'The tunnel goes down', 'only' => 'vpn.killswitch', 'bounded' => 30])])]))->toBe([]);
 });

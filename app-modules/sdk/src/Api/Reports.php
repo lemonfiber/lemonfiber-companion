@@ -11,6 +11,7 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\DoctorEnvelope;
 use Modules\Kernel\Api\AboutWhat;
+use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
@@ -29,6 +30,7 @@ use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\TheCheckThatDisturbs;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -194,9 +196,14 @@ final readonly class Reports
         // Set after the row is complete, which is how the engine sets them:
         // neither is the check's own business, and a finding that names neither
         // is the ordinary case rather than an incomplete one.
-        return $finding
+        $finding = $finding
             ->about(self::about($row, $position))
             ->because(self::because($row, $position));
+
+        return TheCheckThatDisturbs::in($row, $position)->either(
+            so: static fn(ACheckThatDisturbs $check): Finding => $finding->disturbing($check),
+            not: static fn(): Finding => $finding,
+        );
     }
 
     /**

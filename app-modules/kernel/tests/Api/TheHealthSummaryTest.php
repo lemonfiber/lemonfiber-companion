@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Modules\Kernel\Tests\Api;
 
 use function array_keys;
+use function count;
 use function expect;
 use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\DownloadIsUnnamed;
+use Modules\Kernel\Api\DownloadsMoving;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
@@ -97,4 +100,19 @@ it('holds what followed by position, whatever it was handed over keyed by', func
 it('holds nothing downstream where nothing followed from it', function (): void {
     expect(WhatFollowedFromIt::of()->count())->toBe(0)
         ->and(iterator_to_array(WhatFollowedFromIt::of(), preserve_keys: false))->toBe([]);
+});
+
+it('names no download moving until one is said to be, and keeps the rest of itself when they are', function (): void {
+    $summary = TheHealthSummary::of(HowItStands::Broken, 1, 'Downloads have stopped', WhatStoppedMoving::nothing(), anItemCalled('queue.stalled'));
+    $moving = $summary->moving(DownloadsMoving::these('Dune (2021)', 'Severance S02E03'));
+
+    expect(count($summary->downloadsMoving()))->toBe(0)
+        ->and(iterator_to_array($moving->downloadsMoving(), preserve_keys: false))->toBe(['Dune (2021)', 'Severance S02E03'])
+        ->and([$moving->standing(), $moving->wantingAttention(), $moving->worst(), $moving->stopped()])->toBe([HowItStands::Broken, 1, 'Downloads have stopped', $summary->stopped()])
+        ->and(iterator_to_array($moving, preserve_keys: false))->toBe(iterator_to_array($summary, preserve_keys: false));
+});
+
+it('refuses a download moving with no name, and walks the rest by position', function (): void {
+    expect(static fn(): DownloadsMoving => DownloadsMoving::these('Dune (2021)', ' '))->toThrow(DownloadIsUnnamed::class, 'no name')
+        ->and(iterator_to_array(DownloadsMoving::these(...['a' => 'Dune (2021)']), preserve_keys: true))->toBe(['Dune (2021)']);
 });

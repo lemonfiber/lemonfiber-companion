@@ -20,6 +20,15 @@ enum DoctorField: string implements NamesAWireField
     /** The check whose finding explains this one, where another does. */
     case CausedBy = 'caused_by';
 
+    /** What checking a finding disturbs, where the read left it unverified for that reason. */
+    case Disruptive = 'disruptive';
+
+    /** The whole seconds a check that disturbs is bounded to, where the stack bounds it. */
+    case Bounded = 'bounded';
+
+    /** The check or group a diagnosis is narrowed to, to run a check that disturbs. */
+    case Only = 'only';
+
     /** What a whole run came to, in the run's own judgement. */
     case Overall = 'overall';
 

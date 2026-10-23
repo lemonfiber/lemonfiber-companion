@@ -11,6 +11,7 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AboutWhat;
+use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
@@ -199,3 +200,17 @@ function whatItSays(WhatItSaysUnderneath $underneath): string
         none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
     )->said;
 }
+
+it('waits on no check that disturbs until the read says it does, and keeps it through what the run adds', function (): void {
+    $check = ACheckThatDisturbs::boundedTo('The tunnel goes down', 'vpn.killswitch', 30);
+    $disturbing = aFinding()->disturbing($check);
+    $whether = static fn(Finding $finding): ?ACheckThatDisturbs => $finding->whetherCheckingDisturbs()->either(
+        so: static fn(ACheckThatDisturbs $so): ACheckThatDisturbs => $so,
+        not: static fn(): TheWordCarriedOut => new TheWordCarriedOut('not'),
+    ) instanceof ACheckThatDisturbs ? $check : null;
+
+    expect($whether(aFinding()))->toBeNull()
+        ->and($whether($disturbing))->toBe($check)
+        ->and($whether($disturbing->about(AboutWhat::theService('gluetun'))->because(Because::nothingElse())))->toBe($check)
+        ->and($disturbing->title())->toBe('Torrent traffic leaves through the tunnel');
+});

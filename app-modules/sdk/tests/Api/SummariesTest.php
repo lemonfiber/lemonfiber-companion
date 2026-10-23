@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Api;
 
 use function array_map;
+use function count;
 use function expect;
 use function implode;
 use function it;
@@ -42,9 +43,9 @@ use Tests\Support\TheWordCarriedOut;
  *
  * @return Envelope<mixed>
  */
-function aDashboardSaying(array $health, array $stuck = []): Envelope
+function aDashboardSaying(array $health, array $stuck = [], mixed $transfers = ['panel' => 'ready', 'data' => []]): Envelope
 {
-    return new Envelope(1, 'dashboard', ['health' => $health, 'stuck' => $stuck]);
+    return new Envelope(1, 'dashboard', ['health' => $health, 'stuck' => $stuck, 'transfers' => $transfers]);
 }
 
 /**
@@ -288,3 +289,28 @@ it('refuses an exit code that is not a number, naming the item', function (): vo
         'affected' => [anAffectedRow(), [...anAffectedRow(), 'exit' => '1']],
     ]))))->toContain('exit');
 });
+
+it('reads the downloads the stack says are moving, by name, in its order', function (): void {
+    $moving = ['panel' => 'ready', 'data' => [['name' => 'Dune (2021)', 'progress' => 40], ['name' => 'Severance S02E03', 'progress' => 3]]];
+
+    expect(iterator_to_array(Summaries::in(aDashboardSaying(aHealthSummary(), transfers: $moving))->downloadsMoving(), preserve_keys: false))
+        ->toBe(['Dune (2021)', 'Severance S02E03'])
+        ->and(count(Summaries::in(aDashboardSaying(aHealthSummary()))->downloadsMoving()))->toBe(0);
+});
+
+it('names no download where the stack could not say which are moving', function (): void {
+    $unavailable = ['panel' => 'unavailable', 'data' => ['reason' => 'The download client did not answer']];
+
+    expect(count(Summaries::in(aDashboardSaying(aHealthSummary(), transfers: $unavailable))->downloadsMoving()))->toBe(0);
+});
+
+it('refuses a summary whose downloads cannot be read, rather than naming fewer', function (mixed $transfers, string $said): void {
+    expect(whyTheSummaryWasRefused(aDashboardSaying(aHealthSummary(), transfers: $transfers)))->toContain($said);
+})->with([
+    'no panel at all' => ['moving', '`transfers`'],
+    'a panel in no state' => [['data' => []], '`panel`'],
+    'a panel in a state it has no word for' => [['panel' => 'stale', 'data' => []], '`panel`'],
+    'a ready panel with no list' => [['panel' => 'ready', 'data' => 'two'], '`transfers`'],
+    'a download that is not a row' => [['panel' => 'ready', 'data' => ['Dune']], '`transfers`'],
+    'a download with a blank name' => [['panel' => 'ready', 'data' => [['name' => ' ']]], '`transfers`'],
+]);
