@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\ASeriesCounted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchOfASeasonIsHere;
@@ -21,6 +22,7 @@ use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatTraces;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\TracesToFollow;
@@ -97,6 +99,10 @@ function whatWasFound(WhatTheTraceFound $found): string
     $said[] = $found->here()->either(
         whole: static fn(): TheWordCarriedOut => new TheWordCarriedOut('whole'),
         inParts: static fn(ASeriesCounted $series): TheWordCarriedOut => new TheWordCarriedOut(whatIsHere($series)),
+    )->said;
+    $said[] = $found->whetherASearchSettles()->either(
+        so: static fn(ASearchThatSettles $search): TheWordCarriedOut => new TheWordCarriedOut(sprintf('search spends %s, covers %s', $search->spends(), $search->covers())),
+        not: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no search settles it'),
     )->said;
 
     return implode('|', $said);
@@ -190,3 +196,37 @@ it('stands in for a stack with a payload the contract would accept', function ()
     expect(WhatTheContractAccepts::complaintsAbout('TraceEnvelope', TracesToFollow::whatAStackSaysOfTheSeries()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
+
+it('reads what a search that would settle the trace spends and covers, and sends the season a trace is narrowed to', function (): void {
+    $searchable = ['spends' => 'One search of each indexer\'s daily allowance', 'covers' => 'Everything the curator wants at the quality in force'];
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent, $searchable): MockResponse {
+            $sent[] = $asked->query()->all();
+
+            return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'trace', 'data' => [...TracesToFollow::theSeriesAsAStackSendsIt(), 'searchable' => $searchable]]));
+        },
+    ]);
+
+    $said = new Followers(new PinnedClients())->tracedOn(aStackThatFollowsItems(), Session::of('a-session-not-a-secret'), WhatToFollow::calledInSeason('Severance', 2))->either(
+        found: static fn(WhereItGotTo $trace): TheWordCarriedOut => $trace->either(
+            nothingAskedFor: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing asked for'),
+            followed: static fn(WhatTheTraceFound $found): TheWordCarriedOut => new TheWordCarriedOut(whatWasFound($found)),
+        ),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+    )->said;
+
+    expect($said)->toEndWith('|search spends One search of each indexer\'s daily allowance, covers Everything the curator wants at the quality in force')
+        ->and($sent)->toBe([['term' => 'Severance', 'season' => 2]]);
+});
+
+it('refuses a search it cannot read rather than offering one that says nothing', function (array $searchable): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'trace', 'data' => [...TracesToFollow::theSeriesAsAStackSendsIt(), 'searchable' => $searchable]]))]);
+
+    expect(everythingTheTraceSays(new Followers(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
+})->with([
+    'nothing said it spends' => [['covers' => 'Everything the curator wants']],
+    'a blank word for what it covers' => [['spends' => 'One search', 'covers' => ' ']],
+]);

@@ -6,8 +6,8 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "N31-R1", state = "open" },
-  { id = "N31-R2", state = "open" },
-  { id = "N31-R3", state = "open" },
-  { id = "N31-R4", state = "open" },
+  { id = "N31-R1", state = "done", evidence = ["app-modules/kernel/src/Api/ASearchThatSettles.php", "app-modules/sdk/src/Internal/TheSearchThatSettles.php", "app-modules/operator/resources/views/where-this-got-to.blade.php", "tests/Contract/TracingContractTest.php", "tests/Feature/SeeingWhereThisGotToTest.php"] },
+  { id = "N31-R2", state = "done", evidence = ["app-modules/operator/resources/views/where-this-got-to.blade.php", "app-modules/operator/src/Internal/Presenters/HowATraceReads.php", "tests/Feature/SeeingWhereThisGotToTest.php"] },
+  { id = "N31-R3", state = "done", evidence = ["app-modules/kernel/src/Api/AskingTheIndexers.php", "app-modules/sdk/src/Api/Searchers.php", "app-modules/operator/src/Internal/Screens/WhereThisGotTo.php", "tests/Contract/AskingTheIndexersContractTest.php", "tests/Feature/SeeingWhereThisGotToTest.php"] },
+  { id = "N31-R4", state = "done", evidence = ["app-modules/kernel/src/Api/WhatToFollow.php", "app-modules/sdk/src/Internal/TheTraceAsked.php", "tests/Contract/TracingContractTest.php", "tests/Feature/SeeingWhereThisGotToTest.php"] },
 ]

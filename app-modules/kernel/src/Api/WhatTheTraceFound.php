@@ -13,6 +13,7 @@ final readonly class WhatTheTraceFound
         private TheMomentsInItsHistory $history,
         private WhereTheServicesDisagree $disagreements,
         private HowMuchOfItIsHere $here,
+        private WhetherASearchSettles $search,
     ) {}
 
     public static function traced(
@@ -22,7 +23,19 @@ final readonly class WhatTheTraceFound
         WhereTheServicesDisagree $disagreements,
         HowMuchOfItIsHere $here,
     ): self {
-        return new self($sure, $got, $history, $disagreements, $here);
+        return new self($sure, $got, $history, $disagreements, $here, WhetherASearchSettles::not());
+    }
+
+    /** The same trace, with the search the stack says would settle it. */
+    public function settledBy(ASearchThatSettles $search): self
+    {
+        return new self($this->sure, $this->got, $this->history, $this->disagreements, $this->here, WhetherASearchSettles::so($search));
+    }
+
+    /** Whether a search of the indexers would settle it, and which. */
+    public function whetherASearchSettles(): WhetherASearchSettles
+    {
+        return $this->search;
     }
 
     public function sure(): HowSureTheTraceIs

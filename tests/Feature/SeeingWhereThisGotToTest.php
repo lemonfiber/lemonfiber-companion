@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarItGot;
 use Modules\Kernel\Api\HowMuchOfItIsHere;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -19,6 +22,8 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\TheMomentsInItsHistory;
 use Modules\Kernel\Api\TheStagesItReached;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheTraceFound;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
@@ -31,6 +36,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
+use Tests\Support\Fakes\AStackThatSearches;
 use Tests\Support\Fakes\AStackThatTraces;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TracesToFollow;
@@ -65,7 +71,7 @@ function aFilmThatArrived(): WhereItGotTo
 }
 
 /** The screen, following what the route names. Named for this file (`G10`). */
-function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain = null, bool $signedIn = true, string $named = 'Severance'): WhereThisGotTo
+function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain = null, bool $signedIn = true, string $named = 'Severance', ?AStackThatSearches $searching = null): WhereThisGotTo
 {
     $stack = theStackWhoseItemIsFollowed();
     $keychain ??= AKeychainInMemory::working();
@@ -74,7 +80,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisGotTo($tracing, AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
@@ -241,4 +247,137 @@ it('names what was typed without the spaces around it, even where the device hol
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->item)->toBe('Dune');
+});
+
+/** A film monitored and never grabbed, which the stack says a search of the indexers would settle. */
+function aFilmASearchWouldSettle(): WhereItGotTo
+{
+    return WhereItGotTo::followed('Dune', WhatTheTraceFound::traced(
+        HowSureTheTraceIs::Certain,
+        HowFarItGot::reached(Stage::Monitored, TheStagesItReached::of(), 'Monitored, never grabbed'),
+        TheMomentsInItsHistory::of(),
+        WhereTheServicesDisagree::of(),
+        HowMuchOfItIsHere::aWholeItem(),
+    )->settledBy(ASearchThatSettles::spending('One search of each indexer\'s daily allowance', 'Everything the curator wants at the quality in force')));
+}
+
+it('offers asking the indexers only where the stack says a search would settle the trace, with what it spends and covers first', function (): void {
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $offered = WhatTheDeviceWouldDraw::by(theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching));
+    $notOffered = WhatTheDeviceWouldDraw::by(theTraceScreen(AStackThatTraces::with(aFilmThatArrived()), named: 'Dune'));
+
+    expect($offered->said())->toContain(
+        __('health.trace.search_would_settle'),
+        __('health.trace.search_spends', ['spends' => 'One search of each indexer\'s daily allowance']),
+        __('health.trace.search_covers', ['covers' => 'Everything the curator wants at the quality in force']),
+        __('health.trace.search_not_a_rehearsal'),
+    )
+        ->and($offered->offers())->toContain(__('health.trace.search'))
+        ->and($notOffered->offers())->not->toContain(__('health.trace.search'))
+        ->and($searching->searched())->toBe([]);
+});
+
+it('asks the indexers about what the trace followed, follows the search, and draws the trace it came back with', function (): void {
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::answered(aFilmThatArrived()));
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching);
+    $screen->search();
+
+    expect($searching->searched())->toBe(['Dune'])
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.trace.searching'));
+
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(static fn(Job $job): string => $job->shown(), $searching->followed()))->toBe([AStackThatSearches::THE_SEARCH])
+        ->and($drawn->said())->toContain(__('health.trace.searched'), __('health.trace.furthest', ['stage' => Stage::Available->value]))
+        ->and($drawn->offers())->not->toContain(__('health.trace.search'));
+});
+
+it('asks nothing where no search would settle the trace', function (): void {
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    theTraceScreen(AStackThatTraces::with(aFilmThatArrived()), named: 'Dune', searching: $searching)->search();
+
+    expect($searching->searched())->toBe([]);
+});
+
+it('reads the trace with the season it is narrowed to, and asks about that season', function (): void {
+    $tracing = AStackThatTraces::with(aFilmASearchWouldSettle());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $screen = theTraceScreen($tracing, searching: $searching);
+    $screen->followSeason(2);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $screen->search();
+
+    expect($tracing->followed())->toBe('Severance, season 2')
+        ->and($drawn->said())->toContain(__('health.trace.in_season', ['season' => 2]))
+        ->and($searching->searched())->toBe(['Severance, season 2']);
+
+    $screen->followEverySeason();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($tracing->followed())->toBe('Severance');
+});
+
+it('offers following each season of a series on its own, and not the one it is narrowed to', function (): void {
+    $screen = theTraceScreen(AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading()));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.trace.follow_season', ['season' => 1]), __('health.trace.follow_season', ['season' => 2]));
+
+    $screen->followSeason(1);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('health.trace.follow_season', ['season' => 1]))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.trace.follow_season', ['season' => 2]), __('health.trace.every_season'));
+});
+
+it('says the stack did not ask the indexers, in its own words', function (): void {
+    $refusal = ARefusalInItsWords::said('Every indexer has spent its daily allowance', '', WhatTheRefusalNamed::nothing(), 'Try again tomorrow');
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
+    $screen->search();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.trace.search_refused'), 'Every indexer has spent its daily allowance');
+});
+
+it('sends a search once, however often it is tapped while the indexers are asked', function (): void {
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching);
+    $screen->search();
+    $screen->search();
+
+    expect($searching->searched())->toBe(['Dune']);
+});
+
+it('says the stack has no answer for a search it no longer knows, and what stood in the way of one', function (): void {
+    $ended = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::answering(WhatBecameOfTheWork::ended()));
+    $ended->search();
+    $ended->whileItRuns();
+    $met = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
+    $met->search();
+
+    expect(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('health.trace.search_no_outcome'))
+        ->and($met->howTheSearchIsGoing()->went->cameBack())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toContain(__('health.trace.search'));
+});
+
+it('asks the indexers nothing once the session has ended', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), keychain: $keychain, named: 'Dune', searching: $searching);
+    $screen->answer();
+    $keychain->forget(theStackWhoseItemIsFollowed()->id());
+    $screen->search();
+
+    expect($searching->searched())->toBe([])
+        ->and($screen->howTheSearchIsGoing()->went->isSignedIn)->toBeFalse();
+});
+
+it('follows no season below none', function (): void {
+    $tracing = AStackThatTraces::with(aFilmThatArrived());
+    $screen = theTraceScreen($tracing, named: 'Dune');
+    $screen->followSeason(-1);
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->season)->toBeNull()
+        ->and($tracing->followed())->toBe('Dune');
 });

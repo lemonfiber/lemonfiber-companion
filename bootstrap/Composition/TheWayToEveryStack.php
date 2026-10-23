@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AskingForTitles;
+use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingQuality;
@@ -150,6 +151,7 @@ use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
+use Modules\Sdk\Api\Searchers;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\StartLines;
@@ -373,6 +375,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(ChoosingWhatTheHouseholdMayAsk::class, Allowers::class);
         $this->app->bind(Accepting::class, Acceptors::class);
         $this->app->bind(RunningACheck::class, CheckRunners::class);
+        $this->app->bind(AskingTheIndexers::class, Searchers::class);
         $this->app->bind(Forgetting::class, Forgetters::class);
         $this->app->bind(Switching::class, Switchers::class);
 

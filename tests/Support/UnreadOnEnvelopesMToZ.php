@@ -671,12 +671,5 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'the bound the stack reported. Unread today because the fetch states the first two in the app\'s '
                 . 'catalogue words and not yet this bound.',
         ],
-        [
-            'path' => 'TraceEnvelope.searchable',
-            'because' => 'What a search would spend to tell nothing at the quality from nothing at all, where the trace '
-                . 'stopped at `monitored` with that open. `N31-R1` asks for it: such a trace offers asking the '
-                . 'indexers, and `N31-R2` states this spend before the search is sent. Unread today because the '
-                . 'trace screen offers no search.',
-        ],
     ];
 }

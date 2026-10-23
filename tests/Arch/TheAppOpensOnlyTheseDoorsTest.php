@@ -24,6 +24,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\SearchingTheIndexers;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
@@ -277,6 +278,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     'switch' => 'rehearses making the forms chosen from the stack\'s own list the active set, and makes it only as that rehearsal was asked',
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',
     'accept' => 'accepts one warning the stack\'s own report raises, named from that report, after what it costs is shown',
+    'search' => 'asks the indexers about the item a trace followed, with the term and season the trace was read with, only where the stack\'s own trace says a search would settle it and after what it spends is shown; never rehearsed',
     'diagnose' => 'runs one check the stack\'s own report leaves unverified because it disturbs something, narrowed as that report names it, after what it disturbs and its bound are shown; never rehearsed',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
@@ -607,6 +609,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(ChoosingWhatIsAllowed $allowed): string => $allowed->asked(), ChoosingWhatIsAllowed::cases()),
         ...array_map(static fn(AcceptingAChoice $accepting): string => $accepting->asked(), AcceptingAChoice::cases()),
         ...array_map(static fn(CheckingWhatDisturbs $checking): string => $checking->asked(), CheckingWhatDisturbs::cases()),
+        ...array_map(static fn(SearchingTheIndexers $searching): string => $searching->asked(), SearchingTheIndexers::cases()),
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),
         ...array_map(static fn(SwitchingTheForms $switching): string => $switching->asked(), SwitchingTheForms::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),

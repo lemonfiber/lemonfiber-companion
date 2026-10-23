@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
+use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\ASeriesCounted;
 use Modules\Kernel\Api\AStageItReached;
 use Modules\Kernel\Api\HowMuchOfASeasonIsHere;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\WhatTheTraceFound;
 use Modules\Kernel\Api\WhereItGotTo;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AMomentAsShown;
 use Modules\Operator\Internal\ViewModels\AnEpisodeAsShown;
 use Modules\Operator\Internal\ViewModels\ASeasonAsShown;
@@ -79,6 +81,15 @@ final readonly class HowATraceReads
             $disagreements[] = $finding;
         }
 
+        $spends = $found->whetherASearchSettles()->either(
+            so: static fn(ASearchThatSettles $search): AsText => AsText::of($search->spends()),
+            not: static fn(): AsText => AsText::nothing(),
+        )->said;
+        $covers = $found->whetherASearchSettles()->either(
+            so: static fn(ASearchThatSettles $search): AsText => AsText::of($search->covers()),
+            not: static fn(): AsText => AsText::nothing(),
+        )->said;
+
         return new TheTraceTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             item: $item,
@@ -94,6 +105,8 @@ final readonly class HowATraceReads
                 whole: static fn(): HowMuchIsHereAsShown => new HowMuchIsHereAsShown(null),
                 inParts: static fn(ASeriesCounted $series): HowMuchIsHereAsShown => new HowMuchIsHereAsShown(self::series($series)),
             ),
+            searchSpends: $spends,
+            searchCovers: $covers,
         );
     }
 
