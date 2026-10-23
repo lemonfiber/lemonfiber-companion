@@ -57,4 +57,5 @@ return [
     'notifications_declined' => 'Notifications are turned off for lemonfiber in your phone\'s settings. Turn them on there, then come back.',
     'notifications_open_settings' => 'Open the phone\'s settings',
     'notifications_would_not_open' => 'Your phone would not open its settings. Find lemonfiber there yourself.',
+    'notifications_may_be_missing' => 'When lemonfiber opens again, it tells you what each stack still had of what it raised while you were away. A stack does not say whether that was all of it, so some may be missing. Open a stack to see how it stands now.',
 ];

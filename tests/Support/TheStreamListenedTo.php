@@ -22,6 +22,8 @@ use Saloon\Http\Faking\MockResponse;
 use function sprintf;
 use function str_repeat;
 
+use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
+
 /**
  * A stack's event stream as the Hearing contract listens to it: the stack, the session, an event as the core frames it, and both ways of listening.
  *
@@ -67,7 +69,7 @@ final readonly class TheStreamListenedTo
                 MockClient::destroyGlobal();
                 MockClient::global($streams);
 
-                return new Listeners(new PinnedClients(), new NullLogger());
+                return new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
             },
         ];
     }

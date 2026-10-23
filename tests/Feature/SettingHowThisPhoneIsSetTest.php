@@ -474,9 +474,26 @@ it('closes the reason without asking anything when the operator says not now', f
         ->and($notifier->timesAsked())->toBe(0);
 });
 
-it('offers no notifications switch in a member\'s words', function (): void {
-    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
-    $screen->speaksTo = WhoTheSettingsSpeakTo::AMember;
+it('says, while notifications are on, that what is told on coming back may not be everything', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::unasked());
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('settings.notifications_on'));
+    $off = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->notificationsTurned(on: true);
+    $screen->allowNotifications();
+
+    expect($off)->not->toContain(__('settings.notifications_may_be_missing'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('settings.notifications_may_be_missing'))
+        ->and(__('settings.notifications_may_be_missing'))->toContain('some may be missing');
+});
+
+it('offers no notifications switch in a member\'s words, and none of what it says of them', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::unasked());
+    $screen->notificationsTurned(on: true);
+    $screen->allowNotifications();
+    $screen->speaksTo = WhoTheSettingsSpeakTo::AMember;
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->notificationsAreOn())->toBeTrue()
+        ->and($said)->not->toContain(__('settings.notifications_on'))
+        ->and($said)->not->toContain(__('settings.notifications_may_be_missing'));
 });

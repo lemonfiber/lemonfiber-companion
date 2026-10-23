@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
@@ -56,10 +57,12 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\NotesKeptInMemory;
+use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\TheStreamListenedTo;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
+use Tests\Support\WhereItResumes;
 
 // The Hearing contract, run against the adapter and against the fake.
 //
@@ -374,7 +377,7 @@ it('opens the stream once, and takes what arrived after that without asking agai
     // polling holding a stream exists to replace.
     MockClient::destroyGlobal();
     $stack = MockClient::global([MockResponse::make(''), MockResponse::make('')]);
-    $hearing = new Listeners(new PinnedClients(), new NullLogger());
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
 
     whatWakesHear($hearing, 2);
 
@@ -399,7 +402,7 @@ it('holds one stream for each stack it is asked about, and opens neither again',
     // a request to each stack on every wake.
     MockClient::destroyGlobal();
     $stack = MockClient::global([MockResponse::make(''), MockResponse::make('')]);
-    $hearing = new Listeners(new PinnedClients(), new NullLogger());
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
 
     foreach ([TheStreamListenedTo::aStack(), anotherStackToListenTo(), TheStreamListenedTo::aStack(), anotherStackToListenTo()] as $asked) {
         $hearing->howItIs($asked, TheStreamListenedTo::theSession());
@@ -411,7 +414,7 @@ it('holds one stream for each stack it is asked about, and opens neither again',
 it('leaves every other stack\'s stream open when one stack could not be heard', function (): void {
     MockClient::destroyGlobal();
     $stack = MockClient::global([MockResponse::make(''), MockResponse::make('{"error":"gone"}', 500)]);
-    $hearing = new Listeners(new PinnedClients(), new NullLogger());
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
 
     $first = $hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
     $second = $hearing->howItIs(anotherStackToListenTo(), TheStreamListenedTo::theSession());
@@ -436,24 +439,77 @@ it('opens a stream that ended again, once it has said that it ended', function (
         MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
     ]);
 
-    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger()), 3))->toBe([
+    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere()), 3))->toBe([
         aSummaryAsAWord(theFillingSummary()),
         'closed',
         'healthy, 0 wanting, worst "", {}',
     ])->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
 });
 
-it('resumes a stream it could not read after the last event it carried, and forgets that once let go of', function (): void {
+it('resumes a stream it could not read after the last event it carried, and again once every stream was let go of', function (): void {
     // Only the adapter can be asked this. What the stack said while no stream
-    // was open is heard on the next one, rather than skipped; a screen that
-    // let go of every stream starts again from the start.
+    // was open is heard on the next one, rather than skipped, whichever screen
+    // opens it.
     MockClient::destroyGlobal();
     $stack = MockClient::global([
         MockResponse::make(TheStreamListenedTo::anEvent('dashboard', 'not an envelope')),
         MockResponse::make(''),
         MockResponse::make(''),
     ]);
-    $hearing = new Listeners(new PinnedClients(), new NullLogger());
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
+
+    whatWakesHear($hearing, 2);
+    $hearing->letGo();
+    whatWakesHear($hearing, 1);
+
+    expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1', 'run-1']);
+});
+
+it('opens after where an earlier launch left off, and hears the alerts the stack hands back', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([MockResponse::make(anAlertEvent())]);
+    $leftOff = WhereHearingLeftOffInMemory::nowhere()->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named('run-0'));
+
+    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
+
+    expect(WhereEachOpenResumed::in($stack))->toBe(['run-0'])
+        ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'))])
+        ->and(WhereItResumes::said($leftOff->leftOffAt(TheStreamListenedTo::aStack()->id())))->toBe('after:run-1');
+});
+
+it('notes where a stream got to only when it moved', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
+        MockResponse::make(''),
+    ]);
+    $leftOff = WhereHearingLeftOffInMemory::nowhere();
+
+    whatWakesHear(new Listeners(new PinnedClients(), new NullLogger(), $leftOff), 3);
+
+    expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1'])
+        ->and($leftOff->timesNoted())->toBe(1);
+});
+
+it('notes nothing for an event whose identifier is empty', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(str_replace('id: run-1', 'id: ', anAlertEvent()))]);
+    $leftOff = WhereHearingLeftOffInMemory::nowhere();
+
+    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
+
+    expect($alerts)->toHaveCount(1)
+        ->and($leftOff->timesNoted())->toBe(0);
+});
+
+it('resumes within one screen where the store would not keep where it got to, and from the start once let go of', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(TheStreamListenedTo::anEvent('dashboard', 'not an envelope')),
+        MockResponse::make(''),
+        MockResponse::make(''),
+    ]);
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::refusing());
 
     whatWakesHear($hearing, 2);
     $hearing->letGo();
@@ -471,7 +527,7 @@ it('opens again straight after a stream that ended having said nothing', functio
         MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
     ]);
 
-    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger()), 3))->toBe([
+    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere()), 3))->toBe([
         'nothing',
         'closed',
         'healthy, 0 wanting, worst "", {}',
@@ -487,7 +543,7 @@ it('holds nothing after a summary it could not read, so the next wake opens agai
         MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
     ]);
 
-    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger()), 2))->toBe([
+    expect(whatWakesHear(new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere()), 2))->toBe([
         KindOfObstacle::AnswerCouldNotBeRead->value,
         'healthy, 0 wanting, worst "", {}',
     ]);
@@ -890,7 +946,7 @@ it('skips an alert it cannot read, notes why without what the stack sent, and st
     MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent($changed), anAlertEvent()))]);
     $notes = new NotesKeptInMemory();
 
-    $heard = new Listeners(new PinnedClients(), $notes)->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
+    $heard = new Listeners(new PinnedClients(), $notes, WhereHearingLeftOffInMemory::nowhere())->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
 
     expect(whatWasHeardAsAWord($heard))->toBe('alive')
         ->and(iterator_to_array($heard->theAlerts(), preserve_keys: false))

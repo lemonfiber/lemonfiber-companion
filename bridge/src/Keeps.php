@@ -19,10 +19,9 @@ namespace Lemonfiber\Native;
  * consumes this — which is the ordinary shape rather than two abstractions over
  * one thing.
  *
- * **It exists because four adapters share one store and one of them has to be
- * replaceable.** `PlatformKeychain`, `PlatformStacks`, `PlatformStandings` and
- * `PlatformWorkLeftRunning` all write here, and a development build runs every
- * one of them over a store that touches no device — so the real key separation,
+ * **It exists because every adapter in `vault` shares one store and that store
+ * has to be replaceable.** They all write here, and a development build runs
+ * every one of them over a store that touches no device — so the real key separation,
  * the real JSON and the real re-pairing rule are what a laptop exercises.
  * Substituting below this, at the bridge call itself, is the other way to
  * arrange it and it is wrong here: that seam is global, so a stand-in

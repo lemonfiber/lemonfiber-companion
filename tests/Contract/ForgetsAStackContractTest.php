@@ -8,6 +8,7 @@ use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AGrant;
+use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsAStack;
@@ -49,6 +50,7 @@ use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformPhoneKeysNames;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWhereHearingLeftOff;
 use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Watching\Api\KeepingTheirLanguages;
@@ -67,6 +69,7 @@ use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatIsKeptOfRequests;
@@ -132,6 +135,8 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake work' => WorkLeftRunningInMemory::working(),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::working()),
         'the fake place' => WhereTheOperatorWasInMemory::nowhere(),
+        'the platform place heard to' => new PlatformWhereHearingLeftOff(APlatformStore::working(), new PlatformStacks(APlatformStore::working())),
+        'the fake place heard to' => WhereHearingLeftOffInMemory::nowhere(),
         'the platform grants' => new PlatformGrants(APlatformStore::working()),
         'the fake grants' => GrantsKeptInMemory::working(),
         'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::working()),
@@ -221,6 +226,7 @@ function keepAMarkerFor(ForgetsAStack $keeper, Stack $stack): bool
     $noted = match (true) {
         $keeper instanceof PlatformStandings, $keeper instanceof StandingsInMemory => $keeper->remember($kept, HowItStands::Healthy, Instant::atEpochSeconds(1)),
         $keeper instanceof PlatformWhereTheOperatorWas, $keeper instanceof WhereTheOperatorWasInMemory => $keeper->wasOn($kept, WhichTab::Services),
+        $keeper instanceof PlatformWhereHearingLeftOff, $keeper instanceof WhereHearingLeftOffInMemory => $keeper->heardTo($kept, AnEventHeard::named('run-1')),
         $keeper instanceof PlatformWorkLeftRunning, $keeper instanceof WorkLeftRunningInMemory => $keeper->remember($kept, KindOfWork::Walkthrough, Job::named('a-walk')),
         $keeper instanceof PlatformGrants, $keeper instanceof GrantsKeptInMemory => $keeper->keepTheGrant($kept, TheGrantIsFor::of(Whose::member('ada'), ThisDevice::named('this-device')), AGrant::of(str_repeat('0', 32), Instant::atEpochSeconds(1))),
         $keeper instanceof PlatformPhoneKeysNames, $keeper instanceof PhoneKeysNamesKeptInMemory => $keeper->keepTheName($kept, APhoneKeysName::of('Galaxy A51 · 7f3a')),
@@ -271,6 +277,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform words' => new PlatformStandings(APlatformStore::refusing()),
         'the platform work' => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform place' => new PlatformWhereTheOperatorWas(APlatformStore::refusing()),
+        'the platform place heard to' => new PlatformWhereHearingLeftOff(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing())),
         'the platform grants' => new PlatformGrants(APlatformStore::refusing()),
         'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),

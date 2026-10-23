@@ -30,7 +30,8 @@ requirement = [
   { id = "N4-R22", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
   { id = "N4-R23", state = "done", evidence = ["app-modules/kernel/src/Api/Opening.php", "app-modules/kernel/src/Api/Stacks.php", "tests/Contract/StacksContractTest.php"] },
   { id = "N4-R24", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/Locked.php", "bootstrap/Composition/NativePHP/TheLockIsOnTheGlass.php", "tests/Feature/NothingIsDrawnBehindTheLockTest.php"] },
-  { id = "N4-R25", state = "partial", evidence = ["app-modules/sdk/src/Api/AlertsHeard.php", "app-modules/wayfinding/src/Api/WhatItListensWith.php", "app-modules/device/src/Api/PlatformNotifier.php", "tests/Contract/HearingContractTest.php", "tests/Feature/TheListOfStacksListensTest.php"] },
+  { id = "N4-R25", state = "partial", evidence = ["app-modules/sdk/src/Api/AlertsHeard.php", "app-modules/sdk/src/Internal/TheStreamsHeld.php", "app-modules/vault/src/Api/PlatformWhereHearingLeftOff.php", "app-modules/wayfinding/src/Api/WhatItListensWith.php", "app-modules/device/src/Api/PlatformNotifier.php", "tests/Contract/HearingContractTest.php", "tests/Contract/WhereHearingLeftOffContractTest.php", "tests/Feature/TheListOfStacksListensTest.php"] },
   { id = "N4-R26", state = "open" },
   { id = "N4-R27", state = "partial", evidence = ["app-modules/operator/src/Internal/ChoosesNotifications.php", "lang/en/device.php", "tests/Feature/SettingHowThisPhoneIsSetTest.php"] },
+  { id = "N4-R28", state = "done", evidence = ["app-modules/operator/resources/views/how-this-phone-is-set.blade.php", "lang/en/settings.php", "tests/Feature/SettingHowThisPhoneIsSetTest.php"] },
 ]
