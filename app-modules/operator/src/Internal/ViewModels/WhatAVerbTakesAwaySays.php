@@ -15,9 +15,17 @@ final readonly class WhatAVerbTakesAwaySays
     /**
      * @param string   $said    the catalogue key for the shape this arrived in
      * @param int|null $seconds how long for, where the shape has a length at all
+     * @param string   $first   the catalogue key for a line said before it, or empty
      */
     public function __construct(
         public string $said,
         public ?int $seconds,
+        public string $first = '',
     ) {}
+
+    /** The same line, with another said before it. */
+    public function after(string $first): self
+    {
+        return new self($this->said, $this->seconds, $first);
+    }
 }

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Internal\Costs;
+use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatItTurnedOutToCost;
 
 /**
@@ -23,6 +24,7 @@ function whatAStackReportsItsVerbsCost(array $differently = []): array
             'starting' => ['bound' => 'bounded', 'seconds' => 180],
             'stopping' => ['bound' => 'bounded', 'seconds' => 10],
             'restarting' => ['bound' => 'bounded', 'seconds' => 45],
+            'fetching' => ['bound' => 'bounded', 'seconds' => 1800],
             ...$differently,
         ],
     ];
@@ -67,10 +69,10 @@ it('reads a length for each verb this surface offers', function (): void {
         ->and(howLong($disturbs, WhatToDoWithIt::Restart))->toBe(45);
 });
 
-it('reports nothing for a fetch, apart from any length or wait', function (): void {
-    // The stack reports what starting, stopping and restarting disturb, and no
-    // bound for fetching.
-    expect(howLong(Costs::in(whatAStackReportsItsVerbsCost()), WhatToDoWithIt::Pull))->toBe(-2);
+it('reads what fetching takes away, and a listing that says nothing of it as reporting nothing', function (): void {
+    expect(howLong(Costs::in(whatAStackReportsItsVerbsCost()), WhatToDoWithIt::Pull))->toBe(1800)
+        ->and(whatItCosts(Costs::in(whatAStackReportsItsVerbsCost(['fetching' => ['bound' => 'open-ended', 'until' => 'downloads']])), WhatToDoWithIt::Pull)->said)->toBe('downloads')
+        ->and(howLong(WhatAMachineRuns::whatTheVerbsCost(), WhatToDoWithIt::Pull))->toBe(-2);
 });
 
 it('reads one with nothing bounding it as what it is waiting for', function (): void {

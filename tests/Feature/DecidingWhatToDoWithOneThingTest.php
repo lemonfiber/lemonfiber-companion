@@ -385,7 +385,8 @@ it('asks before fetching a form\'s images, saying it may take long and use the l
 
     expect($supervising->whatItWasToldToDo())->toBe([])
         ->and($screen->asking()?->doing())->toBe(WhatToDoWithIt::Pull)
-        ->and($screen->whatItTakesAway()?->said)->toBe('health.fetch_may_take_long')
+        ->and($screen->whatItTakesAway()?->first)->toBe('health.fetch_may_take_long')
+        ->and($screen->whatItTakesAway()?->said)->toBe('health.fetch_unbounded')
         ->and($screen->whatItTakesAway()?->seconds)->toBeNull();
 
     $screen->agree();
@@ -765,4 +766,27 @@ it('says a service that ended stopped with an error, and leaves its exit code fo
         ->and($screen->thing()->service?->carriedToTheLogs())->toBe(['exited' => '137', 'called' => 'Sonarr'])
         ->and($drawn)->toContain(__('health.it_stopped_with_an_error'))
         ->and(implode("\n", $drawn))->not->toContain('137');
+});
+
+it('says the bound the stack reports for a fetch, after saying it may take long and use the line', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings(WhatAMachineRuns::whatTheVerbsCostAFetchBounded()))->declaring(WhatAMachineRuns::libraryAndFull());
+    $screen = everythingRead(theThingScreen($supervising, 'library'));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Pull->value);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->whatItTakesAway()?->first)->toBe('health.fetch_may_take_long')
+        ->and($screen->whatItTakesAway()?->said)->toBe('health.for_at_most')
+        ->and($screen->whatItTakesAway()?->seconds)->toBe(1800)
+        ->and($drawn)->toContain(__('health.fetch_may_take_long'), __('health.for_at_most', ['seconds' => 1800]))
+        ->and(array_values(array_filter($drawn, static fn(string $line): bool => in_array($line, [__('health.fetch_may_take_long'), __('health.for_at_most', ['seconds' => 1800])], strict: true))))
+        ->toBe([__('health.fetch_may_take_long'), __('health.for_at_most', ['seconds' => 1800])]);
+});
+
+it('says no line before what a verb other than a fetch takes away', function (): void {
+    $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+    expect($screen->whatItTakesAway()?->first)->toBe('');
 });

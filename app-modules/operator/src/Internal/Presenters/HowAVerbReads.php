@@ -22,19 +22,22 @@ final readonly class HowAVerbReads
     /**
      * What this verb takes away on the reading, as a line.
      *
-     * A fetch has no bound on the wire, so its line is the one that says it
-     * may take long and use a lot of the line, with no figure of this app's own.
+     * A fetch is said first to take long and use a lot of the line, with no
+     * figure of this app's own, and then the bound the stack reported for it,
+     * or that it reported none.
      */
     public function against(Disturbances $disturbs, WhatToDoWithIt $doing): WhatAVerbTakesAwaySays
     {
-        return $disturbs->forThe(
+        $said = $disturbs->forThe(
             $doing,
             said: $this->of(...),
             unreported: static fn(): WhatAVerbTakesAwaySays => new WhatAVerbTakesAwaySays(
-                said: 'health.fetch_may_take_long',
+                said: 'health.fetch_unbounded',
                 seconds: null,
             ),
         );
+
+        return $doing === WhatToDoWithIt::Pull ? $said->after('health.fetch_may_take_long') : $said;
     }
 
     public function of(WhatItTakesAway $takes): WhatAVerbTakesAwaySays

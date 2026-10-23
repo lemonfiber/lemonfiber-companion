@@ -387,7 +387,8 @@ return [
     // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'About to change :what',
     'about_to_form' => 'This is every service in that form, not just one of them.',
-    'fetch_may_take_long' => 'Fetching can take a long time and can use a lot of your line. The stack says nothing beforehand about how long or how much, so nothing is guessed here.',
+    'fetch_may_take_long' => 'Fetching can take a long time and can use a lot of your line. How much of your line, the stack does not say beforehand, so nothing is guessed here.',
+    'fetch_unbounded' => 'The stack says nothing beforehand about how long, so nothing is guessed here.',
     'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
     'depends_on_it' => 'Depends on it',
     'nothing_leans_on_it' => 'Nothing else in the stack depends on it.',

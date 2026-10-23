@@ -664,12 +664,5 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'carry. Whether they are drawn with lemonfiber\'s own, and how without a switch, is a decision for '
                 . 'the screen not yet taken.',
         ],
-        [
-            'path' => 'StatusEnvelope.disturbs.fetching',
-            'because' => 'What fetching a form\'s images would take away. `N2-R24` has the app say before a fetch that it '
-                . 'may take long and use a lot of the line, under `N2-R8`\'s rule that a disruptive action states '
-                . 'the bound the stack reported. Unread today because the fetch states the first two in the app\'s '
-                . 'catalogue words and not yet this bound.',
-        ],
     ];
 }
