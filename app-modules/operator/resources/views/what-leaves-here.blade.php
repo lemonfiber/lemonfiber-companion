@@ -32,6 +32,21 @@
         <x-design::body>{{ __('stacks.outbound.ours.none') }}</x-design::body>
     @endforelse
 
+    {{-- What lemonfiber sends for an installed plugin, under a heading of
+         its own: neither lemonfiber's own nor a service's, and each card
+         names the plugin that asked for it. --}}
+    <x-design::heading>{{ __('stacks.outbound.on_behalf.heading') }}</x-design::heading>
+
+    @forelse ($this->answer()->onBehalf as $request)
+        <x-design::card>
+            <x-design::strong>{{ __('stacks.outbound.on_behalf.for', ['plugin' => $request->plugin]) }}</x-design::strong>
+            <x-design::note>{{ $request->purpose }}</x-design::note>
+            <x-design::note>{{ __('stacks.outbound.on_behalf.goes_to', ['destination' => $request->destination]) }}</x-design::note>
+        </x-design::card>
+    @empty
+        <x-design::body>{{ __('stacks.outbound.on_behalf.none') }}</x-design::body>
+    @endforelse
+
     {{-- What the services send, under a heading of their own and never mixed
          into the list above: none of these is lemonfiber's doing, and none is
          switched off from here. --}}

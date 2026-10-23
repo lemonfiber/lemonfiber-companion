@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use LogicException;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhetherItIsAllowed;
@@ -66,16 +67,33 @@ function oneOfTheirRequests(string $service = 'sonarr'): array
 }
 
 /**
- * Both lists.
+ * One request made on a plugin's behalf, with every part the reader insists on.
+ *
+ * @return array<string, mixed>
+ */
+function oneRequestOnAPluginsBehalf(string $destination = 'plex.tv'): array
+{
+    return ['plugin' => 'plex', 'destination' => $destination, 'purpose' => 'To claim the media server'];
+}
+
+/**
+ * All three lists.
  *
  * @param list<mixed> $ours
  * @param list<mixed> $theirs
+ * @param list<mixed> $onBehalf
  *
  * @return Envelope<mixed>
  */
-function whatLeavesAs(array $ours, array $theirs): Envelope
+function whatLeavesAs(array $ours, array $theirs, array $onBehalf = []): Envelope
 {
-    return outboundSaying(['ours' => $ours, 'theirs' => $theirs]);
+    return outboundSaying(['ours' => $ours, 'on_behalf' => $onBehalf, 'theirs' => $theirs]);
+}
+
+/** One request made for a plugin, as one line. */
+function oneLineForOnBehalf(ARequestOnAPluginsBehalf $request): string
+{
+    return sprintf('%s/%s/%s', $request->plugin()->named(), $request->destination(), $request->purpose());
 }
 
 /** The first of lemonfiber's requests an answer holds, failing where it holds none. */
@@ -122,12 +140,16 @@ function oneLineForTheirs(ARequestOfTheirs $request): string
     )->said);
 }
 
-it('reads lemonfiber\'s requests and its services\' as two lists', function (): void {
-    $leaving = WhatLeaves::in(whatLeavesAs([oneOfOurRequests()], [oneOfTheirRequests()]));
+it('reads lemonfiber\'s requests, those it makes for a plugin, and its services\' as three lists', function (): void {
+    $leaving = WhatLeaves::in(whatLeavesAs([oneOfOurRequests()], [oneOfTheirRequests()], [oneRequestOnAPluginsBehalf(), oneRequestOnAPluginsBehalf('metadata.provider.plex.tv')]));
 
     expect(array_map(oneLineFor(...), iterator_to_array($leaving->ours(), preserve_keys: false)))->toBe([
         'updates/api.github.com/To say when a newer lemonfiber is out/Nothing but the request itself/allowed/updates.check/Nobody hears that a version came out',
-    ])->and(array_map(oneLineForTheirs(...), iterator_to_array($leaving->theirs(), preserve_keys: false)))->toBe(['sonarr/thetvdb.com/Series metadata']);
+    ])->and(array_map(oneLineForTheirs(...), iterator_to_array($leaving->theirs(), preserve_keys: false)))->toBe(['sonarr/thetvdb.com/Series metadata'])
+        ->and(array_map(oneLineForOnBehalf(...), iterator_to_array($leaving->onBehalf(), preserve_keys: false)))->toBe([
+            'plex/plex.tv/To claim the media server',
+            'plex/metadata.provider.plex.tv/To claim the media server',
+        ]);
 });
 
 it('reads a request switched off, and one configured to reach nothing, as the two facts they are', function (): void {
@@ -160,19 +182,21 @@ it('reads every request lemonfiber can make', function (WhatLemonfiberAsksFor $a
 it('a machine sending nothing is an answer', function (): void {
     $leaving = WhatLeaves::in(whatLeavesAs([], []));
 
-    expect($leaving->ours())->toHaveCount(0)->and($leaving->theirs())->toHaveCount(0);
+    expect($leaving->ours())->toHaveCount(0)->and($leaving->onBehalf())->toHaveCount(0)->and($leaving->theirs())->toHaveCount(0);
 });
 
-it('refuses a payload missing either list, or the data itself', function (): void {
-    expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(outboundSaying(['theirs' => []])))->toThrow(OutboundIsUnreadable::class, '`ours`')
-        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(outboundSaying(['ours' => [], 'theirs' => 'some'])))->toThrow(OutboundIsUnreadable::class, '`theirs`')
+it('refuses a payload missing any of the lists, or the data itself', function (): void {
+    expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(outboundSaying(['on_behalf' => [], 'theirs' => []])))->toThrow(OutboundIsUnreadable::class, '`ours`')
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(outboundSaying(['ours' => [], 'theirs' => []])))->toThrow(OutboundIsUnreadable::class, '`on_behalf`')
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(outboundSaying(['ours' => [], 'on_behalf' => [], 'theirs' => 'some'])))->toThrow(OutboundIsUnreadable::class, '`theirs`')
         ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(new Envelope(1, 'outbound', 'nothing')))->toThrow(OutboundIsUnreadable::class, '`data`');
 });
 
-it('refuses a row that is not a connection, in either list, rather than dropping it', function (): void {
+it('refuses a row that is not a connection, in any list, rather than dropping it', function (): void {
     expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([oneOfOurRequests(), 'x'], [])))->toThrow(OutboundIsUnreadable::class, 'Entry 1 of `ours`')
         ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], ['x'])))->toThrow(OutboundIsUnreadable::class, 'Entry 0 of `theirs`')
-        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [oneOfTheirRequests(), oneOfTheirRequests('radarr'), 'x'])))->toThrow(OutboundIsUnreadable::class, 'Entry 2 of `theirs`');
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [oneOfTheirRequests(), oneOfTheirRequests('radarr'), 'x'])))->toThrow(OutboundIsUnreadable::class, 'Entry 2 of `theirs`')
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [], [oneRequestOnAPluginsBehalf(), 'x'])))->toThrow(OutboundIsUnreadable::class, 'Entry 1 of `on_behalf`');
 });
 
 it('refuses one of lemonfiber\'s requests missing any word, naming which', function (string $field): void {
@@ -220,8 +244,20 @@ it('refuses a recorded service whose destination is not text', function (): void
         ->toThrow(OutboundIsUnreadable::class, '`destination`');
 });
 
+it('refuses a request made for a plugin missing any word, or with one blank or not text, naming which', function (string $field, mixed $said): void {
+    $row = oneRequestOnAPluginsBehalf();
+    $row[$field] = $said;
+    $missing = oneRequestOnAPluginsBehalf();
+    unset($missing[$field]);
+
+    expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [], [oneRequestOnAPluginsBehalf(), $row])))
+        ->toThrow(OutboundIsUnreadable::class, sprintf('Entry 1 of `on_behalf` in the outbound envelope has no readable `%s`', $field))
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [], [$missing])))
+        ->toThrow(OutboundIsUnreadable::class, sprintf('Entry 0 of `on_behalf` in the outbound envelope has no readable `%s`', $field));
+})->with(['plugin', 'destination', 'purpose'])->with([['  '], [null], [3]]);
+
 it('judges the payload these cases are built on against the contract', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()], 'on_behalf' => []]]))
+    expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()], 'on_behalf' => [oneRequestOnAPluginsBehalf()]]]))
         ->toBe([]);
 });
 

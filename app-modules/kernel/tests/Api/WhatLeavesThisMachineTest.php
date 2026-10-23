@@ -8,11 +8,14 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OurRequests;
+use Modules\Kernel\Api\RequestsOnAPluginsBehalf;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheirRequests;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
@@ -49,19 +52,21 @@ function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
     )->said;
 }
 
-it('keeps lemonfiber\'s requests and its services\' apart', function (): void {
+it('keeps lemonfiber\'s requests, those it makes for a plugin, and its services\' apart', function (): void {
     $leaving = WhatLeavesThisMachine::of(
         OurRequests::of(aRequestOfOursAboutImages()),
+        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server')),
         TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()), ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled())),
     );
 
     expect($leaving->ours())->toHaveCount(1)
+        ->and($leaving->onBehalf())->toHaveCount(1)
         ->and($leaving->theirs())->toHaveCount(2)
         ->and(iterator_to_array($leaving->theirs(), preserve_keys: false)[0]->service()->named())->toBe('my-fork');
 });
 
 it('nothing leaving is an answer, and a stack that could not be asked is not', function (): void {
-    expect(whatWasFoundLeaving(WhatWasFoundLeaving::leaving(WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of()))))->toBe('leaving:0/0')
+    expect(whatWasFoundLeaving(WhatWasFoundLeaving::leaving(WhatLeavesThisMachine::of(OurRequests::of(), RequestsOnAPluginsBehalf::of(), TheirRequests::of()))))->toBe('leaving:0/0')
         ->and(whatWasFoundLeaving(WhatWasFoundLeaving::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

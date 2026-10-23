@@ -280,8 +280,9 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // Everything that leaves the machine. Its own screen, because what
             // it answers is a privacy question asked apart from the others,
-            // and it keeps lemonfiber's connections and the services' in two
-            // lists that no other screen would have room to keep apart.
+            // and it keeps lemonfiber's connections, those it makes for a
+            // plugin, and the services' in three lists that no other screen
+            // would have room to keep apart.
             Router::native(AStacksScreen::Leaving->value, WhatLeavesHere::class);
 
             // What the operator will be told about. Its own screen, because

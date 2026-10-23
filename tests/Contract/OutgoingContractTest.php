@@ -3,14 +3,17 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OurRequests;
 use Modules\Kernel\Api\Outgoing;
+use Modules\Kernel\Api\RequestsOnAPluginsBehalf;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -60,6 +63,10 @@ function theSameConnections(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Registry, WhereItGoes::to('ghcr.io', 'lscr.io'), 'To fetch the images the stack runs', 'The name and version of each image', WhetherItIsAllowed::Allowed, 'registry.pull', 'No service can be installed or updated'),
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
+        RequestsOnAPluginsBehalf::of(
+            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server'),
+            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'metadata.provider.plex.tv', 'To match what the library holds'),
+        ),
         TheirRequests::of(
             ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
             ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own', WhoPutItThere::bundled()),
@@ -88,7 +95,10 @@ function whatAStackSaysLeavesIt(string $reachOfTheFirst = 'registry'): array
                 ['service' => 'gluetun', 'destination' => '', 'purpose' => 'Nothing of its own', 'recorded' => true, 'origin' => ['origin' => 'bundled']],
                 ['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record of what this service reaches', 'recorded' => false, 'origin' => ['named' => 'my-plugin', 'origin' => 'plugin']],
             ],
-            'on_behalf' => [],
+            'on_behalf' => [
+                ['plugin' => 'plex', 'destination' => 'plex.tv', 'purpose' => 'To claim the media server'],
+                ['plugin' => 'plex', 'destination' => 'metadata.provider.plex.tv', 'purpose' => 'To match what the library holds'],
+            ],
         ],
     ];
 }
@@ -134,6 +144,12 @@ function everythingThatLeaves(Outgoing $outgoing): string
                 $ours[] = sprintf('%s[%s]%s/%s/%s/%s/%s', $request->asksFor()->value, implode(',', iterator_to_array($request->destinations(), preserve_keys: false)), $request->purpose(), $request->sends(), $request->allowed()->value, $request->switch(), $request->cost());
             }
 
+            $onBehalf = [];
+
+            foreach ($leaving->onBehalf() as $request) {
+                $onBehalf[] = sprintf('%s:%s/%s', $request->plugin()->named(), $request->destination(), $request->purpose());
+            }
+
             $theirs = [];
 
             foreach ($leaving->theirs() as $request) {
@@ -143,30 +159,31 @@ function everythingThatLeaves(Outgoing $outgoing): string
                 )->said);
             }
 
-            return new TheWordCarriedOut(sprintf('ours: %s || theirs: %s', implode(' | ', $ours), implode(' | ', $theirs)));
+            return new TheWordCarriedOut(sprintf('ours: %s || on behalf: %s || theirs: %s', implode(' | ', $ours), implode(' | ', $onBehalf), implode(' | ', $theirs)));
         },
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
 }
 
-it('comes away with lemonfiber\'s requests and its services\', apart', function (): void {
+it('comes away with lemonfiber\'s requests, those it makes for a plugin, and its services\', apart', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSaysLeavesIt()));
 
     foreach (everyWayOfAskingWhatLeaves($answered) as $which => $make) {
         expect(everythingThatLeaves($make()))->toBe(
             'ours: registry[ghcr.io,lscr.io]To fetch the images the stack runs/The name and version of each image/allowed/registry.pull/No service can be installed or updated'
             . ' | updates[]To say when a newer lemonfiber is out/Nothing but the request itself/switched_off/updates.check/Nobody hears that a version came out'
+            . ' || on behalf: plex:plex.tv/To claim the media server | plex:metadata.provider.plex.tv/To match what the library holds'
             . ' || theirs: sonarr:thetvdb.com/Series metadata | gluetun:/Nothing of its own | my-fork:unrecorded',
             $which,
         );
     }
 });
 
-it('a stack sending nothing answers with two empty lists, not an obstacle', function (): void {
+it('a stack sending nothing answers with three empty lists, not an obstacle', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackSendingNothingSays()));
 
-    foreach (everyWayOfAskingWhatLeaves($answered, leaving: WhatLeavesThisMachine::of(OurRequests::of(), TheirRequests::of())) as $which => $make) {
-        expect(everythingThatLeaves($make()))->toBe('ours:  || theirs: ', $which);
+    foreach (everyWayOfAskingWhatLeaves($answered, leaving: WhatLeavesThisMachine::of(OurRequests::of(), RequestsOnAPluginsBehalf::of(), TheirRequests::of())) as $which => $make) {
+        expect(everythingThatLeaves($make()))->toBe('ours:  || on behalf:  || theirs: ', $which);
     }
 });
 

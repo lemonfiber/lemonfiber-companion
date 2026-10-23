@@ -26,10 +26,19 @@ enum OutboundField: string implements NamesAWireField
     case Theirs = 'theirs';
 
     /**
+     * What lemonfiber sends on an installed plugin's behalf, attributed to it.
+     *
+     * A third list on the wire and on every screen, merged into neither of the
+     * other two.
+     */
+    case OnBehalf = 'on_behalf';
+
+    /**
      * Where a request goes.
      *
-     * A list on lemonfiber's own requests and one string on a service's —
-     * one case for both, because it is one word on the wire naming one idea.
+     * A list on lemonfiber's own requests and one string on a service's or a
+     * plugin's — one case for all, because it is one word on the wire naming
+     * one idea.
      */
     case Destination = 'destination';
 

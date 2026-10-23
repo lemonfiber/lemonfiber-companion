@@ -11,9 +11,12 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\OutboundEnvelope;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\OurRequests;
+use Modules\Kernel\Api\RequestsOnAPluginsBehalf;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheirRequests;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
@@ -34,9 +37,10 @@ use function trim;
  * state, reading through {@see WireField}, and refusing rather than
  * salvaging, by position, anything the kernel would refuse.
  *
- * **The two lists are read apart and stay apart.** `ours` becomes
- * {@see ARequestOfOurs} and `theirs` becomes {@see ARequestOfTheirs}, and
- * nothing here builds a list of both.
+ * **The three lists are read apart and stay apart.** `ours` becomes
+ * {@see ARequestOfOurs}, `on_behalf` becomes {@see ARequestOnAPluginsBehalf}
+ * and `theirs` becomes {@see ARequestOfTheirs}, and nothing here builds a list
+ * of more than one.
  *
  * **An unrecorded service's destination and purpose are not read.** The stack
  * fills them with words of its own where it has no record, and `recorded` is
@@ -48,7 +52,7 @@ use function trim;
 final readonly class WhatLeaves
 {
     /**
-     * Everything that leaves a machine, in two lists.
+     * Everything that leaves a machine, in three lists.
      *
      * @param Envelope<mixed> $envelope the `outbound` envelope, as the client returned it
      */
@@ -60,7 +64,11 @@ final readonly class WhatLeaves
             throw OutboundIsUnreadable::missing(WireField::Data);
         }
 
-        return WhatLeavesThisMachine::of(OurRequests::of(...self::ours($data)), TheirRequests::of(...self::theirs($data)));
+        return WhatLeavesThisMachine::of(
+            OurRequests::of(...self::ours($data)),
+            RequestsOnAPluginsBehalf::of(...self::onBehalf($data)),
+            TheirRequests::of(...self::theirs($data)),
+        );
     }
 
     /**
@@ -99,6 +107,33 @@ final readonly class WhatLeaves
                 WhetherItIsAllowed::said(allowed: self::flag($row, WireField::Ours, OutboundField::Allowed, $position)),
                 self::text($row, WireField::Ours, OutboundField::Switch, $position),
                 self::text($row, WireField::Ours, WireField::Cost, $position),
+            );
+            $position++;
+        }
+
+        return $found;
+    }
+
+    /**
+     * Every request lemonfiber makes on an installed plugin's behalf.
+     *
+     * @param  array<mixed>                   $data
+     * @return list<ARequestOnAPluginsBehalf>
+     */
+    private static function onBehalf(array $data): array
+    {
+        $found = [];
+        $position = 0;
+
+        foreach (self::rows($data, OutboundField::OnBehalf) as $row) {
+            if (! is_array($row)) {
+                throw OutboundIsUnreadable::row(OutboundField::OnBehalf, $position);
+            }
+
+            $found[] = ARequestOnAPluginsBehalf::declaredBy(
+                APluginId::called(self::text($row, OutboundField::OnBehalf, WireField::Plugin, $position)),
+                self::text($row, OutboundField::OnBehalf, OutboundField::Destination, $position),
+                self::text($row, OutboundField::OnBehalf, WireField::Purpose, $position),
             );
             $position++;
         }

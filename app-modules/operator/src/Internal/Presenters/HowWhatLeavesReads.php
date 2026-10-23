@@ -6,11 +6,13 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
+use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\OneOfOurRequests;
 use Modules\Operator\Internal\ViewModels\OneOfTheirRequests;
+use Modules\Operator\Internal\ViewModels\OneRequestOnAPluginsBehalf;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
 
 /**
@@ -32,7 +34,7 @@ final readonly class HowWhatLeavesReads
     /** This device no longer holds a session for that stack. */
     public function signedOut(): WhatLeavesTurnedOutToBe
     {
-        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), ours: [], theirs: []);
+        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), ours: [], onBehalf: [], theirs: []);
     }
 
     /** The stack answered, and this is what leaves it. */
@@ -44,19 +46,25 @@ final readonly class HowWhatLeavesReads
             $ours[] = $this->ours($request);
         }
 
+        $onBehalf = [];
+
+        foreach ($leaving->onBehalf() as $request) {
+            $onBehalf[] = $this->onBehalf($request);
+        }
+
         $theirs = [];
 
         foreach ($leaving->theirs() as $request) {
             $theirs[] = $this->theirs($request);
         }
 
-        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::itCameBack(), ours: $ours, theirs: $theirs);
+        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::itCameBack(), ours: $ours, onBehalf: $onBehalf, theirs: $theirs);
     }
 
     /** It did not, and this is what the operator met. */
     public function met(Obstacle $why): WhatLeavesTurnedOutToBe
     {
-        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), ours: [], theirs: []);
+        return new WhatLeavesTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), ours: [], onBehalf: [], theirs: []);
     }
 
     /** One of lemonfiber's requests, as the row that draws it. */
@@ -91,6 +99,16 @@ final readonly class HowWhatLeavesReads
         }
 
         return $found;
+    }
+
+    /** One request made for a plugin, as the row that draws it. */
+    private function onBehalf(ARequestOnAPluginsBehalf $request): OneRequestOnAPluginsBehalf
+    {
+        return new OneRequestOnAPluginsBehalf(
+            plugin: $request->plugin()->named(),
+            destination: $request->destination(),
+            purpose: $request->purpose(),
+        );
     }
 
     /** One service's row, on the sentence its arm calls for. */

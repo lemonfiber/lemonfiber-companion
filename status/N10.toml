@@ -18,4 +18,5 @@ requirement = [
   { id = "N10-R10", state = "done", evidence = ["app-modules/kernel/src/Api/HowItIsHosted.php", "app-modules/kernel/src/Api/Unattended.php", "tests/Arch/EveryDerivedKeyResolvesTest.php"] },
   { id = "N10-R11", state = "done", evidence = ["app-modules/kernel/src/Api/Telling.php", "app-modules/operator/src/Internal/Screens/WhatYouAreToldAbout.php", "app-modules/connection/tests/Api/IntroducingTest.php", "app-modules/kernel/tests/Api/PairingTest.php"] },
   { id = "N10-R12", state = "done", evidence = ["app-modules/kernel/src/Api/WhatWasFoundLeaving.php", "app-modules/sdk/src/Api/WhatLeaves.php", "app-modules/kernel/tests/Api/WhatLeavesThisMachineTest.php", "app-modules/kernel/tests/Api/WhatTheAlertsWereTest.php"] },
+  { id = "N10-R13", state = "done", evidence = ["app-modules/kernel/src/Api/ARequestOnAPluginsBehalf.php", "app-modules/kernel/src/Api/RequestsOnAPluginsBehalf.php", "app-modules/sdk/tests/Api/WhatLeavesTest.php", "app-modules/operator/resources/views/what-leaves-here.blade.php", "tests/Feature/SeeingWhatLeavesTest.php"] },
 ]

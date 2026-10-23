@@ -46,7 +46,7 @@ return [
         'nothing_declared' => 'This machine declares no services',
     ],
 
-    // Everything that leaves the machine, in two lists that are never merged.
+    // Everything that leaves the machine, in three lists that are never merged.
     'outbound' => [
         // The road in, naming the question rather than the mechanism.
         // Each of lemonfiber's own requests, by what it asks for.
@@ -76,6 +76,12 @@ return [
             // On every row, because turning something off is the decision.
             'cost' => 'Turning it off: :cost',
             'none' => 'lemonfiber itself sends nothing',
+        ],
+        'on_behalf' => [
+            'heading' => 'On a plugin\'s behalf',
+            'for' => 'For the plugin :plugin',
+            'goes_to' => 'To :destination',
+            'none' => 'lemonfiber sends nothing on a plugin\'s behalf',
         ],
         'theirs' => [
             'heading' => 'What the services send',

@@ -9,7 +9,8 @@ namespace Modules\Kernel\Api;
  *
  * The question somebody asks when they want to know what their machine says to
  * the world while nobody is watching: every request lemonfiber makes on its
- * own account, and what each of its services reaches.
+ * own account, those it makes on an installed plugin's behalf, and what each
+ * of its services reaches.
  *
  * **It takes a stack and a session rather than a client**, for the reason
  * {@see Asking} gives. **It reads and does not switch anything off**: turning
