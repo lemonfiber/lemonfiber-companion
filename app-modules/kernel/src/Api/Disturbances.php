@@ -26,6 +26,7 @@ final readonly class Disturbances
         private WhatItTakesAway $starting,
         private WhatItTakesAway $stopping,
         private WhatItTakesAway $restarting,
+        private ?WhatItTakesAway $fetching,
     ) {}
 
     public static function of(
@@ -33,7 +34,18 @@ final readonly class Disturbances
         WhatItTakesAway $stopping,
         WhatItTakesAway $restarting,
     ): self {
-        return new self($starting, $stopping, $restarting);
+        return new self($starting, $stopping, $restarting, null);
+    }
+
+    /**
+     * The same, with what fetching a form's images takes away, as the stack reported it.
+     *
+     * Added as the reading adds it: a listing the phone kept says nothing of a
+     * fetch, and a kept listing is nothing to confirm a fetch on.
+     */
+    public function whileFetching(WhatItTakesAway $fetching): self
+    {
+        return new self($this->starting, $this->stopping, $this->restarting, $fetching);
     }
 
     /**
@@ -43,10 +55,10 @@ final readonly class Disturbances
      * {@see WhatToDoWithIt} stops compiling here until somebody has said what
      * it costs — which is the same refusal the stack makes on its own side.
      *
-     * A fetch takes the second arm: the stack reports what starting, stopping
-     * and restarting disturb, and no bound for fetching. Two arms rather than
-     * a nullable answer, so the caller says what a missing bound means instead
-     * of a screen drawing it as free.
+     * A fetch takes the second arm where nothing reported what fetching takes
+     * away, as in a listing the phone kept. Two arms rather than a nullable
+     * answer, so the caller says what a missing bound means instead of a
+     * screen drawing it as free.
      *
      * @template TSaid of object
      * @template TNothing of object
@@ -62,7 +74,7 @@ final readonly class Disturbances
             WhatToDoWithIt::Start => $said($this->starting),
             WhatToDoWithIt::Stop => $said($this->stopping),
             WhatToDoWithIt::Restart => $said($this->restarting),
-            WhatToDoWithIt::Pull => $unreported(),
+            WhatToDoWithIt::Pull => $this->fetching instanceof WhatItTakesAway ? $said($this->fetching) : $unreported(),
         };
     }
 }

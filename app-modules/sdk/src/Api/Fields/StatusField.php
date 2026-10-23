@@ -41,4 +41,7 @@ enum StatusField: string implements NamesAWireField
 
     /** Restarting services. */
     case Restarting = 'restarting';
+
+    /** Fetching a form's images. */
+    case Fetching = 'fetching';
 }

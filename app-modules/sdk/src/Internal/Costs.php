@@ -54,7 +54,7 @@ final readonly class Costs
             self::takenAway($said, StatusField::Starting),
             self::takenAway($said, StatusField::Stopping),
             self::takenAway($said, StatusField::Restarting),
-        );
+        )->whileFetching(self::takenAway($said, StatusField::Fetching));
     }
 
     /**

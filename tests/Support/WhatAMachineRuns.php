@@ -36,7 +36,7 @@ use function ucfirst;
  */
 final readonly class WhatAMachineRuns
 {
-    /** What a stack reports its verbs cost. */
+    /** What a stack reports its verbs cost, with nothing said of a fetch, as in a listing the phone kept. */
     public static function whatTheVerbsCost(): Disturbances
     {
         return Disturbances::of(
@@ -44,6 +44,12 @@ final readonly class WhatAMachineRuns
             stopping: WhatItTakesAway::atMost(10),
             restarting: WhatItTakesAway::atMost(180),
         );
+    }
+
+    /** What a stack reports its verbs cost, a fetch bounded too. */
+    public static function whatTheVerbsCostAFetchBounded(): Disturbances
+    {
+        return self::whatTheVerbsCost()->whileFetching(WhatItTakesAway::atMost(1800));
     }
 
     /** One service, with whatever a case is about changed. */
@@ -68,11 +74,11 @@ final readonly class WhatAMachineRuns
         return Forms::these(Form::called('library'), Form::called('full'));
     }
 
-    public static function twoThings(): Daemons
+    public static function twoThings(?Disturbances $disturbs = null): Daemons
     {
         return Daemons::of(
             HowTheStackIsRunning::Active,
-            self::whatTheVerbsCost(),
+            $disturbs ?? self::whatTheVerbsCost(),
             self::aService('sonarr', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
             self::aService('jellyfin'),
         );

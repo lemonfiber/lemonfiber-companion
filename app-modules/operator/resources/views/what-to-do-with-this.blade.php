@@ -54,6 +54,9 @@
          while the listing drawn is one the phone kept: the length is the
          fresh listing's to state. --}}
     @if ($this->whatItTakesAway() !== null)
+        @if ($this->whatItTakesAway()->first !== '')
+            <x-design::note>{{ __($this->whatItTakesAway()->first) }}</x-design::note>
+        @endif
         <x-design::note>{{ __($this->whatItTakesAway()->said, ['seconds' => $this->whatItTakesAway()->seconds]) }}</x-design::note>
     @endif
 
