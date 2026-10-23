@@ -241,6 +241,16 @@ enum Call: string
     case ArtworkLetGo = 'Lemonfiber.Artwork.LetGo';
 
     /**
+     * Ask the platform to wake this app from time to time while it is away, and answer whether it took the request.
+     *
+     * A wake runs the console command that hears each stack; it carries nothing of its own.
+     */
+    case WakesAsk = 'Lemonfiber.Wakes.Ask';
+
+    /** Stop asking, and take back any wake the platform still holds. */
+    case WakesStop = 'Lemonfiber.Wakes.Stop';
+
+    /**
      * The payload of a call that carries nothing.
      *
      * On a handset `nativephp_call` is a C extension that takes exactly two

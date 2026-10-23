@@ -1,7 +1,7 @@
 package app.lemonfiber.native
 
+import android.content.Context
 import android.util.Log
-import androidx.fragment.app.FragmentActivity
 import com.nativephp.mobile.bridge.BridgeFunction
 
 /**
@@ -23,11 +23,11 @@ public object LocalNetworkFunctions {
     /**
      * Answer whether the platform refuses this app the way to one address.
      *
-     * The activity is what the plugin's registration hands every function, and
+     * The context is what the plugin's registration hands every function, and
      * this one has no use for it: there is nothing on this platform to ask.
      */
     public class Probe(
-        @Suppress("UnusedPrivateProperty") private val activity: FragmentActivity,
+        @Suppress("UnusedPrivateProperty") private val context: Context,
     ) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             val said = LocalNetworkRule.UNASKED.said

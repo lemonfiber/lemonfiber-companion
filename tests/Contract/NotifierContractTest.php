@@ -37,6 +37,7 @@ use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\WakesInMemory;
 
 // The Notifier contract, run against the adapter and against the fake.
 //
@@ -113,7 +114,7 @@ function keptToTheSwitch(Notifier $within, Notifying $notifying): NotifyingOnlyW
     $kept = ConnectionSettingsInMemory::empty();
     $seal = ASealInMemory::working();
     $clock = FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT));
-    $switch = new TurningNotificationsOn($seal, $kept, ANotifierInMemory::allowed(), $clock);
+    $switch = new TurningNotificationsOn($seal, $kept, ANotifierInMemory::allowed(), $clock, WakesInMemory::thatWake());
 
     $notifying === Notifying::On ? $switch->turnOn() : $switch->turnOff();
 

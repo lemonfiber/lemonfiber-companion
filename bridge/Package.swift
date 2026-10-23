@@ -43,6 +43,7 @@ let package = Package(
                 "ArtworkImages.swift",
                 "ArtworkFunctions.swift",
                 "PhoneKeyFunctions.swift",
+                "WakeFunctions.swift",
             ]
         ),
         .testTarget(
@@ -104,6 +105,11 @@ let package = Package(
             name: "LinkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LinkRuleTests"
+        ),
+        .testTarget(
+            name: "WakeRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/WakeRuleTests"
         ),
         .testTarget(
             name: "LocalNetworkRuleTests",

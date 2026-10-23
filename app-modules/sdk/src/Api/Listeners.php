@@ -100,10 +100,11 @@ use Psr\Log\LoggerInterface;
 final class Listeners implements Hearing
 {
     /**
-     * How long a read may wait for bytes that have not arrived, in milliseconds.
+     * How long a read may wait for bytes that have not arrived, in milliseconds, while a screen holds the stream.
      *
      * The least the SDK accepts, because the wait for the next event belongs
-     * between a screen's wakes and not inside one.
+     * between a screen's wakes and not inside one. Work with no screen, such
+     * as a wake while the app is away, is handed a longer wait.
      */
     public const int NO_LONGER_THAN_MS = 1;
 
@@ -112,9 +113,10 @@ final class Listeners implements Hearing
 
     private readonly TheStreamsHeld $streams;
 
-    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes, WhereHearingLeftOff $leftOff)
+    /** @param int $noLongerThanMs how long each read may wait for bytes that have not arrived, in milliseconds */
+    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes, WhereHearingLeftOff $leftOff, int $noLongerThanMs = self::NO_LONGER_THAN_MS)
     {
-        $this->streams = new TheStreamsHeld($clients, $leftOff);
+        $this->streams = new TheStreamsHeld($clients, $leftOff, $noLongerThanMs);
     }
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard
