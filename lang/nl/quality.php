@@ -34,13 +34,11 @@ return [
 
     'choose' => [
         'heading' => 'Een voorinstelling kiezen',
-        'preset' => 'Voorinstelling, of een formaat voor muziek',
-        'preset_help' => 'In de woorden van de stack, zoals hij ze hieronder noemt',
-        'presets' => 'Voorinstellingen: :presets',
-        'formats' => 'Formaten voor muziek: :formats',
-        'kind' => 'Soort media',
-        'kind_help' => 'Laat leeg om voor alles te kiezen',
-        'kinds' => 'Soorten media: :kinds',
+        'kind' => 'Voor',
+        'everything' => 'Alles',
+        'preset' => 'Voorinstelling',
+        'format' => 'Of een formaat voor muziek',
+        'none_offered' => 'De stack biedt er geen aan',
         'act' => 'Kiezen',
     ],
 

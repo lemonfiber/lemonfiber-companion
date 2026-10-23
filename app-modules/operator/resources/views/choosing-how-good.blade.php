@@ -83,24 +83,40 @@
         </x-design::card>
     @endif
 
-    {{-- Choosing, in the stack's words: what it offers is listed under each
-         field, and it takes a name or refuses it. The two fields and the
-         button that sends them are one card. --}}
+    {{-- Choosing, out of the stack's own words: a kind, then a preset or a
+         format, each a chip of what it offered. Which kind takes a format
+         is the stack's to say, and a pair it does not take comes back as
+         its refusal. --}}
     <x-design::heading>{{ __('quality.choose.heading') }}</x-design::heading>
     <x-design::card>
-        <native:outlined-text-input
-            native:model="preset"
-            label="{{ __('quality.choose.preset') }}"
-            supporting="{{ __('quality.choose.preset_help') }}"
-        />
-        <x-design::note>{{ __('quality.choose.presets', ['presets' => implode(', ', $this->answer()->offeredPresets)]) }}</x-design::note>
-        <x-design::note>{{ __('quality.choose.formats', ['formats' => implode(', ', $this->answer()->offeredFormats)]) }}</x-design::note>
-        <native:outlined-text-input
-            native:model="kind"
-            label="{{ __('quality.choose.kind') }}"
-            supporting="{{ __('quality.choose.kind_help') }}"
-        />
-        <x-design::note>{{ __('quality.choose.kinds', ['kinds' => implode(', ', $this->answer()->offeredKinds)]) }}</x-design::note>
+        <x-design::strong>{{ __('quality.choose.kind') }}</x-design::strong>
+        <x-design::chips>
+            <x-design::chip :label="__('quality.choose.everything')" :tap="$this->tapping('kindIs', '')" :chosen="$this->choosesForEverything()" />
+            @forelse ($this->kindsToChooseFrom() as $chip)
+                <x-design::chip :label="$chip->word" :tap="$this->tapping('kindIs', $chip->word)" :chosen="$chip->chosen" />
+            @empty
+                {{-- Nothing: everything is always offered, on the chip above. --}}
+            @endforelse
+        </x-design::chips>
+
+        <x-design::strong>{{ __('quality.choose.preset') }}</x-design::strong>
+        <x-design::chips>
+            @forelse ($this->presetsToChooseFrom() as $chip)
+                <x-design::chip :label="$chip->word" :tap="$this->tapping('presetIs', $chip->word)" :chosen="$chip->chosen" />
+            @empty
+                <x-design::note>{{ __('quality.choose.none_offered') }}</x-design::note>
+            @endforelse
+        </x-design::chips>
+
+        <x-design::strong>{{ __('quality.choose.format') }}</x-design::strong>
+        <x-design::chips>
+            @forelse ($this->formatsToChooseFrom() as $chip)
+                <x-design::chip :label="$chip->word" :tap="$this->tapping('presetIs', $chip->word)" :chosen="$chip->chosen" />
+            @empty
+                <x-design::note>{{ __('quality.choose.none_offered') }}</x-design::note>
+            @endforelse
+        </x-design::chips>
+
         <x-operator::offered-action :label="__('quality.choose.act')" tap="choose()" :offer="$this->offered(WhatToDoAboutQuality::Choose)" />
     </x-design::card>
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AnUpgradeDescribed;
@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
+use Modules\Operator\Internal\ChoosesFromTheStacksWords;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAnUpgradeReads;
 use Modules\Operator\Internal\Presenters\HowTheQualityReads;
@@ -32,20 +33,20 @@ use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
+use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
-use function view;
 
 /**
  * How good this machine's media should be: what is in force, choosing, and upgrading what is already here.
  *
- * **Every preset is the stack's word.** The screen holds no list of presets
- * or kinds of media: what is drawn is what came back, and what is chosen is
- * what the operator typed, which the stack takes or refuses.
+ * **Every preset is the stack's word.** The screen holds no list of presets,
+ * formats or kinds of media: what is drawn is what came back, and what is
+ * chosen is tapped out of what it offered, which the stack takes or refuses.
  *
  * **Seeing is never agreeing.** A held choice is drawn with why it was held,
  * and choosing it anyway is a tap on {@see confirm()}, which carries the
@@ -67,17 +68,11 @@ final class ChoosingHowGood extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use ChoosesFromTheStacksWords;
+    use WritesItsTaps;
+    use DrawsItsTemplate;
 
-    /**
-     * The preset typed, or the format for music.
-     *
-     * `public`, for the reason {@see WhatThisStackIsSetTo::$typed} gives, and
-     * handed to the view by name in {@see render()} for the same reason.
-     */
-    public string $preset = '';
-
-    /** The kind of media typed, or nothing for everything; `public` for the reason above. */
-    public string $kind = '';
+    public const string TEMPLATE = 'operator::choosing-how-good';
 
     /** What is in force, once the frame has asked or a choice came back. */
     public ?TheQualityTurnedOutToBe $answered = null;
@@ -119,9 +114,9 @@ final class ChoosingHowGood extends NativeComponent
     }
 
     /**
-     * Choose what was typed.
+     * Choose what was tapped.
      *
-     * Nothing typed is nothing asked, rather than a blank the stack would refuse.
+     * Nothing tapped is nothing asked, rather than a blank the stack would refuse.
      */
     public function choose(): void
     {
@@ -178,11 +173,6 @@ final class ChoosingHowGood extends NativeComponent
     public function mayUpgrade(): bool
     {
         return $this->described instanceof AnUpgradeDescribed;
-    }
-
-    public function render(): View
-    {
-        return view('operator::choosing-how-good', ['preset' => $this->preset, 'kind' => $this->kind]);
     }
 
     /** What is in force, asked once per frame. */
