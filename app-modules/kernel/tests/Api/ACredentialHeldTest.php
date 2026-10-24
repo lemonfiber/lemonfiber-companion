@@ -25,16 +25,17 @@ it('keeps everything it was described with', function (): void {
     $consumers = WhatUsesIt::of('sonarr', 'bazarr');
     $credential = ACredentialHeld::described('Indexer API key', 'indexer.api_key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday');
 
-    expect([$credential->name(), $credential->state(), $credential->origin(), $credential->consumers(), $credential->advisory()])
-        ->toBe(['Indexer API key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday']);
+    expect([$credential->name(), $credential->setting(), $credential->state(), $credential->origin(), $credential->consumers(), $credential->advisory()])
+        ->toBe(['Indexer API key', 'indexer.api_key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday']);
 });
 
 it('takes an advisory that is empty', function (): void {
     expect(aCredentialSaying('Indexer API key', '')->advisory())->toBe('');
 });
 
-it('refuses a blank name, and an advisory that is blank rather than empty', function (): void {
+it('refuses a blank name or setting, and an advisory that is blank rather than empty', function (): void {
     expect(fn(): ACredentialHeld => aCredentialSaying(' ', ''))->toThrow(CredentialSaysNothing::class, 'arrived with its `name` blank')
+        ->and(fn(): ACredentialHeld => ACredentialHeld::described('Indexer API key', ' ', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of(), ''))->toThrow(CredentialSaysNothing::class, 'arrived with its `setting` blank')
         ->and(fn(): ACredentialHeld => aCredentialSaying('Indexer API key', "\t"))->toThrow(CredentialSaysNothing::class, 'arrived with its `advisory` blank');
 });
 
