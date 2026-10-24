@@ -269,6 +269,7 @@ final readonly class HowAPluginAccountReads
                 to: $pair->to(),
                 release: $pair->release(),
                 from: $pair->from(),
+                asksForApproval: $pair->asksForApproval(),
                 approval: is_int($place) ? $place : null,
                 approved: $pair->asksForApproval() && in_array($pair->approval(), $approved, strict: true),
             );

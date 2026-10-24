@@ -206,7 +206,8 @@ it('rehearses an install and draws all of it as a rehearsal, every proof not ask
         ->and($said)->toContain(aPluginsLine('plugins.step', ['method' => 'POST', 'to' => 'sonarr', 'path' => '/api/v3/notification']))
         ->and($said)->toContain(aPluginsLine('plugins.adapter', ['adapter' => 'servarr']))
         ->and($said)->toContain(aPluginsLine('plugins.pair', ['value' => 'library', 'to' => 'hooks.example.com']))
-        ->and($said)->toContain(aPluginsLine('plugins.stays_here'))
+        ->and(array_count_values($said)[aPluginsLine('plugins.stays_here')] ?? 0)->toBe(1)
+        ->and($said)->not->toContain(aPluginsLine('plugins.not_asked_here'))
         ->and($said)->toContain(aPluginsLine('plugins.inputs_elsewhere'))
         ->and($drawn->offers())->toContain(aPluginsLine('plugins.install'));
 });
