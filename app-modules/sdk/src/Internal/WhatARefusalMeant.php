@@ -305,6 +305,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::ValueWithheld,
         RefusalCode::NothingToRun,
         RefusalCode::ManifestUnkept,
+        RefusalCode::UnaimedCrossing,
+        RefusalCode::NoGrant,
         RefusalCode::CatalogueReplaced,
         RefusalCode::NewestUnkept,
         RefusalCode::NoSuchFiller,

@@ -61,6 +61,9 @@ enum WhatGoingBackDoes: string
     /** Put a secret in the secret store back to the value it held. */
     case Rehold = 'rehold';
 
+    /** A grant of a credential to a plugin is given back, or the one the change gave is ended. */
+    case Regrant = 'regrant';
+
     /** The operator's own overlay is left as it stands, beyond what lemonfiber puts back. */
     case Leave = 'leave';
 

@@ -66,7 +66,7 @@ function aPlainProtection(): array
  */
 function aPayloadHolding(array $held, array $protection = []): array
 {
-    return ['rehearsed' => false, 'held' => $held, 'protection' => $protection === [] ? aPlainProtection() : $protection];
+    return ['rehearsed' => false, 'held' => $held, 'grants' => [], 'protection' => $protection === [] ? aPlainProtection() : $protection];
 }
 
 /**

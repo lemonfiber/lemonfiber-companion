@@ -301,9 +301,17 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'could carry a value is the one field of this envelope that is never read.',
         ],
         [
+            'path' => 'CredentialsEnvelope.grants',
+            'because' => 'Each credential of another service granted to a third-party plugin, by its setting and never its value. No requirement asks this app to list grants yet; the credentials it draws are read from `held`.',
+        ],
+        [
             'path' => 'CredentialsEnvelope.rotated',
             'because' => 'What became of a rotation, where one was asked for. Rotating is done at the machine, '
                 . 'and nothing here asks for one, so no answer this app receives carries it.',
+        ],
+        [
+            'path' => 'CredentialsEnvelope.revoked',
+            'because' => 'What ending one grant came to, where one was asked for. This app does not send `credentials-revoke`, so no answer it receives carries it.',
         ],
         [
             'path' => 'KeysEnvelope.keys[].revoked',
