@@ -22,12 +22,14 @@ use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\PluginSaysNothing;
+use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAProofCameTo;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
+use Modules\Kernel\Api\WhenARecipeRuns;
 
 use function sprintf;
 
@@ -44,8 +46,8 @@ function everyWordAPluginOwes(): array
         'a source' => [static fn(): object => APluginSource::typed('  '), 'source'],
         'a plugin id' => [static fn(): object => APlugin::named(' ', '1', '', $vouched, TheRecipes::these()), 'plugin'],
         'a version' => [static fn(): object => APlugin::named('tdarr', '', '', $vouched, TheRecipes::these()), 'version'],
-        'a recipe id' => [static fn(): object => ARecipe::of('', 'Title', '', TheRecipeSteps::these(), TheValuesItCarries::these()), 'id'],
-        'a recipe title' => [static fn(): object => ARecipe::of('link', ' ', '', TheRecipeSteps::these(), TheValuesItCarries::these()), 'title'],
+        'a recipe id' => [static fn(): object => ARecipe::of('', 'Title', '', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these()), 'id'],
+        'a recipe title' => [static fn(): object => ARecipe::of('link', ' ', '', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these()), 'title'],
         'a step method' => [static fn(): object => ARecipeStep::calling('ask', '', 'sonarr', '/a', ''), 'method'],
         'a step destination' => [static fn(): object => ARecipeStep::calling('ask', 'GET', ' ', '/a', ''), 'to'],
         'a value' => [static fn(): object => AValueItCarries::listed('', '', 'tdarr', '', '', ''), 'value'],

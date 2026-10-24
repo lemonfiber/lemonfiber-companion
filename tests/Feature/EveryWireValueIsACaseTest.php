@@ -46,6 +46,7 @@ use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAnAskBecame;
+use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -61,6 +62,7 @@ use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
@@ -410,6 +412,20 @@ it('everything a plugin install puts at a path has a case', function (): void {
 
     expect($puts)->not->toBe([], 'no puts union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatAChangePuts::cases()))->toBe($puts);
+});
+
+it('everything a step of a plugin\'s recipe run can come to has a case', function (): void {
+    $came = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginsEnvelope'), 'came');
+
+    expect($came)->not->toBe([], 'no came union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatAStepCameTo::cases()))->toBe($came);
+});
+
+it('every time a plugin\'s recipe can run at has a case', function (): void {
+    $on = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginsEnvelope'), 'on');
+
+    expect($on)->not->toBe([], 'no on union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhenARecipeRuns::cases()))->toBe($on);
 });
 
 it('every privileged shape a plugin\'s service can take has a case', function (): void {

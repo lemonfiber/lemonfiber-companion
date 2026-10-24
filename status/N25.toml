@@ -21,4 +21,9 @@ requirement = [
   { id = "N25-R13", state = "done", evidence = ["app-modules/kernel/src/Api/ASecret.php", "app-modules/sdk/src/Api/TheSettingsListed.php", "app-modules/operator/resources/views/how-this-plugin-is-set.blade.php", "tests/Feature/ChangingAPluginsSettingTest.php"] },
   { id = "N25-R14", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/HowThisPluginIsSet.php", "app-modules/operator/src/Providers/OperatorServiceProvider.php"] },
   { id = "N25-R15", state = "done", evidence = ["app-modules/kernel/src/Api/APluginReproof.php", "app-modules/sdk/src/Api/PluginInstalls.php", "app-modules/operator/src/Internal/Screens/WhatExtendsThisStack.php", "tests/Contract/ExtendingTheStackContractTest.php", "tests/Feature/ProvingAPluginAgainTest.php"] },
+  { id = "N25-R16", state = "done", evidence = ["app-modules/kernel/src/Api/WhenARecipeRuns.php", "app-modules/sdk/src/Internal/PluginRecords.php", "app-modules/operator/resources/views/what-extends-this-stack.blade.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
+  { id = "N25-R17", state = "done", evidence = ["app-modules/kernel/src/Api/ARecipeRun.php", "app-modules/operator/resources/views/components/the-recipe.blade.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
+  { id = "N25-R18", state = "done", evidence = ["app-modules/kernel/src/Api/ARecipeRunAgreed.php", "app-modules/kernel/src/Api/APlugin.php", "app-modules/sdk/src/Api/Extenders.php", "tests/Contract/ExtendingTheStackContractTest.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
+  { id = "N25-R19", state = "done", evidence = ["app-modules/kernel/src/Api/WhatARecipeRunDid.php", "app-modules/sdk/src/Internal/PluginRecipeRuns.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
+  { id = "N25-R20", state = "done", evidence = ["app-modules/kernel/src/Api/TheInputsARecipeAsks.php", "app-modules/operator/src/Internal/WhatARowOffers.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
 ]

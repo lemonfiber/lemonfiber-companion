@@ -32,6 +32,7 @@ use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheCapabilitiesLeftUnfilled;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\ThePlugins;
@@ -51,6 +52,7 @@ use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\WhatWentBack;
+use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 
 /**
@@ -124,6 +126,8 @@ final readonly class APluginAsItArrives
                     AValueItCarries::listed('api_key', 'credential-store', 'tdarr', '', '', ''),
                     AValueItCarries::listed('library', 'stack-service', 'hooks.example.com', self::APPROVAL, '', ''),
                 ),
+                WhenARecipeRuns::Install,
+                TheInputsARecipeAsks::these(),
             )),
         );
     }

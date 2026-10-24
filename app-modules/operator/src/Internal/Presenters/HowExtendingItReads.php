@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\APluginReproof;
+use Modules\Kernel\Api\ARecipeRun;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Obstacle;
@@ -18,11 +19,12 @@ use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
 use Modules\Operator\Internal\ViewModels\APluginReproofAsShown;
 use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
+use Modules\Operator\Internal\ViewModels\ARecipeRunAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
 
 /**
- * The plugins on a stack, and installing, updating or removing one, as the fields a screen draws.
+ * The plugins on a stack, and installing, updating, removing or proving one, or running one of its recipes, as the fields a screen draws.
  *
  * `F2`: data in, view model out. One method per state, each saying only its
  * own, so a template never offers a yes beneath an account that is not a
@@ -83,6 +85,7 @@ final readonly class HowExtendingItReads
             update: null,
             removal: null,
             proof: null,
+            run: null,
         );
     }
 
@@ -107,6 +110,7 @@ final readonly class HowExtendingItReads
             update: static fn(AnUpdate $update): APluginUpdateAsShown => $rows->update($update, $approved, $agreeable),
             removal: static fn(APluginRemoval $removal): APluginRemovalAsShown => $rows->removal($removal, $agreeable),
             proof: static fn(APluginReproof $proof): APluginReproofAsShown => $rows->reproof($proof, $agreeable),
+            run: static fn(ARecipeRun $run): ARecipeRunAsShown => $rows->run($run, $approved, $agreeable),
         );
 
         return new WhatExtendsItTurnedOutToBe(
@@ -124,6 +128,7 @@ final readonly class HowExtendingItReads
             update: $account instanceof APluginUpdateAsShown ? $account : null,
             removal: $account instanceof APluginRemovalAsShown ? $account : null,
             proof: $account instanceof APluginReproofAsShown ? $account : null,
+            run: $account instanceof ARecipeRunAsShown ? $account : null,
         );
     }
 
@@ -139,6 +144,7 @@ final readonly class HowExtendingItReads
             ExtendingIt::Update => 'plugins.working.update',
             ExtendingIt::Remove => 'plugins.working.remove',
             ExtendingIt::Prove => 'plugins.working.prove',
+            ExtendingIt::Run => 'plugins.working.run',
         };
     }
 
@@ -154,6 +160,7 @@ final readonly class HowExtendingItReads
             ExtendingIt::Update => 'plugins.refused.update',
             ExtendingIt::Remove => 'plugins.refused.remove',
             ExtendingIt::Prove => 'plugins.refused.prove',
+            ExtendingIt::Run => 'plugins.refused.run',
         };
     }
 
@@ -181,6 +188,7 @@ final readonly class HowExtendingItReads
             update: null,
             removal: null,
             proof: null,
+            run: null,
         );
     }
 }

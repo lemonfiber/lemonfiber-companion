@@ -14,6 +14,8 @@ use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
+use Modules\Kernel\Api\ARecipeRun;
+use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ExtendingTheStack;
@@ -29,6 +31,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\WhatARecipeRunDid;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasFoundOfThePlugins;
 use Modules\Sdk\Api\Extenders;
@@ -37,6 +40,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\APluginAsItArrives;
+use Tests\Support\ARecipeRunAsItArrives;
 use Tests\Support\Fakes\AStackThatExtendsItself;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -202,6 +206,31 @@ function everythingAProofSays(APluginReproof $proof): string
     return implode("\n", $lines);
 }
 
+/** Everything running a demand recipe says, folded to lines, so two answers can be compared. */
+function everythingARunSays(ARecipeRun $run): string
+{
+    $lines = [sprintf('run of %s/%s, %s', $run->plugin()->named(), $run->recipe()->id(), $run->isAReading() ? 'a reading' : 'ran')];
+
+    foreach ($run->recipe()->approvals() as $approval) {
+        $lines[] = sprintf('asks approval %s', $approval);
+    }
+
+    $lines[] = $run->either(
+        rehearsed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing run'),
+        ran: static function (WhatARecipeRunDid $did): TheWordCarriedOut {
+            $said = [sprintf('%s%s', $did->held() ? 'held' : 'did not hold', $did->why() === '' ? '' : sprintf(': %s', $did->why()))];
+
+            foreach ($did->steps() as $step) {
+                $said[] = sprintf('step %s to %s: %s (%s)', $step->step(), $step->to(), $step->came()->value, $step->why());
+            }
+
+            return new TheWordCarriedOut(implode("\n", $said));
+        },
+    )->said;
+
+    return implode("\n", $lines);
+}
+
 /** Everything the stack says of its plugins, folded to lines, so two answers can be compared. */
 function everythingThePluginsSay(ThePlugins $plugins): string
 {
@@ -245,6 +274,7 @@ function everythingThePluginsSay(ThePlugins $plugins): string
         update: static fn(AnUpdate $update): TheWordCarriedOut => new TheWordCarriedOut(everythingTheUpdateSays($update)),
         removal: static fn(APluginRemoval $removal): TheWordCarriedOut => new TheWordCarriedOut(everythingAPluginRemovalSays($removal)),
         proof: static fn(APluginReproof $proof): TheWordCarriedOut => new TheWordCarriedOut(everythingAProofSays($proof)),
+        run: static fn(ARecipeRun $run): TheWordCarriedOut => new TheWordCarriedOut(everythingARunSays($run)),
     )->said;
 
     return implode("\n", $lines);
@@ -672,6 +702,49 @@ it('asks a proof again with the plugin alone, and the yes carrying back the offe
         ->and(static fn(): APluginProofAgreed => APluginProofAgreed::after(APluginAsItArrives::theProof(asked: true), aTdarrThatCanBeUpdated()))->toThrow(APluginActWasNotRehearsed::class);
 });
 
+it('reads what running a demand recipe would do, and what it came to once run', function (bool $ran, bool $held, array $said): void {
+    $read = MockResponse::make((string) json_encode(ARecipeRunAsItArrives::theAnswerOnTheWire($ran, $held)));
+
+    foreach (everyWayOfExtendingIt(ARecipeRunAsItArrives::theAnswer($ran, $held), aPluginJob(), $read) as $which => $make) {
+        $extending = $make();
+
+        expect(everythingExtendingItSays($extending->rehearseRunning(aStackToExtend(), theSessionPluginsAreAskedOn(), ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theRecipe())))->toBe('underway j-1', $which)
+            ->and(array_slice(explode("\n", everythingExtendingItSays($extending->whatBecameOf(aStackToExtend(), theSessionPluginsAreAskedOn(), Job::named('j-1')))), -count($said)))->toBe($said, $which);
+    }
+})->with([
+    'a rehearsal' => [false, true, [sprintf('agreement %s', APluginAsItArrives::AGREEMENT), 'run of tdarr/resync, a reading', sprintf('asks approval %s', ARecipeRunAsItArrives::APPROVAL), 'nothing run']],
+    'a run that held' => [true, true, ['agreement ', 'run of tdarr/resync, ran', sprintf('asks approval %s', ARecipeRunAsItArrives::APPROVAL), 'held', 'step nudge to plex.tv: answered ()']],
+    'a run that did not hold' => [true, false, ['agreement ', 'run of tdarr/resync, ran', sprintf('asks approval %s', ARecipeRunAsItArrives::APPROVAL), 'did not hold: Plex would not answer', 'step nudge to plex.tv: unreachable (No answer in time)']],
+]);
+
+it('rehearses a run with the plugin and the recipe, and runs carrying back the offer and the values approved, each under a key', function (): void {
+    $sent = [];
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => static function (PendingRequest $asked) use (&$sent): MockResponse {
+            $sent[] = [$asked->getRequest()->resolveEndpoint(), $asked->body()?->all(), $asked->headers()->get('Idempotency-Key') !== null];
+
+            return aPluginJob();
+        },
+    ]);
+
+    $extending = new Extenders(new PinnedClients(), SequencedEntropy::counting());
+    $extending->rehearseRunning(aStackToExtend(), theSessionPluginsAreAskedOn(), ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theRecipe());
+    $extending->run(aStackToExtend(), theSessionPluginsAreAskedOn(), ARecipeRunAgreed::after(
+        ARecipeRunAsItArrives::theAnswer(ran: false),
+        ARecipeRunAsItArrives::thePlugin(),
+        ARecipeRunAsItArrives::theRecipe(),
+        PluginLines::under('approved', ARecipeRunAsItArrives::APPROVAL, 'secrets@elsewhere'),
+    ));
+
+    expect($sent)->toBe([
+        ['/api/actions/plugin-run', ['offer' => null, 'plugin' => 'tdarr', 'recipe' => 'resync', 'approved' => [], 'inputs' => []], true],
+        ['/api/actions/plugin-run', ['offer' => APluginAsItArrives::AGREEMENT, 'plugin' => 'tdarr', 'recipe' => 'resync', 'approved' => [ARecipeRunAsItArrives::APPROVAL], 'inputs' => []], true],
+    ])
+        ->and(static fn(): ARecipeRunAgreed => ARecipeRunAgreed::after(ARecipeRunAsItArrives::theAnswer(ran: true), ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theRecipe(), PluginLines::none()))->toThrow(APluginActWasNotRehearsed::class)
+        ->and(static fn(): ARecipeRunAgreed => ARecipeRunAgreed::after(ARecipeRunAsItArrives::theAnswer(ran: false), ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theAskingRecipe(), PluginLines::none()))->toThrow(APluginActWasNotRehearsed::class);
+});
+
 it('stands in for a stack with payloads the contract would accept', function (): void {
     foreach ([
         APluginAsItArrives::theAnswer(null),
@@ -687,6 +760,9 @@ it('stands in for a stack with payloads the contract would accept', function ():
         APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire()),
         APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire(asked: true, cleared: true)),
         APluginAsItArrives::theAnswerAbout('proof', APluginAsItArrives::aProofOnTheWire(asked: true)),
+        ARecipeRunAsItArrives::theAnswerOnTheWire(ran: false),
+        ARecipeRunAsItArrives::theAnswerOnTheWire(ran: true),
+        ARecipeRunAsItArrives::theAnswerOnTheWire(ran: true, held: false),
     ] as $answer) {
         expect(WhatTheContractAccepts::complaintsAbout('PluginsEnvelope', $answer))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");

@@ -49,6 +49,12 @@ interface ExtendingTheStack
     /** Prove it again, as the reading the operator was shown said it would. */
     public function prove(Stack $stack, Session $session, APluginProofAgreed $agreed): HowExtendingItIsGoing;
 
-    /** What became of a rehearsal, an install, an update, a removal or a proof, by the handle it answered with. */
+    /** Ask what running this demand recipe of this plugin would do, running nothing. */
+    public function rehearseRunning(Stack $stack, Session $session, APlugin $plugin, ARecipe $recipe): HowExtendingItIsGoing;
+
+    /** Run it, as the rehearsal the operator was shown said it would. */
+    public function run(Stack $stack, Session $session, ARecipeRunAgreed $agreed): HowExtendingItIsGoing;
+
+    /** What became of a rehearsal, an install, an update, a removal, a proof or a recipe run, by the handle it answered with. */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowExtendingItIsGoing;
 }

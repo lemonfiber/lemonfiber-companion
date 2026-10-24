@@ -154,6 +154,38 @@
     @endif
 
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
+@elseif ($this->answer()->run !== null)
+    {{-- Said before anything else: a rehearsal says nothing below has run. --}}
+    <x-operator::emphasis>{{ __($this->answer()->run->headline, ['title' => $this->answer()->run->recipe->title]) }}</x-operator::emphasis>
+    @if ($this->answer()->run->isAReading)
+        <x-operator::the-recipe :recipe="$this->answer()->run->recipe" :agreeable="$this->answer()->run->agreeable" />
+    @else
+        @if ($this->answer()->run->why !== '')
+            <x-design::body>{{ $this->answer()->run->why }}</x-design::body>
+        @endif
+        {{-- Every step in the recipe's order with what it came to, a step
+             the stack held among them with its reason. --}}
+        @forelse ($this->answer()->run->ran as $step)
+            <x-operator::entry>
+                <x-design::body>{{ __('plugins.run.step', ['step' => $step->step, 'to' => $step->to]) }}</x-design::body>
+                <x-operator::emphasis>{{ __($step->cameSaid) }}</x-operator::emphasis>
+                @if ($step->why !== '')
+                    <x-operator::note>{{ $step->why }}</x-operator::note>
+                @endif
+            </x-operator::entry>
+        @empty
+            <x-operator::note>{{ __('plugins.no_steps') }}</x-operator::note>
+        @endforelse
+    @endif
+
+    @if ($this->answer()->run->agreeable)
+        {{-- The yes to the run, apart from every approval above; an
+             approval given at install covers none of them. --}}
+        <x-operator::note>{{ __('plugins.run.approvals_each_time') }}</x-operator::note>
+        <x-operator::offered-action :label="__('plugins.run.run')" tap="agree()" :offer="$this->offered(ExtendingIt::Run)" />
+    @endif
+
+    <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @else
     @forelse ($this->answer()->installed as $at => $plugin)
         <x-operator::the-plugin :plugin="$plugin" />
@@ -167,6 +199,29 @@
         @unless ($plugin->outOfContract === [])
             <x-operator::offered-action :label="__('plugins.prove_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'prove', $at)" :offer="$this->offered(ExtendingIt::Prove)" />
         @endunless
+        {{-- Each recipe the plugin runs only when asked, with its run; one
+             that asks the operator for a value says what it asks for and
+             where it is run instead. --}}
+        @forelse ($plugin->recipes as $place => $recipe)
+            @if ($recipe->onDemand)
+                <x-operator::entry>
+                    <x-operator::emphasis>{{ $recipe->title }}</x-operator::emphasis>
+                    @if ($recipe->why !== '')
+                        <x-design::body>{{ $recipe->why }}</x-design::body>
+                    @endif
+                    @forelse ($recipe->asks as $ask)
+                        <x-operator::note>{{ __('plugins.run.asks_for', ['ask' => $ask]) }}</x-operator::note>
+                    @empty
+                        <x-operator::offered-action :label="__('plugins.run.run_it', ['title' => $recipe->title])" :tap="$this->tapping('runOnTheRow', $at, $place)" :offer="$this->offered(ExtendingIt::Run)" />
+                    @endforelse
+                    @if ($recipe->asks !== [])
+                        <x-operator::note>{{ __('plugins.run.elsewhere') }}</x-operator::note>
+                    @endif
+                </x-operator::entry>
+            @endif
+        @empty
+            {{-- Nothing: the plugin declares no recipe. --}}
+        @endforelse
     @empty
         {{-- The record answered and holds nothing. A record that could not be
              read never reaches this branch. --}}

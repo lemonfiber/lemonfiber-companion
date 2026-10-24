@@ -21,6 +21,8 @@ use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
+use Modules\Kernel\Api\ARecipe;
+use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ExtendingIt;
@@ -43,6 +45,7 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
+use Modules\Operator\Internal\WhatARowOffers;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -54,14 +57,15 @@ use Native\Mobile\Edge\NativeComponent;
 use function trim;
 
 /**
- * The plugins on this machine, and installing, updating or removing one: each rehearsed, agreed to, and followed.
+ * The plugins on this machine, and installing, updating, removing or proving one, or running one of its demand recipes: each rehearsed, agreed to, and followed.
  *
  * **It opens on what is installed**, each plugin with where it came from and
  * whether anybody reviewed it, and how its source stands now. A record that
  * cannot be read is said as that, never as a machine with no plugins.
  *
  * **Every act begins with a rehearsal.** Installing begins with a source the
- * operator types; updating and removing begin from a plugin's row. The stack
+ * operator types; updating, removing, proving and running a demand recipe
+ * begin from a plugin's row. The stack
  * says what the act would do, writing nothing, and a plugin it refuses, a
  * native one among them, is its refusal in its own words with nothing
  * offered to do.
@@ -73,8 +77,13 @@ use function trim;
  * and every approval given against it.
  *
  * **No inputs are taken.** A recipe that asks the operator for a value is
- * shown in full like any other, and installing it is for the web console or
- * the terminal, which the screen says beneath Install.
+ * shown in full like any other, and installing it, or running it on demand,
+ * is for the web console or the terminal, which the screen says beneath
+ * Install and in the recipe's place.
+ *
+ * **A demand recipe's pairs are asked for each run.** An approval given at
+ * install covers no run, so each run's rehearsal offers every pair's switch
+ * again, all off.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -105,8 +114,11 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** The act in hand, as its own word, or empty where none is. */
     public string $act = '';
 
-    /** The plugin an update or a removal is about, while one is in hand. */
+    /** The plugin an update, a removal, a proof or a recipe run is about, while one is in hand. */
     public ?APlugin $subject = null;
+
+    /** The demand recipe a run is about, while one is in hand. */
+    public ?ARecipe $recipe = null;
 
     /** The rehearsal, while it is in front of the operator to be agreed to. */
     public ?ThePlugins $rehearsal = null;
@@ -196,11 +208,23 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     {
         $asked = ExtendingIt::tryFrom($act);
 
-        if (! $asked instanceof ExtendingIt || $asked === ExtendingIt::Install) {
+        if (! $asked instanceof ExtendingIt || $asked === ExtendingIt::Install || $asked === ExtendingIt::Run) {
             return;
         }
 
-        $this->rehearseOnTheRow($which, $asked);
+        $this->rehearseOnTheRow($which, $asked, recipe: null);
+    }
+
+    /**
+     * Ask what running one of the demand recipes of the plugin in that row would do, by the recipe's place among its recipes.
+     *
+     * A recipe that runs inside an install, or one that asks the operator for
+     * a value, asks nothing: the second is run at the web console or the
+     * terminal.
+     */
+    public function runOnTheRow(int $which, int $recipe): void
+    {
+        $this->rehearseOnTheRow($which, ExtendingIt::Run, $recipe);
     }
 
     /**
@@ -310,11 +334,13 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     {
         $approved = PluginLines::under('approved', ...$this->approved);
         $subject = $this->subject;
+        $recipe = $this->recipe;
 
         $agreed = match (true) {
             $act === ExtendingIt::Install || ! $subject instanceof APlugin => APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), $approved),
             $act === ExtendingIt::Update => APluginUpdateAgreed::after($rehearsal, $subject, $approved),
             $act === ExtendingIt::Prove => APluginProofAgreed::after($rehearsal, $subject),
+            $act === ExtendingIt::Run && $recipe instanceof ARecipe => ARecipeRunAgreed::after($rehearsal, $subject, $recipe, $approved),
             default => APluginRemovalAgreed::after($rehearsal, $subject),
         };
 
@@ -322,38 +348,38 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
             $agreed instanceof APluginInstallAgreed => $this->extending->install($stack, $session, $agreed),
             $agreed instanceof APluginUpdateAgreed => $this->extending->update($stack, $session, $agreed),
             $agreed instanceof APluginProofAgreed => $this->extending->prove($stack, $session, $agreed),
+            $agreed instanceof ARecipeRunAgreed => $this->extending->run($stack, $session, $agreed),
             default => $this->extending->remove($stack, $session, $agreed),
         };
     }
 
     /**
-     * Rehearse updating, removing or proving again the plugin in that row of the listing last read.
+     * Rehearse updating, removing or proving again the plugin in that row of the listing last read, or running the demand recipe in that place among its recipes.
      *
      * Nothing is asked while other work is followed, for a row the listing
      * does not have, for an update of a plugin whose record names no
-     * source to fetch again, or for proving a plugin nothing is kept against.
+     * source to fetch again, for proving a plugin nothing is kept against, or
+     * for a run of a recipe that is not a demand recipe asking for no value.
      */
-    private function rehearseOnTheRow(int $which, ExtendingIt $act): void
+    private function rehearseOnTheRow(int $which, ExtendingIt $act, ?int $recipe): void
     {
-        $chosen = null;
-        $at = 0;
+        $row = new WhatARowOffers($this->listing);
+        $chosen = $row->plugin($which);
+        $running = $chosen instanceof APlugin ? $row->demandRecipe($chosen, $recipe) : null;
 
-        foreach ($this->listing?->installed() ?? [] as $plugin) {
-            $chosen = $at === $which ? $plugin : $chosen;
-            $at++;
-        }
-
-        if (is_string($this->following) || ! $chosen instanceof APlugin || ($act === ExtendingIt::Update && ! $chosen->canBeUpdated()) || ($act === ExtendingIt::Prove && ! ($this->listing?->answersOutOfContractOf($chosen)->holdsAny() ?? false))) {
+        if (is_string($this->following) || ! $chosen instanceof APlugin || ! $row->offers($act, $chosen, $running)) {
             return;
         }
 
         $this->letGoOfTheRehearsal();
         $this->act = $act->value;
         $this->subject = $chosen;
+        $this->recipe = $running;
         $this->answered = $this->put(
             fn(Stack $stack, Session $session): HowExtendingItIsGoing => match (true) {
                 $act === ExtendingIt::Update => $this->extending->rehearseUpdating($stack, $session, $chosen),
                 $act === ExtendingIt::Prove => $this->extending->readProving($stack, $session, $chosen),
+                $running instanceof ARecipe => $this->extending->rehearseRunning($stack, $session, $chosen, $running),
                 default => $this->extending->rehearseRemoving($stack, $session, $chosen),
             },
         );
@@ -456,6 +482,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->leftUnapproved = null;
         $this->act = '';
         $this->subject = null;
+        $this->recipe = null;
         $this->agreed = false;
         $this->typing = false;
         $this->answered = null;

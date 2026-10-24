@@ -59,6 +59,7 @@ use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatAnAskBecame;
+use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -74,6 +75,7 @@ use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
@@ -188,6 +190,8 @@ final readonly class TheWireUnions
         HowSeriousAConnectionIs::class => 'severity',
         WhatGoingBackDoes::class => 'does',
         WhatAChangePuts::class => 'puts',
+        WhatAStepCameTo::class => 'came',
+        WhenARecipeRuns::class => 'on',
         APrivilegedShape::class => 'shape',
         Availability::class => 'capabilities',
         WhatToDoWithTheDownloads::class => 'asked',
