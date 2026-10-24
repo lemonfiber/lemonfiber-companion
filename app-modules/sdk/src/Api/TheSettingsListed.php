@@ -130,7 +130,8 @@ final readonly class TheSettingsListed
             WhereASecretCameFrom::Operator->value => WhereASecretCameFrom::Operator,
             WhereASecretCameFrom::Recipe->value => WhereASecretCameFrom::Recipe,
             WhereASecretCameFrom::Granted->value => WhereASecretCameFrom::Granted,
-            default => throw SettingsAreUnreadable::word($where, $said, WhereASecretCameFrom::Operator->value, WhereASecretCameFrom::Recipe->value, WhereASecretCameFrom::Granted->value),
+            WhereASecretCameFrom::Minted->value => WhereASecretCameFrom::Minted,
+            default => throw SettingsAreUnreadable::word($where, $said, WhereASecretCameFrom::Operator->value, WhereASecretCameFrom::Recipe->value, WhereASecretCameFrom::Granted->value, WhereASecretCameFrom::Minted->value),
         };
     }
 }

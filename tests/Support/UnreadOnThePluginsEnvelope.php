@@ -547,6 +547,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
         [
+            'path' => 'PluginsEnvelope.installed[].services[].upstream',
+            'because' => 'Which of the plugin\'s secrets each field of an adapter\'s upstream file holds. The install\'s own change says that file is written and readable by its owner alone (`plugins.puts.upstream`), its values never shown, and no requirement asks for its fields.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.services[].api',
             'because' => 'As `PluginsEnvelope.installed[].services[].api`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
@@ -651,6 +655,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.installed[].services[].takes_data`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.services[].upstream',
+            'because' => 'As `PluginsEnvelope.installed[].services[].upstream`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
             'path' => 'PluginsEnvelope.update.install.would.services[].api',
             'because' => 'As `PluginsEnvelope.installed[].services[].api`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
@@ -753,6 +761,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].takes_data',
             'because' => 'As `PluginsEnvelope.installed[].services[].takes_data`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.services[].upstream',
+            'because' => 'As `PluginsEnvelope.installed[].services[].upstream`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.install.verified.broke[].now.disruptive',
