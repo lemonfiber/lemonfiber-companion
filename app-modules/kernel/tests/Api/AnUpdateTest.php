@@ -35,6 +35,7 @@ function theUpdateIn(ThePlugins $plugins): AnUpdate
         },
         removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''),
         proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''),
+        run: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a run'),
     );
 
     return $update ?? throw new LogicException('Not an update.');

@@ -14,6 +14,8 @@ use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
+use Modules\Kernel\Api\ARecipe;
+use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\Job;
@@ -119,6 +121,20 @@ final class AStackThatExtendsItself implements ExtendingTheStack
     public function prove(Stack $stack, Session $session, APluginProofAgreed $agreed): HowExtendingItIsGoing
     {
         $this->asked[] = sprintf('prove:%s:%s', $agreed->plugin(), $agreed->agreement());
+
+        return $this->next();
+    }
+
+    public function rehearseRunning(Stack $stack, Session $session, APlugin $plugin, ARecipe $recipe): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('rehearse running:%s:%s', $plugin->id(), $recipe->id());
+
+        return $this->next();
+    }
+
+    public function run(Stack $stack, Session $session, ARecipeRunAgreed $agreed): HowExtendingItIsGoing
+    {
+        $this->asked[] = sprintf('run:%s:%s:%s:%s', $agreed->plugin(), $agreed->recipe(), $agreed->agreement(), $this->joined($agreed->approved()));
 
         return $this->next();
     }

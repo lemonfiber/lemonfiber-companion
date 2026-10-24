@@ -272,6 +272,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     'bandwidth' => 'rehearses a change to how the line is shared, and makes it only as that rehearsal was asked',
     'household-allow' => 'rehearses a change to what the household or one member may ask for, and makes it only as that rehearsal was asked',
     'plugin-prove' => 'reads what proving a plugin again would ask, and proves it only carrying back the offer that reading named',
+    'plugin-run' => 'rehearses running one of a plugin\'s demand recipes that asks for no value, and runs it only carrying back the offer that rehearsal named, with each value it would carry approved apart',
     'settings-set' => 'rehearses giving one setting a plugin\'s services read a value of the operator\'s, and writes it only carrying back the offer that rehearsal named; a secret is never named',
     'settings-clear' => 'rehearses putting one setting a plugin\'s services read back to its default, and writes it only carrying back the offer that rehearsal named',
     'adopt' => 'rehearses keeping the operator\'s own edits as the expected state, and adopts them only against that rehearsal',

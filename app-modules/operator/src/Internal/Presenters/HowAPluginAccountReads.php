@@ -14,6 +14,7 @@ use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\APluginReproof;
 use Modules\Kernel\Api\ARecipe;
+use Modules\Kernel\Api\ARecipeRun;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\HowItsSourceStands;
@@ -21,6 +22,8 @@ use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\WhatARecipeRunDid;
+use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AContestAsShown;
@@ -33,8 +36,10 @@ use Modules\Operator\Internal\ViewModels\APluginReproofAsShown;
 use Modules\Operator\Internal\ViewModels\APluginUpdateAsShown;
 use Modules\Operator\Internal\ViewModels\AProofAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeAsShown;
+use Modules\Operator\Internal\ViewModels\ARecipeRunAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeStepAsShown;
 use Modules\Operator\Internal\ViewModels\AShapeTakenAsShown;
+use Modules\Operator\Internal\ViewModels\AStepThatRanAsShown;
 use Modules\Operator\Internal\ViewModels\AValueCarriedAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 
@@ -216,6 +221,45 @@ final readonly class HowAPluginAccountReads
     }
 
     /**
+     * Running a demand recipe: the rehearsal, each pair with its switch, or what each step came to.
+     *
+     * @param list<string> $approved
+     */
+    public function run(ARecipeRun $run, array $approved, bool $agreeable): ARecipeRunAsShown
+    {
+        $recipe = $this->recipe($run->recipe(), $this->lines($run->recipe()->approvals()), $approved);
+
+        return $run->either(
+            rehearsed: static fn(): ARecipeRunAsShown => new ARecipeRunAsShown(
+                plugin: $run->plugin()->named(),
+                isAReading: true,
+                agreeable: $agreeable,
+                headline: 'plugins.run.reading',
+                recipe: $recipe,
+                why: '',
+                ran: [],
+            ),
+            ran: static function (WhatARecipeRunDid $did) use ($run, $recipe): ARecipeRunAsShown {
+                $ran = [];
+
+                foreach ($did->steps() as $step) {
+                    $ran[] = new AStepThatRanAsShown(step: $step->step(), to: $step->to(), cameSaid: $step->came()->saidOnTheScreen(), why: $step->why());
+                }
+
+                return new ARecipeRunAsShown(
+                    plugin: $run->plugin()->named(),
+                    isAReading: false,
+                    agreeable: false,
+                    headline: $did->held() ? 'plugins.run.held' : 'plugins.run.not_held',
+                    recipe: $recipe,
+                    why: $did->why(),
+                    ran: $ran,
+                );
+            },
+        );
+    }
+
+    /**
      * Each service left unapproved to take its privileged shape, as a refusal names it.
      *
      * @return list<AShapeTakenAsShown>
@@ -275,7 +319,13 @@ final readonly class HowAPluginAccountReads
             );
         }
 
-        return new ARecipeAsShown(title: $recipe->title(), why: $recipe->why(), steps: $steps, pairs: $pairs);
+        $asks = [];
+
+        foreach ($recipe->asks() as $input) {
+            $asks[] = $input->ask();
+        }
+
+        return new ARecipeAsShown(title: $recipe->title(), why: $recipe->why(), steps: $steps, pairs: $pairs, onDemand: $recipe->runs() === WhenARecipeRuns::Demand, asks: $asks);
     }
 
     /** One service taking a privileged shape, with its switch's place where the screen offers one. */

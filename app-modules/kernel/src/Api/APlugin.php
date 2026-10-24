@@ -79,16 +79,18 @@ final readonly class APlugin
         return $this->recipes;
     }
 
-    /** Every approval its recipes ask for, as the stack spells each, once. */
+    /** Every approval the recipes an install or an update runs ask for, as the stack spells each, once; a demand recipe asks for its own each time it runs. */
     public function approvals(): PluginLines
     {
         $approvals = [];
 
         foreach ($this->recipes as $recipe) {
-            foreach ($recipe->pairs() as $pair) {
-                if ($pair->asksForApproval()) {
-                    $approvals[$pair->approval()] = $pair->approval();
-                }
+            if ($recipe->runs() !== WhenARecipeRuns::Install) {
+                continue;
+            }
+
+            foreach ($recipe->approvals() as $approval) {
+                $approvals[$approval] = $approval;
             }
         }
 

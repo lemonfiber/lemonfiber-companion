@@ -25,6 +25,9 @@ enum ExtendingIt: string implements AnAction
     /** Ask an installed plugin's adapters their proofs again, after an answer outside their contract, read first. */
     case Prove = 'prove';
 
+    /** Running one of a plugin's demand recipes. */
+    case Run = 'run';
+
     /**
      * lemonfiber's word for it.
      *
@@ -38,6 +41,7 @@ enum ExtendingIt: string implements AnAction
             self::Update => 'plugin-update',
             self::Remove => 'plugin-remove',
             self::Prove => 'plugin-prove',
+            self::Run => 'plugin-run',
         };
     }
 }

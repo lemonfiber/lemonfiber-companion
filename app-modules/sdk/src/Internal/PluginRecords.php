@@ -9,15 +9,18 @@ use function is_array;
 use function is_bool;
 use function is_string;
 
+use Modules\Kernel\Api\AnInputARecipeAsks;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
 use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
+use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
@@ -56,6 +59,24 @@ final readonly class PluginRecords
             self::vouched($row),
             TheRecipes::these(...self::recipes($row, $position)),
             ...self::services($row),
+        );
+    }
+
+    /**
+     * One recipe as the record or a reading carries it, with when it runs and every value it asks the operator for.
+     *
+     * @param array<mixed> $recipe
+     */
+    public static function recipe(array $recipe, int $at): ARecipe
+    {
+        return ARecipe::of(
+            self::text($recipe, PluginsField::Recipes, WireField::Id, $at),
+            self::text($recipe, PluginsField::Recipes, WireField::Title, $at),
+            self::optional($recipe, WireField::Why),
+            TheRecipeSteps::these(...self::steps($recipe)),
+            TheValuesItCarries::these(...self::pairs($recipe)),
+            self::runs($recipe, $at),
+            TheInputsARecipeAsks::these(...self::inputs($recipe)),
         );
     }
 
@@ -145,12 +166,52 @@ final readonly class PluginRecords
                 throw PluginsAreUnreadable::entry(PluginsField::Recipes, WireField::Id, $at);
             }
 
-            $found[] = ARecipe::of(
-                self::text($recipe, PluginsField::Recipes, WireField::Id, $at),
-                self::text($recipe, PluginsField::Recipes, WireField::Title, $at),
-                self::optional($recipe, WireField::Why),
-                TheRecipeSteps::these(...self::steps($recipe)),
-                TheValuesItCarries::these(...self::pairs($recipe)),
+            $found[] = self::recipe($recipe, $at);
+            $at++;
+        }
+
+        return $found;
+    }
+
+    /**
+     * When a recipe runs; one that does not say runs inside an install, as the contract has it.
+     *
+     * @param array<mixed> $recipe
+     */
+    private static function runs(array $recipe, int $at): WhenARecipeRuns
+    {
+        if (! array_key_exists(PluginsField::On->value, $recipe)) {
+            return WhenARecipeRuns::Install;
+        }
+
+        $said = $recipe[PluginsField::On->value];
+
+        return (is_string($said) ? WhenARecipeRuns::tryFrom($said) : null) ?? throw PluginsAreUnreadable::entry(PluginsField::Recipes, PluginsField::On, $at);
+    }
+
+    /**
+     * Every value a recipe asks the operator for; none where it lists none.
+     *
+     * @param  array<mixed>             $recipe
+     * @return list<AnInputARecipeAsks>
+     */
+    private static function inputs(array $recipe): array
+    {
+        if (! array_key_exists(PluginsField::Inputs->value, $recipe)) {
+            return [];
+        }
+
+        $found = [];
+        $at = 0;
+
+        foreach (self::rows($recipe, PluginsField::Inputs) as $input) {
+            if (! is_array($input)) {
+                throw PluginsAreUnreadable::entry(PluginsField::Inputs, WireField::Name, $at);
+            }
+
+            $found[] = AnInputARecipeAsks::named(
+                self::text($input, PluginsField::Inputs, WireField::Name, $at),
+                self::text($input, PluginsField::Inputs, PluginsField::Ask, $at),
             );
             $at++;
         }

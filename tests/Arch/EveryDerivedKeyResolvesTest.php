@@ -52,6 +52,7 @@ use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAProofSays;
+use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -252,6 +253,10 @@ function everyDerivedKey(): array
         Category::class => aPairPerCase(
             Category::cases(),
             static fn(Category $category): array => [$category->saidOnTheScreen()],
+        ),
+        WhatAStepCameTo::class => aPairPerCase(
+            WhatAStepCameTo::cases(),
+            static fn(WhatAStepCameTo $came): array => [$came->saidOnTheScreen()],
         ),
         WhatToDoWithIt::class => aPairPerCase(
             WhatToDoWithIt::cases(),

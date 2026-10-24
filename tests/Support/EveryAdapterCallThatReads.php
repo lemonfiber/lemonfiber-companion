@@ -47,6 +47,7 @@ use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\AProofOfThisPhone;
+use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
@@ -335,6 +336,10 @@ final readonly class EveryAdapterCallThatReads
             'Extenders::readProving' => static fn(): object => new Extenders($clients, $entropy)->readProving($stack, $session, APluginAsItArrives::held()),
             'Extenders::prove' => static fn(): object
                 => new Extenders($clients, $entropy)->prove($stack, $session, APluginProofAgreed::after(APluginAsItArrives::theProof(), APluginAsItArrives::held())),
+            'Extenders::rehearseRunning' => static fn(): object
+                => new Extenders($clients, $entropy)->rehearseRunning($stack, $session, ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theRecipe()),
+            'Extenders::run' => static fn(): object
+                => new Extenders($clients, $entropy)->run($stack, $session, ARecipeRunAgreed::after(ARecipeRunAsItArrives::theAnswer(ran: false), ARecipeRunAsItArrives::thePlugin(), ARecipeRunAsItArrives::theRecipe(), PluginLines::none())),
             'Extenders::whatBecameOf' => static fn(): object
                 => new Extenders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Followers::tracedOn' => static fn(): object

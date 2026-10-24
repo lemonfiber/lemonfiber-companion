@@ -755,12 +755,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.installed[].services[].takes_data`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
-            'path' => 'PluginsEnvelope.demand',
-            'because' => 'What running one of a plugin\'s demand recipes came to. Nothing this app sends asks for a recipe '
-                . 'by name, so no answer it reads carries one, and no `N` requirement offers running one. Raise it '
-                . 'against the spec before reading it, which is `N1-R17`.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.verified.broke[].now.disruptive',
             'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health '
                 . 'screen lists it, and the health screen draws the whole finding.',
@@ -771,33 +765,10 @@ final readonly class UnreadOnThePluginsEnvelope
                 . 'screen lists it, and the health screen draws the whole finding.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.recipes[].inputs',
-            'because' => 'Every value a recipe asks the operator for when it runs. The screen says under every install and '
-                . 'update that this app gives a recipe no values of the operator\'s, and that a plugin whose recipes '
-                . 'ask for one is installed at the web console or the terminal; no `N` requirement asks the app to '
-                . 'take them.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.install.would.recipes[].on',
-            'because' => 'When a recipe runs: during the install, or only when asked for by name. The screen draws every '
-                . 'recipe the plugin declares, each step in the order it gives (`N20-R5`), and no `N` requirement '
-                . 'asks it to say when one runs. Raise it against the spec before reading it, which is `N1-R17`.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.request_proofs',
             'because' => 'The proofs that ask one of the plugin\'s services a question, as the plugin declares them, kept '
                 . 'so a proof again can ask without its source. What asking one came to arrives in `proofs` beside '
                 . 'the others, which is what is read and drawn.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].recipes[].inputs',
-            'because' => 'As `PluginsEnvelope.install.would.recipes[].inputs`: the record an install would settle is the '
-                . 'record of an installed plugin, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].recipes[].on',
-            'because' => 'As `PluginsEnvelope.install.would.recipes[].on`: the record an install would settle is the '
-                . 'record of an installed plugin, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].request_proofs',
@@ -815,19 +786,45 @@ final readonly class UnreadOnThePluginsEnvelope
                 . 'screen lists it, and the health screen draws the whole finding.',
         ],
         [
-            'path' => 'PluginsEnvelope.update.install.would.recipes[].inputs',
-            'because' => 'As `PluginsEnvelope.install.would.recipes[].inputs`: an update carries the new version\'s install '
-                . 'account whole, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.update.install.would.recipes[].on',
-            'because' => 'As `PluginsEnvelope.install.would.recipes[].on`: an update carries the new version\'s install '
-                . 'account whole, and the one reader reads both.',
-        ],
-        [
             'path' => 'PluginsEnvelope.update.install.would.request_proofs',
             'because' => 'As `PluginsEnvelope.install.would.request_proofs`: an update carries the new version\'s install '
                 . 'account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.ran.recipe',
+            'because' => 'The id of the recipe that ran, which the account already names in `demand.recipe`, read with its title. The two are one recipe.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.ran.steps[].landed',
+            'because' => 'Whether a step reached somewhere outside the plugin\'s own services, which an install going back cannot undo. A run is not put back, so it decides nothing here, and where each step calls is read and drawn by name (`N25-R19`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.ran.steps[].status',
+            'because' => 'The status a step\'s last answer carried. What the step came to, and why in the stack\'s words, is what `N25-R19` asks the app to show; a bare status beside it says less than either.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.ran.steps[].tries',
+            'because' => 'How many times a step was made. What it came to is the answer `N25-R19` asks for, and the count of attempts behind it changes nothing the operator decides.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.recipe.inputs[].secret',
+            'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.demand.recipe.steps[].adapter.owner',
+            'because' => 'As `PluginsEnvelope.installed[].recipes[].steps[].adapter.owner`: the run\'s recipe is read by the one recipe reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.recipes[].inputs[].secret',
+            'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].recipes[].inputs[].secret',
+            'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.recipes[].inputs[].secret',
+            'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
         ],
     ];
 }

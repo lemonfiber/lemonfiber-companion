@@ -16,6 +16,7 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\PluginInstallAction;
 use Lemonfiber\Sdk\Generated\PluginProveAction;
 use Lemonfiber\Sdk\Generated\PluginRemoveAction;
+use Lemonfiber\Sdk\Generated\PluginRunAction;
 use Lemonfiber\Sdk\Generated\PluginUpdateAction;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginInstallAgreed;
@@ -23,6 +24,8 @@ use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
 use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
+use Modules\Kernel\Api\ARecipe;
+use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
@@ -39,24 +42,25 @@ use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
- * The one place this application asks a stack about its plugins, and to install, update or remove one.
+ * The one place this application asks a stack about its plugins, and to install, update, remove or prove one, or run one of its demand recipes.
  *
  * **The listing is a read.** `/api/plugins` answers at once with what the
  * record holds and how each source stands.
  *
  * **Each rehearsal and its act are the same action, told apart by the
- * offer.** `plugin-install`, `plugin-update` and `plugin-remove` asked with no
- * offer are each the reading: the stack says what it would do, under a name,
- * and writes nothing. Asked again with that name, and for an install or an
- * update the values approved, it acts. An update names the source the plugin
- * was installed from. Each answers a
+ * offer.** `plugin-install`, `plugin-update`, `plugin-remove`, `plugin-prove`
+ * and `plugin-run` asked with no offer are each the reading: the stack says
+ * what it would do, under a name, and writes nothing. Asked again with that
+ * name, and for an install, an update or a run the values approved, it acts.
+ * An update names the source the plugin was installed from, and a run the
+ * recipe by its id. Each answers a
  * handle {@see self::whatBecameOf()} follows, and each carries a key of its
  * own, for {@see Supervisors::rehearsed()}'s reason.
  *
  * **No inputs are sent.** A recipe may ask the operator for a value, which
  * may be a secret, and this app takes none: a plugin whose recipes ask for
- * one is installed at the web console or the terminal, and the stack's
- * refusal says which it asks for.
+ * one is installed, and such a recipe run, at the web console or the
+ * terminal, and the stack's refusal says which it asks for.
  *
  * **A refusal keeps the stack's sentence**, for {@see Reversers}' reason: a
  * source holding no plugin, a manifest this build refuses, a value left
@@ -133,6 +137,21 @@ final readonly class Extenders implements ExtendingTheStack
         return $this->asked($stack, $session, new PluginProveAction(offer: $agreed->agreement(), plugin: $agreed->plugin()));
     }
 
+    public function rehearseRunning(Stack $stack, Session $session, APlugin $plugin, ARecipe $recipe): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginRunAction(plugin: $plugin->id(), recipe: $recipe->id()));
+    }
+
+    public function run(Stack $stack, Session $session, ARecipeRunAgreed $agreed): HowExtendingItIsGoing
+    {
+        return $this->asked($stack, $session, new PluginRunAction(
+            offer: $agreed->agreement(),
+            plugin: $agreed->plugin(),
+            recipe: $agreed->recipe(),
+            approved: $this->listed($agreed->approved()),
+        ));
+    }
+
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowExtendingItIsGoing
     {
         try {
@@ -154,7 +173,7 @@ final readonly class Extenders implements ExtendingTheStack
      * A refusal of the asking itself is the stack's answer about the plugin,
      * kept in its words as one of the work would be.
      */
-    private function asked(Stack $stack, Session $session, PluginInstallAction|PluginUpdateAction|PluginRemoveAction|PluginProveAction $action): HowExtendingItIsGoing
+    private function asked(Stack $stack, Session $session, PluginInstallAction|PluginUpdateAction|PluginRemoveAction|PluginProveAction|PluginRunAction $action): HowExtendingItIsGoing
     {
         try {
             $envelope = GatedClient::of($this->clients, $stack, $session)->act(

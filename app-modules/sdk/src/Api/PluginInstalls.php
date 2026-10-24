@@ -22,6 +22,7 @@ use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Internal\PluginInstallReports;
+use Modules\Sdk\Internal\PluginRecipeRuns;
 use Modules\Sdk\Internal\PluginRecords;
 use Modules\Sdk\Internal\PluginUpdatesAndRemovals;
 use Modules\Sdk\Internal\Required;
@@ -67,6 +68,7 @@ final readonly class PluginInstalls
             self::carries($data, PluginsField::Update) => ThePlugins::aboutAnUpdate($installed, $sources, $agreement, PluginUpdatesAndRemovals::update(self::table($data, PluginsField::Update))),
             self::carries($data, WireField::Removal) => ThePlugins::aboutAPluginRemoval($installed, $sources, $agreement, PluginUpdatesAndRemovals::removal(self::table($data, WireField::Removal))),
             self::carries($data, PluginsField::Proof) => ThePlugins::aboutAReproof($installed, $sources, $agreement, self::reproof(self::table($data, PluginsField::Proof))),
+            self::carries($data, PluginsField::Demand) => ThePlugins::aboutARecipeRun($installed, $sources, $agreement, PluginRecipeRuns::in(self::table($data, PluginsField::Demand))),
             default => ThePlugins::listed($installed, $sources, $outOfContract),
         };
     }

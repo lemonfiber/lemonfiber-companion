@@ -118,4 +118,25 @@ enum PluginsField: string implements NamesAWireField
 
     /** The kernel capabilities a service taking a privileged shape is granted. */
     case Grants = 'grants';
+
+    /** When a recipe runs: inside an install and an update, or only when asked for by name. */
+    case On = 'on';
+
+    /** Every value a recipe asks the operator for when it runs. */
+    case Inputs = 'inputs';
+
+    /** What a recipe asks the operator for, in the manifest's words. */
+    case Ask = 'ask';
+
+    /** Running one of a plugin's demand recipes: what it would do, and once run, what it came to. */
+    case Demand = 'demand';
+
+    /** The recipe a run is about, and, inside what it came to, that recipe's id. */
+    case Recipe = 'recipe';
+
+    /** What running a demand recipe came to. */
+    case Ran = 'ran';
+
+    /** What one step of a recipe that ran came to. */
+    case Came = 'came';
 }
