@@ -18,6 +18,9 @@ enum WhereASecretCameFrom: string
     /** It was granted from another service. */
     case Granted = 'granted';
 
+    /** lemonfiber made it for the plugin at install. */
+    case Minted = 'minted';
+
     /** The stack said nothing of where it came from. */
     case Unsaid = 'unsaid';
 
@@ -28,6 +31,7 @@ enum WhereASecretCameFrom: string
             self::Operator => 'plugins.settings.secret_from.operator',
             self::Recipe => 'plugins.settings.secret_from.recipe',
             self::Granted => 'plugins.settings.secret_from.granted',
+            self::Minted => 'plugins.settings.secret_from.minted',
             self::Unsaid => 'plugins.settings.secret_from.unsaid',
         };
     }

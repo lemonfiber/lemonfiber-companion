@@ -6,7 +6,7 @@ namespace Modules\Kernel\Api;
 
 use function sprintf;
 
-/** What one change an install makes puts at its path: a directory, a whole document, a key minted for the plugin, or a region of one. */
+/** What one change an install makes puts at its path: a directory, a whole document, a key minted for the plugin, a region of one, a service's secrets, a starting file, or an adapter's upstream credentials. */
 enum WhatAChangePuts: string
 {
     case Directory = 'directory';
@@ -14,6 +14,8 @@ enum WhatAChangePuts: string
     case Key = 'key';
     case Region = 'region';
     case Secrets = 'secrets';
+    case Starting = 'starting';
+    case Upstream = 'upstream';
 
     /** What it puts, as a catalogue key. */
     public function saidOnTheScreen(): string

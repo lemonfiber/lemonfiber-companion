@@ -70,6 +70,7 @@ use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Kernel\Api\WhereAPhoneKeyLives;
+use Modules\Kernel\Api\WhereASecretCameFrom;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheForgettingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
@@ -426,6 +427,14 @@ it('every time a plugin\'s recipe can run at has a case', function (): void {
 
     expect($on)->not->toBe([], 'no on union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhenARecipeRuns::cases()))->toBe($on);
+});
+
+it('everywhere a secret can have come from has a case, besides the stack saying nothing', function (): void {
+    $from = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SettingsEnvelope'), 'from');
+    $cases = array_filter(WhereASecretCameFrom::cases(), static fn(WhereASecretCameFrom $case): bool => $case !== WhereASecretCameFrom::Unsaid);
+
+    expect($from)->not->toBe([], 'no from union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf($cases))->toBe($from);
 });
 
 it('every privileged shape a plugin\'s service can take has a case', function (): void {

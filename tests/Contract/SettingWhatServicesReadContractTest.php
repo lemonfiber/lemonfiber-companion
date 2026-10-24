@@ -361,6 +361,7 @@ it('reads where a secret came from in each of the stack\'s words', function (str
     'the operator' => ['operator', WhereASecretCameFrom::Operator],
     'a recipe' => ['recipe', WhereASecretCameFrom::Recipe],
     'a grant' => ['granted', WhereASecretCameFrom::Granted],
+    'minted' => ['minted', WhereASecretCameFrom::Minted],
 ]);
 
 it('comes away from rehearsing with the job the stack named', function (): void {
