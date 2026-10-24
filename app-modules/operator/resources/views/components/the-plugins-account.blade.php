@@ -97,10 +97,15 @@
                 @if ($pair->release !== '')
                     <x-operator::note>{{ __('plugins.release', ['from' => $pair->from, 'why' => $pair->release]) }}</x-operator::note>
                 @endif
-                @if ($pair->approval !== null && $install->agreeable)
-                    <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->approved" :tap="$tapping('approve', $pair->approval)" />
-                @elseif ($pair->approval === null)
+                {{-- Staying on this machine is the stack's answer, never what a
+                     missing switch is taken to mean: a pair that asks for an
+                     approval this account offers no switch for says so. --}}
+                @if (! $pair->asksForApproval)
                     <x-operator::note>{{ __('plugins.stays_here') }}</x-operator::note>
+                @elseif ($pair->approval === null)
+                    <x-operator::note>{{ __('plugins.not_asked_here') }}</x-operator::note>
+                @elseif ($install->agreeable)
+                    <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->approved" :tap="$tapping('approve', $pair->approval)" />
                 @endif
             @empty
                 <x-operator::note>{{ __('plugins.sends_nothing') }}</x-operator::note>

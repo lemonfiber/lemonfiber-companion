@@ -83,6 +83,7 @@ return [
     'release' => 'Read from :from and released: :why',
     'approve' => 'Allow sending :value to :to',
     'stays_here' => 'Stays on this machine, and asks for no approval',
+    'not_asked_here' => 'Leaves this machine or releases a value, and asks for an approval of its own that is not given here',
     'approvals_apart' => 'Each switch above allows one value to go where it says, or one service to take what it needs, and nothing else. Installing is a separate yes',
     'install' => 'Install',
     'inputs_elsewhere' => 'This app gives a recipe no values of yours. A plugin whose recipes ask for one is installed at the web console or the terminal',

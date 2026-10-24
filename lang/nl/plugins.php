@@ -83,6 +83,7 @@ return [
     'release' => 'Gelezen uit :from en vrijgegeven: :why',
     'approve' => ':value naar :to sturen toestaan',
     'stays_here' => 'Blijft op deze machine, en vraagt geen toestemming',
+    'not_asked_here' => 'Verlaat deze machine of geeft een waarde vrij, en vraagt om een eigen goedkeuring die hier niet wordt gegeven',
     'approvals_apart' => 'Elke schakelaar hierboven staat één waarde toe om te gaan waar hij zegt, of één service om te nemen wat hij nodig heeft, en niets anders. Installeren is een apart ja',
     'install' => 'Installeren',
     'inputs_elsewhere' => 'Deze app geeft een recept geen waarden van jou. Een plug-in waarvan de recepten er een vragen, installeer je via de webconsole of de terminal',
