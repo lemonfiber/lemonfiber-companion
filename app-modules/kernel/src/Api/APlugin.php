@@ -23,6 +23,7 @@ final readonly class APlugin
         private WhatVouchesForAPlugin $vouched,
         private TheRecipes $recipes,
         private Services $services,
+        private TheCredentialGrants $grants,
     ) {}
 
     /** The plugin, with each service it placed; a blank id or version is refused. */
@@ -34,7 +35,7 @@ final readonly class APlugin
             }
         }
 
-        return new self($id, $version, trim($name), $vouched, $recipes, Services::these(...$services));
+        return new self($id, $version, trim($name), $vouched, $recipes, Services::these(...$services), TheCredentialGrants::of());
     }
 
     /** The name it is installed under. */
@@ -71,6 +72,18 @@ final readonly class APlugin
     public function services(): Services
     {
         return $this->services;
+    }
+
+    /** The same plugin, holding these grants of credentials of other services. */
+    public function holding(TheCredentialGrants $grants): self
+    {
+        return new self($this->id, $this->version, $this->name, $this->vouched, $this->recipes, $this->services, $grants);
+    }
+
+    /** Every credential of another service the operator granted it, as a third-party plugin. */
+    public function grants(): TheCredentialGrants
+    {
+        return $this->grants;
     }
 
     /** Every recipe, in the manifest's order. */

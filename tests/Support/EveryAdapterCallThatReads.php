@@ -10,6 +10,9 @@ use Modules\Kernel\Api\AChallengeToSign;
 use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
+use Modules\Kernel\Api\ACredentialGrant;
+use Modules\Kernel\Api\ACredentialRevoke;
+use Modules\Kernel\Api\ACredentialRevokeAgreed;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadClientAsked;
 use Modules\Kernel\Api\ADownloadHeld;
@@ -25,6 +28,7 @@ use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AKeyToMint;
 use Modules\Kernel\Api\ALift;
 use Modules\Kernel\Api\ALineChange;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
@@ -40,6 +44,7 @@ use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\APhoneKeyToRegister;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APluginInstallAgreed;
 use Modules\Kernel\Api\APluginProofAgreed;
 use Modules\Kernel\Api\APluginRemovalAgreed;
@@ -198,6 +203,7 @@ use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
@@ -424,6 +430,15 @@ final readonly class EveryAdapterCallThatReads
                 )),
             'Tuners::whatBecameOf' => static fn(): object
                 => new Tuners($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'GrantEnders::read' => static fn(): object
+                => new GrantEnders($clients, $entropy)->read($stack, $session, self::aGrantToSpoilTheAnswerTo()),
+            'GrantEnders::end' => static fn(): object
+                => new GrantEnders($clients, $entropy)->end($stack, $session, ACredentialRevokeAgreed::after(
+                    ACredentialRevoke::read('an-offer', self::aGrantToSpoilTheAnswerTo(), Services::none()),
+                    self::aGrantToSpoilTheAnswerTo(),
+                )),
+            'GrantEnders::whatBecameOf' => static fn(): object
+                => new GrantEnders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Acceptors::accept' => static fn(): object
                 => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
             'Acceptors::whatBecameOf' => static fn(): object
@@ -558,6 +573,11 @@ final readonly class EveryAdapterCallThatReads
         ];
     }
     /** The stack every adapter here is pointed at. */
+    private static function aGrantToSpoilTheAnswerTo(): ACredentialGrant
+    {
+        return ACredentialGrant::of(APluginId::called('tdarr'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds(''));
+    }
+
     private static function aStackWhoseAnswersAreSpoiled(): Stack
     {
         return Stack::of(

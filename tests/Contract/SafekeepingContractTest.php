@@ -2,18 +2,24 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\Safekeeping;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
@@ -51,8 +57,9 @@ function theSameCredentials(): TheCredentialsHeld
 {
     return TheCredentialsHeld::of(
         WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of('Another account on this machine'), Remarks::of('Anyone signed in as you')),
-        ACredentialHeld::described('Indexer API key', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr', 'bazarr'), 'Not checked since it was written'),
-        ACredentialHeld::described('Torrent client password', WhereACredentialStands::Active, WhoMadeACredential::Lemonfiber, WhatUsesIt::of(), ''),
+        TheCredentialGrants::of(ACredentialGrant::of(APluginId::called('tdarr'), 'indexer.api_key', ServiceId::called('prowlarr'), 'indexing', AMomentAsWritten::inSeconds('1761321600'))),
+        ACredentialHeld::described('Indexer API key', 'indexer.api_key', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr', 'bazarr'), 'Not checked since it was written'),
+        ACredentialHeld::described('Torrent client password', 'torrent.password', WhereACredentialStands::Active, WhoMadeACredential::Lemonfiber, WhatUsesIt::of(), ''),
     );
 }
 
@@ -68,7 +75,7 @@ function whatAStackSaysItHolds(string $state = 'stale'): array
         'kind' => 'credentials',
         'data' => [
             'rehearsed' => false,
-            'grants' => [],
+            'grants' => [['plugin' => 'tdarr', 'credential' => 'indexer.api_key', 'of' => 'prowlarr', 'for' => 'indexing', 'at' => '1761321600']],
             'held' => [
                 [
                     'name' => 'Indexer API key',
@@ -128,6 +135,10 @@ function everythingTheCredentialsSay(Safekeeping $safekeeping): string
         found: static function (TheCredentialsHeld $held): TheWordCarriedOut {
             $lines = [$held->protection()->summary(), implode(',', iterator_to_array($held->protection()->against(), preserve_keys: false)), implode(',', iterator_to_array($held->protection()->notAgainst(), preserve_keys: false))];
 
+            foreach ($held->grants() as $grant) {
+                $lines[] = sprintf('granted %s to %s, of %s for %s at %s', $grant->credential(), $grant->plugin()->named(), $grant->whose()->named(), $grant->fills(), $grant->approved()->read(read: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()), unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('0'))->said);
+            }
+
             foreach ($held as $credential) {
                 $lines[] = sprintf(
                     '%s|%s|%s|%s|%s',
@@ -151,6 +162,7 @@ it('comes away with every credential, where each stands, who made it, what uses 
     foreach (everyWayOfAskingWhatIsHeld($answered) as $which => $make) {
         expect(everythingTheCredentialsSay($make()))->toBe(
             "Plain files readable only by you\nAnother account on this machine\nAnyone signed in as you\n"
+            . "granted indexer.api_key to tdarr, of prowlarr for indexing at 1761321600\n"
             . "Indexer API key|stale|service|sonarr,bazarr|Not checked since it was written\n"
             . 'Torrent client password|active|lemonfiber||',
             $which,

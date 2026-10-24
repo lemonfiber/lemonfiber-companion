@@ -128,6 +128,21 @@
         <x-design::body>{{ __('plugins.settings.no_secrets') }}</x-design::body>
     @endforelse
 
+    {{-- Each credential of another service granted to it, by its setting and never its value. --}}
+    <x-operator::heading>{{ __('plugins.settings.grants') }}</x-operator::heading>
+    @forelse ($this->answer()->grants as $grant)
+        <x-design::card>
+            <x-design::strong>{{ __('stacks.credentials.grants.of', ['credential' => $grant->credential, 'whose' => $grant->whose]) }}</x-design::strong>
+            <x-operator::the-grant :grant="$grant" />
+        </x-design::card>
+    @empty
+        <x-design::body>{{ __('plugins.settings.no_grants') }}</x-design::body>
+    @endforelse
+    @unless ($this->answer()->grants === [])
+        <x-operator::note>{{ __('plugins.settings.grants_ended_with_the_passwords') }}</x-operator::note>
+        <x-operator::quiet-action :label="__('plugins.settings.to_the_passwords')" :goes="$this->goes()->to(AStacksScreen::Credentials)" />
+    @endunless
+
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 </x-operator::content>

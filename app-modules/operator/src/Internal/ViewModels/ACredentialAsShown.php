@@ -16,7 +16,8 @@ final readonly class ACredentialAsShown
      * @param string       $stateSaid  the catalogue key for where it stands
      * @param string       $originSaid the catalogue key for who produced it
      * @param list<string> $consumers  everything that authenticates with it, possibly nothing
-     * @param string       $advisory   what is worth saying about it, or empty
+     * @param string              $advisory   what is worth saying about it, or empty
+     * @param list<AGrantAsShown> $grants     every grant of it to a third-party plugin
      */
     public function __construct(
         public string $name,
@@ -24,5 +25,6 @@ final readonly class ACredentialAsShown
         public string $originSaid,
         public array $consumers,
         public string $advisory,
+        public array $grants,
     ) {}
 }

@@ -11,6 +11,7 @@ use function is_string;
 
 use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\APluginChange;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\ARunPutBack;
@@ -18,6 +19,7 @@ use Modules\Kernel\Api\ASettingItOverrides;
 use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
@@ -66,6 +68,7 @@ final readonly class PluginInstallReports
             TheContestsLeft::these(...self::contests($install)),
             TheSettingsItOverrides::these(...self::overrides($install)),
             TheShapesTaken::these(...self::taking($install)),
+            TheGrantsAsked::these(...GrantRows::askedBy($install, APluginId::called($would->id()))),
         );
         $proofs = WhatAProofsVerdictWas::proofs($install);
         $checks = self::checks($install);
@@ -183,7 +186,7 @@ final readonly class PluginInstallReports
             $found[] = AShapeTaken::by(
                 self::text($row, PluginsField::Taking, WireField::Service, $position),
                 APrivilegedShape::tryFrom($shape) ?? throw PluginsAreUnreadable::said(WireField::Shape, $shape),
-                PluginLines::under(PluginsField::Grants->value, ...self::words($row, PluginsField::Taking, PluginsField::Grants, $position)),
+                PluginLines::under(WireField::Grants->value, ...self::words($row, PluginsField::Taking, WireField::Grants, $position)),
                 PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
                 self::text($row, PluginsField::Taking, WireField::Approval, $position),
             );

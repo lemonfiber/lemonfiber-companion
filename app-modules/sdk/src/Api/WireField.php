@@ -921,4 +921,22 @@ enum WireField: string implements NamesAWireField
 
     /** One bundled setting a plugin changes; and the setting a settings change is about. */
     case Setting = 'setting';
+
+    /** Every running service a change restarts, a settings change's or ending a grant's. */
+    case Restarts = 'restarts';
+
+    /** Why the services a change restarts were not restarted, where they were not. */
+    case Unrestarted = 'unrestarted';
+
+    /** Whether the member finished it; and whether a grant was ended rather than read. */
+    case Ended = 'ended';
+
+    /** The kernel capabilities a service taking a privileged shape is granted; and every grant of a credential on the credentials read. */
+    case Grants = 'grants';
+
+    /** The setting a credential granted to a plugin is held under. */
+    case Credential = 'credential';
+
+    /** The capability of the plugin's own a credential was granted to fill. */
+    case For = 'for';
 }

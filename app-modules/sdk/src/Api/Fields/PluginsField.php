@@ -116,8 +116,11 @@ enum PluginsField: string implements NamesAWireField
     /** Every service an install would have take a privileged shape. */
     case Taking = 'taking';
 
-    /** The kernel capabilities a service taking a privileged shape is granted. */
-    case Grants = 'grants';
+    /** Each credential of another service the operator granted a third-party plugin. */
+    case Granted = 'granted';
+
+    /** Each credential of another service an install or update would hand a third-party plugin, asked for apart from the offer. */
+    case Granting = 'granting';
 
     /** When a recipe runs: inside an install and an update, or only when asked for by name. */
     case On = 'on';

@@ -20,6 +20,7 @@ use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
+use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\WhatARecipeRunDid;
@@ -27,6 +28,7 @@ use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AContestAsShown;
+use Modules\Operator\Internal\ViewModels\AGrantAskedAsShown;
 use Modules\Operator\Internal\ViewModels\AnAnswerOutOfContractAsShown;
 use Modules\Operator\Internal\ViewModels\APluginAsShown;
 use Modules\Operator\Internal\ViewModels\APluginChangeAsShown;
@@ -140,6 +142,7 @@ final readonly class HowAPluginAccountReads
             overrides: $overrides,
             contests: $contests,
             taking: $taking,
+            granting: $this->granting($install->granting(), $approvals, $approved),
             checked: $checks->wereAsked(),
             broke: $this->lines($checks->broke()),
             unsettled: $this->lines($checks->unsettled()),
@@ -270,6 +273,33 @@ final readonly class HowAPluginAccountReads
 
         foreach ($left as $taken) {
             $shown[] = $this->shape($taken, approval: null, approved: false);
+        }
+
+        return $shown;
+    }
+
+    /**
+     * Every credential of another service the install would hand the plugin, each with its switch where the install offers one.
+     *
+     * @param  list<string>             $approvals every approval the install asks for
+     * @param  list<string>             $approved  every approval the operator has given
+     * @return list<AGrantAskedAsShown>
+     */
+    private function granting(TheGrantsAsked $granting, array $approvals, array $approved): array
+    {
+        $shown = [];
+
+        foreach ($granting as $asked) {
+            $place = array_search($asked->approval(), $approvals, strict: true);
+            $grant = $asked->grant();
+
+            $shown[] = new AGrantAskedAsShown(
+                credential: $grant->credential(),
+                whose: $grant->whose()->named(),
+                fills: $grant->fills(),
+                approval: is_int($place) ? $place : null,
+                approved: in_array($asked->approval(), $approved, strict: true),
+            );
         }
 
         return $shown;

@@ -215,10 +215,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'What the plugin does, in its author\'s words. No requirement asks for it here, and its name and version say which plugin it is.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.granted',
-            'because' => 'As `PluginsEnvelope.installed[].granted`: the record an install would settle is the record of an installed plugin. A grant is approved as `<setting>@<plugin>` beside the rest; this app approves none, so the stack refuses an install whose credential would cross, in its own words.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.installed_at',
             'because' => 'When it was installed, in whole seconds since the epoch. The record (`N11`) draws when each change was made; the plugins screen asks nothing of the time.',
         ],
@@ -261,10 +257,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.installed[].description',
             'because' => 'What the plugin does, in its author\'s words. No requirement asks for it here, and its name and version say which plugin it is.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].granted',
-            'because' => 'Each credential of another service the operator granted this third-party plugin, by its setting and never its value. No requirement asks this app to list a plugin\'s grants yet.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].installed_at',
@@ -433,10 +425,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.description',
             'because' => 'As `PluginsEnvelope.install.would.description`: an update carries the new version\'s install account whole, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.update.install.would.granted',
-            'because' => 'As `PluginsEnvelope.installed[].granted`: the record an install would settle is the record of an installed plugin. A grant is approved as `<setting>@<plugin>` beside the rest; this app approves none, so the stack refuses an install whose credential would cross, in its own words.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.installed_at',

@@ -18,12 +18,12 @@ use Modules\Kernel\Api\WhoMadeACredential;
 /** A credential with the name and advisory given here. */
 function aCredentialSaying(string $name, string $advisory): ACredentialHeld
 {
-    return ACredentialHeld::described($name, WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr'), $advisory);
+    return ACredentialHeld::described($name, 'a.setting', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr'), $advisory);
 }
 
 it('keeps everything it was described with', function (): void {
     $consumers = WhatUsesIt::of('sonarr', 'bazarr');
-    $credential = ACredentialHeld::described('Indexer API key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday');
+    $credential = ACredentialHeld::described('Indexer API key', 'indexer.api_key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday');
 
     expect([$credential->name(), $credential->state(), $credential->origin(), $credential->consumers(), $credential->advisory()])
         ->toBe(['Indexer API key', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, $consumers, 'Refused on Tuesday']);

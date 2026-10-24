@@ -8,6 +8,7 @@ use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
@@ -38,10 +39,15 @@ final readonly class HowAPluginsSettingsRead
     /** The catalogue key for a secret with no value yet. */
     private const string UNSET = 'plugins.settings.secret_unset';
 
-    /** Every setting and secret one of the plugin's services reads. */
-    public function these(APlugin $plugin, TheServicesSettings $settings): WhatAPluginsSettingsShow
+    /** Every setting and secret one of the plugin's services reads, and every grant it holds, dated against the frame's moment. */
+    public function these(APlugin $plugin, TheServicesSettings $settings, Instant $now): WhatAPluginsSettingsShow
     {
         $its = $settings->readByAnyOf($plugin->services());
+        $grants = [];
+
+        foreach ($plugin->grants() as $which => $grant) {
+            $grants[] = new HowAGrantReads()->one($grant, $which, $now);
+        }
 
         return new WhatAPluginsSettingsShow(
             went: HowTheReadingWent::itCameBack(),
@@ -49,13 +55,14 @@ final readonly class HowAPluginsSettingsRead
             plugin: $plugin->shown(),
             settings: $this->settings($plugin, $its->settings()),
             secrets: $this->secrets($plugin, $its->secrets()),
+            grants: $grants,
         );
     }
 
     /** The plugin is not among those installed. */
     public function notInstalled(): WhatAPluginsSettingsShow
     {
-        return new WhatAPluginsSettingsShow(went: HowTheReadingWent::itCameBack(), isInstalled: false, plugin: '', settings: [], secrets: []);
+        return new WhatAPluginsSettingsShow(went: HowTheReadingWent::itCameBack(), isInstalled: false, plugin: '', settings: [], secrets: [], grants: []);
     }
 
     /** This phone holds no session for the stack. */
@@ -72,7 +79,7 @@ final readonly class HowAPluginsSettingsRead
 
     private function nothingFrom(HowTheReadingWent $went): WhatAPluginsSettingsShow
     {
-        return new WhatAPluginsSettingsShow(went: $went, isInstalled: true, plugin: '', settings: [], secrets: []);
+        return new WhatAPluginsSettingsShow(went: $went, isInstalled: true, plugin: '', settings: [], secrets: [], grants: []);
     }
 
     /**
