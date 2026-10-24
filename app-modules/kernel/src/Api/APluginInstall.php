@@ -79,12 +79,18 @@ final readonly class APluginInstall
         return $this->changing->taking();
     }
 
-    /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes. */
+    /** Every credential of another service it would hand the plugin, each asked for apart from the offer. */
+    public function granting(): TheGrantsAsked
+    {
+        return $this->changing->granting();
+    }
+
+    /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes, then the credentials it would hand the plugin. */
     public function approvals(): PluginLines
     {
         $approvals = [];
 
-        foreach ([$this->would->approvals(), $this->changing->taking()->approvals()] as $lines) {
+        foreach ([$this->would->approvals(), $this->changing->taking()->approvals(), $this->changing->granting()->approvals()] as $lines) {
             foreach ($lines as $approval) {
                 $approvals[] = $approval;
             }

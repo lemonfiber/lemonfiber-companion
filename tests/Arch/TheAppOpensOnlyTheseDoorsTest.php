@@ -24,6 +24,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\RevokingAGrant;
 use Modules\Kernel\Api\SearchingTheIndexers;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
@@ -280,6 +281,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',
     'accept' => 'accepts one warning the stack\'s own report raises, named from that report, after what it costs is shown',
     'search' => 'asks the indexers about the item a trace followed, with the term and season the trace was read with, only where the stack\'s own trace says a search would settle it and after what it spends is shown; never rehearsed',
+    'credentials-revoke' => 'ends one grant of a credential to a third-party plugin, from the credentials screen, after the stack read what ending it would restart and said that the plugin stays installed and only rotating takes back what was handed; read first with no offer, and the yes carries the offer back',
     'diagnose' => 'runs the checks that disturb something: one the stack\'s own report leaves unverified, narrowed as that report names it, every check of a family, or every check, each after what it disturbs and its bound are shown; never rehearsed',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
@@ -610,6 +612,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(ChoosingWhatIsAllowed $allowed): string => $allowed->asked(), ChoosingWhatIsAllowed::cases()),
         ...array_map(static fn(AcceptingAChoice $accepting): string => $accepting->asked(), AcceptingAChoice::cases()),
         ...array_map(static fn(CheckingWhatDisturbs $checking): string => $checking->asked(), CheckingWhatDisturbs::cases()),
+        ...array_map(static fn(RevokingAGrant $revoking): string => $revoking->asked(), RevokingAGrant::cases()),
         ...array_map(static fn(SearchingTheIndexers $searching): string => $searching->asked(), SearchingTheIndexers::cases()),
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),
         ...array_map(static fn(SwitchingTheForms $switching): string => $switching->asked(), SwitchingTheForms::cases()),

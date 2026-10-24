@@ -35,6 +35,9 @@ use function sprintf;
  */
 final readonly class AMomentAsWritten
 {
+    /** A moment written out as whole seconds since the epoch, in few enough digits to stay inside an integer. */
+    public const string IN_SECONDS = '/\A\d{1,18}\z/';
+
     /**
      * A date, a `T`, a time to the second, any fraction, and `Z` or an offset.
      *
@@ -104,6 +107,12 @@ final readonly class AMomentAsWritten
     public static function byTheStack(string $written): self
     {
         return new self(preg_match(self::THE_STACKS_OWN, $written) === 1 ? self::instantIn(sprintf(self::IN_UTC, $written)) : null);
+    }
+
+    /** A moment written out as whole seconds since the epoch, as a link or a stack's record writes one; anything else it reads as unreadable. */
+    public static function inSeconds(string $written): self
+    {
+        return new self(preg_match(self::IN_SECONDS, $written) === 1 ? Instant::atEpochSeconds((int) $written) : null);
     }
 
     /**

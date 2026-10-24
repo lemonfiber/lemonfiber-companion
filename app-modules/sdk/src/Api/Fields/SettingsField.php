@@ -34,10 +34,4 @@ enum SettingsField: string implements NamesAWireField
 
     /** Every service whose entry a change regenerates. */
     case Regenerates = 'regenerates';
-
-    /** Every running service a change restarts. */
-    case Restarts = 'restarts';
-
-    /** Why the services a change restarts were not restarted, where they were not. */
-    case Unrestarted = 'unrestarted';
 }

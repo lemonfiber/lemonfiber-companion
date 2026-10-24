@@ -268,6 +268,47 @@ it('approves a shape apart from the install, and sends it with the reading\'s na
         ->and($screen->leftUnapproved?->isEmpty())->toBeTrue();
 });
 
+it('draws each password of another service the install would hand the plugin, by its setting, each with a switch of its own that starts off', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGrantingReading()),
+    )));
+    $plain = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    )));
+
+    expect($drawn->said())->toContain(
+        aPluginsLine('plugins.granting.heading'),
+        aPluginsLine('stacks.credentials.grants.of', ['credential' => 'plex.token', 'whose' => 'plex']),
+        aPluginsLine('plugins.granting.for', ['fills' => 'library-scan']),
+        aPluginsLine('plugins.granting.each'),
+    )->and($drawn->offers())->toContain(aPluginsLine('plugins.granting.approve', ['credential' => 'plex.token', 'plugin' => 'Tdarr']))
+        ->and($plain->said())->toContain(aPluginsLine('plugins.granting.none'))
+        ->and($plain->said())->not->toContain(aPluginsLine('plugins.granting.each'));
+});
+
+it('hands a password over only where its switch was turned on, and the yes to the install alone hands over none', function (): void {
+    $approving = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGrantingReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $screen = tdarrRehearsed($approving);
+    $screen->approve(1);
+    $screen->agree();
+    $leaving = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGrantingReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $alone = tdarrRehearsed($leaving);
+    $alone->agree();
+
+    expect($approving->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::GRANT_APPROVAL)])
+        ->and($leaving->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:', APluginAsItArrives::AGREEMENT)]);
+});
+
 it('names each service the yes left without its shape where the install is refused, and lets go of them on the way back', function (): void {
     $extending = aStackWithTdarr(
         HowExtendingItIsGoing::underway(Job::named('j-1')),

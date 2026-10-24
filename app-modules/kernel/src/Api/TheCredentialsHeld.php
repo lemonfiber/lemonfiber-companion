@@ -15,7 +15,7 @@ use IteratorAggregate;
 use Traversable;
 
 /**
- * Every credential a stack holds, in the stack's order, with what their store protects against.
+ * Every credential a stack holds, in the stack's order, with what their store protects against and every grant of one to a third-party plugin.
  *
  * None at all is an answer, and it is not *could not be read*: that is an
  * {@see Obstacle}, which {@see WhatWasFoundOfTheCredentials} keeps apart.
@@ -25,12 +25,18 @@ use Traversable;
 final readonly class TheCredentialsHeld implements Countable, IteratorAggregate
 {
     /** @param list<ACredentialHeld> $held */
-    private function __construct(private WhatTheStoreProtects $protection, private array $held) {}
+    private function __construct(private WhatTheStoreProtects $protection, private TheCredentialGrants $grants, private array $held) {}
 
-    /** These credentials, in the stack's order; reindexed for a named spread's keys. */
-    public static function of(WhatTheStoreProtects $protection, ACredentialHeld ...$held): self
+    /** These credentials and grants, in the stack's order; reindexed for a named spread's keys. */
+    public static function of(WhatTheStoreProtects $protection, TheCredentialGrants $grants, ACredentialHeld ...$held): self
     {
-        return new self($protection, array_values($held));
+        return new self($protection, $grants, array_values($held));
+    }
+
+    /** Every grant of a credential to a third-party plugin. */
+    public function grants(): TheCredentialGrants
+    {
+        return $this->grants;
     }
 
     /** What keeping them in files does and does not protect against. */

@@ -13,6 +13,7 @@ final readonly class WhatAPluginsSettingsShow
      * @param string                $plugin      what the plugin calls itself
      * @param list<APluginsSettingAsShown> $settings    every setting its services read
      * @param list<ASecretAsShown>  $secrets     every secret its services read
+     * @param list<AGrantAsShown>   $grants      every credential of another service granted to it
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -20,5 +21,6 @@ final readonly class WhatAPluginsSettingsShow
         public string $plugin,
         public array $settings,
         public array $secrets,
+        public array $grants,
     ) {}
 }

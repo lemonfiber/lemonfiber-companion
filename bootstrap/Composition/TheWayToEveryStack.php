@@ -27,6 +27,7 @@ use Modules\Kernel\Api\ChoosingWhatTheHouseholdMayAsk;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Encoding;
+use Modules\Kernel\Api\EndingACredentialGrant;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\FetchingArtwork;
@@ -116,6 +117,7 @@ use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
@@ -422,6 +424,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // Who gets in: the credentials, which app to watch on, and the front
         // door, each read beside the rest and bound for the same reason.
         $this->app->bind(Safekeeping::class, Keyholders::class);
+        $this->app->bind(EndingACredentialGrant::class, GrantEnders::class);
         $this->app->bind(KeepingKeysForApps::class, KeyKeepers::class);
         $this->app->bind(KeepingPhoneKeys::class, PhoneKeyKeepers::class);
         $this->app->bind(MintingKeysAsClaims::class, KeyMinters::class);

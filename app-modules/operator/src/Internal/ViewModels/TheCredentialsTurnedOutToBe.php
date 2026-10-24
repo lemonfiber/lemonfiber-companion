@@ -18,6 +18,7 @@ final readonly class TheCredentialsTurnedOutToBe
      * @param string                   $summary    what the store is, or empty where nothing came back
      * @param list<string>             $against    what the store protects against
      * @param list<string>             $notAgainst what the store does not protect against
+     * @param list<AGrantAsShown>      $elsewhere  every grant of a credential the list does not hold
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -25,5 +26,6 @@ final readonly class TheCredentialsTurnedOutToBe
         public string $summary,
         public array $against,
         public array $notAgainst,
+        public array $elsewhere,
     ) {}
 }

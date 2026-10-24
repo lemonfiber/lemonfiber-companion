@@ -19,6 +19,7 @@ use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APrivilegedShape;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhereItsSourceStands;
@@ -308,7 +309,6 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a shape taken that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => ['gluetun']])), $unreadable],
         'a shape taken by no service' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'service' => ' ']]])), $unreadable],
         'a shape nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'shape' => 'host-network']]])), $unreadable],
-        'grants that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'grants' => 'NET_ADMIN']]])), $unreadable],
         'a blank device' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'devices' => ['']]]])), $unreadable],
         'a shape taken with no approval to give' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'approval' => '']]])), $unreadable],
         'an override that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'overrides' => ['sonarr.rename']])), $unreadable],
@@ -336,6 +336,13 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'services that are not a list' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => 'tdarr'])), $unreadable],
         'a service that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => ['tdarr']])), $unreadable],
         'a service placed with no id' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'services' => [['service' => ' ']]])), $unreadable],
+        'grants asked that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'granting' => 'plex.token@tdarr'])), $unreadable],
+        'a grant asked that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'granting' => ['plex.token@tdarr']])), $unreadable],
+        'a grant asked with no line to approve it by' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'granting' => [['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'approval' => ' ']]])), $unreadable],
+        'a grant asked of nothing' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'granting' => [['credential' => '', 'of' => 'plex', 'for' => 'library-scan', 'approval' => 'x@tdarr']]])), $unreadable],
+        'grants held that are not a list' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => 'plex.token'])), $unreadable],
+        'a grant that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => ['plex.token']])), $unreadable],
+        'a grant of nothing' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => [['credential' => ' ', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1']]])), $unreadable],
     ];
 }
 
@@ -420,4 +427,39 @@ it('reads every check an install broke or left unsettled by its title, an agreem
 
     expect($read)->toBe('broke Sonarr answers|unsettled The VPN is up|not reviewed|not held')
         ->and($plugins->agreement())->toBe('');
+});
+
+it('reads each grant an installed plugin holds, by its record, and a record keeping none as none', function (): void {
+    $grant = ['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600'];
+    $plugins = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'installed' => [
+        [...APluginAsItArrives::onTheWire(), 'granted' => [$grant, [...$grant, 'credential' => 'jellyfin.key', 'of' => 'jellyfin', 'at' => '']]],
+        [...APluginAsItArrives::onTheWire(), 'plugin' => 'bazarr', 'granted' => null],
+    ]]));
+    $held = [];
+
+    foreach ($plugins->installed() as $plugin) {
+        $held[$plugin->id()] = [];
+
+        foreach ($plugin->grants() as $one) {
+            $held[$plugin->id()][] = sprintf('%s:%s of %s for %s at %s', $one->plugin()->named(), $one->credential(), $one->whose()->named(), $one->fills(), $one->approved()->read(read: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()), unreadable: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'))->said);
+        }
+    }
+
+    expect($held)->toBe([
+        'tdarr' => ['tdarr:plex.token of plex for library-scan at 1761321600', 'tdarr:jellyfin.key of jellyfin for library-scan at unsaid'],
+        'bazarr' => [],
+    ]);
+});
+
+it('reads each password of another service an install would hand the plugin, with the line it is approved by, and none where a stack says nothing of it', function (): void {
+    $granting = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(APluginAsItArrives::aGrantingReadingOnTheWire(), APluginAsItArrives::AGREEMENT)['data']));
+    $silent = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static function (array $install): array {
+        unset($install['granting']);
+
+        return $install;
+    })));
+
+    expect($granting)->toEqual(APluginAsItArrives::theGrantingReading())
+        ->and(iterator_to_array($granting->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL])
+        ->and(iterator_to_array($silent->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL]);
 });

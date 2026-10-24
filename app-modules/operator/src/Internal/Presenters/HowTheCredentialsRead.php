@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function array_key_exists;
+use function array_merge;
+use function array_values;
+
 use Modules\Kernel\Api\ACredentialHeld;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
+use Modules\Operator\Internal\ViewModels\AGrantAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheCredentialsTurnedOutToBe;
 
@@ -26,13 +32,21 @@ final readonly class HowTheCredentialsRead
         return $this->nothingFrom(HowTheReadingWent::theSessionEnded());
     }
 
-    /** The stack answered, and these are what it holds. */
-    public function these(TheCredentialsHeld $held): TheCredentialsTurnedOutToBe
+    /** The stack answered, and these are what it holds, each with the grants of it beside it, dated against the frame's moment. */
+    public function these(TheCredentialsHeld $held, Instant $now): TheCredentialsTurnedOutToBe
     {
+        $grants = [];
+
+        foreach ($held->grants() as $which => $grant) {
+            $grants[$grant->credential()][] = new HowAGrantReads()->one($grant, $which, $now);
+        }
+
         $shown = [];
 
         foreach ($held as $credential) {
-            $shown[] = $this->one($credential);
+            $setting = $credential->setting();
+            $shown[] = $this->one($credential, array_key_exists($setting, $grants) ? $grants[$setting] : []);
+            unset($grants[$setting]);
         }
 
         return new TheCredentialsTurnedOutToBe(
@@ -41,6 +55,7 @@ final readonly class HowTheCredentialsRead
             summary: $held->protection()->summary(),
             against: $this->listed($held->protection()->against()),
             notAgainst: $this->listed($held->protection()->notAgainst()),
+            elsewhere: array_merge(...array_values($grants)),
         );
     }
 
@@ -50,8 +65,12 @@ final readonly class HowTheCredentialsRead
         return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
     }
 
-    /** One credential, as the row that draws it. */
-    private function one(ACredentialHeld $credential): ACredentialAsShown
+    /**
+     * One credential, as the row that draws it, with every grant of it.
+     *
+     * @param list<AGrantAsShown> $grants
+     */
+    private function one(ACredentialHeld $credential, array $grants): ACredentialAsShown
     {
         $consumers = [];
 
@@ -65,6 +84,7 @@ final readonly class HowTheCredentialsRead
             originSaid: $credential->origin()->saidOnTheScreen(),
             consumers: $consumers,
             advisory: $credential->advisory(),
+            grants: $grants,
         );
     }
 
@@ -90,6 +110,6 @@ final readonly class HowTheCredentialsRead
     /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): TheCredentialsTurnedOutToBe
     {
-        return new TheCredentialsTurnedOutToBe(went: $went, held: [], summary: '', against: [], notAgainst: []);
+        return new TheCredentialsTurnedOutToBe(went: $went, held: [], summary: '', against: [], notAgainst: [], elsewhere: []);
     }
 }

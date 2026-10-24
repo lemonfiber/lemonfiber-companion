@@ -750,6 +750,7 @@ it('stands in for a stack with payloads the contract would accept', function ():
         APluginAsItArrives::theAnswer(null),
         APluginAsItArrives::theAnswer(APluginAsItArrives::aReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::aGuardedReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
+        APluginAsItArrives::theAnswer(APluginAsItArrives::aGrantingReadingOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::putBackOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswer(APluginAsItArrives::installedOnTheWire(), APluginAsItArrives::AGREEMENT),
         APluginAsItArrives::theAnswerAbout('update', APluginAsItArrives::anUpdateReadingOnTheWire()),

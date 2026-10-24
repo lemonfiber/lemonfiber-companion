@@ -31,4 +31,7 @@ enum CredentialsField: string implements NamesAWireField
 
     /** What the store does not protect against. */
     case NotAgainst = 'not_against';
+
+    /** The grant ending one would end. */
+    case Grant = 'grant';
 }

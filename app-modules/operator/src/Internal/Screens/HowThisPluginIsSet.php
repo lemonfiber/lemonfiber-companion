@@ -15,6 +15,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
@@ -47,7 +48,7 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * One plugin's settings and secrets, and changing a setting: rehearsed, agreed to, and followed.
+ * One plugin's settings, secrets and grants, and changing a setting: rehearsed, agreed to, and followed.
  *
  * Every setting and secret one of the plugin's services reads is listed. A
  * setting is changed or put back to its default by a rehearsal first, and the
@@ -101,6 +102,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     public function __construct(
         private readonly SettingWhatServicesRead $tuning,
         private readonly ExtendingTheStack $extending,
+        private readonly Clock $clock,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -285,14 +287,14 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         $read = $this->read;
 
         if ($read instanceof TheServicesSettings) {
-            return new HowAPluginsSettingsRead()->these($plugin, $read);
+            return new HowAPluginsSettingsRead()->these($plugin, $read, $this->clock->now());
         }
 
         return $this->tuning->readOn($stack, $session)->either(
             found: function (TheServicesSettings $settings) use ($plugin): WhatAPluginsSettingsShow {
                 $this->read = $settings;
 
-                return new HowAPluginsSettingsRead()->these($plugin, $settings);
+                return new HowAPluginsSettingsRead()->these($plugin, $settings, $this->clock->now());
             },
             met: $this->lettingGoIfRefused($stack, new HowAPluginsSettingsRead()->met(...)),
         );

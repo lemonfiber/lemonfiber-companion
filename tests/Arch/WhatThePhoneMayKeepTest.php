@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Connection\Internal\TheSettingsAsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
+use Modules\Kernel\Api\ACredentialRevokeAgreed;
 use Modules\Kernel\Api\AFillAgreed;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AMoveAgreed;
@@ -108,6 +109,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     APluginRemovalAgreed::class,
     APluginProofAgreed::class,
     ARecipeRunAgreed::class,
+    ACredentialRevokeAgreed::class,
     ASettingChangeAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,

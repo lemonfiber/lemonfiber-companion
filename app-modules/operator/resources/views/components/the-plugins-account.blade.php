@@ -72,6 +72,25 @@
         <x-operator::note>{{ __('plugins.no_shapes') }}</x-operator::note>
     @endforelse
 
+    {{-- Every credential of another service it would be handed, by its
+         setting and never its value, each with its own switch apart from the
+         offer: the yes to the install hands over none of them. --}}
+    <x-operator::heading>{{ __('plugins.granting.heading') }}</x-operator::heading>
+    @forelse ($install->granting as $asked)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ __('stacks.credentials.grants.of', ['credential' => $asked->credential, 'whose' => $asked->whose]) }}</x-operator::emphasis>
+            <x-design::body>{{ __('plugins.granting.for', ['fills' => $asked->fills]) }}</x-design::body>
+            @if ($asked->approval !== null && $install->agreeable)
+                <x-design::toggle :label="__('plugins.granting.approve', ['credential' => $asked->credential, 'plugin' => $install->plugin->name])" :on="$asked->approved" :tap="$tapping('approve', $asked->approval)" />
+            @endif
+        </x-operator::entry>
+    @empty
+        <x-operator::note>{{ __('plugins.granting.none') }}</x-operator::note>
+    @endforelse
+    @unless ($install->granting === [])
+        <x-operator::note>{{ __('plugins.granting.each') }}</x-operator::note>
+    @endunless
+
     {{-- Every recipe as its steps in order, and every value it would carry
          elsewhere as its own line with its own switch. --}}
     <x-operator::heading>{{ __('plugins.recipes') }}</x-operator::heading>

@@ -17,12 +17,13 @@ final readonly class WhatAnInstallChanges
         private TheContestsLeft $contests,
         private TheSettingsItOverrides $overrides,
         private TheShapesTaken $taking,
+        private TheGrantsAsked $granting,
     ) {}
 
     /** These, as the stack listed them. */
-    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking): self
+    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking, TheGrantsAsked $granting): self
     {
-        return new self($changes, $contests, $overrides, $taking);
+        return new self($changes, $contests, $overrides, $taking, $granting);
     }
 
     /** Every change, in order. */
@@ -47,5 +48,11 @@ final readonly class WhatAnInstallChanges
     public function taking(): TheShapesTaken
     {
         return $this->taking;
+    }
+
+    /** Every credential of another service it would hand the plugin. */
+    public function granting(): TheGrantsAsked
+    {
+        return $this->granting;
     }
 }
