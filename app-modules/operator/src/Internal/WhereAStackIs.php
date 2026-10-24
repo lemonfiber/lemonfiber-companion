@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
@@ -139,6 +140,12 @@ final readonly class WhereAStackIs
     public function running(string $check): string
     {
         return AStacksScreen::Run->forTheStacksCheck($this->stack, Check::of($check));
+    }
+
+    /** Where running every check, or every check of one family, is weighed before anything is sent. */
+    public function runningChecks(WhatARunCovers $covers): string
+    {
+        return AStacksScreen::RunChecks->forTheStacksChecks($this->stack, $covers);
     }
 
     /** Where somebody is asked in with their name already typed. */

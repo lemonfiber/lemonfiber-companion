@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
+use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
@@ -68,6 +69,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatToDoWithThis::class,
     WhatAcceptingItCosts::class,
     WhatRunningACheckDisturbs::class,
+    WhatRunningChecksDisturbs::class,
     WhereThisGotTo::class,
     WhatExtendsThisStack::class,
     WhatTheHouseholdIsAllowed::class,

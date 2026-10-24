@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -223,6 +224,7 @@ function aSampleOf(ReflectionParameter $taken): object|string
         WhatToFollow::class => WhatToFollow::called('Dune'),
         AWordInUse::class => AWordInUse::named('Grabber'),
         WhatToDoWithTheDownloads::class => WhatToDoWithTheDownloads::Pause,
+        WhatARunCovers::class => WhatARunCovers::everyCheck(),
         default => $taken->getName() === 'stamp' ? '1790150000' : 'gluetun',
     };
 }
@@ -406,6 +408,13 @@ it('a screen that needs only a stack refuses to be handed a check as well', func
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 
+it('a screen that needs only a stack refuses to be handed a run of checks as well', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacksChecks(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        WhatARunCovers::everyCheck(),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
 it('which builder a screen needs is read off its own pattern', function (): void {
     // Read rather than listed, so a case added with a second placeholder is
     // covered by both refusals without anybody remembering to add it to a list
@@ -417,5 +426,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run']);
+        ->toBe(['Doing', 'Logs', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
 });

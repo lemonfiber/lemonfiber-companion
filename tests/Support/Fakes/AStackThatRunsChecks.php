@@ -6,20 +6,26 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\ACheckThatDisturbs;
+use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\RunningACheck;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Tests\Support\TheWordCarriedOut;
 
 /**
- * A stack that takes running a check that disturbs on and says what became of it, as a test arranges, remembering each check it was asked to run.
+ * A stack that takes running checks that disturb on and says what became of it, as a test arranges, remembering each run it was asked for.
  */
 final class AStackThatRunsChecks implements RunningACheck
 {
     /** The handle a run is answered with. */
     public const string THE_RUN = 'a-run';
+
+    /** What {@see self::ran()} records for a run of every check, which names no check or group. */
+    public const string EVERY_CHECK = '(every check)';
 
     /** @var list<string> */
     private array $ran = [];
@@ -72,6 +78,19 @@ final class AStackThatRunsChecks implements RunningACheck
     /**
      * @return WhatBecameOfTheWork<Report>
      */
+    public function runEvery(Stack $stack, Session $session, WhatARunCovers $covers): WhatBecameOfTheWork
+    {
+        $this->ran[] = $covers->either(
+            every: static fn(): TheWordCarriedOut => new TheWordCarriedOut(self::EVERY_CHECK),
+            family: static fn(Category $family): TheWordCarriedOut => new TheWordCarriedOut($family->value),
+        )->said;
+
+        return ($this->running)();
+    }
+
+    /**
+     * @return WhatBecameOfTheWork<Report>
+     */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): WhatBecameOfTheWork
     {
         $this->followed[] = $job;
@@ -79,7 +98,7 @@ final class AStackThatRunsChecks implements RunningACheck
         return ($this->becoming)($job);
     }
 
-    /** @return list<string> every check or group a run was sent for, in order */
+    /** @return list<string> every check, group or family a run was sent for, in order, and {@see self::EVERY_CHECK} for a run of all */
     public function ran(): array
     {
         return $this->ran;

@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\DiagnoseAction;
 use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\ADisturbanceSaysNothing;
+use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\CheckGaveNoReason;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\CheckSaidNothing;
@@ -21,11 +22,12 @@ use Modules\Kernel\Api\RunningACheck;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Sdk\Internal\TheWorkAsked;
 
 /**
- * Running a check that disturbs through the SDK: `diagnose` narrowed to what the stack named for it, with the checks that disturb included, followed to the report it answers with.
+ * Running checks that disturb through the SDK: `diagnose` with the checks that disturb included, narrowed to what the stack named for a finding, to a family, or to nothing, followed to the report it answers with.
  */
 final readonly class CheckRunners implements RunningACheck
 {
@@ -37,6 +39,17 @@ final readonly class CheckRunners implements RunningACheck
     public function run(Stack $stack, Session $session, ACheckThatDisturbs $check): WhatBecameOfTheWork
     {
         return $this->work()->sent($stack, $session, new DiagnoseAction(disruptive: true, only: $check->narrowedTo()));
+    }
+
+    /**
+     * @return WhatBecameOfTheWork<Report>
+     */
+    public function runEvery(Stack $stack, Session $session, WhatARunCovers $covers): WhatBecameOfTheWork
+    {
+        return $this->work()->sent($stack, $session, $covers->either(
+            every: static fn(): DiagnoseAction => new DiagnoseAction(disruptive: true),
+            family: static fn(Category $family): DiagnoseAction => new DiagnoseAction(disruptive: true, only: $family->value),
+        ));
     }
 
     /**

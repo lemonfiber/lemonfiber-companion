@@ -279,7 +279,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     'forget' => 'asks what removing everything lemonfiber keeps would take, and removes it only with that list shown',
     'accept' => 'accepts one warning the stack\'s own report raises, named from that report, after what it costs is shown',
     'search' => 'asks the indexers about the item a trace followed, with the term and season the trace was read with, only where the stack\'s own trace says a search would settle it and after what it spends is shown; never rehearsed',
-    'diagnose' => 'runs one check the stack\'s own report leaves unverified because it disturbs something, narrowed as that report names it, after what it disturbs and its bound are shown; never rehearsed',
+    'diagnose' => 'runs the checks that disturb something: one the stack\'s own report leaves unverified, narrowed as that report names it, every check of a family, or every check, each after what it disturbs and its bound are shown; never rehearsed',
     // One run the record shows, named by its stamp. It takes no yes and offers
     // no rehearsal over the wire, so the only thing that spells it is an
     // agreement built from the record's own rows for that run — and a run the

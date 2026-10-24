@@ -28,7 +28,9 @@ use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
+use Modules\Operator\Internal\Presenters\HowARunOfChecksReads;
 use Modules\Operator\Internal\Presenters\HowAStackReads;
+use Modules\Operator\Internal\ViewModels\ARunOffered;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
@@ -223,6 +225,16 @@ final class HowThisStackIs extends NativeComponent
         }
 
         return $families;
+    }
+
+    /**
+     * The runs of checks offered here: every check, and the family being read where one is.
+     *
+     * @return list<ARunOffered>
+     */
+    public function runsOffered(): array
+    {
+        return new HowARunOfChecksReads()->offered($this->narrowing());
     }
 
     /** Whether the operator is reading one family rather than the whole run. */

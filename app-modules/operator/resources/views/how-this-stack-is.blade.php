@@ -119,6 +119,19 @@
         @endforelse
     </x-design::chips>
 
+    {{-- Running checks again, the ones that disturb included: every check,
+         and the family being read where one is. Each is weighed on its own
+         screen before anything is sent. --}}
+    @forelse ($this->runsOffered() as $run)
+        @if ($run->familySaid !== '')
+            <x-design::link :label="__($run->said, ['family' => __($run->familySaid)])" :goes="$this->goes()->runningChecks($run->covers)" />
+        @else
+            <x-design::link :label="__($run->said)" :goes="$this->goes()->runningChecks($run->covers)" />
+        @endif
+    @empty
+        {{-- Nothing: every check is always offered. --}}
+    @endforelse
+
     @forelse ($this->findings() as $finding)
         <x-design::card>
             {{-- Which part of the machine it is about, and which service where

@@ -10,7 +10,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheCheckTurnedOutToBe;
-use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 
 /**
  * One finding that waits on a check that disturbs, as the fields a screen draws before and after it runs.
@@ -49,10 +48,7 @@ final readonly class HowACheckThatDisturbsReads
 
         return $finding->whetherCheckingDisturbs()->either(
             so: static function (ACheckThatDisturbs $disturbing) use ($card, $finding): TheCheckTurnedOutToBe {
-                $bound = $disturbing->either(
-                    bounded: static fn(int $seconds): WhatAVerbTakesAwaySays => new WhatAVerbTakesAwaySays('health.for_at_most', $seconds),
-                    unbounded: static fn(): WhatAVerbTakesAwaySays => new WhatAVerbTakesAwaySays('health.disturbs.no_bound', null),
-                );
+                $bound = new HowABoundReads()->of($disturbing);
 
                 return new TheCheckTurnedOutToBe(
                     went: HowTheReadingWent::itCameBack(),

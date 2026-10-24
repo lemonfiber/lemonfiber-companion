@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
@@ -132,6 +133,21 @@ it('comes away from a run with the job the stack named, sending diagnose narrowe
         ->and($sent->body()?->all())->toBe(['only' => 'vpn.killswitch', 'disruptive' => true]);
 });
 
+it('comes away from a run of every check, or of a family, with the job the stack named, sending diagnose with the checks that disturb included', function (WhatARunCovers $covers, array $body): void {
+    foreach (['the fake' => AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), 'the adapter' => aCheckRunnerAnswered(aCheckRunTakenOn(AStackThatRunsChecks::THE_RUN))] as $which => $running) {
+        expect(whatRunningCameTo($running->runEvery(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), $covers)))
+            ->toBe(sprintf('following %s', AStackThatRunsChecks::THE_RUN), $which);
+    }
+
+    $sent = MockClient::global()->getRecordedResponses()[0]->getPendingRequest();
+
+    expect($sent->getRequest()->resolveEndpoint())->toBe('/api/actions/diagnose')
+        ->and($sent->body()?->all())->toBe($body);
+})->with([
+    'every check' => [WhatARunCovers::everyCheck(), ['only' => null, 'disruptive' => true]],
+    'a family' => [WhatARunCovers::theFamily(Category::Vpn), ['only' => 'vpn', 'disruptive' => true]],
+]);
+
 it('reads the report the run came to', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOnceTheCheckRan()));
 
@@ -159,12 +175,15 @@ it('comes away with the obstacle where the stack could not be asked or read', fu
     'an answer that is not one' => [MockResponse::make('not json at all'), KindOfObstacle::AnswerCouldNotBeRead],
 ]);
 
-it('the fake remembers each check run and each handle followed', function (): void {
+it('the fake remembers each run and each handle followed', function (): void {
     $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
     $running->run(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), theKillswitchCheck());
     $running->whatBecameOf(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), Job::named(AStackThatRunsChecks::THE_RUN));
 
-    expect($running->ran())->toBe(['vpn.killswitch'])
+    $running->runEvery(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), WhatARunCovers::everyCheck());
+    $running->runEvery(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), WhatARunCovers::theFamily(Category::Vpn));
+
+    expect($running->ran())->toBe(['vpn.killswitch', AStackThatRunsChecks::EVERY_CHECK, 'vpn'])
         ->and(array_map(static fn(Job $job): string => $job->shown(), $running->followed()))->toBe([AStackThatRunsChecks::THE_RUN]);
 });
 
