@@ -80,6 +80,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The setting a choice of filler is recorded under, in lemonfiber\'s own spelling of it. The screen says the same thing in the operator\'s terms, from the capability and the service that would answer it.',
         ],
         [
+            'path' => 'SubstitutionEnvelope.substitution.leaves_unfilled[].native',
+            'because' => 'As `WiringEnvelope.unfilled[].native`: a capability the substitution leaves unanswered is drawn as lost, which it is, and no requirement asks which upstream API its ask talks in.',
+        ],
+        [
             'path' => 'SubstitutionEnvelope.unvetted',
             'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
         ],
@@ -667,6 +671,14 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'Where the service asking came from: this build\'s stack or a named plugin. Each link '
                 . 'is drawn with the service asking, what it reaches and where each service it reaches came '
                 . 'from; no requirement asks where the one asking came from.',
+        ],
+        [
+            'path' => 'WiringEnvelope.unfilled[].native',
+            'because' => 'The upstream\'s own API an unanswered ask talks in, where no filler declares it. The ask is drawn as answered by nothing, which it is, and no requirement asks which API it talks in.',
+        ],
+        [
+            'path' => 'WiringEnvelope.wired[].reaches.native',
+            'because' => 'The upstream\'s own API an ask reaches in place of the adapter that fronts it. The screen names the service the ask reaches, which is what an operator acts on, and no requirement asks which API it talks in.',
         ],
     ];
 }
