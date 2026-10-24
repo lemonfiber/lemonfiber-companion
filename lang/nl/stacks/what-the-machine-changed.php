@@ -66,6 +66,7 @@ return [
             'reinstate-device' => 'De telefoonsleutel die het introk wordt weer geldig',
             'resettle' => 'De instelling die lemonfiber bijhoudt wordt teruggezet naar wat ze was',
             'rehold' => 'Het geheim dat lemonfiber bewaart wordt teruggezet naar wat het was',
+            'regrant' => 'Een toegang die aan een plug-in was verleend wordt teruggegeven, of de verlening die het gaf wordt beëindigd',
             'leave' => 'Je eigen overlay blijft staan zoals hij is',
         ],
     ],

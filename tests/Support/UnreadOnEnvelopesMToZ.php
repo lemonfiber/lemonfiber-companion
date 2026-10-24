@@ -223,6 +223,18 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The fingerprint of the secret a rehold puts back. A fingerprint of a secret means nothing on a screen, and this app draws nothing a secret store holds (`N6-R7`).',
         ],
         [
+            'path' => 'UndoEnvelope.reversed[].action.give',
+            'because' => 'Whether a regrant gives a grant back or ends the one the change gave. The reversal is drawn by what it does and its target, which `regrant` says, and no requirement asks for the direction apart from it.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.grant',
+            'because' => 'The grant a regrant gives back or ends, named by the setting the credential is held under and never by its value. No requirement asks this app to list a plugin\'s grants, so it is drawn by what it does and its target alone.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.plugin',
+            'because' => 'The plugin a regrant gives a grant back to or takes one from. The reversal is drawn by what it does and its target, and no requirement asks for the plugin apart from it.',
+        ],
+        [
             'path' => 'UndoEnvelope.reversed[].action.filed',
             'because' => 'The environment file\'s setting a secret goes back to, where it was moved out of one. `target` names what the change was against and `does` says the secret is put back, and both are drawn; the file\'s setting is the instruction the stack carries out with.',
         ],
