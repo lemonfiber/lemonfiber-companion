@@ -42,8 +42,6 @@ use Modules\Kernel\Api\Wanted;
  */
 final readonly class TheRequestsAsKept
 {
-    private const string FOR = 'for';
-
     private const string NOT_YET_NAMED = 'not_yet_named';
 
     /**
@@ -97,7 +95,7 @@ final readonly class TheRequestsAsKept
     {
         /** @var array<string, string> $called */
         $called = $wanted->called()->either(
-            named: static fn(string $title): Written => new Written([self::FOR => $title]),
+            named: static fn(string $title): Written => new Written(['for' => $title]),
             notYet: static fn(KindOfRequest $kind): Written => new Written([self::NOT_YET_NAMED => $kind->value]),
         )->held;
 
@@ -138,7 +136,7 @@ final readonly class TheRequestsAsKept
             return self::notYetNamedIn($fields, $number, $by, $size);
         }
 
-        $for = self::textAt($fields, self::FOR);
+        $for = self::textAt($fields, 'for');
 
         foreach (self::listAt($fields, 'refused') as $refused) {
             return Wanted::turnedDown($number, $by, $for, $size, self::turnedDownIn(self::fieldsIn($refused)));

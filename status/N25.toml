@@ -26,4 +26,8 @@ requirement = [
   { id = "N25-R18", state = "done", evidence = ["app-modules/kernel/src/Api/ARecipeRunAgreed.php", "app-modules/kernel/src/Api/APlugin.php", "app-modules/sdk/src/Api/Extenders.php", "tests/Contract/ExtendingTheStackContractTest.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
   { id = "N25-R19", state = "done", evidence = ["app-modules/kernel/src/Api/WhatARecipeRunDid.php", "app-modules/sdk/src/Internal/PluginRecipeRuns.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
   { id = "N25-R20", state = "done", evidence = ["app-modules/kernel/src/Api/TheInputsARecipeAsks.php", "app-modules/operator/src/Internal/WhatARowOffers.php", "tests/Feature/RunningAPluginsRecipeTest.php"] },
+  { id = "N25-R21", state = "done", evidence = ["app-modules/kernel/src/Api/AGrantAsked.php", "app-modules/sdk/src/Internal/GrantRows.php", "app-modules/operator/resources/views/components/the-plugins-account.blade.php", "tests/Feature/WhatExtendsThisStackTest.php"] },
+  { id = "N25-R22", state = "done", evidence = ["app-modules/kernel/src/Api/ACredentialGrant.php", "app-modules/operator/src/Internal/Presenters/HowAPluginsSettingsRead.php", "tests/Feature/ChangingAPluginsSettingTest.php"] },
+  { id = "N25-R23", state = "done", evidence = ["app-modules/kernel/src/Api/ACredentialRevokeAgreed.php", "app-modules/sdk/src/Api/GrantEnders.php", "app-modules/operator/src/Internal/Screens/WhatItHoldsToLetThemIn.php", "tests/Contract/EndingACredentialGrantContractTest.php", "tests/Feature/EndingAGrantTest.php"] },
+  { id = "N25-R24", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatItHoldsToLetThemIn.php", "app-modules/operator/src/Internal/Screens/HowThisPluginIsSet.php"] },
 ]

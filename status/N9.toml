@@ -17,4 +17,5 @@ requirement = [
   { id = "N9-R9", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhichAppToWatchOn.php", "tests/Feature/SeeingWhichAppToWatchOnTest.php", "tests/Contract/AdvisingContractTest.php"] },
   { id = "N9-R10", state = "done", evidence = ["app-modules/kernel/src/Api/AnAddressToHand.php", "app-modules/kernel/src/Api/HowTheDoorWasChosen.php", "app-modules/codes/tests/Api/QrCodesTest.php", "app-modules/kernel/tests/Api/AHandoffTest.php"] },
   { id = "N9-R11", state = "done", evidence = ["app-modules/sdk/src/Api/CredentialsKept.php", "tests/Contract/EveryAdapterAnswersWhatItCannotReadTest.php", "tests/Contract/SafekeepingContractTest.php"] },
+  { id = "N9-R12", state = "done", evidence = ["app-modules/operator/src/Internal/Presenters/HowTheCredentialsRead.php", "app-modules/operator/resources/views/what-it-holds-to-let-them-in.blade.php", "tests/Feature/EndingAGrantTest.php"] },
 ]

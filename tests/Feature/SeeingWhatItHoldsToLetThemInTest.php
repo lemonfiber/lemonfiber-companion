@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
@@ -27,7 +29,9 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatEndsGrants;
 use Tests\Support\Fakes\AStackThatHoldsCredentials;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -35,6 +39,9 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 //
 // Here rather than in the operator module's own tests because a screen renders,
 // and rendering needs the application.
+
+/** The moment every frame here is drawn at: a day after the grants below were approved. */
+const WHEN_THE_CREDENTIALS_ARE_READ = 1_761_408_000;
 
 /** The machine this screen is about. */
 function theStackWhoseCredentialsAreRead(): Stack
@@ -58,10 +65,11 @@ function credentialsInTrouble(): TheCredentialsHeld
 {
     return TheCredentialsHeld::of(
         howTheCredentialsAreKept(),
-        ACredentialHeld::described('Indexer API key', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr', 'bazarr'), ''),
-        ACredentialHeld::described('Usenet password', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, WhatUsesIt::of('sabnzbd'), 'The provider refused it on Tuesday'),
-        ACredentialHeld::described('Torrent client password', WhereACredentialStands::Rotating, WhoMadeACredential::Lemonfiber, WhatUsesIt::of('qbittorrent'), ''),
-        ACredentialHeld::described('Old tracker key', WhereACredentialStands::Superseded, WhoMadeACredential::Operator, WhatUsesIt::of(), ''),
+        TheCredentialGrants::of(),
+        ACredentialHeld::described('Indexer API key', 'indexer.api_key', WhereACredentialStands::Stale, WhoMadeACredential::Service, WhatUsesIt::of('sonarr', 'bazarr'), ''),
+        ACredentialHeld::described('Usenet password', 'usenet.password', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, WhatUsesIt::of('sabnzbd'), 'The provider refused it on Tuesday'),
+        ACredentialHeld::described('Torrent client password', 'torrent.password', WhereACredentialStands::Rotating, WhoMadeACredential::Lemonfiber, WhatUsesIt::of('qbittorrent'), ''),
+        ACredentialHeld::described('Old tracker key', 'tracker.key', WhereACredentialStands::Superseded, WhoMadeACredential::Operator, WhatUsesIt::of(), ''),
     );
 }
 
@@ -70,6 +78,7 @@ function theCredentialsScreen(
     AStackThatHoldsCredentials $safekeeping,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatEndsGrants $ending = null,
 ): WhatItHoldsToLetThemIn {
     $stack = theStackWhoseCredentialsAreRead();
     $keychain ??= AKeychainInMemory::working();
@@ -78,7 +87,7 @@ function theCredentialsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, $ending ?? AStackThatEndsGrants::untouched(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CREDENTIALS_ARE_READ)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -134,7 +143,7 @@ it('offers nothing that would set, change or show a value', function (): void {
 });
 
 it('a stack holding no credentials says there are none', function (): void {
-    $none = TheCredentialsHeld::of(WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of(), Remarks::of()));
+    $none = TheCredentialsHeld::of(WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of(), Remarks::of()), TheCredentialGrants::of());
     $drawn = WhatTheDeviceWouldDraw::by(theCredentialsScreen(AStackThatHoldsCredentials::holding($none)))->said();
 
     expect($drawn)->toContain(__('stacks.credentials.none'))

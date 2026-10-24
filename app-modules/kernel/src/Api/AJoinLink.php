@@ -46,9 +46,6 @@ final readonly class AJoinLink
     /** The parts a join link is written with, and no others. */
     private const array PARTS = ['host', 'query', 'scheme'];
 
-    /** A moment as a link writes it: seconds since the epoch, in few enough digits to stay inside an integer. */
-    private const string A_MOMENT = '/\A\d{1,18}\z/';
-
     private function __construct(
         private Address $at,
         private Fingerprint $presenting,
@@ -187,7 +184,7 @@ final readonly class AJoinLink
     /** Refuses a link whose offer has lapsed; lapsing at this very moment counts, as it does for pairing material. */
     private static function stillOpen(string $expires, Clock $clock): void
     {
-        if (preg_match(self::A_MOMENT, $expires) !== 1) {
+        if (preg_match(AMomentAsWritten::IN_SECONDS, $expires) !== 1) {
             throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Expires->value);
         }
 

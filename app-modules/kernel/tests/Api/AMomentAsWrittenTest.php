@@ -72,3 +72,19 @@ it('reads nothing but the stack\'s own form as a moment the stack wrote', functi
     'a date alone' => ['2026-09-29'],
     'a thirtieth of February' => ['2026-02-30T00:00:00'],
 ]);
+
+it('reads a moment written out as whole seconds since the epoch, and nothing else as one', function (string $written, ?int $seconds): void {
+    expect(AMomentAsWritten::inSeconds($written)->read(
+        read: static fn(Instant $moment): WhatTheTimestampNamed => new WhatTheTimestampNamed($moment->epochSeconds()),
+        unreadable: static fn(): WhatTheTimestampNamed => new WhatTheTimestampNamed(null),
+    )->seconds)->toBe($seconds);
+})->with([
+    'a stamp' => ['1761321600', 1_761_321_600],
+    'the epoch' => ['0', 0],
+    'nothing' => ['', null],
+    'a negative' => ['-5', null],
+    'letters in it' => ['17613216OO', null],
+    'a space after' => ['1761321600 ', null],
+    'too long for an integer' => ['1234567890123456789', null],
+    'a timestamp' => ['2026-09-29T21:39:01Z', null],
+]);

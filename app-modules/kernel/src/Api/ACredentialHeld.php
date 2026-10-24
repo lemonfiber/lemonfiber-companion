@@ -19,15 +19,17 @@ final readonly class ACredentialHeld
 {
     private function __construct(
         private string $name,
+        private string $setting,
         private WhereACredentialStands $state,
         private WhoMadeACredential $origin,
         private WhatUsesIt $consumers,
         private string $advisory,
     ) {}
 
-    /** What the stack said of one credential; a blank name or a blank advisory is refused. */
+    /** What the stack said of one credential; a blank name, setting or advisory is refused. */
     public static function described(
         string $name,
+        string $setting,
         WhereACredentialStands $state,
         WhoMadeACredential $origin,
         WhatUsesIt $consumers,
@@ -37,17 +39,27 @@ final readonly class ACredentialHeld
             throw CredentialSaysNothing::about('name');
         }
 
+        if (trim($setting) === '') {
+            throw CredentialSaysNothing::about('setting');
+        }
+
         if ($advisory !== '' && trim($advisory) === '') {
             throw CredentialSaysNothing::about('advisory');
         }
 
-        return new self($name, $state, $origin, $consumers, $advisory);
+        return new self($name, $setting, $state, $origin, $consumers, $advisory);
     }
 
     /** What it is, in the operator's words. */
     public function name(): string
     {
         return $this->name;
+    }
+
+    /** The setting it is held under, a name and never a value, which a grant of it names. */
+    public function setting(): string
+    {
+        return $this->setting;
     }
 
     /** Where it stands. */

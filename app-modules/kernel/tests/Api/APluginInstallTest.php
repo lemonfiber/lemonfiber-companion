@@ -8,13 +8,19 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\ACredentialGrant;
+use Modules\Kernel\Api\AGrantAsked;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnUpdate;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\ThePlugins;
@@ -37,7 +43,7 @@ function anInstallRecorded(WhatAProofCameTo $cameTo, WhatTheChecksMade $checks, 
     return APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: $recorded,
-        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these()),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these()),
         proofs: TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', $cameTo)),
         checks: $checks,
     );
@@ -98,4 +104,19 @@ it('asks for each shape a service takes apart from the offer, after its recipes\
         ->and(iterator_to_array($update->shapesTaken()->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::SHAPE_APPROVAL])
         ->and(APluginAsItArrives::theListing()->shapesTaken()->isEmpty())->toBeTrue()
         ->and(APluginAsItArrives::theReading()->shapesTaken()->isEmpty())->toBeTrue();
+});
+
+it('asks for each password of another service it would hand the plugin apart from the offer, after its recipes\' values', function (): void {
+    $asked = AGrantAsked::of(ACredentialGrant::of(APluginId::called('tdarr'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds('')), APluginAsItArrives::GRANT_APPROVAL);
+    $install = APluginInstall::reported(
+        APluginAsItArrives::held(),
+        recorded: false,
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these($asked)),
+        proofs: TheProofs::these(),
+        checks: WhatTheChecksMade::notAsked(),
+    );
+
+    expect(iterator_to_array($install->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL])
+        ->and(iterator_to_array($install->granting(), preserve_keys: false))->toBe([$asked])
+        ->and(iterator_to_array(APluginAsItArrives::theGrantingReading()->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL]);
 });

@@ -13,12 +13,15 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\CredentialsEnvelope;
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
+use Modules\Kernel\Api\WhatARevokeCameTo;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Sdk\Api\Fields\CredentialsField;
+use Modules\Sdk\Internal\CredentialGrantsRead;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -45,13 +48,49 @@ final readonly class CredentialsKept
      */
     public static function in(Envelope $envelope): TheCredentialsHeld
     {
+        return self::heldIn(self::data($envelope));
+    }
+
+    /**
+     * What ending a grant came to, with every credential and grant after it; an answer with no word of the grant is refused.
+     *
+     * @param Envelope<mixed> $envelope the `credentials` envelope, as the work finished with it
+     */
+    public static function afterARevoke(Envelope $envelope): WhatARevokeCameTo
+    {
+        $data = self::data($envelope);
+
+        return WhatARevokeCameTo::of(CredentialGrantsRead::revoked($data), self::heldIn($data));
+    }
+
+    /**
+     * The payload as a table, refused where it is not one.
+     *
+     * @param  Envelope<mixed> $envelope
+     * @return array<mixed>
+     */
+    private static function data(Envelope $envelope): array
+    {
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
             throw CredentialsIsUnreadable::missing(WireField::Data);
         }
 
-        return TheCredentialsHeld::of(self::protection($data), ...self::held($data));
+        return $data;
+    }
+
+    /**
+     * Every credential and grant the payload holds, with what their store protects against.
+     *
+     * @param array<mixed> $data
+     */
+    private static function heldIn(array $data): TheCredentialsHeld
+    {
+        $protection = self::protection($data);
+        $credentials = self::held($data);
+
+        return TheCredentialsHeld::of($protection, TheCredentialGrants::of(...CredentialGrantsRead::listed($data)), ...$credentials);
     }
 
     /**
@@ -137,6 +176,7 @@ final readonly class CredentialsKept
 
             $found[] = ACredentialHeld::described(
                 self::text($row, WireField::Name, $position),
+                self::text($row, WireField::Setting, $position),
                 self::state($row, $position),
                 self::origin($row, $position),
                 WhatUsesIt::of(...self::consumers($row, $position)),

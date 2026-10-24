@@ -289,29 +289,15 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'phone is a direction to a place the person holding it is not.',
         ],
         [
-            'path' => 'CredentialsEnvelope.held[].setting',
-            'because' => 'The setting the credential is recorded under, a name and never a value. It is how the '
-                . 'settings screen would find it, and no requirement here asks the credentials screen to link '
-                . 'there; the credential is named in the operator\'s words by `name`.',
-        ],
-        [
             'path' => 'CredentialsEnvelope.revealed',
             'because' => 'One value, handed back only where an operator asked at the terminal to see it and '
                 . 'confirmed. This app never asks for one and never draws one (`N9-R4`), so the field that '
                 . 'could carry a value is the one field of this envelope that is never read.',
         ],
         [
-            'path' => 'CredentialsEnvelope.grants',
-            'because' => 'Each credential of another service granted to a third-party plugin, by its setting and never its value. No requirement asks this app to list grants yet; the credentials it draws are read from `held`.',
-        ],
-        [
             'path' => 'CredentialsEnvelope.rotated',
             'because' => 'What became of a rotation, where one was asked for. Rotating is done at the machine, '
                 . 'and nothing here asks for one, so no answer this app receives carries it.',
-        ],
-        [
-            'path' => 'CredentialsEnvelope.revoked',
-            'because' => 'What ending one grant came to, where one was asked for. This app does not send `credentials-revoke`, so no answer it receives carries it.',
         ],
         [
             'path' => 'KeysEnvelope.keys[].revoked',

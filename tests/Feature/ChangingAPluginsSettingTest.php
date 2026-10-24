@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Modules\Dx\Providers\DxServiceProvider;
+use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
@@ -14,6 +17,7 @@ use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -27,6 +31,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
@@ -53,6 +58,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatTunesItsSettings;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -63,6 +69,9 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 // and rendering needs the application.
 
 /** The machine whose plugin is set. */
+/** When the grant below was approved. */
+const WHEN_THE_GUARD_WAS_GRANTED = 1_761_321_600;
+
 function theStackWhosePluginIsSet(): Stack
 {
     return Stack::of(
@@ -164,6 +173,7 @@ function theGuardsSettingsScreen(
     $screen = new HowThisPluginIsSet(
         $tuning,
         $extending ?? AStackThatExtendsItself::listing(theGuardInstalled()),
+        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GUARD_WAS_GRANTED + 3_600)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
@@ -481,4 +491,30 @@ it('takes a change on against a stand-in machine and follows it to what the mach
     }
 
     expect($said)->toBe(['settings-set answered', 'settings-clear answered']);
+});
+
+/** What a grant's line saying when it was approved begins with. */
+function aGrantLineOnTheSettingsPage(): string
+{
+    $said = __('stacks.credentials.grants.approved', ['when' => '']);
+
+    return is_string($said) ? $said : '';
+}
+
+it('lists each password of another service granted to the plugin, when it was approved, and where it is ended', function (): void {
+    $grant = ACredentialGrant::of(APluginId::called('gluetun'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds((string) WHEN_THE_GUARD_WAS_GRANTED));
+    $granted = ThePlugins::listed(TheInstalledPlugins::these(theGuardPlugin()->holding(TheCredentialGrants::of($grant))), ThePluginSources::these(), TheAnswersOutOfContract::these());
+    $drawn = WhatTheDeviceWouldDraw::by(theGuardsSettingsScreen(aStackThatSetsTheGuard(), AStackThatExtendsItself::listing($granted)));
+    $none = WhatTheDeviceWouldDraw::by(theGuardsSettingsScreen(aStackThatSetsTheGuard()));
+
+    expect($drawn->said())->toContain(
+        __('plugins.settings.grants'),
+        __('stacks.credentials.grants.of', ['credential' => 'plex.token', 'whose' => 'plex']),
+        __('stacks.credentials.grants.granted', ['plugin' => 'gluetun', 'fills' => 'library-scan']),
+        __('plugins.settings.grants_ended_with_the_passwords'),
+    )->and($drawn->offers())->toContain(__('plugins.settings.to_the_passwords'))
+        ->and($drawn->offers())->not->toContain(__('stacks.credentials.grants.revoke'))
+        ->and(array_filter($drawn->said(), static fn(string $line): bool => str_starts_with($line, aGrantLineOnTheSettingsPage())))->toHaveCount(1)
+        ->and($none->said())->toContain(__('plugins.settings.no_grants'))
+        ->and($none->offers())->not->toContain(__('plugins.settings.to_the_passwords'));
 });

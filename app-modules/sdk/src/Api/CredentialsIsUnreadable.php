@@ -49,6 +49,17 @@ final class CredentialsIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** One grant of the list, or the grant a revoke ends, has no readable field. */
+    public static function grant(NamesAWireField $list, NamesAWireField $field, int $position): self
+    {
+        return new self(sprintf(
+            'Entry %d of `%s` in the credentials envelope has no readable `%s`. A grant that will not say which credential crosses, to whom or what for is refused rather than shown.',
+            $position,
+            $list->value,
+            $field->value,
+        ));
+    }
+
     /** A word from a closed set this app has no case for. */
     public static function word(NamesAWireField $field, string $said, int $position, string ...$accepted): self
     {

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\CredentialSaysNothing;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
@@ -34,7 +35,7 @@ function aStoreThatProtects(): WhatTheStoreProtects
 /** A credential by this name, for reading an order off. */
 function aCredentialCalled(string $name): ACredentialHeld
 {
-    return ACredentialHeld::described($name, WhereACredentialStands::Active, WhoMadeACredential::Operator, WhatUsesIt::of(), '');
+    return ACredentialHeld::described($name, 'a.setting', WhereACredentialStands::Active, WhoMadeACredential::Operator, WhatUsesIt::of(), '');
 }
 
 it('keeps what the store is, what it protects against, and what it does not', function (): void {
@@ -51,7 +52,7 @@ it('refuses a store that will not say what it is', function (): void {
 
 it('keeps every credential in the stack\'s order, with the store beside them', function (): void {
     $store = aStoreThatProtects();
-    $held = TheCredentialsHeld::of($store, ...['first' => aCredentialCalled('Indexer API key'), 'second' => aCredentialCalled('Usenet password')]);
+    $held = TheCredentialsHeld::of($store, TheCredentialGrants::of(), ...['first' => aCredentialCalled('Indexer API key'), 'second' => aCredentialCalled('Usenet password')]);
     $names = [];
 
     foreach ($held as $credential) {
@@ -62,7 +63,8 @@ it('keeps every credential in the stack\'s order, with the store beside them', f
         ->and(array_keys(iterator_to_array($held, preserve_keys: true)))->toBe([0, 1])
         ->and($held)->toHaveCount(2)
         ->and($held->protection())->toBe($store)
-        ->and(TheCredentialsHeld::of($store))->toHaveCount(0);
+        ->and(TheCredentialsHeld::of($store, TheCredentialGrants::of()))->toHaveCount(0)
+        ->and($held->grants())->toHaveCount(0);
 });
 
 it('a stack that could not be asked never holds an empty list', function (): void {
@@ -71,6 +73,6 @@ it('a stack that could not be asked never holds an empty list', function (): voi
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
-    expect($fold(WhatWasFoundOfTheCredentials::found(TheCredentialsHeld::of(aStoreThatProtects()))))->toBe('found:0')
+    expect($fold(WhatWasFoundOfTheCredentials::found(TheCredentialsHeld::of(aStoreThatProtects(), TheCredentialGrants::of()))))->toBe('found:0')
         ->and($fold(WhatWasFoundOfTheCredentials::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

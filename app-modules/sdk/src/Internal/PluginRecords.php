@@ -11,10 +11,12 @@ use function is_string;
 
 use Modules\Kernel\Api\AnInputARecipeAsks;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
 use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
@@ -52,7 +54,7 @@ final readonly class PluginRecords
      */
     public static function of(array $row, NamesAWireField $list, int $position): APlugin
     {
-        return APlugin::named(
+        $plugin = APlugin::named(
             self::text($row, $list, WireField::Plugin, $position),
             self::text($row, $list, WireField::Version, $position),
             self::optional($row, WireField::Name),
@@ -60,6 +62,8 @@ final readonly class PluginRecords
             TheRecipes::these(...self::recipes($row, $position)),
             ...self::services($row),
         );
+
+        return $plugin->holding(TheCredentialGrants::of(...GrantRows::onTheRecord($row, APluginId::called($plugin->id()))));
     }
 
     /**
@@ -79,6 +83,7 @@ final readonly class PluginRecords
             TheInputsARecipeAsks::these(...self::inputs($recipe)),
         );
     }
+
 
     /**
      * Each service the plugin placed, by its id, in the record's order.

@@ -10,10 +10,14 @@ use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\ACapabilityLeftUnfilled;
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
+use Modules\Kernel\Api\ACredentialGrant;
+use Modules\Kernel\Api\AGrantAsked;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\APluginRemoval;
 use Modules\Kernel\Api\APluginReproof;
@@ -29,9 +33,11 @@ use Modules\Kernel\Api\AValueItCarries;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\HowItsSourceStands;
 use Modules\Kernel\Api\PluginLines;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheCapabilitiesLeftUnfilled;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePluginChanges;
@@ -74,6 +80,9 @@ final readonly class APluginAsItArrives
 
     /** What approving the egress guard's shape for its one service is written as. */
     public const string SHAPE_APPROVAL = 'egress-guard@gluetun';
+
+    /** The line the reading asks the grant of Plex's token to Tdarr by. */
+    public const string GRANT_APPROVAL = 'plex.token@tdarr';
 
     /**
      * Tdarr, as a record on the wire holds it.
@@ -174,6 +183,7 @@ final readonly class APluginAsItArrives
             'asks' => [['by' => 'tdarr', 'origin' => ['origin' => 'plugin', 'named' => 'tdarr'], 'reaches' => ['how' => 'asked', 'capability' => 'media-server', 'services' => ['jellyfin'], 'settled' => ['settled' => 'outright'], 'origins' => ['jellyfin' => ['origin' => 'bundled']]]]],
             'recipes_ran' => [],
             'taking' => [],
+            'granting' => [],
         ];
     }
 
@@ -187,6 +197,19 @@ final readonly class APluginAsItArrives
         return [
             ...self::aReadingOnTheWire(),
             'taking' => [['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => self::SHAPE_APPROVAL]],
+        ];
+    }
+
+    /**
+     * The reading, asking to hand Tdarr Plex's token for scanning the library.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aGrantingReadingOnTheWire(): array
+    {
+        return [
+            ...self::aReadingOnTheWire(),
+            'granting' => [['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'approval' => self::GRANT_APPROVAL]],
         ];
     }
 
@@ -423,6 +446,25 @@ final readonly class APluginAsItArrives
         );
     }
 
+    /** The reading asking to hand Tdarr Plex's token, as this app holds it. */
+    public static function theGrantingReading(): ThePlugins
+    {
+        return ThePlugins::aboutAnInstall(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            APluginInstall::reported(
+                self::held(),
+                recorded: false,
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(
+                    AGrantAsked::of(ACredentialGrant::of(APluginId::called('tdarr'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds('')), self::GRANT_APPROVAL),
+                )),
+                proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+                checks: WhatTheChecksMade::notAsked(),
+            ),
+        );
+    }
+
     /** The reading with one service taking the egress guard's shape, as this app holds it. */
     public static function theGuardedReading(): ThePlugins
     {
@@ -440,7 +482,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard(), TheGrantsAsked::these()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -479,7 +521,7 @@ final readonly class APluginAsItArrives
             APluginInstall::reported(
                 self::held(),
                 recorded: true,
-                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
             ),
@@ -527,7 +569,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -537,7 +579,7 @@ final readonly class APluginAsItArrives
     {
         return APluginInstall::putBack(
             self::held(),
-            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these()),
+            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
             TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
             WhatTheChecksMade::notAsked(),
             ARunPutBack::reported(

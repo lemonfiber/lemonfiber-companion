@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Generated\WatchedEnvelope;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\ThePlace;
-use Modules\Sdk\Api\Fields\WatchedField;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
@@ -37,7 +36,7 @@ final readonly class PlacesKept
         $in = HoldingId::called(Required::text($data, WireField::Id, PlaceIsUnreadable::missing(WireField::Id)));
         $howFarIn = HowFarIn::at(Required::number($data, WireField::Position, PlaceIsUnreadable::missing(WireField::Position)));
 
-        return Required::flag($data, WatchedField::Ended, PlaceIsUnreadable::missing(WatchedField::Ended))
+        return Required::flag($data, WireField::Ended, PlaceIsUnreadable::missing(WireField::Ended))
             ? ThePlace::atTheEndOf($in, $howFarIn)
             : ThePlace::in($in, $howFarIn);
     }
