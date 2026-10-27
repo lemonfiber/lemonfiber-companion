@@ -102,9 +102,8 @@ order; `composer install` turns the hooks on through `post-install-cmd`.
 
 `composer test:report` writes the clover that `test:floors` and Sonar read;
 `test:coverage` does not. Mutation floors are declared per measured tree under
-`extra.mutation-gate.floor` in the manifest nearest it, with
-`extra.mutation-gate.floorReason` beside each `0`; nightworksio/mutation-gate
-holds them, in CI as `mutation / verdict`, and `composer test:mutation` runs it.
+`extra.mutation-gate.floor` in the manifest nearest it, with `floorReason`
+beside each `0`; `composer test:mutation` and CI's `mutation / verdict` hold them.
 
 - `ARCHITECTURE.md` is checked: each rule in `.docs/architecture/` names its
   mechanism, and `tests/Arch/TheRulesAreRealTest.php` fails when they disagree. [`.docs/decisions/0005`](.docs/decisions/0005-how-a-rule-changes.md)

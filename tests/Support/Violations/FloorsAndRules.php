@@ -28,8 +28,8 @@ final readonly class FloorsAndRules
     public static function floors(): array
     {
         return [
-            // A measured tree whose nearest manifest states no bar. The floors
-            // block is left in place and emptied rather than removed, because
+            // A measured tree whose nearest manifest states no bar. The floor
+            // blocks are left in place and emptied rather than removed, because
             // the failure worth catching is the one that looks like it was
             // filled in — a manifest with no block at all is the state a new
             // package arrives in and the state somebody is looking for.
@@ -39,15 +39,18 @@ final readonly class FloorsAndRules
                 <<<'JSON'
                         "lemonfiber": {
                             "floors": {
-                                "coverage": 100,
-                                "mutation": 100
+                                "coverage": 100
                             }
+                        },
+                        "mutation-gate": {
+                            "floor": 100
                         },
                 JSON,
                 <<<'JSON'
                         "lemonfiber": {
                             "floors": {}
                         },
+                        "mutation-gate": {},
                 JSON,
                 'every measured tree is held',
                 'bridge/src',
