@@ -4,8 +4,8 @@
 # The list below is also the wait list. The flag only goes up once every check
 # `main` requires has passed, and the reusable reads this same list back out of
 # this file to know what it must see finish first — so a workflow missing from it
-# is a workflow the gate never waits for and never re-evaluates on. `main`
-# requires twenty-eight checks here and they come from three workflows:
+# is a workflow the gate never waits for and never re-evaluates on. The checks
+# it waits for come from the workflows they are listed under:
 #
 #   gates   gates / gates
 #   pin-only pin-only / pin-only
@@ -13,7 +13,8 @@
 #              checks, rules, the rules refuse violations,
 #              the bridge compiles for iOS, kotlin, swift,
 #              both halves answer the same questions,
-#              tests and coverage, gate / gate, sonarcloud
+#              tests and coverage, gate / gate, sonarcloud,
+#              mutation / verdict
 #   sdk-drift  sdk-drift / drift
 #   codeql     analyze, alerts / alerts
 #

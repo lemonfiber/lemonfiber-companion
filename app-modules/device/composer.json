@@ -18,11 +18,13 @@
     "extra": {
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 0,
-                "mutation-is-zero-because": "Adapters over the bridge and one word table. Each adapter is held by its port's contract, which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
+                "coverage": 100
             },
             "kind": "adapter"
+        },
+        "mutation-gate": {
+            "floor": 0,
+            "floorReason": "Adapters over the bridge and one word table. Each adapter is held by its port's contract, which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
         }
     }
 }

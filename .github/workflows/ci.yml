@@ -41,8 +41,6 @@ env:
 # So the fast gates share one job and one install. The tests stay separate
 # because they need a coverage driver and genuinely take time, and so do the
 # guards, which run the analyser and the suite again as subprocesses.
-#
-# Mutation testing is not run in CI; `composer test:mutation` runs it locally.
 
 jobs:
   # Which of the following are worth running at all. A documentation change
@@ -467,9 +465,28 @@ jobs:
         env:
           COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
       # Writes the clover report the floors gate reads. One run produces both
-      # the global number and the seventeen per-tree ones.
-      - run: composer test:report
+      # the global number and the per-tree ones. Pest's `--coverage` writes its
+      # PHP report to a path of its own and deletes it once it has printed the
+      # summary, so that path is linked to the one the mutation plan's map is
+      # read from, which keeps the report: the suite runs under coverage once.
+      - run: |
+          set -euo pipefail
+          report=$(php -r 'require "vendor/autoload.php"; echo \Pest\Support\Coverage::getPath();')
+          mkdir -p .mutation-gate/ran "$(dirname "${report}")"
+          : > .mutation-gate/ran/coverage.php
+          ln -f .mutation-gate/ran/coverage.php "${report}"
+          composer test:report
       - run: composer test:floors
+      # The gate's own map, read from the PHP report in the job that wrote it,
+      # since reading a runner's report can run code.
+      - run: vendor/bin/mutation-gate coverage --from=.mutation-gate/ran --into=.mutation-gate/map
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-gate-map
+          path: .mutation-gate/map/map.json.gz
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
       # The same two reports are what `sonar` hands SonarCloud, so the suite
       # runs once for both.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -672,6 +689,40 @@ jobs:
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
 
+  # Every mutant of every tree `phpunit.xml` measures is killed, or the tree
+  # holds the floor `extra.mutation-gate` declares in the manifest nearest it.
+  # The gate is nightworksio/mutation-gate, at the commit composer.lock
+  # installs and this call pins, and both move together by pull request.
+  #
+  # Its reusable workflow plans the run, mutates each shard in its own job and
+  # judges them in `mutation / verdict`, which is the check branch protection
+  # names. It runs on every pull request, the documentation-only ones included,
+  # because a required check from a called workflow reports under the caller's
+  # name only when the caller runs. Where `tests` ran, the plan reads the map it
+  # wrote rather than running the suite under coverage again; where `tests` was
+  # skipped, the plan runs it. A pull request whose tests fail starts no
+  # mutation; its red is `tests and coverage`'s.
+  #
+  # `COMPOSER_AUTH` reaches only the steps that install the dependencies, as it
+  # does in the jobs above. The grants below are ceilings, not the token any
+  # job gets: each job of the called workflow declares its own permissions, the
+  # ones that run this repository's code read only, and GitHub refuses to start
+  # a called workflow whose jobs ask for more than its caller grants.
+  mutation:
+    needs: tests
+    if: ${{ !cancelled() && needs.tests.result != 'failure' }}
+    permissions:
+      contents: write # used only by publish, on main, which writes the badge and the trend
+      actions: read # used only by verdict and deliver, to find the run's HTML report the comment links
+      pull-requests: write # used only by the deliver jobs, which post the comment and run none of this repository's code
+      id-token: write # used only by fetch and deliver, for a store that signs in through OIDC; this repository names none
+    uses: nightworksio/php-mutation-gate/.github/workflows/mutation-gate.yml@GATE_PIN # main
+    with:
+      php-version: '8.5'
+      coverage: ${{ needs.tests.result == 'success' && 'mutation-gate-map' || '' }}
+    secrets:
+      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
   # Records that every gate passed on this tree, so a later run on the same
   # tree — see `scope` — does not test it again. Only where the PHP gates
   # actually ran and nothing it waits on failed or was cancelled: a skipped PHP
@@ -679,7 +730,7 @@ jobs:
   # against the base, so it passed here or had nothing to check.
   proved-tree:
     name: record the proven tree
-    needs: [scope, guards, checks, typecheck, kotlin, swift, agreement, tests, sonar]
+    needs: [scope, guards, checks, typecheck, kotlin, swift, agreement, tests, sonar, mutation]
     if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5

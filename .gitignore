@@ -72,3 +72,4 @@ nativephp.lock
 # works. It is generated, it is not this repository's, and it arrives untracked
 # on every machine that installs.
 /native
+/.mutation-gate/

@@ -1,0 +1,17 @@
+{
+    "$schema": "vendor/nightworksio/mutation-gate/resources/mutation-gate.schema.json",
+    "preset": "laravel",
+    "runner": "pest",
+    "pest": {
+        "patch": true
+    },
+    "tests": {
+        "suites": ["Arch", "Templates", "Contract", "Modules", "Native", "Feature"]
+    },
+    "shards": {
+        "max": 10
+    },
+    "ignores": {
+        "native": "allow"
+    }
+}

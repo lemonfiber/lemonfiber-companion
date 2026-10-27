@@ -114,8 +114,8 @@ final readonly class OurCode
      * One directory per tree rather than one pattern, which is what a question
      * asked *of* a tree needs: `MeasuredTree` reads the floors out of the
      * manifest nearest each one, and `app-modules/*\/src` has no nearest
-     * manifest — thirteen of them do. `scripts/mutation.php` mutates these and
-     * the `Floors` suite measures them, so all three are answering the same
+     * manifest — thirteen of them do. The mutation gate mutates these and the
+     * `Floors` suite measures them, so all three are answering the same
      * question out of the same file.
      *
      * A pattern matching nothing contributes nothing, which is `R4`'s finding

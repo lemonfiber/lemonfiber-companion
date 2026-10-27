@@ -42,9 +42,9 @@ it('the modules a rule judges are found', function (): void {
 });
 
 it('the trees held to a floor are found, and the two that are not modules are among them', function (): void {
-    // `MeasuredTree::all()` is what `G7` holds to a bar, what the `Floors`
-    // suite measures against the clover report and what `scripts/mutation.php`
-    // mutates. Empty, all three pass having judged nothing.
+    // `MeasuredTree::all()` is what `G7` holds to a bar and what the `Floors`
+    // suite measures against the clover report. Empty, both pass having judged
+    // nothing.
     expect(MeasuredTree::all())->not->toBe([]);
 
     // Named, and deliberately. Every other list in this repository is derived

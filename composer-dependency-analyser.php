@@ -247,6 +247,7 @@ return (new Configuration())
             'rector/rector',
             'ergebnis/composer-normalize',
             'shipmonk/composer-dependency-analyser',
+            'nightworksio/mutation-gate',
             // S2 — roave/security-advisories is conflict-only. It ships no code
             // to name: what it does is fail resolution when a dependency
             // matches a published advisory, so the refusal arrives at

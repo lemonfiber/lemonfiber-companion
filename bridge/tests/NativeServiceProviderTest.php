@@ -8,7 +8,7 @@ use Lemonfiber\Native\Storage;
 use Lemonfiber\Native\Telling;
 
 // Asserts on every binding the bridge's provider makes, so its mutants are
-// judged here: see `scripts/mutation.php`.
+// judged here, by its `holds:` group.
 pest()->group('holds:bridge/src/NativeServiceProvider.php');
 
 // What this plugin publishes to the application that installs it.

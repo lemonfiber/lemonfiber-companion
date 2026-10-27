@@ -21,7 +21,7 @@ use Tests\Support\Fakes\AScreenComingToTheFront;
 use Tests\Support\Fakes\AScreenOpenedOverAnother;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // Whose session a screen is drawn for decides the theme it is drawn in: the

@@ -18,11 +18,13 @@
     "extra": {
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 0,
-                "mutation-is-zero-because": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
+                "coverage": 100
             },
             "kind": "adapter"
+        },
+        "mutation-gate": {
+            "floor": 0,
+            "floorReason": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
         }
     }
 }

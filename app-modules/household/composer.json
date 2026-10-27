@@ -27,10 +27,12 @@
         },
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 100
+                "coverage": 100
             },
             "kind": "surface"
+        },
+        "mutation-gate": {
+            "floor": 100
         }
     }
 }

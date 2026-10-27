@@ -12,7 +12,7 @@ use Modules\Design\Api\WhoseTheme;
 use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // The widgets (filled buttons, list rows, fields, the top and bottom bars) take

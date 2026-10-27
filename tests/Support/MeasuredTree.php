@@ -169,14 +169,12 @@ final readonly class MeasuredTree
      * tree list is being built. Raising here would take down every rule that
      * reads a manifest, and the message would be about JSON rather than about
      * the tree nobody wrote a number for.
+     *
+     * @param array<array-key, mixed> $block
      */
-    private static function floor(mixed $floors, string $which): ?int
+    private static function floor(array $block, string $key): ?int
     {
-        if (! is_array($floors)) {
-            return null;
-        }
-
-        $value = $floors[$which] ?? null;
+        $value = $block[$key] ?? null;
 
         return is_int($value) ? $value : null;
     }
@@ -191,25 +189,29 @@ final readonly class MeasuredTree
      * says what holds its own decisions instead.
      *
      * Read without raising, for the reason {@see floor()} is.
+     *
+     * @param array<array-key, mixed> $block
      */
-    private static function argument(mixed $floors, string $which): ?string
+    private static function argument(array $block, string $key): ?string
     {
-        if (! is_array($floors)) {
-            return null;
-        }
-
-        $said = $floors[sprintf('%s-is-zero-because', $which)] ?? null;
+        $said = $block[$key] ?? null;
 
         return is_string($said) ? $said : null;
     }
 
+    /**
+     * The floors of the nearest manifest: coverage under `extra.lemonfiber.floors`,
+     * mutation under `extra.mutation-gate`, where the gate reads it.
+     */
     private static function read(string $tree): self
     {
         $manifest = self::nearestManifestAbove($tree);
-        $lemonfiber = self::lemonfiberBlockIn($manifest);
+        $extra = self::extraIn($manifest);
+        $lemonfiber = self::blockIn($extra, 'lemonfiber');
+        $floors = self::blockIn($lemonfiber, 'floors');
+        $gate = self::blockIn($extra, 'mutation-gate');
 
         $kind = $lemonfiber['kind'] ?? null;
-        $floors = $lemonfiber['floors'] ?? null;
 
         return new self(
             path: $tree,
@@ -221,18 +223,18 @@ final readonly class MeasuredTree
             // not modules and have no kind to declare.
             kind: is_string($kind) ? Kind::tryFrom($kind) : null,
             coverageFloor: self::floor($floors, 'coverage'),
-            mutationFloor: self::floor($floors, 'mutation'),
-            whyCoverageIsZero: self::argument($floors, 'coverage'),
-            whyMutationIsZero: self::argument($floors, 'mutation'),
+            mutationFloor: self::floor($gate, 'floor'),
+            whyCoverageIsZero: self::argument($floors, 'coverage-is-zero-because'),
+            whyMutationIsZero: self::argument($gate, 'floorReason'),
         );
     }
 
     /**
-     * What one manifest says under `extra.lemonfiber`, or nothing.
+     * What one manifest says under `extra`, or nothing.
      *
      * @return array<array-key, mixed>
      */
-    private static function lemonfiberBlockIn(string $manifest): array
+    private static function extraIn(string $manifest): array
     {
         $raw = file_get_contents(Tree::at($manifest));
 
@@ -248,8 +250,21 @@ final readonly class MeasuredTree
         }
 
         $extra = is_array($decoded) ? $decoded['extra'] ?? null : null;
-        $lemonfiber = is_array($extra) ? $extra['lemonfiber'] ?? null : null;
 
-        return is_array($lemonfiber) ? $lemonfiber : [];
+        return is_array($extra) ? $extra : [];
+    }
+
+    /**
+     * One block of a manifest's settings, or nothing.
+     *
+     * @param array<array-key, mixed> $settings
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function blockIn(array $settings, string $key): array
+    {
+        $block = $settings[$key] ?? null;
+
+        return is_array($block) ? $block : [];
     }
 }
