@@ -10570,12 +10570,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nightworksio/php-mutation-gate.git",
-                "reference": "0d79c92b50a3fefb42d1c91f304b2e97301e1eca"
+                "reference": "7cd8f62eb99cd18ba05afe74e5f8195d7bf38891"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/0d79c92b50a3fefb42d1c91f304b2e97301e1eca",
-                "reference": "0d79c92b50a3fefb42d1c91f304b2e97301e1eca",
+                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/7cd8f62eb99cd18ba05afe74e5f8195d7bf38891",
+                "reference": "7cd8f62eb99cd18ba05afe74e5f8195d7bf38891",
                 "shasum": ""
             },
             "require": {
@@ -10607,7 +10607,6 @@
                 "async-aws/s3": "^3",
                 "codeception/codeception": "^5.3.6",
                 "colinodell/json5": "^3.0",
-                "composer/composer": "^2.9",
                 "ergebnis/composer-normalize": "^2.54",
                 "ergebnis/phpstan-rules": "^2.13",
                 "ext-dom": "*",
@@ -10686,8 +10685,6 @@
             },
             "autoload-dev": {
                 "psr-4": {
-                    "NightWorksIO\\MutationGateComposer\\": "plugins/composer/src/",
-                    "NightWorksIO\\MutationGateComposer\\Tests\\": "plugins/composer/tests/",
                     "NightWorksIO\\MutationGateDefault\\Tests\\": "plugins/default/tests/",
                     "NightWorksIO\\MutationGateLaravel\\Tests\\": "plugins/laravel/tests/",
                     "NightWorksIO\\MutationGateSecurity\\Tests\\": "plugins/security/tests/",
@@ -10789,7 +10786,7 @@
                 "issues": "https://github.com/nightworksio/php-mutation-gate/issues",
                 "source": "https://github.com/nightworksio/php-mutation-gate"
             },
-            "time": "2026-10-27T16:28:10+00:00"
+            "time": "2026-10-27T22:21:30+00:00"
         },
         {
             "name": "nunomaduro/collision",
