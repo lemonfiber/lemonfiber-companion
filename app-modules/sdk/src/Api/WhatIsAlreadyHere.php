@@ -64,7 +64,7 @@ final readonly class WhatIsAlreadyHere
             looked: Required::flag($data, MigrationField::Read, MigrationIsUnreadable::missing(MigrationField::Read)),
             standing: WhatStandsHere::of(...self::projects($data)),
             conflicts: ThePortsHeld::of(...self::conflicts($data)),
-            unsupported: WhatIsUnsupported::these(...self::limits($data, WireField::Unsupported)),
+            unsupported: WhatIsUnsupported::these(...self::limits($data, MigrationField::Unsupported)),
             beside: ThePortsMoved::of(...self::moved($data)),
             linking: self::linking($data),
             choices: WhatMayBeDone::offered(

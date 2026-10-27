@@ -17,7 +17,6 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Stuck;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Stalls;
 use Saloon\Http\Faking\MockClient;
@@ -64,7 +63,6 @@ function theSameStalled(): Stalled
 {
     return Stalled::of(
         HowMuchIsShown::SomeOfIt,
-        WhatIsUnsupported::none(),
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
         Stuck::at('A series somebody has', 'sonarr', Stage::Downloaded),
     );

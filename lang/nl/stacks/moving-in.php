@@ -124,8 +124,6 @@ return [
         'breaks' => 'Dit maakt iets stuk: :breakage',
         'remedy' => 'Om het te herstellen: :remediation',
         'no_connections' => 'Deze ronde probeerde geen verbinding',
-        'cannot_wire' => 'Wat deze ronde niet kan verbinden',
-        'nothing_unsupported' => 'Elke service hier is er een waar deze ronde mee kan praten',
         'fills' => [
             'label' => 'Wie wat beantwoordt',
             'asks' => ':by vraagt om :capability',

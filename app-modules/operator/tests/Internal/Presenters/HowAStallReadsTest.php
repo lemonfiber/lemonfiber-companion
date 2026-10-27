@@ -13,39 +13,26 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
-use Modules\Kernel\Api\Unsupported;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 
-it('carries each limit the stack named, what and why, in its order', function (): void {
+it('carries each stalled item in the stack\'s order, with how much of the listing this is', function (): void {
     $read = new HowAStallReads()->these(Stalled::of(
-        HowMuchIsShown::AllOfIt,
-        WhatIsUnsupported::these(
-            Unsupported::of('The download client', 'It refused the credentials'),
-            Unsupported::of('The indexer', 'It did not answer'),
-        ),
+        HowMuchIsShown::SomeOfIt,
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
+        Stuck::at('A series somebody has', 'sonarr', Stage::Downloaded),
     ));
 
-    expect($read->unreached)->toHaveCount(2)
-        ->and($read->unreached[0]->what)->toBe('The download client')
-        ->and($read->unreached[0]->because)->toBe('It refused the credentials')
-        ->and($read->unreached[1]->what)->toBe('The indexer')
-        ->and($read->unreached[1]->because)->toBe('It did not answer')
-        ->and($read->countSaid)->toBe(HowAStallReads::COUNTED_WHERE_IT_LOOKED)
-        ->and($read->stalled)->toHaveCount(1);
+    expect($read->went->cameBack())->toBeTrue()
+        ->and($read->stalled)->toHaveCount(2)
+        ->and($read->stalled[0]->title)->toBe('A film nobody has seen')
+        ->and($read->stalled[1]->title)->toBe('A series somebody has')
+        ->and($read->shownSaid)->toBe(HowMuchIsShown::SomeOfIt->saidOnTheScreen());
 });
 
-it('counts plainly where the stack reached everything', function (): void {
-    $read = new HowAStallReads()->these(Stalled::nothing());
-
-    expect($read->unreached)->toBe([])
-        ->and($read->countSaid)->toBe(HowAStallReads::COUNTED);
-});
-
-it('carries no limit and the plain count where nothing was read', function (): void {
+it('carries no item and no listing where nothing was read', function (): void {
     foreach ([new HowAStallReads()->signedOut(), new HowAStallReads()->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))] as $read) {
-        expect($read->unreached)->toBe([])
-            ->and($read->countSaid)->toBe(HowAStallReads::COUNTED);
+        expect($read->went->cameBack())->toBeFalse()
+            ->and($read->stalled)->toBe([])
+            ->and($read->shownSaid)->toBe('');
     }
 });

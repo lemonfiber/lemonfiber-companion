@@ -15,8 +15,6 @@ use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\TheWiring;
-use Modules\Kernel\Api\Unsupported;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Sdk\Api\Fields\SeedField;
@@ -54,12 +52,11 @@ final readonly class WhatTheWiringCameTo
         $said = Required::text($data, SeedField::Assessment, SeedIsUnreadable::missing(SeedField::Assessment));
         $judged = HowDriftWasJudged::tryFrom($said) ?? throw SeedIsUnreadable::missing(SeedField::Assessment);
         $rehearsed = Required::flag($data, WireField::Rehearsed, SeedIsUnreadable::missing(WireField::Rehearsed));
-        $unsupported = WhatIsUnsupported::these(...self::unsupported($data));
         $connections = self::wirings($data);
 
         return $rehearsed
-            ? TheWiring::rehearsed($judged, $unsupported, ...$connections)
-            : TheWiring::written($judged, $unsupported, ...$connections);
+            ? TheWiring::rehearsed($judged, ...$connections)
+            : TheWiring::written($judged, ...$connections);
     }
 
     /**
@@ -196,35 +193,5 @@ final readonly class WhatTheWiringCameTo
         }
 
         return $said;
-    }
-
-    /**
-     * What the run could not wire because it cannot speak to it, each with why; none where the stack lists none.
-     *
-     * @param  array<mixed>      $data
-     * @return list<Unsupported>
-     */
-    private static function unsupported(array $data): array
-    {
-        if (! array_key_exists(WireField::Unsupported->value, $data)) {
-            return [];
-        }
-
-        $found = [];
-        $position = 0;
-
-        foreach (Required::rows($data, WireField::Unsupported, SeedIsUnreadable::missing(WireField::Unsupported)) as $row) {
-            if (! is_array($row)) {
-                throw SeedIsUnreadable::entry(WireField::Unsupported, $position, WireField::What);
-            }
-
-            $found[] = Unsupported::of(
-                Required::text($row, WireField::What, SeedIsUnreadable::entry(WireField::Unsupported, $position, WireField::What)),
-                Required::text($row, WireField::Because, SeedIsUnreadable::entry(WireField::Unsupported, $position, WireField::Because)),
-            );
-            $position++;
-        }
-
-        return $found;
     }
 }

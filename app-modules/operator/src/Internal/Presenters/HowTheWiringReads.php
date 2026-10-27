@@ -10,7 +10,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
-use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
@@ -68,12 +67,6 @@ final readonly class HowTheWiringReads
     /** What the run came to. */
     public function answered(TheWiring $wiring): TheWiringTurnedOutToBe
     {
-        $unsupported = [];
-
-        foreach ($wiring->unsupported() as $limit) {
-            $unsupported[] = new ALineOfTheSurvey('stacks.already_here.unsupported', ['what' => $limit->what(), 'because' => $limit->because()]);
-        }
-
         $connections = [];
 
         foreach ($wiring as $connection) {
@@ -91,7 +84,6 @@ final readonly class HowTheWiringReads
                     HowDriftWasJudged::Assessed => 'stacks.wiring.assessed',
                     HowDriftWasJudged::Unassessable => 'stacks.wiring.unassessable',
                 },
-                unsupported: $unsupported,
                 connections: $connections,
             ),
         );

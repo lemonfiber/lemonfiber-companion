@@ -43,4 +43,7 @@ enum MigrationField: string implements NamesAWireField
 
     /** What adopting each recognised service would come to. */
     case Carrying = 'carrying';
+
+    /** What a survey found and cannot take over, each with why. */
+    case Unsupported = 'unsupported';
 }

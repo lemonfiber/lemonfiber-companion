@@ -170,14 +170,6 @@
                 <x-design::body>{{ __('stacks.wiring.no_connections') }}</x-design::body>
             @endforelse
 
-            <x-design::section :label="__('stacks.wiring.cannot_wire')">
-                @forelse ($this->howItIsGoing()->wiring->unsupported as $line)
-                    <x-design::row :headline="__($line->said, $line->with)" />
-                @empty
-                    <x-design::row :headline="__('stacks.wiring.nothing_unsupported')" />
-                @endforelse
-            </x-design::section>
-
             @if ($this->adoptionRehearsed)
                 <x-operator::offered-action :label="__('stacks.wiring.adopt')" tap="adopt()" :offer="$this->offered(WhatToDoAboutWiring::Adopt)" />
             @endif

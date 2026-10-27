@@ -6,33 +6,13 @@
     {{-- How many stopped, said before the list, so an operator who opened
          this because somebody in the house asked them to does not have to
          count rows. --}}
-    <x-design::title>{{ trans_choice($this->answer()->countSaid, $this->howMany()) }}</x-design::title>
+    <x-design::title>{{ trans_choice('health.stuck_count', $this->howMany()) }}</x-design::title>
 
     {{-- Whether this is the whole of what the stack holds. Rendered in both
          cases rather than only when something is missing: a screen that is
          silent when a list is whole teaches an operator to read silence,
          and silence is also what a screen that forgot the flag produces. --}}
     <x-design::note>{{ __($this->answer()->shownSaid) }}</x-design::note>
-
-    {{-- What the stack could not look into, before the rows. An empty listing
-         from a queue it could not reach is not good news, so this is its own
-         answer rather than a footnote under one. --}}
-    @unless ($this->answer()->unreached === [])
-        <x-design::notice tone="unknown">
-            <x-design::strong>{{ __('health.could_not_reach') }}</x-design::strong>
-            <x-design::body>{{ __('health.could_not_reach_explained') }}</x-design::body>
-        </x-design::notice>
-
-        <x-design::section>
-            @forelse ($this->answer()->unreached as $limit)
-                <x-design::row :headline="$limit->what" :supporting="$limit->because" />
-            @empty
-                {{-- Unreachable while the branch above guards it. A stack that
-                     reached everything it manages has nothing to add here: the
-                     plain count above already says so. --}}
-            @endforelse
-        </x-design::section>
-    @endunless
 
     @forelse ($this->answer()->stalled as $item)
         <x-design::card>
@@ -71,9 +51,7 @@
         {{-- Not the same screen as a stack that could not be asked. Nothing
              stuck is the answer the operator wants, and saying so is what
              tells it apart from the obstacle branch. --}}
-        @if ($this->answer()->unreached === [])
-            <x-design::standing :said="__('health.nothing_stopped')" tone="fine" :note="__('health.nothing_stopped_action')" />
-        @endif
+        <x-design::standing :said="__('health.nothing_stopped')" tone="fine" :note="__('health.nothing_stopped_action')" />
     @endforelse
 
     {{-- Offered whether or not the reading came back: somebody watching a

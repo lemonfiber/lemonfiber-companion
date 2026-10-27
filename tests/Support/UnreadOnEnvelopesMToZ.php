@@ -606,12 +606,6 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'is the figure an operator can weigh; the count of names is not.',
         ],
         [
-            'path' => 'StatusEnvelope.unsupported',
-            'because' => 'What this stack cannot do, and why. It is the stack describing its own limits '
-                . 'rather than its condition, and `N2-R1` opens this app on a verdict. A screen mixing the '
-                . 'two would report a limitation as something wrong.',
-        ],
-        [
             'path' => 'UpdateEnvelope.backup',
             'because' => 'The snapshot taken before a run. `N2-R19` has the app say which way back the stack '
                 . 'named, and the stack performs it — naming the snapshot would be this app describing a file '

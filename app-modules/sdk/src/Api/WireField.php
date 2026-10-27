@@ -520,12 +520,6 @@ enum WireField: string implements NamesAWireField
      */
     case Remedy = 'remedy';
 
-    /**
-     * What was found and cannot be acted on: the limits a reading of what is
-     * stuck carried, and what a survey found and cannot take over.
-     */
-    case Unsupported = 'unsupported';
-
     /** Where something would go: what a setting would hold, and the port a service would take instead. */
     case To = 'to';
 
