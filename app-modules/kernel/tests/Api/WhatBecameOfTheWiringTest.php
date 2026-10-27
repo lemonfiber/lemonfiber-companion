@@ -14,7 +14,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\TheWiringSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
-use Modules\Kernel\Api\WhatIsUnsupported;
 
 use function sprintf;
 
@@ -33,7 +32,7 @@ function theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring $became): string
 }
 
 it('takes each arm it was built on, and no other', function (): void {
-    $wiring = TheWiring::written(HowDriftWasJudged::Assessed, WhatIsUnsupported::none());
+    $wiring = TheWiring::written(HowDriftWasJudged::Assessed);
 
     expect(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::underway(Job::named('j-1'))))->toBe('underway j-1')
         ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::answered($wiring)))->toBe('answered assessed')

@@ -137,8 +137,6 @@ return [
         'breaks' => 'This breaks something: :breakage',
         'remedy' => 'To put it right: :remediation',
         'no_connections' => 'This run attempted no connection',
-        'cannot_wire' => 'What this run cannot wire',
-        'nothing_unsupported' => 'Every service here is one this run can speak to',
         'fills' => [
             'label' => 'What answers what',
             'asks' => ':by asks for :capability',

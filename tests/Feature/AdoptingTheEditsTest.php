@@ -19,7 +19,6 @@ use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhereAConnectionStands;
@@ -58,7 +57,6 @@ function whatAdoptingWouldDo(): TheWiring
 {
     return TheWiring::rehearsed(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::none(),
         AConnection::of('Sonarr into Jellyfin', WhatItWouldBreak::nothing(), HowAConnectionEnded::plainly(WhereAConnectionStands::WouldAdopt)),
         AConnection::of('SABnzbd into Sonarr', WhatItWouldBreak::nothing(), HowAConnectionEnded::wouldWire('http://sabnzbd:8080', '')),
     );
@@ -68,7 +66,6 @@ function whatAdoptingDid(): TheWiring
 {
     return TheWiring::written(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::none(),
         AConnection::of('Sonarr into Jellyfin', WhatItWouldBreak::nothing(), HowAConnectionEnded::plainly(WhereAConnectionStands::Adopted)),
     );
 }

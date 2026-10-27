@@ -44,7 +44,6 @@ function aRunOfEveryState(): array
     return [
         'assessment' => 'assessed',
         'rehearsed' => false,
-        'unsupported' => [['what' => 'tautulli', 'because' => 'lemonfiber cannot speak to it'], ['what' => 'bazarr', 'because' => 'Nor to this one']],
         'wirings' => [
             ['connection' => 'SABnzbd into Sonarr', 'severity' => $informational, 'state' => ['state' => 'wired']],
             ['connection' => 'SABnzbd into Radarr', 'severity' => ['severity' => 'warning', 'breakage' => 'Downloads never arrive', 'remediation' => 'Point it again'], 'state' => ['state' => 'conflicted', 'ours' => '/downloads', 'yours' => '/mnt/downloads']],
@@ -102,10 +101,6 @@ function everyConnectionRead(TheWiring $wiring): array
 {
     $lines = [sprintf('%s|%s', $wiring->judged()->value, $wiring->wasRehearsed() ? 'rehearsed' : 'written')];
 
-    foreach ($wiring->unsupported() as $limit) {
-        $lines[] = sprintf('cannot %s: %s', $limit->what(), $limit->because());
-    }
-
     foreach ($wiring as $connection) {
         $ended = $connection->ended();
         $lines[] = sprintf('%s|%s|%s|%s|%s|%s|%s', $connection->connection(), $ended->state()->value, $ended->said(), $ended->ours(), $ended->yours(), $connection->breaks()->breakage(), $connection->breaks()->remediation());
@@ -121,8 +116,6 @@ it('stands in for a stack with a payload the contract would accept', function ()
 it('reads every connection in its own state, with the stack\'s words and what a warning breaks', function (): void {
     expect(implode("\n", everyConnectionRead(WhatTheWiringCameTo::in(aRunSaying(aRunOfEveryState())))))->toBe(implode("\n", [
         'assessed|written',
-        'cannot tautulli: lemonfiber cannot speak to it',
-        'cannot bazarr: Nor to this one',
         'SABnzbd into Sonarr|wired|||||',
         'SABnzbd into Radarr|conflicted||/downloads|/mnt/downloads|Downloads never arrive|Point it again',
         'Prowlarr into Sonarr|would-wire||8989|8990||',
@@ -146,12 +139,8 @@ it('reads a rehearsed run as one, and a run that could not judge drift as that',
     expect(everyConnectionRead($run)[0])->toBe('unassessable|rehearsed');
 });
 
-it('reads a run that lists nothing it cannot wire as none', function (): void {
-    expect(WhatTheWiringCameTo::in(aRunSaying(aRunWith(aRunOfEveryState(), ['unsupported'], 'absent')))->unsupported())->toHaveCount(0);
-});
-
 it('reads what the stack may leave out of a conflict or a rehearsed wiring as nothing, where it is absent or null', function (int $at, string $field, mixed $said, string $read): void {
-    expect(everyConnectionRead(WhatTheWiringCameTo::in(aRunSaying(aRunWith(aRunOfEveryState(), ['wirings', $at, 'state', $field], $said))))[$at + 3])->toBe($read);
+    expect(everyConnectionRead(WhatTheWiringCameTo::in(aRunSaying(aRunWith(aRunOfEveryState(), ['wirings', $at, 'state', $field], $said))))[$at + 1])->toBe($read);
 })->with([
     [1, 'yours', 'absent', 'SABnzbd into Radarr|conflicted||/downloads||Downloads never arrive|Point it again'],
     [1, 'yours', null, 'SABnzbd into Radarr|conflicted||/downloads||Downloads never arrive|Point it again'],
@@ -168,7 +157,7 @@ it('refuses a field of the run itself that is missing or not what the contract s
         ->toThrow(SeedIsUnreadable::class, sprintf('The seed envelope has no readable `%s`', $field));
 })->with([
     ['assessment', 'absent'], ['assessment', 'judged'], ['assessment', ' '], ['rehearsed', 'no'], ['rehearsed', 'absent'],
-    ['wirings', 'absent'], ['wirings', 'none'], ['unsupported', null],
+    ['wirings', 'absent'], ['wirings', 'none'],
 ]);
 
 it('refuses a connection that does not say what it owes, naming the second place it could be', function (int $at, string $inside, mixed $said, string $field): void {
@@ -195,13 +184,6 @@ it('refuses a connection that does not say what it owes, naming the second place
     [11, 'state.reason', 'absent', 'reason'],
     [12, 'state.reason', ' ', 'reason'],
 ]);
-
-it('refuses what the run cannot wire where it does not say what or why, naming the second', function (mixed $said, string $field): void {
-    $path = $field === 'the row' ? ['unsupported', 1] : ['unsupported', 1, $field];
-
-    expect(fn(): TheWiring => WhatTheWiringCameTo::in(aRunSaying(aRunWith(aRunOfEveryState(), $path, $said))))
-        ->toThrow(SeedIsUnreadable::class, sprintf('Entry 1 of `unsupported` in the seed envelope has no readable `%s`', $field === 'the row' ? 'what' : $field));
-})->with([['spoiled', 'the row'], [' ', 'what'], ['absent', 'because']]);
 
 it('refuses an envelope in a version this app does not read', function (): void {
     expect(fn(): TheWiring => WhatTheWiringCameTo::in(aRunSaying(aRunOfEveryState(), version: 99)))->toThrow(EnvelopeIsNotRead::class);

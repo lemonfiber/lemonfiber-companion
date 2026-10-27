@@ -187,10 +187,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'The rest of a check\'s finding. The screen names the check by its title, which is how the health screen lists it, and the health screen draws the whole finding.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.adapters',
-            'because' => 'Which of lemonfiber\'s adapters the plugin\'s own services name. The adapter each recipe step reaches through is read and drawn (`N20-R6`); the services\' own adapters drive the stack\'s wiring, and nothing about them is agreed to here.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.contributions',
             'because' => 'The rows a plugin adds to registers lemonfiber already runs, such as its checks. No requirement asks the plugins screen to list them, and each is drawn where its register is.',
         ],
@@ -229,10 +225,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.install.would.recipes[].steps[].adapter.owner',
             'because' => 'Whose adapter a step reaches through, which the contract fixes to lemonfiber. The screen says each adapter is lemonfiber\'s and not the plugin\'s (`N20-R6`), the one answer the field can give.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].adapters',
-            'because' => 'Which of lemonfiber\'s adapters the plugin\'s own services name. The adapter each recipe step reaches through is read and drawn (`N20-R6`); the services\' own adapters drive the stack\'s wiring, and nothing about them is agreed to here.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].contributions',
@@ -399,10 +391,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.install.verified.unsettled[].now.verdict`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
-            'path' => 'PluginsEnvelope.update.install.would.adapters',
-            'because' => 'As `PluginsEnvelope.install.would.adapters`: an update carries the new version\'s install account whole, and the one reader reads both.',
-        ],
-        [
             'path' => 'PluginsEnvelope.update.install.would.contributions',
             'because' => 'As `PluginsEnvelope.install.would.contributions`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
@@ -441,10 +429,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.recipes[].steps[].adapter.owner',
             'because' => 'As `PluginsEnvelope.install.would.recipes[].steps[].adapter.owner`: an update carries the new version\'s install account whole, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].services[].api',
-            'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].services[].asks',
@@ -551,10 +535,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Which of the plugin\'s secrets each field of an adapter\'s upstream file holds. The install\'s own change says that file is written and readable by its owner alone (`plugins.puts.upstream`), its values never shown, and no requirement asks for its fields.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.services[].api',
-            'because' => 'As `PluginsEnvelope.installed[].services[].api`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.services[].asks',
             'because' => 'As `PluginsEnvelope.installed[].services[].asks`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
@@ -657,10 +637,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.install.would.services[].upstream',
             'because' => 'As `PluginsEnvelope.installed[].services[].upstream`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.update.install.would.services[].api',
-            'because' => 'As `PluginsEnvelope.installed[].services[].api`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].asks',

@@ -27,10 +27,8 @@ use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\Unfilled;
-use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
@@ -111,7 +109,6 @@ function aRunOfEveryConnection(): TheWiring
 {
     return TheWiring::written(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::these(Unsupported::of('tautulli', 'lemonfiber cannot speak to it')),
         aConnectionEnded('A', HowAConnectionEnded::plainly(WhereAConnectionStands::Wired)),
         aConnectionEnded('B', HowAConnectionEnded::plainly(WhereAConnectionStands::AlreadyWired)),
         aConnectionEnded('C', HowAConnectionEnded::plainly(WhereAConnectionStands::Drifted)),
@@ -276,7 +273,7 @@ it('says what a warning breaks and what puts it right, and nothing of the kind w
 });
 
 it('says whether drift could be judged, and that a run which could not is its own answer', function (): void {
-    $unjudged = TheWiring::written(HowDriftWasJudged::Unassessable, WhatIsUnsupported::none(), aConnectionEnded('A', HowAConnectionEnded::plainly(WhereAConnectionStands::AlreadyWired)));
+    $unjudged = TheWiring::written(HowDriftWasJudged::Unassessable, aConnectionEnded('A', HowAConnectionEnded::plainly(WhereAConnectionStands::AlreadyWired)));
     $judged = theRunDrawn(theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(aRunOfEveryConnection()))));
     $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered($unjudged)));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -290,7 +287,7 @@ it('says whether drift could be judged, and that a run which could not is its ow
 });
 
 it('labels a rehearsed run as one before anything else, and a run that wrote as nothing of the kind', function (): void {
-    $rehearsed = TheWiring::rehearsed(HowDriftWasJudged::Assessed, WhatIsUnsupported::none(), aConnectionEnded('A', HowAConnectionEnded::wouldWire('8989', '8990')));
+    $rehearsed = TheWiring::rehearsed(HowDriftWasJudged::Assessed, aConnectionEnded('A', HowAConnectionEnded::wouldWire('8989', '8990')));
     $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered($rehearsed)));
     $written = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(aRunOfEveryConnection())));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -304,14 +301,10 @@ it('labels a rehearsed run as one before anything else, and a run that wrote as 
         ->and(WhatTheDeviceWouldDraw::by($written)->said())->not->toContain(__('stacks.wiring.rehearsed'));
 });
 
-it('names what a run cannot wire, with why, and says so where it can wire everything', function (): void {
-    $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(aRunOfEveryConnection())));
-    $empty = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(TheWiring::written(HowDriftWasJudged::Assessed, WhatIsUnsupported::none()))));
+it('says so where a run attempted no connection', function (): void {
+    $empty = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(TheWiring::written(HowDriftWasJudged::Assessed))));
 
-    expect(theRunDrawn($screen)->unsupported[0]->with)->toBe(['what' => 'tautulli', 'because' => 'lemonfiber cannot speak to it'])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.already_here.unsupported', ['what' => 'tautulli', 'because' => 'lemonfiber cannot speak to it']))
-        ->and(WhatTheDeviceWouldDraw::by($empty)->said())->toContain(__('stacks.wiring.nothing_unsupported'))
-        ->and(WhatTheDeviceWouldDraw::by($empty)->said())->toContain(__('stacks.wiring.no_connections'));
+    expect(WhatTheDeviceWouldDraw::by($empty)->said())->toContain(__('stacks.wiring.no_connections'));
 });
 
 it('shows a request the stack turned down in its own words', function (): void {
@@ -464,7 +457,6 @@ it('renders its own view', function (): void {
 it('draws an area the operator declared unmanaged as left alone in their words, never as a change, with no value and nothing to do about it', function (): void {
     $leftAlone = TheWiring::written(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::none(),
         aConnectionEnded('Sonarr to qBittorrent', HowAConnectionEnded::because(WhereAConnectionStands::Observed, 'Tuned by hand for the seedbox')),
     );
     $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered($leftAlone)));

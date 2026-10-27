@@ -18,7 +18,6 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Sdk\Api\PinnedClients;
@@ -57,7 +56,6 @@ function theSameRun(): TheWiring
 {
     return TheWiring::written(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::none(),
         AConnection::of('SABnzbd into Sonarr', WhatItWouldBreak::warning('Downloads never arrive', 'Point it again'), HowAConnectionEnded::failed('401 Unauthorized')),
     );
 }

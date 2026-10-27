@@ -9,7 +9,6 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\WhatIsStuck;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Tests\Support\TheWordCarriedOut;
 
 /** Whichever arm an answer takes, as a word. */
@@ -25,7 +24,6 @@ function whatCameBackAboutTheStall(WhatIsStuck $answer): string
 it('a listing takes the arm that renders rows', function (): void {
     $stalled = Stalled::of(
         HowMuchIsShown::AllOfIt,
-        WhatIsUnsupported::none(),
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     );
 

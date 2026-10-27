@@ -14,8 +14,6 @@ use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\TheWiringSaysNothing;
-use Modules\Kernel\Api\Unsupported;
-use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhereAConnectionStands;
@@ -28,11 +26,9 @@ function aConnectionThat(HowAConnectionEnded $ended, string $connection = 'SABnz
     return AConnection::of($connection, WhatItWouldBreak::nothing(), $ended);
 }
 
-it('keeps every connection in the stack\'s order, with how drift was judged, whether it only said so, and what it could not wire', function (): void {
-    $unsupported = WhatIsUnsupported::these(Unsupported::of('tautulli', 'lemonfiber cannot speak to it'));
+it('keeps every connection in the stack\'s order, with how drift was judged and whether it only said so', function (): void {
     $wiring = TheWiring::rehearsed(
         HowDriftWasJudged::Unassessable,
-        $unsupported,
         ...['a' => aConnectionThat(HowAConnectionEnded::plainly(WhereAConnectionStands::Wired)), 'b' => aConnectionThat(HowAConnectionEnded::failed('401 Unauthorized'), 'qBittorrent into Radarr')],
     );
     $connections = [];
@@ -43,15 +39,13 @@ it('keeps every connection in the stack\'s order, with how drift was judged, whe
 
     expect($wiring->judged())->toBe(HowDriftWasJudged::Unassessable)
         ->and($wiring->wasRehearsed())->toBeTrue()
-        ->and(TheWiring::written(HowDriftWasJudged::Assessed, WhatIsUnsupported::none())->wasRehearsed())->toBeFalse()
-        ->and($wiring->unsupported())->toBe($unsupported)
+        ->and(TheWiring::written(HowDriftWasJudged::Assessed)->wasRehearsed())->toBeFalse()
         ->and($connections)->toBe(['SABnzbd into Sonarr', 'qBittorrent into Radarr'])
         ->and(array_keys(iterator_to_array($wiring, preserve_keys: true)))->toBe([0, 1])
         ->and($wiring)->toHaveCount(2);
 
     $written = TheWiring::written(
         HowDriftWasJudged::Assessed,
-        WhatIsUnsupported::none(),
         ...['a' => aConnectionThat(HowAConnectionEnded::plainly(WhereAConnectionStands::Wired)), 'b' => aConnectionThat(HowAConnectionEnded::failed('401 Unauthorized'), 'qBittorrent into Radarr')],
     );
 
