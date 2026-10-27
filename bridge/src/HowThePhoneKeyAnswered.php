@@ -47,9 +47,16 @@ enum HowThePhoneKeyAnswered: string
     /** This is what the phone is called. */
     case Named = 'named';
 
-    /** What a call answered, where it is one of these. */
+    /**
+     * What a call answered, where it is one of these.
+     *
+     * Two branches rather than `tryFrom($said ?? '')`, for the reason
+     * {@see WhyNothingWasKept::orTheStoreWouldNotOpen()} gives.
+     */
     public static function in(WhatTheBridgeAnswered $said): ?self
     {
-        return self::tryFrom($said->outcome() ?? '');
+        $word = $said->outcome();
+
+        return $word === null ? null : self::tryFrom($word);
     }
 }
