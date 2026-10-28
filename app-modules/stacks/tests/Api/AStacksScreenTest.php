@@ -13,12 +13,15 @@ use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhenItCameOut;
@@ -77,11 +80,28 @@ it('puts a whole form where a service would go, and the machine where it belongs
     ))->toBe(sprintf('/stacks/%s/do/arr', A_MACHINE));
 });
 
-it('puts one of lemonfiber\'s words where a service would go', function (): void {
+it('puts one of lemonfiber\'s words where a service would go, encoded', function (): void {
     expect(AStacksScreen::WordAbout->forTheStacksWord(
         StackId::rememberedAs(A_MACHINE),
         AWordInUse::named('ratio'),
-    ))->toBe(sprintf('/stacks/%s/words/ratio', A_MACHINE));
+    ))->toBe(sprintf('/stacks/%s/words/ratio', A_MACHINE))
+        ->and(AStacksScreen::WordAbout->forTheStacksWord(StackId::rememberedAs(A_MACHINE), AWordInUse::named('down/up ratio')))
+        ->toBe(sprintf('/stacks/%s/words/down%%2Fup%%20ratio', A_MACHINE));
+});
+
+it('puts one check where a service would go, encoded', function (): void {
+    expect(AStacksScreen::Run->forTheStacksCheck(StackId::rememberedAs(A_MACHINE), Check::of('disk/free space')))
+        ->toBe(sprintf('/stacks/%s/run/disk%%2Ffree%%20space', A_MACHINE));
+});
+
+it('puts a run of every check, or of one family\'s, where a service would go', function (): void {
+    expect(AStacksScreen::RunChecks->forTheStacksChecks(StackId::rememberedAs(A_MACHINE), WhatARunCovers::theFamily(Category::Storage)))
+        ->toBe(sprintf('/stacks/%s/run-every/storage', A_MACHINE));
+});
+
+it('puts one title a member\'s search found where a service would go, encoded', function (): void {
+    expect(AStacksScreen::Found->forTheStacksFoundTitle(StackId::rememberedAs(A_MACHINE), AFoundTitle::listed('tmdb:1 2/3', KindOfTitle::Film, 'Alien', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable)))
+        ->toBe(sprintf('/stacks/%s/found/tmdb%%3A1%%202%%2F3', A_MACHINE));
 });
 
 it('puts one title a member may watch where a service would go, encoded', function (): void {
