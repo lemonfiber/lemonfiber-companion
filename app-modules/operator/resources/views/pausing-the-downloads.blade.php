@@ -21,14 +21,14 @@
     @elseif ($this->done()->stands->hasEnded())
         <x-operator::emphasis>{{ __('stacks.pausing.no_outcome') }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.pausing.no_outcome_action') }}</x-design::body>
-    @else
+    @elseif ($this->done()->said !== null)
         @if ($this->done()->wasRehearsed)
             <x-operator::heading>{{ __('stacks.pausing.a_rehearsal') }}</x-operator::heading>
         @else
             <x-operator::heading>{{ __($this->says()->done) }}</x-operator::heading>
         @endif
 
-        @forelse ($this->done()->clients as $client)
+        @forelse ($this->done()->said->clients as $client)
             <x-operator::entry>
                 <x-design::body>{{ $client->name }}</x-design::body>
                 @if ($client->reached)
@@ -42,8 +42,8 @@
             <x-design::body>{{ __('stacks.pausing.no_clients') }}</x-design::body>
         @endforelse
 
-        @if ($this->done()->caution !== '')
-            <x-operator::emphasis>{{ $this->done()->caution }}</x-operator::emphasis>
+        @if ($this->done()->said->caution !== '')
+            <x-operator::emphasis>{{ $this->done()->said->caution }}</x-operator::emphasis>
         @endif
     @endif
 
@@ -56,14 +56,14 @@
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::emphasis>{{ __('stacks.pausing.offer_ended') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
-@else
+@elseif ($this->answer()->said !== null)
     {{-- The rehearsal: what every client is doing now, all of it before the
          yes. Nothing below has happened, and nothing is worded as though it
          had. --}}
     <x-operator::heading>{{ __($this->says()->whatItDoes) }}</x-operator::heading>
     <x-design::body>{{ __($this->says()->explained) }}</x-design::body>
 
-    @forelse ($this->answer()->clients as $client)
+    @forelse ($this->answer()->said->clients as $client)
         <x-operator::entry>
             <x-design::body>{{ $client->name }}</x-design::body>
             @if ($client->reached)
@@ -77,11 +77,11 @@
         <x-design::body>{{ __('stacks.pausing.no_clients') }}</x-design::body>
     @endforelse
 
-    @if ($this->answer()->caution !== '')
-        <x-operator::emphasis>{{ $this->answer()->caution }}</x-operator::emphasis>
+    @if ($this->answer()->said->caution !== '')
+        <x-operator::emphasis>{{ $this->answer()->said->caution }}</x-operator::emphasis>
     @endif
 
-    @if ($this->answer()->clients !== [])
+    @if ($this->answer()->said->clients !== [])
         <x-operator::offered-action :label="__($this->says()->agree)" tap="agree()" :offer="$this->offered($this->whatWasAsked())" />
     @endif
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />

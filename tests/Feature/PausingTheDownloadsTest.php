@@ -118,7 +118,7 @@ it('rehearses first, and draws what every client is doing and the one it could n
     $screen = thePausingScreen($pausing);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect(everyClientAsShown($screen->answer()->clients))->toBe([
+    expect(everyClientAsShown($screen->answer()->said->clients ?? []))->toBe([
         ['qbittorrent', 'stacks.pausing.said.fetching', '', true, ''],
         ['sabnzbd', 'stacks.pausing.said.stopped', '', true, ''],
         ['nzbget', 'stacks.pausing.said.unsaid', '', false, 'connection refused'],
@@ -179,7 +179,7 @@ it('reports each client before and after, and names the one it could not reach',
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect(everyClientAsShown($screen->done()->clients))->toBe([
+    expect(everyClientAsShown($screen->done()->said->clients ?? []))->toBe([
         ['qbittorrent', 'stacks.pausing.said.fetching', 'stacks.pausing.said.stopped', true, ''],
         ['sabnzbd', 'stacks.pausing.said.stopped', 'stacks.pausing.said.stopped', true, ''],
         ['nzbget', 'stacks.pausing.said.unsaid', '', false, ''],
@@ -318,7 +318,7 @@ it('asks for a session where it is gone by the time the yes is sent, or asked af
     $screen->whileItRuns();
 
     expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
-        ->and($screen->done()->clients)->toBe([]);
+        ->and($screen->done()->said)->toBeNull();
 })->with(['before the yes' => [false], 'after it' => [true]]);
 
 it('has nothing to report for a yes nobody gave', function (): void {
