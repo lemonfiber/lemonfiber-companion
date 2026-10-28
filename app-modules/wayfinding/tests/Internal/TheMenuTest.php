@@ -106,7 +106,8 @@ it('counts what is new of every kind as digits, and draws no count where nothing
     expect(new TheWhatsNewInTheMenu($new)->count())->toBe(4)
         ->and(new TheWhatsNewInTheMenu($new)->badge())->toBe('4')
         ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->count())->toBe(0)
-        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->badge())->toBe('');
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::none())->badge())->toBe('')
+        ->and(new TheWhatsNewInTheMenu(HowMuchIsNew::holding(WhatIsNew::these(AnItem::anUpdate('2.4.0')), WhatIsNew::these(), WhatIsNew::these()))->badge())->toBe('1');
 });
 
 it('names each group by a key of its own', function (): void {

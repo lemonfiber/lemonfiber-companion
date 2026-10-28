@@ -174,8 +174,7 @@ final readonly class TheWayAround
      */
     public function afterRemoving(Stack $removed): string
     {
-        $before = [];
-        $after = [];
+        $first = null;
         $passed = false;
 
         foreach ($this->stacks->configured() as $stack) {
@@ -186,17 +185,13 @@ final readonly class TheWayAround
             }
 
             if ($passed) {
-                $after[] = $stack;
-
-                continue;
+                return $this->choosingLeadsTo($stack);
             }
 
-            $before[] = $stack;
+            $first ??= $stack;
         }
 
-        $next = [...$after, ...$before];
-
-        return $next === [] ? AScreenWithoutAStack::TheList->value : $this->choosingLeadsTo($next[0]);
+        return $first instanceof Stack ? $this->choosingLeadsTo($first) : AScreenWithoutAStack::TheList->value;
     }
 
     /**
