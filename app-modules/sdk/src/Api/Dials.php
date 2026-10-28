@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -247,15 +248,13 @@ final readonly class Dials
     private static function each(array $listed): array
     {
         $set = [];
-        $position = 0;
 
-        foreach ($listed as $row) {
+        foreach (InTheOrderSent::rows($listed) as $position => $row) {
             if (! is_array($row)) {
                 throw SettingIsUnreadable::row($position);
             }
 
             $set[] = self::one($row);
-            $position++;
         }
 
         return $set;

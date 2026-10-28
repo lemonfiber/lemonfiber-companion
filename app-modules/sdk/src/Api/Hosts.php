@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Sdk\Api\Fields\HostingField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -130,15 +131,13 @@ final readonly class Hosts
     private static function commands(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data)) as $position => $row) {
             if (! is_array($row)) {
                 throw HostingIsUnreadable::command($position);
             }
 
             $found[] = self::one($row, $position);
-            $position++;
         }
 
         return $found;

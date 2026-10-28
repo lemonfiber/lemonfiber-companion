@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
 use Modules\Sdk\Api\Fields\WiringField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -83,9 +84,8 @@ final readonly class Links
     private static function wired(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WiringField::Wired) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WiringField::Wired)) as $position => $row) {
             if (! is_array($row)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, WiringField::Reaches, $position);
             }
@@ -94,7 +94,6 @@ final readonly class Links
                 ServiceId::called(self::text($row, WiringField::Wired, WireField::By, $position)),
                 self::reaches(self::table($row, WiringField::Reaches, $position), $position),
             );
-            $position++;
         }
 
         return $found;
@@ -198,9 +197,8 @@ final readonly class Links
     private static function unfilled(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WiringField::Unfilled) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WiringField::Unfilled)) as $position => $row) {
             if (! is_array($row)) {
                 throw LinksAreUnreadable::entry(WiringField::Unfilled, WireField::By, $position);
             }
@@ -209,7 +207,6 @@ final readonly class Links
                 ServiceId::called(self::text($row, WiringField::Unfilled, WireField::By, $position)),
                 Capability::called(self::text($row, WiringField::Unfilled, WireField::Capability, $position)),
             );
-            $position++;
         }
 
         return $found;

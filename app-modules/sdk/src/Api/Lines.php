@@ -55,16 +55,14 @@ final readonly class Lines
         $asked = HowManyLines::of($window->bound());
 
         $said = [];
-        $position = 0;
 
-        foreach ($window->lines() as $envelope) {
+        foreach ($window->lines() as $position => $envelope) {
             // Every line, not the window. A wire version this build does not
             // app does not support, and a window is many envelopes rather than
             // one — the client asserts each line's *kind* as it builds the
             // window and says nothing about its version, so this is the only
             // place the gate can stand for a log read.
             $said[] = self::line(Wire::checked($envelope)->data, $position);
-            $position++;
         }
 
         return Scrollback::of($service, $asked, ...$said);

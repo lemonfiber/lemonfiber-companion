@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\LifecycleField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
@@ -94,11 +95,9 @@ final readonly class Lifecycles
     private static function command(array $data): TheCommandLine
     {
         $words = [];
-        $position = 0;
 
-        foreach (Required::rows($data, WireField::Command, LifecycleIsUnreadable::missing(WireField::Command)) as $word) {
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Command, LifecycleIsUnreadable::missing(WireField::Command))) as $position => $word) {
             $words[] = is_string($word) && trim($word) !== '' ? $word : throw LifecycleIsUnreadable::entry(WireField::Command, $position);
-            $position++;
         }
 
         return $words === [] ? throw LifecycleIsUnreadable::missing(WireField::Command) : TheCommandLine::of(...$words);
@@ -113,9 +112,8 @@ final readonly class Lifecycles
     private static function services(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, WireField::Services, LifecycleIsUnreadable::missing(WireField::Services)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Services, LifecycleIsUnreadable::missing(WireField::Services))) as $position => $row) {
             $refused = LifecycleIsUnreadable::entry(WireField::Services, $position);
 
             if (! is_array($row)) {
@@ -126,7 +124,6 @@ final readonly class Lifecycles
                 Required::text($row, WireField::Name, $refused),
                 HowAServiceRuns::tryFrom(Required::text($row, WireField::State, $refused)) ?? throw $refused,
             );
-            $position++;
         }
 
         return $found;
@@ -163,9 +160,8 @@ final readonly class Lifecycles
         }
 
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, LifecycleField::PortConflicts, LifecycleIsUnreadable::missing(LifecycleField::PortConflicts)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, LifecycleField::PortConflicts, LifecycleIsUnreadable::missing(LifecycleField::PortConflicts))) as $position => $row) {
             $refused = LifecycleIsUnreadable::entry(LifecycleField::PortConflicts, $position);
 
             if (! is_array($row)) {
@@ -177,7 +173,6 @@ final readonly class Lifecycles
                 Required::text($row, WireField::WantedBy, $refused),
                 Required::text($row, WireField::HeldBy, $refused),
             );
-            $position++;
         }
 
         return $found;

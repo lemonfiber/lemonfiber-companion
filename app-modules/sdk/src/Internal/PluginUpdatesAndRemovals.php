@@ -111,15 +111,13 @@ final readonly class PluginUpdatesAndRemovals
     private static function leaves(array $removal): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::table($removal, PluginsField::Leaves) as $row) {
+        foreach (InTheOrderSent::rows(self::table($removal, PluginsField::Leaves)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Leaves, WireField::Capability, $position);
             }
 
             $found[] = ACapabilityLeftUnfilled::of(self::text($row, WireField::Capability), self::text($row, PluginsField::FilledBy));
-            $position++;
         }
 
         return $found;

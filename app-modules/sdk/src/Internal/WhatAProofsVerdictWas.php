@@ -43,9 +43,8 @@ final readonly class WhatAProofsVerdictWas
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($install[PluginsField::Proofs->value] as $row) {
+        foreach (InTheOrderSent::rows($install[PluginsField::Proofs->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Proofs, PluginsField::Proof, $position);
             }
@@ -57,7 +56,6 @@ final readonly class WhatAProofsVerdictWas
                 self::text($row, WireField::Why, $position),
                 self::cameTo($row, $position),
             );
-            $position++;
         }
 
         return TheProofs::these(...$found);

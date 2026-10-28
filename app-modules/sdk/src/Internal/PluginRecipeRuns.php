@@ -53,15 +53,13 @@ final readonly class PluginRecipeRuns
     private static function did(array $ran): WhatARecipeRunDid
     {
         $steps = [];
-        $at = 0;
 
-        foreach (Required::rows($ran, WireField::Steps, PluginsAreUnreadable::missing(WireField::Steps)) as $step) {
+        foreach (InTheOrderSent::rows(Required::rows($ran, WireField::Steps, PluginsAreUnreadable::missing(WireField::Steps))) as $at => $step) {
             if (! is_array($step)) {
                 throw PluginsAreUnreadable::entry(WireField::Steps, WireField::Step, $at);
             }
 
             $steps[] = self::step($step, $at);
-            $at++;
         }
 
         return WhatARecipeRunDid::reported(

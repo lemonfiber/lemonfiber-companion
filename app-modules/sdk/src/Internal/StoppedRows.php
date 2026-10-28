@@ -45,9 +45,8 @@ final readonly class StoppedRows
         }
 
         $stopped = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw SummaryIsUnreadable::inStopped($position, DashboardField::Stuck);
             }
@@ -59,7 +58,6 @@ final readonly class StoppedRows
                 self::blocking($row, $position),
                 self::count($row, DashboardField::HeldFor, $position),
             );
-            $position++;
         }
 
         return WhatStoppedMoving::of(...$stopped);

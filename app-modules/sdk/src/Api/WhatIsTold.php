@@ -17,6 +17,7 @@ use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Sdk\Api\Fields\AlertsField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -79,9 +80,8 @@ final readonly class WhatIsTold
 
         $found = [];
         $kinds = [];
-        $position = 0;
 
-        foreach ($data[AlertsField::Exceptions->value] as $row) {
+        foreach (InTheOrderSent::rows($data[AlertsField::Exceptions->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw AlertsAreUnreadable::exception($position);
             }
@@ -94,7 +94,6 @@ final readonly class WhatIsTold
 
             $kinds[] = $kind;
             $found[] = AnEventSetApart::of($kind, WhetherItIsHeard::said(wanted: self::wanted($row, $position)));
-            $position++;
         }
 
         return $found;

@@ -14,6 +14,7 @@ use function is_string;
 use function json_encode;
 
 use Modules\Dx\Internal\WhatTheContractDeclares;
+use Modules\Sdk\Internal\InTheOrderSent;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\StaticCall;
@@ -57,6 +58,9 @@ final readonly class WhatAReaderNames
      * ends.
      */
     private const int SETTLING = 3;
+
+    /** The type whose static call keys a list's rows again by position, holding the same entries. */
+    private const string RE_KEYED = InTheOrderSent::class;
 
     /**
      * Bindings holding nothing but what the SDK handed in.
@@ -189,6 +193,10 @@ final readonly class WhatAReaderNames
      */
     public static function whatTheCallAnswered(StaticCall $call, array $bindings, array $readers, array $answers): array
     {
+        if (self::isReKeyed($call)) {
+            return WhereAnExpressionPoints::paths(WhereTheReadingStops::theArgumentsOf($call, 'reading a list keyed again by position')[0]->value, $bindings, $readers, $answers);
+        }
+
         [$key, $given] = self::theCallLeadsTo($call, $bindings, $readers, $answers);
 
         return $answers[self::signature($key, $given)] ?? [];
@@ -249,6 +257,19 @@ final readonly class WhatAReaderNames
     public static function nameOf(Node $node): string
     {
         return $node instanceof Variable && is_string($node->name) ? $node->name : '';
+    }
+
+    /**
+     * Whether a call hands back the rows it was given, keyed again by position.
+     *
+     * Seen through rather than followed into: the rows are the same entries,
+     * and entering it as a reader would hand it a path such as
+     * `install.reversed.reversed`, which {@see WhereAShapeHoldsItself} takes for
+     * a shape holding itself and follows no further.
+     */
+    private static function isReKeyed(StaticCall $call): bool
+    {
+        return $call->class instanceof Name && WhereAnExpressionPoints::theLeafOf($call->class->toString()) === WhereAnExpressionPoints::theLeafOf(self::RE_KEYED);
     }
 
     /**

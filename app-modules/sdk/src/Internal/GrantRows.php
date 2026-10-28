@@ -67,12 +67,10 @@ final readonly class GrantRows
         }
 
         $found = [];
-        $at = 0;
 
-        foreach ($row[PluginsField::Granted->value] as $grant) {
+        foreach (InTheOrderSent::rows($row[PluginsField::Granted->value]) as $at => $grant) {
             $unreadable = static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::entry(PluginsField::Granted, $field, $at);
             $found[] = is_array($grant) ? self::one($grant, $plugin, $unreadable) : throw $unreadable(WireField::Credential);
-            $at++;
         }
 
         return $found;
@@ -95,12 +93,10 @@ final readonly class GrantRows
         }
 
         $found = [];
-        $at = 0;
 
-        foreach ($install[PluginsField::Granting->value] as $asked) {
+        foreach (InTheOrderSent::rows($install[PluginsField::Granting->value]) as $at => $asked) {
             $unreadable = static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::entry(PluginsField::Granting, $field, $at);
             $found[] = is_array($asked) ? AGrantAsked::of(self::one($asked, $plugin, $unreadable), self::text($asked, WireField::Approval, $unreadable)) : throw $unreadable(WireField::Credential);
-            $at++;
         }
 
         return $found;

@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Sdk\Api\Fields\KeysField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -54,11 +55,9 @@ final readonly class KeysListed
         }
 
         $keys = [];
-        $position = 0;
 
-        foreach ($data[WireField::Keys->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Keys->value]) as $position => $row) {
             $keys[] = self::one($row, $position);
-            $position++;
         }
 
         return TheKeysForApps::of(self::purposes($data), ...$keys);

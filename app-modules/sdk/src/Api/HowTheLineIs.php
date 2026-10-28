@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Sdk\Api\Fields\BandwidthField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -156,15 +157,13 @@ final readonly class HowTheLineIs
         }
 
         $said = [];
-        $position = 0;
 
-        foreach ($data[$list->value] as $one) {
+        foreach (InTheOrderSent::rows($data[$list->value]) as $position => $one) {
             if (! is_string($one) || trim($one) === '') {
                 throw BandwidthIsUnreadable::remark($list->value, $position);
             }
 
             $said[] = $one;
-            $position++;
         }
 
         return Remarks::of(...$said);

@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Generated\UpgradeEnvelope;
 use Modules\Kernel\Api\OneKindUpgraded;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Sdk\Api\Fields\UpgradeField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\WhatAQualityAnswerCarries;
 use Modules\Sdk\Internal\Wire;
 
@@ -86,9 +87,8 @@ final readonly class WhatAnUpgradeComesTo
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Media->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Media->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, UpgradeField::MediaType, $position);
             }
@@ -99,7 +99,6 @@ final readonly class WhatAnUpgradeComesTo
                 self::inMedia($row, WireField::SizePerHour, $position),
                 WhatAQualityAnswerCarries::asking($row, UpgradeEnvelope::KIND->value),
             );
-            $position++;
         }
 
         return $found;

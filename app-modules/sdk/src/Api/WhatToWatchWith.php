@@ -20,6 +20,7 @@ use Modules\Kernel\Api\TheTroubles;
 use Modules\Kernel\Api\WhatToWatchOn;
 use Modules\Kernel\Api\WhyPlaybackMayStruggle;
 use Modules\Sdk\Api\Fields\ClientsField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -76,9 +77,8 @@ final readonly class WhatToWatchWith
     private static function devices(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Devices) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Devices)) as $position => $row) {
             if (! is_array($row)) {
                 throw ClientsIsUnreadable::row(WireField::Devices, $position);
             }
@@ -91,7 +91,6 @@ final readonly class WhatToWatchWith
                 self::optional($row, WireField::Devices, WireField::Caution, $position),
                 self::optional($row, WireField::Devices, WireField::Instead, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -156,9 +155,8 @@ final readonly class WhatToWatchWith
     private static function troubles(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, ClientsField::Trouble) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, ClientsField::Trouble)) as $position => $row) {
             if (! is_array($row)) {
                 throw ClientsIsUnreadable::row(ClientsField::Trouble, $position);
             }
@@ -167,7 +165,6 @@ final readonly class WhatToWatchWith
                 self::text($row, ClientsField::Trouble, ClientsField::Symptom, $position),
                 ...self::causes($row, $position),
             );
-            $position++;
         }
 
         return $found;

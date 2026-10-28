@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Sdk\Api\Fields\HouseholdField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -70,15 +71,13 @@ final readonly class Tellings
         }
 
         $said = [];
-        $position = 0;
 
-        foreach (self::members($data) as $member) {
+        foreach (InTheOrderSent::rows(self::members($data)) as $position => $member) {
             if (! is_array($member)) {
                 throw HouseholdIsUnreadable::member($position);
             }
 
             $said[] = self::owedIn($member);
-            $position++;
         }
 
         // Exactly one row is one member's reading. Anything else is an answer

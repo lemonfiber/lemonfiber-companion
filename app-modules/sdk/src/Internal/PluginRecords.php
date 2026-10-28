@@ -94,15 +94,13 @@ final readonly class PluginRecords
     private static function services(array $row): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($row, WireField::Services) as $placed) {
+        foreach (InTheOrderSent::rows(self::rows($row, WireField::Services)) as $at => $placed) {
             if (! is_array($placed)) {
                 throw PluginsAreUnreadable::entry(WireField::Services, WireField::Service, $at);
             }
 
             $found[] = ServiceId::called(self::text($placed, WireField::Services, WireField::Service, $at));
-            $at++;
         }
 
         return $found;
@@ -164,15 +162,13 @@ final readonly class PluginRecords
         }
 
         $found = [];
-        $at = 0;
 
-        foreach ($row[PluginsField::Recipes->value] as $recipe) {
+        foreach (InTheOrderSent::rows($row[PluginsField::Recipes->value]) as $at => $recipe) {
             if (! is_array($recipe)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Recipes, WireField::Id, $at);
             }
 
             $found[] = self::recipe($recipe, $at);
-            $at++;
         }
 
         return $found;
@@ -207,9 +203,8 @@ final readonly class PluginRecords
         }
 
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, PluginsField::Inputs) as $input) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, PluginsField::Inputs)) as $at => $input) {
             if (! is_array($input)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Inputs, WireField::Name, $at);
             }
@@ -218,7 +213,6 @@ final readonly class PluginRecords
                 self::text($input, PluginsField::Inputs, WireField::Name, $at),
                 self::text($input, PluginsField::Inputs, PluginsField::Ask, $at),
             );
-            $at++;
         }
 
         return $found;
@@ -233,9 +227,8 @@ final readonly class PluginRecords
     private static function steps(array $recipe): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, WireField::Steps) as $step) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, WireField::Steps)) as $at => $step) {
             if (! is_array($step)) {
                 throw PluginsAreUnreadable::entry(WireField::Steps, WireField::Id, $at);
             }
@@ -247,7 +240,6 @@ final readonly class PluginRecords
                 self::text($step, WireField::Steps, WireField::Path, $at),
                 self::adapter($step),
             );
-            $at++;
         }
 
         return $found;
@@ -276,9 +268,8 @@ final readonly class PluginRecords
     private static function pairs(array $recipe): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, PluginsField::Pairs) as $pair) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, PluginsField::Pairs)) as $at => $pair) {
             if (! is_array($pair)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Pairs, WireField::Value, $at);
             }
@@ -291,7 +282,6 @@ final readonly class PluginRecords
                 self::optional($pair, PluginsField::Release),
                 self::optional($pair, WireField::From),
             );
-            $at++;
         }
 
         return $found;

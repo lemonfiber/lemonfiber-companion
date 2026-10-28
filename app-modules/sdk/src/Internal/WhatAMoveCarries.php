@@ -84,15 +84,13 @@ final readonly class WhatAMoveCarries
     public static function named(array $data, NamesAWireField $list, string $kind): WhatWasNamed
     {
         $names = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $name) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $name) {
             if (! is_string($name) || trim($name) === '') {
                 throw MoveIsUnreadable::entry($kind, $list, $position, $list);
             }
 
             $names[] = $name;
-            $position++;
         }
 
         return WhatWasNamed::of($list->value, ...$names);

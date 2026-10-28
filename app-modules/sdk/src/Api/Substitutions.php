@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Sdk\Api\Fields\SubstitutionField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -83,15 +84,13 @@ final readonly class Substitutions
     private static function services(array $choice): Services
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($choice, SubstitutionField::AskedBy) as $named) {
+        foreach (InTheOrderSent::rows(self::rows($choice, SubstitutionField::AskedBy)) as $position => $named) {
             if (! is_string($named) || trim($named) === '') {
                 throw SubstitutionIsUnreadable::entry(SubstitutionField::AskedBy, WireField::Service, $position);
             }
 
             $found[] = ServiceId::called($named);
-            $position++;
         }
 
         return Services::these(...$found);
@@ -106,9 +105,8 @@ final readonly class Substitutions
     private static function unfilled(array $choice): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($choice, SubstitutionField::LeavesUnfilled) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($choice, SubstitutionField::LeavesUnfilled)) as $position => $row) {
             if (! is_array($row)) {
                 throw SubstitutionIsUnreadable::entry(SubstitutionField::LeavesUnfilled, WireField::By, $position);
             }
@@ -117,7 +115,6 @@ final readonly class Substitutions
                 ServiceId::called(self::entry($row, WireField::By, $position)),
                 Capability::called(self::entry($row, WireField::Capability, $position)),
             );
-            $position++;
         }
 
         return $found;

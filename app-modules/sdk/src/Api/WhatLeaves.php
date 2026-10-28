@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -92,9 +93,8 @@ final readonly class WhatLeaves
     private static function ours(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Ours) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Ours)) as $position => $row) {
             if (! is_array($row)) {
                 throw OutboundIsUnreadable::row(WireField::Ours, $position);
             }
@@ -108,7 +108,6 @@ final readonly class WhatLeaves
                 self::text($row, WireField::Ours, OutboundField::Switch, $position),
                 self::text($row, WireField::Ours, WireField::Cost, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -123,9 +122,8 @@ final readonly class WhatLeaves
     private static function onBehalf(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, OutboundField::OnBehalf) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, OutboundField::OnBehalf)) as $position => $row) {
             if (! is_array($row)) {
                 throw OutboundIsUnreadable::row(OutboundField::OnBehalf, $position);
             }
@@ -135,7 +133,6 @@ final readonly class WhatLeaves
                 self::text($row, OutboundField::OnBehalf, OutboundField::Destination, $position),
                 self::text($row, OutboundField::OnBehalf, WireField::Purpose, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -150,15 +147,13 @@ final readonly class WhatLeaves
     private static function theirs(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, OutboundField::Theirs) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, OutboundField::Theirs)) as $position => $row) {
             if (! is_array($row)) {
                 throw OutboundIsUnreadable::row(OutboundField::Theirs, $position);
             }
 
             $found[] = self::oneOfTheirs($row, $position);
-            $position++;
         }
 
         return $found;

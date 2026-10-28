@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ArchivesEnvelope;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Sdk\Api\Fields\ArchivesField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -62,15 +63,13 @@ final readonly class TheArchives
     private static function names(array $listed): array
     {
         $names = [];
-        $position = 0;
 
-        foreach ($listed as $name) {
+        foreach (InTheOrderSent::rows($listed) as $position => $name) {
             if (! is_string($name) || trim($name) === '') {
                 throw ArchivesAreUnreadable::archive($position);
             }
 
             $names[] = $name;
-            $position++;
         }
 
         return $names;

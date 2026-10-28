@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\TheCheckThatDisturbs;
 use Modules\Sdk\Internal\Wire;
 
@@ -164,15 +165,13 @@ final readonly class Reports
         }
 
         $findings = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw ReportIsUnreadable::finding($position);
             }
 
             $findings[] = self::finding($row, $position);
-            $position++;
         }
 
         return Findings::of(...$findings);

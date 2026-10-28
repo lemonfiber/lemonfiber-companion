@@ -27,6 +27,7 @@ use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Sdk\Api\Fields\AdoptionField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\ReplacementField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatAMoveCarries;
 use Modules\Sdk\Internal\Wire;
@@ -160,9 +161,8 @@ final readonly class WhatMovingInCameTo
         $kind = AdoptionEnvelope::KIND->value;
         $list = AdoptionField::Upgrades;
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $row) {
             if (! is_array($row)) {
                 throw MoveIsUnreadable::entry($kind, $list, $position, WireField::Service);
             }
@@ -178,7 +178,6 @@ final readonly class WhatMovingInCameTo
                 Required::text($row, WireField::Ours, MoveIsUnreadable::entry($kind, $list, $position, WireField::Ours)),
                 Required::text($row, WireField::Verdict, MoveIsUnreadable::entry($kind, $list, $position, WireField::Verdict)),
             );
-            $position++;
         }
 
         return $found;
@@ -194,9 +193,8 @@ final readonly class WhatMovingInCameTo
     {
         $kind = ImportEnvelope::KIND->value;
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $row) {
             if (! is_array($row)) {
                 throw MoveIsUnreadable::entry($kind, $list, $position, WireField::Service);
             }
@@ -206,7 +204,6 @@ final readonly class WhatMovingInCameTo
                 Required::text($row, WireField::Kind, MoveIsUnreadable::entry($kind, $list, $position, WireField::Kind)),
                 Required::text($row, WireField::Name, MoveIsUnreadable::entry($kind, $list, $position, WireField::Name)),
             );
-            $position++;
         }
 
         return $found;
@@ -223,9 +220,8 @@ final readonly class WhatMovingInCameTo
         $kind = ImportEnvelope::KIND->value;
         $list = WireField::NotCarried;
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $row) {
             if (! is_array($row)) {
                 throw MoveIsUnreadable::entry($kind, $list, $position, WireField::What);
             }
@@ -234,7 +230,6 @@ final readonly class WhatMovingInCameTo
                 Required::text($row, WireField::What, MoveIsUnreadable::entry($kind, $list, $position, WireField::What)),
                 Required::text($row, WireField::Because, MoveIsUnreadable::entry($kind, $list, $position, WireField::Because)),
             );
-            $position++;
         }
 
         return $found;
@@ -251,9 +246,8 @@ final readonly class WhatMovingInCameTo
         $kind = BesideEnvelope::KIND->value;
         $list = WireField::Ports;
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $row) {
             if (! is_array($row)) {
                 throw MoveIsUnreadable::entry($kind, $list, $position, WireField::Service);
             }
@@ -263,7 +257,6 @@ final readonly class WhatMovingInCameTo
                 Required::number($row, WireField::From, MoveIsUnreadable::entry($kind, $list, $position, WireField::From)),
                 Required::number($row, WireField::To, MoveIsUnreadable::entry($kind, $list, $position, WireField::To)),
             );
-            $position++;
         }
 
         return $found;

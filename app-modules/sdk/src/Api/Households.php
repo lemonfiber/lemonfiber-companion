@@ -18,6 +18,7 @@ use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Sdk\Api\Fields\HouseholdField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\WhatWasAskedFor;
 use Modules\Sdk\Internal\Wire;
 
@@ -150,11 +151,9 @@ final readonly class Households
         }
 
         $members = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Members) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Members)) as $position => $row) {
             $members[] = self::member($row, $position);
-            $position++;
         }
 
         return TheMembers::of(...$members);
@@ -229,9 +228,8 @@ final readonly class Households
     private static function wanted(array $members): Requested
     {
         $wanted = [];
-        $position = 0;
 
-        foreach ($members as $member) {
+        foreach (InTheOrderSent::rows($members) as $position => $member) {
             if (! is_array($member)) {
                 throw HouseholdIsUnreadable::member($position);
             }
@@ -239,8 +237,6 @@ final readonly class Households
             foreach (self::askedBy($member, $position) as $request) {
                 $wanted[] = $request;
             }
-
-            $position++;
         }
 
         return Requested::of(...$wanted);
@@ -257,15 +253,13 @@ final readonly class Households
     {
         $by = self::text($member, WireField::Name);
         $wanted = [];
-        $position = 0;
 
-        foreach (self::requestsOf($member, $at) as $row) {
+        foreach (InTheOrderSent::rows(self::requestsOf($member, $at)) as $position => $row) {
             if (! is_array($row)) {
                 throw HouseholdIsUnreadable::request($by, $position);
             }
 
             $wanted[] = WhatWasAskedFor::request($row, $by, $position);
-            $position++;
         }
 
         return $wanted;

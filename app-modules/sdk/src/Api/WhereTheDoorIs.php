@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHouseholdBegins;
 use Modules\Sdk\Api\Fields\FrontDoorField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -163,9 +164,8 @@ final readonly class WhereTheDoorIs
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Beside->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Beside->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw FrontDoorIsUnreadable::beside(WireField::Service, $position);
             }
@@ -176,7 +176,6 @@ final readonly class WhereTheDoorIs
                 self::besideText($row, WireField::Because, $position),
                 self::address($row),
             );
-            $position++;
         }
 
         return $found;

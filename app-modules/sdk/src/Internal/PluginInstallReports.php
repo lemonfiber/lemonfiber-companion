@@ -91,9 +91,8 @@ final readonly class PluginInstallReports
     private static function changes(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, WireField::Changes) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, WireField::Changes)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(WireField::Changes, WireField::Path, $position);
             }
@@ -104,7 +103,6 @@ final readonly class PluginInstallReports
                 self::text($row, WireField::Changes, WireField::Path, $position),
                 WhatAChangePuts::tryFrom($puts) ?? throw PluginsAreUnreadable::said(PluginsField::Puts, $puts),
             );
-            $position++;
         }
 
         return $found;
@@ -119,9 +117,8 @@ final readonly class PluginInstallReports
     private static function contests(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Contests) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Contests)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Contests, WireField::Capability, $position);
             }
@@ -131,7 +128,6 @@ final readonly class PluginInstallReports
                 self::text($row, PluginsField::Contests, WireField::By, $position),
                 PluginLines::under(WireField::Claimants->value, ...self::words($row, PluginsField::Contests, WireField::Claimants, $position)),
             );
-            $position++;
         }
 
         return $found;
@@ -146,9 +142,8 @@ final readonly class PluginInstallReports
     private static function overrides(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Overrides) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Overrides)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Overrides, WireField::Setting, $position);
             }
@@ -157,7 +152,6 @@ final readonly class PluginInstallReports
                 self::text($row, PluginsField::Overrides, WireField::Setting, $position),
                 self::text($row, PluginsField::Overrides, WireField::Why, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -176,9 +170,8 @@ final readonly class PluginInstallReports
         }
 
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Taking) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Taking)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Taking, WireField::Service, $position);
             }
@@ -192,7 +185,6 @@ final readonly class PluginInstallReports
                 PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
                 self::text($row, PluginsField::Taking, WireField::Approval, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -230,15 +222,13 @@ final readonly class PluginInstallReports
     private static function titles(array $verified, NamesAWireField $list): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($verified, $list) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($verified, $list)) as $position => $row) {
             if (! is_array($row) || ! array_key_exists(WireField::Now->value, $row) || ! is_array($row[WireField::Now->value])) {
                 throw PluginsAreUnreadable::entry($list, WireField::Now, $position);
             }
 
             $found[] = self::text($row[WireField::Now->value], $list, WireField::Title, $position);
-            $position++;
         }
 
         return $found;

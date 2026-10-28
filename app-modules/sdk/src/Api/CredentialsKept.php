@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Internal\CredentialGrantsRead;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -167,9 +168,8 @@ final readonly class CredentialsKept
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Held->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Held->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw CredentialsIsUnreadable::row($position);
             }
@@ -182,7 +182,6 @@ final readonly class CredentialsKept
                 WhatUsesIt::of(...self::consumers($row, $position)),
                 self::advisory($row, $position),
             );
-            $position++;
         }
 
         return $found;

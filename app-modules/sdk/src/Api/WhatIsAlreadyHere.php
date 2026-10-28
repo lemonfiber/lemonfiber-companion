@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatLinkingCosts;
 use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Sdk\Api\Fields\MigrationField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
@@ -96,9 +97,8 @@ final readonly class WhatIsAlreadyHere
     private static function projects(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, WireField::Standing, MigrationIsUnreadable::missing(WireField::Standing)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Standing, MigrationIsUnreadable::missing(WireField::Standing))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry(WireField::Standing, $position, WireField::Project);
             }
@@ -107,7 +107,6 @@ final readonly class WhatIsAlreadyHere
                 Required::text($row, WireField::Project, MigrationIsUnreadable::entry(WireField::Standing, $position, WireField::Project)),
                 ...self::services($row, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -122,9 +121,8 @@ final readonly class WhatIsAlreadyHere
     private static function services(array $project, int $at): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($project, WireField::Services, MigrationIsUnreadable::entry(WireField::Standing, $at, WireField::Services)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($project, WireField::Services, MigrationIsUnreadable::entry(WireField::Standing, $at, WireField::Services))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::service($at, $position, WireField::Service);
             }
@@ -135,7 +133,6 @@ final readonly class WhatIsAlreadyHere
                 Required::flag($row, WireField::Running, MigrationIsUnreadable::service($at, $position, WireField::Running)),
                 Required::flag($row, MigrationField::Adoptable, MigrationIsUnreadable::service($at, $position, MigrationField::Adoptable)),
             );
-            $position++;
         }
 
         return $found;
@@ -171,9 +168,8 @@ final readonly class WhatIsAlreadyHere
     private static function conflicts(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, MigrationField::Conflicts, MigrationIsUnreadable::missing(MigrationField::Conflicts)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, MigrationField::Conflicts, MigrationIsUnreadable::missing(MigrationField::Conflicts))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::Port);
             }
@@ -183,7 +179,6 @@ final readonly class WhatIsAlreadyHere
                 Required::text($row, WireField::WantedBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::WantedBy)),
                 Required::text($row, WireField::HeldBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::HeldBy)),
             );
-            $position++;
         }
 
         return $found;
@@ -198,9 +193,8 @@ final readonly class WhatIsAlreadyHere
     private static function limits(array $data, NamesAWireField $list): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MigrationIsUnreadable::missing($list)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MigrationIsUnreadable::missing($list))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry($list, $position, WireField::What);
             }
@@ -209,7 +203,6 @@ final readonly class WhatIsAlreadyHere
                 Required::text($row, WireField::What, MigrationIsUnreadable::entry($list, $position, WireField::What)),
                 Required::text($row, WireField::Because, MigrationIsUnreadable::entry($list, $position, WireField::Because)),
             );
-            $position++;
         }
 
         return $found;
@@ -224,9 +217,8 @@ final readonly class WhatIsAlreadyHere
     private static function modes(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, MigrationField::Modes, MigrationIsUnreadable::missing(MigrationField::Modes)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, MigrationField::Modes, MigrationIsUnreadable::missing(MigrationField::Modes))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry(MigrationField::Modes, $position, MigrationField::Mode);
             }
@@ -237,7 +229,6 @@ final readonly class WhatIsAlreadyHere
                 Required::flag($row, WireField::Disturbs, MigrationIsUnreadable::entry(MigrationField::Modes, $position, WireField::Disturbs)),
                 Required::flag($row, MigrationField::Preselected, MigrationIsUnreadable::entry(MigrationField::Modes, $position, MigrationField::Preselected)),
             );
-            $position++;
         }
 
         return $found;
@@ -252,9 +243,8 @@ final readonly class WhatIsAlreadyHere
     private static function moved(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, WireField::Beside, MigrationIsUnreadable::missing(WireField::Beside)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Beside, MigrationIsUnreadable::missing(WireField::Beside))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry(WireField::Beside, $position, WireField::Service);
             }
@@ -264,7 +254,6 @@ final readonly class WhatIsAlreadyHere
                 Required::number($row, WireField::From, MigrationIsUnreadable::entry(WireField::Beside, $position, WireField::From)),
                 Required::number($row, WireField::To, MigrationIsUnreadable::entry(WireField::Beside, $position, WireField::To)),
             );
-            $position++;
         }
 
         return $found;
@@ -279,9 +268,8 @@ final readonly class WhatIsAlreadyHere
     private static function carrying(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, MigrationField::Carrying, MigrationIsUnreadable::missing(MigrationField::Carrying)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, MigrationField::Carrying, MigrationIsUnreadable::missing(MigrationField::Carrying))) as $position => $row) {
             if (! is_array($row)) {
                 throw MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::Service);
             }
@@ -292,7 +280,6 @@ final readonly class WhatIsAlreadyHere
                 Required::flag($row, WireField::BackupFirst, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::BackupFirst)),
                 Required::flag($row, WireField::Refused, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::Refused)),
             );
-            $position++;
         }
 
         return $found;

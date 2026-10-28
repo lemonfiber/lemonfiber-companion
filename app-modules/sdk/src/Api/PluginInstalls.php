@@ -21,6 +21,7 @@ use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Sdk\Api\Fields\PluginsField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\PluginInstallReports;
 use Modules\Sdk\Internal\PluginRecipeRuns;
 use Modules\Sdk\Internal\PluginRecords;
@@ -119,15 +120,13 @@ final readonly class PluginInstalls
     private static function installed(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Installed) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Installed)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(WireField::Installed, WireField::Plugin, $position);
             }
 
             $found[] = PluginRecords::of($row, WireField::Installed, $position);
-            $position++;
         }
 
         return $found;
@@ -145,15 +144,13 @@ final readonly class PluginInstalls
         }
 
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, PluginsField::Sources) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, PluginsField::Sources)) as $position => $row) {
             if (! is_array($row) || ! array_key_exists(WireField::Standing->value, $row) || ! is_array($row[WireField::Standing->value])) {
                 throw PluginsAreUnreadable::entry(PluginsField::Sources, WireField::Standing, $position);
             }
 
             $found[] = ASourceAsked::of(self::text($row, PluginsField::Sources, WireField::Plugin, $position), self::standing($row[WireField::Standing->value], $position));
-            $position++;
         }
 
         return ThePluginSources::these(...$found);
@@ -197,9 +194,8 @@ final readonly class PluginInstalls
     private static function answersIn(array $table, NamesAWireField $list): TheAnswersOutOfContract
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($table, $list) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($table, $list)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry($list, WireField::Plugin, $position);
             }
@@ -210,7 +206,6 @@ final readonly class PluginInstalls
                 self::text($row, $list, WireField::Operation, $position),
                 self::text($row, $list, WireField::Why, $position),
             );
-            $position++;
         }
 
         return TheAnswersOutOfContract::these(...$found);

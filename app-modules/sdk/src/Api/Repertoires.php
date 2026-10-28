@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\FormsEnvelope;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -49,15 +50,13 @@ final readonly class Repertoires
         }
 
         $forms = [];
-        $position = 0;
 
-        foreach (self::listed($data) as $row) {
+        foreach (InTheOrderSent::rows(self::listed($data)) as $position => $row) {
             if (! is_array($row)) {
                 throw RepertoireIsUnreadable::item($position);
             }
 
             $forms[] = Form::called(self::id($row, $position));
-            $position++;
         }
 
         return Forms::these(...$forms);

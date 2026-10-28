@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhatAServiceIsFor;
 use Modules\Kernel\Api\WhatTheServicesAreFor;
 use Modules\Kernel\Api\WhatWasDropped;
 use Modules\Sdk\Api\Fields\CatalogueField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -75,9 +76,8 @@ final readonly class Catalogues
     private static function services(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Services) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Services)) as $position => $row) {
             if (! is_array($row)) {
                 throw CatalogueIsUnreadable::entry(WireField::Services, WireField::Id, $position);
             }
@@ -89,7 +89,6 @@ final readonly class Catalogues
                 self::text($row, WireField::Services, CatalogueField::WithoutIt, $position),
                 self::matters($row, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -116,15 +115,13 @@ final readonly class Catalogues
     private static function dropped(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Removed) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Removed)) as $position => $row) {
             if (! is_array($row)) {
                 throw CatalogueIsUnreadable::entry(WireField::Removed, WireField::Id, $position);
             }
 
             $found[] = self::one($row, $position);
-            $position++;
         }
 
         return $found;

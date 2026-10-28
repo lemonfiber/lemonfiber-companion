@@ -19,6 +19,7 @@ use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereItStopsShort;
 use Modules\Sdk\Api\Fields\HistoryField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function preg_match;
@@ -107,15 +108,13 @@ final readonly class Records
     private static function changes(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data)) as $position => $row) {
             if (! is_array($row)) {
                 throw HistoryIsUnreadable::change($position);
             }
 
             $found[] = self::one($row, $position);
-            $position++;
         }
 
         return $found;

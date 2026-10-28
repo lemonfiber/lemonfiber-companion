@@ -42,11 +42,9 @@ final readonly class CredentialGrantsRead
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Grants->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Grants->value]) as $position => $row) {
             $found[] = self::grant($row, WireField::Grants, $position);
-            $position++;
         }
 
         return $found;

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Sdk\Api\Fields\StuckField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -105,9 +106,8 @@ final readonly class Stoppages
     private static function items(array $data): array
     {
         $stalled = [];
-        $position = 0;
 
-        foreach (self::rows($data) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data)) as $position => $row) {
             if (! is_array($row)) {
                 throw StuckIsUnreadable::item($position);
             }
@@ -117,8 +117,6 @@ final readonly class Stoppages
                 self::text($row, WireField::Service, $position),
                 self::stage($row, $position),
             );
-
-            $position++;
         }
 
         return $stalled;

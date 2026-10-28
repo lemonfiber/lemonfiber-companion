@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhereThingsAreKept;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Sdk\Api\Fields\StoredField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -83,9 +84,8 @@ final readonly class WhatIsStored
     {
         $found = [];
 
-        $position = 0;
 
-        foreach (self::rows($data, StoredField::Roots) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, StoredField::Roots)) as $position => $row) {
             if (! is_array($row)) {
                 throw StoredIsUnreadable::row(StoredField::Roots, $position);
             }
@@ -94,7 +94,6 @@ final readonly class WhatIsStored
                 self::text($row, StoredField::Roots, WireField::At, $position),
                 self::text($row, StoredField::Roots, WireField::What, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -110,9 +109,8 @@ final readonly class WhatIsStored
     {
         $found = [];
 
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Kept) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Kept)) as $position => $row) {
             if (! is_array($row)) {
                 throw StoredIsUnreadable::row(WireField::Kept, $position);
             }
@@ -123,7 +121,6 @@ final readonly class WhatIsStored
                 self::text($row, WireField::Kept, WireField::Why, $position),
                 WhetherItHoldsASecret::said(secret: self::flag($row, WireField::Kept, WireField::Secret, $position)),
             );
-            $position++;
         }
 
         return $found;
@@ -139,9 +136,8 @@ final readonly class WhatIsStored
     {
         $found = [];
 
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Beside) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Beside)) as $position => $row) {
             if (! is_array($row)) {
                 throw StoredIsUnreadable::row(WireField::Beside, $position);
             }
@@ -150,7 +146,6 @@ final readonly class WhatIsStored
                 self::text($row, WireField::Beside, WireField::What, $position),
                 self::text($row, WireField::Beside, WireField::Why, $position),
             );
-            $position++;
         }
 
         return $found;

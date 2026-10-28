@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Api\Fields\RepairField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -90,15 +91,13 @@ final readonly class Offers
 
         $rows = self::rows($data, RepairField::Mended);
         $mended = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw OfferIsUnreadable::outcome($position);
             }
 
             $mended[] = self::outcome($row, $position);
-            $position++;
         }
 
         return WhatWasMended::of(...$mended);
@@ -192,15 +191,13 @@ final readonly class Offers
     {
         $rows = self::rows($data, WireField::Offered);
         $repairs = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw OfferIsUnreadable::repair($position);
             }
 
             $repairs[] = self::repair($row, $position);
-            $position++;
         }
 
         return Repairs::of(...$repairs);

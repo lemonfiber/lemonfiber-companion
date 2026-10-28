@@ -84,9 +84,8 @@ final readonly class TheReversal
     private static function reversed(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Reversed) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Reversed)) as $position => $row) {
             if (! is_array($row)) {
                 throw UndoIsUnreadable::entry(WireField::Reversed, WireField::Target, $position);
             }
@@ -95,7 +94,6 @@ final readonly class TheReversal
                 self::text($row, WireField::Reversed, WireField::Target, $position),
                 self::does($row, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -141,9 +139,8 @@ final readonly class TheReversal
     private static function said(array $data, NamesAWireField $list): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, $list) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, $list)) as $position => $row) {
             if (! is_array($row)) {
                 throw UndoIsUnreadable::entry($list, WireField::Target, $position);
             }
@@ -152,7 +149,6 @@ final readonly class TheReversal
                 self::text($row, $list, WireField::Target, $position),
                 self::text($row, $list, WireField::Because, $position),
             );
-            $position++;
         }
 
         return $found;
