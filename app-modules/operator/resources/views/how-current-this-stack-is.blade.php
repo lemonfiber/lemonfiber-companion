@@ -233,16 +233,16 @@
             <x-design::strong>{{ __('updates.no_outcome') }}</x-design::strong>
             <x-design::body>{{ __('updates.no_outcome_action') }}</x-design::body>
         </x-design::notice>
-    @elseif (! $this->lastUpdate()->wasTaken)
+    @elseif ($this->lastUpdate()->took === null)
         <x-design::body>{{ __('updates.nothing_applied') }}</x-design::body>
     @else
-        @if ($this->lastUpdate()->didNotArrive > 0)
+        @if ($this->lastUpdate()->took->didNotArrive > 0)
             <x-design::notice tone="trouble">
-                <x-design::strong>{{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->didNotArrive) }}</x-design::strong>
+                <x-design::strong>{{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->took->didNotArrive) }}</x-design::strong>
             </x-design::notice>
         @endif
 
-        @if ($this->lastUpdate()->anythingUnanswered)
+        @if ($this->lastUpdate()->took->anythingUnanswered)
             {{-- Apart from the line above, and not a louder version of it. A
                  service that would not come back up is something to fix; one
                  that started and never answered is something the stack does
@@ -250,9 +250,9 @@
             <x-design::body>{{ __('updates.unanswered') }}</x-design::body>
         @endif
 
-        <x-operator::moves-in-place :moves="$this->lastUpdate()->moved" />
+        <x-operator::moves-in-place :moves="$this->lastUpdate()->took->moved" />
 
-        @forelse ($this->lastUpdate()->applied as $took)
+        @forelse ($this->lastUpdate()->took->applied as $took)
             <x-design::card>
                 <x-design::strong>{{ $took->service }}</x-design::strong>
 

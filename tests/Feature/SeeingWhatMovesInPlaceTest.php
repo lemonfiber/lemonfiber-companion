@@ -109,9 +109,9 @@ it('reports each move an update tried as taken, or as not taken with why in the 
 it('reports a move apart from how each service took the update', function (): void {
     $last = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate(AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), anUpdateThatTriedThreeMoves()))->lastUpdate();
 
-    expect(array_map(static fn(object $took): string => $took->service, $last->applied))->toBe(['sonarr', 'jellyfin'])
-        ->and($last->didNotArrive)->toBe(1)
-        ->and(array_map(static fn(object $move): array => [$move->service, $move->owesAReason, $move->because], $last->moved))->toBe([
+    expect(array_map(static fn(object $took): string => $took->service, $last->took->applied ?? []))->toBe(['sonarr', 'jellyfin'])
+        ->and($last->took?->didNotArrive)->toBe(1)
+        ->and(array_map(static fn(object $move): array => [$move->service, $move->owesAReason, $move->because], $last->took->moved ?? []))->toBe([
             ['jellyfin', false, ''],
             ['sonarr', true, 'The plugin would not install.'],
             ['radarr', true, ''],
@@ -121,7 +121,7 @@ it('reports a move apart from how each service took the update', function (): vo
 it('reports no move where the update tried none', function (): void {
     $last = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate(AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), TheUpkeepScreenOfTheLoft::aReportSaying(TheUpkeepScreenOfTheLoft::whatLastNightCameTo())))->lastUpdate();
 
-    expect($last->moved)->toBe([]);
+    expect($last->took?->moved)->toBe([]);
 });
 
 it('names each move in place a start names, and says an update takes it', function (): void {

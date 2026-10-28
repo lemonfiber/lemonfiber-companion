@@ -501,7 +501,7 @@ it('reads what needs attention before what is fine', function (): void {
 
     $named = [];
 
-    foreach (TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied as $took) {
+    foreach (TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->took->applied ?? [] as $took) {
         $named[] = $took->service;
     }
 
