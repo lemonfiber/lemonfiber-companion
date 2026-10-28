@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
@@ -22,12 +23,16 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -74,6 +79,7 @@ function theRequestsScreen(
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
     bool $signedIn = true,
+    ?KeepingWhatWasAsked $kept = null,
 ): WhatTheHouseholdAsked {
     $stack = theStackWhoseHouseholdIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -82,7 +88,7 @@ function theRequestsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noRequestsYet());
+    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $kept ?? WhatThePhoneKeeps::noRequestsYet());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -477,6 +483,18 @@ it('turning one down asks for the sentence before it sends anything', function (
         // Nothing sent: the question is open and the reason is not written.
         ->and($wanting->whatItWasToldWasDecided())->toBe([]);
 
+    $screen->decline();
+
+    expect($wanting->whatItWasToldWasDecided())->toBe([]);
+});
+
+it('sends no decision once the stack could not be read again, where nothing of it was kept', function (): void {
+    $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
+    $screen = theRequestsScreen($wanting, kept: new KeepingWhatWasAsked(ASealInMemory::working(), ReadingsInMemory::unreachable(), FrozenClock::at(Instant::atEpochSeconds(0))));
+    $screen->wouldDecline('41');
+    $screen->__syncProperty('because', 'There is no room for it this month');
+    $wanting->fromNowOnMeeting(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen->again();
     $screen->decline();
 
     expect($wanting->whatItWasToldWasDecided())->toBe([]);

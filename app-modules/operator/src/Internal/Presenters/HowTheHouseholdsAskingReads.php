@@ -100,7 +100,7 @@ final readonly class HowTheHouseholdsAskingReads
             waiting: 0,
             askedNow: $went,
             readAgo: AgoAsShown::saysNothing(),
-            waitsForTheStack: false,
+            waitsForTheStack: true,
         );
     }
 }

@@ -398,3 +398,7 @@ it('has both platforms read what the code field is told about typing', function 
     'iOS' => ['vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift'],
     'Android' => ['vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt'],
 ]);
+
+it('opens with no name typed for the machine', function (): void {
+    expect(pairingScreen()->called())->toBe('');
+});

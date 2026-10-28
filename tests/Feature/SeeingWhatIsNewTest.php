@@ -220,6 +220,19 @@ it('puts a stack it could not reach first, with when the phone last heard from i
         ->and($said)->not->toContain(__('news.nothing_new'));
 });
 
+it('puts every stack it could not reach first, each by its name', function (): void {
+    $loft = aStackWithNews('a', 'The loft');
+    $attic = aStackWithNews('b', 'The attic');
+    $phone = new APhoneLookingAtWhatIsNew($loft, $attic);
+    $phone->listing->cannotBeReached($loft->id(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $phone->listing->cannotBeReached($attic->id(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = $phone->opens();
+    WhatTheDeviceWouldDraw::by($screen);
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('news.unreached', ['stack' => 'The loft']), __('news.unreached', ['stack' => 'The attic']));
+});
+
 it('opens an update on Updates, a request on Requests and a problem on Health opened out, and marks each seen', function (): void {
     $home = aStackWithNews('a', 'The loft');
     $phone = new APhoneLookingAtWhatIsNew($home);

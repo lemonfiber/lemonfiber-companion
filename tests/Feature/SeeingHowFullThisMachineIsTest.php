@@ -339,9 +339,12 @@ it('explains the ratio where it is drawn, once asked for however many downloads 
         AWord::explained('ratio', 'How much you have shared against what you took', 'Private trackers ask for at least one to one.'),
     ));
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: $explaining);
-    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+    WhatTheDeviceWouldDraw::by($screen);
+    $askedOnTheFirstFrame = $explaining->askings();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'ratio', 'short' => 'How much you have shared against what you took']))
+    expect($askedOnTheFirstFrame)->toBe(0)
+        ->and($drawn)->toContain(__('stacks.words.in_place', ['word' => 'ratio', 'short' => 'How much you have shared against what you took']))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.words.more', ['word' => 'ratio']))
         ->and($explaining->askings())->toBe(1);
 });

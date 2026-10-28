@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
@@ -289,6 +290,8 @@ it('a paired stack leads to signing into it, rather than to a sentence about whe
     // The same onward step as the typed road, and for the same reason: pairing
     // introduces a machine and leaves this device holding no session for it.
     $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect(fn(): string => $screen->onwardsTo())->toThrow(StackIsUnidentified::class);
 
     $screen->scan();
 

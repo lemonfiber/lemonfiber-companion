@@ -29,7 +29,7 @@ it('draws what was met, what to do about it and the action in the column it stan
     $met = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
     expect(WhatMarkupDraws::outline(
-        '<native:column><x-operator::what-stood-in-the-way :went="$went" :goes="$goes" /></native:column>',
+        '<native:column><x-operator::what-stood-in-the-way :settings-would-not-open="false" :went="$went" :goes="$goes" /></native:column>',
         ['went' => HowTheReadingWent::somethingStopped($met), 'goes' => theStacksRoads()],
     ))->toBe(sprintf(
         'column[][%s, %s, button{"width":"fill"}[]]',
@@ -40,7 +40,7 @@ it('draws what was met, what to do about it and the action in the column it stan
 
 it('draws an ended session and the way back in the column it stands in', function (): void {
     expect(WhatMarkupDraws::outline(
-        '<native:column><x-operator::what-stood-in-the-way :went="$went" :goes="$goes" /></native:column>',
+        '<native:column><x-operator::what-stood-in-the-way :settings-would-not-open="false" :went="$went" :goes="$goes" /></native:column>',
         ['went' => HowTheReadingWent::theSessionEnded(), 'goes' => theStacksRoads()],
     ))->toBe(sprintf(
         'column[][%s, button{"width":"fill"}[]]',
@@ -53,7 +53,7 @@ it('opens no scroll view inside the content it is drawn in', function (): void {
 
     expect(WhatMarkupDraws::outline(
         '<x-operator::content><native:text>Before</native:text>'
-        . '<x-operator::what-stood-in-the-way :went="$went" :goes="$goes" />'
+        . '<x-operator::what-stood-in-the-way :settings-would-not-open="false" :went="$went" :goes="$goes" />'
         . '</x-operator::content>',
         ['went' => HowTheReadingWent::somethingStopped($met), 'goes' => theStacksRoads()],
     ))->toBe(sprintf(
@@ -68,7 +68,7 @@ it('draws a road to the stack\'s updates beside a stack too old for what was ask
     $met = Obstacle::of(KindOfObstacle::NotOnThisStack);
 
     expect(WhatMarkupDraws::outline(
-        '<native:column><x-operator::what-stood-in-the-way :went="$went" :goes="$goes" /></native:column>',
+        '<native:column><x-operator::what-stood-in-the-way :settings-would-not-open="false" :went="$went" :goes="$goes" /></native:column>',
         ['went' => HowTheReadingWent::somethingStopped($met), 'goes' => theStacksRoads()],
     ))->toBe(sprintf(
         'column[][%s, %s, button{"width":"fill"}[], button{"width":"fill"}[]]',

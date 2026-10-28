@@ -14,7 +14,7 @@
             <x-operator::note>{{ __('updates.moves.why_unsaid') }}</x-operator::note>
         @endif
 
-        @if ($loop->last && $after !== '')
+        @if ($loop->last && $after !== null)
             <x-operator::note>{{ $after }}</x-operator::note>
         @endif
     </x-operator::entry>

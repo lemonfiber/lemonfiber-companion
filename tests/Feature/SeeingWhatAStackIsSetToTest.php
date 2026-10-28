@@ -698,3 +698,9 @@ it('draws a change refused because the operator declared the area unmanaged in t
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
         ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
 });
+
+it('hands the field nothing before anything is typed', function (): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
+
+    expect($screen->render()->getData()['typed'] ?? null)->toBe('');
+});

@@ -322,6 +322,16 @@ it('asks about nobody when the route names nobody', function (): void {
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.handoff.show'));
 });
 
+it('asks about nobody when what the route carries is not a name', function (): void {
+    $handing = AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::answered(aHandoffThatStands(WhereTheHandoffStands::Ready)));
+    $screen = theConnectingScreen($handing);
+    $screen->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored(), 'service' => ['Sam']]);
+    $screen->show();
+
+    expect($handing->asked())->toBe([])
+        ->and($screen->named())->toBe('');
+});
+
 it('is offered on each member\'s card, told apart by their name', function (): void {
     $keychain = AKeychainInMemory::working();
     $keychain->keep(theStackADeviceConnectsTo()->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());

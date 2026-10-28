@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Zone;
  *
  * Held to the same contract as the platform's in `LocalZoneContractTest`.
  */
-final readonly class AZoneThatIsSet implements LocalZone
+final class AZoneThatIsSet implements LocalZone
 {
     private function __construct(private Zone $zone) {}
 
@@ -20,6 +20,12 @@ final readonly class AZoneThatIsSet implements LocalZone
     public static function to(string $name): self
     {
         return new self(Zone::named($name));
+    }
+
+    /** The phone is set to the zone of that name from now on. */
+    public function fromNowOnSetTo(string $name): void
+    {
+        $this->zone = Zone::named($name);
     }
 
     public function zone(): Zone

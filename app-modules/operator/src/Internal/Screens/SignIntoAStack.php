@@ -275,7 +275,7 @@ final class SignIntoAStack extends NativeComponent
             return;
         }
 
-        $this->went = $this->runsTheHouse ? $this->asTheOperator() : $this->asAMember(AMembersName::of(trim($this->theirName)));
+        $this->went = $this->runsTheHouse ? $this->asTheOperator() : $this->asAMember(AMembersName::of($this->theirName));
         $this->theirName = $this->went->isSignedIn() ? '' : $this->theirName;
 
         if ($this->went->isSignedIn() && $this->given === WhichSurfaceTheyAreGiven::TheirHome) {

@@ -15,7 +15,7 @@
     {{-- The address that was tried, where the stack was not reached: a stale
          or wrong one is often the whole story, and the operator cannot see
          that without seeing it. Drawn here and on no member's screen. --}}
-    @if ($went->whereItWasTried() !== '')
+    @if ($went->whereItWasTried() !== null && $went->whereItWasTried() !== '')
         <x-operator::note>{{ __('connection.tried_at', ['address' => $went->whereItWasTried()]) }}</x-operator::note>
     @endif
 

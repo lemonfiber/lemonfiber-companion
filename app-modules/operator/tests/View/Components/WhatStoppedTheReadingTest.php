@@ -29,7 +29,7 @@ it('draws what stood in the way inside one padded column that scrolls', function
     $met = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
     expect(WhatMarkupDraws::outline(
-        '<x-operator::what-stopped-the-reading :went="$went" :goes="$goes" />',
+        '<x-operator::what-stopped-the-reading :settings-would-not-open="false" :went="$went" :goes="$goes" />',
         ['went' => HowTheReadingWent::somethingStopped($met), 'goes' => theRoadsOfTheStackRead()],
     ))->toBe(sprintf(
         'scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
@@ -41,7 +41,7 @@ it('draws what stood in the way inside one padded column that scrolls', function
 
 it('draws an ended session inside one padded column that scrolls', function (): void {
     expect(WhatMarkupDraws::outline(
-        '<x-operator::what-stopped-the-reading :went="$went" :goes="$goes" />',
+        '<x-operator::what-stopped-the-reading :settings-would-not-open="false" :went="$went" :goes="$goes" />',
         ['went' => HowTheReadingWent::theSessionEnded(), 'goes' => theRoadsOfTheStackRead()],
     ))->toBe(sprintf(
         'scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'

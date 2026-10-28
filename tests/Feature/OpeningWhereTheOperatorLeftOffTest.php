@@ -212,3 +212,7 @@ it('opens a stack tapped on the list on the tab last used there', function (): v
     expect($list->tappingGoesTo($attic))->toBe(AStacksScreen::Repairs->forTheStack($attic->id()))
         ->and($list->tappingGoesTo($loft))->toBe(AStacksScreen::Health->forTheStack($loft->id()));
 });
+
+it('holds one opening a run, so a list the container builds again does not land a second time', function (): void {
+    expect(app(WhereAStackOpens::class))->toBe(app(WhereAStackOpens::class));
+});

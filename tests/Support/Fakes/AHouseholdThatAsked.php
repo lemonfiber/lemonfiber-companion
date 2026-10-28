@@ -52,7 +52,7 @@ final class AHouseholdThatAsked implements Wanting
      * @param Closure(): Underway      $acting what a decision comes away with
      */
     private function __construct(
-        private readonly Closure $answer,
+        private Closure $answer,
         private readonly Closure $acting,
     ) {}
 
@@ -134,6 +134,12 @@ final class AHouseholdThatAsked implements Wanting
         $this->decided[] = $decided;
 
         return ($this->acting)();
+    }
+
+    /** From now on, reading what the household asked for meets this. */
+    public function fromNowOnMeeting(Obstacle $why): void
+    {
+        $this->answer = static fn(): WhatWasWanted => WhatWasWanted::met($why);
     }
 
     public function askedOf(Stack $stack, Session $session): WhatWasWanted

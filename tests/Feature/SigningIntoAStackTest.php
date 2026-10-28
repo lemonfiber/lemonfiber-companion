@@ -591,7 +591,12 @@ it('knocks as a member where a name was typed, as the operator once they said th
             ->and($screen->went())->toBe(HowTheSignInWent::NotYet);
     }
 
-    expect($member->namedAs())->toBe('ada')
+    $untyped = aDoorThatOpens();
+    $neverNamed = typedPassword(signInScreen($untyped, runsTheHouse: false), 'a-password');
+    $neverNamed->offer();
+
+    expect($untyped->knocks())->toBe(0)
+        ->and($member->namedAs())->toBe('ada')
         ->and($member->knocks())->toBe(1)
         ->and($operator->namedAs())->toBeNull()
         ->and($operator->knocks())->toBe(1);

@@ -218,13 +218,16 @@ it('opens on the word another screen sent somebody to, by any name it goes by, a
     expect($screen->answer()->words[0]->isOpen)->toBeFalse();
 });
 
-it('opens on no word where the route names none', function (): void {
+it('opens on no word where the route names none, or a blank', function (string ...$named): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
-    $screen->mount(' ');
+    $screen->mount(...$named);
 
     expect([$screen->looking, $screen->open])->toBe(['', ''])
         ->and($screen->answer()->words)->toHaveCount(3);
-});
+})->with([
+    'nothing' => [],
+    'a blank' => [' '],
+]);
 
 it('the way to one word is a route to this screen', function (): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
@@ -266,7 +269,7 @@ it('offers nothing to ask where the glossary it holds explains the word, or noth
         $screen->looking = $looking;
         $screen->askTheStack();
 
-        expect($screen->answer()->mayAsk)->toBe('', $looking);
+        expect($screen->answer()->mayAsk)->toBeNull($looking);
     }
 
     expect($explaining->wordsAsked())->toBe([]);
@@ -319,7 +322,7 @@ it('a word the stack has no entry for either is shown as it came, and not offere
     $screen->askTheStack();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.words.unexplained', ['word' => 'Grabber']))
-        ->and($screen->answer()->askingMet)->toBe('')
+        ->and($screen->answer()->askingMet)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')])
         ->and($explaining->wordsAsked())->toBe(['Grabber']);
 });
@@ -333,8 +336,8 @@ it('what one word came to is not said of another word looked for next', function
 
     $screen->looking = 'indexer';
 
-    expect($screen->answer()->unexplained)->toBe('')
-        ->and($screen->answer()->askingMet)->toBe('')
+    expect($screen->answer()->unexplained)->toBeNull()
+        ->and($screen->answer()->askingMet)->toBeNull()
         ->and($screen->answer()->mayAsk)->toBe('indexer');
 });
 

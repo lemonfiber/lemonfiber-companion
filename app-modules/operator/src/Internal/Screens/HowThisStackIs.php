@@ -351,9 +351,7 @@ final class HowThisStackIs extends NativeComponent
         $exits = [];
 
         foreach ($this->summary()->affected as $item) {
-            if ($item->exited !== '') {
-                $exits[$item->check] = $item->exited;
-            }
+            $exits[$item->check] = $item->exited;
         }
 
         return $exits;

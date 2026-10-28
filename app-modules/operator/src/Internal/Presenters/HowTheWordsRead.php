@@ -59,9 +59,9 @@ final readonly class HowTheWordsRead
             HowTheReadingWent::itCameBack(),
             $shown,
             isSearching: true,
-            mayAsk: $unexplained ? '' : $looking->typed(),
-            unexplained: $unexplained ? $looking->typed() : '',
-            askingMet: $answered instanceof AWordAskedAbout ? $answered->met : '',
+            mayAsk: $unexplained ? null : $looking->typed(),
+            unexplained: $unexplained ? $looking->typed() : null,
+            askingMet: $answered?->met,
         );
     }
 

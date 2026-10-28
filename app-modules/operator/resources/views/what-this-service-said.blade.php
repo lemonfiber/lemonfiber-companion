@@ -1,7 +1,7 @@
 @use('Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown')
 @use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Operator\Api\HowTheColumnScrolls')
-<x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
+<x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" :back="$this->hasAWayBack()" />
 <x-wayfinding::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())

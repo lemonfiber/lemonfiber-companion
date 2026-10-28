@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AMomentAsShown;
 use Modules\Operator\Internal\ViewModels\AnEpisodeAsShown;
+use Modules\Operator\Internal\ViewModels\ASearchAsOffered;
 use Modules\Operator\Internal\ViewModels\ASeasonAsShown;
 use Modules\Operator\Internal\ViewModels\ASeriesAsShown;
 use Modules\Operator\Internal\ViewModels\AStageAsShown;
@@ -81,14 +82,10 @@ final readonly class HowATraceReads
             $disagreements[] = $finding;
         }
 
-        $spends = $found->whetherASearchSettles()->either(
-            so: static fn(ASearchThatSettles $search): AsText => AsText::of($search->spends()),
+        $search = $found->whetherASearchSettles()->either(
+            so: static fn(ASearchThatSettles $search): ASearchAsOffered => new ASearchAsOffered($search->spends(), $search->covers()),
             not: static fn(): AsText => AsText::nothing(),
-        )->said;
-        $covers = $found->whetherASearchSettles()->either(
-            so: static fn(ASearchThatSettles $search): AsText => AsText::of($search->covers()),
-            not: static fn(): AsText => AsText::nothing(),
-        )->said;
+        );
 
         return new TheTraceTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
@@ -105,8 +102,7 @@ final readonly class HowATraceReads
                 whole: static fn(): HowMuchIsHereAsShown => new HowMuchIsHereAsShown(null),
                 inParts: static fn(ASeriesCounted $series): HowMuchIsHereAsShown => new HowMuchIsHereAsShown(self::series($series)),
             ),
-            searchSpends: $spends,
-            searchCovers: $covers,
+            search: $search instanceof ASearchAsOffered ? $search : null,
         );
     }
 

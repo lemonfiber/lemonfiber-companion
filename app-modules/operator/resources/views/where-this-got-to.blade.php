@@ -61,11 +61,11 @@
                 <x-design::note>{{ __('health.trace.searched') }}</x-design::note>
             @endif
 
-            @if ($this->answer()->searchSpends !== '' && ! $this->howTheSearchIsGoing()->stands->isWorking())
+            @if ($this->answer()->search !== null && ! $this->howTheSearchIsGoing()->stands->isWorking())
                 <x-design::notice>
                     <x-design::strong>{{ __('health.trace.search_would_settle') }}</x-design::strong>
-                    <x-design::body>{{ __('health.trace.search_spends', ['spends' => $this->answer()->searchSpends]) }}</x-design::body>
-                    <x-design::body>{{ __('health.trace.search_covers', ['covers' => $this->answer()->searchCovers]) }}</x-design::body>
+                    <x-design::body>{{ __('health.trace.search_spends', ['spends' => $this->answer()->search->spends]) }}</x-design::body>
+                    <x-design::body>{{ __('health.trace.search_covers', ['covers' => $this->answer()->search->covers]) }}</x-design::body>
                 </x-design::notice>
                 <x-design::note>{{ __('health.trace.search_not_a_rehearsal') }}</x-design::note>
                 <x-operator::offered-action :label="__('health.trace.search')" tap="search()" :offer="$this->offered(SearchingTheIndexers::Search)" />

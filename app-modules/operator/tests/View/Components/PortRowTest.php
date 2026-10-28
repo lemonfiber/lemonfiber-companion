@@ -28,7 +28,6 @@ it('draws a port row as one target ending in a chevron, read as its name and wha
         ->and(data_get($drawn, 'children.1.type'))->toBe('divider');
 });
 
-
 it('draws a port row that goes nowhere as a plain row with no chevron, read as its name', function (): void {
     $drawn = WhatMarkupDraws::drawn('<native:column><x-operator::port-row tone="quiet" name="Bazarr" /></native:column>');
 
@@ -36,7 +35,6 @@ it('draws a port row that goes nowhere as a plain row with no chevron, read as i
         ->and(data_get($drawn, 'children.0.children'))->toHaveCount(2)
         ->and(data_get($drawn, 'children.0.children.1.children'))->toHaveCount(1);
 });
-
 
 it('reads a port row that does something by the name it answers to', function (): void {
     $drawn = WhatMarkupDraws::drawn('<native:column><x-operator::port-row tone="attention" name="Open" answers-to="Open Sonarr" tap="open" /></native:column>');
@@ -52,5 +50,6 @@ it('leads a row with no tone with a blank the width of a port, and draws no port
     expect(data_get($drawn, 'children.0.children.0.type'))->toBe('column')
         ->and(data_get($drawn, 'children.0.children.0.children'))->toBeEmpty()
         ->and(data_get($drawn, 'children.0.children.0.layout.width'))->toBe(data_get(WhatMarkupDraws::drawn('<native:column><x-operator::port-row tone="fine" name="Sonarr" /></native:column>'), 'children.0.children.0.layout.width'))
-        ->and(data_get($drawn, 'children.0.children.1.children.0.props.text'))->toBe('library');
+        ->and(data_get($drawn, 'children.0.children.1.children.0.props.text'))->toBe('library')
+        ->and(data_get($drawn, 'children.0.props.a11y_label'))->toBe('library');
 });

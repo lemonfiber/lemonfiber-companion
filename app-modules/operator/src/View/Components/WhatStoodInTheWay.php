@@ -36,8 +36,8 @@ final class WhatStoodInTheWay extends Component
     public function __construct(
         public readonly HowTheReadingWent $went,
         public readonly WhereAStackIs $goes,
+        public readonly bool $settingsWouldNotOpen,
         public readonly string $askAgain = 'askAgain()',
-        public readonly bool $settingsWouldNotOpen = false,
     ) {}
 
     public function render(): View

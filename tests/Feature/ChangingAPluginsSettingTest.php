@@ -548,3 +548,7 @@ function theTwoLinesUnder(array $said, string $line): array
 
     return array_slice($said, $at + 1, 2);
 }
+
+it('opens with nothing typed into a setting\'s field', function (): void {
+    expect(theGuardsSettingsScreen(aStackThatSetsTheGuard())->typed)->toBe('');
+});

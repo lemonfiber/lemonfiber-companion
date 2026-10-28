@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\TheVersionsSpoken;
 use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
 
 it('is put right in the app\'s settings only where the local network was refused', function (): void {
@@ -17,4 +18,12 @@ it('is put right in the app\'s settings only where the local network was refused
         WhyNothingWasSaid::because(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
         WhyNothingWasSaid::nothingStoppedIt()->isPutRightInTheAppsSettings(),
     ])->toBe([true, false, false]);
+});
+
+it('fills its sentences with what disagreeing versions name, and with nothing otherwise', function (): void {
+    expect([
+        WhyNothingWasSaid::because(Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 3, spoken: 2)))->filling(),
+        WhyNothingWasSaid::because(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->filling(),
+        WhyNothingWasSaid::nothingStoppedIt()->filling(),
+    ])->toBe([['answered' => 3, 'spoken' => 2], [], []]);
 });

@@ -15,11 +15,11 @@ final readonly class AWordAskedAbout
     /**
      * @param string $word        the word as it was asked for
      * @param bool   $unexplained whether the stack has no entry for it either
-     * @param string $met         what stood in the way of asking, as a key, or empty
+     * @param string|null $met    what stood in the way of asking, as a key, where something did
      */
     public function __construct(
         public string $word,
         public bool $unexplained,
-        public string $met,
+        public ?string $met,
     ) {}
 }

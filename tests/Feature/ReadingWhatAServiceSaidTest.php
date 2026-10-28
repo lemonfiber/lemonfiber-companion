@@ -100,6 +100,7 @@ function theLogScreen(
     ?string $service = null,
     bool $signedIn = true,
     ?AKeychainInMemory $keychain = null,
+    ?AZoneThatIsSet $zone = null,
 ): WhatThisServiceSaid {
     $stack = theStackWhoseServiceIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -112,7 +113,7 @@ function theLogScreen(
         $saying,
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
-        AZoneThatIsSet::to('Europe/Amsterdam'),
+        $zone ?? AZoneThatIsSet::to('Europe/Amsterdam'),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
     );
@@ -228,12 +229,18 @@ it('shows the lines, oldest first, marking only those from the error stream', fu
         ->and($screen->answer()->went->remedy)->toBe('');
 });
 
+it('reads the lines in the zone the phone was set to when they were read, until they are asked for again', function (): void {
+    $zone = AZoneThatIsSet::to('Europe/Amsterdam');
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()), zone: $zone);
+    $screen->answer();
+    $zone->fromNowOnSetTo('UTC');
+    $kept = aLogRow($screen->answer()->lines[0])['at'];
+    $screen->again();
+
+    expect([$kept, aLogRow($screen->answer()->lines[0])['at']])->toBe(['06:00:00', '04:00:00']);
+});
+
 it('a line the service timed carries the time on the phone\'s clock, and one it did not says so', function (): void {
-    // `hasAMoment` is a field of its own so a template never has to read an
-    // empty `at` as *no moment*. That only holds if the two disagree somewhere:
-    // a fold that set the flag from nothing, or set it the same way on both
-    // arms, renders identically on every line that does carry a time — and the
-    // lines without one are exactly where nobody looks.
     $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->answer()->lines;
 
     // Four in the morning UTC is six on a phone set to Amsterdam in September.

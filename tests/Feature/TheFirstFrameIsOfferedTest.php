@@ -21,6 +21,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
+use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADeviceOnANetwork;
@@ -88,6 +89,13 @@ function theLaunchScreen(
         AroundThePhone::listening(clock: $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)), standings: $standings ?? StandingsInMemory::working()),
     );
 }
+
+it('stops going round once the list stops being the screen in front', function (): void {
+    $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft', 'a')));
+    $screen->stop();
+
+    expect(Closure::bind(static fn(NativeComponent $stopped): bool => $stopped->nativeRunning, null, NativeComponent::class)($screen))->toBeFalse();
+});
 
 it('asks how the app opened once, however often the screen reads it', function (): void {
     $stacks = StacksInMemory::holding(aPairedStack('The loft', 'a'));

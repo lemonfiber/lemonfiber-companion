@@ -35,6 +35,7 @@ use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\Presenters\HowTheRunReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
+use Modules\Operator\Internal\ViewModels\ASearchAsOffered;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
@@ -141,7 +142,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
      */
     public function search(): void
     {
-        if ($this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->stands->isWorking()) {
+        if (! $this->answer()->search instanceof ASearchAsOffered || $this->howTheSearchIsGoing()->stands->isWorking()) {
             return;
         }
 

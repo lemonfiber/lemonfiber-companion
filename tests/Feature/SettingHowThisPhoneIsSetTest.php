@@ -188,7 +188,7 @@ it('lets go of the readings older than a shorter time the moment it is chosen', 
     $screen->keepReadingsFor('SevenDays');
 
     expect($store->forgetEverything()->howMany())->toBe(1)
-        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 7))
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 7])
         ->and($readings->keptFor()->is(KeptFor::SevenDays))->toBeTrue()
         ->and($settings->forgetEverything()->howMany())->toBe(1);
 });
@@ -222,7 +222,7 @@ it('opens a field for a count of days, and keeps a count it is given', function 
         ->and($typing->offers())->toContain(__('settings.save'))
         ->and($tree)->toContain('"keyboard":"number"')
         ->and($screen->typingDays)->toBeFalse()
-        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 45))
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 45])
         ->and(array_column($chosen, 'word'))->toBe(['Other'])
         ->and($opened)->toBe(['', false])
         ->and($store->forgetEverything()->howMany())->toBe(1);
@@ -271,7 +271,7 @@ it('reads each setting, and whether the phone can keep anything, once', function
     $screen->keepsNothing();
 
     expect($screen->lockAfter()->said)->toBe(LockAfter::Immediately->said())
-        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 30))
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 30])
         ->and(array_column($screen->stacksInOrder(), 'name'))->toBe(['The loft', 'The attic'])
         ->and($keychain->timesAskedIfAvailable())->toBe(1);
 });
