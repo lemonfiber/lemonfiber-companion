@@ -125,7 +125,7 @@ final readonly class GrantRows
     private static function approved(array $row): AMomentAsWritten
     {
         if (! array_key_exists(WireField::At->value, $row) || ! is_string($row[WireField::At->value])) {
-            return AMomentAsWritten::inSeconds('');
+            return AMomentAsWritten::unwritten();
         }
 
         return AMomentAsWritten::inSeconds($row[WireField::At->value]);
