@@ -60,7 +60,7 @@
                 native:model="theirName"
                 label="{{ __('household.joining.your_name') }}"
                 content-type="username"
-                read-only="{{ $this->nameIsTheLinks ? 'true' : '' }}"
+                read-only="{{ $this->namedByTheLink !== null ? 'true' : '' }}"
                 autocorrect="off"
                 autocapitalize="none"
             />

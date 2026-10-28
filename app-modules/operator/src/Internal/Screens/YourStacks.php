@@ -106,11 +106,8 @@ final class YourStacks extends NativeComponent
 
     public ?Launch $launched = null;
 
-    /** What became of the last attempt to hand a report over, as a key, or empty. */
-    public string $sharingWent = '';
-
-    /** What to do about it, beside {@see $sharingWent}. */
-    public string $sharingRemedy = '';
+    /** Why the last attempt to hand a report over handed nothing, or null where it handed it or none was made. */
+    public ?WhyNothingWasShared $sharingRefused = null;
 
     /**
      * How far into the first run the operator has read.
@@ -450,14 +447,12 @@ final class YourStacks extends NativeComponent
 
         $handed->either(
             over: function (): WhatTheSharingDid {
-                $this->sharingWent = '';
-                $this->sharingRemedy = '';
+                $this->sharingRefused = null;
 
                 return new WhatTheSharingDid();
             },
             refused: function (WhyNothingWasShared $why): WhatTheSharingDid {
-                $this->sharingWent = $why->saidOnTheScreen();
-                $this->sharingRemedy = $why->remedy();
+                $this->sharingRefused = $why;
 
                 return new WhatTheSharingDid();
             },

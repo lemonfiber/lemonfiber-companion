@@ -244,20 +244,20 @@
                     :goes="$this->goes()"
                 />
             @else
-                @if ($this->rehearsal()->runningUnread)
+                @if ($this->rehearsal()->read->runningUnread)
                     {{-- Said once, above a list that still says what would
                          start, because the stack could not tell which of these
                          are up already. --}}
                     <x-design::note>{{ __('health.rehearsal.running_unread') }}</x-design::note>
                 @endif
 
-                @forelse ($this->rehearsal()->wouldStart as $service)
+                @forelse ($this->rehearsal()->read->wouldStart as $service)
                     <x-design::body>{{ __($service->said, ['name' => $service->name]) }}</x-design::body>
                 @empty
                     <x-design::body>{{ __('health.rehearsal.would_start_nothing') }}</x-design::body>
                 @endforelse
 
-                @forelse ($this->rehearsal()->leftOut as $left)
+                @forelse ($this->rehearsal()->read->leftOut as $left)
                     <x-design::note>{{ __('health.rehearsal.left_out', ['name' => $left->name, 'needs' => __($left->needsSaid)]) }}</x-design::note>
                 @empty
                     <x-design::note>{{ __('health.rehearsal.nothing_left_out') }}</x-design::note>
@@ -266,14 +266,14 @@
                 {{-- The stack's estimate, said as one, and the services it could
                      not estimate, so a short sum reads as short. --}}
                 <x-operator::figure
-                    :figure="(string) $this->rehearsal()->estimatedMib"
+                    :figure="(string) $this->rehearsal()->read->estimatedMib"
                     :unit="__('health.rehearsal.estimate_unit')"
                     :eyebrow="__('health.rehearsal.estimate')"
                     :caption="__('health.rehearsal.estimate_said')"
                 />
 
-                @if ($this->rehearsal()->unestimated !== [])
-                    <x-design::note>{{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->unestimated)]) }}</x-design::note>
+                @if ($this->rehearsal()->read->unestimated !== [])
+                    <x-design::note>{{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->read->unestimated)]) }}</x-design::note>
                 @endif
             @endif
         </x-design::card>

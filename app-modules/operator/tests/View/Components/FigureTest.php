@@ -11,11 +11,11 @@ use Tests\TestCase;
 // so the application is booted.
 uses(TestCase::class);
 
-it('draws a figure under what it is, with its whole and unit beside it and its meaning under it', function (): void {
-    $markup = '<x-operator::figure figure="412" out-of="/ 500" unit="GB" eyebrow="Used" caption="Of the media volume" />';
+it('draws a figure under what it is, with its unit beside it and its meaning under it', function (): void {
+    $markup = '<x-operator::figure figure="412" unit="GB" eyebrow="Used" caption="Of the media volume" />';
 
     expect(WhatMarkupDraws::outline($markup))
-        ->toBe('column{"gap":8}[Used, row{"gap":8,"align_items":2}[412, / 500, GB], Of the media volume]');
+        ->toBe('column{"gap":8}[Used, row{"gap":8,"align_items":2}[412, GB], Of the media volume]');
 
     $figure = WhatMarkupDraws::drawn($markup);
 
@@ -25,9 +25,6 @@ it('draws a figure under what it is, with its whole and unit beside it and its m
         ->and(data_get($figure, 'children.2.props.font_size'))->toEqual(TypeSize::Caption->points());
 });
 
-
-it('says a figure nobody measured in words, with neither unit nor whole beside them', function (): void {
-    $markup = '<x-operator::figure absent="Not measured yet" out-of="/ 500" unit="GB" />';
-
-    expect(WhatMarkupDraws::outline($markup))->toBe('column{"gap":8}[Not measured yet]');
+it('draws a figure alone where it is measured in nothing, is not named and means nothing more', function (): void {
+    expect(WhatMarkupDraws::outline('<x-operator::figure figure="3" />'))->toBe('column{"gap":8}[row{"gap":8,"align_items":2}[3]]');
 });

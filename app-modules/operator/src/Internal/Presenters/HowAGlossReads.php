@@ -25,16 +25,16 @@ final readonly class HowAGlossReads
             return new AGlossAsShown(
                 word: $word->word(),
                 short: $word->short(),
-                goes: $word->deep() === '' ? '' : $goes->wordAbout(AWordInUse::named($word->word())),
+                goes: $word->deep() === '' ? null : $goes->wordAbout(AWordInUse::named($word->word())),
             );
         }
 
-        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', asks: $goes->wordAbout($drawn));
+        return new AGlossAsShown(word: $drawn->said(), asks: $goes->wordAbout($drawn));
     }
 
     /** A word drawn as it came, while the glossary waits for the next frame. */
     public function waiting(AWordInUse $drawn): AGlossAsShown
     {
-        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', waits: true);
+        return new AGlossAsShown(word: $drawn->said(), waits: true);
     }
 }

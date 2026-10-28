@@ -342,6 +342,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             answered: function (TheWiring $wiring): TheWiringTurnedOutToBe {
                 $this->following = null;
                 $this->adoptionRehearsed = $this->rehearsingAnAdoption && $wiring->wasRehearsed();
+                $this->rehearsingAnAdoption = false;
 
                 return new HowTheWiringReads()->answered($wiring);
             },

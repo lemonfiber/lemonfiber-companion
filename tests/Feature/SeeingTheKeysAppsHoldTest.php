@@ -203,7 +203,7 @@ it('asks nothing for a row it does not have or a key that cannot be revoked', fu
     $screen->askToRevoke(2);
     $screen->askToRevoke(3);
 
-    expect($screen->revoking)->toBe('');
+    expect($screen->revoking)->toBeNull();
 });
 
 it('offers no revoke for a key already revoked', function (): void {
@@ -296,7 +296,7 @@ it('asks nothing for a phone key row it does not have, one already revoked, or a
     $screen->askToRevokeAPhoneKey(2);
     $screen->revokeThePhoneKey();
 
-    expect($screen->revokingAPhoneKey)->toBe('')
+    expect($screen->revokingAPhoneKey)->toBeNull()
         ->and($phoneKeys->revoked())->toBe([]);
 });
 

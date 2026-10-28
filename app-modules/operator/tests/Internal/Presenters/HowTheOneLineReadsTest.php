@@ -220,7 +220,7 @@ it('says a stack never heard cannot be told, with no age', function (): void {
         counted: '',
         howMany: 0,
         worst: '',
-        ago: AgoAsShown::live(),
+        ago: AgoAsShown::saysNothing(),
         met: '',
         remedy: '',
         filling: [],

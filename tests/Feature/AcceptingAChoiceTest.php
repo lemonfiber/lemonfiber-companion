@@ -79,9 +79,9 @@ function anAcceptanceThatTakes(): AStackThatAccepts
 it('offers accepting a warning on Health and leads to what it costs, and offers nothing for a failure', function (): void {
     $report = aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided), aWarningAbout('vpn.egress', Standing::Remediable, Conclusion::Failed));
     $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying($report));
-    $accepting = array_map(static fn(WhatOneFindingSays $row): string => $row->accepting, $screen->findings());
+    $accepting = array_map(static fn(WhatOneFindingSays $row): string => $row->accepting ?? 'nothing to accept', $screen->findings());
 
-    expect($accepting)->toContain(THE_CHOICE, '')
+    expect($accepting)->toContain(THE_CHOICE, 'nothing to accept')
         ->and(array_count_values($accepting)[THE_CHOICE])->toBe(1)
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.choice.accept_this', ['title' => 'Torrents run inside a VPN']))
         ->and($screen->goes()->accepting(THE_CHOICE))->toBe(AStacksScreen::Accept->forTheStacksCheck(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE)));
@@ -93,7 +93,7 @@ it('draws an accepted warning on Health as accepted and still a warning, and off
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($row->verdict)->toBe('health.choice.accepted')
-        ->and($row->accepting)->toBe('')
+        ->and($row->accepting)->toBeNull()
         ->and($drawn->said())->toContain(__('health.choice.accepted'), WHAT_THE_CHOICE_COSTS)
         ->and($drawn->said())->not->toContain(__(Severity::Warning->saidOnTheScreen()));
 });
@@ -141,14 +141,17 @@ it('offers nothing to accept for a failure, a check the report does not raise, o
     'one already accepted' => [aReportWith(aWarningAbout(THE_CHOICE, Standing::Suppressed)), THE_CHOICE, 'health.choice.accepted_stays'],
 ]);
 
-it('says so where the stack answered and its report does not show the warning accepted', function (): void {
-    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))));
+it('says so where the stack answered and its report does not show the warning accepted', function (Report $answered): void {
+    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::answered($answered));
     $screen = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), $accepting);
     $screen->accept();
     $screen->whileItRuns();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.choice.not_taken'));
-});
+})->with([
+    'still raised' => [aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))],
+    'raised no more' => [aReportWith()],
+]);
 
 it('draws a refusal in the stack\'s own words, and an outcome the stack no longer has', function (): void {
     $why = ARefusalInItsWords::said('Nothing in this run warns about vpn.contained', '', WhatTheRefusalNamed::nothing(), 'Answer one of the warnings this run raised');

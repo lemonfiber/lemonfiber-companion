@@ -14,19 +14,8 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatStartingItWouldShow
 {
     /**
-     * @param HowTheReadingWent            $went        whether the rehearsal came back, and what stood in the way where it did not
-     * @param list<AServiceToStartAsShown> $wouldStart  the services starting it would name, in the stack's order, each as one it would bring up or one already running
-     * @param list<AServiceLeftOutAsShown> $leftOut     the services it would leave out, each with what it would need
-     * @param int|null                     $estimatedMib what the stack estimates starting it would take, in mebibytes; null where nothing was read
-     * @param list<string>                 $unestimated the services that would start with no estimate of their own
-     * @param bool                         $runningUnread whether the stack could not read which of them are already running
+     * @param HowTheReadingWent       $went whether the rehearsal came back, and what stood in the way where it did not
+     * @param TheRehearsalAsRead|null $read what it came to, where it came back
      */
-    public function __construct(
-        public HowTheReadingWent $went,
-        public array $wouldStart,
-        public array $leftOut,
-        public ?int $estimatedMib,
-        public array $unestimated,
-        public bool $runningUnread,
-    ) {}
+    public function __construct(public HowTheReadingWent $went, public ?TheRehearsalAsRead $read = null) {}
 }

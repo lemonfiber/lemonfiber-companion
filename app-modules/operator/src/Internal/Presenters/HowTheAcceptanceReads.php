@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
+use Modules\Operator\Internal\ViewModels\AWarningAsRaised;
 use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
@@ -53,11 +54,13 @@ final readonly class HowTheAcceptanceReads
     /** What the report the stack answered with says of the check accepted. */
     public function answered(Report $report, string $check): TheAcceptanceTurnedOutToBe
     {
+        $raised = new HowAWarningReads()->in($report, $check)->raised;
+
         return new TheAcceptanceTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
             refused: null,
             answered: true,
-            accepted: new HowAWarningReads()->in($report, $check)->accepted,
+            accepted: $raised instanceof AWarningAsRaised && $raised->check === null,
         );
     }
 

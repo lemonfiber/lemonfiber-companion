@@ -215,10 +215,11 @@ it('opens on the line as it stands, each limit beside the figure it is set again
         ->and($sharing->rehearsed())->toBe([]);
 });
 
-it('says a change asking nothing, or a lift that is not whole minutes, on the screen rather than sending it', function (string $lift, string $said): void {
+it('says a change asking nothing, or a lift that is not whole minutes, on the screen rather than sending it', function (string $lift, string $said, string $down = ''): void {
     $sharing = aStackThatChangesItsLine();
     $screen = theLineChangeScreen($sharing);
     $screen->lift = $lift;
+    $screen->down = $down;
     $screen->rehearse();
 
     expect($screen->howItIsGoing()->notAskable)->toBe($said)
@@ -227,7 +228,17 @@ it('says a change asking nothing, or a lift that is not whole minutes, on the sc
 })->with([
     'nothing' => ['', 'stacks.line_change.nothing_asked'],
     'a lift in words' => ['an hour', 'stacks.line_change.lift.is_minutes'],
+    'only spaces typed' => ['  ', 'stacks.line_change.nothing_asked', '   '],
 ]);
+
+it('sends a lift typed with spaces around it as its minutes', function (): void {
+    $sharing = aStackThatChangesItsLine();
+    $screen = theLineChangeScreen($sharing);
+    $screen->lift = ' 45 ';
+    $screen->rehearse();
+
+    expect(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe([' lift=45']);
+});
 
 it('rehearses every part as typed, follows the work, and draws it labelled as a rehearsal with each client', function (): void {
     $sharing = aStackThatChangesItsLine();
@@ -349,6 +360,7 @@ it('marks the chips chosen, and leaves a part as it is on its own chip', functio
     expect(theChipsChosen($screen->exceededChoice()->offered))->toBe(['pause'])
         ->and($screen->exceededChoice()->said)->toBe('stacks.line_change.exceeded.pause')
         ->and(theChipsChosen($screen->liftChoice()))->toBe(['240'])
+        ->and(array_map(static fn(AChoiceOfASettingAsShown $chip): string => $chip->word, $screen->liftChoice()))->toBe(['15', '60', '240', ''])
         ->and($screen->lift)->toBe('240');
 
     $screen->exceededIs('explode');

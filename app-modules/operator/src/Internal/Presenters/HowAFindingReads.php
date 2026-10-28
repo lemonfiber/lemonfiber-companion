@@ -105,6 +105,7 @@ final readonly class HowAFindingReads
                 underneath: '',
                 from: $from,
                 exited: $exited,
+                accepting: null,
                 runnable: $runnable,
             ),
             wentWrong: static fn(
@@ -123,14 +124,7 @@ final readonly class HowAFindingReads
                 service: $service,
                 called: $called,
                 because: $because,
-                // Every one of them, in the order the engine gave. `likeliest()`
-                // exists for a screen with room for one line, and this screen
-                // has room for the list — an operator whose first remedy did
-                // not work would otherwise have nowhere to find the second.
                 remedies: $remedies,
-                // Available, and not leading. It arrives on the row
-                // beneath everything the requirement puts above it, which is
-                // what *must not lead* means on a surface with one column.
                 underneath: $underneath->either(
                     said: static fn(string $detail): WhatTheCoreAddedUnderneath
                         => new WhatTheCoreAddedUnderneath($detail),
@@ -139,18 +133,13 @@ final readonly class HowAFindingReads
                 )->said,
                 from: $from,
                 exited: $exited,
-                accepting: $choice === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
+                accepting: $choice === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : null,
                 runnable: $runnable,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
-                // No code and no severity, because these outcomes carry neither.
-                // Nothing was graded — a check that could not run produced no
-                // judgement, and a word here would be this app inventing one.
-                // The template branches on the meaning, so a row with a reason
-                // and neither of the others still explains itself.
                 code: '',
                 meaning: $reason,
                 service: $service,
@@ -160,6 +149,7 @@ final readonly class HowAFindingReads
                 underneath: '',
                 from: $from,
                 exited: $exited,
+                accepting: null,
                 runnable: $runnable,
             ),
         );

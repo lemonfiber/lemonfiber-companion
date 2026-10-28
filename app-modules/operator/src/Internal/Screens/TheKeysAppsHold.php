@@ -36,7 +36,6 @@ use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function trim;
 use function view;
 
 /**
@@ -71,8 +70,8 @@ final class TheKeysAppsHold extends NativeComponent
      */
     public ?TheKeysTurnedOutToBe $answered = null;
 
-    /** The name of the key the operator asked to revoke and has not confirmed yet, or empty. */
-    public string $revoking = '';
+    /** The name of the key the operator asked to revoke and has not confirmed yet, or null where none is. */
+    public ?string $revoking = null;
 
     public function __construct(
         private readonly KeepingKeysForApps $keeping,
@@ -129,16 +128,16 @@ final class TheKeysAppsHold extends NativeComponent
     /** The operator kept the key. */
     public function keepIt(): void
     {
-        $this->revoking = '';
+        $this->revoking = null;
     }
 
     /** The operator confirmed: revoke the key, and show the listing the stack answers with. */
     public function revoke(): void
     {
         $name = $this->revoking;
-        $this->revoking = '';
+        $this->revoking = null;
 
-        if (trim($name) === '') {
+        if ($name === null) {
             return;
         }
 
@@ -160,7 +159,7 @@ final class TheKeysAppsHold extends NativeComponent
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheKeysTurnedOutToBe => $asking($stack, $session)->either(
                 found: fn(TheKeysForApps $keys): TheKeysTurnedOutToBe => $reads->these($keys, $this->clock->now()),
-                refused: fn(ARefusalInItsWords $why): TheKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(TheKeysForApps::of(''), $this->clock->now())),
+                refused: fn(ARefusalInItsWords $why): TheKeysTurnedOutToBe => $reads->refused($why, $shown),
                 met: $this->lettingGoIfRefused($stack, $reads->met(...)),
             ),
             notHeld: static fn(): TheKeysTurnedOutToBe => new HowTheKeysRead()->signedOut(),

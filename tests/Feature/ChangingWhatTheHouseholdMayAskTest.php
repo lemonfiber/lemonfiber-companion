@@ -27,6 +27,7 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
+use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
@@ -150,12 +151,34 @@ it('offers the whole household or one member, every policy, and a limit, and ask
     $members = WhatTheDeviceWouldDraw::by($screen);
 
     expect($members->offers())->toContain('alex', 'robin')
+        ->and($members->said())->not->toContain(__('stacks.allowance_change.members_unread'))
         ->and($inviting->readings())->toBe(1);
 
     $screen->again();
     WhatTheDeviceWouldDraw::by($screen);
 
     expect($inviting->readings())->toBe(1);
+});
+
+it('draws the members to choose from once somebody is chosen, and not once the whole household is', function (): void {
+    $screen = theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed());
+    $screen->forSomebody('alex');
+    $somebody = WhatTheDeviceWouldDraw::by($screen);
+    $screen->forEverybody();
+    $everybody = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($somebody->offers())->toContain('alex', 'robin')
+        ->and($everybody->offers())->not->toContain('alex');
+});
+
+it('marks the policy chosen, and leaving it as it is on its own chip', function (): void {
+    $screen = theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed());
+    $chosen = static fn(): array => array_map(static fn(AChoiceOfASettingAsShown $chip): string => $chip->chosen ? sprintf('chosen:%s', $chip->word) : $chip->word, $screen->policyChoice()->offered);
+    $before = $chosen();
+    $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
+
+    expect($before)->toBe([HowTheHouseholdAsks::Trusted->value, HowTheHouseholdAsks::WithinALimit->value, HowTheHouseholdAsks::EverythingWaits->value, 'chosen:'])
+        ->and($chosen())->toBe([sprintf('chosen:%s', HowTheHouseholdAsks::Trusted->value), HowTheHouseholdAsks::WithinALimit->value, HowTheHouseholdAsks::EverythingWaits->value, '']);
 });
 
 it('offers only the whole household where the members could not be read, and says why', function (): void {
@@ -197,7 +220,7 @@ it('names only what was chosen, leaving the rest as it is', function (string $po
     expect(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe([$asked]);
 })->with([
     'only a policy' => ['trusted', '', '', 'for=everybody policy=trusted limit=as it is'],
-    'only a limit' => ['', ' 3 ', '30', 'for=everybody policy=as it is limit=3/30'],
+    'only a limit' => ['', ' 3 ', ' 30 ', 'for=everybody policy=as it is limit=3/30'],
     'both' => ['within-a-limit', '5', '7', 'for=everybody policy=within-a-limit limit=5/7'],
     'a word the stack does not offer' => ['unlimited', '5', '7', 'for=everybody policy=as it is limit=5/7'],
 ]);

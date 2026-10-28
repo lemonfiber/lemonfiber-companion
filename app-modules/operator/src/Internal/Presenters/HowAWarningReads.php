@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\WhereAChoiceStands;
+use Modules\Operator\Internal\ViewModels\AWarningAsRaised;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheWarningTurnedOutToBe;
 
@@ -27,25 +28,25 @@ final readonly class HowAWarningReads
             }
         }
 
-        return $this->without(HowTheReadingWent::itCameBack());
+        return new TheWarningTurnedOutToBe(HowTheReadingWent::itCameBack());
     }
 
     public function met(Obstacle $why): TheWarningTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return new TheWarningTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     public function signedOut(): TheWarningTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return new TheWarningTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     private function of(Finding $finding): TheWarningTurnedOutToBe
     {
         return $finding->said()->either(
-            nothingWrong: fn(): TheWarningTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
+            nothingWrong: fn(): TheWarningTurnedOutToBe => new TheWarningTurnedOutToBe(HowTheReadingWent::itCameBack()),
             wentWrong: fn(Code $code, string $meaning, Remedies $remedies): TheWarningTurnedOutToBe => $this->raised($finding, $meaning, $remedies),
-            couldNotSay: fn(): TheWarningTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
+            couldNotSay: fn(): TheWarningTurnedOutToBe => new TheWarningTurnedOutToBe(HowTheReadingWent::itCameBack()),
         );
     }
 
@@ -55,21 +56,12 @@ final readonly class HowAWarningReads
         $stands = WhereAChoiceStands::of($finding);
 
         if ($stands === WhereAChoiceStands::NotAChoice) {
-            return $this->without(HowTheReadingWent::itCameBack());
+            return new TheWarningTurnedOutToBe(HowTheReadingWent::itCameBack());
         }
 
         return new TheWarningTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            title: $finding->title(),
-            meaning: $meaning,
-            remedies: $remedies,
-            check: $stands === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : '',
-            accepted: $stands === WhereAChoiceStands::Accepted,
+            HowTheReadingWent::itCameBack(),
+            new AWarningAsRaised($finding->title(), $meaning, $remedies, $stands === WhereAChoiceStands::Unanswered ? $finding->check()->shown() : null),
         );
-    }
-
-    private function without(HowTheReadingWent $went): TheWarningTurnedOutToBe
-    {
-        return new TheWarningTurnedOutToBe(went: $went, title: '', meaning: '', remedies: Remedies::none(), check: '', accepted: false);
     }
 }

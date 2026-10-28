@@ -199,7 +199,7 @@ it('keeps the kept reading, waiting, beside what stopped the stack answering, an
 
     expect($screen->turningDown())->toBeNull();
 
-    $screen->turningDown = new WhatOneRequestSays(1, 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '');
+    $screen->turningDown = new WhatOneRequestSays(1, 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: '', untitled: '');
     $screen->because = 'We have it already';
     $writing = WhatTheDeviceWouldDraw::by($screen);
     $screen->decline();

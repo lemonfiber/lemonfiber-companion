@@ -757,10 +757,7 @@ it('a rehearsal that could not be had says what stood in the way, and lets go of
     ))->rehearsal();
 
     expect($unanswered->rehearsal()?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($unanswered->rehearsal()?->wouldStart)->toBe([])
-        ->and($unanswered->rehearsal()?->leftOut)->toBe([])
-        ->and($unanswered->rehearsal()?->estimatedMib)->toBeNull()
-        ->and($unanswered->rehearsal()?->unestimated)->toBe([])
+        ->and($unanswered->rehearsal()?->read)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
@@ -769,10 +766,7 @@ it('a rehearsal on a device holding no session for the stack says so', function 
     $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library', signedIn: false));
 
     expect($screen->rehearsal()?->went->isSignedIn)->toBeFalse()
-        ->and($screen->rehearsal()?->wouldStart)->toBe([])
-        ->and($screen->rehearsal()?->leftOut)->toBe([])
-        ->and($screen->rehearsal()?->estimatedMib)->toBeNull()
-        ->and($screen->rehearsal()?->unestimated)->toBe([]);
+        ->and($screen->rehearsal()?->read)->toBeNull();
 });
 
 it('says a service that ended stopped with an error, and leaves its exit code for its logs', function (): void {

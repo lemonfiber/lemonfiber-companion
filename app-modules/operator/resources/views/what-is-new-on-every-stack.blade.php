@@ -41,9 +41,9 @@
             @forelse ($section->rows as $row)
                 {{-- Heard as what it says and where, since one title can be new on two stacks. --}}
                 <x-design::row
-                    :headline="$row->says->says === '' ? $row->says->words : __($row->says->says, $row->says->with)"
+                    :headline="$row->says->line === null ? $row->says->words : __($row->says->line->key, $row->says->line->filling)"
                     :supporting="__('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
-                    :answers-to="($row->says->says === '' ? $row->says->words : __($row->says->says, $row->says->with)) . ', ' . __('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
+                    :answers-to="($row->says->line === null ? $row->says->words : __($row->says->line->key, $row->says->line->filling)) . ', ' . __('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
                     :tap="$row->tap"
                 />
             @empty

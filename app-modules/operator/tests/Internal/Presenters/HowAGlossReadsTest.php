@@ -28,19 +28,27 @@ it('offers the way to the longer gloss only where the glossary has one', functio
         AWord::explained('grab', 'Taking a release', ''),
     );
 
-    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('pin'), whereTheGlossedStackIs())->goes)->not->toBe('')
-        ->and(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->goes)->toBe('');
+    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('pin'), whereTheGlossedStackIs())->goes)->toBe(whereTheGlossedStackIs()->wordAbout(AWordInUse::named('pin')))
+        ->and(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->goes)->toBeNull();
 });
 
 it('draws a word the glossary does not carry as it came, with no gloss, and the way to ask the stack for it', function (): void {
     $gloss = new HowAGlossReads()->of(TheGlossary::of(), AWordInUse::named('Grabber'), whereTheGlossedStackIs());
 
-    expect([$gloss->word, $gloss->short, $gloss->goes])->toBe(['Grabber', '', ''])
+    expect([$gloss->word, $gloss->short, $gloss->goes, $gloss->waits])->toBe(['Grabber', null, null, false])
         ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->wordAbout(AWordInUse::named('Grabber')));
 });
 
 it('offers no asking for a word the glossary carries', function (): void {
     $glossary = TheGlossary::of(AWord::explained('grab', 'Taking a release', ''));
 
-    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->asks)->toBe('');
+    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->asks)->toBeNull();
+});
+
+it('draws a word as it came while the glossary waits for the next frame, and says it waits only then', function (): void {
+    $waiting = new HowAGlossReads()->waiting(AWordInUse::named('grab'));
+    $read = new HowAGlossReads()->of(TheGlossary::of(AWord::explained('grab', 'Taking a release', '')), AWordInUse::named('grab'), whereTheGlossedStackIs());
+
+    expect([$waiting->word, $waiting->short, $waiting->asks, $waiting->waits])->toBe(['grab', null, null, true])
+        ->and([$read->short, $read->waits])->toBe(['Taking a release', false]);
 });

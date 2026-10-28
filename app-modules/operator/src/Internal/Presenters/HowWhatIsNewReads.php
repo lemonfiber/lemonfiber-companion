@@ -147,9 +147,9 @@ final readonly class HowWhatIsNewReads
     private function unreached(Stack $stack, Showing $lastKnown, Instant $now): AnUnreachedStackAsShown
     {
         $ago = $lastKnown->either(
-            waiting: static fn(): AgoAsShown => AgoAsShown::unsaid(),
+            waiting: static fn(): AgoAsShown => AgoAsShown::saysNothing(),
             holding: static fn(Reading $reading): AgoAsShown => $reading->either(
-                live: static fn(): AgoAsShown => AgoAsShown::unsaid(),
+                live: static fn(): AgoAsShown => AgoAsShown::saysNothing(),
                 retained: static fn(object $value, Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
             ),
         );

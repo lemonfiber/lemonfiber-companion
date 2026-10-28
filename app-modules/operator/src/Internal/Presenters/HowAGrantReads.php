@@ -28,7 +28,7 @@ final readonly class HowAGrantReads
             fills: $grant->fills(),
             approved: $grant->approved()->read(
                 read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-                unreadable: AgoAsShown::unsaid(...),
+                unreadable: AgoAsShown::saysNothing(...),
             ),
         );
     }

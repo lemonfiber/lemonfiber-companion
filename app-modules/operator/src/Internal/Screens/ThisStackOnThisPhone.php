@@ -15,6 +15,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
+use Modules\Operator\Internal\WhereRemovingTheStackStands;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -49,11 +50,8 @@ final class ThisStackOnThisPhone extends NativeComponent
      */
     public ?Stack $held = null;
 
-    /** Whether the operator is being asked whether to remove the stack. */
-    public bool $confirmingTheRemoval = false;
-
-    /** Whether the removal could not begin, and nothing was removed. */
-    public bool $removalRefused = false;
+    /** Where removing the stack stands, or null where the operator has not asked. */
+    public ?WhereRemovingTheStackStands $removal = null;
 
     public function __construct(
         private readonly TheWayAround $around,
@@ -114,14 +112,13 @@ final class ThisStackOnThisPhone extends NativeComponent
 
     public function askToRemove(): void
     {
-        $this->confirmingTheRemoval = true;
-        $this->removalRefused = false;
+        $this->removal = WhereRemovingTheStackStands::Asked;
     }
 
     /** The operator kept the stack. */
     public function keepTheStack(): void
     {
-        $this->confirmingTheRemoval = false;
+        $this->removal = null;
     }
 
     /**
@@ -137,13 +134,11 @@ final class ThisStackOnThisPhone extends NativeComponent
         $landing = $this->around->afterRemoving($this->stack());
 
         if ($this->removing->remove($this->stack()->id()) === WhatBecameOfRemoving::Refused) {
-            $this->confirmingTheRemoval = false;
-            $this->removalRefused = true;
+            $this->removal = WhereRemovingTheStackStands::Refused;
 
             return;
         }
 
         $this->replaceTheWholeStack($landing);
     }
-
 }

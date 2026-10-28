@@ -443,6 +443,17 @@ it('speaks in its own words when opened from anywhere but a member\'s Profile', 
     'a word it does not know' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => 'the_neighbours']],
 ]);
 
+it('reads whether notifications are on once, however often the screen asks', function (): void {
+    $kept = ConnectionSettingsInMemory::empty();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), $kept);
+    $screen->notificationsAreOn();
+    $read = $kept->timesRead();
+    $screen->notificationsAreOn();
+    $screen->notificationsAreOn();
+
+    expect($kept->timesRead())->toBe($read);
+});
+
 it('offers notifications off until the operator turns them on, and asks the phone nothing to draw them', function (): void {
     $notifier = ANotifierInMemory::unasked();
     $drawn = WhatTheDeviceWouldDraw::by(thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier));

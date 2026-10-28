@@ -69,7 +69,7 @@ trait FollowsARunOfChecks
     public function ranAgo(): AgoAsShown
     {
         if ($this->ranAt === 0) {
-            return AgoAsShown::unsaid();
+            return AgoAsShown::saysNothing();
         }
 
         $ran = Instant::atEpochSeconds($this->ranAt);

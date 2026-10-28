@@ -14,23 +14,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowTheGuardWent
 {
     /**
-     * @param HowTheReadingWent $went        whether asking after it came back, and what stood in the way where it did not
-     * @param bool              $wasAsked    whether a guard was started here, so there is anything to follow
-     * @param bool              $isGuarding  whether it is still guarding
-     * @param string            $endedSaid   the catalogue key for how it ended, or empty while it guards or before one was asked for
-     * @param list<string>      $forms       the forms it guards, or the forms it named once it saw the data location go
-     * @param string            $named       those forms, joined
-     * @param string            $stoppedSaid the catalogue key for whether it stopped them, or empty where it did not see the data location go
-     * @param string            $said        the stack's own words for why it ended or why it did not start, or empty
+     * @param WhereTheWorkStands  $stands   where the guard stands: not asked before one was started here, running while it guards, answered once it ended
+     * @param string|null         $guarding the forms it guards, joined, while it guards
+     * @param HowAGuardEnded|null $ended    how it ended, once it did
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $wasAsked,
-        public bool $isGuarding,
-        public string $endedSaid,
-        public array $forms,
-        public string $named,
-        public string $stoppedSaid,
-        public string $said,
+        public WhereTheWorkStands $stands,
+        public ?string $guarding = null,
+        public ?HowAGuardEnded $ended = null,
     ) {}
 }

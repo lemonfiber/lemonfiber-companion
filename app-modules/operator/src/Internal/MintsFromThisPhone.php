@@ -61,13 +61,15 @@ final readonly class MintsFromThisPhone
         )->said;
     }
 
-    /** The name this phone's key is registered under on the stack, or nothing where it has none it still holds. */
-    public function thisPhonesName(StackId $stack): string
+    /** The name this phone's key is registered under on the stack, or null where it has none it still holds. */
+    public function thisPhonesKey(StackId $stack): ?APhoneKeysName
     {
-        return $this->names->nameOn($stack)->either(
-            named: fn(APhoneKeysName $name): WhatTheSheetSaid => new WhatTheSheetSaid($this->phone->keepsAnythingOf($stack) ? $name->shown() : ''),
-            none: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid(''),
-        )->said;
+        $named = $this->names->nameOn($stack)->either(
+            named: fn(APhoneKeysName $name): APhoneKeysName|AsText => $this->phone->keepsAnythingOf($stack) ? $name : AsText::nothing(),
+            none: static fn(): AsText => AsText::nothing(),
+        );
+
+        return $named instanceof APhoneKeysName ? $named : null;
     }
 
     /**
@@ -92,10 +94,10 @@ final readonly class MintsFromThisPhone
     public function mint(Stack $stack, Session $session, AKeyToMint $key, ?Credential $password, Instant $now, Closure $met): WhatMintingShows
     {
         $asked = new AMintAsked($stack, $session, $key, $now, $met);
-        $name = $this->thisPhonesName($stack->id());
+        $name = $this->thisPhonesKey($stack->id());
 
-        if ($name !== '') {
-            return $this->proved($asked, APhoneKeysName::of($name));
+        if ($name instanceof APhoneKeysName) {
+            return $this->proved($asked, $name);
         }
 
         return $password instanceof Credential
@@ -154,7 +156,7 @@ final readonly class MintsFromThisPhone
     private function claimed(AMintAsked $asked, WhatMintingCameTo $came): WhatMintingShows
     {
         return $came->either(
-            answered: fn(AKeyClaim $claim): WhatMintingShows => new WhatMintingShows(claim: $this->shown($claim, $asked->now), refused: null, met: null, said: ''),
+            answered: fn(AKeyClaim $claim): WhatMintingShows => new WhatMintingShows(claim: $this->shown($claim, $asked->now), refused: null, met: null, said: null),
             unregistered: fn(): WhatMintingShows => $this->forgotten($asked->stack, self::said('stacks.mint.unregistered')),
             refused: $this->refused(...),
             met: $asked->met,
@@ -211,6 +213,6 @@ final readonly class MintsFromThisPhone
     /** A refusal, in the stack's words. */
     private function refused(ARefusalInItsWords $why): WhatMintingShows
     {
-        return new WhatMintingShows(claim: null, refused: new HowARefusalReads()->inItsWords($why), met: null, said: '');
+        return new WhatMintingShows(claim: null, refused: new HowARefusalReads()->inItsWords($why), met: null, said: null);
     }
 }

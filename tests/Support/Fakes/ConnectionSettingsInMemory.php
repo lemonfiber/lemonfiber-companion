@@ -23,6 +23,8 @@ final class ConnectionSettingsInMemory implements SettingsKept
 
     private ?Shape $shape = null;
 
+    private int $reads = 0;
+
     private function __construct(private readonly bool $reachable) {}
 
     /** A store that keeps what it is handed. */
@@ -51,9 +53,17 @@ final class ConnectionSettingsInMemory implements SettingsKept
 
     public function kept(): KeptSettings
     {
+        ++$this->reads;
+
         return $this->payload instanceof SealedPayload && $this->shape instanceof Shape
             ? KeptSettings::found($this->payload, $this->shape)
             : KeptSettings::none();
+    }
+
+    /** How many times what is kept was read, which is how a screen is held to reading it once. */
+    public function timesRead(): int
+    {
+        return $this->reads;
     }
 
     public function forgetEverything(): Forgotten

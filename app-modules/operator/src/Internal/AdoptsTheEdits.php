@@ -43,7 +43,6 @@ trait AdoptsTheEdits
         }
 
         $this->following = null;
-        $this->rehearsingAnAdoption = false;
         $this->adoptionRehearsed = false;
         $this->going = $this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->adopt($stack, $session),

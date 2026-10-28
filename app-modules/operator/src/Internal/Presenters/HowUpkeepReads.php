@@ -37,7 +37,7 @@ final readonly class HowUpkeepReads
     /** Where the stack said it stands, read on this frame's asking. */
     public function standing(Upkeep $upkeep): WhatTheUpkeepTurnedOutToBe
     {
-        return $this->read($upkeep, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+        return $this->read($upkeep, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false);
     }
 
     /**
@@ -116,7 +116,7 @@ final readonly class HowUpkeepReads
             history: [],
             offer: null,
             askedNow: $went,
-            readAgo: AgoAsShown::live(),
+            readAgo: AgoAsShown::saysNothing(),
             waitsForTheStack: false,
         );
     }

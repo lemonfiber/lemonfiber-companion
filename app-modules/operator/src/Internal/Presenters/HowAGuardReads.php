@@ -11,9 +11,11 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AFormToGuardAsShown;
+use Modules\Operator\Internal\ViewModels\HowAGuardEnded;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhatTheGuardStopped;
 use Modules\Operator\Internal\ViewModels\WhatTheGuardWouldGuard;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where a guard started from this screen stands, as the template draws it.
@@ -50,55 +52,59 @@ final readonly class HowAGuardReads
     /** Nothing was started from this screen, so there is nothing to follow. */
     public function notAsked(): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), wasAsked: false);
+        return new HowTheGuardWent(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack the guard was asked of. */
     public function signedOut(): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return new HowTheGuardWent(WhereTheWorkStands::signedOut());
     }
 
     /** Starting it, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return new HowTheGuardWent(WhereTheWorkStands::met($why));
     }
 
     /** The stack is guarding the forms asked for. */
     public function guarding(Forms $asked): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isGuarding: true, forms: $this->named($asked));
+        return new HowTheGuardWent(WhereTheWorkStands::running(), guarding: Listed::these(...$this->named($asked)));
     }
 
     /** It saw the data location go: the forms it named, whether stopping them worked, and why it ended. */
     public function sawItGo(WhatTheGuardSaw $saw): HowTheGuardWent
     {
-        return $this->following(
-            HowTheReadingWent::itCameBack(),
-            endedSaid: 'stacks.guard.saw_it_go',
-            forms: $this->named($saw->forms()),
-            stoppedSaid: $saw->stoppedThem() ? 'stacks.guard.stopped_them' : 'stacks.guard.did_not_stop_them',
-            said: $saw->reason(),
-        );
+        return $this->endedAs(new HowAGuardEnded(
+            'stacks.guard.saw_it_go',
+            $saw->reason(),
+            new WhatTheGuardStopped($saw->stoppedThem() ? 'stacks.guard.stopped_them' : 'stacks.guard.did_not_stop_them', $this->named($saw->forms())),
+        ));
     }
 
     /** It never started, and the stack said why. */
     public function refused(string $said): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), endedSaid: 'stacks.guard.did_not_start', said: $said);
+        return $this->endedAs(new HowAGuardEnded('stacks.guard.did_not_start', $said));
     }
 
     /** It ended without seeing anything: released, or let go because nothing asked. */
     public function ended(): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), endedSaid: 'stacks.guard.let_go');
+        return $this->endedAs(new HowAGuardEnded('stacks.guard.let_go'));
     }
 
     /** The stack no longer knows it. */
     public function unknown(): HowTheGuardWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), endedSaid: 'stacks.guard.unknown');
+        return $this->endedAs(new HowAGuardEnded('stacks.guard.unknown'));
+    }
+
+    /** A guard that ended, as this says. */
+    private function endedAs(HowAGuardEnded $ended): HowTheGuardWent
+    {
+        return new HowTheGuardWent(WhereTheWorkStands::answered(), ended: $ended);
     }
 
     /**
@@ -117,20 +123,4 @@ final readonly class HowAGuardReads
         return $named;
     }
 
-    /**
-     * One state of following it, every field its own state does not fill left empty.
-     *
-     * @param list<string> $forms
-     */
-    private function following(
-        HowTheReadingWent $went,
-        bool $wasAsked = true,
-        bool $isGuarding = false,
-        string $endedSaid = '',
-        array $forms = [],
-        string $stoppedSaid = '',
-        string $said = '',
-    ): HowTheGuardWent {
-        return new HowTheGuardWent($went, $wasAsked, $isGuarding, $endedSaid, $forms, Listed::these(...$forms), $stoppedSaid, $said);
-    }
 }

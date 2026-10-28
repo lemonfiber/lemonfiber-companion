@@ -13,11 +13,11 @@ use Modules\Kernel\Api\SecondsIn;
  */
 enum HowLongALiftLasts: int
 {
-    case AQuarterOfAnHour = 900;
+    case AQuarterOfAnHour = SecondsIn::AnHour->value / 4;
 
-    case AnHour = 3_600;
+    case AnHour = SecondsIn::AnHour->value;
 
-    case FourHours = 14_400;
+    case FourHours = SecondsIn::AnHour->value * 4;
 
     /** The length offered at these minutes, or none. */
     public static function ofMinutes(string $typed): ?self

@@ -122,6 +122,44 @@ it('adopts only against that rehearsal, and draws an adopted value as the operat
         ->and($drawn->offers())->not->toContain(__('stacks.wiring.adopt'));
 });
 
+it('sends no yes while the rehearsal of adopting is still being asked, and sends the yes once', function (): void {
+    $wiring = aStackThatAdopts();
+    $screen = theScreenThatAdopts($wiring);
+    $screen->rehearseAdopting();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->rehearseAdopting();
+    $screen->adopt();
+
+    expect($wiring->asked())->toBe(['rehearse-adopting', 'after:a-rehearsal', 'rehearse-adopting']);
+
+    $again = aStackThatAdopts();
+    $twice = theScreenThatAdopts($again);
+    $twice->rehearseAdopting();
+    $twice->whileItRuns();
+    $twice->howItIsGoing();
+    $twice->adopt();
+    $twice->adopt();
+
+    expect($again->asked())->toBe(['rehearse-adopting', 'after:a-rehearsal', 'adopt']);
+});
+
+it('offers no adopting yes after a wiring run sent while adopting was being rehearsed', function (): void {
+    $wiring = AStackThatWires::answering(
+        WhatBecameOfTheWiring::underway(Job::named('a-rehearsal')),
+        WhatBecameOfTheWiring::underway(Job::named('a-run')),
+        WhatBecameOfTheWiring::answered(whatAdoptingWouldDo()),
+    );
+    $screen = theScreenThatAdopts($wiring);
+    $screen->rehearseAdopting();
+    $screen->wire();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->adopt();
+
+    expect($wiring->asked())->toBe(['rehearse-adopting', 'wire', 'after:a-run']);
+});
+
 it('offers no adopting yes after a wiring run, even one that only rehearsed', function (): void {
     $wiring = AStackThatWires::answering(
         WhatBecameOfTheWiring::underway(Job::named('a-run')),

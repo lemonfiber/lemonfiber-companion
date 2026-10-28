@@ -360,11 +360,17 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
      */
     private function rehearseOnTheRow(int $which, ExtendingIt $act, ?int $recipe): void
     {
-        $row = new WhatARowOffers($this->listing);
+        $listing = $this->listing;
+
+        if (is_string($this->following) || ! $listing instanceof ThePlugins) {
+            return;
+        }
+
+        $row = new WhatARowOffers($listing);
         $chosen = $row->plugin($which);
         $running = $chosen instanceof APlugin ? $row->demandRecipe($chosen, $recipe) : null;
 
-        if (is_string($this->following) || ! $chosen instanceof APlugin || ! $row->offers($act, $chosen, $running)) {
+        if (! $chosen instanceof APlugin || ! $row->offers($act, $chosen, $running)) {
             return;
         }
 

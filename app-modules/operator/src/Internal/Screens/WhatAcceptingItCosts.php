@@ -89,9 +89,9 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
 
     public function accept(): void
     {
-        $check = $this->answer()->check;
+        $check = $this->answer()->raised?->check;
 
-        if ($check === '' || $this->howItIsGoing()->stands->isWorking()) {
+        if ($check === null || $this->howItIsGoing()->stands->isWorking()) {
             return;
         }
 

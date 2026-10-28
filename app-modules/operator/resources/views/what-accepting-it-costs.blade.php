@@ -5,19 +5,19 @@
 <x-operator::content>
     <x-operator::heading>{{ __('health.choice.title') }}</x-operator::heading>
 
-    @if ($this->answer()->isRaised())
+    @if ($this->answer()->raised !== null)
         <x-design::card>
-            <x-design::strong>{{ $this->answer()->title }}</x-design::strong>
+            <x-design::strong>{{ $this->answer()->raised->title }}</x-design::strong>
             <x-design::note>{{ __('health.choice.costs') }}</x-design::note>
-            <x-design::body>{{ $this->answer()->meaning }}</x-design::body>
-            @forelse ($this->answer()->remedies as $remedy)
+            <x-design::body>{{ $this->answer()->raised->meaning }}</x-design::body>
+            @forelse ($this->answer()->raised->remedies as $remedy)
                 <x-design::body>{{ $remedy->action() }}</x-design::body>
             @empty
                 {{-- Nothing: the stack named nothing to do instead. --}}
             @endforelse
         </x-design::card>
 
-        @if ($this->answer()->accepted)
+        @if ($this->answer()->raised->check === null)
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.choice.accepted') }}</x-design::strong>
                 <x-design::body>{{ __('health.choice.accepted_stays') }}</x-design::body>
@@ -47,7 +47,7 @@
             </x-design::notice>
         @endif
 
-        @if ($this->answer()->check !== '' && ! $this->howItIsGoing()->stands->isWorking())
+        @if ($this->answer()->raised?->check !== null && ! $this->howItIsGoing()->stands->isWorking())
             <x-design::body>{{ __('health.choice.what_accepting_does') }}</x-design::body>
             <x-operator::offered-action :label="__('health.choice.accept_it')" tap="accept()" :offer="$this->offered(AcceptingAChoice::Accept)" />
         @endif

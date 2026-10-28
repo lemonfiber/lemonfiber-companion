@@ -23,19 +23,15 @@ use function view;
 final class Figure extends Component
 {
     /**
-     * @param string $figure  the figure as it reads, or nothing where none was measured
-     * @param string $absent  the words said where there is no figure
-     * @param string $eyebrow what the figure is, above it
-     * @param string $unit    what the figure is measured in, beside it
-     * @param string $outOf   the whole the figure is part of, beside it
-     * @param string $caption what the figure means, under it
+     * @param string      $figure  the figure as it reads
+     * @param string      $eyebrow what the figure is, above it
+     * @param string|null $unit    what the figure is measured in, beside it, where it is measured in anything
+     * @param string      $caption what the figure means, under it
      */
     public function __construct(
-        public readonly string $figure = '',
-        public readonly string $absent = '',
+        public readonly string $figure,
         public readonly string $eyebrow = '',
-        public readonly string $unit = '',
-        public readonly string $outOf = '',
+        public readonly ?string $unit = null,
         public readonly string $caption = '',
     ) {}
 

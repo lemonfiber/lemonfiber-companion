@@ -151,7 +151,7 @@ final readonly class HowTheHandoffReads
     {
         return $moment->read(
             read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::unsaid(...),
+            unreadable: AgoAsShown::saysNothing(...),
         );
     }
 }

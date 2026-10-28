@@ -59,8 +59,8 @@ final readonly class WhatOneRequestSays
         public string $sizeSaid,
         public int $sizeFigure,
         public string $sizeUnit,
-        public string $refusedReason = '',
-        public string $refusedAt = '',
-        public string $untitled = '',
+        public string $refusedReason,
+        public string $refusedAt,
+        public string $untitled,
     ) {}
 }

@@ -36,7 +36,7 @@ final readonly class HowWhatIsPlayingReads
 
         return $heard->heard(
             none: static fn(): WhatIsPlayingAsShown => new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, null)),
-            current: fn(WhatTheHouseholdIsPlaying $playing): WhatIsPlayingAsShown => $this->playing($playing, AgoAsShown::live(), $broke),
+            current: fn(WhatTheHouseholdIsPlaying $playing): WhatIsPlayingAsShown => $this->playing($playing, AgoAsShown::saysNothing(), $broke),
             asOf: fn(WhatTheHouseholdIsPlaying $playing, Instant $at): WhatIsPlayingAsShown
                 => $this->playing($playing, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
         );

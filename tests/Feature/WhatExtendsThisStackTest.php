@@ -600,6 +600,20 @@ it('offers to update and to remove each plugin by its name, and says where one c
         ->and($extending->asked())->toBe(['list']);
 });
 
+it('asks about the plugin in the row named, and nothing before anything is listed', function (): void {
+    $vouched = WhatVouchesForAPlugin::recorded('', '', '', reviewed: false, upstream: '', licence: '');
+    $listing = ThePlugins::listed(TheInstalledPlugins::these(APlugin::named('tdarr', '2.1.0', 'Tdarr', $vouched, TheRecipes::these()), APlugin::named('unmanic', '1.0.0', 'Unmanic', $vouched, TheRecipes::these())), ThePluginSources::these(), TheAnswersOutOfContract::these());
+    $extending = AStackThatExtendsItself::listing($listing, HowExtendingItIsGoing::underway(Job::named('j-1')));
+    $unlisted = thePluginsScreen($extending);
+    $unlisted->actOnTheRow('remove', 0);
+    $asked = $extending->asked();
+    $unlisted->answer();
+    $unlisted->actOnTheRow('remove', 1);
+
+    expect($asked)->toBe([])
+        ->and($extending->asked())->toBe(['list', 'rehearse removal:unmanic']);
+});
+
 it('rehearses an update and draws it as a rehearsal: from and to, what stops, what comes off, and the new version', function (): void {
     $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theUpdateReading()));
     $screen = thePluginsListed($extending);

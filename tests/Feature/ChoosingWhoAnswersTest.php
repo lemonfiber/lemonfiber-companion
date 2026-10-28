@@ -126,6 +126,25 @@ it('offers each claimant that does not answer already, only where two or more cl
         ->and($drawn->said())->toContain(__('stacks.wiring.fills.choose'));
 });
 
+it('offers no choice where one service claims a capability nothing fills, and says why a choice was made only where the stack said', function (): void {
+    $bundled = static fn(string $service): AClaimant => AClaimant::of(ServiceId::called($service), WhoPutItThere::bundled());
+    $asking = static fn(string $by, string $capability, Services $reached, WhatSettledIt $settled, AClaimant ...$claimants): ALink
+        => ALink::from(ServiceId::called($by), HowItReaches::asked(Capability::called($capability), $reached, $settled, TheClaimants::these(...$claimants)));
+    $linking = AStackThatSaysWhatAnswersWhat::with(TheLinks::of(
+        WhatNothingFills::none(),
+        $asking('bazarr', 'subtitles', Services::none(), WhatSettledIt::unfilled(), $bundled('opensubtitles')),
+        $asking('radarr', 'indexer', Services::these(ServiceId::called('prowlarr')), WhatSettledIt::chosen(Services::these(ServiceId::called('jackett')), WhoSettledIt::Stack, WhyItWasChosen::stated('It answered first')), $bundled('prowlarr'), $bundled('jackett')),
+    ));
+    $screen = theScreenChoosingAFiller(AStackThatChoosesFillers::answering(WhatBecameOfTheFill::fill(plexForTheMediaServer())), linking: $linking);
+    $links = $screen->whatAnswersWhat()->links ?? [];
+    $unsaid = theScreenChoosingAFiller(AStackThatChoosesFillers::answering(WhatBecameOfTheFill::fill(plexForTheMediaServer())))->whatAnswersWhat()->links ?? [];
+
+    expect(array_map(static fn(ALinkAsShown $link): array => $link->choices, $links))->toBe([[], ['jackett']])
+        ->and(array_map(static fn(ALinkAsShown $link): ?string => $link->why, $links))->toBe([null, 'It answered first'])
+        ->and(array_map(static fn(ALinkAsShown $link): ?string => $link->why, $unsaid))->toBe([null, null, null, null, 'Transcoding runs on the other machine'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.fills.why', ['why' => 'It answered first']));
+});
+
 it('a tap asks what the choice would come to, writes nothing, and draws all of it before the yes', function (): void {
     $fillers = AStackThatChoosesFillers::answering(WhatBecameOfTheFill::fill(plexForTheMediaServer()));
     $screen = theScreenChoosingAFiller($fillers);

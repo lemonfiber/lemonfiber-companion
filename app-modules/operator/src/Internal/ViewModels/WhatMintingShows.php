@@ -12,11 +12,11 @@ namespace Modules\Operator\Internal\ViewModels;
  */
 final readonly class WhatMintingShows
 {
-    /** @param string $said the catalogue key for what happened on the phone, or empty */
+    /** @param string|null $said the catalogue key for what happened on the phone, where something did */
     public function __construct(
         public ?AKeyClaimAsShown $claim,
         public ?ARefusalAsShown $refused,
         public ?HowTheReadingWent $met,
-        public string $said,
+        public ?string $said,
     ) {}
 }

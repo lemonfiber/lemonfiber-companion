@@ -15,13 +15,13 @@ final readonly class TheKeysTurnedOutToBe
 {
     /**
      * @param list<AKeyAsShown> $keys     every key, in the order they were minted
-     * @param string            $purposes the stack's sentence on what a purpose is worth, or empty where nothing came back
+     * @param string|null       $purposes the stack's sentence on what a purpose is worth, where a listing came back
      * @param ?ARefusalAsShown   $refused  a revoke the stack refused, in its words, or none
      */
     public function __construct(
         public HowTheReadingWent $went,
-        public array $keys,
-        public string $purposes,
+        public array $keys = [],
+        public ?string $purposes = null,
         public ?ARefusalAsShown $refused = null,
     ) {}
 }

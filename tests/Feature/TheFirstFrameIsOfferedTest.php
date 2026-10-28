@@ -30,6 +30,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
 /** A stack this device is already paired with. */
@@ -87,6 +88,17 @@ function theLaunchScreen(
         AroundThePhone::listening(clock: $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)), standings: $standings ?? StandingsInMemory::working()),
     );
 }
+
+it('asks how the app opened once, however often the screen reads it', function (): void {
+    $stacks = StacksInMemory::holding(aPairedStack('The loft', 'a'));
+    $network = ADeviceOnANetwork::connected();
+    $screen = theLaunchScreen($stacks, opening: new Opening($stacks, $network));
+    $screen->howItOpened();
+    $asked = $network->timesAsked();
+    $screen->howItOpened();
+
+    expect([$asked, $network->timesAsked()])->toBe([1, 1]);
+});
 
 it('the first frame is registered, and it is this screen', function (): void {
     $resolved = NativeRouter::resolve('/');
@@ -222,7 +234,7 @@ it('assembles a report for the operator to send, and does not send it', function
 
     expect($handed)->not->toBeNull()
         ->and($handed?->named())->toBe('lemonfiber-diagnostics.txt')
-        ->and($screen->sharingWent)->toBe('');
+        ->and($screen->sharingRefused)->toBeNull();
 });
 
 it('the report carries no address, no session and no reading', function (): void {
@@ -253,32 +265,22 @@ it('says why a report could not be handed over, and what to do', function (): vo
 
         $screen->share();
 
-        expect($screen->sharingWent)->toBe($why->saidOnTheScreen(), $why->value)
-            ->and($screen->sharingRemedy)->toBe($why->remedy(), $why->value)
-            ->and(__($screen->sharingWent))->not->toBe($screen->sharingWent, $why->value);
+        expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__($why->saidOnTheScreen()), __($why->remedy()))
+            ->and(__($why->saidOnTheScreen()))->not->toBe($why->saidOnTheScreen(), $why->value);
     }
 });
 
 it('clears the refusal once a later attempt works', function (): void {
-    // A screen that kept the last failure would tell an operator their report
-    // could not be sent while the sheet was open in front of them.
-    $screen = theLaunchScreen(
-        StacksInMemory::holding(aPairedStack('The loft', 'a')),
-        sharing: AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NothingToHandOver),
-    );
+    $sharing = AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NothingToHandOver);
+    $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft', 'a')), sharing: $sharing);
 
     $screen->share();
+    $refused = WhatTheDeviceWouldDraw::by($screen)->said();
+    $sharing->fromNowOnOpens();
+    $screen->share();
 
-    expect($screen->sharingWent)->not->toBe('');
-
-    $working = theLaunchScreen(
-        StacksInMemory::holding(aPairedStack('The loft', 'a')),
-        sharing: AShareSheetThatWasOffered::working(),
-    );
-    $working->share();
-
-    expect($working->sharingWent)->toBe('')
-        ->and($working->sharingRemedy)->toBe('');
+    expect($refused)->toContain(__(WhyNothingWasShared::NothingToHandOver->saidOnTheScreen()))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__(WhyNothingWasShared::NothingToHandOver->saidOnTheScreen()));
 });
 
 it('a stack in the list leads to that stack and no other', function (): void {

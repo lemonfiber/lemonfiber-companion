@@ -47,7 +47,7 @@ final readonly class HowARunBackReads
                 at: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
                 unreadable: AgoAsShown::undated(...),
             ),
-            nowhere: AgoAsShown::live(...),
+            nowhere: AgoAsShown::saysNothing(...),
         );
 
         return new WhatPuttingARunBackWouldShow(

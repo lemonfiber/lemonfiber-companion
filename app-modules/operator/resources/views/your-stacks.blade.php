@@ -81,10 +81,10 @@
         </x-design::section>
     @endif
 
-    @if ($this->sharingWent !== '')
+    @if ($this->sharingRefused !== null)
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->sharingWent) }}</x-design::strong>
-            <x-design::body>{{ __($this->sharingRemedy) }}</x-design::body>
+            <x-design::strong>{{ __($this->sharingRefused->saidOnTheScreen()) }}</x-design::strong>
+            <x-design::body>{{ __($this->sharingRefused->remedy()) }}</x-design::body>
         </x-design::notice>
     @endif
 

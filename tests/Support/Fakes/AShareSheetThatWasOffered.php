@@ -33,7 +33,7 @@ final class AShareSheetThatWasOffered implements Sharing
     /** @var list<ABundleFile> every bundle's file it was handed, in order */
     private array $handedOver = [];
 
-    private function __construct(private readonly ?WhyNothingWasShared $refusing) {}
+    private function __construct(private ?WhyNothingWasShared $refusing) {}
 
     /** A sheet that opens. */
     public static function working(): self
@@ -45,6 +45,12 @@ final class AShareSheetThatWasOffered implements Sharing
     public static function refusing(WhyNothingWasShared $why): self
     {
         return new self($why);
+    }
+
+    /** The sheet opens from now on, where it refused until now. */
+    public function fromNowOnOpens(): void
+    {
+        $this->refusing = null;
     }
 
     /** What it was handed, for a test to read every word of. */

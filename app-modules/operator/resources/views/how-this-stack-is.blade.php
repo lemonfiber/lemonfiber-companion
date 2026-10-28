@@ -187,7 +187,7 @@
                 />
             @endif
 
-            @if ($finding->accepting !== '')
+            @if ($finding->accepting !== null)
                 <x-design::link
                     :label="__('health.choice.accept')"
                     :answers-to="__('health.choice.accept_this', ['title' => $finding->title])"

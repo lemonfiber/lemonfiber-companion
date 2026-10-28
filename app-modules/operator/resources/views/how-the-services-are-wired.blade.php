@@ -92,7 +92,7 @@
                 <x-design::card>
                     <x-design::strong>{{ $link->asks === '' ? $link->by : __($link->asks, $link->asksWith) }}</x-design::strong>
                     <x-design::body>{{ __($link->settledSaid, $link->settledWith) }}</x-design::body>
-                    @if ($link->why !== '')
+                    @if ($link->why !== null)
                         <x-design::note>{{ __('stacks.wiring.fills.why', ['why' => $link->why]) }}</x-design::note>
                     @endif
                     <x-operator::claimed-by :claimants="$link->claimants" />

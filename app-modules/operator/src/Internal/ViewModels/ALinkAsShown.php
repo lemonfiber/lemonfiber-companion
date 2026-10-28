@@ -21,6 +21,7 @@ final readonly class ALinkAsShown
     /**
      * @param array<string, string>  $asksWith    what fills the line that heads it
      * @param array<string, string>  $settledWith what fills the line that says how it settled
+     * @param string|null            $why         why it was chosen, in the stack's words, where a choice settled it and the stack said why
      * @param list<AClaimantAsShown> $claimants   every service that claims it, in the stack's order
      * @param list<string>           $choices     every claimant that may be chosen to answer it, in the same order
      */
@@ -32,7 +33,7 @@ final readonly class ALinkAsShown
         public string $settledSaid,
         public array $settledWith,
         public bool $isContested,
-        public string $why,
+        public ?string $why,
         public array $claimants,
         public array $choices,
     ) {}

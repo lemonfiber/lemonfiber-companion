@@ -293,7 +293,7 @@ it('a guard let go is told apart from one that saw the data location go and from
     $went = theGuardAskedAfter($screen);
     $said = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($went->isGuarding)->toBeFalse()
+    expect($went->stands->isWorking())->toBeFalse()
         ->and($said)->toContain(aLineOfTheGuard('stacks.guard.let_go'))
         ->and($said)->not->toContain(aLineOfTheGuard('stacks.guard.saw_it_go'))
         ->and($said)->not->toContain(aLineOfTheGuard('stacks.guard.guarding', ['forms' => 'library, full']));
@@ -369,7 +369,7 @@ it('a handle held without the guard it was for asks after nothing, and says none
     $screen = theGuardScreen($guarding);
     $screen->took = AStackThatGuards::THE_JOB;
 
-    expect($screen->lastGuard()->wasAsked)->toBeFalse()
+    expect($screen->lastGuard()->stands->wasAsked())->toBeFalse()
         ->and($guarding->followed())->toBe([]);
 });
 
@@ -414,7 +414,7 @@ it('a guard the stack could not be asked to start says what stood in the way, an
     $screen = aGuardAgreedTo(AStackThatGuards::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->lastGuard()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->lastGuard()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->toContain(aLineOfTheGuard(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(aLineOfTheGuard('health.ask_again'));
 });
@@ -423,7 +423,7 @@ it('a credential the stack refused while guarding signs this device out and lets
     $keychain = AKeychainInMemory::working();
     $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), $keychain);
 
-    expect(theGuardAskedAfter($screen)->went->isSignedIn)->toBeFalse()
+    expect(theGuardAskedAfter($screen)->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackAGuardWatches()->id()))->toBeFalse();
 });
 
@@ -438,13 +438,13 @@ it('a session that ended before starting or while following says so, and asks no
 
     $screen->agree();
 
-    expect($screen->lastGuard()->went->isSignedIn)->toBeFalse()
+    expect($screen->lastGuard()->stands->went->isSignedIn)->toBeFalse()
         ->and($guarding->started())->toBe([]);
 
     $following = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), $keychain = AKeychainInMemory::working());
     $keychain->forget(theStackAGuardWatches()->id());
 
-    expect(theGuardAskedAfter($following)->went->isSignedIn)->toBeFalse();
+    expect(theGuardAskedAfter($following)->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('names forms for another guard once the last has ended, and not while one guards', function (): void {
@@ -461,7 +461,7 @@ it('names forms for another guard once the last has ended, and not while one gua
     $ended->startOver();
 
     expect([$ended->took, $ended->guarding, $ended->naming])->toBe([null, null, []])
-        ->and($ended->lastGuard()->wasAsked)->toBeFalse();
+        ->and($ended->lastGuard()->stands->wasAsked())->toBeFalse();
 });
 
 it('asking again asks for the forms and for where the guard stands', function (): void {
@@ -471,7 +471,7 @@ it('asking again asks for the forms and for where the guard stands', function ()
 
     $screen->again();
 
-    expect($screen->lastGuard()->isGuarding)->toBeTrue()
+    expect($screen->lastGuard()->stands->isWorking())->toBeTrue()
         ->and($guarding->followed())->toHaveCount(2);
 });
 

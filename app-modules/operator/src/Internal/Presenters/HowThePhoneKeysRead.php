@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APhoneKey;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
@@ -31,9 +32,9 @@ final readonly class HowThePhoneKeysRead
     /**
      * The stack answered, and these are its phone keys, each dated against `$now`.
      *
-     * @param string $thisPhone the name this phone's key is registered under, which is marked, or empty
+     * @param APhoneKeysName|null $thisPhone the name this phone's key is registered under, which is marked, or null where it holds none
      */
-    public function these(ThePhoneKeys $keys, Instant $now, string $thisPhone): ThePhoneKeysTurnedOutToBe
+    public function these(ThePhoneKeys $keys, Instant $now, ?APhoneKeysName $thisPhone): ThePhoneKeysTurnedOutToBe
     {
         $shown = [];
 
@@ -57,7 +58,7 @@ final readonly class HowThePhoneKeysRead
     }
 
     /** One phone key, as the card that draws it. */
-    private function one(APhoneKey $key, Instant $now, string $thisPhone): APhoneKeyAsShown
+    private function one(APhoneKey $key, Instant $now, ?APhoneKeysName $thisPhone): APhoneKeyAsShown
     {
         return new APhoneKeyAsShown(
             name: $key->name()->shown(),
@@ -66,7 +67,7 @@ final readonly class HowThePhoneKeysRead
             used: $this->ago($key->used(), $now),
             revoked: $this->ago($key->whenRevoked(), $now),
             mayBeRevoked: ! $key->wasRevoked(),
-            isThisPhone: $thisPhone !== '' && $key->name()->shown() === $thisPhone,
+            isThisPhone: $thisPhone instanceof APhoneKeysName && $key->name()->shown() === $thisPhone->shown(),
         );
     }
 
@@ -75,7 +76,7 @@ final readonly class HowThePhoneKeysRead
     {
         return $moment->read(
             read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::unsaid(...),
+            unreadable: AgoAsShown::saysNothing(...),
         );
     }
 }
