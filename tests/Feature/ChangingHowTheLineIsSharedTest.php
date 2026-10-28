@@ -288,6 +288,8 @@ it('makes the change the rehearsal was asked with, not what is in the fields whe
     $screen->rehearse();
     $screen->whileItRuns();
     $screen->howItIsGoing();
+    $screen->answer();
+    $readAfterTheRehearsal = $rationing->askings();
     $screen->down = '90%';
     $screen->apply();
 
@@ -299,7 +301,22 @@ it('makes the change the rehearsal was asked with, not what is in the fields whe
 
     expect($drawn->said())->toContain(__(WhatTheLineRunDid::Applied->saidOnTheScreen()))
         ->and($drawn->offers())->not->toContain(__('stacks.line_change.apply'))
-        ->and($rationing->askings())->toBe(2);
+        ->and([$readAfterTheRehearsal, $rationing->askings()])->toBe([1, 2]);
+});
+
+it('forgets a rehearsal once something else is rehearsed, so a yes cannot carry out the one before', function (): void {
+    $sharing = aStackThatChangesItsLine();
+    $screen = theLineChangeScreen($sharing);
+    $screen->down = '50%';
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->lift = 'an hour';
+    $screen->rehearse();
+    $screen->apply();
+
+    expect($screen->howItIsGoing()->notAskable)->toBe('stacks.line_change.lift.is_minutes')
+        ->and($sharing->carriedOut())->toBe([]);
 });
 
 it('sends no yes where nothing was rehearsed, or where the last answer was not a rehearsal', function (): void {
