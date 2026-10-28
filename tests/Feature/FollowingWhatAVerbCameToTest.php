@@ -33,6 +33,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowAStackEditReads;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Modules\Operator\Internal\TheLineTheYesRuns;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -743,7 +744,7 @@ it('follows a rehearsal still being worked out on the screen\'s cadence, and sho
     $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
     $screen->whileItSettles();
 
-    expect($screen->willRun)->toBe('docker compose restart sonarr')
+    expect($screen->willRun?->command)->toBe('docker compose restart sonarr')
         ->and($screen->rehearsalOfTheYes)->toBeNull();
 });
 
@@ -763,6 +764,7 @@ it('asks the question without the command where the stack would not rehearse it,
     'refused' => [Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
     'forgotten' => [HowAgreedWorkIsGoing::ended()],
     'met asking after it' => [HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    'said to have moved, which a rehearsal cannot be' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()))],
 ]);
 
 it('never shows, before the yes, a command from a report that was not a rehearsal, and says the rehearsal could not be read', function (): void {
@@ -797,7 +799,7 @@ it('shows no command before the yes where the rehearsal says the verb would run 
 
     expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
         ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->willRun)->toBe('')
+        ->and($screen->willRun)->toBeNull()
         ->and($screen->asking())->not->toBeNull();
 });
 
@@ -811,8 +813,8 @@ it('puts the rehearsal away with the question, whichever way it is answered', fu
     whatAskingToRestartSonarrDrew($declined);
     $declined->neverMind();
 
-    expect($agreed->willRun)->toBe('')
-        ->and($declined->willRun)->toBe('')
+    expect($agreed->willRun)->toBeNull()
+        ->and($declined->willRun)->toBeNull()
         ->and($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
 });
 
@@ -820,11 +822,11 @@ it('puts away that a rehearsal could not be read with the question it was about'
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
 
     whatAskingToRestartSonarrDrew($screen);
-    $unreadWhileAsked = $screen->willRunUnread;
+    $unreadWhileAsked = $screen->willRun;
     $screen->neverMind();
 
-    expect($unreadWhileAsked)->toBeTrue()
-        ->and($screen->willRunUnread)->toBeFalse();
+    expect($unreadWhileAsked)->toEqual(TheLineTheYesRuns::unread())
+        ->and($screen->willRun)->toBeNull();
 });
 
 it('rehearses nothing for a start, which asks no question', function (): void {
@@ -922,4 +924,16 @@ it('offers nothing to put back a file the operator edited: the outcome offers wh
 
     expect($saidWhereEdited)->toContain(whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']))
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($edited)->offers())->not->toBe([])->toBe(WhatTheDeviceWouldDraw::onTheSecondFrame($untouched)->offers());
+});
+
+it('carries back with the yes no name an earlier rehearsal gave, once the question is asked again', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+
+    whatAskingToRestartSonarrDrew($screen);
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::stillRunning());
+    whatAskingToRestartSonarrDrew($screen);
+    $screen->agree();
+
+    expect($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
 });

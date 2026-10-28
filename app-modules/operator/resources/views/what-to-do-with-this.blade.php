@@ -33,15 +33,15 @@
     <x-design::title>{{ __('health.about_to', ['what' => $this->asking()->named()]) }}</x-design::title>
     <x-design::body>{{ __($this->asking()->doing()->saidOnTheScreen()) }}</x-design::body>
 
-    @if ($this->willRun !== '')
+    @if ($this->willRun?->command !== null)
         {{-- The exact command the yes will run, from the stack's own
              rehearsal of it, read before agreeing rather than after. Nothing
              is drawn until the stack has said, and a rehearsal that could not
              be read is said as that, apart from a verb with no command: the
              question stands either way. --}}
         <x-design::note>{{ __('stacks.command.will_run') }}</x-design::note>
-        <x-design::verbatim>{{ $this->willRun }}</x-design::verbatim>
-    @elseif ($this->willRunUnread)
+        <x-design::verbatim>{{ $this->willRun->command }}</x-design::verbatim>
+    @elseif ($this->willRun !== null)
         <x-design::note>{{ __('stacks.command.unread') }}</x-design::note>
     @endif
 
