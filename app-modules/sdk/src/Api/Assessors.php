@@ -52,9 +52,7 @@ final readonly class Assessors implements ForgetsAStack, KnowingWhatAStackOffers
 
     public function aScreenOpens(): Forgotten
     {
-        $old = $this->held->letGoOfWhatIsOlderThanABreak($this->clock->now());
-
-        return $old === 0 ? Forgotten::nothing() : Forgotten::rows($old);
+        return Forgotten::rows($this->held->letGoOfWhatIsOlderThanABreak($this->clock->now()));
     }
 
     /** What the stack said goes with the stack, which asking again is the same letting go of. */

@@ -148,8 +148,10 @@ final readonly class Titles
             throw TitleIsUnreadable::missing(TitleField::Released);
         }
 
+        [, $year, $month, $day] = $part;
+
         try {
-            return WhenItWasReleased::on((int) $part[1], (int) $part[2], (int) $part[3]);
+            return WhenItWasReleased::on((int) $year, (int) $month, (int) $day);
         } catch (ReleaseIsNoDay $why) {
             throw TitleIsUnreadable::noDay($why);
         }

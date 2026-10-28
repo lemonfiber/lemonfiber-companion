@@ -156,7 +156,7 @@ final readonly class Handoffs
             $found[] = ASignedInDevice::listed(
                 self::cell($row, WireField::Device, WireField::Sessions, $position),
                 self::cell($row, WireField::Client, WireField::Sessions, $position),
-                AMomentAsWritten::of(self::lastSeen($row, $position)),
+                self::lastSeen($row, $position),
             );
         }
 
@@ -188,14 +188,14 @@ final readonly class Handoffs
         return $row[$field->value];
     }
 
-    /** When the media server last heard from one device: empty where it sent `null` or nothing. */
-    private static function lastSeen(mixed $row, int $position): string
+    /** When the media server last heard from one device: unwritten where it sent `null` or nothing. */
+    private static function lastSeen(mixed $row, int $position): AMomentAsWritten
     {
         if (is_array($row) && (! array_key_exists(HandoffField::LastSeen->value, $row) || $row[HandoffField::LastSeen->value] === null)) {
-            return '';
+            return AMomentAsWritten::unwritten();
         }
 
-        return self::cell($row, HandoffField::LastSeen, WireField::Sessions, $position);
+        return AMomentAsWritten::of(self::cell($row, HandoffField::LastSeen, WireField::Sessions, $position));
     }
 
     /** A yes or a no one app owes. */
