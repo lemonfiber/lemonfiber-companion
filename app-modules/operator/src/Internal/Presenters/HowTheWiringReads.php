@@ -31,37 +31,37 @@ final readonly class HowTheWiringReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::notAsked());
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still carrying the run out. */
     public function running(): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running());
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
     public function ended(): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     /** The stack turned the request down, and this is its reason. */
     public function refused(string $because): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::answered(), refusal: $because);
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::answered(), refusal: $because);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): TheWiringTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::met($why));
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the run came to. */
@@ -75,7 +75,6 @@ final readonly class HowTheWiringReads
 
         return new TheWiringTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            refusal: '',
             wiring: new TheWiringAsShown(
                 rehearsed: $wiring->wasRehearsed(),
                 judgedSaid: match ($wiring->judged()) {
@@ -122,15 +121,5 @@ final readonly class HowTheWiringReads
             WhereAConnectionStands::Failed => 'stacks.wiring.state.failed',
             WhereAConnectionStands::Refused => 'stacks.wiring.state.refused',
         };
-    }
-
-    /** An answer with no run in it, for every state but one answered. */
-    private function without(WhereTheWorkStands $stands, string $refusal = ''): TheWiringTurnedOutToBe
-    {
-        return new TheWiringTurnedOutToBe(
-            stands: $stands,
-            refusal: $refusal,
-            wiring: null,
-        );
     }
 }

@@ -126,7 +126,7 @@
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.wiring.no_outcome') }}</x-design::strong>
             </x-design::notice>
-        @elseif ($this->howItIsGoing()->refusal !== '')
+        @elseif ($this->howItIsGoing()->refusal !== null)
             {{-- The stack's answer, drawn as the reason it is rather than as
                  something to try again. --}}
             <x-design::notice>
