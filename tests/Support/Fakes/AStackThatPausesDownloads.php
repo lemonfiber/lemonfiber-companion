@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use function array_key_exists;
+use function array_shift;
+
 use Closure;
 use Modules\Kernel\Api\HowPausingIsGoing;
 use Modules\Kernel\Api\Job;
@@ -25,6 +28,9 @@ final class AStackThatPausesDownloads implements PausingDownloads
 {
     /** The handle the rehearsal is answered with. */
     public const string THE_REHEARSAL = 'a-rehearsal-a-test-can-name';
+
+    /** The handle a second rehearsal is answered with. */
+    public const string THE_NEXT_REHEARSAL = 'a-second-rehearsal-a-test-can-name';
 
     /** The handle the yes is answered with. */
     public const string THE_JOB = 'a-pause-a-test-can-name';
@@ -56,6 +62,21 @@ final class AStackThatPausesDownloads implements PausingDownloads
             static fn(): Underway => Underway::as(Job::named(self::THE_REHEARSAL)),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(Job $job): HowPausingIsGoing => $job->shown() === self::THE_JOB ? $became : $offer,
+        );
+    }
+
+    /** A stack whose first rehearsal comes to `$first` and every one after to `$then`, each under a handle of its own, that takes a yes on. */
+    public static function rehearsingAfresh(WhatPausingComesTo $first, WhatPausingComesTo $then): self
+    {
+        $handles = [self::THE_REHEARSAL, self::THE_NEXT_REHEARSAL];
+        $rehearsals = [self::THE_REHEARSAL => $first, self::THE_NEXT_REHEARSAL => $then];
+
+        return new self(
+            static function () use (&$handles): Underway {
+                return Underway::as(Job::named(array_shift($handles) ?? self::THE_NEXT_REHEARSAL));
+            },
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(Job $job): HowPausingIsGoing => array_key_exists($job->shown(), $rehearsals) ? HowPausingIsGoing::answered($rehearsals[$job->shown()]) : HowPausingIsGoing::stillRunning(),
         );
     }
 

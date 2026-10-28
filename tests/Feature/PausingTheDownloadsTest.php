@@ -220,6 +220,24 @@ it('sends no yes before a rehearsal has been read, and never on its cadence', fu
     expect($pausing->agreed())->toBe([]);
 });
 
+it('carries out only the rehearsal read since asking again, never the one it replaced', function (): void {
+    $replaced = aRehearsedPause();
+    $fresh = aRehearsedPause(caution: 'A client stopped since the last reading');
+    $pausing = AStackThatPausesDownloads::rehearsingAfresh($replaced, $fresh);
+    $screen = thePausingScreen($pausing);
+    $screen->answer();
+    $screen->again();
+    $screen->agree();
+
+    expect($pausing->agreed())->toBe([]);
+
+    $screen->answer();
+    $screen->agree();
+
+    expect($pausing->agreed())->toBe([$fresh])
+        ->and($pausing->rehearsed())->toHaveCount(2);
+});
+
 it('says the stack is still rehearsing, and reads the same rehearsal again on its cadence', function (): void {
     $pausing = AStackThatPausesDownloads::rehearsing(HowPausingIsGoing::stillRunning(), HowPausingIsGoing::stillRunning());
     $screen = thePausingScreen($pausing);
@@ -264,6 +282,7 @@ it('says what stood in the way of a yes the stack refused, and rehearses afresh 
     $screen->agree();
 
     expect($screen->done()->stands->went->cameBack())->toBeFalse()
+        ->and($screen->wasAgreedTo())->toBeTrue()
         ->and($pausing->agreed())->toHaveCount(1);
 
     $screen->again();

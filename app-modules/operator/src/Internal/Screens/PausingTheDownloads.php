@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPausingReads;
+use Modules\Operator\Internal\TheYesGiven;
 use Modules\Operator\Internal\ViewModels\HowPausingWent;
 use Modules\Operator\Internal\ViewModels\WhatPausingSays;
 use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
@@ -78,11 +79,8 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** The rehearsal's report, while there is one to agree to, held as the value because a yes can only quote the offer itself. */
     public ?WhatPausingComesTo $offered = null;
 
-    /** Whether the operator has agreed, which is which of the two readings a frame draws. */
-    public bool $agreed = false;
-
-    /** The handle agreeing answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
+    /** The yes the operator gave, once one was, which is which of the two readings a frame draws. */
+    public ?TheYesGiven $yes = null;
 
     /** What became of the yes, once this frame has asked. */
     public ?HowPausingWent $carriedOut = null;
@@ -122,7 +120,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** Whether the operator has agreed to the rehearsal. */
     public function wasAgreedTo(): bool
     {
-        return $this->agreed;
+        return $this->yes instanceof TheYesGiven;
     }
 
     /** What became of the yes, asked once per frame. */
@@ -146,13 +144,12 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
         }
 
         $stack = $this->stack();
-        $this->agreed = true;
-        $this->handle = null;
+        $this->yes = TheYesGiven::notTakenOn();
 
         $this->carriedOut = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowPausingWent => $this->pausing->carryOut($stack, $session, $offer)->either(
                 started: function (Job $job): HowPausingWent {
-                    $this->handle = $job->shown();
+                    $this->yes = TheYesGiven::takenOnAs($job->shown());
 
                     return new HowPausingReads()->running();
                 },
@@ -174,7 +171,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     {
         $this->carriedOut = null;
 
-        if ($this->agreed && is_string($this->handle)) {
+        if ($this->yes?->handle !== null) {
             return;
         }
 
@@ -182,7 +179,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
             $this->asking = null;
         }
 
-        $this->agreed = false;
+        $this->yes = null;
         $this->offered = null;
         $this->answered = null;
     }
@@ -201,7 +198,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
             return;
         }
 
-        if ($this->agreed) {
+        if ($this->yes instanceof TheYesGiven) {
             $this->carriedOut = null;
 
             return;
@@ -213,7 +210,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** Whether the stack is rehearsing, or carrying it out, right now. */
     public function isWorking(): bool
     {
-        return $this->agreed ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
+        return $this->yes instanceof TheYesGiven ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
     }
 
     /** Resume the session and rehearse what was asked. */
@@ -276,9 +273,9 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** Ask the stack what became of the yes. */
     private function followed(): HowPausingWent
     {
-        $held = $this->handle;
+        $held = $this->yes?->handle;
 
-        if (! is_string($held)) {
+        if ($held === null) {
             return new HowPausingReads()->ended();
         }
 
