@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\TheNewsAsItems;
@@ -43,18 +44,15 @@ use function sprintf;
  */
 final readonly class HowWhatIsNewReads
 {
-    /** The word a filter is chosen by where it chooses everything. */
-    public const string EVERYTHING = '';
-
     public function __construct(private Noticing $noticing) {}
 
     /**
      * What the screen draws, narrowed by kind and stack.
      *
-     * @param string $kind  a kind's value, or {@see EVERYTHING}
-     * @param string $stack a stack's stored identifier, or {@see EVERYTHING}
+     * @param KindOfNews|null $kind  the kind shown, or null for every kind
+     * @param StackId|null    $stack the stack shown, or null for every stack
      */
-    public function shown(Configured $stacks, WhatEachStackListed $listed, string $kind, string $stack, Instant $now): WhatIsNewAsShown
+    public function shown(Configured $stacks, WhatEachStackListed $listed, ?KindOfNews $kind, ?StackId $stack, Instant $now): WhatIsNewAsShown
     {
         $shown = $this->stacksShown($stacks, $stack);
         $unreached = [];
@@ -87,11 +85,9 @@ final readonly class HowWhatIsNewReads
      *
      * @return list<KindOfNews>
      */
-    public static function kindsShown(string $kind): array
+    public static function kindsShown(?KindOfNews $kind): array
     {
-        $chosen = KindOfNews::tryFrom($kind);
-
-        return $chosen instanceof KindOfNews ? [$chosen] : KindOfNews::cases();
+        return $kind instanceof KindOfNews ? [$kind] : KindOfNews::cases();
     }
 
     /**
@@ -99,12 +95,12 @@ final readonly class HowWhatIsNewReads
      *
      * @return list<Stack>
      */
-    public function stacksShown(Configured $stacks, string $stack): array
+    public function stacksShown(Configured $stacks, ?StackId $stack): array
     {
         $shown = [];
 
         foreach ($stacks as $one) {
-            if ($stack === self::EVERYTHING || $one->id()->stored() === $stack) {
+            if (! $stack instanceof StackId || $one->id()->is($stack)) {
                 $shown[] = $one;
             }
         }
@@ -166,12 +162,12 @@ final readonly class HowWhatIsNewReads
      *
      * @return list<AFilterAsShown>
      */
-    private function kinds(string $kind): array
+    private function kinds(?KindOfNews $kind): array
     {
-        $filters = [new AFilterAsShown('news.all_kinds', '', ATap::calling('showKind', self::EVERYTHING)->written(), KindOfNews::tryFrom($kind) === null)];
+        $filters = [new AFilterAsShown(said: 'news.all_kinds', name: null, tap: ATap::calling('showEveryKind')->written(), chosen: ! $kind instanceof KindOfNews)];
 
         foreach (KindOfNews::cases() as $one) {
-            $filters[] = new AFilterAsShown($one->saidOnTheScreen(), '', ATap::calling('showKind', $one->value)->written(), $one->value === $kind);
+            $filters[] = new AFilterAsShown(said: $one->saidOnTheScreen(), name: null, tap: ATap::calling('showKind', $one->value)->written(), chosen: $one === $kind);
         }
 
         return $filters;
@@ -182,12 +178,12 @@ final readonly class HowWhatIsNewReads
      *
      * @return list<AFilterAsShown>
      */
-    private function stacks(Configured $stacks, string $stack): array
+    private function stacks(Configured $stacks, ?StackId $stack): array
     {
-        $filters = [new AFilterAsShown('news.all_stacks', '', ATap::calling('showStack', self::EVERYTHING)->written(), $stack === self::EVERYTHING)];
+        $filters = [new AFilterAsShown(said: 'news.all_stacks', name: null, tap: ATap::calling('showEveryStack')->written(), chosen: ! $stack instanceof StackId)];
 
         foreach ($stacks as $one) {
-            $filters[] = new AFilterAsShown('', $one->name()->shown(), ATap::calling('showStack', $one->id()->stored())->written(), $one->id()->stored() === $stack);
+            $filters[] = new AFilterAsShown(said: null, name: $one->name()->shown(), tap: ATap::calling('showStack', $one->id()->stored())->written(), chosen: $stack instanceof StackId && $one->id()->is($stack));
         }
 
         // Every stack first and then each one, so one paired stack makes two

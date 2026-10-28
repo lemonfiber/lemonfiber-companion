@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsPlayingReads;
 use Modules\Operator\Internal\ViewModels\WhatIsPlayingAsShown;
+use Modules\Operator\Internal\WhyPlayingIsNotFollowed;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
@@ -68,9 +69,8 @@ final class WhatIsPlayingNow extends NativeComponent
     /** What stood in the way of asking, until the stream next says what is playing. */
     public ?Obstacle $stopped = null;
 
-    public bool $isSignedIn = true;
-
-    public bool $isTheOperator = true;
+    /** Why what is playing is not asked after here, or null while the operator's session asks. */
+    public ?WhyPlayingIsNotFollowed $notFollowed = null;
 
     public function __construct(
         private readonly FollowingWhatIsPlaying $following,
@@ -95,7 +95,7 @@ final class WhatIsPlayingNow extends NativeComponent
             return;
         }
 
-        if (! $this->isSignedIn || ! $this->isTheOperator || ! $held->mayListen($now)) {
+        if ($this->notFollowed instanceof WhyPlayingIsNotFollowed || ! $held->mayListen($now)) {
             return;
         }
 
@@ -108,11 +108,10 @@ final class WhatIsPlayingNow extends NativeComponent
     {
         $heard = $this->playingHeardSoFar();
 
-        return match (true) {
-            ! $this->isSignedIn => new HowWhatIsPlayingReads()->signedOut(),
-            ! $this->isTheOperator => new HowWhatIsPlayingReads()->forAMember(),
-            $this->stopped instanceof Obstacle => new HowWhatIsPlayingReads()->met($this->stopped),
-            default => new HowWhatIsPlayingReads()->of($heard, $this->clock->now()),
+        return match ($this->notFollowed) {
+            WhyPlayingIsNotFollowed::SignedOut => new HowWhatIsPlayingReads()->signedOut(),
+            WhyPlayingIsNotFollowed::AMembersSession => new HowWhatIsPlayingReads()->forAMember(),
+            null => $this->stopped instanceof Obstacle ? new HowWhatIsPlayingReads()->met($this->stopped) : new HowWhatIsPlayingReads()->of($heard, $this->clock->now()),
         };
     }
 
@@ -144,8 +143,7 @@ final class WhatIsPlayingNow extends NativeComponent
     private function askedNow(): WhatAStreamSaidSoFar
     {
         $stack = $this->stack();
-        $this->isSignedIn = true;
-        $this->isTheOperator = true;
+        $this->notFollowed = null;
         $this->stopped = null;
 
         $answer = $this->asTheOperator($stack, fn(Session $session): WhatAStreamSaid => $this->following->now($stack, $session)->either(
@@ -216,13 +214,16 @@ final class WhatIsPlayingNow extends NativeComponent
     private function letGoOfARefusal(Obstacle $why, Stack $stack): void
     {
         $this->letGoOfTheSession($why, $stack);
-        $this->isSignedIn = ! $why->meansWeAreSignedOut();
+
+        if ($why->meansWeAreSignedOut()) {
+            $this->notFollowed = WhyPlayingIsNotFollowed::SignedOut;
+        }
     }
 
     /** @return WhatAStreamSaid<never> */
     private function signedOut(): WhatAStreamSaid
     {
-        $this->isSignedIn = false;
+        $this->notFollowed = WhyPlayingIsNotFollowed::SignedOut;
 
         return WhatAStreamSaid::closed();
     }
@@ -230,7 +231,7 @@ final class WhatIsPlayingNow extends NativeComponent
     /** @return WhatAStreamSaid<never> */
     private function aMembersSession(): WhatAStreamSaid
     {
-        $this->isTheOperator = false;
+        $this->notFollowed = WhyPlayingIsNotFollowed::AMembersSession;
 
         return WhatAStreamSaid::closed();
     }

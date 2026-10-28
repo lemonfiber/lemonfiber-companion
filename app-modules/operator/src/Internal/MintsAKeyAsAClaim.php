@@ -203,10 +203,13 @@ trait MintsAKeyAsAClaim
     {
         $claim = $this->minted?->claim;
 
-        $left = $claim === null ? 0 : max(0, $claim->lapsesAt - $this->clock->now()->epochSeconds());
+        if ($claim === null) {
+            return 0;
+        }
+
         $minute = HowLongAgo::Minutes->seconds();
 
-        return intdiv($left, $minute) + ($left % $minute > 0 ? 1 : 0);
+        return max(0, intdiv($claim->lapsesAt - $this->clock->now()->epochSeconds() + $minute - 1, $minute));
     }
 
     /** The screen came back to the front: the link it showed is gone. */

@@ -14,7 +14,7 @@
     @if ($this->news()->stacks !== [])
         <x-design::chips>
             @forelse ($this->news()->stacks as $filter)
-                <x-design::chip :label="$filter->said === '' ? $filter->name : __($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
+                <x-design::chip :label="$filter->said === null ? $filter->name : __($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
             @empty
                 {{-- Nothing: this is drawn only where there are stacks to offer. --}}
             @endforelse

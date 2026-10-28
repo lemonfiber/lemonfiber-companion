@@ -429,8 +429,55 @@ it('keeps what it admits and what it is for where a choice names nothing', funct
 
     expect($screen->mintAdmits)->toBe('act')
         ->and($screen->mintFor)->toBe('mcp')
-        ->and($screen->admitsAMembersOwn())->toBeFalse();
+        ->and($screen->admitsAMembersOwn())->toBeFalse()
+        ->and($screen->mintMembers)->toBe([])
+        ->and($screen->whatAKeyMayBeFor())->toBe(['home-assistant', 'mcp', 'other']);
 });
+
+it('asks whether this phone can keep a key once, however often the screen asks why not', function (): void {
+    $phone = APhoneKeyInMemory::onAnAndroidPhone();
+    $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), minting: APhoneThatMints::onAnAndroidPhone($phone));
+    $screen->mintingIsNotOffered();
+    $screen->mintingIsNotOffered();
+
+    expect($phone->timesAskedWhere())->toBe(1);
+});
+
+it('does not make a key with only spaces for its name, its member or the password, and names it as typed less the spaces around it', function (string $field): void {
+    $minting = APhoneThatMints::onAnAndroidPhone();
+    $screen = theFormForAKey($minting);
+    $screen->password = 'the operator password';
+    $screen->admitting('member');
+    $screen->admittingMember(0);
+    match ($field) {
+        'name' => $screen->mintName = '  ',
+        'member' => $screen->mintMember = '  ',
+        default => $screen->password = '  ',
+    };
+    $blank = $screen->mayMint();
+    $screen->mintName = '  Home Assistant  ';
+    $screen->mintMember = 'ada';
+    $screen->password = 'the operator password';
+    $screen->mint();
+
+    expect($blank)->toBeFalse()
+        ->and($minting->stack->claimed())->toBe(['Home Assistant']);
+})->with(['a name' => ['name'], 'a member' => ['member'], 'a password' => ['password']]);
+
+it('says how many whole minutes the link still collects the key for, rounding a part minute up, and none once it lapsed or where none is shown', function (int $before, int $minutes): void {
+    $screen = theFormForAKey(APhoneThatMints::onAnAndroidPhone(), now: 1_791_925_800 - $before);
+    $none = $screen->minutesTheLinkLasts();
+    $screen->password = 'the operator password';
+    $screen->mint();
+
+    expect($screen->minutesTheLinkLasts())->toBe($minutes)
+        ->and($none)->toBe(0);
+})->with([
+    'ten minutes exactly' => [600, 10],
+    'a second past ten' => [601, 11],
+    'a second' => [1, 1],
+    'lapsed two minutes ago' => [-120, 0],
+]);
 
 it('says nobody could be read where the household could not be asked', function (): void {
     $screen = theKeysScreen(AStackThatKeepsKeys::listing(threeKeysForApps()), minting: APhoneThatMints::onAnAndroidPhone(household: AStackThatInvites::answering()->readingAs(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));

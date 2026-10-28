@@ -134,7 +134,7 @@ it('keeps the list current from the stream without being asked again', function 
     expect($playing->asked())->toBe(1)
         ->and($drawn)->toContain('Joris')
         ->and($drawn)->not->toContain('Sanne')
-        ->and($screen->answer()->ago->said)->toBe('');
+        ->and($screen->answer()->hears?->heard?->ago->said)->toBe('');
 });
 
 it('says when it last heard once the stream stops, and that it could not hear', function (): void {
@@ -148,8 +148,8 @@ it('says when it last heard once the stream stops, and that it could not hear', 
     $clock->moveTo(secondsIntoWatchingWhatPlays(120));
     $screen->follow();
 
-    expect($screen->answer()->broke)->toBeTrue()
-        ->and($screen->answer()->ago->said)->not->toBe('')
+    expect($screen->answer()->hears?->broke)->toBeTrue()
+        ->and($screen->answer()->hears?->heard?->ago->said)->not->toBe('')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLinePlaying('stacks.playing.unheard'), 'Sanne');
 });
 
@@ -164,7 +164,7 @@ it('lets go of a stream gone quiet past the contract\'s silence, and of one nobo
     $screen->follow();
 
     expect($playing->lettingsGo())->toBe(1)
-        ->and($screen->answer()->ago->said)->not->toBe('');
+        ->and($screen->answer()->hears?->heard?->ago->said)->not->toBe('');
 
     $capture->backgrounded();
     $screen->follow();
@@ -217,6 +217,17 @@ it('offers signing in where the device holds no session, and lets go of one the 
             nobody: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nobody'),
             theirs: static fn(): TheWordCarriedOut => new TheWordCarriedOut('somebody'),
         )->said)->toBe('nobody');
+});
+
+it('asks again once the operator has signed in where the device held no session', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these(sannesFilm()))), keychain: $keychain);
+    $screen->answer();
+    $keychain->keep(theHouseWhosePlayingIsWatched()->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $screen->again();
+
+    expect($screen->answer()->went->cameBack())->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Sanne');
 });
 
 it('asks the core again when the operator checks again', function (): void {

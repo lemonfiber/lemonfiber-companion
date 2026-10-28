@@ -8,14 +8,14 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class AFilterAsShown
 {
     /**
-     * @param string $said   the catalogue key for the chip's words, or empty where `name` is them
-     * @param string $name   a stack's name, where the chip is a stack's
+     * @param string|null $said   the catalogue key for the chip's words, or null where `name` is them
+     * @param string|null $name   a stack's name, where the chip is a stack's, or null
      * @param string $tap    what choosing it calls
      * @param bool   $chosen whether it is the one in force now
      */
     public function __construct(
-        public string $said,
-        public string $name,
+        public ?string $said,
+        public ?string $name,
         public string $tap,
         public bool $chosen,
     ) {}

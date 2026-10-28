@@ -4,28 +4,28 @@
 <x-operator::content>
     <x-design::heading>{{ __('stacks.playing.heading') }}</x-design::heading>
 
-    @if (! $this->answer()->isTheOperator)
+    @if ($this->answer()->hears === null)
         <x-design::body>{{ __('stacks.playing.operators_only') }}</x-design::body>
-    @elseif (! $this->answer()->heard)
+    @elseif ($this->answer()->hears->heard === null)
         {{-- Nothing heard yet: only a break makes it something that could
              not be heard. --}}
-        <x-design::body>{{ __($this->answer()->broke ? 'stacks.playing.unheard' : 'stacks.playing.not_said_yet') }}</x-design::body>
+        <x-design::body>{{ __($this->answer()->hears->broke ? 'stacks.playing.unheard' : 'stacks.playing.not_said_yet') }}</x-design::body>
     @else
-        @if ($this->answer()->ago->said !== '')
+        @if ($this->answer()->hears->heard->ago->said !== '')
             {{-- Heard before the stream stopped: what was last true, with when. --}}
-            @if ($this->answer()->broke)
+            @if ($this->answer()->hears->broke)
                 <x-design::body>{{ __('stacks.playing.unheard') }}</x-design::body>
             @endif
-            <x-design::note>{{ __('stacks.playing.last_heard', ['ago' => trans_choice($this->answer()->ago->said, $this->answer()->ago->count)]) }}</x-design::note>
+            <x-design::note>{{ __('stacks.playing.last_heard', ['ago' => trans_choice($this->answer()->hears->heard->ago->said, $this->answer()->hears->heard->ago->count)]) }}</x-design::note>
         @endif
 
-        @if ($this->answer()->unread !== '')
+        @if ($this->answer()->hears->heard->unread !== '')
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.playing.unread') }}</x-design::strong>
-                <x-design::body>{{ $this->answer()->unread }}</x-design::body>
+                <x-design::body>{{ $this->answer()->hears->heard->unread }}</x-design::body>
             </x-design::notice>
         @else
-            @forelse ($this->answer()->sessions as $session)
+            @forelse ($this->answer()->hears->heard->sessions as $session)
                 <x-design::card>
                     <x-design::strong>{{ $session->member }}</x-design::strong>
                     <x-design::body>{{ __($session->what, $session->filling) }}</x-design::body>

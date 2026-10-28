@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheNewsOfAStack;
+use Modules\Kernel\Api\TheReadingWaitsAFrame;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasFoundOfTheNews;
 
@@ -32,6 +33,9 @@ final class AStackThatListsWhatIsNew implements ReadingNews
 
     /** @var array<string, int> how many times each stack was asked */
     private array $askings = [];
+
+    /** @var array<string, true> stacks whose next reading waits a frame, by their stored identifiers */
+    private array $waiting = [];
 
     /** Stacks that each list nothing until a test says otherwise. */
     public static function listingNothing(): self
@@ -55,6 +59,14 @@ final class AStackThatListsWhatIsNew implements ReadingNews
         return $this;
     }
 
+    /** The stack's next reading waits a frame, as one that had to be asked what it serves does. */
+    public function waitsAFrame(StackId $stack): self
+    {
+        $this->waiting[$stack->stored()] = true;
+
+        return $this;
+    }
+
     /** How many times the stack was asked, which catches a frame asking twice. */
     public function askings(StackId $stack): int
     {
@@ -65,6 +77,12 @@ final class AStackThatListsWhatIsNew implements ReadingNews
     {
         $which = $stack->id()->stored();
         $this->askings[$which] = $this->askings($stack->id()) + 1;
+
+        if (array_key_exists($which, $this->waiting)) {
+            unset($this->waiting[$which]);
+
+            throw TheReadingWaitsAFrame::becauseTheStackWasAskedWhatItServes();
+        }
 
         return array_key_exists($which, $this->answers)
             ? $this->answers[$which]

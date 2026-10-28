@@ -13,6 +13,8 @@ use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Operator\Internal\ViewModels\ASessionPlayingAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatIsPlayingAsShown;
+use Modules\Operator\Internal\ViewModels\WhatTheOperatorHearsPlaying;
+use Modules\Operator\Internal\ViewModels\WhatWasHeardPlaying;
 
 /** Turns what the household is playing, as heard so far, into what the screen draws. */
 final readonly class HowWhatIsPlayingReads
@@ -33,7 +35,7 @@ final readonly class HowWhatIsPlayingReads
         $broke = $heard->hasBroken();
 
         return $heard->heard(
-            none: static fn(): WhatIsPlayingAsShown => new WhatIsPlayingAsShown(went: HowTheReadingWent::itCameBack(), isTheOperator: true, heard: false, sessions: [], unread: '', ago: AgoAsShown::live(), broke: $broke),
+            none: static fn(): WhatIsPlayingAsShown => new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, null)),
             current: fn(WhatTheHouseholdIsPlaying $playing): WhatIsPlayingAsShown => $this->playing($playing, AgoAsShown::live(), $broke),
             asOf: fn(WhatTheHouseholdIsPlaying $playing, Instant $at): WhatIsPlayingAsShown
                 => $this->playing($playing, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
@@ -42,17 +44,17 @@ final readonly class HowWhatIsPlayingReads
 
     public function signedOut(): WhatIsPlayingAsShown
     {
-        return new WhatIsPlayingAsShown(went: HowTheReadingWent::theSessionEnded(), isTheOperator: true, heard: false, sessions: [], unread: '', ago: AgoAsShown::live(), broke: false);
+        return new WhatIsPlayingAsShown(HowTheReadingWent::theSessionEnded(), null);
     }
 
     public function met(Obstacle $why): WhatIsPlayingAsShown
     {
-        return new WhatIsPlayingAsShown(went: HowTheReadingWent::somethingStopped($why), isTheOperator: true, heard: false, sessions: [], unread: '', ago: AgoAsShown::live(), broke: false);
+        return new WhatIsPlayingAsShown(HowTheReadingWent::somethingStopped($why), null);
     }
 
     public function forAMember(): WhatIsPlayingAsShown
     {
-        return new WhatIsPlayingAsShown(went: HowTheReadingWent::itCameBack(), isTheOperator: false, heard: false, sessions: [], unread: '', ago: AgoAsShown::live(), broke: false);
+        return new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), null);
     }
 
     private function playing(WhatTheHouseholdIsPlaying $playing, AgoAsShown $ago, bool $broke): WhatIsPlayingAsShown
@@ -63,7 +65,7 @@ final readonly class HowWhatIsPlayingReads
             $sessions[] = $this->session($session);
         }
 
-        return new WhatIsPlayingAsShown(went: HowTheReadingWent::itCameBack(), isTheOperator: true, heard: true, sessions: $sessions, unread: $playing->whyNot(), ago: $ago, broke: $broke);
+        return new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, new WhatWasHeardPlaying($sessions, $playing->whyNot(), $ago)));
     }
 
     private function session(ASessionPlaying $session): ASessionPlayingAsShown

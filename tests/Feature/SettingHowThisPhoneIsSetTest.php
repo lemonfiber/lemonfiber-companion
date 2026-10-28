@@ -61,10 +61,11 @@ function thePhonesSettingsOver(
     ?ANotifierInMemory $notifier = null,
     ?TheAppsSettings $apps = null,
     ?WakesInMemory $wakes = null,
+    ?LockingAfter $locking = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
     $wakes ??= WakesInMemory::thatWake();
-    $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+    $locking ??= new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
 
     return new HowThisPhoneIsSet(
         $locking,
@@ -210,6 +211,7 @@ it('opens a field for a count of days, and keeps a count it is given', function 
     $screen->keepReadingsFor('Other');
     $typing = WhatTheDeviceWouldDraw::by($screen);
     $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
+    $opened = [$screen->days, $screen->daysRefused];
 
     $screen->days = '45';
     $screen->saveDays();
@@ -222,7 +224,56 @@ it('opens a field for a count of days, and keeps a count it is given', function 
         ->and($screen->typingDays)->toBeFalse()
         ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 45))
         ->and(array_column($chosen, 'word'))->toBe(['Other'])
+        ->and($opened)->toBe(['', false])
         ->and($store->forgetEverything()->howMany())->toBe(1);
+});
+
+it('marks only Other in force while a count is typed, whatever is kept, and the choice kept otherwise', function (string $kept): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $screen->keepReadingsFor($kept);
+    $before = $screen->keepReadings()->offered;
+    $screen->keepReadingsFor('Other');
+    $chosen = static fn(array $offered): array => array_column(array_filter($offered, static fn(mixed $choice): bool => $choice instanceof AChoiceOfASettingAsShown && $choice->chosen), 'word');
+
+    expect($chosen($before))->toBe([$kept])
+        ->and($chosen($screen->keepReadings()->offered))->toBe(['Other'])
+        ->and($screen->days)->toBe('')
+        ->and($screen->daysRefused)->toBeFalse();
+})->with(['a named count' => ['NinetyDays'], 'until removed' => ['UntilRemoved']]);
+
+it('lets go of a refused count, and what was typed, once a choice is kept', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $screen->keepReadingsFor('Other');
+    $screen->days = 'a week';
+    $screen->saveDays();
+    $screen->keepReadingsFor('SevenDays');
+
+    expect($screen->daysRefused)->toBeFalse()
+        ->and($screen->days)->toBe('');
+});
+
+it('reads each setting, and whether the phone can keep anything, once', function (): void {
+    $device = ADeviceThatKnowsYou::unlocked();
+    $kept = ConnectionSettingsInMemory::empty();
+    $keychain = AKeychainInMemory::working();
+    [$readings] = readingsADayAndSixtyDaysOld();
+    $stacks = theLoftAndTheAttic();
+    $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+    $screen = thePhonesSettingsOver($device, $kept, $keychain, readings: $readings, stacks: $stacks, locking: $locking);
+    $screen->lockAfter();
+    $screen->keepReadings();
+    $screen->stacksInOrder();
+    $screen->keepsNothing();
+    $elsewhere = thePhonesSettingsOver($device, $kept, readings: $readings, stacks: $stacks, locking: $locking);
+    $elsewhere->lockAfterIs(LockAfter::OneHour->name);
+    $elsewhere->keepReadingsFor('SevenDays');
+    $elsewhere->putStacksInOrder(Reorderable::sent([str_repeat('b', Nonce::SHORTEST), str_repeat('a', Nonce::SHORTEST)]));
+    $screen->keepsNothing();
+
+    expect($screen->lockAfter()->said)->toBe(LockAfter::Immediately->said())
+        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 30))
+        ->and(array_column($screen->stacksInOrder(), 'name'))->toBe(['The loft', 'The attic'])
+        ->and($keychain->timesAskedIfAvailable())->toBe(1);
 });
 
 it('refuses a count of days it cannot keep readings for, and keeps the field open', function (string $typed): void {
@@ -266,6 +317,7 @@ it('asks on this screen before it clears saved data, and keeps it when told to',
         ->and($asking->offers())->toContain(__('settings.clear'))
         ->and($asking->offers())->toContain(__('settings.keep_it'))
         ->and($screen->lockAfter()->said)->toBe(LockAfter::OneHour->said())
+        ->and($screen->confirmingTheClear)->toBeFalse()
         ->and($kept->forgetEverything()->howMany())->toBe(1);
 });
 
