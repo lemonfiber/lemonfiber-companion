@@ -8,7 +8,6 @@ use function array_key_exists;
 use function in_array;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\AlertsEnvelope;
@@ -18,9 +17,8 @@ use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `alerts` envelope, as what the operator will be told about.
@@ -112,7 +110,7 @@ final readonly class WhatIsTold
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw AlertsAreUnreadable::missing($field);
         }
 
@@ -132,7 +130,7 @@ final readonly class WhatIsTold
 
         $said = $row[WireField::Kind->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw AlertsAreUnreadable::said(WireField::Kind, $position);
         }
 

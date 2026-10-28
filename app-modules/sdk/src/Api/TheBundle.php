@@ -25,9 +25,8 @@ use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhenABundleWasTaken;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Sdk\Api\Fields\BundleField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `bundle` envelope, as the support bundle the stack described or wrote.
@@ -149,7 +148,7 @@ final readonly class TheBundle
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw BundleIsUnreadable::missing($field);
         }
 
@@ -225,7 +224,7 @@ final readonly class TheBundle
         $found = [];
 
         foreach (self::listed($data, $field) as $position => $said) {
-            if (! is_string($said) || trim($said) === '') {
+            if (! Required::isText($said)) {
                 throw BundleIsUnreadable::entry($field, $position);
             }
 
@@ -283,7 +282,7 @@ final readonly class TheBundle
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw BundleIsUnreadable::missing($field);
         }
 
@@ -303,7 +302,7 @@ final readonly class TheBundle
 
         $said = $piece[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw BundleIsUnreadable::entry(BundleField::Pieces, $position);
         }
 

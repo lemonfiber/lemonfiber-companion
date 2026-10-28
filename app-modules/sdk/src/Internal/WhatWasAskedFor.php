@@ -163,7 +163,7 @@ final readonly class WhatWasAskedFor
         // the contract left.
         $reason = self::under($refused, WireField::Reason);
 
-        if (! is_string($reason) || trim($reason) === '') {
+        if (! Required::isText($reason)) {
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
@@ -172,7 +172,7 @@ final readonly class WhatWasAskedFor
         // A refusal with no moment is ordinary — the stack records one where it
         // has one — so this is the one absence here with an answer rather than
         // a refusal, which is `Size::unknown()`'s argument on the row above.
-        if (! is_string($at) || trim($at) === '') {
+        if (! Required::isText($at)) {
             return TurnedDown::because($reason);
         }
 

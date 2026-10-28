@@ -7,7 +7,6 @@ namespace Modules\Sdk\Internal;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\APluginChange;
@@ -31,8 +30,6 @@ use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
-
-use function trim;
 
 /**
  * The install a `plugins` answer is about: what it would do, or did, and how it ended.
@@ -263,7 +260,7 @@ final readonly class PluginInstallReports
         $found = [];
 
         foreach ($row[$field->value] as $word) {
-            if (! is_string($word) || trim($word) === '') {
+            if (! Required::isText($word)) {
                 throw PluginsAreUnreadable::entry($list, $field, $position);
             }
 
@@ -295,10 +292,6 @@ final readonly class PluginInstallReports
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry($list, $field, $position));
     }
 }

@@ -8,7 +8,6 @@ use function array_is_list;
 use function array_key_exists;
 use function is_array;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\PreviewEnvelope;
@@ -18,11 +17,10 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\Fields\PreviewField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
 use Throwable;
-
-use function trim;
 
 /**
  * Reads the `preview` envelope into what starting a form would come to.
@@ -108,7 +106,7 @@ final readonly class Rehearsals
         $services = [];
 
         foreach (self::listed($data, $field) as $position => $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw RehearsalIsUnreadable::entry($field, $position);
             }
 

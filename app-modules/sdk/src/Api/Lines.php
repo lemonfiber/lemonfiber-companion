@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
 use Modules\Sdk\Api\Fields\LogField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -175,7 +176,7 @@ final readonly class Lines
     {
         $said = $row[WireField::At->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw LineIsUnreadable::moment(is_string($said) ? $said : '', $position);
         }
 

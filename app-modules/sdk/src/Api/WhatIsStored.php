@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StoredEnvelope;
@@ -21,9 +20,8 @@ use Modules\Kernel\Api\WhereThingsAreKept;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `stored` envelope, as what a stack keeps on its machine.
@@ -204,7 +202,7 @@ final readonly class WhatIsStored
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw StoredIsUnreadable::said($list, $field, $position);
         }
 

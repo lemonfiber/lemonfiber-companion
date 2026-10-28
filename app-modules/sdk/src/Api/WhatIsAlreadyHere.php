@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\MigrationEnvelope;
@@ -32,8 +31,6 @@ use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `migration` envelope into what a stack found already on its machine.
@@ -322,7 +319,7 @@ final readonly class WhatIsAlreadyHere
         $named = [];
 
         foreach (Required::rows($linking, MigrationField::Filesystems, $refused) as $filesystem) {
-            if (! is_string($filesystem) || trim($filesystem) === '') {
+            if (! Required::isText($filesystem)) {
                 throw $refused;
             }
 

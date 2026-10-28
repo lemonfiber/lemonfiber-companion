@@ -27,9 +27,8 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `outbound` envelope, as what leaves a machine.
@@ -247,7 +246,7 @@ final readonly class WhatLeaves
         $found = [];
 
         foreach ($row[OutboundField::Destination->value] as $one) {
-            if (! is_string($one) || trim($one) === '') {
+            if (! Required::isText($one)) {
                 throw OutboundIsUnreadable::said(WireField::Ours, OutboundField::Destination, $position);
             }
 
@@ -298,7 +297,7 @@ final readonly class WhatLeaves
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw OutboundIsUnreadable::said($list, $field, $position);
         }
 

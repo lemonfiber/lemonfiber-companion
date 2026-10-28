@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SeedEnvelope;
@@ -21,8 +20,6 @@ use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `seed` envelope into what one wiring run came to.
@@ -187,7 +184,7 @@ final readonly class WhatTheWiringCameTo
 
         $said = $state[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw SeedIsUnreadable::entry(SeedField::Wirings, $position, $field);
         }
 

@@ -36,9 +36,8 @@ use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheUninstallStands;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Sdk\Api\Fields\UninstallField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `uninstall` envelope into what taking lemonfiber off would come to, or came to.
@@ -377,11 +376,7 @@ final readonly class Uninstalls
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw UninstallIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, UninstallIsUnreadable::missing($field));
     }
 
     /**

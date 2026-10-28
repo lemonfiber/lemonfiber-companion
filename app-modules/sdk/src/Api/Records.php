@@ -8,7 +8,6 @@ use function array_key_exists;
 use function filter_var;
 use function is_array;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HistoryEnvelope;
@@ -20,10 +19,10 @@ use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereItStopsShort;
 use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function preg_match;
-use function trim;
 
 /**
  * The `history` envelope, as the record this app can show.
@@ -92,7 +91,7 @@ final readonly class Records
 
         $said = $data[HistoryField::Horizon->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HistoryIsUnreadable::missing(HistoryField::Horizon);
         }
 
@@ -295,7 +294,7 @@ final readonly class Records
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HistoryIsUnreadable::said($field, $position);
         }
 

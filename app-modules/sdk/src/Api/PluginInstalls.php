@@ -30,8 +30,6 @@ use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatAProofsVerdictWas;
 use Modules\Sdk\Internal\Wire;
 
-use function trim;
-
 /**
  * The `plugins` envelope, as what a stack says of its plugins.
  *
@@ -270,10 +268,6 @@ final readonly class PluginInstalls
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry($list, $field, $position));
     }
 }

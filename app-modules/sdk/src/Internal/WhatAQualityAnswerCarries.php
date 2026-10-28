@@ -17,8 +17,6 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\QualityIsUnreadable;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * The shapes the `quality`, `music` and `upgrade` envelopes carry alike, read once.
  *
@@ -103,10 +101,6 @@ final readonly class WhatAQualityAnswerCarries
      */
     private static function under(array $table, string $kind, NamesAWireField $parent, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $table) || ! is_string($table[$field->value]) || trim($table[$field->value]) === '') {
-            throw QualityIsUnreadable::under($kind, $parent, $field);
-        }
-
-        return $table[$field->value];
+        return Required::text($table, $field, QualityIsUnreadable::under($kind, $parent, $field));
     }
 }

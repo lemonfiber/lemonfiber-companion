@@ -6,14 +6,11 @@ namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\WhetherASearchSettles;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\TraceIsUnreadable;
-
-use function trim;
 
 /**
  * Reads a trace's `searchable`: what a search that would settle it spends, and what it covers.
@@ -45,10 +42,6 @@ final readonly class TheSearchThatSettles
     /** @param array<mixed> $searchable */
     private static function said(array $searchable, TraceField $field): string
     {
-        if (! array_key_exists($field->value, $searchable) || ! is_string($searchable[$field->value]) || trim($searchable[$field->value]) === '') {
-            throw TraceIsUnreadable::missing($field);
-        }
-
-        return $searchable[$field->value];
+        return Required::text($searchable, $field, TraceIsUnreadable::missing($field));
     }
 }

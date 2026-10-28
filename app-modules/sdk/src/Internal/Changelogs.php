@@ -17,8 +17,6 @@ use Modules\Sdk\Api\ChangelogIsUnreadable;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * The `changelog` block, read into releases.
  *
@@ -154,7 +152,7 @@ final readonly class Changelogs
 
         // Blank as well as absent, because {@see Release::called()} refuses a
         // blank one with its own kind, which no adapter catches.
-        if (! is_string($version) || trim($version) === '') {
+        if (! Required::isText($version)) {
             throw $unreadable;
         }
 

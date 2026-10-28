@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -381,7 +382,7 @@ final readonly class Offers
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw OfferIsUnreadable::repair($position);
         }
 

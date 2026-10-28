@@ -9,7 +9,6 @@ use function array_map;
 use function is_array;
 use function is_bool;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\BandwidthEnvelope;
@@ -27,9 +26,8 @@ use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `bandwidth` envelope, as how a stack shares its line.
@@ -159,7 +157,7 @@ final readonly class HowTheLineIs
         $said = [];
 
         foreach (InTheOrderSent::rows($data[$list->value]) as $position => $one) {
-            if (! is_string($one) || trim($one) === '') {
+            if (! Required::isText($one)) {
                 throw BandwidthIsUnreadable::remark($list->value, $position);
             }
 
@@ -302,7 +300,7 @@ final readonly class HowTheLineIs
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw BandwidthIsUnreadable::missing($where);
         }
 

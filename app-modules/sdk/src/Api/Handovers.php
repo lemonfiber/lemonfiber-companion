@@ -15,9 +15,8 @@ use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\TheFilesTouched;
 use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Sdk\Api\Fields\HostingField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `hosting` envelope an install or a removal answers with, as what it did.
@@ -146,7 +145,7 @@ final readonly class Handovers
 
         $said = $changed[WireField::Name->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HostingIsUnreadable::changed(WireField::Name);
         }
 
@@ -197,7 +196,7 @@ final readonly class Handovers
         $files = [];
 
         foreach ($listed as $file) {
-            if (! is_string($file) || trim($file) === '') {
+            if (! Required::isText($file)) {
                 throw HostingIsUnreadable::changed(HostingField::Touched);
             }
 
@@ -270,7 +269,7 @@ final readonly class Handovers
 
         $said = $row[HostingField::Output->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HostingIsUnreadable::output($name);
         }
 

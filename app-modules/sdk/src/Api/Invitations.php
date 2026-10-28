@@ -9,7 +9,6 @@ use function array_map;
 use function is_array;
 use function is_bool;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\InvitationEnvelope;
@@ -24,9 +23,8 @@ use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Fields\InvitationField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `invitation` envelope into what asking somebody in came to.
@@ -209,7 +207,7 @@ final readonly class Invitations
         $named = [];
 
         foreach ($applied[InvitationField::Libraries->value] as $library) {
-            if (! is_string($library) || trim($library) === '') {
+            if (! Required::isText($library)) {
                 throw InvitationIsUnreadable::under(WireField::Applied, InvitationField::Libraries);
             }
 
@@ -234,7 +232,7 @@ final readonly class Invitations
         $names = [];
 
         foreach ($data[$field->value] as $name) {
-            if (! is_string($name) || trim($name) === '') {
+            if (! Required::isText($name)) {
                 throw InvitationIsUnreadable::missing($field);
             }
 
@@ -251,11 +249,7 @@ final readonly class Invitations
      */
     private static function under(array $applied, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $applied) || ! is_string($applied[$field->value]) || trim($applied[$field->value]) === '') {
-            throw InvitationIsUnreadable::under(WireField::Applied, $field);
-        }
-
-        return $applied[$field->value];
+        return Required::text($applied, $field, InvitationIsUnreadable::under(WireField::Applied, $field));
     }
 
     /**
@@ -265,10 +259,6 @@ final readonly class Invitations
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw InvitationIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, InvitationIsUnreadable::missing($field));
     }
 }

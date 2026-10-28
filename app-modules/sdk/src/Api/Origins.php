@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ProvenanceEnvelope;
@@ -16,9 +15,8 @@ use Modules\Kernel\Api\WhereItComesFrom;
 use Modules\Kernel\Api\WhereTheServicesComeFrom;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `provenance` envelope, as where this app can say each service comes from.
@@ -169,7 +167,7 @@ final readonly class Origins
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw ProvenanceIsUnreadable::said($field, $position);
         }
 

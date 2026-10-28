@@ -35,10 +35,10 @@ use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function sprintf;
-use function trim;
 
 /**
  * Reads the `space` envelope into what the kernel knows about how full a machine is.
@@ -390,7 +390,7 @@ final readonly class WhereTheRoomIs
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw SpaceIsUnreadable::missing($where);
         }
 

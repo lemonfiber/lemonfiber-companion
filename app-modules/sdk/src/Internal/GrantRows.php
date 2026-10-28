@@ -7,6 +7,7 @@ namespace Modules\Sdk\Internal;
 use function array_key_exists;
 
 use Closure;
+use InvalidArgumentException;
 
 use function is_array;
 use function is_string;
@@ -20,9 +21,6 @@ use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
-use Throwable;
-
-use function trim;
 
 /**
  * One grant of a credential to a third-party plugin, as the plugins record and the credentials read both carry it.
@@ -37,7 +35,7 @@ final readonly class GrantRows
      * One grant to that plugin, refusing a blank word through `$unreadable`.
      *
      * @param array<mixed>                         $row
-     * @param Closure(NamesAWireField): Throwable $unreadable
+     * @param Closure(NamesAWireField): InvalidArgumentException $unreadable
      */
     public static function one(array $row, APluginId $plugin, Closure $unreadable): ACredentialGrant
     {
@@ -106,7 +104,7 @@ final readonly class GrantRows
      * The plugin a grant on the credentials read is to.
      *
      * @param array<mixed>                         $row
-     * @param Closure(NamesAWireField): Throwable $unreadable
+     * @param Closure(NamesAWireField): InvalidArgumentException $unreadable
      */
     public static function plugin(array $row, Closure $unreadable): APluginId
     {
@@ -131,14 +129,10 @@ final readonly class GrantRows
      * A word a grant must carry.
      *
      * @param array<mixed>                         $row
-     * @param Closure(NamesAWireField): Throwable $unreadable
+     * @param Closure(NamesAWireField): InvalidArgumentException $unreadable
      */
     private static function text(array $row, NamesAWireField $field, Closure $unreadable): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw $unreadable($field);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, $unreadable($field));
     }
 }

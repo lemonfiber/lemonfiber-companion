@@ -16,9 +16,8 @@ use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `hosting` envelope, as the listing this app can show.
@@ -115,7 +114,7 @@ final readonly class Hosts
 
         $said = $data[HostingField::Instruction->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HostingIsUnreadable::withNothingToDoInstead();
         }
 
@@ -232,7 +231,7 @@ final readonly class Hosts
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw HostingIsUnreadable::said($field, $position);
         }
 

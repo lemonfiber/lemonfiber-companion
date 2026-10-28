@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function array_map;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\CredentialsEnvelope;
@@ -23,9 +22,8 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Internal\CredentialGrantsRead;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `credentials` envelope into the credentials a stack holds.
@@ -119,12 +117,8 @@ final readonly class CredentialsKept
 
         $protection = $data[CredentialsField::Protection->value];
 
-        if (! array_key_exists(WireField::Summary->value, $protection) || ! is_string($protection[WireField::Summary->value]) || trim($protection[WireField::Summary->value]) === '') {
-            throw CredentialsIsUnreadable::missing(WireField::Summary);
-        }
-
         return WhatTheStoreProtects::said(
-            $protection[WireField::Summary->value],
+            Required::text($protection, WireField::Summary, CredentialsIsUnreadable::missing(WireField::Summary)),
             Remarks::of(...self::sentences($protection, CredentialsField::Against)),
             Remarks::of(...self::sentences($protection, CredentialsField::NotAgainst)),
         );
@@ -145,7 +139,7 @@ final readonly class CredentialsKept
         $found = [];
 
         foreach ($protection[$list->value] as $one) {
-            if (! is_string($one) || trim($one) === '') {
+            if (! Required::isText($one)) {
                 throw CredentialsIsUnreadable::missing($list);
             }
 
@@ -228,7 +222,7 @@ final readonly class CredentialsKept
         $found = [];
 
         foreach ($row[CredentialsField::Consumers->value] as $one) {
-            if (! is_string($one) || trim($one) === '') {
+            if (! Required::isText($one)) {
                 throw CredentialsIsUnreadable::said(CredentialsField::Consumers, $position);
             }
 
@@ -265,7 +259,7 @@ final readonly class CredentialsKept
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw CredentialsIsUnreadable::said($field, $position);
         }
 

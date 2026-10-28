@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\WiringEnvelope;
@@ -29,6 +28,7 @@ use Modules\Kernel\Api\WhyItWasChosen;
 use Modules\Sdk\Api\Fields\WiringField;
 use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -222,7 +222,7 @@ final readonly class Links
         $found = [];
 
         foreach (self::rows($row, $field) as $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, $field, $position);
             }
 
@@ -269,10 +269,6 @@ final readonly class Links
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw LinksAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, LinksAreUnreadable::entry($list, $field, $position));
     }
 }

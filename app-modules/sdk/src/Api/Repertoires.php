@@ -6,16 +6,14 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\FormsEnvelope;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `forms` envelope, as every form a stack declares.
@@ -112,7 +110,7 @@ final readonly class Repertoires
 
         $said = $row[WireField::Id->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw RepertoireIsUnreadable::unnamed($position);
         }
 

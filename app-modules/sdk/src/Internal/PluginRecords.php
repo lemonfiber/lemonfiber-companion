@@ -28,8 +28,6 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * One plugin as the `plugins` envelope records it: what it is, what vouches for it, and its recipes.
  *
@@ -309,11 +307,7 @@ final readonly class PluginRecords
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry($list, $field, $position));
     }
 
     /**

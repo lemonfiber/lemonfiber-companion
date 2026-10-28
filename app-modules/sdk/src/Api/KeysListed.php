@@ -9,7 +9,6 @@ use function array_map;
 use function explode;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\KeysEnvelope;
@@ -23,6 +22,7 @@ use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -110,11 +110,7 @@ final readonly class KeysListed
     /** @param array<mixed> $data */
     private static function purposes(array $data): string
     {
-        if (! array_key_exists(KeysField::Purposes->value, $data) || ! is_string($data[KeysField::Purposes->value]) || trim($data[KeysField::Purposes->value]) === '') {
-            throw KeysAreUnreadable::missing(KeysField::Purposes);
-        }
-
-        return $data[KeysField::Purposes->value];
+        return Required::text($data, KeysField::Purposes, KeysAreUnreadable::missing(KeysField::Purposes));
     }
 
     /** @param array<mixed> $row */
@@ -162,10 +158,6 @@ final readonly class KeysListed
     /** @param array<mixed> $row */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw KeysAreUnreadable::said($field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, KeysAreUnreadable::said($field, $position));
     }
 }

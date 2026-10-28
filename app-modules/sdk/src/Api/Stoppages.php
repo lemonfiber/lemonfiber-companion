@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StuckEnvelope;
@@ -17,9 +16,8 @@ use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `stuck` envelope, as the listing this app can show.
@@ -168,7 +166,7 @@ final readonly class Stoppages
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw StuckIsUnreadable::said($field, $position);
         }
 

@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\CatalogueEnvelope;
@@ -19,9 +18,8 @@ use Modules\Kernel\Api\WhatTheServicesAreFor;
 use Modules\Kernel\Api\WhatWasDropped;
 use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `catalogue` envelope, as what each service is for and what became of any the stack dropped.
@@ -169,10 +167,6 @@ final readonly class Catalogues
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw CatalogueIsUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, CatalogueIsUnreadable::entry($list, $field, $position));
     }
 }

@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function array_map;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SelfUpdateEnvelope;
@@ -19,9 +18,8 @@ use Modules\Kernel\Api\WhatAnUpdateWouldBring;
 use Modules\Kernel\Api\WhatIsReleased;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `self-update` envelope into what the kernel knows about the running copy of lemonfiber.
@@ -146,7 +144,7 @@ final readonly class WhereThisCopyIs
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw SelfUpdateIsUnreadable::missing($field);
         }
 

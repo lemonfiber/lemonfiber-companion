@@ -21,8 +21,6 @@ use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Sdk\Api\WireField;
 use Throwable;
 
-use function trim;
-
 /**
  * Reads the services a set of forms left out, and a list of form names.
  *
@@ -70,7 +68,7 @@ final readonly class WhatWasLeftOut
         $forms = [];
 
         foreach ($listed as $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw $refused();
             }
 
@@ -101,7 +99,7 @@ final readonly class WhatWasLeftOut
         $name = $row[WireField::Name->value];
         $needs = $row[WireField::Needs->value];
 
-        if (! is_string($id) || trim($id) === '' || ! is_string($name) || trim($name) === '' || ! is_string($needs)) {
+        if (! Required::isText($id) || ! Required::isText($name) || ! is_string($needs)) {
             throw $refused();
         }
 

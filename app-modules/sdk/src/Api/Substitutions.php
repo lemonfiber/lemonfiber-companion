@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SubstitutionEnvelope;
@@ -19,9 +18,8 @@ use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `substitution` envelope, as a choice of what fills a capability.
@@ -86,7 +84,7 @@ final readonly class Substitutions
         $found = [];
 
         foreach (InTheOrderSent::rows(self::rows($choice, SubstitutionField::AskedBy)) as $position => $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw SubstitutionIsUnreadable::entry(SubstitutionField::AskedBy, WireField::Service, $position);
             }
 
@@ -157,11 +155,7 @@ final readonly class Substitutions
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw SubstitutionIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, SubstitutionIsUnreadable::missing($field));
     }
 
     /**
@@ -185,11 +179,7 @@ final readonly class Substitutions
      */
     private static function entry(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw SubstitutionIsUnreadable::entry(SubstitutionField::LeavesUnfilled, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, SubstitutionIsUnreadable::entry(SubstitutionField::LeavesUnfilled, $field, $position));
     }
 
     /**
