@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_key_exists;
-
 use DateInvalidTimeZoneException;
+use DateTimeImmutable;
 use DateTimeZone;
 
 /**
@@ -70,10 +69,6 @@ final readonly class Zone
     /** How far this zone's clock stood from UTC at that second. */
     private function offsetAt(int $seconds): int
     {
-        // The first transition answered is the one in force at the start of
-        // the span asked about, and the span is that one second.
-        $inForce = $this->zone->getTransitions($seconds, $seconds);
-
-        return array_key_exists(0, $inForce) ? $inForce[0]['offset'] : 0;
+        return $this->zone->getOffset(DateTimeImmutable::createFromTimestamp($seconds));
     }
 }
