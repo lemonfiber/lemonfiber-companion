@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\Presenters;
 
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
+use Modules\Household\Internal\ViewModels\TheTitlesFound;
 use Modules\Household\Internal\ViewModels\WhatAskingShows;
 use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
 use Modules\Household\Internal\ViewModels\WhatTheSearchShows;
@@ -17,6 +18,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
 
@@ -44,7 +46,7 @@ final readonly class HowAFoundTitleReads
     public const string UNDATED = 'household.search.line_undated';
 
     /** One page, each title a row leading to its page. */
-    public function found(WhatASearchFound $page): WhatTheSearchShows
+    public function found(WhatToLookFor $words, WhatASearchFound $page): WhatTheSearchShows
     {
         $rows = [];
 
@@ -52,11 +54,12 @@ final readonly class HowAFoundTitleReads
             $rows[] = $this->shown($title);
         }
 
-        return WhatTheSearchShows::page(
+        return WhatTheSearchShows::page(new TheTitlesFound(
+            $words,
             $page->approval(),
             $rows,
-            $page->followedBy(more: static fn(WhereTheNextPageBegins $next): InWords => new InWords($next->said()), last: static fn(): InWords => new InWords(''))->said,
-        );
+            $page->followedBy(more: static fn(WhereTheNextPageBegins $next): InWordsOrNone => new InWordsOrNone($next->said()), last: static fn(): InWordsOrNone => new InWordsOrNone(null))->said,
+        ));
     }
 
     /** What stood in the way of a search. */
@@ -68,7 +71,7 @@ final readonly class HowAFoundTitleReads
     /** What asking would come to, or came to. */
     public function asked(WhatAnAskCameTo $answer): WhatAskingShows
     {
-        return WhatAskingShows::answered($answer->said(), $answer->wasRehearsed() ? '' : $this->became($answer->became()));
+        return WhatAskingShows::answered($answer->said(), $this->became($answer->became()));
     }
 
     /** What stood in the way of asking. */

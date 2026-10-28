@@ -164,6 +164,10 @@ it('says nothing was removed where the removal could not begin, and removes noth
         ->and($profile->confirmingTheRemoval)->toBeFalse()
         ->and(whereProfileWent($profile))->toBe('nowhere')
         ->and($phone->stacks->configured()->knows($home->id()))->toBeTrue();
+
+    $profile->askToRemove();
+
+    expect(WhatTheDeviceWouldDraw::by($profile)->said())->not->toContain(__('household.remove_house_refused', ['house' => 'The loft']));
 });
 
 it('draws once more after its house is gone, as it does while it hands over', function (): void {

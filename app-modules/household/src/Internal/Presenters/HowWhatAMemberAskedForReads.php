@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Presenters;
 
+use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
 use Modules\Kernel\Api\KindOfRequest;
@@ -79,10 +80,8 @@ final readonly class HowWhatAMemberAskedForReads
     /**
      * One request, as the three things a member reads about it.
      *
-     * Built inside the arms rather than after them, the way the operator's own
-     * row is: `refusal()` answers with an object so that a caller cannot read a
-     * reason out without saying what happens when there was no refusal, and
-     * building in each arm is what that shape is for.
+     * Built inside the arms of what it is called, so a row holds the title or
+     * the key for its kind and never both.
      *
      * The reason is empty where there was no refusal, rather than absent: a
      * template reading a field that is sometimes there is a template with a
@@ -113,17 +112,11 @@ final readonly class HowWhatAMemberAskedForReads
      */
     private function told(Wanted $wanted, string $standing): WhatOneOfTheirRequestsSays
     {
-        $title = $wanted->called()->either(named: static fn(string $named): InWords => new InWords($named), notYet: static fn(): InWords => new InWords(''))->said;
-        $untitled = $wanted->called()->either(
-            named: static fn(): InWords => new InWords(''),
-            notYet: static fn(KindOfRequest $kind): InWords => new InWords(self::notYetNamed($kind)),
-        )->said;
+        $reason = $wanted->refusal(was: static fn(TurnedDown $why): InWords => new InWords($why->reason()), wasNot: static fn(): InWords => new InWords(''))->said;
 
-        return $wanted->refusal(
-            was: static fn(TurnedDown $why): WhatOneOfTheirRequestsSays
-                => new WhatOneOfTheirRequestsSays($title, $standing, $why->reason(), $untitled),
-            wasNot: static fn(): WhatOneOfTheirRequestsSays
-                => new WhatOneOfTheirRequestsSays($title, $standing, '', $untitled),
+        return $wanted->called()->either(
+            named: static fn(string $named): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays($named, $standing, $reason),
+            notYet: static fn(KindOfRequest $kind): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays(new ALineAsShown(self::notYetNamed($kind), []), $standing, $reason),
         );
     }
 }

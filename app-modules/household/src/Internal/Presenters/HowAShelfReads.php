@@ -125,12 +125,12 @@ final readonly class HowAShelfReads
         // library that nobody claimed.
         return $holding->year()->either(
             dated: fn(int $year): WhatOnePosterSays => $this->dated($holding, (string) $year, $opensOn),
-            unstated: fn(): WhatOnePosterSays => $this->dated($holding, '', $opensOn),
+            unstated: fn(): WhatOnePosterSays => $this->dated($holding, null, $opensOn),
         );
     }
 
     /** The poster, once its year is said or known to be unsaid, opening its title where there is somewhere to open it on. */
-    private function dated(Holding $holding, string $year, ?StackId $opensOn): WhatOnePosterSays
+    private function dated(Holding $holding, ?string $year, ?StackId $opensOn): WhatOnePosterSays
     {
         if (! $opensOn instanceof StackId) {
             return WhatOnePosterSays::ofATitle($holding->titled(), $holding->medium()->saidOnTheScreen(), $year);

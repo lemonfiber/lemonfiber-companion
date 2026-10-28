@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Household\Internal\ThePicturesItDraws;
-use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Kernel\Api\Address;
@@ -154,17 +152,17 @@ it('follows what is new with a row for each kind the shelf holds, in the order t
         ->and(eachPosterIn($screen, 3, itsTitle()))->toBe(['Something else']);
 });
 
-it('cuts the first row at the newest few and leaves every holding of a kind in its own row', function (): void {
+it('cuts the first row at the newest twelve and leaves every holding of a kind in its own row', function (): void {
     $films = [];
 
-    for ($nth = 1; $nth <= HowAShelfReads::NEW_IN_THE_HOUSE + 1; $nth++) {
+    for ($nth = 1; $nth <= 13; $nth++) {
         $films[] = Holding::of(HoldingId::called(sprintf('f%d', $nth)), sprintf('Film %d', $nth), Medium::Film, WhenItCameOut::in(2000 + $nth));
     }
 
     $screen = theShelfScreen(AShelfThatWasRead::holding(Shelf::of(...$films)));
     $everyTitle = array_map(static fn(Holding $film): string => $film->titled(), $films);
 
-    expect(eachPosterIn($screen, 0, itsTitle()))->toBe(array_slice($everyTitle, 0, HowAShelfReads::NEW_IN_THE_HOUSE))
+    expect(eachPosterIn($screen, 0, itsTitle()))->toBe(array_slice($everyTitle, 0, 12))
         ->and(eachPosterIn($screen, 1, itsTitle()))->toBe($everyTitle)
         ->and($screen->answer()->rows)->toHaveCount(2);
 });
@@ -412,9 +410,9 @@ it('names each kind against a key rather than in English', function (): void {
 });
 
 it('leaves the year off a holding the core could not date', function (): void {
-    // Empty rather than a placeholder: a year invented here would be a fact
+    // Left off rather than a placeholder: a year invented here would be a fact
     // about somebody's library that nobody claimed.
-    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOnePosterSays $poster): string => $poster->filling['year']))->toBe(['1999', '', '2012']);
+    expect(eachPosterIn(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())), 0, static fn(WhatOnePosterSays $poster): string => array_key_exists('year', $poster->filling) ? $poster->filling['year'] : 'no year'))->toBe(['1999', 'no year', '2012']);
 });
 
 it('draws each row under its heading, each poster labelled with its title, kind and year and drawn as its year and kind above its title', function (): void {
@@ -465,8 +463,8 @@ it('says an empty shelf in as many words', function (): void {
 it('reports what stood in the way and keeps the way back', function (): void {
     $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($met->answer()->met)->toEqual(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())
-        ->and($met->answer()->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold())
+    expect($met->answer()->stopped?->met)->toEqual(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())
+        ->and($met->answer()->stopped?->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold())
         ->and($met->answer()->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toBe([]);
 });
@@ -525,8 +523,7 @@ it('a refused credential is a signed-out device, not a report', function (): voi
 
     expect($refused->answer()->isSignedIn)->toBeFalse()
         ->and($refused->answer()->cameBack())->toBeFalse()
-        ->and($refused->answer()->met)->toBe('')
-        ->and($refused->answer()->remedy)->toBe('')
+        ->and($refused->answer()->stopped)->toBeNull()
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)
         ->toBeFalse();
 });
@@ -589,7 +586,7 @@ it('carries no sentence and no remedy where the core answered', function (): voi
     $out = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), signedIn: false)->answer();
 
     foreach ([$told, $empty, $unread, $out] as $answer) {
-        expect($answer->met)->toBe('')->and($answer->remedy)->toBe('');
+        expect($answer->stopped)->toBeNull();
     }
 
     expect($told->isSignedIn)->toBeTrue()
@@ -666,22 +663,22 @@ it('offers a member the app\'s settings where the local network was refused, and
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.settings_would_not_open'));
 });
 
-it('draws the hero\'s backdrop and the front of each row\'s posters from what the phone holds, asking for each poster once', function (): void {
-    $films = array_map(static fn(int $n): Holding => Holding::of(HoldingId::called(sprintf('f%d', $n)), sprintf('Film %d', $n), Medium::Film, WhenItCameOut::in(2000 + $n)), range(1, WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2));
+it('draws the hero\'s backdrop and the front nine of each row\'s posters from what the phone holds, asking for each poster once', function (): void {
+    $films = array_map(static fn(int $n): Holding => Holding::of(HoldingId::called(sprintf('f%d', $n)), sprintf('Film %d', $n), Medium::Film, WhenItCameOut::in(2000 + $n)), range(1, 11));
     $held = ArtworkHeldInMemory::working();
     $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
     $shown = theShelfScreen(AShelfThatWasRead::holding(Shelf::of(...$films, ...[Holding::of(HoldingId::called('s1'), 'A series', Medium::Series, WhenItCameOut::unstated())])), pictures: new ThePicturesItDraws($held, $posters))->answer();
-    $pictured = static fn(WhatAShelfRowSays $row): array => array_keys(array_filter($row->posters, static fn(WhatOnePosterSays $poster): bool => $poster->pictured !== ''));
-    $front = range(0, WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW - 1);
+    $pictured = static fn(WhatAShelfRowSays $row): array => array_keys(array_filter($row->posters, static fn(WhatOnePosterSays $poster): bool => $poster->pictured !== null));
+    $front = range(0, 8);
 
     expect($shown->hero?->pictured)->toStartWith(ArtworkKey::SCHEME)
         ->and($pictured($shown->rows[0]))->toBe($front)
-        ->and($shown->rows[0]->posters)->toHaveCount(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 3)
+        ->and($shown->rows[0]->posters)->toHaveCount(12)
         ->and($pictured($shown->rows[1]))->toBe($front)
         ->and($pictured($shown->rows[2]))->toBe([0])
         ->and($shown->hero?->pictured)->not->toBe($shown->rows[0]->posters[0]->pictured)
-        ->and($posters->asked())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2)
-        ->and($held->howMany())->toBe(WhatAMemberTurnedOutToBeAbleToWatch::PICTURED_IN_EACH_ROW + 2);
+        ->and($posters->asked())->toBe(11)
+        ->and($held->howMany())->toBe(11);
 });
 
 it('draws the shelf\'s pictures again once back on view, after the lock let go of every one', function (): void {

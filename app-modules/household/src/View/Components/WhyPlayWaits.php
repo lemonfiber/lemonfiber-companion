@@ -10,6 +10,7 @@ use Illuminate\View\Component;
 
 use function is_string;
 
+use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\ViewModels\WhatPlayingSays;
 
 use function view;
@@ -23,17 +24,25 @@ use function view;
  */
 final class WhyPlayWaits extends Component
 {
-    /** The line, as it is drawn. */
-    public readonly string $said;
+    /** The line, as it is drawn, or null where Play plays. */
+    public readonly ?string $said;
 
     public function __construct(Translator $catalogue, WhatPlayingSays $playing)
     {
-        $looked = $playing->why === '' ? '' : $catalogue->get($playing->why);
-        $this->said = $playing->isInTheCoresWords || ! is_string($looked) ? $playing->why : $looked;
+        $waits = $playing->waits;
+        $this->said = $waits instanceof ALineAsShown ? $this->looked($catalogue, $waits) : $waits;
     }
 
     public function render(): View
     {
         return view('household::components.why-play-waits');
+    }
+
+    /** This app's line, filled, or its key where the catalogue has none. */
+    private function looked(Translator $catalogue, ALineAsShown $line): string
+    {
+        $said = $catalogue->get($line->key, $line->filling);
+
+        return is_string($said) ? $said : $line->key;
     }
 }

@@ -21,10 +21,8 @@ final readonly class WhatTheirOwnTitlesTurnedOutToBe
     /** @param list<WhatAShelfRowSays> $rows */
     private function __construct(
         public bool $cameBack,
-        public string $met,
-        public string $remedy,
         public array $rows,
-        private ?Obstacle $why = null,
+        public ?WhatStoppedAMember $stopped = null,
     ) {}
 
     /**
@@ -35,40 +33,24 @@ final readonly class WhatTheirOwnTitlesTurnedOutToBe
      */
     public static function these(array $rows): self
     {
-        return new self(cameBack: true, met: '', remedy: '', rows: $rows);
+        return new self(cameBack: true, rows: $rows);
     }
 
     /** Something stood in the way, and this is what the member met. */
     public static function somethingStopped(Obstacle $why): self
     {
-        return new self(cameBack: false, met: WhatAMemberIsTold::met($why), remedy: WhatAMemberIsTold::remedy($why), rows: [], why: $why);
+        return new self(cameBack: false, rows: [], stopped: WhatStoppedAMember::by($why));
     }
 
     /** This device holds no session for that house, so nothing was asked. */
     public static function theSessionEnded(): self
     {
-        return new self(cameBack: false, met: '', remedy: '', rows: []);
+        return new self(cameBack: false, rows: []);
     }
 
     /** Whether something stood in the way, which Home says where the rows would be. */
     public function wasStopped(): bool
     {
-        return $this->met !== '';
-    }
-
-    /**
-     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
-     *
-     * @return array<string, int>
-     */
-    public function filling(): array
-    {
-        return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
-    }
-
-    /** Whether {@see $met} and {@see $remedy} are the core's own text, drawn as written, rather than catalogue keys. */
-    public function isInTheStacksWords(): bool
-    {
-        return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
+        return $this->stopped instanceof WhatStoppedAMember;
     }
 }

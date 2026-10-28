@@ -4,49 +4,36 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\ViewModels;
 
-use function array_merge;
-
 use Closure;
 use Modules\Kernel\Api\AFoundTitle;
 
 /**
- * What a member's search has shown so far: every page read, in order, or what stopped it.
- *
- * Pages are added as the member scrolls, so the rows are every page's titles
- * and `next` is where the page after the last one read begins, or nothing.
+ * What a member's search has shown so far: the titles it found, what stopped it, or both when a later page did not come back.
  */
 final readonly class WhatTheSearchShows
 {
-    /** @param list<AFoundTitleAsShown> $rows */
     private function __construct(
-        public bool $searched,
         public bool $isSignedIn,
-        public string $approval,
-        public array $rows,
-        public string $next,
+        public ?TheTitlesFound $found,
         public ?WhatStoppedAMember $stopped,
     ) {}
 
     /** Nothing searched for yet. */
     public static function nothingYet(): self
     {
-        return new self(searched: false, isSignedIn: true, approval: '', rows: [], next: '', stopped: null);
+        return new self(isSignedIn: true, found: null, stopped: null);
     }
 
-    /**
-     * A page the core answered.
-     *
-     * @param list<AFoundTitleAsShown> $rows
-     */
-    public static function page(string $approval, array $rows, string $next): self
+    /** A page the core answered. */
+    public static function page(TheTitlesFound $found): self
     {
-        return new self(searched: true, isSignedIn: true, approval: $approval, rows: $rows, next: $next, stopped: null);
+        return new self(isSignedIn: true, found: $found, stopped: null);
     }
 
     /** The member's session has ended. */
     public static function theSessionEnded(): self
     {
-        return new self(searched: true, isSignedIn: false, approval: '', rows: [], next: '', stopped: null);
+        return new self(isSignedIn: false, found: null, stopped: null);
     }
 
     /** Something stood in the way. */
@@ -54,46 +41,32 @@ final readonly class WhatTheSearchShows
     {
         return $stopped->endsTheSession()
             ? self::theSessionEnded()
-            : new self(searched: true, isSignedIn: true, approval: '', rows: [], next: '', stopped: $stopped);
+            : new self(isSignedIn: true, found: null, stopped: $stopped);
     }
 
-    /**
-     * This, with the page after it added; a page that did not come back is kept as what stopped it, beneath what was already shown.
-     */
-    public function andThen(self $page): self
+    /** This page beneath the titles `$before` it; a page that did not come back keeps them, with what stopped it. */
+    public function after(TheTitlesFound $before): self
     {
-        if (! $page->cameBack()) {
-            return new self(searched: true, isSignedIn: $page->isSignedIn, approval: $this->approval, rows: $this->rows, next: '', stopped: $page->stopped);
-        }
-
-        return new self(searched: true, isSignedIn: true, approval: $page->approval, rows: array_merge($this->rows, $page->rows), next: $page->next, stopped: null);
+        return new self(
+            isSignedIn: $this->isSignedIn,
+            found: $this->found instanceof TheTitlesFound ? $before->andThen($this->found) : $before->last(),
+            stopped: $this->stopped,
+        );
     }
 
     /**
      * This, each row's poster drawn from the source `$from` answers for its title.
      *
-     * @param Closure(AFoundTitle): string $from
+     * @param Closure(AFoundTitle): ?string $from
      */
     public function pictured(Closure $from): self
     {
-        $rows = [];
-
-        foreach ($this->rows as $row) {
-            $rows[] = $row->pictured($from($row->found));
-        }
-
-        return new self(searched: $this->searched, isSignedIn: $this->isSignedIn, approval: $this->approval, rows: $rows, next: $this->next, stopped: $this->stopped);
+        return new self(isSignedIn: $this->isSignedIn, found: $this->found?->pictured($from), stopped: $this->stopped);
     }
 
-    /** Whether the core answered and nothing stood in the way. */
-    public function cameBack(): bool
+    /** Whether a search was answered or stopped. */
+    public function searched(): bool
     {
-        return $this->isSignedIn && ! $this->stopped instanceof WhatStoppedAMember;
-    }
-
-    /** Whether another page follows the last one read. */
-    public function hasMore(): bool
-    {
-        return $this->next !== '';
+        return $this->found instanceof TheTitlesFound || $this->stopped instanceof WhatStoppedAMember;
     }
 }

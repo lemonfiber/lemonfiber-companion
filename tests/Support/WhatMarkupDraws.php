@@ -127,10 +127,12 @@ final readonly class WhatMarkupDraws
     /**
      * The words a translation key draws as a text in the outline, and the key
      * itself where the catalogue has none, as a screen would draw it.
+     *
+     * @param array<string, int|string> $filling
      */
-    public static function words(string $key): string
+    public static function words(string $key, array $filling = []): string
     {
-        $said = __($key);
+        $said = __($key, $filling);
 
         return is_string($said) ? $said : $key;
     }

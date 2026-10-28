@@ -33,6 +33,8 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Override;
 
+use function trim;
+
 /**
  * One title on a member's shelf, in full, opened from its poster or from Home's hero.
  *
@@ -101,9 +103,10 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
     public function playTheEpisode(string $episode): void
     {
         $page = $this->page();
+        $pressed = $this->holding($episode);
 
-        if ($page instanceof HoldingId && $episode !== '') {
-            $this->pressed($page, $this->titles->theEpisode($this->stack(), $page, HoldingId::called($episode)));
+        if ($page instanceof HoldingId && $pressed instanceof HoldingId) {
+            $this->pressed($page, $this->titles->theEpisode($this->stack(), $page, $pressed));
         }
     }
 
@@ -188,6 +191,12 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
     {
         $named = $this->param('service');
 
-        return is_string($named) && $named !== '' ? HoldingId::called($named) : null;
+        return is_string($named) ? $this->holding($named) : null;
+    }
+
+    /** The holding `$named` names, or none where it names nothing. */
+    private function holding(string $named): ?HoldingId
+    {
+        return trim($named) === '' ? null : HoldingId::called($named);
     }
 }

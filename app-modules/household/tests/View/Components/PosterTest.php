@@ -27,7 +27,7 @@ use function uses;
 uses(TestCase::class);
 
 /** A holding as the presenter hands it over. */
-function aPosterOf(string $titled, string $year = '1999', string $medium = 'household.medium.film'): WhatOnePosterSays
+function aPosterOf(string $titled, ?string $year = '1999', string $medium = 'household.medium.film'): WhatOnePosterSays
 {
     return WhatOnePosterSays::ofATitle($titled, $medium, $year);
 }
@@ -61,7 +61,7 @@ it('is read as one element, its title, kind and year said once from its label', 
 });
 
 it('says nothing of a year the core could not give, on the tile or to a reader', function (): void {
-    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien', year: '', medium: 'household.medium.series')]);
+    $drawn = WhatMarkupDraws::drawn('<x-household::poster :poster="$poster" />', ['poster' => aPosterOf('Alien', year: null, medium: 'household.medium.series')]);
 
     expect(data_get($drawn, 'props.a11y_label'))->toBe('Alien, Series')
         ->and(data_get($drawn, 'children.0.children.0.children.0.props.text'))->toBe('Series');

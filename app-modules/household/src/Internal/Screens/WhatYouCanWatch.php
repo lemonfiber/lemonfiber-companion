@@ -282,8 +282,8 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
     private function pictured(WhatAMemberTurnedOutToBeAbleToWatch $shown, Stack $stack, Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch
     {
         return $shown->pictured(
-            poster: fn(string $plays): string => $this->pictures->ofAHolding($stack, $session, $whose, HoldingId::called($plays)),
-            backdrop: fn(string $plays): string => $this->pictures->backdropOfAHolding($stack, $session, $whose, HoldingId::called($plays)),
+            poster: fn(string $plays): ?string => $this->pictures->ofAHolding($stack, $session, $whose, HoldingId::called($plays)),
+            backdrop: fn(string $plays): ?string => $this->pictures->backdropOfAHolding($stack, $session, $whose, HoldingId::called($plays)),
         );
     }
 

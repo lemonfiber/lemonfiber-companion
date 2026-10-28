@@ -37,6 +37,7 @@ final class AMemberWhoIsOwed implements Owing
         private readonly Sentences $said,
         private readonly ?Obstacle $why,
         private readonly Requested $wanted,
+        private readonly ?Obstacle $requestsMet = null,
         private ?Stack $asked = null,
         private int $askings = 0,
         private int $askingsForTheDefaults = 0,
@@ -80,6 +81,12 @@ final class AMemberWhoIsOwed implements Owing
     public static function asking(Requested $wanted): self
     {
         return new self(said: Sentences::none(), why: null, wanted: $wanted);
+    }
+
+    /** A member the stack has something to tell, whose requests could not be read for what stood in the way. */
+    public static function owedWithTheirRequestsUnread(Sentences $said, Obstacle $why): self
+    {
+        return new self(said: $said, why: null, wanted: Requested::none(), requestsMet: $why);
     }
 
     /** Which stack was asked, for a test that cares that the right one was. */
@@ -138,6 +145,6 @@ final class AMemberWhoIsOwed implements Owing
 
         return $this->why instanceof Obstacle
             ? WhatTheirAskingSaid::bothRefused($this->why)
-            : WhatTheirAskingSaid::of(WhatTheyAreOwed::told($this->said), WhatTheyAsked::told($this->wanted));
+            : WhatTheirAskingSaid::of(WhatTheyAreOwed::told($this->said), $this->requestsMet instanceof Obstacle ? WhatTheyAsked::refused($this->requestsMet) : WhatTheyAsked::told($this->wanted));
     }
 }

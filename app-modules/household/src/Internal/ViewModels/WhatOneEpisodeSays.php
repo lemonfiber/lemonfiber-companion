@@ -8,20 +8,16 @@ namespace Modules\Household\Internal\ViewModels;
 final readonly class WhatOneEpisodeSays
 {
     /**
-     * @param string                $id            the episode as the core names it, which its Play asks for
-     * @param string                $headed        its heading, as a catalogue key: its number and name, or its name alone
-     * @param array<string, int|string> $headedFilling what that key is filled with
-     * @param string                $runs          how long it runs, as a catalogue key, or empty where unstated
-     * @param array<string, int|string> $runsFilling what that key is filled with
-     * @param string             $about       what happens in it, or empty
+     * @param string            $id     the episode as the core names it, which its Play asks for
+     * @param ALineAsShown      $headed its heading: its number and name, or its name alone
+     * @param ALineAsShown|null $runs   how long it runs, or null where unstated
+     * @param string            $about  what happens in it, or empty
      */
     public function __construct(
         public string $id,
         public string $titled,
-        public string $headed,
-        public array $headedFilling,
-        public string $runs,
-        public array $runsFilling,
+        public ALineAsShown $headed,
+        public ?ALineAsShown $runs,
         public string $about,
         public WhatPlayingSays $playing,
     ) {}

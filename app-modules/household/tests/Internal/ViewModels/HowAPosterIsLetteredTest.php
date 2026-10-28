@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Household\Tests\Internal\ViewModels;
 
 use function expect;
-use function intdiv;
 use function it;
 
 use Modules\Design\Api\TypeSize;
@@ -14,36 +13,29 @@ use Modules\Household\Internal\ViewModels\HowAPosterIsLettered;
 use function sprintf;
 use function str_repeat;
 
-it('letters a short title of short words large', function (): void {
+it('letters a title of eighteen characters, its words six at most, large', function (): void {
     expect(HowAPosterIsLettered::for('Alien'))->toBe(HowAPosterIsLettered::Large)
-        ->and(HowAPosterIsLettered::for(str_repeat('a', HowAPosterIsLettered::LARGE_WORD_AT_MOST)))->toBe(HowAPosterIsLettered::Large);
+        ->and(HowAPosterIsLettered::for('aaaaaa'))->toBe(HowAPosterIsLettered::Large)
+        ->and(HowAPosterIsLettered::for('abc abc abc abc dd'))->toBe(HowAPosterIsLettered::Large);
 });
 
-it('letters a title large up to its longest, and no further', function (): void {
-    $atMost = sprintf('%s%s', str_repeat('abc ', intdiv(HowAPosterIsLettered::LARGE_AT_MOST, 4)), str_repeat('d', HowAPosterIsLettered::LARGE_AT_MOST % 4));
-
-    expect(HowAPosterIsLettered::for($atMost))->toBe(HowAPosterIsLettered::Large)
-        ->and(HowAPosterIsLettered::for(sprintf('%s e', $atMost)))->toBe(HowAPosterIsLettered::Middle);
+it('steps down from large past eighteen characters, or for a word of seven', function (): void {
+    expect(HowAPosterIsLettered::for('abc abc abc abc ddd'))->toBe(HowAPosterIsLettered::Middle)
+        ->and(HowAPosterIsLettered::for('aaaaaaa'))->toBe(HowAPosterIsLettered::Middle);
 });
 
-it('steps down from large for one word too long to fit a line at that size', function (): void {
-    expect(HowAPosterIsLettered::for(str_repeat('a', HowAPosterIsLettered::LARGE_WORD_AT_MOST + 1)))->toBe(HowAPosterIsLettered::Middle);
+it('letters a title of fifty-six characters, its words eleven at most, at the middle step', function (): void {
+    expect(HowAPosterIsLettered::for(sprintf('%s%s', str_repeat('abc ', 13), 'dddd')))->toBe(HowAPosterIsLettered::Middle)
+        ->and(HowAPosterIsLettered::for(str_repeat('a', 11)))->toBe(HowAPosterIsLettered::Middle);
 });
 
-it('letters a title at the middle step up to its longest, and no further', function (): void {
-    $atMost = sprintf('%s%s', str_repeat('abc ', intdiv(HowAPosterIsLettered::MIDDLE_AT_MOST, 4)), str_repeat('d', HowAPosterIsLettered::MIDDLE_AT_MOST % 4));
-
-    expect(HowAPosterIsLettered::for($atMost))->toBe(HowAPosterIsLettered::Middle)
-        ->and(HowAPosterIsLettered::for(sprintf('%s e', $atMost)))->toBe(HowAPosterIsLettered::Small);
-});
-
-it('steps down from the middle for one word too long to fit a line at that size', function (): void {
-    expect(HowAPosterIsLettered::for(str_repeat('a', HowAPosterIsLettered::MIDDLE_WORD_AT_MOST)))->toBe(HowAPosterIsLettered::Middle)
-        ->and(HowAPosterIsLettered::for(str_repeat('a', HowAPosterIsLettered::MIDDLE_WORD_AT_MOST + 1)))->toBe(HowAPosterIsLettered::Small);
+it('steps down from the middle past fifty-six characters, or for a word of twelve', function (): void {
+    expect(HowAPosterIsLettered::for(sprintf('%s%s', str_repeat('abc ', 13), 'ddddd')))->toBe(HowAPosterIsLettered::Small)
+        ->and(HowAPosterIsLettered::for(str_repeat('a', 12)))->toBe(HowAPosterIsLettered::Small);
 });
 
 it('counts characters rather than bytes, so a title in any script is stepped by its length', function (): void {
-    expect(HowAPosterIsLettered::for(str_repeat('é', HowAPosterIsLettered::LARGE_WORD_AT_MOST)))->toBe(HowAPosterIsLettered::Large);
+    expect(HowAPosterIsLettered::for('éééééé'))->toBe(HowAPosterIsLettered::Large);
 });
 
 it('sets each step at a smaller size of the brand\'s than the step before it', function (): void {

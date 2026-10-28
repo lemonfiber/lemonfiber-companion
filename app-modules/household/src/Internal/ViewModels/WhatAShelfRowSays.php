@@ -28,14 +28,14 @@ final readonly class WhatAShelfRowSays
      *
      * A poster that plays nothing is a preview's and is left lettered.
      *
-     * @param Closure(string): string $from
+     * @param Closure(string): ?string $from
      */
     public function pictured(int $first, Closure $from): self
     {
         $posters = [];
 
         foreach (array_slice($this->posters, 0, $first) as $poster) {
-            $posters[] = $poster->plays === '' ? $poster : $poster->pictured($from($poster->plays));
+            $posters[] = $poster->plays === null ? $poster : $poster->pictured($from($poster->plays));
         }
 
         return new self($this->heading, [...$posters, ...array_slice($this->posters, $first)]);

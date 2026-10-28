@@ -129,7 +129,7 @@ it('draws the newest title across a member\'s Home, opening nothing and asking f
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->shelf()->hero?->titled)->toBe('A film')
-        ->and($screen->shelf()->hero?->goes)->toBe('')
+        ->and($screen->shelf()->hero?->goes)->toBeNull()
         ->and($drawn->said())->toContain(__('household.hero.reads', ['reads' => 'A film, Film, 1999']))
         ->and($drawn->offersThatWait())->toContain(__('household.title.play'))
         ->and($drawn->offersThatWait())->toContain(__('household.hero.more'))
@@ -210,8 +210,8 @@ it('asks nothing for a member\'s session, and says it is not theirs to ask', fun
     $owing = AMemberWhoIsOwed::owed(whatTheDefaultsAreTold());
     $screen = thePreview(watching: $watching, owing: $owing, whose: Whose::member('ada'));
 
-    expect($screen->shelf()->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
-        ->and($screen->allowance()->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
+    expect($screen->shelf()->stopped?->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
+        ->and($screen->allowance()->stopped?->met)->toBe(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
         ->and($watching->askings())->toBe(0)
         ->and($owing->askings())->toBe(0);
 });

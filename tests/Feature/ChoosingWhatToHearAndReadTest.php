@@ -71,6 +71,21 @@ it('keeps what the member chose for them on this house, and draws it chosen the 
         ->and($phone->languages->of($house->id(), Whose::member('robin')))->toEqual(TheirLanguages::of(HearIn::Dutch, ReadIn::English));
 });
 
+it('reads what the member chose once a frame, and again once they choose', function (): void {
+    $house = aHouseToChooseLanguagesIn();
+    $phone = new AMemberOnTheirProfile($house);
+    $profile = $phone->profileOf($house);
+
+    $profile->languages();
+    $phone->languages->hearIn($house->id(), HearIn::Dutch);
+
+    expect(theLanguagesOffered($profile->languages()->hear))->toBe(['original*', 'nl', 'en']);
+
+    $profile->readIn(ReadIn::English->value);
+
+    expect(theLanguagesOffered($profile->languages()->hear))->toBe(['original', 'nl*', 'en']);
+});
+
 it('hands another member signed in to the same house nothing the first one chose', function (): void {
     $house = aHouseToChooseLanguagesIn();
     $phone = new AMemberOnTheirProfile($house);

@@ -15,7 +15,7 @@
     @endforelse
 @elseif ($this->leftOffWasStopped())
     <x-design::notice tone="quiet">
-        <x-household::what-stood-in-the-way :met="$this->whereTheyLeftOff()->met" :remedy="$this->whereTheyLeftOff()->remedy" :filling="$this->whereTheyLeftOff()->filling()" :in-the-stacks-words="$this->whereTheyLeftOff()->isInTheStacksWords()" />
+        <x-household::what-stood-in-the-way :stopped="$this->whereTheyLeftOff()->stopped" />
     </x-design::notice>
     @if (! $this->theirOwnWereStopped())
         {{-- Offered once: where their requests could not be asked for either,
@@ -33,7 +33,7 @@
     @endforelse
 @elseif ($this->theirOwnWereStopped())
     <x-design::notice tone="quiet">
-        <x-household::what-stood-in-the-way :met="$this->theirOwn()->met" :remedy="$this->theirOwn()->remedy" :filling="$this->theirOwn()->filling()" :in-the-stacks-words="$this->theirOwn()->isInTheStacksWords()" />
+        <x-household::what-stood-in-the-way :stopped="$this->theirOwn()->stopped" />
     </x-design::notice>
     <x-design::action :label="__('household.ask_again')" :answersTo="__('household.ask_again_for_yours')" tap="askAgain()" tone="tonal" />
 @endif
@@ -44,7 +44,7 @@
          kind it holds. A poster carries its title, its kind and its year, and
          says all three to a screen reader at once. --}}
     @if ($this->answer()->hasAHero())
-        <x-household::hero :poster="$this->answer()->hero" :tap="$this->tapping('play', $this->answer()->hero->plays)" />
+        <x-household::hero :poster="$this->answer()->hero" :tap="$this->answer()->hero->plays === null ? '' : $this->tapping('play', $this->answer()->hero->plays)" />
         @if ($this->playingSaid !== '')
             <x-design::note>{{ __($this->playingSaid) }}</x-design::note>
         @endif
@@ -73,16 +73,16 @@
     </x-design::notice>
 
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-@elseif ($this->answer()->isSignedIn)
+@elseif ($this->answer()->stopped !== null)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
          beside it. --}}
     <x-design::notice tone="unknown">
-        <x-household::what-stood-in-the-way :met="$this->answer()->met" :remedy="$this->answer()->remedy" :filling="$this->answer()->filling()" :in-the-stacks-words="$this->answer()->isInTheStacksWords()" />
+        <x-household::what-stood-in-the-way :stopped="$this->answer()->stopped" />
     </x-design::notice>
 
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-    @if ($this->answer()->isPutRightInTheAppsSettings())
+    @if ($this->answer()->stopped?->isPutRightInTheAppsSettings())
         <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>

@@ -9,6 +9,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 use function is_string;
+
+use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
+
 use function view;
 
 /**
@@ -25,19 +28,15 @@ final class WhatStoodInTheWay extends Component
     /** What the member met, as it is drawn. */
     public readonly string $said;
 
-    /** What the member can do about it, as it is drawn, or empty where there is nothing to say. */
-    public readonly string $todo;
+    /** What the member can do about it, as it is drawn, or null where the screen says nothing of it. */
+    public readonly ?string $todo;
 
-    /**
-     * @param string               $met               the core's sentence, or the catalogue key for what happened
-     * @param string               $remedy            the core's remedy, or the catalogue key for what to do; empty for none
-     * @param array<string, int>   $filling           what this app's lines are filled with
-     * @param bool                 $inTheStacksWords  whether the two are the core's text rather than keys
-     */
-    public function __construct(Translator $catalogue, string $met, string $remedy = '', array $filling = [], bool $inTheStacksWords = false)
+    public function __construct(Translator $catalogue, WhatStoppedAMember $stopped)
     {
-        $this->said = $inTheStacksWords ? $met : $this->looked($catalogue, $met, $filling);
-        $this->todo = $inTheStacksWords || $remedy === '' ? $remedy : $this->looked($catalogue, $remedy, $filling);
+        $filling = $stopped->filling();
+        $inTheStacksWords = $stopped->isInTheStacksWords();
+        $this->said = $inTheStacksWords ? $stopped->met : $this->looked($catalogue, $stopped->met, $filling);
+        $this->todo = $inTheStacksWords || $stopped->remedy === null ? $stopped->remedy : $this->looked($catalogue, $stopped->remedy, $filling);
     }
 
     public function render(): View

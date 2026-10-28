@@ -5,9 +5,9 @@
      which reads it in full; something part-way through plays on from where
      it was left; a request opens nothing. Each step's lettering is written
      out, so every class on it can be read. --}}
-@if ($poster->tap !== '')
+@if ($poster->tap !== null)
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}" :press-opacity="0.6" @press="{{ $poster->tap }}">
-@elseif ($poster->goes !== '')
+@elseif ($poster->goes !== null)
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}" :press-opacity="0.6" @navigate="$poster->goes">
 @else
 <native:pressable class="w-32 min-h-12" a11y-label="{{ $named }}">
@@ -25,7 +25,7 @@
     <native:text class="text-[13] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
     @endif
 </native:column>
-@if ($poster->pictured !== '')
+@if ($poster->pictured !== null)
 <native:image src="{{ $poster->pictured }}" class="w-full h-full rounded object-cover" />
 @endif
 </native:stack>

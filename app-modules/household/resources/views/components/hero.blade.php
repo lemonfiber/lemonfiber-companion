@@ -18,7 +18,7 @@
     <native:text class="text-[15] font-extrabold text-theme-text" font="GolosText-ExtraBold" :fixed-size="true" :max-lines="$lines">{{ $titled }}</native:text>
     @endif
 </native:column>
-@if ($poster->pictured !== '')
+@if ($poster->pictured !== null)
 <native:image src="{{ $poster->pictured }}" class="w-full h-full rounded object-cover" />
 @endif
 </native:stack>
@@ -33,7 +33,7 @@
 <x-design::action :label="__('household.title.play')" :answersTo="$playNamed" :disabled="true" />
 <x-design::note>{{ __('household.preview.cannot_play') }}</x-design::note>
 @endif
-@if ($poster->goes !== '')
+@if ($poster->goes !== null)
 <x-design::action :label="__('household.hero.more')" :answersTo="$moreNamed" tone="tonal" :goes="$poster->goes" />
 @else
 <x-design::action :label="__('household.hero.more')" :answersTo="$moreNamed" tone="tonal" :disabled="true" />

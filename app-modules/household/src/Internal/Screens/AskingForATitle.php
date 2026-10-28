@@ -11,9 +11,10 @@ use function is_string;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
-use Modules\Household\Internal\Presenters\InWords;
+use Modules\Household\Internal\Presenters\InWordsOrNone;
 use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
+use Modules\Household\Internal\ViewModels\TheAskAnswered;
 use Modules\Household\Internal\ViewModels\WhatAskingShows;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\AFoundTitle;
@@ -117,23 +118,25 @@ final class AskingForATitle extends NativeComponent
 
         $shown = new HowAFoundTitleReads()->shown($title);
 
-        return $this->asked instanceof WhatAskingShows && $this->asked->cameBack() ? $shown->standing($this->asked->became) : $shown;
+        $answer = $this->asked?->answer;
+
+        return $answer instanceof TheAskAnswered ? $shown->standing($answer->became) : $shown;
     }
 
-    /** The source the title's poster is drawn from, or nothing where there is no title, no session or no poster. */
-    public function pictured(): string
+    /** The source the title's poster is drawn from, or null where there is no title, no session or no poster. */
+    public function pictured(): ?string
     {
         $title = $this->title();
 
         if (! $title instanceof AFoundTitle) {
-            return '';
+            return null;
         }
 
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): InWords => new InWords($this->pictures->ofAFoundTitle($stack, $session, $title)),
-            notHeld: static fn(): InWords => new InWords(''),
+            held: fn(Session $session): InWordsOrNone => new InWordsOrNone($this->pictures->ofAFoundTitle($stack, $session, $title)),
+            notHeld: static fn(): InWordsOrNone => new InWordsOrNone(null),
         )->said;
     }
 

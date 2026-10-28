@@ -96,7 +96,7 @@ function aFirstPage(): WhatASearchFound
 /** The last page. */
 function aLastPage(): WhatASearchFound
 {
-    return WhatASearchFound::lastly('What you ask for arrives without waiting for a yes.', AFoundTitle::listed('693134', KindOfTitle::Film, 'Dune: Part Two', WhenItCameOut::in(2024), WhereAFoundTitleStands::Here));
+    return WhatASearchFound::lastly('What you ask for now waits for a yes.', AFoundTitle::listed('693134', KindOfTitle::Film, 'Dune: Part Two', WhenItCameOut::in(2024), WhereAFoundTitleStands::Here));
 }
 
 /** A found title's page, opened from its search row, asking the house given. */
@@ -130,6 +130,16 @@ function aSearchLine(string $key, array $filling = []): string
     return is_string($line) ? $line : '';
 }
 
+/**
+ * The rows the search tab found so far.
+ *
+ * @return list<AFoundTitleAsShown>
+ */
+function theRowsFound(LookingForATitle $screen): array
+{
+    return $screen->answer()->found->rows ?? [];
+}
+
 /** A rehearsal answered in the core's words. */
 function aRehearsalSaid(string $said): HowAnAskWent
 {
@@ -140,7 +150,7 @@ it('asks nothing until the member searches, and nothing for fewer words than the
     $finding = AStackThatFindsTitles::finding(aFirstPage());
     $screen = theSearchTab($finding);
 
-    expect($screen->answer()->searched)->toBeFalse()
+    expect($screen->answer()->searched())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.search.explained'));
 
     $screen->typed = ' d ';
@@ -163,8 +173,8 @@ it('shows every title on the page with its year, kind and standing, under the co
         'Dune: Prophecy',
         aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.medium.series'), 'stands' => aSearchLine('household.asked.getting')]),
     )
-        ->and($screen->goes()->found($screen->answer()->rows[0]->found))->toBe(AStacksScreen::Found->forTheStacksFoundTitle(theHouseSearchedFrom()->id(), dune()))
-        ->and($screen->answer()->rows[0]->carries)->toBe([
+        ->and($screen->goes()->found(theRowsFound($screen)[0]->found))->toBe(AStacksScreen::Found->forTheStacksFoundTitle(theHouseSearchedFrom()->id(), dune()))
+        ->and(theRowsFound($screen)[0]->carries)->toBe([
             WhatAFoundTitleIsOpenedWith::Kind->value => 'movies',
             WhatAFoundTitleIsOpenedWith::Title->value => 'Dune',
             WhatAFoundTitleIsOpenedWith::Year->value => '2021',
@@ -182,8 +192,9 @@ it('reads the next page as the member reaches the end, from the place the last p
     $screen->more();
 
     expect($finding->asked())->toBe(['dune', 'dune after page-2'])
-        ->and(array_map(static fn(AFoundTitleAsShown $row): string => $row->titled, $screen->answer()->rows))->toBe(['Dune', 'Dune: Prophecy', 'Dune: Part Two'])
-        ->and($screen->answer()->hasMore())->toBeFalse();
+        ->and(array_map(static fn(AFoundTitleAsShown $row): string => $row->titled, theRowsFound($screen)))->toBe(['Dune', 'Dune: Prophecy', 'Dune: Part Two'])
+        ->and($screen->answer()->found?->next)->toBeNull()
+        ->and($screen->answer()->found?->approval)->toBe('What you ask for now waits for a yes.');
 });
 
 it('says in as many words that nothing matched, rather than drawing a blank list', function (): void {
@@ -270,9 +281,9 @@ it('keeps the titles already shown and draws what stopped the next page beneath 
     $screen->search();
     $screen->more();
 
-    expect(array_map(static fn(AFoundTitleAsShown $row): string => $row->titled, $screen->answer()->rows))->toBe(['Dune', 'Dune: Prophecy'])
+    expect(array_map(static fn(AFoundTitleAsShown $row): string => $row->titled, theRowsFound($screen)))->toBe(['Dune', 'Dune: Prophecy'])
         ->and($screen->answer()->stopped?->met)->toBe(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold())
-        ->and($screen->answer()->hasMore())->toBeFalse();
+        ->and($screen->answer()->found?->next)->toBeNull();
 });
 
 it('opened with a blank title carried, says to open it from Search, and asks nothing when told to ask', function (): void {
@@ -291,6 +302,43 @@ it('opened with a blank title carried, says to open it from Search, and asks not
         ->and($page->shown())->toBeNull()
         ->and($asking->asked())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(__('household.found.from_search'));
+});
+
+it('opened with no title carried at all, says to open it from Search', function (): void {
+    $page = theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('unused'), aRehearsalSaid('unused')), dune(), carried: false);
+    $page->setData([
+        WhatAFoundTitleIsOpenedWith::Kind->value => KindOfTitle::Film->value,
+        WhatAFoundTitleIsOpenedWith::Year->value => '2021',
+        WhatAFoundTitleIsOpenedWith::Stands->value => WhereAFoundTitleStands::Askable->value,
+    ]);
+
+    expect($page->title())->toBeNull();
+});
+
+it('reads a title carried with no year as one whose year is unstated', function (): void {
+    $prophecy = AFoundTitle::listed('90228', KindOfTitle::Series, 'Dune: Prophecy', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable);
+
+    expect(theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('unused'), aRehearsalSaid('unused')), $prophecy)->title()?->year()->either(
+        dated: static fn(int $year): TheWordCarriedOut => new TheWordCarriedOut((string) $year),
+        unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unstated'),
+    )->said)->toBe('unstated');
+});
+
+it('draws no poster for a found title where the member\'s session is not held', function (): void {
+    $held = ArtworkHeldInMemory::working();
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a poster')));
+    $keychain = AKeychainInMemory::working();
+    $page = new AskingForATitle(AStackThatTakesAsks::answering(aRehearsalSaid('unused'), aRehearsalSaid('unused')), new ThePicturesItDraws($held, $posters), $keychain, SequencedEntropy::counting(), AroundThePhone::holding(StacksInMemory::holding(theHouseSearchedFrom()), storage: $keychain), new AppsSettingsThatOpen());
+    $page->setParams(['stack' => theHouseSearchedFrom()->id()->stored(), 'service' => dune()->id()]);
+    $page->setData([
+        WhatAFoundTitleIsOpenedWith::Kind->value => KindOfTitle::Film->value,
+        WhatAFoundTitleIsOpenedWith::Title->value => 'Dune',
+        WhatAFoundTitleIsOpenedWith::Year->value => '2021',
+        WhatAFoundTitleIsOpenedWith::Stands->value => WhereAFoundTitleStands::Askable->value,
+    ]);
+
+    expect($page->pictured())->toBeNull()
+        ->and($posters->asked())->toBe(0);
 });
 
 it('rehearses again when asked to check again', function (): void {
@@ -312,7 +360,7 @@ it('draws each title\'s poster from what the phone holds, fetched once, and lett
     $screen->search();
     $screen->search();
 
-    $sources = array_map(static fn(AFoundTitleAsShown $row): string => $row->pictured, $screen->answer()->rows);
+    $sources = array_map(static fn(AFoundTitleAsShown $row): ?string => $row->pictured, theRowsFound($screen));
 
     expect($sources)->each->toStartWith(ArtworkKey::SCHEME)
         ->and($posters->asked())->toBe(2)
@@ -322,7 +370,7 @@ it('draws each title\'s poster from what the phone holds, fetched once, and lett
     $lettered->typed = 'dune';
     $lettered->search();
 
-    expect(array_map(static fn(AFoundTitleAsShown $row): string => $row->pictured, $lettered->answer()->rows))->each->toBe('');
+    expect(array_map(static fn(AFoundTitleAsShown $row): ?string => $row->pictured, theRowsFound($lettered)))->each->toBeNull();
 });
 
 it('draws the found title\'s poster from what the phone holds, and none where it was opened with nothing', function (): void {
@@ -333,7 +381,7 @@ it('draws the found title\'s poster from what the phone holds, and none where it
 
     expect($page->pictured())->toStartWith(ArtworkKey::SCHEME)
         ->and($drawn)->toContain('Dune')
-        ->and(theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('It arrives without waiting.'), aRehearsalSaid('unused')), dune(), carried: false, pictures: new ThePicturesItDraws($held, $posters))->pictured())->toBe('')
+        ->and(theFoundPage(AStackThatTakesAsks::answering(aRehearsalSaid('It arrives without waiting.'), aRehearsalSaid('unused')), dune(), carried: false, pictures: new ThePicturesItDraws($held, $posters))->pictured())->toBeNull()
         ->and($posters->asked())->toBe(1);
 });
 

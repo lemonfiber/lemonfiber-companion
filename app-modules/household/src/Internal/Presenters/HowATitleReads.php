@@ -7,12 +7,14 @@ namespace Modules\Household\Internal\Presenters;
 use function intdiv;
 
 use Modules\Household\Internal\Month;
+use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\ViewModels\WhatOneEpisodeSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatOneSeasonSays;
 use Modules\Household\Internal\ViewModels\WhatPlayingSays;
 use Modules\Household\Internal\ViewModels\WhatTheTitleSays;
 use Modules\Household\Internal\ViewModels\WhatThisTitleTurnedOutToBe;
+use Modules\Household\Internal\ViewModels\WhenItCameOutAsShown;
 use Modules\Kernel\Api\AnEpisode;
 use Modules\Kernel\Api\ATitle;
 use Modules\Kernel\Api\Genres;
@@ -57,22 +59,17 @@ final readonly class HowATitleReads
     {
         $holding = $title->holding();
         $year = $holding->year()->either(
-            dated: static fn(int $year): InWords => new InWords((string) $year),
-            unstated: static fn(): InWords => new InWords(''),
+            dated: static fn(int $year): InWordsOrNone => new InWordsOrNone((string) $year),
+            unstated: static fn(): InWordsOrNone => new InWordsOrNone(null),
         )->said;
-        [$runs, $runsFilling] = $this->runs($title->runs());
-        [$released, $releasedFilling, $releasedIn] = $this->released($title->released());
 
         return WhatThisTitleTurnedOutToBe::told(new WhatTheTitleSays(
             poster: WhatOnePosterSays::ofATitle($holding->titled(), $holding->medium()->saidOnTheScreen(), $year),
             about: $title->about(),
-            runs: $runs,
-            runsFilling: $runsFilling,
+            runs: $this->runs($title->runs()),
             genres: $this->genres($title->genres()),
             certificate: $title->certificate(),
-            released: $released,
-            releasedFilling: $releasedFilling,
-            releasedIn: $releasedIn,
+            released: $this->released($title->released()),
             playing: $this->playing($title->whatPlayPlays()),
             seasons: $this->seasons($title->seasons()),
         ));
@@ -131,62 +128,53 @@ final readonly class HowATitleReads
 
     private function episode(AnEpisode $episode): WhatOneEpisodeSays
     {
-        [$runs, $runsFilling] = $this->runs($episode->runs());
-
         $titled = $episode->titled();
-        [$headed, $headedFilling] = $episode->number()->either(
-            number: static fn(int $number): Keyed => new Keyed(self::EPISODE_NUMBERED, ['number' => (string) $number, 'title' => $titled]),
-            none: static fn(): Keyed => new Keyed(self::EPISODE_UNNUMBERED, ['title' => $titled]),
-        )->asDrawn();
 
         return new WhatOneEpisodeSays(
             id: $episode->id()->named(),
             titled: $titled,
-            headed: $headed,
-            headedFilling: $headedFilling,
-            runs: $runs,
-            runsFilling: $runsFilling,
+            headed: $episode->number()->either(
+                number: static fn(int $number): ALineAsShown => new ALineAsShown(self::EPISODE_NUMBERED, ['number' => $number, 'title' => $titled]),
+                none: static fn(): ALineAsShown => new ALineAsShown(self::EPISODE_UNNUMBERED, ['title' => $titled]),
+            ),
+            runs: $this->runs($episode->runs()),
             about: $episode->about(),
             playing: $this->playingWhere($episode->plays()),
         );
     }
 
-    /**
-     * How long it runs, as a key and what fills it, or an empty key where unstated.
-     *
-     * @return array{string, array<string, int|string>}
-     */
-    private function runs(HowLongItRuns $runs): array
+    /** How long it runs, or null where unstated. */
+    private function runs(HowLongItRuns $runs): ?ALineAsShown
     {
-        return $runs->either(
-            minutes: static fn(int $minutes): Keyed => self::inHoursAndMinutes($minutes * SecondsIn::AMinute->value),
-            unstated: static fn(): Keyed => new Keyed('', []),
-        )->asDrawn();
+        $line = $runs->either(
+            minutes: static fn(int $minutes): ALineAsShown => self::inHoursAndMinutes($minutes * SecondsIn::AMinute->value),
+            unstated: static fn(): Unsaid => new Unsaid(),
+        );
+
+        return $line instanceof ALineAsShown ? $line : null;
     }
 
     /** A runtime in seconds, as hours and minutes where it runs an hour or more, and as minutes where it does not. */
-    private static function inHoursAndMinutes(int $seconds): Keyed
+    private static function inHoursAndMinutes(int $seconds): ALineAsShown
     {
         $minutes = intdiv($seconds % SecondsIn::AnHour->value, SecondsIn::AMinute->value);
 
         return match (true) {
-            $seconds < SecondsIn::AMinute->value => new Keyed(self::RUNS_UNDER_A_MINUTE, []),
-            $seconds < SecondsIn::AnHour->value => new Keyed(self::RUNS_MINUTES, ['minutes' => $minutes]),
-            default => new Keyed(self::RUNS_HOURS, ['hours' => intdiv($seconds, SecondsIn::AnHour->value), 'minutes' => $minutes]),
+            $seconds < SecondsIn::AMinute->value => new ALineAsShown(self::RUNS_UNDER_A_MINUTE, []),
+            $seconds < SecondsIn::AnHour->value => new ALineAsShown(self::RUNS_MINUTES, ['minutes' => $minutes]),
+            default => new ALineAsShown(self::RUNS_HOURS, ['hours' => intdiv($seconds, SecondsIn::AnHour->value), 'minutes' => $minutes]),
         };
     }
 
-    /**
-     * When it came out, as a key, its day and year, and its month's key; empty keys where unstated.
-     *
-     * @return array{string, array<string, int>, string}
-     */
-    private function released(WhenItWasReleased $released): array
+    /** When it came out, or null where unstated. */
+    private function released(WhenItWasReleased $released): ?WhenItCameOutAsShown
     {
-        return $released->either(
-            on: static fn(int $year, int $month, int $day): ReleasedOn => new ReleasedOn(self::RELEASED, ['day' => $day, 'year' => $year], Month::numbered($month)->saidOnTheScreen()),
-            unstated: static fn(): ReleasedOn => new ReleasedOn('', [], ''),
-        )->asDrawn();
+        $on = $released->either(
+            on: static fn(int $year, int $month, int $day): WhenItCameOutAsShown => new WhenItCameOutAsShown(self::RELEASED, ['day' => $day, 'year' => $year], Month::numbered($month)->saidOnTheScreen()),
+            unstated: static fn(): Unsaid => new Unsaid(),
+        );
+
+        return $on instanceof WhenItCameOutAsShown ? $on : null;
     }
 
     /**

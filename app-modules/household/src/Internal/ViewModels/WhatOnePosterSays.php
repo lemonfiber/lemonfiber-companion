@@ -43,7 +43,10 @@ final readonly class WhatOnePosterSays
     /**
      * @param array<string, string> $filling what the two lines are filled with, as written
      * @param array<string, string> $keyed   what the two lines are filled with that is a catalogue key
-     * @param string                $pictured the source its picture is drawn from over its lettering, or empty where it is only lettered
+     * @param string|null           $goes     the path its title opens at, or null where it opens nothing
+     * @param string|null           $plays    the title as the core names it, which Play asks for, or null where it plays nothing
+     * @param string|null           $tap      what pressing it does on the screen drawing it, or null where pressing it does nothing of its own
+     * @param string|null           $pictured the source its picture is drawn from over its lettering, or null where it is only lettered
      */
     private function __construct(
         public string $titled,
@@ -52,14 +55,14 @@ final readonly class WhatOnePosterSays
         public string $reads,
         public array $filling,
         public array $keyed,
-        public string $goes,
-        public string $plays,
-        public string $tap = '',
-        public string $pictured = '',
+        public ?string $goes = null,
+        public ?string $plays = null,
+        public ?string $tap = null,
+        public ?string $pictured = null,
     ) {}
 
-    /** The same poster, drawn from this source over its lettering. */
-    public function pictured(string $source): self
+    /** The same poster, drawn from this source over its lettering, or lettered alone where there is none. */
+    public function pictured(?string $source): self
     {
         return new self($this->titled, $this->lettered, $this->above, $this->reads, $this->filling, $this->keyed, $this->goes, $this->plays, $this->tap, $source);
     }
@@ -68,25 +71,18 @@ final readonly class WhatOnePosterSays
      * A title on the shelf: its year and kind at the top, where the core
      * dated it, and its name, kind and year to a screen reader.
      *
-     * @param string                $medium  the kind, as a catalogue key
-     * @param string                $year    the year, or empty where the core could not date it
-     * @param string $goes  the path its title opens at, or empty where it opens nothing
-     * @param string $plays the title as the core names it, which Play asks for, or empty where it plays nothing
+     * @param string      $medium the kind, as a catalogue key
+     * @param string|null $year   the year, or null where the core could not date it
+     * @param string|null $goes   the path its title opens at, or null where it opens nothing
+     * @param string|null $plays  the title as the core names it, which Play asks for, or null where it plays nothing
      */
-    public static function ofATitle(string $titled, string $medium, string $year, string $goes = '', string $plays = ''): self
+    public static function ofATitle(string $titled, string $medium, ?string $year, ?string $goes = null, ?string $plays = null): self
     {
-        $isDated = $year !== '';
+        if ($year === null) {
+            return new self($titled, HowAPosterIsLettered::for($titled), self::ABOVE_UNDATED, self::READS_UNDATED, ['title' => $titled], ['kind' => $medium], $goes, $plays);
+        }
 
-        return new self(
-            titled: $titled,
-            lettered: HowAPosterIsLettered::for($titled),
-            above: $isDated ? self::ABOVE : self::ABOVE_UNDATED,
-            reads: $isDated ? self::READS : self::READS_UNDATED,
-            filling: ['title' => $titled, 'year' => $year],
-            keyed: ['kind' => $medium],
-            goes: $goes,
-            plays: $plays,
-        );
+        return new self($titled, HowAPosterIsLettered::for($titled), self::ABOVE, self::READS, ['title' => $titled, 'year' => $year], ['kind' => $medium], $goes, $plays);
     }
 
     /**
@@ -107,8 +103,6 @@ final readonly class WhatOnePosterSays
             reads: self::READS_PART_WAY,
             filling: ['title' => $titled, ...$filling],
             keyed: [],
-            goes: '',
-            plays: '',
             tap: $tap,
         );
     }
@@ -129,8 +123,6 @@ final readonly class WhatOnePosterSays
             reads: self::READS_STANDING,
             filling: ['title' => $titled],
             keyed: ['standing' => $standing],
-            goes: '',
-            plays: '',
         );
     }
 
@@ -149,8 +141,6 @@ final readonly class WhatOnePosterSays
             reads: self::READS_STANDING,
             filling: [],
             keyed: ['title' => $kind, 'standing' => $standing],
-            goes: '',
-            plays: '',
         );
     }
 }

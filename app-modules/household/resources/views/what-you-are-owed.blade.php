@@ -30,7 +30,7 @@
     @if ($this->requests()->cameBack())
         @forelse ($this->requests()->rows as $request)
             <x-design::card>
-                <x-design::strong>{{ $request->title !== '' ? $request->title : __($request->untitled) }}</x-design::strong>
+                <x-design::strong>{{ is_string($request->title) ? $request->title : __($request->title->key, $request->title->filling) }}</x-design::strong>
 
                 {{-- The state in the member's words rather than the operator's, and
                      a state rather than a stage: no queue position, no percentage,
@@ -51,7 +51,7 @@
                  having asked for nothing is an ordinary thing to have done. --}}
             <x-design::body>{{ __('household.nothing_asked_for') }}</x-design::body>
         @endforelse
-    @else
+    @elseif ($this->requests()->stopped !== null)
         {{-- Both readings are one call to one endpoint, so this is usually the
              obstacle already drawn above rather than a second one. It is said
              here anyway: the two are parsed separately, and a stack whose
@@ -59,27 +59,27 @@
              would otherwise leave this section silently empty — which reads as
              having asked for nothing. --}}
         <x-design::notice tone="unknown">
-            <x-household::what-stood-in-the-way :met="$this->requests()->met" :filling="$this->requests()->filling()" :in-the-stacks-words="$this->requests()->isInTheStacksWords()" />
+            <x-household::what-stood-in-the-way :stopped="$this->requests()->stopped->withoutTheRemedy()" />
         </x-design::notice>
     @endif
 
     {{-- Tonal, because the reading is what this frame is for. A filled bar
          would make asking again look like the thing to do. --}}
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
-@elseif ($this->answer()->isSignedIn)
+@elseif ($this->answer()->stopped !== null)
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
          beside it. A refusal is drawn as a refusal here: an account that may
          not ask for something is told so, rather than shown an empty list. --}}
     <x-design::notice tone="unknown">
-        <x-household::what-stood-in-the-way :met="$this->answer()->met" :remedy="$this->answer()->remedy" :filling="$this->answer()->filling()" :in-the-stacks-words="$this->answer()->isInTheStacksWords()" />
+        <x-household::what-stood-in-the-way :stopped="$this->answer()->stopped" />
     </x-design::notice>
 
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
          leaving and returning. --}}
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-    @if ($this->answer()->isPutRightInTheAppsSettings())
+    @if ($this->answer()->stopped?->isPutRightInTheAppsSettings())
         <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
