@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use Modules\Operator\Internal\AGlyphForALine;
+
 /**
  * One row of what a service wrote, flattened for a template to read.
  *
@@ -28,31 +30,17 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatOneLineSays
 {
     /**
-     * @param string $line          what the service wrote, exactly as it wrote it; empty for a fold
-     * @param string $streamSaid    the key for the error stream where the line came out of it, and empty otherwise
-     * @param bool   $worthNoticing whether a screen should let this one stand out
-     * @param string $at            the time on the phone's clock when it was written, or the moment as written where it cannot be read
-     * @param string $atInFull      the moment exactly as the service wrote it, for a screen reader
-     * @param bool   $hasAMoment    whether the service gave one at all
-     * @param int    $folded        how many decorative lines this row stands for, or 0 for a line
-     * @param int    $fold          which fold this is, counted from the top of the window
-     * @param bool   $isOpen        whether that fold is showing the lines it holds
-     * @param string $tone          the tone of the severity the line declared, where it earns a glyph, or empty
-     * @param string $levelSaid     the key for that severity, which the glyph is read aloud as, or empty
-     * @param bool   $isAnError     whether the line declared an error
+     * @param string                   $line          what the service wrote, exactly as it wrote it
+     * @param string                   $streamSaid    the key for the error stream where the line came out of it, and empty otherwise
+     * @param bool                     $worthNoticing whether a screen should let this one stand out
+     * @param WhenALineWasWritten|null $written       when it was written, or null where the service gave no moment
+     * @param AGlyphForALine|null      $glyph         the glyph the severity it declared earns, or null where it earns none
      */
     public function __construct(
         public string $line,
         public string $streamSaid,
         public bool $worthNoticing,
-        public string $at,
-        public string $atInFull,
-        public bool $hasAMoment,
-        public int $folded = 0,
-        public int $fold = 0,
-        public bool $isOpen = false,
-        public string $tone = '',
-        public string $levelSaid = '',
-        public bool $isAnError = false,
+        public ?WhenALineWasWritten $written,
+        public ?AGlyphForALine $glyph,
     ) {}
 }

@@ -5,13 +5,13 @@
 <x-operator::content>
     <x-operator::heading>{{ __('health.disturbs.title') }}</x-operator::heading>
 
-    @if ($this->answer()->isFound())
+    @if ($this->answer()->found !== null)
         {{-- The finding as it stands, and after a run, as the run left it. --}}
         <x-design::card>
-            <x-design::strong>{{ $this->answer()->title }}</x-design::strong>
-            <x-design::strong>{{ __($this->answer()->verdict) }}</x-design::strong>
-            @if ($this->answer()->meaning !== '')
-                <x-design::body>{{ $this->answer()->meaning }}</x-design::body>
+            <x-design::strong>{{ $this->answer()->found->title }}</x-design::strong>
+            <x-design::strong>{{ __($this->answer()->found->verdict) }}</x-design::strong>
+            @if ($this->answer()->found->meaning !== '')
+                <x-design::body>{{ $this->answer()->found->meaning }}</x-design::body>
             @endif
             @if ($this->ranAgo()->said !== '')
                 <x-design::note>{{ __('health.disturbs.ran', ['ago' => trans_choice($this->ranAgo()->said, $this->ranAgo()->count)]) }}</x-design::note>
@@ -37,13 +37,13 @@
             </x-design::notice>
         @endif
 
-        @if ($this->answer()->check !== '' && ! $this->howItIsGoing()->stands->isWorking())
+        @if ($this->answer()->found?->disturbs !== null && ! $this->howItIsGoing()->stands->isWorking())
             {{-- What it disturbs and for how long, in the stack's words and
                  figures, and the downloads it interrupts, before the yes. --}}
             <x-design::notice>
                 <x-design::strong>{{ __('health.disturbs.what') }}</x-design::strong>
-                <x-design::body>{{ $this->answer()->disturbs }}</x-design::body>
-                <x-design::body>{{ __($this->answer()->boundSaid, ['seconds' => $this->answer()->seconds]) }}</x-design::body>
+                <x-design::body>{{ $this->answer()->found->disturbs->disturbs }}</x-design::body>
+                <x-design::body>{{ __($this->answer()->found->disturbs->boundSaid, ['seconds' => $this->answer()->found->disturbs->seconds]) }}</x-design::body>
                 @if ($this->downloadsMoving() !== [])
                     <x-design::body>{{ __('health.disturbs.interrupts') }}</x-design::body>
                 @endif

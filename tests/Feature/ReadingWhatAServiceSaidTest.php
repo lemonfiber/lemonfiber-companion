@@ -23,6 +23,8 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown;
+use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -136,10 +138,22 @@ function everyLineOnTheScreen(WhatThisServiceSaid $screen): string
     $rows = [];
 
     foreach ($screen->answer()->lines as $line) {
-        $rows[] = sprintf('%s/%s', $line->streamSaid, $line->line);
+        $rows[] = $line instanceof WhatOneLineSays ? sprintf('%s/%s', $line->streamSaid, $line->line) : sprintf('%d folded', $line->howMany);
     }
 
     return implode(' | ', $rows);
+}
+
+/**
+ * One row of the log as a test compares it: a line with when it was written and its glyph, or a fold with how many it holds.
+ *
+ * @return array<string, bool|int|string|null>
+ */
+function aLogRow(WhatOneLineSays|AFoldOfLinesAsShown $row): array
+{
+    return $row instanceof AFoldOfLinesAsShown
+        ? ['folded' => $row->howMany, 'fold' => $row->fold]
+        : ['line' => $row->line, 'at' => $row->written?->at, 'atInFull' => $row->written?->inFull, 'tone' => $row->glyph?->tone, 'error' => $row->glyph?->isAnError];
 }
 
 /**
@@ -223,17 +237,17 @@ it('a line the service timed carries the time on the phone\'s clock, and one it 
     $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->answer()->lines;
 
     // Four in the morning UTC is six on a phone set to Amsterdam in September.
-    expect($rows[0]->at)->toBe('06:00:00')
-        ->and($rows[0]->atInFull)->toBe('2026-09-14T04:00:00Z')
-        ->and($rows[0]->hasAMoment)->toBeTrue()
+    expect(aLogRow($rows[0])['at'])->toBe('06:00:00')
+        ->and(aLogRow($rows[0])['atInFull'])->toBe('2026-09-14T04:00:00Z')
+        ->and(aLogRow($rows[0])['at'])->not->toBeNull()
         // The service wrote this one without a time, so there is nothing to show
         // and the screen says which rather than showing a blank where a moment
         // goes.
-        ->and($rows[1]->at)->toBe('')
-        ->and($rows[1]->atInFull)->toBe('')
-        ->and($rows[1]->hasAMoment)->toBeFalse()
-        ->and($rows[2]->at)->toBe('06:00:02')
-        ->and($rows[2]->hasAMoment)->toBeTrue();
+        ->and(aLogRow($rows[1])['at'])->toBeNull()
+        ->and(aLogRow($rows[1])['atInFull'])->toBeNull()
+        ->and(aLogRow($rows[1])['at'])->toBeNull()
+        ->and(aLogRow($rows[2])['at'])->toBe('06:00:02')
+        ->and(aLogRow($rows[2])['at'])->not->toBeNull();
 });
 
 it('draws the time on the phone\'s clock and reads out the moment as the service wrote it', function (): void {
@@ -268,15 +282,14 @@ it('folds a run of lines holding no letters into one row that says how many', fu
     $rows = $screen->answer()->lines;
 
     expect($rows)->toHaveCount(5)
-        ->and($rows[0]->line)->toBe('starting')
-        ->and($rows[1]->folded)->toBe(3)
-        ->and($rows[1]->fold)->toBe(0)
-        ->and($rows[1]->isOpen)->toBeFalse()
-        ->and($rows[2]->line)->toBe('ready')
+        ->and(aLogRow($rows[0])['line'])->toBe('starting')
+        ->and(aLogRow($rows[1])['folded'])->toBe(3)
+        ->and(aLogRow($rows[1])['fold'])->toBe(0)
+        ->and(aLogRow($rows[2])['line'])->toBe('ready')
         // One such line alone is left as it is: a fold of one hides nothing.
-        ->and($rows[3]->line)->toBe('=====')
-        ->and($rows[3]->folded)->toBe(0)
-        ->and($rows[4]->line)->toBe('listening');
+        ->and(aLogRow($rows[3])['line'])->toBe('=====')
+        ->and(aLogRow($rows[3]))->not->toHaveKey('folded')
+        ->and(aLogRow($rows[4])['line'])->toBe('listening');
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())
         ->toContain(trans_choice('health.decorative_lines', 3));
     expect(trans_choice('health.decorative_lines', 3))->toBe('3 decorative lines');
@@ -291,11 +304,10 @@ it('opens a fold to show the lines it holds, and closes it again', function (): 
     $open = $screen->answer()->lines;
 
     expect($open)->toHaveCount(8)
-        ->and($open[1]->folded)->toBe(3)
-        ->and($open[1]->isOpen)->toBeTrue()
-        ->and($open[2]->line)->toBe('@@@==@@@')
-        ->and($open[3]->line)->toBe('')
-        ->and($open[4]->line)->toBe('@@==@@');
+        ->and(aLogRow($open[1])['folded'])->toBe(3)
+        ->and(aLogRow($open[2])['line'])->toBe('@@@==@@@')
+        ->and(aLogRow($open[3])['line'])->toBe('')
+        ->and(aLogRow($open[4])['line'])->toBe('@@==@@');
 
     $screen->unfold(0);
 
@@ -318,10 +330,8 @@ it('keeps each fold it opened, and forgets them all when asked again', function 
     $screen->unfold(1);
     $rows = $screen->answer()->lines;
 
-    expect($rows[0]->fold)->toBe(0)
-        ->and($rows[0]->isOpen)->toBeFalse()
-        ->and($rows[2]->fold)->toBe(1)
-        ->and($rows[2]->isOpen)->toBeTrue()
+    expect(aLogRow($rows[0])['fold'])->toBe(0)
+        ->and(aLogRow($rows[2])['fold'])->toBe(1)
         ->and($rows)->toHaveCount(5);
 
     $screen->unfold(0);
@@ -343,8 +353,8 @@ it('folds nothing while a search is on', function (): void {
     $rows = typedIntoTheSearch(theLogScreen(AServiceThatSpoke::saying(aBannerAndThen($service))), '@')->answer()->lines;
 
     expect($rows)->toHaveCount(2)
-        ->and($rows[0]->line)->toBe('@@@==@@@')
-        ->and($rows[1]->line)->toBe('@@==@@');
+        ->and(aLogRow($rows[0])['line'])->toBe('@@@==@@@')
+        ->and(aLogRow($rows[1])['line'])->toBe('@@==@@');
 });
 
 it('says above the lines the code the road here carried, from a finding or from how the service stopped', function (): void {
@@ -681,14 +691,14 @@ it('gives an error, a fatal line and a warning the glyph of their tone, read alo
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWithAnErrorInIt()));
     $rows = $screen->answer()->lines;
 
-    expect($rows[0]->tone)->toBe('')
-        ->and($rows[1]->tone)->toBe('')
-        ->and($rows[2]->tone)->toBe('trouble')
-        ->and($rows[2]->isAnError)->toBeTrue()
-        ->and($rows[3]->tone)->toBe('attention')
-        ->and($rows[3]->isAnError)->toBeFalse()
-        ->and($rows[4]->tone)->toBe('trouble')
-        ->and($rows[4]->isAnError)->toBeTrue();
+    expect(aLogRow($rows[0])['tone'])->toBeNull()
+        ->and(aLogRow($rows[1])['tone'])->toBeNull()
+        ->and(aLogRow($rows[2])['tone'])->toBe('trouble')
+        ->and(aLogRow($rows[2])['error'])->toBeTrue()
+        ->and(aLogRow($rows[3])['tone'])->toBe('attention')
+        ->and(aLogRow($rows[3])['error'])->toBeFalse()
+        ->and(aLogRow($rows[4])['tone'])->toBe('trouble')
+        ->and(aLogRow($rows[4])['error'])->toBeTrue();
     $readAloud = everythingReadAloudOnTheLogScreen(WhatTheDeviceWouldDraw::tree($screen));
 
     expect($readAloud)->toContain(
@@ -709,10 +719,8 @@ it('offers the lines from the first error at the top, which starts them there an
     $screen->showFromTheFirstError();
     $rows = $screen->answer()->lines;
 
-    // The lines start at the error; the window's claim about its edge is the
-    // one it made before, because nothing arrived differently.
     expect($rows)->toHaveCount(3)
-        ->and($rows[0]->line)->toBe('VPN provider name is not valid')
+        ->and(aLogRow($rows[0])['line'])->toBe('VPN provider name is not valid')
         ->and($screen->answer()->arrived)->toBe(5)
         ->and($screen->answer()->startsAtTheFirstError)->toBeTrue()
         ->and($screen->answer()->hasAnErrorFurtherDown)->toBeFalse()
@@ -743,11 +751,29 @@ it('offers nothing to show from where no line declared an error, or where the fi
         ->and(WhatTheDeviceWouldDraw::by($quiet)->offers())->not->toContain(whatTheLogScreenCalls('health.show_from_the_first_error'))
         ->and($atOnce->answer()->hasAnErrorFurtherDown)->toBeFalse();
 
-    // Asking where nothing comes before the first error leaves every line where it was.
     $atOnce->showFromTheFirstError();
 
     expect($atOnce->answer()->startsAtTheFirstError)->toBeFalse()
         ->and($atOnce->answer()->lines)->toHaveCount(2);
+});
+
+it('starts at an error on the second line, leaving out only the one before it', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
+        $service,
+        HowManyLines::of(10),
+        Said::whenever('starting', $service, Stream::Stdout),
+        Said::whenever('broken', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
+    )));
+
+    expect($screen->answer()->hasAnErrorFurtherDown)->toBeTrue();
+
+    $screen->showFromTheFirstError();
+    $rows = $screen->answer()->lines;
+
+    expect($rows)->toHaveCount(1)
+        ->and(aLogRow($rows[0])['line'])->toBe('broken')
+        ->and($screen->answer()->startsAtTheFirstError)->toBeTrue();
 });
 
 it('sets every line in the figures face, weighting one from the error stream in the same face', function (): void {

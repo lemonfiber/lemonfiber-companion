@@ -162,9 +162,7 @@ it('a stack that could not be asked names no version', function (): void {
 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toEqual(Obstacle::of(KindOfObstacle::StackDidNotAnswer)->said())
-        ->and([$answer->lemonfiber, $answer->stack, $answer->engine, $answer->release, $answer->notesSaid, $answer->noticedSaid])
-        ->toBe(['', '', '', '', '', ''])
-        ->and($answer->changes)->toBe([]);
+        ->and($answer->read)->toBeNull();
 });
 
 it('shows the operator the address a stack that met nothing was tried at, beside the sentence', function (KindOfObstacle $met): void {
@@ -197,7 +195,7 @@ it('a session that has ended asks nothing', function (): void {
     $answer = theVersionsScreen($reading, signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
-        ->and($answer->lemonfiber)->toBe('')
+        ->and($answer->read)->toBeNull()
         ->and($reading->askings())->toBe(0);
 });
 

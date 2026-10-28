@@ -157,7 +157,7 @@
                 @endif
             </x-design::note>
         </x-design::card>
-    @elseif ($this->answer()->notesWithheld->said !== '')
+    @elseif ($this->answer()->notesWithheld !== null)
         {{-- The record does not describe the running build: notes not written
              yet, or notes out of step with it. Said as that, the way the
              versions screen says it, rather than drawn as what it changed. --}}

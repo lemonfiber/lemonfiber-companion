@@ -26,6 +26,7 @@ use Modules\Operator\Internal\FollowsARunOfChecks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACheckThatDisturbsReads;
 use Modules\Operator\Internal\SaysWhatARunInterrupts;
+use Modules\Operator\Internal\ViewModels\ARunThatDisturbs;
 use Modules\Operator\Internal\ViewModels\TheCheckTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
@@ -91,9 +92,9 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
      */
     public function run(): void
     {
-        $shown = $this->answer();
+        $shown = $this->answer()->found?->disturbs;
 
-        if ($shown->check === '' || $this->howItIsGoing()->stands->isWorking()) {
+        if (! $shown instanceof ARunThatDisturbs || $this->howItIsGoing()->stands->isWorking()) {
             return;
         }
 

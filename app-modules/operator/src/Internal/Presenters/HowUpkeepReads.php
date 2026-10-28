@@ -111,7 +111,7 @@ final readonly class HowUpkeepReads
             running: '',
             runningWasWithdrawn: false,
             inUse: null,
-            notesWithheld: new HowWithheldNotesRead()->of(HowTheNotesStand::Current),
+            notesWithheld: null,
             editsKept: [],
             history: [],
             offer: null,

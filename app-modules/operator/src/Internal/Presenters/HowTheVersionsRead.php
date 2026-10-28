@@ -9,9 +9,12 @@ use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\WhatRunsHere;
-use Modules\Operator\Internal\ViewModels\ALineOfTheNotesAsShown;
+use Modules\Operator\Internal\ViewModels\AGroupOfTheNotesAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\TheReleaseNotesAsShown;
+use Modules\Operator\Internal\ViewModels\TheVersionsAsRead;
 use Modules\Operator\Internal\ViewModels\TheVersionsTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatWithheldNotesSay;
 
 /**
  * Which versions a stack runs, as the fields a screen draws.
@@ -25,95 +28,66 @@ final readonly class HowTheVersionsRead
     /** This device no longer holds a session for that stack. */
     public function signedOut(): TheVersionsTurnedOutToBe
     {
-        return $this->nothingFrom(HowTheReadingWent::theSessionEnded());
+        return new TheVersionsTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     /** It did not answer, and this is what the operator met. */
     public function met(Obstacle $why): TheVersionsTurnedOutToBe
     {
-        return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
+        return new TheVersionsTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     /** The stack answered, and these are the versions it runs. */
     public function these(WhatRunsHere $runs): TheVersionsTurnedOutToBe
     {
-        return $runs->running(
-            named: fn(Release $release, array $changes): TheVersionsTurnedOutToBe => $runs->notes() === HowTheNotesStand::Current
-                ? $this->withTheNotes($runs, $release, $changes)
-                : $this->withoutTheNotes($runs, $runs->notes()),
-            notNamed: fn(): TheVersionsTurnedOutToBe => $this->withoutTheNotes($runs, $runs->notes()),
+        $notes = $runs->running(
+            named: fn(Release $release, array $changes): TheReleaseNotesAsShown|WhatWithheldNotesSay => $runs->notes() === HowTheNotesStand::Current
+                ? $this->notes($release, $changes)
+                : $this->withheld($runs->notes()),
+            notNamed: fn(): WhatWithheldNotesSay => $this->withheld($runs->notes()),
+        );
+
+        return new TheVersionsTurnedOutToBe(
+            HowTheReadingWent::itCameBack(),
+            new TheVersionsAsRead($runs->lemonfiber(), $runs->stack(), $runs->engine(), $notes),
         );
     }
 
     /**
-     * The versions, and what the running release changed.
+     * What the running release changed.
      *
      * @param list<AGroupOfChanges> $changes
      */
-    private function withTheNotes(WhatRunsHere $runs, Release $release, array $changes): TheVersionsTurnedOutToBe
+    private function notes(Release $release, array $changes): TheReleaseNotesAsShown
     {
-        $shown = [];
+        $groups = [];
 
         foreach ($changes as $group) {
-            $shown[] = new ALineOfTheNotesAsShown($group->title(), heading: true);
+            $entries = [];
 
             foreach ($group as $entry) {
-                $shown[] = new ALineOfTheNotesAsShown($entry, heading: false);
+                $entries[] = $entry;
             }
+
+            $groups[] = new AGroupOfTheNotesAsShown($group->title(), $entries);
         }
 
-        return new TheVersionsTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            lemonfiber: $runs->lemonfiber(),
-            stack: $runs->stack(),
-            engine: $runs->engine(),
-            notesSaid: '',
-            notesMeanSaid: '',
-            release: $release->version(),
-            noticedSaid: $release->theHouseholdWouldNotice() ? 'updates.would_be_noticed' : 'updates.would_not_be_noticed',
-            withdrawn: $release->wasWithdrawn(),
-            changes: $shown,
+        return new TheReleaseNotesAsShown(
+            $release->version(),
+            $release->theHouseholdWouldNotice() ? 'updates.would_be_noticed' : 'updates.would_not_be_noticed',
+            $release->wasWithdrawn(),
+            $groups,
         );
     }
 
     /**
-     * The versions, and why the notes are not shown.
+     * Why the notes are not shown.
      *
      * Notes the stack calls current but names no release for are notes not
      * written for this copy, and said as that.
      */
-    private function withoutTheNotes(WhatRunsHere $runs, HowTheNotesStand $notes): TheVersionsTurnedOutToBe
+    private function withheld(HowTheNotesStand $notes): WhatWithheldNotesSay
     {
-        $withheld = new HowWithheldNotesRead()->of($notes === HowTheNotesStand::Current ? HowTheNotesStand::Pending : $notes);
-
-        return new TheVersionsTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            lemonfiber: $runs->lemonfiber(),
-            stack: $runs->stack(),
-            engine: $runs->engine(),
-            notesSaid: $withheld->said,
-            notesMeanSaid: $withheld->meansSaid,
-            release: '',
-            noticedSaid: '',
-            withdrawn: false,
-            changes: [],
-        );
-    }
-
-    /** An answer with nothing in it, for a reading that did not come back. */
-    private function nothingFrom(HowTheReadingWent $went): TheVersionsTurnedOutToBe
-    {
-        return new TheVersionsTurnedOutToBe(
-            went: $went,
-            lemonfiber: '',
-            stack: '',
-            engine: '',
-            notesSaid: '',
-            notesMeanSaid: '',
-            release: '',
-            noticedSaid: '',
-            withdrawn: false,
-            changes: [],
-        );
+        return new HowWithheldNotesRead()->notWrittenForThisCopy($notes);
     }
 }

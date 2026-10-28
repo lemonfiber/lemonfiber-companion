@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\Zone;
+use Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
@@ -71,7 +72,7 @@ final readonly class HowAScrollbackReads
         LookingFor $looking,
         Zone $zone,
         array $open,
-        bool $fromTheFirstError = false,
+        bool $fromTheFirstError,
     ): WhatTheServiceTurnedOutToSay {
         $shown = $scrollback->matching($looking);
         $folds = ! $shown->lookingFor()->isSearching();
@@ -92,21 +93,18 @@ final readonly class HowAScrollbackReads
         }
 
         $rows = $this->withTheRun($rows, $run, $zone, $open);
-        $first = $this->firstErrorIn($rows);
-        $narrowed = $fromTheFirstError && $first > 0;
+        $before = $this->linesBeforeTheFirstError($rows);
+        $from = $fromTheFirstError ? $before : null;
 
-        // Every claim about the edge comes off the window rather than off the
-        // rows, which is what keeps a search — or showing from the first error — from quietly
-        // narrowing it.
         return new WhatTheServiceTurnedOutToSay(
             went: HowTheReadingWent::itCameBack(),
-            lines: $narrowed ? array_slice($rows, $first) : $rows,
+            lines: $from === null ? $rows : array_slice($rows, $from),
             arrived: $shown->howManyArrived(),
             bound: $shown->asked()->figure(),
             isAWindow: $shown->isAWindow(),
             isSearching: $shown->lookingFor()->isSearching(),
-            hasAnErrorFurtherDown: ! $narrowed && $first > 0,
-            startsAtTheFirstError: $narrowed,
+            hasAnErrorFurtherDown: $from === null && $before !== null,
+            startsAtTheFirstError: $from !== null,
         );
     }
 
@@ -144,11 +142,11 @@ final readonly class HowAScrollbackReads
      * many came before it — so the same window folds the same way on every
      * frame, and the fold somebody opened stays the one that is open.
      *
-     * @param list<WhatOneLineSays> $rows
+     * @param list<WhatOneLineSays|AFoldOfLinesAsShown> $rows
      * @param list<Said>            $run
      * @param list<int>             $open
      *
-     * @return list<WhatOneLineSays>
+     * @return list<WhatOneLineSays|AFoldOfLinesAsShown>
      */
     private function withTheRun(array $rows, array $run, Zone $zone, array $open): array
     {
@@ -157,19 +155,18 @@ final readonly class HowAScrollbackReads
         }
 
         $fold = $this->foldsIn($rows);
-        $isOpen = in_array($fold, $open, strict: true);
-        $rows[] = new HowALineReads()->folding(count($run), $fold, $isOpen);
+        $rows[] = new HowALineReads()->folding(count($run), $fold);
 
-        return $isOpen ? $this->withTheLines($rows, $run, $zone) : $rows;
+        return in_array($fold, $open, strict: true) ? $this->withTheLines($rows, $run, $zone) : $rows;
     }
 
     /**
      * The rows so far, followed by each of these lines as a row of its own.
      *
-     * @param list<WhatOneLineSays> $rows
+     * @param list<WhatOneLineSays|AFoldOfLinesAsShown> $rows
      * @param list<Said>            $lines
      *
-     * @return list<WhatOneLineSays>
+     * @return list<WhatOneLineSays|AFoldOfLinesAsShown>
      */
     private function withTheLines(array $rows, array $lines, Zone $zone): array
     {
@@ -181,33 +178,32 @@ final readonly class HowAScrollbackReads
     }
 
     /**
-     * Where among these rows the first line declaring an error is, or 0 where
-     * it is the first row or there is none — either way, nothing to leave out.
+     * How many rows come before the first one declaring an error, where any do.
      *
-     * @param list<WhatOneLineSays> $rows
+     * @param list<WhatOneLineSays|AFoldOfLinesAsShown> $rows
      */
-    private function firstErrorIn(array $rows): int
+    private function linesBeforeTheFirstError(array $rows): ?int
     {
         foreach ($rows as $at => $row) {
-            if ($row->isAnError) {
-                return $at;
+            if ($row instanceof WhatOneLineSays && $row->glyph?->isAnError === true) {
+                return $at > 0 ? $at : null;
             }
         }
 
-        return 0;
+        return null;
     }
 
     /**
      * How many folds are among these rows, which is the number the next one takes.
      *
-     * @param list<WhatOneLineSays> $rows
+     * @param list<WhatOneLineSays|AFoldOfLinesAsShown> $rows
      */
     private function foldsIn(array $rows): int
     {
         $folds = 0;
 
         foreach ($rows as $row) {
-            if ($row->folded > 0) {
+            if ($row instanceof AFoldOfLinesAsShown) {
                 ++$folds;
             }
         }

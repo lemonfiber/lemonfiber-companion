@@ -8,7 +8,10 @@ use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
+use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\ARunThatDisturbs;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\TheCheckAsFound;
 use Modules\Operator\Internal\ViewModels\TheCheckTurnedOutToBe;
 
 /**
@@ -29,55 +32,34 @@ final readonly class HowACheckThatDisturbsReads
             }
         }
 
-        return $this->without(HowTheReadingWent::itCameBack());
+        return new TheCheckTurnedOutToBe(HowTheReadingWent::itCameBack());
     }
 
     public function met(Obstacle $why): TheCheckTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return new TheCheckTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     public function signedOut(): TheCheckTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return new TheCheckTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     private function of(Finding $finding, Report $report): TheCheckTurnedOutToBe
     {
         $card = new HowAFindingReads($report->findings())->of($finding);
-
-        return $finding->whetherCheckingDisturbs()->either(
-            so: static function (ACheckThatDisturbs $disturbing) use ($card, $finding): TheCheckTurnedOutToBe {
+        $disturbs = $finding->whetherCheckingDisturbs()->either(
+            so: static function (ACheckThatDisturbs $disturbing) use ($finding): ARunThatDisturbs {
                 $bound = new HowABoundReads()->of($disturbing);
 
-                return new TheCheckTurnedOutToBe(
-                    went: HowTheReadingWent::itCameBack(),
-                    title: $card->title,
-                    verdict: $card->verdict,
-                    meaning: $card->meaning,
-                    disturbs: $disturbing->disturbs(),
-                    boundSaid: $bound->said,
-                    seconds: $bound->seconds,
-                    check: $finding->check()->shown(),
-                    only: $disturbing->narrowedTo(),
-                );
+                return new ARunThatDisturbs($disturbing->disturbs(), $bound->said, $bound->seconds, $finding->check()->shown(), $disturbing->narrowedTo());
             },
-            not: static fn(): TheCheckTurnedOutToBe => new TheCheckTurnedOutToBe(
-                went: HowTheReadingWent::itCameBack(),
-                title: $card->title,
-                verdict: $card->verdict,
-                meaning: $card->meaning,
-                disturbs: '',
-                boundSaid: '',
-                seconds: null,
-                check: '',
-                only: '',
-            ),
+            not: static fn(): AsText => AsText::nothing(),
         );
-    }
 
-    private function without(HowTheReadingWent $went): TheCheckTurnedOutToBe
-    {
-        return new TheCheckTurnedOutToBe(went: $went, title: '', verdict: '', meaning: '', disturbs: '', boundSaid: '', seconds: null, check: '', only: '');
+        return new TheCheckTurnedOutToBe(
+            HowTheReadingWent::itCameBack(),
+            new TheCheckAsFound($card->title, $card->verdict, $card->meaning, $disturbs instanceof ARunThatDisturbs ? $disturbs : null),
+        );
     }
 }

@@ -22,7 +22,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatTheServiceTurnedOutToSay
 {
     /**
-     * @param list<WhatOneLineSays> $lines      the lines to show, oldest first
+     * @param list<WhatOneLineSays|AFoldOfLinesAsShown> $lines      the lines to show, oldest first
      * @param int                   $arrived    how many came back before anything narrowed them
      * @param int                   $bound      how many were asked for
      * @param bool                  $isAWindow  whether the view stops where it was told to

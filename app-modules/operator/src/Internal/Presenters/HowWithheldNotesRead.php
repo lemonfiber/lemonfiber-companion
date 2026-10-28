@@ -17,12 +17,17 @@ use Modules\Operator\Internal\ViewModels\WhatWithheldNotesSay;
  */
 final readonly class HowWithheldNotesRead
 {
-    public function of(HowTheNotesStand $notes): WhatWithheldNotesSay
+    /** Why the notes are not shown, or null where they are current. */
+    public function of(HowTheNotesStand $notes): ?WhatWithheldNotesSay
     {
-        return match ($notes) {
-            HowTheNotesStand::Current => new WhatWithheldNotesSay('', ''),
-            HowTheNotesStand::Pending => new WhatWithheldNotesSay('stacks.versions.notes_pending', 'stacks.versions.notes_pending_means'),
-            HowTheNotesStand::Stale => new WhatWithheldNotesSay('stacks.versions.notes_stale', 'stacks.versions.notes_stale_means'),
-        };
+        return $notes === HowTheNotesStand::Current ? null : $this->notWrittenForThisCopy($notes);
+    }
+
+    /** Why notes not written for this copy are not shown: stale where the stack says so, and still to come otherwise. */
+    public function notWrittenForThisCopy(HowTheNotesStand $notes): WhatWithheldNotesSay
+    {
+        return $notes === HowTheNotesStand::Stale
+            ? new WhatWithheldNotesSay('stacks.versions.notes_stale', 'stacks.versions.notes_stale_means')
+            : new WhatWithheldNotesSay('stacks.versions.notes_pending', 'stacks.versions.notes_pending_means');
     }
 }

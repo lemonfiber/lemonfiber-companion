@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown')
 @use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Operator\Api\HowTheColumnScrolls')
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
@@ -57,11 +58,11 @@
          reader hears the moment as the service wrote it. --}}
     <native:column class="w-full gap-3">
         @forelse ($this->answer()->lines as $line)
-            @if ($line->folded > 0)
+            @if ($line instanceof AFoldOfLinesAsShown)
                 {{-- A run of lines holding no letters, folded into one row
                      that opens to show them. --}}
                 <x-operator::quiet-action
-                    :label="trans_choice('health.decorative_lines', $line->folded)"
+                    :label="trans_choice('health.decorative_lines', $line->howMany)"
                     :tap="$this->tapping('unfold', $line->fold)"
                 />
             @else
@@ -70,10 +71,10 @@
                          services write progress to `stderr` — so a line from it
                          is drawn in weight, and a glyph is kept for what a line
                          declared about itself. --}}
-                    @if ($line->tone !== '')
+                    @if ($line->glyph !== null)
                         {{-- An error or a warning, by what the line declared,
                              with its glyph read aloud as that word. --}}
-                        <x-design::marked-line :line="$line->line" :tone="$line->tone" :word="__($line->levelSaid)" />
+                        <x-design::marked-line :line="$line->line" :tone="$line->glyph->tone" :word="__($line->glyph->said)" />
                     @elseif ($line->worthNoticing)
                         {{-- Weighted in the figures face rather than set in
                              another, so it reads as one of the lines beside
@@ -83,10 +84,10 @@
                     @else
                         <x-design::verbatim>{{ $line->line }}</x-design::verbatim>
                     @endif
-                    @if ($line->hasAMoment && $line->streamSaid !== '')
-                        <x-operator::stamp :answers-to="$line->atInFull . ' · ' . __($line->streamSaid)">{{ $line->at }} · {{ __($line->streamSaid) }}</x-operator::stamp>
-                    @elseif ($line->hasAMoment)
-                        <x-operator::stamp :answers-to="$line->atInFull">{{ $line->at }}</x-operator::stamp>
+                    @if ($line->written !== null && $line->streamSaid !== '')
+                        <x-operator::stamp :answers-to="$line->written->inFull . ' · ' . __($line->streamSaid)">{{ $line->written->at }} · {{ __($line->streamSaid) }}</x-operator::stamp>
+                    @elseif ($line->written !== null)
+                        <x-operator::stamp :answers-to="$line->written->inFull">{{ $line->written->at }}</x-operator::stamp>
                     @elseif ($line->streamSaid !== '')
                         <x-operator::stamp>{{ __('health.no_moment') }} · {{ __($line->streamSaid) }}</x-operator::stamp>
                     @endif

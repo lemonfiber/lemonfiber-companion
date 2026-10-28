@@ -13,8 +13,8 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatWithheldNotesSay
 {
     /**
-     * @param string $said      the key for why the notes are not shown, or empty where they are
-     * @param string $meansSaid the key for what that means, or empty where they are
+     * @param string $said      the key for why the notes are not shown
+     * @param string $meansSaid the key for what that means
      */
     public function __construct(
         public string $said,
