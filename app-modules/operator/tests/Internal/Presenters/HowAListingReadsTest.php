@@ -7,10 +7,22 @@ namespace Modules\Operator\Tests\Internal\Presenters;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatItWouldNeed;
+use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Operator\Internal\Presenters\HowAListingReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 
@@ -55,4 +67,18 @@ it('a listing stopped by forms that could not be read says why, and nothing else
     expect($stopped->went->met)->toBe(KindOfObstacle::StackDidNotAnswer->said())
         ->and([$stopped->services, $stopped->overall, $stopped->isSettling, $stopped->disturbs, $stopped->active, $stopped->leftOut])
         ->toBe([[], '', false, null, [], []]);
+});
+
+it('offers every form a kept listing names, those asked for, those that brought a service in and those that left one out, each once', function (): void {
+    $daemons = Daemons::of(
+        HowTheStackIsRunning::Active,
+        Disturbances::of(WhatItTakesAway::atMost(1), WhatItTakesAway::atMost(1), WhatItTakesAway::atMost(1)),
+        Daemon::called('Jellyfin', ServiceId::called('jellyfin'), HowAServiceRuns::Running, HowMuchItMatters::Core, WhatLeansOnIt::nothing())
+            ->broughtInBy(Forms::these(Form::called('requests'), Form::called('watching'))),
+    )->asked(
+        Forms::these(Form::called('watching')),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('sabnzbd'), 'SABnzbd', WhatItWouldNeed::Usenet, Forms::these(Form::called('downloads')))),
+    );
+
+    expect(new HowAListingReads()->formsNamedIn($daemons)->names)->toBe(['watching', 'requests', 'downloads']);
 });
