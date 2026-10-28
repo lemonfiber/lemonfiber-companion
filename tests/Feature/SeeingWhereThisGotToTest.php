@@ -41,6 +41,7 @@ use Tests\Support\Fakes\AStackThatTraces;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // Where one item got to.
 //
@@ -157,15 +158,14 @@ it('a trace the stack is sure of is not drawn as uncertain', function (): void {
         ->and($unsure->isUncertain)->toBeTrue();
 });
 
-it('follows what was typed with the spaces around it left off, and hands the box what is typed, empty at first', function (): void {
+it('follows what was typed with the spaces around it left off, and draws the box with what is typed, empty at first', function (): void {
     $tracing = AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading());
     $screen = theTraceScreen($tracing);
 
-    expect($screen->render()->getData()['looking'] ?? null)->toBe('');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['']);
 
     $screen->looking = '  Dune  ';
-    expect($screen->render()->getData())->toHaveKey('looking')
-        ->and($screen->render()->getData()['looking'])->toBe('  Dune  ');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['  Dune  ']);
     $screen->follow();
     $screen->answer();
 

@@ -34,6 +34,7 @@ use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // Logs offered as a bounded, searchable read that names the service
 // and states the view is a window rather than the whole.
@@ -650,21 +651,11 @@ it('an obstacle that is not a refused credential leaves the session alone', func
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });
 
-it('hands the view the state its markup reads by name', function (): void {
-    // `native:model="looking"` expands to `:value="$looking"` — a bare variable
-    // in the compiled view — and `NativeComponent::fromView()` fills a view's
-    // data from a component's **public** properties. The search box's state is
-    // `protected`, deliberately, so the view was handed nothing and `$looking`
-    // was undefined on every frame.
-    //
-    // An undefined variable is a warning rather than a stop: the field drew
-    // empty and nothing anywhere said why. `F15` is what saw it, by drawing
-    // every screen the router serves — and this screen is only reached there
-    // behind a session, so the fact is pinned here as well, where the session
-    // is a line in a builder rather than a stand-in keychain.
+it('draws what is typed in the search box', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $screen->looking = 'timeout';
 
-    expect($screen->render()->getData())->toHaveKey('looking');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['timeout']);
 });
 
 it('draws the list of stacks when the menu opens it, though its top bar names the service rather than the stack', function (): void {

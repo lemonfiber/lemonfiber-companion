@@ -92,12 +92,6 @@ final class SignIntoAStack extends NativeComponent
      * `NativeComponent::__syncProperty()` writes only public, non-static
      * properties, so a protected one is never assigned at all.
      *
-     * **`render()` hands it to the view by name.** `native:model` expands to a
-     * bare `$typed` in the compiled view, and the package fills the view's
-     * data from a component's *public* properties — so a protected one arrives
-     * undefined, which is a warning rather than a stop and draws an empty
-     * field.
-     *
      * **A bare string rather than a {@see Credential}.** A field holds
      * characters; a credential is what they become, once, at the moment they
      * are offered. Holding a `Credential` here would mean holding one across

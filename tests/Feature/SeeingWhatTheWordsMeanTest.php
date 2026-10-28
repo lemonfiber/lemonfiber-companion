@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // What lemonfiber's words mean, as the stack's glossary explains them.
 //
@@ -390,10 +391,9 @@ it('asking again forgets what asking for one word came to', function (): void {
         ->and($screen->answer()->mayAsk)->toBe('Grabber');
 });
 
-it('hands what is typed to the search box', function (): void {
+it('draws what is typed in the search box', function (): void {
     $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
     $screen->looking = 'seed';
 
-    expect($screen->render()->getData())->toHaveKey('looking')
-        ->and($screen->render()->getData()['looking'])->toBe('seed');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['seed']);
 });

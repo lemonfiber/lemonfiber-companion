@@ -32,6 +32,7 @@ use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // Everything a machine is set to, on one screen.
 //
@@ -338,7 +339,7 @@ it('refuses to open a withheld setting even when asked directly', function (): v
     $screen->change('API_KEY');
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBe('');
+        ->and($screen->typed())->toBeNull();
 });
 
 it('opens a shown setting seeded with what it holds', function (): void {
@@ -480,7 +481,7 @@ it('closes an open setting without asking anything', function (): void {
     $screen->never();
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBe('')
+        ->and($screen->typed())->toBeNull()
         ->and($screen->proposal())->toBeNull()
         ->and($adjusting->rehearsals())->toBe(0);
 });
@@ -576,7 +577,7 @@ it('closes whatever was open when a key the listing did not offer arrives', func
     $screen->change('API_KEY');
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBe('');
+        ->and($screen->typed())->toBeNull();
 });
 
 it('offers no proposal for a setting when none has been asked for', function (): void {
@@ -592,18 +593,13 @@ it('offers no proposal for a setting when none has been asked for', function ():
         ->and($screen->proposal())->toBeNull();
 });
 
-it('hands the template what has been typed, so the field keeps it', function (): void {
-    // The view data rather than the view name. A screen that rendered the right
-    // template with nothing in it draws an empty field over what the operator
-    // was halfway through typing, which is the one thing a change screen must
-    // not do between two taps.
+it('draws what has been typed in the field, so a frame between two taps keeps it', function (): void {
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
 
     $screen->change('LIBRARY_PATH');
     typedIntoTheField($screen, '/data/films');
 
-    expect($screen->render()->getData())->toHaveKey('typed')
-        ->and($screen->render()->getData()['typed'])->toBe('/data/films');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['/data/films']);
 });
 
 it('asks nothing of the stack for a setting that is not the open one', function (): void {
@@ -697,10 +693,4 @@ it('draws a change refused because the operator declared the area unmanaged in t
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
         ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
-});
-
-it('hands the field nothing before anything is typed', function (): void {
-    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
-
-    expect($screen->render()->getData()['typed'] ?? null)->toBe('');
 });

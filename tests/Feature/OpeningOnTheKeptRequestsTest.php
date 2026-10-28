@@ -169,11 +169,6 @@ it('draws the kept reading with its age on the first frame, and the fresh one re
         ->and($wanting->askings())->toBe(1);
 });
 
-it('hands the reason field nothing before a reason is typed', function (): void {
-    $screen = theGardenRoomsRequests(theGardenRoomAnswering(), nothingKeptOfTheGardenRoom());
-
-    expect($screen->render()->getData()['because'] ?? null)->toBe('');
-});
 
 it('opens the stack\'s stream once it is shown', function (): void {
     $hearing = AStackThatSpeaksUp::holdingOpen();

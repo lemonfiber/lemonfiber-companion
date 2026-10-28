@@ -176,7 +176,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     {
         $this->aFrameBegins();
 
-        return view('operator::where-this-got-to', ['looking' => $this->looking]);
+        return view('operator::where-this-got-to');
     }
 
     /** What came back, asked once per frame; a search that came back replaces it, so the search is asked after first. */

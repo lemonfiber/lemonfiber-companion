@@ -36,6 +36,7 @@ use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The requests awaiting a decision are visible from a phone.
@@ -640,12 +641,10 @@ it('a number arriving with spaces around it is the same number', function (): vo
     expect($wanting->whatItWasToldWasDecided())->toHaveCount(1);
 });
 
-it('the frame is handed what was typed, so the field draws it', function (): void {
-    // `native:model` expands to a bare variable, so a screen that only held the
-    // value would render a frame where it was never defined — a warning rather
-    // than a stop, and a field that looks empty while this holds a sentence.
+it('draws the reason typed for turning a request down in its field', function (): void {
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
+    $screen->wouldDecline('41');
     $screen->__syncProperty('because', 'No room this month');
 
-    expect($screen->render()->getData()['because'] ?? null)->toBe('No room this month');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['No room this month']);
 });

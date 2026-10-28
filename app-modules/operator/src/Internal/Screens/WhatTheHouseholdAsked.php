@@ -224,11 +224,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
 
     public function render(): View
     {
-        // Handed the typed field, because `native:model` expands to a bare
-        // variable and a screen that only held it would render a frame where
-        // it was never defined — a warning rather than a stop, so the field
-        // draws empty and the control beside it never enables.
-        return view('operator::what-the-household-asked', ['because' => $this->because]);
+        return view('operator::what-the-household-asked');
     }
 
     /**

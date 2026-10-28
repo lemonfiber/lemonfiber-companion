@@ -84,10 +84,8 @@ final class PairByScanning extends NativeComponent
      * stopped, so a protected one is simply never assigned and the field goes
      * back to what it was on every keystroke.
      *
-     * It is also what `render()` needs. `native:model` expands to a bare
-     * variable in the compiled view and the package fills the view's data from
-     * a component's public properties, so a protected one arrives undefined —
-     * a warning rather than a stop, drawing an empty field.
+     * It is also how the field reaches the view: the package fills a view's
+     * data from a component's public properties.
      *
      * Public mutable state is what `enforceReadonlyPublicProperty` refuses;
      * `phpstan.neon` says why a screen is the one place it cannot apply.

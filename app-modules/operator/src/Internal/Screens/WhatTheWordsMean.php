@@ -73,8 +73,7 @@ final class WhatTheWordsMean extends NativeComponent
     /**
      * What somebody has typed into the search box.
      *
-     * Public and handed to the view by name, for
-     * {@see WhatThisServiceSaid::$looking}'s reason.
+     * Public, for {@see WhatThisServiceSaid::$looking}'s reason.
      */
     public string $looking = '';
 
@@ -165,7 +164,7 @@ final class WhatTheWordsMean extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-the-words-mean', ['looking' => $this->looking]);
+        return view('operator::what-the-words-mean');
     }
 
     /** What came back, asked once and narrowed on every read. */

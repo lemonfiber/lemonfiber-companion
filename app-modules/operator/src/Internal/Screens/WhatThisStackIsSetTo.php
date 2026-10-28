@@ -70,7 +70,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
     use FindsItsWayAround;
 
     /**
-     * What the operator has typed, bound to the one input on this screen.
+     * What the operator has typed into the setting open for changing, while one is.
      *
      * `public`, as {@see PairByTyping}'s is and for its reason:
      * `NativeComponent::__syncProperty()` writes only public, non-static
@@ -78,15 +78,11 @@ final class WhatThisStackIsSetTo extends NativeComponent
      * what `enforceReadonlyPublicProperty` refuses, and `phpstan.neon` says why
      * a screen is the one place that rule cannot apply.
      *
-     * That is why {@see render()} hands it to the view by name: the package
-     * fills a view's data from a component's *public* properties, so a
-     * protected one would arrive undefined and draw an empty field.
-     *
      * Seeded from the value the stack showed when a setting is opened, so the
      * common edit — one character of a path — does not begin by retyping the
      * whole thing.
      */
-    public string $typed = '';
+    public ?string $typed = null;
 
     public ?WhatThisStackIsSetToTurnedOutToBe $answered = null;
 
@@ -105,8 +101,8 @@ final class WhatThisStackIsSetTo extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** What the operator has typed into the one field. */
-    public function typed(): string
+    /** What the operator has typed into the setting open for changing, or nothing while none is. */
+    public function typed(): ?string
     {
         return $this->typed;
     }
@@ -165,7 +161,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
     public function never(): void
     {
         $this->changing = null;
-        $this->typed = '';
+        $this->typed = null;
         $this->proposed = null;
     }
 
@@ -233,7 +229,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-this-stack-is-set-to', ['typed' => $this->typed]);
+        return view('operator::what-this-stack-is-set-to');
     }
 
     public function answer(): WhatThisStackIsSetToTurnedOutToBe
@@ -256,22 +252,14 @@ final class WhatThisStackIsSetTo extends NativeComponent
      */
     private function put(string $key, Closure $asking): WhatAChangeTurnedOutToBe
     {
-        if ($this->changing !== $key) {
-            // Reached only by a tap on a control the template is not drawing.
-            // Answered the way the screen would answer any other — nothing
-            // happened — rather than by raising at somebody.
-            //
-            // One clause and not two. A blank key was tested for beside this
-            // and could never be the one that decided: `$changing` is either
-            // nothing or a key off the listing, so it is never blank, and a
-            // blank key therefore fails the comparison first. A test for a
-            // state that cannot occur is a line no case can reach, which is
-            // the same thing as a line nobody has checked.
+        $typed = $this->typed;
+
+        if ($this->changing !== $key || $typed === null) {
             return new HowAChangeReads()->nothingOpen();
         }
 
         $stack = $this->stack();
-        $asked = WhatToSet::to($key, $this->typed);
+        $asked = WhatToSet::to($key, $typed);
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatAChangeTurnedOutToBe => $asking(
