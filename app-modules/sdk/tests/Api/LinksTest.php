@@ -30,9 +30,12 @@ function aWiringSaying(array $wired, array $unfilled): Envelope
 it('refuses a row it cannot read by its position, first or later, in every list', function (): void {
     $link = ['by' => 'seerr', 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'It is named in its settings.']];
     $loss = ['by' => 'seerr', 'capability' => 'transcoder'];
+    $asked = ['how' => 'asked', 'capability' => 'download-client', 'services' => ['qbittorrent'], 'settled' => ['settled' => 'outright'], 'origins' => ['qbittorrent' => ['origin' => 'bundled']]];
     $refused = [
         'Row 1 of `wired` in the wiring envelope has no readable `reaches`.' => aWiringSaying([$link, 'seerr'], []),
         'Row 2 of `wired` in the wiring envelope has no readable `by`.' => aWiringSaying([$link, $link, [...$link, 'by' => ' ']], []),
+        'Row 1 of `wired` in the wiring envelope has no readable `origins`.' => aWiringSaying([$link, [...$link, 'reaches' => [...$asked, 'origins' => [' ' => ['origin' => 'bundled']]]]], []),
+        'Row 2 of `wired` in the wiring envelope has no readable `origins`.' => aWiringSaying([$link, $link, [...$link, 'reaches' => [...$asked, 'origins' => [['origin' => 'bundled']]]]], []),
         'Row 1 of `unfilled` in the wiring envelope has no readable `by`.' => aWiringSaying([], [$loss, 'seerr']),
         'Row 2 of `unfilled` in the wiring envelope has no readable `capability`.' => aWiringSaying([], [$loss, $loss, [...$loss, 'capability' => ' ']]),
     ];

@@ -31,8 +31,6 @@ use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
-use function trim;
-
 /**
  * The `wiring` envelope, as what the stack wires to what.
  *
@@ -164,11 +162,11 @@ final readonly class Links
         $found = [];
 
         foreach (self::table($reaches, WiringField::Origins, $position) as $service => $origin) {
-            if (! is_array($origin) || trim((string) $service) === '') {
+            if (! is_array($origin) || ! Required::isText($service)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, WiringField::Origins, $position);
             }
 
-            $found[] = AClaimant::of(ServiceId::called((string) $service), self::origin($origin, $position));
+            $found[] = AClaimant::of(ServiceId::called($service), self::origin($origin, $position));
         }
 
         return TheClaimants::these(...$found);

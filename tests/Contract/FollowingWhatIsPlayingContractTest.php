@@ -276,3 +276,14 @@ it('opens again the next time it is asked once let go of, forgetting where the s
         ->and(whatWakesOfPlayingHear($following, 1))->toBe(['nothing'])
         ->and(WhereEachOpenResumed::in($stack))->toBe([null, null]);
 });
+
+it('opens the stream again on the next wake after one that said what it could not read, from past it, rather than saying it closed', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying(['available' => 'yes']))),
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying())),
+    ]);
+
+    expect(whatWakesOfPlayingHear(new Players(new PinnedClients()), 2))->toBe([KindOfObstacle::AnswerCouldNotBeRead->value, EVERYTHING_PLAYING])
+        ->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
+});
