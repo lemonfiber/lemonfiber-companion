@@ -41,7 +41,7 @@
                 <x-design::strong>{{ __('health.choice.refused') }}</x-design::strong>
                 <x-operator::refused-in-its-words :refused="$this->howItIsGoing()->refused" />
             </x-design::notice>
-        @elseif ($this->howItIsGoing()->answered && ! $this->howItIsGoing()->accepted)
+        @elseif ($this->howItIsGoing()->accepted === false)
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.choice.not_taken') }}</x-design::strong>
             </x-design::notice>

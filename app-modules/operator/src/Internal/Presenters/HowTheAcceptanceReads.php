@@ -18,22 +18,22 @@ final readonly class HowTheAcceptanceReads
 {
     public function notAsked(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::notAsked());
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     public function signedOut(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running());
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     public function ended(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheAcceptanceTurnedOutToBe
@@ -41,14 +41,12 @@ final readonly class HowTheAcceptanceReads
         return new TheAcceptanceTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
-            answered: false,
-            accepted: false,
         );
     }
 
     public function met(Obstacle $why): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::met($why));
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the report the stack answered with says of the check accepted. */
@@ -58,19 +56,7 @@ final readonly class HowTheAcceptanceReads
 
         return new TheAcceptanceTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            refused: null,
-            answered: true,
             accepted: $raised instanceof AWarningAsRaised && $raised->check === null,
-        );
-    }
-
-    private function without(WhereTheWorkStands $stands): TheAcceptanceTurnedOutToBe
-    {
-        return new TheAcceptanceTurnedOutToBe(
-            stands: $stands,
-            refused: null,
-            answered: false,
-            accepted: false,
         );
     }
 }
