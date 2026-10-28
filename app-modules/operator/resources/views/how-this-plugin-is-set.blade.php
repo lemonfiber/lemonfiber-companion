@@ -34,8 +34,8 @@
                 {{-- Unreachable: a setting is listed here because one of the plugin's services reads it. --}}
             @endforelse
 
-            @if ($this->changing === $setting->name)
-                @unless ($this->toDefault)
+            @if ($this->changing?->named === $setting->name)
+                @unless ($this->changing->toDefault)
                     <native:outlined-text-input native:model="typed" label="{{ __('plugins.settings.value') }}" supporting="{{ $setting->name }}" />
                     <x-operator::offered-action :label="__('plugins.settings.rehearse')" tap="rehearse()" :offer="$this->offered(ChangingASetting::Set)" />
                 @endunless

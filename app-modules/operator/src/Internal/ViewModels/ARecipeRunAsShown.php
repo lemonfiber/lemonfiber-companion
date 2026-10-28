@@ -13,7 +13,7 @@ final readonly class ARecipeRunAsShown
      * @param bool                      $agreeable  whether a yes may be given against it
      * @param string                    $headline   the catalogue key for what it is or came to
      * @param ARecipeAsShown            $recipe     the recipe, its steps in order and every value it would carry
-     * @param string                    $why        why the run did not hold, in the stack's words, or empty
+     * @param ?string                    $why        why the run did not hold, in the stack's words, or empty
      * @param list<AStepThatRanAsShown> $ran        every step and what it came to; empty for a rehearsal
      */
     public function __construct(
@@ -22,7 +22,7 @@ final readonly class ARecipeRunAsShown
         public bool $agreeable,
         public string $headline,
         public ARecipeAsShown $recipe,
-        public string $why,
+        public ?string $why,
         public array $ran,
     ) {}
 }

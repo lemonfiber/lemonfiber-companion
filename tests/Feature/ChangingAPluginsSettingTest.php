@@ -248,18 +248,18 @@ it('opens one of the plugin\'s settings seeded with its value, and opens nothing
     $screen->change('vpn.key');
     $screen->change('tls.email');
 
-    expect($screen->changing)->toBe('');
+    expect($screen->changing)->toBeNull();
 
     $screen->change('vpn.countries');
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->changing)->toBe('vpn.countries')
+    expect($screen->changing?->named)->toBe('vpn.countries')
         ->and($screen->typed)->toBe('Belgium')
         ->and($drawn->offers())->toContain(__('plugins.settings.rehearse'), __('plugins.settings.never'));
 
     $screen->never();
 
-    expect($screen->changing)->toBe('')
+    expect($screen->changing)->toBeNull()
         ->and($screen->typed)->toBe('');
 });
 
@@ -328,6 +328,20 @@ it('sends no yes where nothing was rehearsed, or where the last answer was not a
         ->and(WhatTheDeviceWouldDraw::by($notARehearsal)->said())->toContain(__(WhatTheSettingRunDid::NotWritten->saidOnTheScreen()));
 });
 
+it('sends no yes against a rehearsal no longer on the screen: the setting closed or opened afresh, or rehearsed again and not yet back', function (string $then): void {
+    $tuning = aStackThatSetsTheGuard();
+    $screen = aRehearsalOfGermany($tuning);
+
+    match ($then) {
+        'closed' => $screen->never(),
+        'opened afresh' => $screen->change('vpn.countries'),
+        default => $screen->rehearse(),
+    };
+    $screen->agree();
+
+    expect($tuning->carriedOut())->toBe([]);
+})->with(['closed' => ['closed'], 'opened afresh' => ['opened afresh'], 'rehearsed again' => ['rehearsed again']]);
+
 it('rehearses putting a setting back to its default, and says where that restarts nothing', function (): void {
     $back = ASettingChange::backToDefault('vpn.countries');
     $tuning = aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::answered(aChangeToTheCountries(WhatTheSettingRunDid::Rehearsed, $back, restarts: Services::none())));
@@ -381,7 +395,7 @@ it('draws a refusal in the stack\'s own words, reads the settings again, and off
     $screen->startAgain();
 
     expect($screen->howItIsGoing()->refused)->toBeNull()
-        ->and($screen->changing)->toBe('vpn.countries');
+        ->and($screen->changing?->named)->toBe('vpn.countries');
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {

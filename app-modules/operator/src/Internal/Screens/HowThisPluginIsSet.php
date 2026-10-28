@@ -33,6 +33,7 @@ use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
+use Modules\Operator\Internal\ASettingBeingChanged;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAPluginsSettingsRead;
@@ -72,11 +73,8 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     /** What is typed into the open setting's field. */
     public string $typed = '';
 
-    /** The setting open for changing, by its name, or blank where none is. */
-    public string $changing = '';
-
-    /** Whether the open setting is being put back to its default rather than given a value. */
-    public bool $toDefault = false;
+    /** The setting open for changing, or null where none is. */
+    public ?ASettingBeingChanged $changing = null;
 
     /** What the last rehearsal was asked with, which is what a yes agrees to. */
     public ?ASettingChange $asked = null;
@@ -109,13 +107,6 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** The plugin this screen is about, by the id the route carries. */
-    public function pluginNamed(): string
-    {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
-    }
 
     /** Read the plugin and its settings again. */
     public function again(): void
@@ -135,8 +126,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         }
 
         $this->startAgain();
-        $this->changing = $setting;
-        $this->toDefault = false;
+        $this->changing = new ASettingBeingChanged($setting, toDefault: false);
         $this->typed = $held->value()->said();
     }
 
@@ -144,8 +134,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     public function never(): void
     {
         $this->startAgain();
-        $this->changing = '';
-        $this->toDefault = false;
+        $this->changing = null;
         $this->typed = '';
     }
 
@@ -161,11 +150,13 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     /** Ask what giving the open setting what is typed would do, writing nothing. */
     public function rehearse(): void
     {
-        if (is_string($this->following) || $this->toDefault || ! $this->itsSetting($this->changing) instanceof ASetting) {
+        $open = $this->changing;
+
+        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || $open->toDefault || ! $this->itsSetting($open->named) instanceof ASetting) {
             return;
         }
 
-        $this->ask(ASettingChange::toHold($this->changing, $this->typed));
+        $this->ask(ASettingChange::toHold($open->named, $this->typed));
     }
 
     /** Ask what putting one of the plugin's settings back to its default would do, writing nothing. */
@@ -175,9 +166,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
             return;
         }
 
-        $this->changing = $setting;
-        $this->toDefault = true;
-        $this->typed = '';
+        $this->changing = new ASettingBeingChanged($setting, toDefault: true);
         $this->ask(ASettingChange::backToDefault($setting));
     }
 
@@ -273,7 +262,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         return $this->extending->installedOn($stack, $session)->either(
             found: function (ThePlugins $plugins) use ($stack, $session): WhatAPluginsSettingsShow {
                 foreach ($plugins->installed() as $plugin) {
-                    $this->plugin = $plugin->id() === $this->pluginNamed() ? $plugin : $this->plugin;
+                    $this->plugin = $plugin->id() === $this->param('service') ? $plugin : $this->plugin;
                 }
 
                 return $this->plugin instanceof APlugin ? $this->settingsOf($this->plugin, $stack, $session) : new HowAPluginsSettingsRead()->notInstalled();

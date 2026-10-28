@@ -26,9 +26,9 @@
              missing switch is taken to mean. --}}
         @if (! $pair->asksForApproval)
             <x-operator::note>{{ __('plugins.stays_here') }}</x-operator::note>
-        @elseif ($pair->approval !== null)
+        @elseif ($pair->switch !== null)
             @if ($agreeable)
-                <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->approved" :tap="$tapping('approve', $pair->approval)" />
+                <x-design::toggle :label="__('plugins.approve', ['value' => $pair->value, 'to' => $pair->to])" :on="$pair->switch->on" :tap="$tapping('approve', $pair->switch->place)" />
             @endif
         @elseif ($recipe->onDemand)
             <x-operator::note>{{ __('plugins.asked_each_run') }}</x-operator::note>

@@ -106,6 +106,25 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
         ->and($supervising->followed()[0]->shown())->toBe(AStackThatSupervises::THE_JOB);
 });
 
+it('reads the machine again once a verb it was following has ended, and not while it ran', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->render();
+    $screen->answer();
+    $screen->whileItSettles();
+    $screen->render();
+    $screen->answer();
+    $whileItRan = $supervising->askings();
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::ended());
+    $screen->whatItCameTo();
+    $screen->whileItSettles();
+    $screen->render();
+    $screen->answer();
+
+    expect($supervising->askings())->toBe($whileItRan + 1);
+});
+
 it('asks after the verb once a frame, however often the template reads it', function (): void {
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
@@ -715,6 +734,17 @@ it('shows the command once the stack has finished working out the rehearsal, and
         ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
         ->and($screen->rehearsalOfTheYes)->toBe(AStackThatSupervises::THE_JOB)
         ->and($screen->asking())->not->toBeNull();
+});
+
+it('follows a rehearsal still being worked out on the screen\'s cadence, and shows the command once it is', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+    whatAskingToRestartSonarrDrew($screen);
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
+    $screen->whileItSettles();
+
+    expect($screen->willRun)->toBe('docker compose restart sonarr')
+        ->and($screen->rehearsalOfTheYes)->toBeNull();
 });
 
 it('asks the question without the command where the stack would not rehearse it, and says it could not be read', function (Underway|HowAgreedWorkIsGoing $refused): void {

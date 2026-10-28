@@ -82,7 +82,7 @@
     @if ($this->answer()->update->stopped !== '')
         <x-operator::emphasis>{{ __('plugins.stopped', ['why' => $this->answer()->update->stopped]) }}</x-operator::emphasis>
     @endif
-    @if ($this->answer()->update->restoredSaid !== '')
+    @if ($this->answer()->update->restoredSaid !== null)
         {{-- Where the new version did not hold: which version is on the
              machine now, and how far putting it back got. --}}
         <x-operator::emphasis>{{ __($this->answer()->update->restoredSaid, ['version' => $this->answer()->update->restoredVersion]) }}</x-operator::emphasis>
@@ -160,7 +160,7 @@
     @if ($this->answer()->run->isAReading)
         <x-operator::the-recipe :recipe="$this->answer()->run->recipe" :agreeable="$this->answer()->run->agreeable" />
     @else
-        @if ($this->answer()->run->why !== '')
+        @if ($this->answer()->run->why !== null && $this->answer()->run->why !== '')
             <x-design::body>{{ $this->answer()->run->why }}</x-design::body>
         @endif
         {{-- Every step in the recipe's order with what it came to, a step

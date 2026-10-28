@@ -64,8 +64,8 @@
             @empty
                 {{-- Given no device beyond every plugin's entry. --}}
             @endforelse
-            @if ($shape->approval !== null && $install->agreeable)
-                <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->approved" :tap="$tapping('approve', $shape->approval)" />
+            @if ($shape->switch !== null && $install->agreeable)
+                <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->switch->on" :tap="$tapping('approve', $shape->switch->place)" />
             @endif
         </x-operator::entry>
     @empty
@@ -93,8 +93,8 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ __('stacks.credentials.grants.of', ['credential' => $asked->credential, 'whose' => $asked->whose]) }}</x-operator::emphasis>
             <x-design::body>{{ __('plugins.granting.for', ['fills' => $asked->fills]) }}</x-design::body>
-            @if ($asked->approval !== null && $install->agreeable)
-                <x-design::toggle :label="__('plugins.granting.approve', ['credential' => $asked->credential, 'plugin' => $install->plugin->name])" :on="$asked->approved" :tap="$tapping('approve', $asked->approval)" />
+            @if ($asked->switch !== null && $install->agreeable)
+                <x-design::toggle :label="__('plugins.granting.approve', ['credential' => $asked->credential, 'plugin' => $install->plugin->name])" :on="$asked->switch->on" :tap="$tapping('approve', $asked->switch->place)" />
             @endif
         </x-operator::entry>
     @empty

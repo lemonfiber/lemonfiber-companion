@@ -169,7 +169,7 @@ final readonly class HowAListingReads
             services: $rows,
             overall: $daemons->running()->saidOnTheScreen(),
             isSettling: $settling && ! $waits,
-            disturbs: $daemons->disturbs(),
+            disturbs: $waits ? null : $daemons->disturbs(),
             active: new HowWhatWasLeftOutReads()->forms($daemons->active()),
             leftOut: new HowWhatWasLeftOutReads()->of($daemons->leftOut()),
             askedNow: $askedNow,

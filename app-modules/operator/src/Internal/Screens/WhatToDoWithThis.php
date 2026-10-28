@@ -242,11 +242,12 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
             return;
         }
 
+        $offered = $this->offered;
         $this->asking = null;
         $this->movedOn = null;
         $this->forgetTheRehearsal();
 
-        $this->send($agreed);
+        $this->send($offered instanceof AnOffer ? $agreed->quoting($offered) : $agreed);
     }
 
     /** Put the question away without doing anything about it. */
@@ -270,10 +271,9 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     public function whatItTakesAway(): ?WhatAVerbTakesAwaySays
     {
         $agreed = $this->asking;
-        $answer = $this->answer();
-        $disturbs = $answer->disturbs;
+        $disturbs = $this->answer()->disturbs;
 
-        if (! $agreed instanceof AgreedTo || $answer->waitsForTheStack || ! $disturbs instanceof Disturbances) {
+        if (! $agreed instanceof AgreedTo || ! $disturbs instanceof Disturbances) {
             return null;
         }
 
@@ -362,14 +362,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->aFrameBegins();
 
         return view('operator::what-to-do-with-this');
-    }
-
-    /** The question on the screen takes the name the stack gave what its rehearsal offers, which the yes carries back. */
-    protected function rehearsalOffered(AnOffer $offer): void
-    {
-        if ($this->asking instanceof AgreedTo) {
-            $this->asking = $this->asking->quoting($offer);
-        }
     }
 
     /**

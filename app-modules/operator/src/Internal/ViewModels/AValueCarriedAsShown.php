@@ -24,8 +24,7 @@ final readonly class AValueCarriedAsShown
      * @param string   $release  why it is released away from the service it was read from, or empty
      * @param string   $from     the service it is read from, where it is released, or empty
      * @param bool     $asksForApproval whether the stack says it leaves the machine or releases a value, and so asks for an approval
-     * @param int|null $approval its switch's place among the approvals this account offers, or null where it offers none for it
-     * @param bool     $approved whether the operator has approved it
+     * @param ASwitchAsShown|null $switch its switch, or null where the screen offers none for it
      */
     public function __construct(
         public string $value,
@@ -34,7 +33,6 @@ final readonly class AValueCarriedAsShown
         public string $release,
         public string $from,
         public bool $asksForApproval,
-        public ?int $approval,
-        public bool $approved,
+        public ?ASwitchAsShown $switch,
     ) {}
 }

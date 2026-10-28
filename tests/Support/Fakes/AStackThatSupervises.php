@@ -70,6 +70,13 @@ final class AStackThatSupervises implements Supervising
     private bool $lastWasAYes = false;
 
     /**
+     * What asking after a verb answers from now on, where a test changed it after the screen began.
+     *
+     * @var ?HowAgreedWorkIsGoing<WhatTheVerbCameTo>
+     */
+    private ?HowAgreedWorkIsGoing $fromNowOn = null;
+
+    /**
     /** How many times it was asked for its forms, which are counted apart from {@see askings()}. */
     private int $formsAskings = 0;
 
@@ -216,6 +223,16 @@ final class AStackThatSupervises implements Supervising
     }
 
     /**
+     * From now on, asking after a verb answers this.
+     *
+     * @param HowAgreedWorkIsGoing<WhatTheVerbCameTo> $became
+     */
+    public function fromNowOnComingTo(HowAgreedWorkIsGoing $became): void
+    {
+        $this->fromNowOn = $became;
+    }
+
+    /**
      * The same stack, which answers asking after a verb with `$became`.
      *
      * A wither rather than a constructor per outcome, because what a verb
@@ -359,7 +376,7 @@ final class AStackThatSupervises implements Supervising
             return HowAgreedWorkIsGoing::moved($this->yesMoved);
         }
 
-        return $this->becoming ?? HowAgreedWorkIsGoing::stillRunning();
+        return $this->fromNowOn ?? $this->becoming ?? HowAgreedWorkIsGoing::stillRunning();
     }
 
     /**

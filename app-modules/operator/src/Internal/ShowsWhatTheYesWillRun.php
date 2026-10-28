@@ -44,10 +44,11 @@ trait ShowsWhatTheYesWillRun
     /** Whether the rehearsal asked for could not be read, which is said rather than drawn as no command. */
     public bool $willRunUnread = false;
 
+    /** The name the stack gave what its rehearsal offers, which the yes carries back, once the rehearsal answered. */
+    public ?AnOffer $offered = null;
+
     abstract public function stack(): Stack;
 
-    /** The question on the screen takes the name the stack gave what its rehearsal offers. */
-    abstract protected function rehearsalOffered(AnOffer $offer): void;
 
     /** Ask the stack to rehearse the verb now being asked about, and take its answer if it is already there. */
     private function rehearseTheQuestion(AgreedTo $agreed): void
@@ -117,12 +118,12 @@ trait ShowsWhatTheYesWillRun
     }
 
     /**
-     * A rehearsal that answered: the question takes the name the stack gave what
-     * it offers, so the yes carries it back.
+     * A rehearsal that answered: the name the stack gave what it offers is
+     * kept, so the yes carries it back.
      */
     private function rehearsed(WhatTheVerbCameTo $report): WhatTheVerbCameTo
     {
-        $this->rehearsalOffered($report->offer());
+        $this->offered = $report->offer();
 
         return $report;
     }
@@ -141,5 +142,6 @@ trait ShowsWhatTheYesWillRun
         $this->rehearsalOfTheYes = null;
         $this->willRun = '';
         $this->willRunUnread = false;
+        $this->offered = null;
     }
 }

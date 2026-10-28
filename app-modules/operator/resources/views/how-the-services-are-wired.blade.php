@@ -26,10 +26,10 @@
                 <x-design::body>{{ __('stacks.wiring.fills.not_chosen') }}</x-design::body>
                 <x-operator::refused-in-its-words :refused="$this->choice->refused" />
             @else
-                @if ($this->choice->said !== '')
-                    <x-design::body>{{ __($this->choice->said, $this->choice->saidWith) }}</x-design::body>
+                @if ($this->choice->said !== null)
+                    <x-design::body>{{ __($this->choice->said->key, $this->choice->said->filling) }}</x-design::body>
                 @endif
-                @if ($this->choice->meaning !== '')
+                @if ($this->choice->meaning !== null && $this->choice->meaning !== '')
                     {{-- The stack's own account: which parts of a reading moved,
                          or what stood in the way of keeping it. --}}
                     <x-design::note>{{ $this->choice->meaning }}</x-design::note>
