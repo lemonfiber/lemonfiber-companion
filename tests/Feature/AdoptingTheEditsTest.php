@@ -173,3 +173,17 @@ it('offers no adopting yes after a wiring run, even one that only rehearsed', fu
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.wiring.adopt'))
         ->and($wiring->asked())->toBe(['wire', 'after:a-run']);
 });
+
+it('offers no adopting yes where the stack answered the rehearsal with what it wrote', function (): void {
+    $wiring = AStackThatWires::answering(
+        WhatBecameOfTheWiring::underway(Job::named('a-rehearsal')),
+        WhatBecameOfTheWiring::answered(whatAdoptingDid()),
+    );
+    $screen = theScreenThatAdopts($wiring);
+    $screen->rehearseAdopting();
+    $screen->whileItRuns();
+    $screen->adopt();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.wiring.adopt'))
+        ->and($wiring->asked())->toBe(['rehearse-adopting', 'after:a-rehearsal']);
+});

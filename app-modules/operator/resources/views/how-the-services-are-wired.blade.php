@@ -1,5 +1,6 @@
 @use('Modules\Kernel\Api\WhatToDoAboutWiring')
 @use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Operator\Internal\WhereAdoptingStands')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -170,7 +171,7 @@
                 <x-design::body>{{ __('stacks.wiring.no_connections') }}</x-design::body>
             @endforelse
 
-            @if ($this->adoptionRehearsed)
+            @if ($this->adopting === WhereAdoptingStands::Rehearsed)
                 <x-operator::offered-action :label="__('stacks.wiring.adopt')" tap="adopt()" :offer="$this->offered(WhatToDoAboutWiring::Adopt)" />
             @endif
         @endif
