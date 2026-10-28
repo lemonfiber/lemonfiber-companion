@@ -60,13 +60,13 @@
 
     {{-- Drawn and not usable while the reading drawn is one the phone kept:
          an update is agreed to only against a fresh one. --}}
-    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
-    @if ($this->answer()->waitsForTheStack)
-        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->keptAgo !== null" />
+    @if ($this->answer()->keptAgo !== null)
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
     @endif
     <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
 @else
-    @if ($this->answer()->waitsForTheStack)
+    @if ($this->answer()->keptAgo !== null)
         {{-- What the phone kept, said for what it is: how long ago it was
              read, and above it what stopped the reading asked for now. --}}
         @if (! $this->answer()->askedNow->cameBack())
@@ -77,7 +77,7 @@
                 :goes="$this->goes()"
             />
         @endif
-        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
     @endif
 
     {{-- The answer, first: whether any service would move onto the version
@@ -124,9 +124,9 @@
             {{-- Drawn whether or not it can be used, so a kept reading never
                  hides what a fresh one would offer; beside it, until then,
                  why it waits and how old the reading is. --}}
-            <x-operator::offered-action :label="trans_choice('updates.take_them', $this->answer()->offer->changing()->count())" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->waitsForTheStack" />
-            @if ($this->answer()->waitsForTheStack)
-                <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+            <x-operator::offered-action :label="trans_choice('updates.take_them', $this->answer()->offer->changing()->count())" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->keptAgo !== null" />
+            @if ($this->answer()->keptAgo !== null)
+                <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
             @endif
         </x-design::card>
     @endif

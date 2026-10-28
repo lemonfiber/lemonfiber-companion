@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowAMoveInPlaceReads;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\AMoveInPlaceAsShown;
@@ -170,7 +171,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     {
         $answer = $this->answer();
 
-        if ($answer->waitsForTheStack || ! $answer->offer instanceof TakingAnUpdate) {
+        if ($answer->keptAgo instanceof AgoAsShown || ! $answer->offer instanceof TakingAnUpdate) {
             return;
         }
 
@@ -191,7 +192,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     {
         $taking = $this->asking;
 
-        if ($this->answer()->waitsForTheStack || ! $taking instanceof TakingAnUpdate) {
+        if ($this->answer()->keptAgo instanceof AgoAsShown || ! $taking instanceof TakingAnUpdate) {
             return;
         }
 

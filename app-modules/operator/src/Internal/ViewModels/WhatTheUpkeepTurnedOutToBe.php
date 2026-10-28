@@ -38,8 +38,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param list<WhatOneReleaseSays>       $history    every release the stack's record holds, newest first
      * @param ?TakingAnUpdate                $offer      the update to take, where the stack offered one
      * @param HowTheReadingWent              $askedNow   what this frame's asking met, which stands beside a kept reading where the stack did not answer
-     * @param AgoAsShown                     $readAgo    how long ago the reading drawn was read, said only where it was kept
-     * @param bool                           $waitsForTheStack whether the reading drawn is one the phone kept, so nothing on it can be acted on yet
+     * @param ?AgoAsShown                    $keptAgo    how long ago the reading drawn was read, where it is one the phone kept, so nothing on it can be acted on yet
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -52,7 +51,6 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public array $history,
         public ?TakingAnUpdate $offer,
         public HowTheReadingWent $askedNow,
-        public AgoAsShown $readAgo,
-        public bool $waitsForTheStack,
+        public ?AgoAsShown $keptAgo = null,
     ) {}
 }
