@@ -11,6 +11,7 @@ use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AnInvitationAsShown;
 use Modules\Operator\Internal\ViewModels\AnInvitationToHandAsShown;
+use Modules\Operator\Internal\ViewModels\TheAddressesToHandOver;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatWasGrantedAsShown;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -120,14 +121,15 @@ final readonly class HowTheInvitationReads
             url: $toHand->address()->url(),
             caution: $toHand->address()->caution(),
             hours: $toHand->hours(),
-            code: new HowACodeReads()->squares($drawn->for($toHand->address())),
-            declines: $toHand->address()->decline(),
-            declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
-            joins: $toHand->address()->join(),
-            joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
             unjoinable: $toHand->address()->whyNotJoinable(),
-            handsOver: true,
             lapses: true,
+            handed: new TheAddressesToHandOver(
+                code: new HowACodeReads()->squares($drawn->for($toHand->address())),
+                declines: $toHand->address()->decline(),
+                declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
+                joins: $toHand->address()->join(),
+                joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
+            ),
         );
     }
 
@@ -139,13 +141,7 @@ final readonly class HowTheInvitationReads
             url: $toHand->address()->url(),
             caution: $toHand->address()->caution(),
             hours: $toHand->hours(),
-            code: [],
-            declines: '',
-            declineCode: [],
-            joins: '',
-            joinCode: [],
             unjoinable: $toHand->address()->whyNotJoinable(),
-            handsOver: false,
             lapses: $lapses,
         );
     }
