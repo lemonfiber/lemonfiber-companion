@@ -390,7 +390,7 @@ it('reads what the work came to, the rehearsal labelled as one with what it rege
 
 it('reads a written change back to the default, with what it costs and why nothing restarted', function (): void {
     $written = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting(
-        ['value' => null, 'was' => null, 'applied' => true, 'restarts' => [], 'consequence' => ' The tunnel drops for a moment ', 'unrestarted' => 'gluetun was stopped'],
+        ['value' => null, 'was' => null, 'applied' => true, 'restarts' => [], 'consequence' => ' The tunnel drops for a moment ', 'unrestarted' => ' gluetun was stopped '],
         ['rehearsed' => false],
     ))));
 

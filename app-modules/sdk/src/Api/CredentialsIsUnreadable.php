@@ -58,6 +58,16 @@ final class CredentialsIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** The one grant a revoke names was not readable, named by the field. */
+    public static function within(NamesAWireField $record, NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            '`%s` in the credentials envelope has no readable `%s`. A grant that will not say which credential crosses, to whom or what for is refused rather than shown.',
+            $record->value,
+            $field->value,
+        ));
+    }
+
     /** A word from a closed set this app has no case for. */
     public static function word(NamesAWireField $field, string $said, int $position, string ...$accepted): self
     {

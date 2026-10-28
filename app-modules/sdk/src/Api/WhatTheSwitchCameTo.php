@@ -83,7 +83,7 @@ final readonly class WhatTheSwitchCameTo
         $words = [];
 
         foreach (Required::rows($switched, LifecycleField::StopCommand, LifecycleIsUnreadable::missing(LifecycleField::StopCommand)) as $position => $word) {
-            $words[] = is_string($word) && trim($word) !== '' ? $word : throw LifecycleIsUnreadable::entry(LifecycleField::StopCommand, (int) $position);
+            $words[] = Required::isText($word) ? $word : throw LifecycleIsUnreadable::entry(LifecycleField::StopCommand, (int) $position);
         }
 
         return $words === [] ? throw LifecycleIsUnreadable::missing(LifecycleField::StopCommand) : TheCommandLine::of(...$words);
