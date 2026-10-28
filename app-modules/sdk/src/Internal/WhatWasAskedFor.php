@@ -21,8 +21,6 @@ use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * One row of a member's request list, read into what a screen can show.
  *
@@ -89,7 +87,7 @@ final readonly class WhatWasAskedFor
     private static function notYetNamed(array $row, string $by, int $position, int $number, HowARequestStands $standing): Wanted
     {
         $media = self::under($row, WireField::Media);
-        $kind = is_string($media) ? KindOfRequest::tryFrom(trim($media)) : null;
+        $kind = is_string($media) ? KindOfRequest::tryFrom($media) : null;
 
         if (! $kind instanceof KindOfRequest) {
             $kind = KindOfRequest::Something;

@@ -792,6 +792,7 @@ it('reads what checking a finding disturbs, the check a diagnosis runs it under,
     $unbounded = ['disturbs' => 'One query of each indexer', 'only' => 'indexers'];
 
     expect(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs($bounded)])))))->toBe('The tunnel goes down|vpn.killswitch|30 seconds')
+        ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs([...$bounded, 'bounded' => 0])])))))->toBe('The tunnel goes down|vpn.killswitch|0 seconds')
         ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs($unbounded)])))))->toBe('One query of each indexer|indexers|no bound')
         ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs([...$unbounded, 'bounded' => null])])))))->toBe('One query of each indexer|indexers|no bound')
         ->and(whatCheckingItDisturbs(Reports::in(doctorSaying(aRun('degraded', [aFindingThatDisturbs(null)])))))->toBe('nothing to run')
