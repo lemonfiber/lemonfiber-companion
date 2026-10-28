@@ -38,6 +38,7 @@ use Modules\Kernel\Api\WhichRate;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
+use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -272,6 +273,8 @@ it('rehearses every part as typed, follows the work, and draws it labelled as a 
             __('stacks.line_change.rate.moving', ['figure' => $overrun->figure, 'unit' => aLineOfTheLineChange($overrun->said)]),
             __('stacks.line_change.silent', ['said' => 'connection refused']),
         )
+        ->and($drawn->said())->toContain(__('stacks.pausing.said.fetching'))
+        ->and(array_map(static fn(AClientHoldingAsShown $client): ?string => $client->pullingSaid, $screen->howItIsGoing()->change->clients ?? []))->toBe(['stacks.pausing.said.fetching', null])
         ->and($drawn->offers())->toContain(__('stacks.line_change.apply'))
         ->and($sharing->carriedOut())->toBe([]);
 });

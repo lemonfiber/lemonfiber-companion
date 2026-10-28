@@ -12,13 +12,13 @@ final readonly class TheLineChangeAsShown
      * @param bool                         $mayBeApplied whether this is a rehearsal a yes may be given to
      * @param HowTheLineTurnedOutToBe      $line         the line as this run left it or would leave it
      * @param list<AClientHoldingAsShown>  $clients      each download client, in the stack's order
-     * @param ALiftAsShown                 $lift         where a lift of the limits stands
+     * @param ?ALiftAsShown                $lift         where a lift of the limits stands, where there is one
      */
     public function __construct(
         public string $didSaid,
         public bool $mayBeApplied,
         public HowTheLineTurnedOutToBe $line,
         public array $clients,
-        public ALiftAsShown $lift,
+        public ?ALiftAsShown $lift,
     ) {}
 }
