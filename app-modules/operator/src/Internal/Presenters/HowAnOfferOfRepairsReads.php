@@ -54,7 +54,6 @@ final readonly class HowAnOfferOfRepairsReads
         // have to ask the stack again to agree to what it is already showing.
         return new WhatTheStackWouldPutRight(
             stands: WhereTheWorkStands::answered(),
-            named: $offer->named(),
             repairs: $rows,
         );
     }

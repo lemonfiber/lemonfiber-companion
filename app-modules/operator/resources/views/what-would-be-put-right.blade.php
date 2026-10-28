@@ -85,10 +85,10 @@
                 <x-design::strong>{{ __('health.nobody_knows_what_happened') }}</x-design::strong>
                 <x-design::body>{{ __('health.nobody_knows_what_happened_action') }}</x-design::body>
             </x-design::notice>
-        @else
-            <x-design::heading>{{ trans_choice('health.changed_count', $this->done()->changed) }}</x-design::heading>
+        @elseif ($this->done()->came !== null)
+            <x-design::heading>{{ trans_choice('health.changed_count', $this->done()->came->changed) }}</x-design::heading>
 
-            @forelse ($this->done()->outcomes as $outcome)
+            @forelse ($this->done()->came->outcomes as $outcome)
                 <x-design::card>
                     <x-design::strong>{{ $outcome->repair->does }}</x-design::strong>
                     <x-design::body>{{ __($outcome->became) }}</x-design::body>

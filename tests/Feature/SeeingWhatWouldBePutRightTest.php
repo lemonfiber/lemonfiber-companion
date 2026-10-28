@@ -467,13 +467,13 @@ it('a finished run says what became of each repair, and what one left', function
     $screen->agreeTo('storage.one-filesystem');
     $done = $screen->done();
 
-    expect($done->changed)->toBe(1)
-        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Fixed->saidOnTheScreen())
-        ->and($done->outcomes[0]->left)->toBe('')
-        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
-        ->and($done->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
-        ->and($done->outcomes[1]->left)->toBe('Half of the library on the old disk')
-        ->and($done->outcomes[1]->worthAnotherGo)->toBeTrue();
+    expect($done->came?->changed)->toBe(1)
+        ->and($done->came?->outcomes[0]->became)->toBe(WhatBecameOfIt::Fixed->saidOnTheScreen())
+        ->and($done->came?->outcomes[0]->left)->toBe('')
+        ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
+        ->and($done->came?->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
+        ->and($done->came?->outcomes[1]->left)->toBe('Half of the library on the old disk')
+        ->and($done->came?->outcomes[1]->worthAnotherGo)->toBeTrue();
 });
 
 it('an outcome still carries what the repair said it would do', function (): void {
@@ -485,11 +485,10 @@ it('an outcome still carries what the repair said it would do', function (): voi
 
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
-    $first = $screen->done()->outcomes[0];
+    $first = $screen->done()->came?->outcomes[0];
 
-    expect($first->repair->does)->toBe('Move the library onto the larger disk')
-        ->and($first->repair->effects)->toBe(['Downloads pause while it moves'])
-        ->and($first->repair->undoing)->toBe(Undoing::Possible->saidOnTheScreen());
+    expect([$first?->repair->does, $first?->repair->effects, $first?->repair->undoing])
+        ->toBe(['Move the library onto the larger disk', ['Downloads pause while it moves'], Undoing::Possible->saidOnTheScreen()]);
 });
 
 it('asking again after agreeing reads, and never agrees twice', function (): void {
@@ -536,7 +535,7 @@ it('nothing was agreed to, so there is nothing that was done', function (): void
 
     expect($screen->done()->stands->hasEnded())->toBeTrue()
         ->and($screen->done()->stands->isWorking())->toBeFalse()
-        ->and($screen->done()->outcomes)->toBe([]);
+        ->and($screen->done()->came)->toBeNull();
 });
 
 it('a stack that goes away between agreeing and reading says what was met', function (): void {
@@ -553,7 +552,7 @@ it('a stack that goes away between agreeing and reading says what was met', func
 
     expect($screen->done()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->done()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
-        ->and($screen->done()->outcomes)->toBe([]);
+        ->and($screen->done()->came)->toBeNull();
 });
 
 it('a run still being carried out is its own state', function (): void {
@@ -795,9 +794,9 @@ it('says a repair the stack left alone because the area was declared unmanaged c
     $done = $screen->done();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($done->changed)->toBe(0)
-        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
-        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
+    expect($done->came?->changed)->toBe(0)
+        ->and($done->came?->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
+        ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
         ->and($drawn)->toContain(__(WhatBecameOfIt::Unmanaged->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::WouldOverwrite->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::FixFailed->saidOnTheScreen()));

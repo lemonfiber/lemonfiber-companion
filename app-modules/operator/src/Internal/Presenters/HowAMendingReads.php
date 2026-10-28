@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Operator\Internal\ViewModels\WhatTheMendingCameTo;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
@@ -47,8 +48,7 @@ final readonly class HowAMendingReads
         // another about whether a run did anything.
         return new WhatThisStackPutRight(
             stands: WhereTheWorkStands::answered(),
-            outcomes: $rows,
-            changed: $mended->changed(),
+            came: new WhatTheMendingCameTo($rows, $mended->changed()),
         );
     }
 
