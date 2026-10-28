@@ -65,7 +65,7 @@ final readonly class HowACredentialRevokeReads
             refused: null,
             revoke: new ACredentialRevokeAsShown(
                 wasEnded: $revoke->wasEnded(),
-                grant: new HowAGrantReads()->one($revoke->grant(), 0, $now),
+                grant: new HowAGrantReads()->one($revoke->grant(), null, $now),
                 restarts: $this->listed($revoke->restarts()),
                 unrestarted: $revoke->unrestarted(),
             ),

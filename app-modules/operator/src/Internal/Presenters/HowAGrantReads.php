@@ -17,8 +17,8 @@ use Modules\Operator\Internal\ViewModels\AGrantAsShown;
  */
 final readonly class HowAGrantReads
 {
-    /** The grant at that place among those the stack listed. */
-    public function one(ACredentialGrant $grant, int $which, Instant $now): AGrantAsShown
+    /** The grant at that place among those the stack listed, or on its own where it has no place. */
+    public function one(ACredentialGrant $grant, ?int $which, Instant $now): AGrantAsShown
     {
         return new AGrantAsShown(
             which: $which,
