@@ -4,7 +4,10 @@
 
 <x-operator::content :scrolls="HowTheColumnScrolls::PulledDownToReadAgain">
 
-@if ($this->title()->title !== null)
+@if (! $this->title()->isSignedIn)
+    <x-design::body>{{ __('household.signed_out') }}</x-design::body>
+    <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
+@elseif ($this->title()->title !== null)
     {{-- The title as the core answered it for this member: its poster, Play,
          and what it is. A part the core did not state is not drawn. Play is
          never hidden; where it cannot be pressed, the reason is beside it, in
@@ -62,14 +65,11 @@
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
         @endif
     @endif
-@elseif ($this->title()->isSignedIn)
+@else
     {{-- The core says it is not on this member's shelf: outside their limits,
          or not in the house. The two are one answer, and Home is where to go. --}}
     <x-design::body>{{ __('household.title.absent') }}</x-design::body>
     <x-design::action :label="__('household.title.to_home')" :goes="$this->goes()->to(AStacksScreen::Shelf)" tone="tonal" />
-@else
-    <x-design::body>{{ __('household.signed_out') }}</x-design::body>
-    <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
 @endif
 </x-operator::content>
 

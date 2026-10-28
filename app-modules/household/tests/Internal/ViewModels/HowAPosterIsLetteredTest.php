@@ -21,7 +21,8 @@ it('letters a title of eighteen characters, its words six at most, large', funct
 
 it('steps down from large past eighteen characters, or for a word of seven', function (): void {
     expect(HowAPosterIsLettered::for('abc abc abc abc ddd'))->toBe(HowAPosterIsLettered::Middle)
-        ->and(HowAPosterIsLettered::for('aaaaaaa'))->toBe(HowAPosterIsLettered::Middle);
+        ->and(HowAPosterIsLettered::for('aaaaaaa'))->toBe(HowAPosterIsLettered::Middle)
+        ->and(HowAPosterIsLettered::for('a aaaaaaa'))->toBe(HowAPosterIsLettered::Middle);
 });
 
 it('letters a title of fifty-six characters, its words eleven at most, at the middle step', function (): void {
