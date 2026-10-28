@@ -13,18 +13,19 @@ use function trim;
  */
 final readonly class WhatAKeyAdmits
 {
-    private function __construct(private ?bool $acts, private string $member) {}
+    /** @param bool|string $admits whether it acts, or the member whose own it admits */
+    private function __construct(private bool|string $admits) {}
 
     /** Every served read and the event stream. */
     public static function reading(): self
     {
-        return new self(acts: false, member: '');
+        return new self(admits: false);
     }
 
     /** What reading admits, and the actions the contract lists as callable by a key. */
     public static function acting(): self
     {
-        return new self(acts: true, member: '');
+        return new self(admits: true);
     }
 
     /** What that household member's own session admits; a blank member is refused. */
@@ -34,7 +35,7 @@ final readonly class WhatAKeyAdmits
             throw KeySaysNothing::about('member');
         }
 
-        return new self(acts: null, member: $member);
+        return new self(admits: $member);
     }
 
     /**
@@ -50,10 +51,10 @@ final readonly class WhatAKeyAdmits
      */
     public function either(Closure $reading, Closure $acting, Closure $member): object
     {
-        return match ($this->acts) {
+        return match ($this->admits) {
             false => $reading(),
             true => $acting(),
-            null => $member($this->member),
+            default => $member($this->admits),
         };
     }
 }

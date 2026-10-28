@@ -12,7 +12,6 @@ use function is_string;
 use function json_decode;
 use function preg_replace;
 use function strtr;
-use function trim;
 
 /**
  * What a stack hands somebody out of band so their phone can find it and know it.
@@ -255,7 +254,7 @@ final readonly class Pairing
 
         $said = $found[$half->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! is_string($said) || $said === '') {
             throw PairingIsNotReadable::withoutIts($half, $how);
         }
 

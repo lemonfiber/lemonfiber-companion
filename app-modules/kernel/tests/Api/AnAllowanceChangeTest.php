@@ -42,6 +42,7 @@ it('carries whom it is about and only what was named', function (): void {
 
     expect(whatAnAllowanceChangeAsks(AnAllowanceChange::ofPolicy(WhoAnAllowanceIsFor::everybody(), HowTheHouseholdAsks::Trusted)))->toBe('everybody trusted -')
         ->and(whatAnAllowanceChangeAsks(AnAllowanceChange::ofLimit($alex, ARequestLimit::of(5, 7))))->toBe('alex - 5/7')
+        ->and(whatAnAllowanceChangeAsks(AnAllowanceChange::ofLimit($alex, ARequestLimit::of(5, 0))))->toBe('alex - 5/0')
         ->and(whatAnAllowanceChangeAsks(AnAllowanceChange::ofBoth($alex, HowTheHouseholdAsks::EverythingWaits, ARequestLimit::of(0, 30))))->toBe('alex everything-waits 0/30');
 });
 

@@ -25,9 +25,11 @@ use Modules\Kernel\Api\PluginSaysNothing;
 use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
+use Modules\Kernel\Api\TheStepsThatRan;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAProofCameTo;
+use Modules\Kernel\Api\WhatARecipeRunDid;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\WhenARecipeRuns;
 
@@ -48,15 +50,18 @@ function everyWordAPluginOwes(): array
         'a version' => [static fn(): object => APlugin::named('tdarr', '', '', $vouched, TheRecipes::these()), 'version'],
         'a recipe id' => [static fn(): object => ARecipe::of('', 'Title', '', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these()), 'id'],
         'a recipe title' => [static fn(): object => ARecipe::of('link', ' ', '', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these()), 'title'],
+        'a step id' => [static fn(): object => ARecipeStep::calling(' ', 'GET', 'sonarr', '/a', ''), 'id'],
         'a step method' => [static fn(): object => ARecipeStep::calling('ask', '', 'sonarr', '/a', ''), 'method'],
         'a step destination' => [static fn(): object => ARecipeStep::calling('ask', 'GET', ' ', '/a', ''), 'to'],
-        'a value' => [static fn(): object => AValueItCarries::listed('', '', 'tdarr', '', '', ''), 'value'],
+        'a step path' => [static fn(): object => ARecipeStep::calling('ask', 'GET', 'sonarr', ' ', ''), 'path'],
+        'a value' => [static fn(): object => AValueItCarries::listed(' ', '', 'tdarr', '', '', ''), 'value'],
         'where a value goes' => [static fn(): object => AValueItCarries::listed('key', '', '', '', '', ''), 'to'],
         'a change path' => [static fn(): object => APluginChange::at(' ', WhatAChangePuts::Region), 'path'],
         'a proof id' => [static fn(): object => AProof::of('', 'It answers', 'GET /', '', WhatAProofCameTo::notAsked()), 'proof'],
+        'what a proof establishes' => [static fn(): object => AProof::of('answers', ' ', 'GET /', '', WhatAProofCameTo::notAsked()), 'establishes'],
         'what a proof asks' => [static fn(): object => AProof::of('answers', 'It answers', ' ', '', WhatAProofCameTo::notAsked()), 'asks'],
         'a contested capability' => [static fn(): object => ACapabilityLeftContested::over(' ', 'sonarr', PluginLines::none()), 'capability'],
-        'an overridden setting' => [static fn(): object => ASettingItOverrides::of('', 'why'), 'setting'],
+        'an overridden setting' => [static fn(): object => ASettingItOverrides::of(' ', 'why'), 'setting'],
         'a source\'s plugin' => [static fn(): object => ASourceAsked::of(' ', HowItsSourceStands::reachable()), 'plugin'],
         'why a source is unreachable' => [static fn(): object => HowItsSourceStands::unreachable(' '), 'why'],
         'why a source was not asked' => [static fn(): object => HowItsSourceStands::unasked(''), 'why'],
@@ -83,5 +88,12 @@ it('keeps what it was given, trimmed where it is said to be', function (): void 
         ->and($vouched->upstream())->toBe('https://example.com')
         ->and($vouched->licence())->toBe('MIT')
         ->and(ASettingItOverrides::of('sonarr.rename', ' because ')->why())->toBe('because')
-        ->and(ACapabilityLeftContested::over('transcode', ' ', PluginLines::none())->by())->toBe('');
+        ->and(ACapabilityLeftContested::over('transcode', ' ', PluginLines::none())->by())->toBe('')
+        ->and(AProof::of('answers', 'It answers', 'GET /', ' Sonarr is up ', WhatAProofCameTo::notAsked())->why())->toBe('Sonarr is up')
+        ->and(ARecipe::of('link', 'Title', ' So it can transcode ', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these())->why())->toBe('So it can transcode')
+        ->and(ARecipeStep::calling('ask', 'GET', 'sonarr', '/a', ' servarr ')->adapter())->toBe('servarr')
+        ->and(WhatARecipeRunDid::reported(held: false, why: ' Sonarr refused ', steps: TheStepsThatRan::these())->why())->toBe('Sonarr refused');
+    $pair = AValueItCarries::listed('key', ' credential-store ', 'tdarr', ' plex.token@tdarr ', ' 2.1.0 ', ' sonarr ');
+
+    expect([$pair->origin(), $pair->approval(), $pair->release(), $pair->from()])->toBe(['credential-store', 'plex.token@tdarr', '2.1.0', 'sonarr']);
 });

@@ -11,18 +11,19 @@ use Closure;
  */
 final readonly class WhatPlayPlays
 {
-    private function __construct(private ?HoldingId $id, private string $titled, private ?WhereItPlays $plays) {}
+    /** @param array{HoldingId, string, WhereItPlays}|null $one the one it plays, under its name, and where it plays; or none */
+    private function __construct(private ?array $one) {}
 
     /** This one, under this name, and where it plays. */
     public static function one(HoldingId $id, string $titled, WhereItPlays $plays): self
     {
-        return new self($id, $titled, $plays);
+        return new self([$id, $titled, $plays]);
     }
 
     /** Nothing: a series with no episode listed, or an episode the title does not hold. */
     public static function nothing(): self
     {
-        return new self(null, '', null);
+        return new self(null);
     }
 
     /**
@@ -37,8 +38,6 @@ final readonly class WhatPlayPlays
      */
     public function either(Closure $one, Closure $nothing): object
     {
-        return $this->id instanceof HoldingId && $this->plays instanceof WhereItPlays
-            ? $one($this->id, $this->titled, $this->plays)
-            : $nothing();
+        return $this->one === null ? $nothing() : $one(...$this->one);
     }
 }

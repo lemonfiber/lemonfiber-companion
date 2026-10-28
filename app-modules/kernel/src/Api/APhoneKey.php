@@ -62,6 +62,6 @@ final readonly class APhoneKey
     /** When it was revoked; unreadable where it stands. */
     public function whenRevoked(): AMomentAsWritten
     {
-        return $this->revoked ?? AMomentAsWritten::byTheStack('');
+        return $this->revoked ?? AMomentAsWritten::unwritten();
     }
 }

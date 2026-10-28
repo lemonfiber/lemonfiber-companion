@@ -53,3 +53,10 @@ it('names an alert by what the core gave it, trimmed, and refuses a blank name',
         ->and(AnAlertsName::of('vpn.tunnel#2')->filedFor($loft))->not->toBe(AnAlertsName::of('vpn.tunnel#2')->filedFor(StackId::rememberedAs('the-shed')))
         ->and(static fn(): AnAlertsName => AnAlertsName::of(' '))->toThrow(CodeIsBlank::class);
 });
+
+it('files an alert, and the notice of more to tell, under the keys earlier builds filed them under', function (): void {
+    $loft = StackId::rememberedAs('the-loft');
+
+    expect(AnAlertsName::of('vpn.tunnel#2')->filedFor($loft))->toBe('c0f227205c7459ad688e46fe095e97dd6109e940fcd1ccbdb1d955de9c9f64cb')
+        ->and(AnAlertsName::beyondTheCap()->filedFor($loft))->toBe('a62338e085fedf8edf6536b452e933697e1f613197094211a305120f8ea03b05');
+});

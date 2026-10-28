@@ -74,11 +74,19 @@ it('puts the join link after the address and before the address that turns it do
         ->and(fn(): AnAddressToHand => AnAddressToHand::joinable(AnAddressToHand::at('http://loft.local:8096', ''), ' '))->toThrow(TheDoorSaysNothing::class, '`join`');
 });
 
+it('hands the join link and the address that turns it down over without the address\'s caution', function (): void {
+    $address = AnAddressToHand::joinable(AnAddressToHand::declinable('http://192.168.1.42:8096', 'Its certificate is its own', 'http://192.168.1.42:5056/decline/abc'), 'lemonfiber://join?stack=abc');
+
+    expect($address->caution())->toBe('Its certificate is its own')
+        ->and($address->joining()->caution())->toBe('')
+        ->and($address->declining()->caution())->toBe('');
+});
+
 it('keeps the stack\'s sentence for why an invitation has no join link, and puts no link in the text', function (): void {
     $address = AnAddressToHand::unjoinable(AnAddressToHand::at('http://loft.local:8096', ''), 'The house has no certificate to pin yet');
 
     expect($address->whyNotJoinable())->toBe('The house has no certificate to pin yet')
         ->and($address->join())->toBe('')
         ->and(AnInvitationToPassOn::of(AnInvitationToHand::to('anna', $address, 72), 'Come in', 'Join:', 'Turn it down:')->text())->toBe("Come in\n\nhttp://loft.local:8096")
-        ->and(fn(): AnAddressToHand => AnAddressToHand::unjoinable(AnAddressToHand::at('http://loft.local:8096', ''), ''))->toThrow(TheDoorSaysNothing::class, '`unjoinable`');
+        ->and(fn(): AnAddressToHand => AnAddressToHand::unjoinable(AnAddressToHand::at('http://loft.local:8096', ''), ' '))->toThrow(TheDoorSaysNothing::class, '`unjoinable`');
 });

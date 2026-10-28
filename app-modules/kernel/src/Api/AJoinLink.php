@@ -66,7 +66,7 @@ final readonly class AJoinLink
 
         foreach (WhatAJoinLinkSays::cases() as $parameter) {
             if ($parameter->isAlwaysCarried() && ! array_key_exists($parameter->value, $said)) {
-                throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithoutAParameter, $parameter->value);
+                throw JoinLinkCannotBeUsed::over(WhyAJoinLinkCannotBeUsed::WithoutAParameter, $parameter->value);
             }
         }
 
@@ -172,7 +172,7 @@ final readonly class AJoinLink
             }
 
             if (array_key_exists($name, $said)) {
-                throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, $name);
+                throw JoinLinkCannotBeUsed::over(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, $name);
             }
 
             $said[$name] = rawurldecode($value);
@@ -185,7 +185,7 @@ final readonly class AJoinLink
     private static function stillOpen(string $expires, Clock $clock): void
     {
         if (preg_match(AMomentAsWritten::IN_SECONDS, $expires) !== 1) {
-            throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Expires->value);
+            throw JoinLinkCannotBeUsed::over(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Expires->value);
         }
 
         if (! $clock->now()->isBefore(Instant::atEpochSeconds((int) $expires))) {

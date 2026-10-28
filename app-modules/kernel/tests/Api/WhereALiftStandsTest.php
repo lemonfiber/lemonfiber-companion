@@ -27,7 +27,8 @@ function whichArmTheLiftTook(WhereALiftStands $lift): string
 it('takes the arm for each standing, with the seconds and the stack\'s words', function (): void {
     expect([whichArmTheLiftTook(WhereALiftStands::none()), WhereALiftStands::none()->says()])->toBe(['none', ''])
         ->and([whichArmTheLiftTook(WhereALiftStands::inForce(600, ' Lifted until 21:10 ')), WhereALiftStands::inForce(600, ' Lifted until 21:10 ')->says()])->toBe(['in force:600', 'Lifted until 21:10'])
-        ->and(whichArmTheLiftTook(WhereALiftStands::expired(0, '')))->toBe('expired:0');
+        ->and(whichArmTheLiftTook(WhereALiftStands::expired(0, '')))->toBe('expired:0')
+        ->and(WhereALiftStands::expired(60, ' Lapsed a minute ago ')->says())->toBe('Lapsed a minute ago');
 });
 
 it('refuses seconds below nothing', function (): void {

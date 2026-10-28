@@ -250,7 +250,8 @@ it('refuses two versions that do not disagree', function (int $answered, int $sp
 it('says which side is newer', function (): void {
     expect(TheVersionsSpoken::between(3, 2)->isTheStackNewer())->toBeTrue()
         ->and(TheVersionsSpoken::between(2, 3)->isTheStackNewer())->toBeFalse()
-        ->and([TheVersionsSpoken::between(3, 2)->answered(), TheVersionsSpoken::between(3, 2)->spoken()])->toBe([3, 2]);
+        ->and([TheVersionsSpoken::between(3, 2)->answered(), TheVersionsSpoken::between(3, 2)->spoken()])->toBe([3, 2])
+        ->and([TheVersionsSpoken::between(0, 1)->answered(), TheVersionsSpoken::between(1, 0)->spoken()])->toBe([0, 0]);
 });
 
 it('puts only a refused local-network permission right in the app\'s settings', function (): void {

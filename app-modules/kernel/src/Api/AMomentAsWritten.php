@@ -46,9 +46,6 @@ final readonly class AMomentAsWritten
      */
     private const string RFC_3339 = '/\A(\d{4})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:([Zz])|([+-])(\d{2}):(\d{2}))\z/';
 
-    /** The first year an {@see Instant} can fall in. */
-    private const int THE_EPOCH = 1970;
-
     /** The calendar repeats exactly every four hundred years, leap days and all. */
     private const int YEARS_IN_AN_ERA = 400;
 
@@ -103,6 +100,12 @@ final readonly class AMomentAsWritten
         return new self(self::instantIn($written));
     }
 
+    /** No moment at all, where nothing was written: it reads as unreadable. */
+    public static function unwritten(): self
+    {
+        return new self(null);
+    }
+
     /** A moment the stack wrote of its own, in UTC with no zone; anything else it reads as unreadable. */
     public static function byTheStack(string $written): self
     {
@@ -140,7 +143,7 @@ final readonly class AMomentAsWritten
         [$year, $month, $day] = [(int) $part[1], (int) $part[2], (int) $part[3]];
         [$hour, $minute, $second] = [(int) $part[4], (int) $part[5], (int) $part[6]];
 
-        if ($year < self::THE_EPOCH || ! checkdate($month, $day, $year) || $hour > self::LAST_HOUR || $minute > self::LAST_MINUTE || $second > self::LAST_SECOND) {
+        if (! checkdate($month, $day, $year) || $hour > self::LAST_HOUR || $minute > self::LAST_MINUTE || $second > self::LAST_SECOND) {
             return null;
         }
 
@@ -150,8 +153,6 @@ final readonly class AMomentAsWritten
             + $second
             - self::offset($part);
 
-        // An offset ahead of UTC on the first morning of 1970 still lands
-        // before the epoch, and no moment before it is one this app holds.
         return $seconds < 0 ? null : Instant::atEpochSeconds($seconds);
     }
 
@@ -176,8 +177,8 @@ final readonly class AMomentAsWritten
      *
      * Howard Hinnant's `days_from_civil`: the year is counted from March, so
      * the leap day falls at the end of it, and in eras of 400 years, which
-     * repeat exactly. Only years from 1970 on reach it, so the era arithmetic
-     * never meets a negative one.
+     * repeat exactly. Only years from 1 on reach it, as no other passes
+     * `checkdate()`, so the era arithmetic never meets a negative one.
      */
     private static function daysSinceTheEpoch(int $year, int $month, int $day): int
     {

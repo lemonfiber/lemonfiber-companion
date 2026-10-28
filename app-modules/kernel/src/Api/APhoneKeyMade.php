@@ -9,11 +9,8 @@ use Closure;
 /** The key this phone made for a stack, with what vouches for it, or why none was made. */
 final readonly class APhoneKeyMade
 {
-    private function __construct(
-        private WhereAPhoneKeyLives|WhyThisPhoneHoldsNoKey $where,
-        private string $publicKey,
-        private AnAttestation $attestation,
-    ) {}
+    /** @param array{WhereAPhoneKeyLives, string, AnAttestation}|WhyThisPhoneHoldsNoKey $made where it lives, its public half's DER and what vouches for it; or why none was made */
+    private function __construct(private array|WhyThisPhoneHoldsNoKey $made) {}
 
     /**
      * Made, and living there.
@@ -22,13 +19,13 @@ final readonly class APhoneKeyMade
      */
     public static function made(WhereAPhoneKeyLives $where, string $publicKey, AnAttestation $attestation): self
     {
-        return new self($where, $publicKey, $attestation);
+        return new self([$where, $publicKey, $attestation]);
     }
 
     /** Not made, for this reason. */
     public static function not(WhyThisPhoneHoldsNoKey $why): self
     {
-        return new self($why, '', AnAttestation::fromApple(''));
+        return new self($why);
     }
 
     /**
@@ -44,10 +41,6 @@ final readonly class APhoneKeyMade
      */
     public function either(Closure $made, Closure $not): object
     {
-        if ($this->where instanceof WhyThisPhoneHoldsNoKey) {
-            return $not($this->where);
-        }
-
-        return $made($this->where, $this->publicKey, $this->attestation);
+        return $this->made instanceof WhyThisPhoneHoldsNoKey ? $not($this->made) : $made(...$this->made);
     }
 }

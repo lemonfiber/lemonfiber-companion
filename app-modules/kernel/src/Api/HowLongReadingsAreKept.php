@@ -24,11 +24,11 @@ final readonly class HowLongReadingsAreKept
     /** The most days a reading can be asked to be kept for: a year. */
     public const int MOST_DAYS = KeptFor::OneYear->value;
 
-    /** Written in place of a count of days where readings are kept until removed. */
-    private const int UNTIL_REMOVED = 0;
-
-    /** @param int $days how many days, or {@see UNTIL_REMOVED} */
-    private function __construct(private int $days) {}
+    /**
+     * @param int  $days         how many days, where they are not kept until removed
+     * @param bool $untilRemoved whether they are kept until removed
+     */
+    private function __construct(private int $days, private bool $untilRemoved) {}
 
     /** How long readings are kept until the operator says otherwise. */
     public static function standard(): self
@@ -39,13 +39,13 @@ final readonly class HowLongReadingsAreKept
     /** One of the lengths offered by name. */
     public static function for(KeptFor $kept): self
     {
-        return new self($kept->value);
+        return new self($kept->value, untilRemoved: false);
     }
 
     /** Kept until the operator removes them, and never let go of for their age. */
     public static function untilRemoved(): self
     {
-        return new self(self::UNTIL_REMOVED);
+        return new self(self::MOST_DAYS, untilRemoved: true);
     }
 
     /**
@@ -57,19 +57,19 @@ final readonly class HowLongReadingsAreKept
      */
     public static function days(int $days): self
     {
-        return new self(max(self::FEWEST_DAYS, min(self::MOST_DAYS, $days)));
+        return new self(max(self::FEWEST_DAYS, min(self::MOST_DAYS, $days)), untilRemoved: false);
     }
 
     /** Whether readings are kept until they are removed. */
     public function isUntilRemoved(): bool
     {
-        return $this->days === self::UNTIL_REMOVED;
+        return $this->untilRemoved;
     }
 
     /** Whether this is the length offered under that name. */
     public function is(KeptFor $kept): bool
     {
-        return $this->days === $kept->value;
+        return ! $this->untilRemoved && $this->days === $kept->value;
     }
 
     /**
@@ -83,6 +83,6 @@ final readonly class HowLongReadingsAreKept
      */
     public function either(Closure $days, Closure $untilRemoved): object
     {
-        return $this->isUntilRemoved() ? $untilRemoved() : $days($this->days);
+        return $this->untilRemoved ? $untilRemoved() : $days($this->days);
     }
 }

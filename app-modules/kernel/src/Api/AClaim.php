@@ -50,7 +50,7 @@ final readonly class AClaim
     public static function carried(string $token): self
     {
         if ($token === '') {
-            throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Claim->value);
+            throw JoinLinkCannotBeUsed::over(WhyAJoinLinkCannotBeUsed::WithAParameterItCannotRead, WhatAJoinLinkSays::Claim->value);
         }
 
         return new self($token);

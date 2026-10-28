@@ -71,7 +71,7 @@ function whyItIsRefused(string $handed): WhyAJoinLinkCannotBeUsed
         return $refused->why();
     }
 
-    throw JoinLinkCannotBeUsed::because(WhyAJoinLinkCannotBeUsed::NotAJoinLink, 'it was read');
+    throw JoinLinkCannotBeUsed::over(WhyAJoinLinkCannotBeUsed::NotAJoinLink, 'it was read');
 }
 
 it('reads the house, its certificate and the name the person signs in as, decoded', function (): void {
@@ -99,6 +99,7 @@ it('carries the claim it was written with, for the one exchange that claims the 
 
     expect($claim instanceof AClaim ? $claim->forTheExchange() : $claim->said)->toBe('a-token-of-enough-random-bits')
         ->and(print_r($claim, return: true))->not->toContain('a-token-of-enough-random-bits')
+        ->and(print_r($claim, return: true))->toContain('(a claim, hidden)')
         ->and(static fn(): string => serialize($claim))->toThrow(MustNotLeaveThisProcess::class, 'A claim may not be serialised')
         ->and(static fn(): mixed => unserialize('O:25:"Modules\\Kernel\\Api\\AClaim":0:{}'))->toThrow(MustNotLeaveThisProcess::class);
 });

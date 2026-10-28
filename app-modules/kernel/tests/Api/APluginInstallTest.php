@@ -61,6 +61,19 @@ it('is installed only where it was recorded, no proof failed and the checks foun
         ->and(anInstallRecorded(WhatAProofCameTo::passed(), $nothingBroke, recorded: false)->held())->toBeFalse();
 });
 
+it('is never installed once it was put back, however its proofs and checks came out', function (): void {
+    $putBack = APluginInstall::putBack(
+        APluginAsItArrives::held(),
+        WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these()),
+        TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', WhatAProofCameTo::passed())),
+        WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
+        ARunPutBack::reported(WhetherItWasRehearsed::CarriedOut, WhatWentBack::these(), ChangesAndWhy::these(), ChangesAndWhy::these()),
+    );
+
+    expect($putBack->held())->toBeFalse()
+        ->and($putBack->isAReading())->toBeFalse();
+});
+
 it('is a reading only where nothing was recorded and nothing put back', function (): void {
     $reading = APluginAsItArrives::theReading();
     $putBack = APluginAsItArrives::thePutBack();
@@ -72,6 +85,14 @@ it('is a reading only where nothing was recorded and nothing put back', function
         ->and(APluginAsItArrives::theListing()->agreement())->toBe('')
         ->and(APluginAsItArrives::theListing()->approvals()->isEmpty())->toBeTrue()
         ->and($reading->approvals()->count())->toBe(1);
+});
+
+it('quotes the stack\'s name for a reading as it reads, and none for a run that wrote', function (): void {
+    $nothingBroke = WhatTheChecksMade::of(PluginLines::none(), PluginLines::none());
+    $about = static fn(bool $recorded): ThePlugins => ThePlugins::aboutAnInstall(TheInstalledPlugins::these(), ThePluginSources::these(), ' install-tdarr-2.1.0 ', anInstallRecorded(WhatAProofCameTo::passed(), $nothingBroke, recorded: $recorded));
+
+    expect($about(recorded: false)->agreement())->toBe('install-tdarr-2.1.0')
+        ->and($about(recorded: true)->agreement())->toBe('');
 });
 
 it('says the checks were not asked apart from asked and finding nothing', function (): void {

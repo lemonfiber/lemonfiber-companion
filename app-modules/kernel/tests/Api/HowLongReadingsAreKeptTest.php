@@ -40,5 +40,6 @@ it('is the length offered by name when the count is the same', function (): void
 it('keeps readings until removed apart from every count of days', function (): void {
     expect(howLongThatIs(HowLongReadingsAreKept::untilRemoved()))->toBe('until removed')
         ->and(HowLongReadingsAreKept::untilRemoved()->isUntilRemoved())->toBeTrue()
-        ->and(HowLongReadingsAreKept::days(1)->isUntilRemoved())->toBeFalse();
+        ->and(HowLongReadingsAreKept::days(1)->isUntilRemoved())->toBeFalse()
+        ->and(HowLongReadingsAreKept::for(KeptFor::OneYear)->isUntilRemoved())->toBeFalse();
 });
