@@ -144,14 +144,14 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** What the stack said, asked once per frame. */

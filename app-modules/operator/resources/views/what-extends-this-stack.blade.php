@@ -1,11 +1,11 @@
 @use('Modules\Kernel\Api\ExtendingIt')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
     <x-operator::heading>{{ __('plugins.heading') }}</x-operator::heading>
 
-@if ($this->answer()->isWorking)
+@if ($this->answer()->stands->isWorking())
     <x-design::body>{{ __($this->answer()->workingSaid) }}</x-design::body>
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words: a source holding no plugin, a
@@ -23,7 +23,7 @@
         {{-- Every service taking a shape was allowed it, or none takes one. --}}
     @endforelse
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          work any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>
@@ -243,7 +243,7 @@
     @endif
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

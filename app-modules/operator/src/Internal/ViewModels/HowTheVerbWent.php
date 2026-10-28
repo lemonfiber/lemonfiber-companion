@@ -13,10 +13,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowTheVerbWent
 {
     /**
-     * @param HowTheReadingWent            $went                    whether asking after it came back, and what stood in the way where it did not
-     * @param bool                         $wasAsked                whether a verb was sent here, so there is anything to follow
-     * @param bool                         $isWorking               whether the stack is still carrying it out
-     * @param bool                         $hasEnded                whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands            $stands                    where the work stands, and whether the stack could be asked at all
      * @param bool                         $wasRehearsed            whether the report is of a rehearsal, which changed nothing
      * @param ?string                      $cameToSaid              the catalogue key for what it came to, in the tense the report allows
      * @param string                       $because                 the stack's reason for declining, or empty where it ran
@@ -32,10 +29,7 @@ final readonly class HowTheVerbWent
      * @param string                       $command                 the command line the stack ran, or would run, as somebody would type it
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $wasAsked,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public bool $wasRehearsed,
         public ?string $cameToSaid,
         public string $because,

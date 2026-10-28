@@ -8,9 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheForgettingTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent             $went         whether the stack answered, or what stood in the way
-     * @param bool                          $isWorking    whether the stack is still at it
-     * @param bool                          $hasEnded     whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands             $stands         where the work stands, and whether the stack could be asked at all
      * @param ARefusalAsShown|null          $refused      the stack's refusal, where it refused
      * @param WhatIsKeptTurnedOutToBe|null  $wouldGo      the stack's list of what would go, where it answered the asking without a yes
      * @param bool                          $theWayInWent whether the yes was given and the answer could not be read, which is this app's way in having gone with the rest
@@ -19,9 +17,7 @@ final readonly class TheForgettingTurnedOutToBe
      * @param list<APlaceLeftAsShown>       $left         each place it could not remove, and why
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public ?ARefusalAsShown $refused,
         public ?WhatIsKeptTurnedOutToBe $wouldGo,
         public bool $theWayInWent,

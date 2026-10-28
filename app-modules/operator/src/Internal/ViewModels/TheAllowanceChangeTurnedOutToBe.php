@@ -8,17 +8,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheAllowanceChangeTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent              $went       whether the stack answered, or what stood in the way
-     * @param bool                           $isWorking  whether the stack is still at it
-     * @param bool                           $hasEnded   whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands              $stands       where the work stands, and whether the stack could be asked at all
      * @param string                         $notAskable the catalogue key saying why what was chosen was not sent, blank where it was
      * @param ARefusalAsShown|null           $refused    the stack's refusal, where it refused
      * @param TheAllowanceChangeAsShown|null $change     what the run reported, where it finished
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public string $notAskable,
         public ?ARefusalAsShown $refused,
         public ?TheAllowanceChangeAsShown $change,

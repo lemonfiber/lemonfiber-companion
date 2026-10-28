@@ -144,10 +144,10 @@ it('asking costs a round trip, then a read of the handle', function (): void {
 it('work still going is a state of the screen, not a spinner', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
 
-    expect($screen->offer()->isWorking)->toBeTrue()
-        ->and($screen->offer()->hasEnded)->toBeFalse()
+    expect($screen->offer()->stands->isWorking())->toBeTrue()
+        ->and($screen->offer()->stands->hasEnded())->toBeFalse()
         ->and(count($screen->offer()->repairs))->toBe(0)
-        ->and($screen->offer()->went->met)->toBe('');
+        ->and($screen->offer()->stands->went->met)->toBe('');
 });
 
 it('asking again while the work runs reads the same job, and starts none', function (): void {
@@ -189,9 +189,9 @@ it('a job the stack forgot is its own state, and asking again starts a new one',
     $mending = AStackThatWouldMend::thatForgotTheJob();
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->hasEnded)->toBeTrue()
-        ->and($screen->offer()->isWorking)->toBeFalse()
-        ->and($screen->offer()->went->met)->toBe('');
+    expect($screen->offer()->stands->hasEnded())->toBeTrue()
+        ->and($screen->offer()->stands->isWorking())->toBeFalse()
+        ->and($screen->offer()->stands->went->met)->toBe('');
 
     $screen->again();
     $screen->offer();
@@ -206,19 +206,19 @@ it('a stack with no repair to offer is not a job that ended', function (): void 
     $ended = theRepairsScreen(AStackThatWouldMend::thatForgotTheJob());
 
     expect(count($nothing->offer()->repairs))->toBe(0)
-        ->and($nothing->offer()->hasEnded)->toBeFalse()
+        ->and($nothing->offer()->stands->hasEnded())->toBeFalse()
         ->and(count($ended->offer()->repairs))->toBe(0)
-        ->and($ended->offer()->hasEnded)->toBeTrue();
+        ->and($ended->offer()->stands->hasEnded())->toBeTrue();
 });
 
 it('a stack that could not be asked says so, and says what to do', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->offer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
+    expect($screen->offer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->offer()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and(count($screen->offer()->repairs))->toBe(0)
-        ->and($screen->offer()->isWorking)->toBeFalse()
-        ->and($screen->offer()->hasEnded)->toBeFalse();
+        ->and($screen->offer()->stands->isWorking())->toBeFalse()
+        ->and($screen->offer()->stands->hasEnded())->toBeFalse();
 });
 
 it('a stack that took the question on and then went away is an obstacle too', function (): void {
@@ -228,7 +228,7 @@ it('a stack that took the question on and then went away is an obstacle too', fu
     $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->offer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
 });
@@ -534,8 +534,8 @@ it('nothing was agreed to, so there is nothing that was done', function (): void
     // template branches on `wasAgreedTo()` rather than on this.
     $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
 
-    expect($screen->done()->hasEnded)->toBeTrue()
-        ->and($screen->done()->isWorking)->toBeFalse()
+    expect($screen->done()->stands->hasEnded())->toBeTrue()
+        ->and($screen->done()->stands->isWorking())->toBeFalse()
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
@@ -551,8 +551,8 @@ it('a stack that goes away between agreeing and reading says what was met', func
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->done()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
+    expect($screen->done()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->done()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
@@ -565,9 +565,9 @@ it('a run still being carried out is its own state', function (): void {
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->isWorking)->toBeTrue()
-        ->and($screen->done()->hasEnded)->toBeFalse()
-        ->and($screen->done()->went->met)->toBe('');
+    expect($screen->done()->stands->isWorking())->toBeTrue()
+        ->and($screen->done()->stands->hasEnded())->toBeFalse()
+        ->and($screen->done()->stands->went->met)->toBe('');
 });
 
 it('what was done is held, so reading it twice asks once', function (): void {

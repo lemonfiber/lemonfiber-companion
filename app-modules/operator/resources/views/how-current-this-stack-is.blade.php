@@ -208,25 +208,25 @@
          taken. --}}
     <x-design::heading>{{ __('updates.last_update') }}</x-design::heading>
 
-    @if (! $this->lastUpdate()->went->cameBack())
+    @if (! $this->lastUpdate()->stands->went->cameBack())
         {{-- Asking again is the column's own, below. Where the reading asked
              for now did not come back either, what stands in the way is said
              once, above, with its remedy, rather than twice. --}}
         @if ($this->answer()->askedNow->cameBack())
             <x-operator::what-stood-in-the-way
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                :went="$this->lastUpdate()->went"
+                :went="$this->lastUpdate()->stands->went"
                 ask-again=""
                 :goes="$this->goes()"
             />
         @endif
-        <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
-    @elseif ($this->lastUpdate()->isWorking)
+        <x-operator::try-again :went="$this->lastUpdate()->stands->went" tap="tryAgain()" />
+    @elseif ($this->lastUpdate()->stands->isWorking())
         <x-design::standing
             :said="__('updates.still_updating')"
             tone="working"
         />
-    @elseif ($this->lastUpdate()->hasEnded)
+    @elseif ($this->lastUpdate()->stands->hasEnded())
         {{-- Not a failure: it may well have worked, and the reading above
              is where to look. --}}
         <x-design::notice tone="unknown">

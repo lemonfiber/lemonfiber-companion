@@ -19,9 +19,9 @@ use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Modules\Operator\Internal\ViewModels\ADirectionHeldAsShown;
 use Modules\Operator\Internal\ViewModels\ALiftAsShown;
 use Modules\Operator\Internal\ViewModels\ARateAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheLineChangeAsShown;
 use Modules\Operator\Internal\ViewModels\TheLineChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -45,40 +45,38 @@ final readonly class HowTheLineChangeReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     /** What was typed was not sent, and why. */
     public function notAskable(string $why): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), notAskable: $why);
+        return $this->without(WhereTheWorkStands::answered(), notAskable: $why);
     }
 
     /** This phone holds no session for the stack. */
     public function signedOut(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still at it. */
     public function running(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more. */
     public function ended(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     /** The stack refused it, in its own words. */
     public function refused(ARefusalInItsWords $why): TheLineChangeTurnedOutToBe
     {
         return new TheLineChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             notAskable: '',
             refused: new HowARefusalReads()->inItsWords($why),
             change: null,
@@ -88,7 +86,7 @@ final readonly class HowTheLineChangeReads
     /** What stood in the way of asking. */
     public function met(Obstacle $why): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported, read against the clock once. */
@@ -101,9 +99,7 @@ final readonly class HowTheLineChangeReads
         }
 
         return new TheLineChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             notAskable: '',
             refused: null,
             change: new TheLineChangeAsShown(
@@ -185,12 +181,10 @@ final readonly class HowTheLineChangeReads
         return $rates;
     }
 
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, string $notAskable = ''): TheLineChangeTurnedOutToBe
+    private function without(WhereTheWorkStands $stands, string $notAskable = ''): TheLineChangeTurnedOutToBe
     {
         return new TheLineChangeTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             notAskable: $notAskable,
             refused: null,
             change: null,

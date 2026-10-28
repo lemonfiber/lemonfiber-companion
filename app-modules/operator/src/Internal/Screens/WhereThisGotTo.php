@@ -143,7 +143,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     {
         $term = $this->term();
 
-        if ($term === '' || $this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->isWorking) {
+        if ($term === '' || $this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->stands->isWorking()) {
             return;
         }
 
@@ -154,14 +154,14 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howTheSearchIsGoing()->isWorking) {
+        if ($this->howTheSearchIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howTheSearchIsGoing()->isWorking;
+        return $this->howTheSearchIsGoing()->stands->isWorking();
     }
 
     public function howTheSearchIsGoing(): TheRunTurnedOutToBe

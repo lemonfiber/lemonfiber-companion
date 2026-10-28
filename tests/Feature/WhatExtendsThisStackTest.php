@@ -491,7 +491,7 @@ it('says the session has ended where this phone holds none, and asks nothing', f
     $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    expect($screen->answer()->went->cameBack())->toBeFalse()
+    expect($screen->answer()->stands->went->cameBack())->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($extending->asked())->toBe([]);
 });

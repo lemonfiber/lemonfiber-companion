@@ -16,12 +16,10 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatExtendsItTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent          $went        whether the stack was reached, and what stood in the way where it was not
+     * @param WhereTheWorkStands          $stands        where the work stands, and whether the stack could be asked at all
      * @param bool                       $typing      whether a source is being typed, before anything is asked
-     * @param bool                       $isWorking   whether the stack is at work on a rehearsal or an act
      * @param bool                       $afterTheYes whether the work asked about is the act agreed to rather than its rehearsal
      * @param string                     $workingSaid the catalogue key for what the stack is at, or empty
-     * @param bool                       $hasEnded    whether the stack has no outcome for the work any more
      * @param string                     $refusedSaid the catalogue key for what the stack would not do, or empty
      * @param ARefusalAsShown|null       $refused     the stack's refusal, in its words, where it refused
      * @param list<AShapeTakenAsShown>   $unapproved  every service left unapproved to take its privileged shape, where the act agreed to was refused
@@ -33,12 +31,10 @@ final readonly class WhatExtendsItTurnedOutToBe
      * @param ARecipeRunAsShown|null     $run         what running a demand recipe would do or came to, where the answer is about that
      */
     public function __construct(
-        public HowTheReadingWent $went,
+        public WhereTheWorkStands $stands,
         public bool $typing,
-        public bool $isWorking,
         public bool $afterTheYes,
         public string $workingSaid,
-        public bool $hasEnded,
         public string $refusedSaid,
         public ?ARefusalAsShown $refused,
         public array $unapproved,

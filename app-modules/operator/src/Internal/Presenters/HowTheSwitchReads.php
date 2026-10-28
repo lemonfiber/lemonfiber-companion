@@ -11,9 +11,9 @@ use Modules\Kernel\Api\TheServicesNamed;
 use Modules\Kernel\Api\TheSwitch;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\AsText;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheSwitchAsShown;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where switching the active forms has got to, as the template draws it.
@@ -28,35 +28,33 @@ final readonly class HowTheSwitchReads
 
     public function notAsked(): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     public function notAskable(string $why): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), notAskable: $why);
+        return $this->without(WhereTheWorkStands::answered(), notAskable: $why);
     }
 
     public function signedOut(): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     public function ended(): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheSwitchTurnedOutToBe
     {
         return new TheSwitchTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             notAskable: '',
             refused: new HowARefusalReads()->inItsWords($why),
             change: null,
@@ -65,7 +63,7 @@ final readonly class HowTheSwitchReads
 
     public function met(Obstacle $why): TheSwitchTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported, headed by whether it was a rehearsal. */
@@ -74,9 +72,7 @@ final readonly class HowTheSwitchReads
         $rehearsed = $switch->did() === WhetherItWasRehearsed::Rehearsed;
 
         return new TheSwitchTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             notAskable: '',
             refused: null,
             change: new TheSwitchAsShown(
@@ -105,12 +101,10 @@ final readonly class HowTheSwitchReads
         return $names;
     }
 
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, string $notAskable = ''): TheSwitchTurnedOutToBe
+    private function without(WhereTheWorkStands $stands, string $notAskable = ''): TheSwitchTurnedOutToBe
     {
         return new TheSwitchTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             notAskable: $notAskable,
             refused: null,
             change: null,

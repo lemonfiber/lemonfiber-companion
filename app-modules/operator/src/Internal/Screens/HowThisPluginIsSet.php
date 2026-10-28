@@ -200,7 +200,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -208,7 +208,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** The plugin's settings, asked once per frame, after where a change has got to and what the stream said. */

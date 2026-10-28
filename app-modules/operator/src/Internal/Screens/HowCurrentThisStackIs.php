@@ -148,7 +148,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     #[Poll(HowOftenAScreenLooks::WHILE_OPEN_MS)]
     public function whileOpen(): void
     {
-        if (! $this->lastUpdate()->isWorking) {
+        if (! $this->lastUpdate()->stands->isWorking()) {
             $this->answered = null;
         }
     }

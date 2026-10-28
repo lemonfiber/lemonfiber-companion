@@ -710,14 +710,14 @@ it('an act the stack could not be reached for is an obstacle beside the rest, th
     $screen->offer();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howItIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->howItIsGoing()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->toContain(__('stacks.invitation.who_is_in'))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
     $screen->again();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeTrue();
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeTrue();
 });
 
 it('a household that could not be read is an obstacle, not nobody in', function (): void {
@@ -748,7 +748,7 @@ it('a credential the stack refused signs this device out and lets the session go
     $refused->name = 'anna';
     $refused->offer();
 
-    expect($refused->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($refused->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($acting->isHolding(theStackSomebodyIsAskedIn()->id()))->toBeFalse();
 });
 
@@ -760,7 +760,7 @@ it('a session that has ended asks the stack nothing', function (): void {
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($inviting->readings())->toBe(0)
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->howItIsGoing()->askedFor)->toBe('anna')
         ->and($inviting->asked())->toBe([]);
 });

@@ -153,7 +153,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->answer()->isWorking;
+        return $this->answer()->stands->isWorking();
     }
 
     /** Where it has got to, asked once per frame. */
@@ -317,7 +317,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->answer()->isWorking) {
+        if ($this->answer()->stands->isWorking()) {
             $this->answered = null;
         }
     }

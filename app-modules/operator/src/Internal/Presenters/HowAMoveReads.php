@@ -16,8 +16,8 @@ use Modules\Kernel\Api\TheStandingBeside;
 use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AMoveAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -44,47 +44,45 @@ final readonly class HowAMoveReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), '');
+        return $this->without(WhereTheWorkStands::notAsked(), '');
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded(), $mode);
+        return $this->without(WhereTheWorkStands::signedOut(), $mode);
     }
 
     /** The stack is still working it out. */
     public function running(string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $mode, isWorking: true);
+        return $this->without(WhereTheWorkStands::running(), $mode);
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
     public function ended(string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $mode, hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended(), $mode);
     }
 
     /** The stack turned the request down, and this is its reason. */
     public function refused(string $because, string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $mode, refusal: $because);
+        return $this->without(WhereTheWorkStands::answered(), $mode, refusal: $because);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why, string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why), $mode);
+        return $this->without(WhereTheWorkStands::met($why), $mode);
     }
 
     /** Where the move stands, and what it came to or would come to. */
     public function answered(AMove $move): TheMoveTurnedOutToBe
     {
         return new TheMoveTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
+            stands: WhereTheWorkStands::answered(),
             mode: $move->by()->value,
-            isWorking: false,
-            hasEnded: false,
             refusal: '',
             move: $move->either(
                 adopting: fn(TheAdoption $adoption): AMoveAsShown => $this->adopting($move, $adoption),
@@ -298,17 +296,13 @@ final readonly class HowAMoveReads
 
     /** An answer with no move in it, for every state but one answered. */
     private function without(
-        HowTheReadingWent $went,
+        WhereTheWorkStands $stands,
         string $mode,
-        bool $isWorking = false,
-        bool $hasEnded = false,
         string $refusal = '',
     ): TheMoveTurnedOutToBe {
         return new TheMoveTurnedOutToBe(
-            went: $went,
+            stands: $stands,
             mode: $mode,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
             refusal: $refusal,
             move: null,
         );

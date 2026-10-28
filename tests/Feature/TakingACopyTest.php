@@ -124,12 +124,12 @@ function aCopyAgreedTo(AStackThatTakesCopies $copying, ?AKeychainInMemory $keych
 function everythingAboutTheCopy(HowTheCopyWent $went): array
 {
     return [
-        'cameBack' => $went->went->cameBack(),
-        'isSignedIn' => $went->went->isSignedIn,
-        'met' => $went->went->met,
-        'wasAsked' => $went->wasAsked,
-        'isWorking' => $went->isWorking,
-        'hasEnded' => $went->hasEnded,
+        'cameBack' => $went->stands->went->cameBack(),
+        'isSignedIn' => $went->stands->went->isSignedIn,
+        'met' => $went->stands->went->met,
+        'wasAsked' => $went->stands->wasAsked(),
+        'isWorking' => $went->stands->isWorking(),
+        'hasEnded' => $went->stands->hasEnded(),
         'wasRehearsed' => $went->wasRehearsed,
         'scope' => $went->scope instanceof AScopeAsShown ? [$went->scope->said, $went->scope->with, $went->scope->trees] : null,
         'tookSaid' => $went->tookSaid,
@@ -228,7 +228,7 @@ it('sends nothing on a yes nobody was asked for', function (): void {
     $screen->agree();
 
     expect($copying->taken())->toBe([])
-        ->and($screen->lastCopy()->wasAsked)->toBeFalse();
+        ->and($screen->lastCopy()->stands->wasAsked())->toBeFalse();
 });
 
 it('takes exactly the copy it named, and says it is being taken without drawing progress nobody measured', function (): void {
@@ -384,7 +384,7 @@ it('says what stood in the way of a copy the stack would not take, and asks agai
 
     $screen->again();
 
-    expect($screen->lastCopy()->wasAsked)->toBeFalse()
+    expect($screen->lastCopy()->stands->wasAsked())->toBeFalse()
         ->and($copying->followed())->toBe([]);
 });
 
@@ -399,8 +399,8 @@ it('lets go of a session the stack refused, while taking or while asking after',
         $screen->whileItRuns();
     }
 
-    expect($screen->lastCopy()->went->isSignedIn)->toBeFalse()
-        ->and($screen->lastCopy()->wasAsked)->toBeTrue()
+    expect($screen->lastCopy()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->lastCopy()->stands->wasAsked())->toBeTrue()
         ->and($keychain->isHolding(theStackACopyIsTakenOf()->id()))->toBeFalse();
 })->with(['taking' => [false], 'asking after' => [true]]);
 
@@ -426,7 +426,7 @@ it('lets go of a session refused while it follows a copy after the session is go
     $keychain->forget(theStackACopyIsTakenOf()->id());
     $screen->whileItRuns();
 
-    expect($screen->lastCopy()->went->isSignedIn)->toBeFalse();
+    expect($screen->lastCopy()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('offers nothing to copy where the services could not be listed, and says what stood in the way', function (): void {

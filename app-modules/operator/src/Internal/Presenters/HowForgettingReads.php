@@ -13,8 +13,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
 use Modules\Operator\Internal\ViewModels\APlaceLeftAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where removing everything lemonfiber keeps has got to, as the template draws it.
@@ -23,30 +23,28 @@ final readonly class HowForgettingReads
 {
     public function notAsked(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     public function signedOut(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     public function ended(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheForgettingTurnedOutToBe
     {
         return new TheForgettingTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
             wouldGo: null,
             theWayInWent: false,
@@ -60,19 +58,17 @@ final readonly class HowForgettingReads
     public function met(Obstacle $why, bool $agreed): TheForgettingTurnedOutToBe
     {
         return $agreed
-            ? $this->without(HowTheReadingWent::itCameBack(), theWayInWent: true)
-            : $this->without(HowTheReadingWent::somethingStopped($why));
+            ? $this->without(WhereTheWorkStands::answered(), theWayInWent: true)
+            : $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the stack answered: the list of what would go, or what went. */
     public function answered(TheForgetting $forgetting): TheForgettingTurnedOutToBe
     {
         return $forgetting->got()->either(
-            notAsked: fn(): TheForgettingTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
+            notAsked: fn(): TheForgettingTurnedOutToBe => $this->without(WhereTheWorkStands::answered()),
             unconfirmed: static fn(): TheForgettingTurnedOutToBe => new TheForgettingTurnedOutToBe(
-                went: HowTheReadingWent::itCameBack(),
-                isWorking: false,
-                hasEnded: false,
+                stands: WhereTheWorkStands::answered(),
                 refused: null,
                 wouldGo: new HowWhatIsKeptReads()->this($forgetting->listed()),
                 theWayInWent: false,
@@ -88,9 +84,7 @@ final readonly class HowForgettingReads
                 }
 
                 return new TheForgettingTurnedOutToBe(
-                    went: HowTheReadingWent::itCameBack(),
-                    isWorking: false,
-                    hasEnded: false,
+                    stands: WhereTheWorkStands::answered(),
                     refused: null,
                     wouldGo: null,
                     theWayInWent: false,
@@ -102,12 +96,10 @@ final readonly class HowForgettingReads
         );
     }
 
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, bool $theWayInWent = false): TheForgettingTurnedOutToBe
+    private function without(WhereTheWorkStands $stands, bool $theWayInWent = false): TheForgettingTurnedOutToBe
     {
         return new TheForgettingTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refused: null,
             wouldGo: null,
             theWayInWent: $theWayInWent,

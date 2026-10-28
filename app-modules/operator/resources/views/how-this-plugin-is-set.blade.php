@@ -40,15 +40,15 @@
                     <x-operator::offered-action :label="__('plugins.settings.rehearse')" tap="rehearse()" :offer="$this->offered(ChangingASetting::Set)" />
                 @endunless
 
-                @if (! $this->howItIsGoing()->went->cameBack())
+                @if (! $this->howItIsGoing()->stands->went->cameBack())
                     <x-operator::what-stood-in-the-way
                         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                        :went="$this->howItIsGoing()->went"
+                        :went="$this->howItIsGoing()->stands->went"
                         :goes="$this->goes()"
                     />
-                @elseif ($this->howItIsGoing()->isWorking)
+                @elseif ($this->howItIsGoing()->stands->isWorking())
                     <x-design::standing :said="__('plugins.settings.working')" tone="working" />
-                @elseif ($this->howItIsGoing()->hasEnded)
+                @elseif ($this->howItIsGoing()->stands->hasEnded())
                     <x-design::notice tone="unknown">
                         <x-design::strong>{{ __('plugins.settings.no_outcome') }}</x-design::strong>
                     </x-design::notice>

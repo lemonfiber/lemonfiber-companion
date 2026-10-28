@@ -9,10 +9,10 @@
         <x-operator::heading>{{ __($this->answer()->titleSaid) }}</x-operator::heading>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('health.run_every.working')" tone="working" />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.run_every.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -44,7 +44,7 @@
             @endforelse
         @endif
 
-        @if ($this->answer()->runnable && ! $this->howItIsGoing()->isWorking)
+        @if ($this->answer()->runnable && ! $this->howItIsGoing()->stands->isWorking())
             {{-- Every check the run covers that disturbs something, each in the
                  stack's words with its bound, and the downloads it interrupts,
                  before the yes. --}}
@@ -74,7 +74,7 @@
     @else
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

@@ -129,7 +129,7 @@ final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howTheSwitchIsGoing()->isWorking;
+        return $this->howTheSwitchIsGoing()->stands->isWorking();
     }
 
     /**

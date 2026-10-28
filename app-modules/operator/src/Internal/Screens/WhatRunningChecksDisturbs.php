@@ -83,7 +83,7 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
     {
         $covers = $this->covers();
 
-        if (! $covers instanceof WhatARunCovers || $this->howItIsGoing()->isWorking || ! $this->answer()->went->cameBack()) {
+        if (! $covers instanceof WhatARunCovers || $this->howItIsGoing()->stands->isWorking() || ! $this->answer()->went->cameBack()) {
             return;
         }
 

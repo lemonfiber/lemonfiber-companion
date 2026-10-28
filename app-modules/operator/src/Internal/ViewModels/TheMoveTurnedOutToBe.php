@@ -14,18 +14,14 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheMoveTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent $went      whether the stack was reached, and what stood in the way where it was not
+     * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all
      * @param string            $mode      the word of the mode asked about, or empty where nothing has been
-     * @param bool              $isWorking whether the stack is still working it out
-     * @param bool              $hasEnded  whether the stack has no outcome for it any more
      * @param string            $refusal   the stack's words turning the request down, or empty
      * @param AMoveAsShown|null $move      where the move stands, or nothing where none has come back
      */
     public function __construct(
-        public HowTheReadingWent $went,
+        public WhereTheWorkStands $stands,
         public string $mode,
-        public bool $isWorking,
-        public bool $hasEnded,
         public string $refusal,
         public ?AMoveAsShown $move,
     ) {}

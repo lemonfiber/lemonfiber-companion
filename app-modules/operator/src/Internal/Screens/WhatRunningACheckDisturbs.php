@@ -93,7 +93,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     {
         $shown = $this->answer();
 
-        if ($shown->check === '' || $this->howItIsGoing()->isWorking) {
+        if ($shown->check === '' || $this->howItIsGoing()->stands->isWorking()) {
             return;
         }
 

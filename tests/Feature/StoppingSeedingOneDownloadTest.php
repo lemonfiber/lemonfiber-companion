@@ -119,12 +119,12 @@ function aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing $became, ?WhatLettin
 function everythingTheOfferToLetGoShows(WhatLettingItGoWouldShow $shown): array
 {
     return [
-        'cameBack' => $shown->went->cameBack(),
-        'isSignedIn' => $shown->went->isSignedIn,
-        'met' => $shown->went->met,
+        'cameBack' => $shown->stands->went->cameBack(),
+        'isSignedIn' => $shown->stands->went->isSignedIn,
+        'met' => $shown->stands->went->met,
         'namesADownload' => $shown->namesADownload,
-        'isWorking' => $shown->isWorking,
-        'hasEnded' => $shown->hasEnded,
+        'isWorking' => $shown->stands->isWorking(),
+        'hasEnded' => $shown->stands->hasEnded(),
         'download' => $shown->download instanceof ADownloadAsShown
             ? [$shown->download->name, $shown->download->standingSaid, $shown->download->ratioSaid, $shown->download->ratio, $shown->download->consequence]
             : null,
@@ -161,11 +161,11 @@ function nothingOfferedToLetGo(array $changed): array
 function everythingLettingGoShows(HowLettingItGoWent $went): array
 {
     return [
-        'cameBack' => $went->went->cameBack(),
-        'isSignedIn' => $went->went->isSignedIn,
-        'met' => $went->went->met,
-        'isWorking' => $went->isWorking,
-        'hasEnded' => $went->hasEnded,
+        'cameBack' => $went->stands->went->cameBack(),
+        'isSignedIn' => $went->stands->went->isSignedIn,
+        'met' => $went->stands->went->met,
+        'isWorking' => $went->stands->isWorking(),
+        'hasEnded' => $went->stands->hasEnded(),
         'wasRehearsed' => $went->wasRehearsed,
         'name' => $went->name,
         'size' => $went->size instanceof ASizeAsShown ? [$went->size->figure, $went->size->unit] : null,
@@ -309,7 +309,7 @@ it('lets go of a session the stack refused while it was asked what stopping woul
     $keychain = AKeychainInMemory::working();
     $screen = theLettingGoScreen($stopping, $keychain);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackADownloadIsLetGoOn()->id()))->toBeFalse();
 })->with([
     'asking' => [AStackThatStopsSeeding::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))],
@@ -422,7 +422,7 @@ it('says what stood in the way of a yes the stack refused, and asks for the offe
     $screen->again();
 
     expect($screen->wasAgreedTo())->toBeFalse()
-        ->and($screen->answer()->went->cameBack())->toBeTrue()
+        ->and($screen->answer()->stands->went->cameBack())->toBeTrue()
         ->and($stopping->asked())->toHaveCount(2)
         ->and($stopping->followed())->toBe([]);
 });
@@ -448,7 +448,7 @@ it('asks for the offer afresh when asked again before a yes', function (): void 
     $screen->agree();
 
     expect($stopping->agreed())->toBe([])
-        ->and($screen->answer()->went->cameBack())->toBeTrue()
+        ->and($screen->answer()->stands->went->cameBack())->toBeTrue()
         ->and($stopping->asked())->toHaveCount(2);
 });
 
@@ -465,7 +465,7 @@ it('lets go of a session refused while stopping or asking after it', function (b
         $screen->whileItRuns();
     }
 
-    expect($screen->done()->went->isSignedIn)->toBeFalse()
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackADownloadIsLetGoOn()->id()))->toBeFalse();
 })->with(['stopping' => [false], 'asking after' => [true]]);
 

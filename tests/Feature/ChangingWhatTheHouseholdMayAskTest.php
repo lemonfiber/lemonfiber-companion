@@ -211,7 +211,7 @@ it('rehearses for the member chosen, follows the work, and draws the stack\'s wo
     $screen->days = '7';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->isWorking)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->isWorking())->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe(['for=alex policy=everything-waits limit=5/7']);
 
@@ -234,7 +234,7 @@ it('makes the change the rehearsal was asked with, not what is chosen when the y
     $screen->apply();
 
     expect(array_map(everythingAChangeAsks(...), $choosing->carriedOut()))->toBe(['for=alex policy=everything-waits limit=5/7'])
-        ->and($screen->howItIsGoing()->isWorking)->toBeTrue();
+        ->and($screen->howItIsGoing()->stands->isWorking())->toBeTrue();
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -288,7 +288,7 @@ it('says what stood in the way of asking, and lets go of a session the stack ref
 
     $refused = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
 
-    expect($refused->howItIsGoing()->went->isSignedIn)->toBeFalse();
+    expect($refused->howItIsGoing()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('asks nothing and offers signing in where no session is held', function (): void {
@@ -297,7 +297,7 @@ it('asks nothing and offers signing in where no session is held', function (): v
     $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->whoMayBeChosen()->membersRead)->toBeFalse()
         ->and($choosing->rehearsed())->toBe([]);
 });

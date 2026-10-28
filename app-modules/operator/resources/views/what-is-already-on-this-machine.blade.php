@@ -96,16 +96,16 @@
         <x-design::body>{{ __('stacks.already_here.no_modes') }}</x-design::body>
     @endforelse
 
-    @if ($this->howTheMoveIsGoing()->went->cameBack())
+    @if ($this->howTheMoveIsGoing()->stands->went->cameBack())
         @if ($this->howTheMoveIsGoing()->mode !== '')
             <x-design::heading>{{ __('stacks.moving_in.about', ['mode' => $this->howTheMoveIsGoing()->mode]) }}</x-design::heading>
         @endif
-        @if ($this->howTheMoveIsGoing()->isWorking)
+        @if ($this->howTheMoveIsGoing()->stands->isWorking())
             <x-design::standing
                 :said="__('stacks.moving_in.working')"
                 tone="working"
             />
-        @elseif ($this->howTheMoveIsGoing()->hasEnded)
+        @elseif ($this->howTheMoveIsGoing()->stands->hasEnded())
             {{-- Not a failure and not a refusal: the stack has no outcome for
                  it any more. --}}
             <x-design::notice tone="unknown">
@@ -169,10 +169,10 @@
              would have been, with the way back. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howTheMoveIsGoing()->went"
+            :went="$this->howTheMoveIsGoing()->stands->went"
             :goes="$this->goes()"
         />
-        <x-operator::try-again :went="$this->howTheMoveIsGoing()->went" tap="tryAgain()" />
+        <x-operator::try-again :went="$this->howTheMoveIsGoing()->stands->went" tap="tryAgain()" />
     @endif
 
     {{-- Looking again reads the survey, and asks after work still being

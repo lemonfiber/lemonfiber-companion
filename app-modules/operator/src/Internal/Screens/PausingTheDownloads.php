@@ -180,7 +180,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
             return;
         }
 
-        if ($this->answered?->isWorking !== true) {
+        if ($this->answered?->stands->isWorking() !== true) {
             $this->asking = null;
         }
 
@@ -215,7 +215,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** Whether the stack is rehearsing, or carrying it out, right now. */
     public function isWorking(): bool
     {
-        return $this->agreed ? $this->done()->isWorking : $this->answer()->isWorking;
+        return $this->agreed ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
     }
 
     /** Resume the session and rehearse what was asked. */

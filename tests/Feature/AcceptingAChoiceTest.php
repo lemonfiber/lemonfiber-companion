@@ -170,7 +170,7 @@ it('says what stood in the way, and lets go of a session the stack refused', fun
     $refused->accept();
 
     expect(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
-        ->and($refused->howItIsGoing()->went->isSignedIn)->toBeFalse();
+        ->and($refused->howItIsGoing()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('asks the stack again for the warning when asked to look again', function (): void {
@@ -195,7 +195,7 @@ it('says the session ended where it went while the acceptance was followed', fun
 
     $screen->again();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });

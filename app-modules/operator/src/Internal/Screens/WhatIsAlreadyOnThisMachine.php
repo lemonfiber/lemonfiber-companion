@@ -185,7 +185,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
      */
     public function tryAgain(): void
     {
-        if ($this->going?->went->wasHeldByOtherWork() !== true) {
+        if ($this->going?->stands->went->wasHeldByOtherWork() !== true) {
             return;
         }
 
@@ -210,7 +210,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howTheMoveIsGoing()->isWorking) {
+        if ($this->howTheMoveIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -218,7 +218,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howTheMoveIsGoing()->isWorking;
+        return $this->howTheMoveIsGoing()->stands->isWorking();
     }
 
     /** What came back, asked once per frame. */

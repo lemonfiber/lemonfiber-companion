@@ -114,13 +114,13 @@
         @endforelse
     </x-design::section>
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing
                 :said="__('stacks.wiring.working')"
                 tone="working"
             />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             {{-- Not a failure and not a refusal: the stack has no outcome for it
                  any more. --}}
             <x-design::notice tone="unknown">
@@ -175,7 +175,7 @@
             @endif
         @endif
 
-        @if (! $this->howItIsGoing()->isWorking)
+        @if (! $this->howItIsGoing()->stands->isWorking())
             {{-- A run changes nothing already right and keeps what was changed
                  by hand, so it is offered as it is: the screen's one way
                  forward. --}}
@@ -192,7 +192,7 @@
         {{-- Starting a run, or asking after one, met something in the way. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

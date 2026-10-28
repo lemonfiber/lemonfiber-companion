@@ -29,10 +29,10 @@
         </x-design::notice>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('health.choice.working')" tone="working" />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.choice.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -47,7 +47,7 @@
             </x-design::notice>
         @endif
 
-        @if ($this->answer()->check !== '' && ! $this->howItIsGoing()->isWorking)
+        @if ($this->answer()->check !== '' && ! $this->howItIsGoing()->stands->isWorking())
             <x-design::body>{{ __('health.choice.what_accepting_does') }}</x-design::body>
             <x-operator::offered-action :label="__('health.choice.accept_it')" tap="accept()" :offer="$this->offered(AcceptingAChoice::Accept)" />
         @endif
@@ -56,7 +56,7 @@
     @else
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

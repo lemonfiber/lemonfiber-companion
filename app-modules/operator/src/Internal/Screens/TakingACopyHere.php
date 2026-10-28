@@ -98,7 +98,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->lastCopy()->isWorking;
+        return $this->lastCopy()->stands->isWorking();
     }
 
     /** The services a copy can be narrowed to, asked once per frame. */
@@ -176,7 +176,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->lastCopy()->isWorking) {
+        if ($this->lastCopy()->stands->isWorking()) {
             $this->lastCopy = null;
         }
     }

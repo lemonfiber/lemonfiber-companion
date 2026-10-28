@@ -170,7 +170,7 @@ it('says the session ended where it went while the switch was rehearsed', functi
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
     $screen->whileItSwitches();
 
-    expect($screen->howTheSwitchIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howTheSwitchIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 

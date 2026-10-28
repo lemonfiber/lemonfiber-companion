@@ -18,7 +18,7 @@ use Modules\Operator\Internal\ViewModels\AClientAsShown;
 use Modules\Operator\Internal\ViewModels\AHandoffAsShown;
 use Modules\Operator\Internal\ViewModels\ASignedInDeviceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -34,31 +34,31 @@ final readonly class HowTheHandoffReads
     /** Nothing has been asked yet. */
     public function notAsked(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(HowTheReadingWent::itCameBack(), isWorking: false, refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::notAsked(), refused: '', handoff: null);
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(HowTheReadingWent::theSessionEnded(), isWorking: false, refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::signedOut(), refused: '', handoff: null);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(HowTheReadingWent::somethingStopped($why), isWorking: false, refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::met($why), refused: '', handoff: null);
     }
 
     /** The stack is still working it out. */
     public function working(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(HowTheReadingWent::itCameBack(), isWorking: true, refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::running(), refused: '', handoff: null);
     }
 
     /** The stack refused, and this is its reason. */
     public function refused(string $because): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(HowTheReadingWent::itCameBack(), isWorking: false, refused: $because, handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::answered(), refused: $because, handoff: null);
     }
 
     /**
@@ -89,8 +89,7 @@ final readonly class HowTheHandoffReads
         }
 
         return new HowTheHandoffWent(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
+            stands: WhereTheWorkStands::answered(),
             refused: '',
             handoff: new AHandoffAsShown(
                 heading: $this->heading($handoff->stands()),

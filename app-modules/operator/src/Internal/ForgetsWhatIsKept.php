@@ -66,7 +66,7 @@ trait ForgetsWhatIsKept
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileForgettingRuns(): void
     {
-        if ($this->howForgettingIsGoing()->isWorking) {
+        if ($this->howForgettingIsGoing()->stands->isWorking()) {
             $this->forgettingGoing = null;
         }
     }

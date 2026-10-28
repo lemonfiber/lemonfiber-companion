@@ -72,7 +72,7 @@ trait FollowsWhatTheVerbCameTo
     {
         $heard = $this->cameTo;
 
-        return $heard instanceof HowTheVerbWent ? $heard->isWorking : $this->took !== null;
+        return $heard instanceof HowTheVerbWent ? $heard->stands->isWorking() : $this->took !== null;
     }
 
     abstract public function stack(): Stack;
@@ -88,7 +88,7 @@ trait FollowsWhatTheVerbCameTo
     {
         $sent = $this->sent;
 
-        if (! $sent instanceof AgreedTo || ! $this->whatItCameTo()->went->wasHeldByOtherWork()) {
+        if (! $sent instanceof AgreedTo || ! $this->whatItCameTo()->stands->went->wasHeldByOtherWork()) {
             return;
         }
 

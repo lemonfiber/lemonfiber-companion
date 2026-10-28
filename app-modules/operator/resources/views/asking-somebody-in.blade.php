@@ -32,13 +32,13 @@
         </x-design::notice>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing
                 :said="__('stacks.invitation.working')"
                 tone="working"
             />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             {{-- Not a failure and not a refusal: the stack has no outcome for it
                  any more. Who is in, below, is the stack's answer again. --}}
             <x-design::notice tone="unknown">
@@ -181,7 +181,7 @@
              would have been, with the way back. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

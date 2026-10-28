@@ -22,7 +22,7 @@ use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
  */
 function everythingTheRunHolds(TheRunTurnedOutToBe $run): array
 {
-    return [$run->went->cameBack(), $run->went->isSignedIn, $run->isWorking, $run->hasEnded, $run->refused instanceof ARefusalAsShown, $run->answered];
+    return [$run->stands->went->cameBack(), $run->stands->went->isSignedIn, $run->stands->isWorking(), $run->stands->hasEnded(), $run->refused instanceof ARefusalAsShown, $run->answered];
 }
 
 it('says each state of a run apart, and only its own', function (): void {

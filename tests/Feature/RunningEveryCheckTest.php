@@ -232,7 +232,7 @@ it('says what stood in the way of a run, and lets a refused session go', functio
     $stopped = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $stopped->run();
 
-    expect($stopped->howItIsGoing()->went->cameBack())->toBeFalse()
+    expect($stopped->howItIsGoing()->stands->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($stopped)->offers())->not->toContain(__('health.run_every.run_it'));
 });
 

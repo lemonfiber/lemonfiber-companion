@@ -251,7 +251,7 @@ it('offers nothing to agree to where the stack would not rehearse, and lets go o
     $pausing = AStackThatPausesDownloads::met(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = thePausingScreen($pausing, $keychain);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseDownloadsPause()->id()))->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.pausing.agree.pause'));
 });
@@ -262,7 +262,7 @@ it('says what stood in the way of a yes the stack refused', function (): void {
     $screen->answer();
     $screen->agree();
 
-    expect($screen->done()->went->cameBack())->toBeFalse()
+    expect($screen->done()->stands->went->cameBack())->toBeFalse()
         ->and($pausing->agreed())->toHaveCount(1);
 });
 
@@ -270,7 +270,7 @@ it('asks for a session rather than a rehearsal where this device holds none', fu
     $pausing = aStackRehearsingAPause(HowPausingIsGoing::stillRunning());
     $screen = thePausingScreen($pausing, signedIn: false);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($pausing->rehearsed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.sign_in'));
 });
@@ -317,14 +317,14 @@ it('asks for a session where it is gone by the time the yes is sent, or asked af
 
     $screen->whileItRuns();
 
-    expect($screen->done()->went->isSignedIn)->toBeFalse()
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->done()->clients)->toBe([]);
 })->with(['before the yes' => [false], 'after it' => [true]]);
 
 it('has nothing to report for a yes nobody gave', function (): void {
     $pausing = aStackRehearsingAPause(HowPausingIsGoing::stillRunning());
 
-    expect(thePausingScreen($pausing)->done()->hasEnded)->toBeTrue()
+    expect(thePausingScreen($pausing)->done()->stands->hasEnded())->toBeTrue()
         ->and($pausing->followed())->toBe([]);
 });
 

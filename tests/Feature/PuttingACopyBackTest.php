@@ -159,11 +159,11 @@ function aCopyTooNewToPutBack(): ARefusalInItsWords
 function everythingThePuttingBackShows(HowPuttingItBackWent $went): array
 {
     return [
-        'cameBack' => $went->went->cameBack(),
-        'isSignedIn' => $went->went->isSignedIn,
-        'met' => $went->went->met,
-        'isWorking' => $went->isWorking,
-        'hasEnded' => $went->hasEnded,
+        'cameBack' => $went->stands->went->cameBack(),
+        'isSignedIn' => $went->stands->went->isSignedIn,
+        'met' => $went->stands->went->met,
+        'isWorking' => $went->stands->isWorking(),
+        'hasEnded' => $went->stands->hasEnded(),
         'scope' => $went->scope instanceof AScopeAsShown ? [$went->scope->said, $went->scope->with, $went->scope->trees] : null,
         'takenBy' => $went->takenBy,
         'relocation' => $went->relocation instanceof ARelocationAsShown ? [$went->relocation->was, $went->relocation->now] : null,
@@ -564,7 +564,7 @@ it('lets go of a session refused while putting back or asking after', function (
         $screen->whileItRuns();
     }
 
-    expect($screen->done()->went->isSignedIn)->toBeFalse()
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackACopyGoesBackOn()->id()))->toBeFalse();
 })->with(['putting back' => [false], 'asking after' => [true]]);
 

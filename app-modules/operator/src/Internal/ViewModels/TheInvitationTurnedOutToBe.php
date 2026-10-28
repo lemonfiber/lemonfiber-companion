@@ -15,18 +15,14 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheInvitationTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent        $went       whether the stack was reached, and what stood in the way where it was not
-     * @param bool                     $isWorking  whether the stack is still carrying it out
-     * @param bool                     $hasEnded   whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands        $stands       where the work stands, and whether the stack could be asked at all
      * @param string                   $refusal    the stack's reason for refusing, or empty
      * @param string                   $askedFor   the name that was asked for, which a refusal is drawn with
      * @param string                   $notAskable the catalogue key for why what was typed was not sent, or empty
      * @param AnInvitationAsShown|null $invitation the invitation the stack answered, or nothing where none has come back
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public string $refusal,
         public string $askedFor,
         public string $notAskable,

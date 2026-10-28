@@ -91,7 +91,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
     {
         $check = $this->answer()->check;
 
-        if ($check === '' || $this->howItIsGoing()->isWorking) {
+        if ($check === '' || $this->howItIsGoing()->stands->isWorking()) {
             return;
         }
 
@@ -102,14 +102,14 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** The warning as the stack last raised it, asked once per frame. */

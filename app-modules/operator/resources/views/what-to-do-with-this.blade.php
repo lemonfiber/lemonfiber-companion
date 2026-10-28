@@ -132,23 +132,23 @@
         </native:row>
     @endif
 
-    @if ($this->whatItCameTo()->wasAsked)
+    @if ($this->whatItCameTo()->stands->wasAsked())
         {{-- What the last verb sent from here came to, from the stack's own
              report of it. The listing below says where things stand; this
              says what the verb did, which the listing cannot. --}}
         <x-design::card>
             <x-operator::heading>{{ __('health.came_to.heading') }}</x-operator::heading>
 
-            @if (! $this->whatItCameTo()->went->cameBack())
+            @if (! $this->whatItCameTo()->stands->went->cameBack())
                 {{-- Asking again is the column's own, at its foot. --}}
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                    :went="$this->whatItCameTo()->went"
+                    :went="$this->whatItCameTo()->stands->went"
                     ask-again=""
                     :goes="$this->goes()"
                 />
-                <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
-            @elseif ($this->whatItCameTo()->isWorking)
+                <x-operator::try-again :went="$this->whatItCameTo()->stands->went" tap="tryAgain()" />
+            @elseif ($this->whatItCameTo()->stands->isWorking())
                 @if ($this->waitsOn !== '')
                     {{-- The stack's own line for what the start is waiting for,
                          in place of this screen's sentence and with no progress
@@ -157,7 +157,7 @@
                 @else
                     <x-design::body>{{ __('health.came_to.running') }}</x-design::body>
                 @endif
-            @elseif ($this->whatItCameTo()->hasEnded)
+            @elseif ($this->whatItCameTo()->stands->hasEnded())
                 {{-- Not a failure: it may well have worked, and the listing is
                      where to look. --}}
                 <x-design::body>{{ __('health.came_to.no_outcome') }}</x-design::body>

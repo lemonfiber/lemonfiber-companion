@@ -33,7 +33,7 @@ use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -143,7 +143,7 @@ it('opens on a description of the careful bundle, which writes nothing, and asks
     expect(array_map(whatTheBundleAskedFor(...), $helping->asked()))->toBe([
         ['writes' => false, 'lines' => 200, 'filenames' => 'replaced', 'revealing' => []],
     ])
-        ->and($screen->answer()->isWorking)->toBeTrue()
+        ->and($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($drawn)->toContain(__('stacks.help.gathering'))
         ->and($helping->followed())->toBe([]);
 });
@@ -164,7 +164,7 @@ it('offers the choices, and asks the stack nothing until they are described', fu
         ->and($drawn->offers())->toContain(__('stacks.help.name_it'))
         ->and($drawn->offers())->toContain(__('stacks.help.describe'))
         ->and($screen->windows())->toBe([ALogWindow::Fewer, ALogWindow::AsOnAPhone, ALogWindow::More])
-        ->and($screen->answer()->wasAsked)->toBeFalse()
+        ->and($screen->answer()->stands->wasAsked())->toBeFalse()
         ->and($helping->asked())->toBe([])
         ->and($helping->followed())->toBe([]);
 });
@@ -279,7 +279,7 @@ it('describes the bundle chosen without writing it, and says it is being gathere
     expect(array_map(whatTheBundleAskedFor(...), $helping->asked()))->toBe([
         ['writes' => false, 'lines' => 200, 'filenames' => 'shown', 'revealing' => []],
     ])
-        ->and($screen->answer()->isWorking)->toBeTrue()
+        ->and($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($screen->answer()->isWritten)->toBeFalse()
         ->and($screen->answer()->bundle)->toBeNull()
         ->and($screen->handle)->toBe(AStackThatBundles::THE_JOB)
@@ -361,7 +361,7 @@ it('writes the bundle described, on its own yes, with every choice it was descri
         ['writes' => false, 'lines' => 50, 'filenames' => 'replaced', 'revealing' => ['SONARR_URL']],
         ['writes' => true, 'lines' => 50, 'filenames' => 'replaced', 'revealing' => ['SONARR_URL']],
     ])
-        ->and($screen->answer()->isWorking)->toBeTrue();
+        ->and($screen->answer()->stands->isWorking())->toBeTrue();
 });
 
 it('draws a written bundle as written, where it is, and offers no second write', function (): void {
@@ -396,7 +396,7 @@ it('never sends a write again that met an obstacle: asking again describes', fun
     $screen->write();
 
     expect($screen->handle)->toBeNull()
-        ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
+        ->and($screen->answer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 
     $screen->again();
     $screen->answer();
@@ -437,7 +437,7 @@ it('goes back to the choices, keeping them, and forgets the bundle it was follow
 
     expect($screen->asked)->toBeNull()
         ->and($screen->handle)->toBeNull()
-        ->and($screen->answer()->wasAsked)->toBeFalse()
+        ->and($screen->answer()->stands->wasAsked())->toBeFalse()
         ->and($screen->window)->toBe(ALogWindow::Fewer)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.help.what_goes_in'));
 });
@@ -445,7 +445,7 @@ it('goes back to the choices, keeping them, and forgets the bundle it was follow
 it('says the stack no longer knows what became of a bundle, which is not a failure', function (): void {
     $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::ended()));
 
-    expect($screen->answer()->hasEnded)->toBeTrue()
+    expect($screen->answer()->stands->hasEnded())->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.help.no_outcome'));
 });
 
@@ -473,7 +473,7 @@ it('draws what stood in the way of describing, and asking again describes again'
     $screen = theHelpScreen($helping);
     $screen->describe();
 
-    expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->answer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->handle)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
@@ -488,7 +488,7 @@ it('lets go of a session the stack refused, whether asking or asking after', fun
     $screen = theHelpScreen(AStackThatBundles::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
     $screen->describe();
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeFalse();
 
     $keychain = AKeychainInMemory::working();
@@ -497,7 +497,7 @@ it('lets go of a session the stack refused, whether asking or asking after', fun
     $screen->describe();
     $screen->whileItRuns();
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeFalse();
 });
 
@@ -514,7 +514,7 @@ it('asks nothing of a stack this device holds no session for', function (): void
     $screen = theHelpScreen($helping, signedIn: false);
     $screen->describe();
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($helping->asked())->toBe([]);
 });
 
@@ -526,7 +526,7 @@ it('follows nothing for a stack this device stopped holding a session for', func
     $keychain->forget(theStackHelpIsAskedAbout()->id());
     $screen->again();
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($helping->followed())->toBe([]);
 });
 
@@ -569,10 +569,7 @@ it('fetches nothing for a bundle said to be written that the screen holds no bun
     $sheet = AShareSheetThatWasOffered::working();
     $screen = theHelpScreen($helping, sheet: $sheet);
     $screen->went = new HowTheBundleWent(
-        went: HowTheReadingWent::itCameBack(),
-        wasAsked: true,
-        isWorking: false,
-        hasEnded: false,
+        stands: WhereTheWorkStands::answered(),
         refused: null,
         isWritten: true,
         bundle: null,
@@ -648,7 +645,7 @@ it('fetches nothing for a stack this device stopped holding a session for, and s
     expect($helping->fetched())->toBe([])
         ->and($screen->handing)->toBe('')
         ->and($screen->handingLeaves)->toBe('')
-        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
+        ->and($screen->answer()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('forgets what handing over came to once the choices change or a bundle is described again', function (): void {

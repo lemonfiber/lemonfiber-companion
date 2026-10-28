@@ -104,11 +104,11 @@ function aPreviewRevertingNothing(): TheReset
 function everythingTheResetShows(AResetAsShown $shown): array
 {
     return [
-        'cameBack' => $shown->went->cameBack(),
-        'isSignedIn' => $shown->went->isSignedIn,
-        'met' => $shown->went->met,
-        'isWorking' => $shown->isWorking,
-        'hasEnded' => $shown->hasEnded,
+        'cameBack' => $shown->stands->went->cameBack(),
+        'isSignedIn' => $shown->stands->went->isSignedIn,
+        'met' => $shown->stands->went->met,
+        'isWorking' => $shown->stands->isWorking(),
+        'hasEnded' => $shown->stands->hasEnded(),
         'refused' => $shown->refused instanceof ARefusalAsShown ? [$shown->refused->said, $shown->refused->meaning, $shown->refused->named] : null,
         'isReported' => $shown->isReported,
         'changesNothing' => $shown->changesNothing,
@@ -362,8 +362,8 @@ it('offers nothing to agree to where the stack could not be asked, and lets go o
     $screen = thePuttingItAllBackScreen($resetting, $keychain);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->answer()->went->cameBack())->toBeFalse()
-        ->and($screen->answer()->went->isSignedIn)->toBe($stillSignedIn)
+    expect($screen->answer()->stands->went->cameBack())->toBeFalse()
+        ->and($screen->answer()->stands->went->isSignedIn)->toBe($stillSignedIn)
         ->and($keychain->isHolding(theStackWhoseConfigurationGoesBack()->id()))->toBe($stillSignedIn)
         ->and($drawn->offers())->not->toContain(__('stacks.reset.put_them_back'))
         ->and($drawn->said())->not->toContain(__('stacks.reset.heading'));
@@ -380,7 +380,7 @@ it('lets go of a session refused while asking after the preview', function (): v
     $keychain = AKeychainInMemory::working();
     $screen = thePuttingItAllBackScreen(AStackThatResets::previewing(HowTheResetIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), HowTheResetIsGoing::stillRunning()), $keychain);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseConfigurationGoesBack()->id()))->toBeFalse();
 });
 
@@ -547,7 +547,7 @@ it('lets go of a session refused while putting back or asking after', function (
         $screen->whileItRuns();
     }
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseConfigurationGoesBack()->id()))->toBeFalse();
 })->with(['putting back' => [false], 'asking after' => [true]]);
 

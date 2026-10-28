@@ -131,14 +131,14 @@ function annasCostReadOn(AStackThatTakesThemOut $removing): TakingSomebodyOut
 function everythingTheRemovalScreenHolds(TheRemovalTurnedOutToBe $shown): array
 {
     return [
-        'cameBack' => $shown->went->cameBack(),
-        'isSignedIn' => $shown->went->isSignedIn,
-        'met' => $shown->went->met,
+        'cameBack' => $shown->stands->went->cameBack(),
+        'isSignedIn' => $shown->stands->went->isSignedIn,
+        'met' => $shown->stands->went->met,
         'name' => $shown->name,
         'namesNobody' => $shown->namesNobody,
         'wasAgreed' => $shown->wasAgreed,
-        'isWorking' => $shown->isWorking,
-        'hasEnded' => $shown->hasEnded,
+        'isWorking' => $shown->stands->isWorking(),
+        'hasEnded' => $shown->stands->hasEnded(),
         'refusal' => $shown->refusal,
         'removal' => $shown->removal instanceof ARemovalAsShown
             ? [$shown->removal->name, $shown->removal->carriedOut, $shown->removal->revokedSaid, $shown->removal->isDone, $shown->removal->requests, $shown->removal->asksSaid, $shown->removal->watchHistory, $shown->removal->findings]
@@ -181,7 +181,7 @@ it('asks what taking them out would cost as it opens, and says it is asking', fu
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($removing->asked())->toBe(['would:anna'])
-        ->and($screen->answer()->isWorking)->toBeTrue()
+        ->and($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.removal.reading', ['name' => 'anna']))
         ->and($drawn->offers())->not->toContain(__('stacks.removal.take_them_out', ['name' => 'anna']));
 });
@@ -220,7 +220,7 @@ it('takes them out by the name the stack answered under, and draws everywhere as
     $screen = annasCostReadOn($removing);
     $screen->agree();
 
-    expect($screen->answer()->isWorking)->toBeTrue()
+    expect($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($screen->answer()->wasAgreed)->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.removal.removing', ['name' => 'anna']));
 
@@ -372,7 +372,7 @@ it('a session that has ended asks the stack nothing', function (): void {
     $removing = AStackThatTakesThemOut::answering();
     $screen = theRemovalScreen($removing, signedIn: false);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->name)->toBe('anna')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
         ->and($removing->asked())->toBe([]);
@@ -382,7 +382,7 @@ it('a credential the stack refused signs this device out and lets the session go
     $keychain = AKeychainInMemory::working();
     $screen = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackSomebodyLeaves()->id()))->toBeFalse();
 });
 

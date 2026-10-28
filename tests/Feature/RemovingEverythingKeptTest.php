@@ -160,7 +160,7 @@ it('says the session ended where it went while what would go was asked', functio
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
     $screen->whileForgettingRuns();
 
-    expect($screen->howForgettingIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howForgettingIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 

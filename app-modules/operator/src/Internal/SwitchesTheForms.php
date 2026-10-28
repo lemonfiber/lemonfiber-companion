@@ -104,7 +104,7 @@ trait SwitchesTheForms
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItSwitches(): void
     {
-        if ($this->howTheSwitchIsGoing()->isWorking) {
+        if ($this->howTheSwitchIsGoing()->stands->isWorking()) {
             $this->switchGoing = null;
         }
     }

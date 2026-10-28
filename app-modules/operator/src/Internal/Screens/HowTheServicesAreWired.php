@@ -262,7 +262,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
         $this->linked = null;
         $going = $this->going;
 
-        if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->went->cameBack()) {
+        if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->stands->went->cameBack()) {
             $this->going = null;
         }
     }
@@ -276,7 +276,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -285,7 +285,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     public function render(): View

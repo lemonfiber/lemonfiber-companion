@@ -10,9 +10,9 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Operator\Internal\Listed;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where changing a setting has got to, as the template draws it.
@@ -22,34 +22,32 @@ final readonly class HowASettingChangeReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheSettingChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     /** This phone holds no session for the stack. */
     public function signedOut(): TheSettingChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still at it. */
     public function running(): TheSettingChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more. */
     public function ended(): TheSettingChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     /** The stack refused it, in its own words. */
     public function refused(ARefusalInItsWords $why): TheSettingChangeTurnedOutToBe
     {
         return new TheSettingChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
             change: null,
         );
@@ -58,16 +56,14 @@ final readonly class HowASettingChangeReads
     /** What stood in the way of asking. */
     public function met(Obstacle $why): TheSettingChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported. */
     public function answered(TheSettingAsChanged $report): TheSettingChangeTurnedOutToBe
     {
         return new TheSettingChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: null,
             change: new TheSettingChangeAsShown(
                 didSaid: $report->did()->saidOnTheScreen(),
@@ -96,8 +92,8 @@ final readonly class HowASettingChangeReads
         return Listed::these(...$named);
     }
 
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false): TheSettingChangeTurnedOutToBe
+    private function without(WhereTheWorkStands $stands): TheSettingChangeTurnedOutToBe
     {
-        return new TheSettingChangeTurnedOutToBe(went: $went, isWorking: $isWorking, hasEnded: $hasEnded, refused: null, change: null);
+        return new TheSettingChangeTurnedOutToBe(stands: $stands, refused: null, change: null);
     }
 }

@@ -90,7 +90,7 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
     // Just sent, it is running, and nothing has been asked after yet.
-    expect($screen->whatItCameTo()->isWorking)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->isWorking())->toBeTrue()
         ->and($supervising->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
         ->toContain(__('health.came_to.running'));
@@ -296,8 +296,8 @@ it('says the stack has no outcome for a verb any more, rather than that it faile
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
 
-    expect($screen->whatItCameTo()->hasEnded)->toBeTrue()
-        ->and($screen->whatItCameTo()->isWorking)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->hasEnded())->toBeTrue()
+        ->and($screen->whatItCameTo()->stands->isWorking())->toBeFalse()
         ->and($drawn)->toContain(__('health.came_to.no_outcome'));
 });
 
@@ -305,7 +305,7 @@ it('says nothing about a verb where none was sent, and asks after none', functio
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
-    expect($screen->whatItCameTo()->wasAsked)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(whatTheCatalogueSays('health.came_to.heading'));
 });
@@ -321,7 +321,7 @@ it('does not ask after a handle it holds without the verb it was sent for', func
     $screen->mountComponent();
 
     expect($screen->took)->toBe(AStackThatSupervises::THE_JOB)
-        ->and($screen->whatItCameTo()->wasAsked)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
 });
 
@@ -334,8 +334,8 @@ it('says what stood in the way of a verb that could not be delivered', function 
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
-    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->whatItCameTo()->isWorking)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->whatItCameTo()->stands->isWorking())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($supervising->followed())->toBe([]);
 });
@@ -380,7 +380,7 @@ it('says what stood in the way of asking after it, and lets go of a session refu
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(TheThingScreenOfTheShed::theMachine()->id()))->toBeFalse();
 });
 
@@ -392,7 +392,7 @@ it('keeps the session where asking after a verb could not reach the machine', fu
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+    expect($screen->whatItCameTo()->stands->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(TheThingScreenOfTheShed::theMachine()->id()))->toBeTrue();
 });
 
@@ -406,8 +406,8 @@ it('says the session ended where it ended between sending a verb and asking afte
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
-        ->and($screen->whatItCameTo()->wasAsked)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeTrue()
         ->and($supervising->followed())->toBe([]);
 });
 
@@ -420,8 +420,8 @@ it('says the session ended where a verb was agreed to on a device no longer sign
     $keychain->forget(TheThingScreenOfTheShed::theMachine()->id());
     $screen->agree();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
-        ->and($screen->whatItCameTo()->wasAsked)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeTrue()
         ->and($supervising->whatItWasToldToDo())->toBe([]);
 });
 
@@ -468,7 +468,7 @@ it('does not ask after an earlier verb once a later one could not be sent', func
     $askedAfterSoFar = count($supervising->followed());
     $screen->again();
 
-    expect($screen->whatItCameTo()->wasAsked)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->whatItWasToldToDo())->toHaveCount(1)
         ->and($supervising->followed())->toHaveCount($askedAfterSoFar);
 });

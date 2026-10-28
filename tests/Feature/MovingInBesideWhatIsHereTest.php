@@ -425,7 +425,7 @@ it('says the stack has no outcome for work it no longer knows, which is not a re
 
     expect($drawn->said())->toContain(__('stacks.moving_in.no_outcome'))
         ->and($screen->following)->toBeNull()
-        ->and($screen->howTheMoveIsGoing()->hasEnded)->toBeTrue()
+        ->and($screen->howTheMoveIsGoing()->stands->hasEnded())->toBeTrue()
         ->and($drawn->offers())->toContain(__('stacks.moving_in.leave_it'))
         ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
 });
@@ -562,14 +562,14 @@ it('an act the stack could not be reached for is an obstacle beside the survey, 
     $screen->wouldMoveIn('replace');
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howTheMoveIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->howTheMoveIsGoing()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->toContain(__('stacks.already_here.modes'))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
     $screen->again();
 
-    expect($screen->howTheMoveIsGoing()->went->cameBack())->toBeTrue()
+    expect($screen->howTheMoveIsGoing()->stands->went->cameBack())->toBeTrue()
         ->and($movingIn->acts())->toBe(['would:replace']);
 });
 
@@ -578,7 +578,7 @@ it('a credential the stack refused when moving in signs this device out and lets
     $screen = theScreenForMovingIn(AStackWithSomethingAlreadyOnIt::with(aSurveyWithModesToChoose())->moving(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
     $screen->wouldMoveIn('adopt');
 
-    expect($screen->howTheMoveIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howTheMoveIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackBeingMovedInto()->id()))->toBeFalse();
 });
 
@@ -590,7 +590,7 @@ it('a session that has ended asks the stack nothing about moving in', function (
     $keychain->forget(theStackBeingMovedInto()->id());
     $screen->wouldMoveIn('adopt');
 
-    expect($screen->howTheMoveIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howTheMoveIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->howTheMoveIsGoing()->mode)->toBe('adopt')
         ->and($movingIn->acts())->toBe([]);
 });

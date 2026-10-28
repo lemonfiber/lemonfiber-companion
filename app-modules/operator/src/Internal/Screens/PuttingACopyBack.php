@@ -231,7 +231,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** Whether the stack is putting the copy back right now. */
     public function isWorking(): bool
     {
-        return $this->agreed && $this->done()->isWorking;
+        return $this->agreed && $this->done()->stands->isWorking();
     }
 
     /** Resume the session and ask what putting the copy back would do. */

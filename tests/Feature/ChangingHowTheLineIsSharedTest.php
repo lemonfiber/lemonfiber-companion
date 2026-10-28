@@ -241,7 +241,7 @@ it('rehearses every part as typed, follows the work, and draws it labelled as a 
     $screen->liftFor('60');
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->isWorking)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->isWorking())->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe(['down=50% up=25% active=07:00-23:00 line=60MiB/6MiB cap=500GiB exceeded=throttle lift=60']);
 
@@ -278,7 +278,7 @@ it('makes the change the rehearsal was asked with, not what is in the fields whe
     $screen->apply();
 
     expect(array_map(everyPartSentOfTheLine(...), $sharing->carriedOut()))->toBe(['down=50% lift=none'])
-        ->and($screen->howItIsGoing()->isWorking)->toBeTrue();
+        ->and($screen->howItIsGoing()->stands->isWorking())->toBeTrue();
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -365,7 +365,7 @@ it('a refused credential signs this device out and lets the session go', functio
     $screen->down = '50%';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseLineIsChanged()->id()))->toBeFalse();
 });
 
@@ -374,8 +374,8 @@ it('a stack that is not answering leaves the session, and says what stood in the
     $screen->down = '50%';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeFalse()
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toBe([]);
 });
 
@@ -386,7 +386,7 @@ it('a session that has ended asks nothing of the stack', function (): void {
     $screen->rehearse();
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($sharing->rehearsed())->toBe([]);
 });
 

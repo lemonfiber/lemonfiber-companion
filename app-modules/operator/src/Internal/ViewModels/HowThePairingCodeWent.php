@@ -15,16 +15,14 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowThePairingCodeWent
 {
     /**
-     * @param HowTheReadingWent    $went                 whether asking came back, and what stood in the way where it did not
-     * @param bool                 $isWorking            whether the stack is still making it
+     * @param WhereTheWorkStands    $stands                 where the work stands, and whether the stack could be asked at all
      * @param bool                 $hasExpired           whether the code shown has stopped being good
      * @param bool                 $isCheckedDifferently whether the stack's check code is not the one a phone works out, so the code is not shown
      * @param string               $refused              the stack's refusal in its own words, or empty
      * @param ?APairingCodeAsShown $code                 the code to show, while it is good
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
+        public WhereTheWorkStands $stands,
         public bool $hasExpired,
         public bool $isCheckedDifferently,
         public string $refused,

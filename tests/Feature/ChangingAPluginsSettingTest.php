@@ -438,7 +438,7 @@ it('draws what stood in the way of a change, and a session that ended while it w
     $ended->whileItRuns();
 
     expect(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
-        ->and($ended->howItIsGoing()->went->cameBack())->toBeFalse()
+        ->and($ended->howItIsGoing()->stands->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('connection.session_has_ended'));
 });
 

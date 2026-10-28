@@ -23,15 +23,11 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatThisStackPutRight
 {
     /**
-     * @param bool                     $isWorking whether the stack is still carrying it out
-     * @param bool                     $hasEnded  whether the stack has forgotten the job
      * @param list<WhatOneOutcomeSays> $outcomes  what became of each repair, in the stack's order
      * @param int                      $changed   how many of them changed anything on the machine
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking = false,
-        public bool $hasEnded = false,
+        public WhereTheWorkStands $stands,
         public array $outcomes = [],
         public int $changed = 0,
     ) {}

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use function array_find;
-use function array_map;
 
 use InvalidArgumentException;
 
 use function is_string;
-use function iterator_to_array;
 
 use Lemonfiber\Native\Reorderable;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
@@ -25,7 +23,6 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\SecureStorage;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
@@ -205,10 +202,15 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
      */
     public function stacksInOrder(): array
     {
-        return $this->stacksShown ??= array_map(
-            static fn(Stack $stack): array => ['key' => $stack->id()->stored(), 'name' => $stack->name()->shown()],
-            iterator_to_array($this->stacks->configured(), preserve_keys: false),
-        );
+        if ($this->stacksShown === null) {
+            $this->stacksShown = [];
+
+            foreach ($this->stacks->configured() as $stack) {
+                $this->stacksShown[] = ['key' => $stack->id()->stored(), 'name' => $stack->name()->shown()];
+            }
+        }
+
+        return $this->stacksShown;
     }
 
     /**

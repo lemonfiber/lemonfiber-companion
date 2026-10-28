@@ -210,7 +210,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     /** Whether the stack is putting the run back right now. */
     public function isWorking(): bool
     {
-        return $this->agreed && $this->done()->isWorking;
+        return $this->agreed && $this->done()->stands->isWorking();
     }
 
     /** Resume the session and read what the record says of the run. */

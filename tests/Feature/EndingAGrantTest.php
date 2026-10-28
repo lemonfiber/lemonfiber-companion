@@ -234,5 +234,5 @@ it('a phone that holds no session says so when ending a grant', function (): voi
     $keychainless->held = thePasswordsWithTheirGrants(plexsTokenGrantedToTdarr());
     $keychainless->revoke(0);
 
-    expect($keychainless->howItIsGoing()->went->cameBack())->toBeFalse();
+    expect($keychainless->howItIsGoing()->stands->went->cameBack())->toBeFalse();
 });

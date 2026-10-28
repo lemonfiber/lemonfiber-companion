@@ -13,10 +13,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowTheCopyWent
 {
     /**
-     * @param HowTheReadingWent  $went         whether asking after it came back, and what stood in the way where it did not
-     * @param bool               $wasAsked     whether a copy was asked for here, so there is anything to follow
-     * @param bool               $isWorking    whether the stack is still taking it
-     * @param bool               $hasEnded     whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands  $stands         where the work stands, and whether the stack could be asked at all
      * @param bool               $wasRehearsed whether the report is of a rehearsal, which wrote nothing
      * @param ?AScopeAsShown     $scope        what it covers, where a copy was asked for
      * @param ?string            $tookSaid     the catalogue key for what it did, in the tense the report allows
@@ -26,10 +23,7 @@ final readonly class HowTheCopyWent
      * @param ?string            $holdsSaid    the catalogue key for whether it holds credentials
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $wasAsked,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public bool $wasRehearsed,
         public ?AScopeAsShown $scope,
         public ?string $tookSaid,

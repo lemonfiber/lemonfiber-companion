@@ -13,10 +13,10 @@ use Modules\Kernel\Api\WhereItStopped;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\AWalkthroughLineAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereItStoppedAsShown;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * What following a walkthrough produces, as the fields a screen draws.
@@ -42,10 +42,8 @@ final readonly class HowAWalkthroughReads
         }
 
         return new WhatTheWalkthroughTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
+            stands: WhereTheWorkStands::answered(),
             wasStarted: false,
-            isWorking: false,
-            hasEnded: false,
             record: null,
             road: $road,
         );
@@ -54,25 +52,25 @@ final readonly class HowAWalkthroughReads
     /** This device no longer holds a session for the stack. */
     public function signedOut(): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still walking it. */
     public function running(): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** Starting it, or asking after it, met this instead. */
     public function met(Obstacle $why): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** The walkthrough's own record, once it finished. */
@@ -100,10 +98,8 @@ final readonly class HowAWalkthroughReads
         }
 
         return new WhatTheWalkthroughTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
+            stands: WhereTheWorkStands::answered(),
             wasStarted: true,
-            isWorking: false,
-            hasEnded: false,
             record: new TheWalkthroughAsRecorded(
                 item: $report->item()->either(
                     named: static fn(string $item): AsText => AsText::of($item),
@@ -146,15 +142,11 @@ final readonly class HowAWalkthroughReads
 
     /** A state with no record in it. */
     private function following(
-        HowTheReadingWent $went,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
     ): WhatTheWalkthroughTurnedOutToBe {
         return new WhatTheWalkthroughTurnedOutToBe(
-            went: $went,
+            stands: $stands,
             wasStarted: true,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
             record: null,
             road: [],
         );

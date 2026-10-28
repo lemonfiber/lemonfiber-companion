@@ -28,8 +28,6 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatTheStackWouldPutRight
 {
     /**
-     * @param bool                   $isWorking  whether the stack is still working out what it would do
-     * @param bool                   $hasEnded   whether the stack has no outcome for that job any more
      * @param string                 $named      the listing's name, or empty where there is no listing
      * @param list<WhatOneRepairSays> $repairs   what it would put right, in the order offered
      *
@@ -46,9 +44,7 @@ final readonly class WhatTheStackWouldPutRight
      * flip.
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking = false,
-        public bool $hasEnded = false,
+        public WhereTheWorkStands $stands,
         public string $named = '',
         public array $repairs = [],
     ) {}

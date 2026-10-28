@@ -22,13 +22,13 @@
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
-    @if (! $this->done()->went->cameBack())
+    @if (! $this->done()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->done()->went"
+            :went="$this->done()->stands->went"
             :goes="$this->goes()"
         />
-    @elseif ($this->done()->isWorking)
+    @elseif ($this->done()->stands->isWorking())
         <x-design::standing
             :said="__('stacks.put_back.putting_back', ['copy' => $this->copyNamed()])"
             tone="working"
@@ -45,7 +45,7 @@
         <x-operator::refused-in-its-words :refused="$this->done()->refused" />
         <x-design::body>{{ __('stacks.put_back.same_answer') }}</x-design::body>
         <x-design::action :label="__('stacks.put_back.look_again')" tap="lookAgain()" />
-    @elseif ($this->done()->hasEnded)
+    @elseif ($this->done()->stands->hasEnded())
         {{-- Not a failure: it may well have been put back, and the machine's
              health is where to look. --}}
         <x-design::notice tone="unknown">

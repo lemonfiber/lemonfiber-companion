@@ -1,6 +1,6 @@
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
 @if (! $this->answer()->namesWhat)
     {{-- Opened on neither pausing nor resuming, so there is nothing to
@@ -10,15 +10,15 @@
     {{-- What each client read back, drawn from the stack's report and never
          from the rehearsal, so a rehearsal cannot read as something that
          happened. --}}
-    @if (! $this->done()->went->cameBack())
+    @if (! $this->done()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->done()->went"
+            :went="$this->done()->stands->went"
             :goes="$this->goes()"
         />
-    @elseif ($this->done()->isWorking)
+    @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __($this->says()->working) }}</x-operator::emphasis>
-    @elseif ($this->done()->hasEnded)
+    @elseif ($this->done()->stands->hasEnded())
         <x-operator::emphasis>{{ __('stacks.pausing.no_outcome') }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.pausing.no_outcome_action') }}</x-design::body>
     @else
@@ -48,12 +48,12 @@
     @endif
 
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
-@elseif ($this->answer()->isWorking)
+@elseif ($this->answer()->stands->isWorking())
     {{-- The stack answers the rehearsal as work, so it may not be in yet.
          Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.pausing.working_it_out') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     <x-operator::emphasis>{{ __('stacks.pausing.offer_ended') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @else
@@ -92,7 +92,7 @@
          nothing is offered. --}}
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

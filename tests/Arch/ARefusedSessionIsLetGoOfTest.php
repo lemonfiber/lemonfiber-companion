@@ -51,9 +51,13 @@ use Tests\Support\Tree;
  * That is the stronger of the two, and deliberately so. A rule matching the
  * `meansWeAreSignedOut()` call would pass a fold that asks and then ignores the
  * answer. A fold that goes through this cannot spell the signed-out state
- * wrongly, because it does not spell it at all.
+ * wrongly, because it does not spell it at all. A fold following work hands
+ * it to {@see Modules\Operator\Internal\ViewModels\WhereTheWorkStands::met()},
+ * which hands it on to the same place.
+ *
+ * @var list<string>
  */
-const THE_DECISION = 'HowTheReadingWent::somethingStopped($why)';
+const THE_DECISION = ['HowTheReadingWent::somethingStopped($why)', 'WhereTheWorkStands::met($why)'];
 
 /**
  * What a screen must do about one: let go of the session itself, or hand an
@@ -117,7 +121,9 @@ it('every fold that renders an obstacle goes through the one place that decides'
     $silent = [];
 
     foreach ($found['folds'] as $path) {
-        if (! str_contains((string) file_get_contents($path), THE_DECISION)) {
+        $source = (string) file_get_contents($path);
+
+        if (array_filter(THE_DECISION, static fn(string $decision): bool => str_contains($source, $decision)) === []) {
             $silent[] = basename($path);
         }
     }
@@ -172,8 +178,12 @@ it('every screen that resumes a session lets go of a refused one', function (): 
  */
 const THE_BRANCH = '@else';
 
-/** @see THE_BRANCH */
-const THE_QUESTION = '$this->answer()->went->cameBack()';
+/**
+ * @see THE_BRANCH
+ *
+ * @var list<string> the reading's own question, and the same question of where the work stands
+ */
+const THE_QUESTION = ['$this->answer()->went->cameBack()', '$this->answer()->stands->went->cameBack()'];
 
 it('a screen draws the obstacle instead of its content, never beside it', function (): void {
     $drawing = [];
@@ -191,7 +201,7 @@ it('a screen draws the obstacle instead of its content, never beside it', functi
     $wrong = [];
 
     foreach ($drawing as $path => $source) {
-        $asks = mb_strpos($source, sprintf('@if (%s)', THE_QUESTION));
+        $asks = array_find(array_map(static fn(string $question): int|false => mb_strpos($source, sprintf('@if (%s)', $question)), THE_QUESTION), static fn(int|false $at): bool => is_int($at));
         $branches = mb_strpos($source, THE_BRANCH);
         $draws = mb_strpos($source, '<x-operator::what-stopped-the-reading');
 
@@ -221,6 +231,6 @@ it('a screen draws the obstacle instead of its content, never beside it', functi
         . 'of one rule, and nothing reads Blade closely enough to notice when they stop '
         . 'agreeing.',
         implode("\n  ", $wrong),
-        THE_QUESTION,
+        THE_QUESTION[0],
     ));
 });

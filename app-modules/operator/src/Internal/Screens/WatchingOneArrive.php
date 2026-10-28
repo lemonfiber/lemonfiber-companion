@@ -192,7 +192,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if (! $this->answer()->isWorking) {
+        if (! $this->answer()->stands->isWorking()) {
             $this->letGoOfAWalkThatIsOver();
 
             return;
@@ -205,7 +205,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->answer()->isWorking;
+        return $this->answer()->stands->isWorking();
     }
 
     public function render(): View

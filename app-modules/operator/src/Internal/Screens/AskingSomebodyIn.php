@@ -310,7 +310,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -318,7 +318,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** Who is in, asked once per frame. */

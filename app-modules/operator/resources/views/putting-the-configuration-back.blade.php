@@ -2,16 +2,16 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
     <x-operator::heading>{{ __('stacks.reset.heading') }}</x-operator::heading>
 
-@if ($this->answer()->isWorking)
+@if ($this->answer()->stands->isWorking())
     <x-operator::emphasis>{{ __($this->answer()->words->working) }}</x-operator::emphasis>
 
     {{-- The stack says nothing of a job until it finishes, so the screen
          asks again on its cadence rather than drawing progress. --}}
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     {{-- Not a failure. After a yes the files may well have gone back, and
          the settings are where to look before asking for anything again. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->ended) }}</x-operator::emphasis>
@@ -67,7 +67,7 @@
          nothing is offered. --}}
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

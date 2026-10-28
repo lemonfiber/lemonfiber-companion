@@ -10,9 +10,9 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where a wiring run has got to, as the fields a screen draws.
@@ -31,37 +31,37 @@ final readonly class HowTheWiringReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still carrying the run out. */
     public function running(): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
     public function ended(): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     /** The stack turned the request down, and this is its reason. */
     public function refused(string $because): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), refusal: $because);
+        return $this->without(WhereTheWorkStands::answered(), refusal: $because);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): TheWiringTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the run came to. */
@@ -74,9 +74,7 @@ final readonly class HowTheWiringReads
         }
 
         return new TheWiringTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refusal: '',
             wiring: new TheWiringAsShown(
                 rehearsed: $wiring->wasRehearsed(),
@@ -127,12 +125,10 @@ final readonly class HowTheWiringReads
     }
 
     /** An answer with no run in it, for every state but one answered. */
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, string $refusal = ''): TheWiringTurnedOutToBe
+    private function without(WhereTheWorkStands $stands, string $refusal = ''): TheWiringTurnedOutToBe
     {
         return new TheWiringTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refusal: $refusal,
             wiring: null,
         );

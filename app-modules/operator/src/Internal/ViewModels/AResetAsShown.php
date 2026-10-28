@@ -16,9 +16,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class AResetAsShown
 {
     /**
-     * @param HowTheReadingWent   $went           whether the stack answered, and what stood in the way where it did not
-     * @param bool                $isWorking      whether the stack is still at it
-     * @param bool                $hasEnded       whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands   $stands           where the work stands, and whether the stack could be asked at all
      * @param ?ARefusalAsShown    $refused        why the stack refused, in its words, and nothing unless it refused
      * @param bool                $isReported     whether there is a report to draw
      * @param bool                $changesNothing whether the report reverts no file and no connection
@@ -28,9 +26,7 @@ final readonly class AResetAsShown
      * @param list<string>        $connections    the connections that go, or went, with them
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public ?ARefusalAsShown $refused,
         public bool $isReported,
         public bool $changesNothing,

@@ -83,8 +83,8 @@ it('counts what is not where the operator wanted it, apart from what is unknown'
         // for a situation it is guessing at.
         ->and($last->anythingUnanswered)->toBeFalse()
         ->and($last->wasTaken)->toBeTrue()
-        ->and($last->isWorking)->toBeFalse()
-        ->and($last->hasEnded)->toBeFalse();
+        ->and($last->stands->isWorking())->toBeFalse()
+        ->and($last->stands->hasEnded())->toBeFalse();
 });
 
 it('says when the stack cannot tell what a service is doing', function (): void {
@@ -102,7 +102,7 @@ it('a screen that has taken no update says so, and asks after nothing', function
     $last = $screen->lastUpdate();
 
     expect($last->wasTaken)->toBeFalse()
-        ->and($last->went->cameBack())->toBeTrue()
+        ->and($last->stands->went->cameBack())->toBeTrue()
         ->and($last->applied)->toBe([])
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.nothing_applied'));
@@ -114,7 +114,7 @@ it('an update just taken is running, and the screen says so', function (): void 
     $screen->wouldYouLike();
     $screen->agree();
 
-    expect($screen->lastUpdate()->isWorking)->toBeTrue()
+    expect($screen->lastUpdate()->stands->isWorking())->toBeTrue()
         ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
@@ -189,7 +189,7 @@ it('an update the stack has no outcome for is said to be that, not a failure', f
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::ended());
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
-    expect($screen->lastUpdate()->hasEnded)->toBeTrue()
+    expect($screen->lastUpdate()->stands->hasEnded())->toBeTrue()
         ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.no_outcome'));
 });
@@ -198,8 +198,8 @@ it('a take the stack refused says what stood in the way, and follows nothing', f
     $keeping = AStackThatKeepsCurrent::withButRefusing(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
-    expect($screen->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->lastUpdate()->isWorking)->toBeFalse()
+    expect($screen->lastUpdate()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->lastUpdate()->stands->isWorking())->toBeFalse()
         ->and($keeping->taken())->toHaveCount(1)
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
@@ -230,7 +230,7 @@ it('does not offer an update again where anything but other work stood in its wa
 it('asking after an update says what stood in the way', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect(TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
+    expect(TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('lets go of a session the stack refused while taking or following an update', function (): void {

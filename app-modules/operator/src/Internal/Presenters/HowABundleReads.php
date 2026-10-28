@@ -14,7 +14,7 @@ use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * What became of a support bundle asked for, as the template draws it.
@@ -28,37 +28,37 @@ final readonly class HowABundleReads
     /** Nothing was asked for from this screen, so there is nothing to follow. */
     public function notAsked(): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), wasAsked: false);
+        return $this->following(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack the bundle was asked of. */
     public function signedOut(): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** Asking for it, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** The stack is still gathering it. */
     public function running(): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** The stack refused the bundle, and this is why, in its words. */
     public function refused(ARefusalInItsWords $why): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
+        return $this->following(WhereTheWorkStands::answered(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** The bundle, described or written, as the stack answered with it. */
@@ -77,10 +77,7 @@ final readonly class HowABundleReads
         }
 
         return new HowTheBundleWent(
-            went: HowTheReadingWent::itCameBack(),
-            wasAsked: true,
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: null,
             isWritten: $bundle->where()->isWritten(),
             bundle: new ABundleAsShown(
@@ -123,17 +120,11 @@ final readonly class HowABundleReads
 
     /** A state with no bundle to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $wasAsked = true,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
         ?ARefusalAsShown $refused = null,
     ): HowTheBundleWent {
         return new HowTheBundleWent(
-            went: $went,
-            wasAsked: $wasAsked,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refused: $refused,
             isWritten: false,
             bundle: null,

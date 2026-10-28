@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Zone;
 use Modules\Operator\Internal\ViewModels\APairingCodeAsShown;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where making a pairing code has got to, as the fields a screen draws.
@@ -23,43 +23,43 @@ final readonly class HowThePairingCodeReads
     /** Nothing has been asked yet. */
     public function notAsked(): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** The stack is still making it. */
     public function working(): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     /** The stack refused, and this is its reason. */
     public function refused(string $because): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::itCameBack(), refused: $because);
+        return $this->without(WhereTheWorkStands::answered(), refused: $because);
     }
 
     /** The code shown has stopped being good, so it is not shown any more. */
     public function expired(): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasExpired: true);
+        return $this->without(WhereTheWorkStands::answered(), hasExpired: true);
     }
 
     /** The stack's check code is not the one a phone typing the line works out, so the code is not shown. */
     public function checkedDifferently(): HowThePairingCodeWent
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isCheckedDifferently: true);
+        return $this->without(WhereTheWorkStands::answered(), isCheckedDifferently: true);
     }
 
     /**
@@ -72,8 +72,7 @@ final readonly class HowThePairingCodeReads
     public function made(APairingCode $code, AScannableCode $drawn, Zone $here): HowThePairingCodeWent
     {
         return new HowThePairingCodeWent(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
+            stands: WhereTheWorkStands::answered(),
             hasExpired: false,
             isCheckedDifferently: false,
             refused: '',
@@ -91,15 +90,13 @@ final readonly class HowThePairingCodeReads
 
     /** A state with no code in it. */
     private function without(
-        HowTheReadingWent $went,
-        bool $isWorking = false,
+        WhereTheWorkStands $stands,
         bool $hasExpired = false,
         bool $isCheckedDifferently = false,
         string $refused = '',
     ): HowThePairingCodeWent {
         return new HowThePairingCodeWent(
-            went: $went,
-            isWorking: $isWorking,
+            stands: $stands,
             hasExpired: $hasExpired,
             isCheckedDifferently: $isCheckedDifferently,
             refused: $refused,

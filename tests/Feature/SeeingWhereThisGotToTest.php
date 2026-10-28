@@ -356,7 +356,7 @@ it('says the stack has no answer for a search it no longer knows, and what stood
     $met->search();
 
     expect(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('health.trace.search_no_outcome'))
-        ->and($met->howTheSearchIsGoing()->went->cameBack())->toBeFalse()
+        ->and($met->howTheSearchIsGoing()->stands->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toContain(__('health.trace.search'));
 });
 
@@ -369,7 +369,7 @@ it('asks the indexers nothing once the session has ended', function (): void {
     $screen->search();
 
     expect($searching->searched())->toBe([])
-        ->and($screen->howTheSearchIsGoing()->went->isSignedIn)->toBeFalse();
+        ->and($screen->howTheSearchIsGoing()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('follows no season below none', function (): void {

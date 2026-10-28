@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * What asking a stack what it would put right produces, as fields a template
@@ -29,13 +30,13 @@ final readonly class HowAnOfferOfRepairsReads
     /** No session for that stack, so nothing was asked. */
     public function signedOut(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::theSessionEnded());
+        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still working out what it would do. */
     public function stillWorkingItOut(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::itCameBack(), isWorking: true);
+        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::running());
     }
 
     /** It finished, and this is the listing. */
@@ -52,7 +53,7 @@ final readonly class HowAnOfferOfRepairsReads
         // will offer that yes reads it from here — a fold that dropped it would
         // have to ask the stack again to agree to what it is already showing.
         return new WhatTheStackWouldPutRight(
-            went: HowTheReadingWent::itCameBack(),
+            stands: WhereTheWorkStands::answered(),
             named: $offer->named(),
             repairs: $rows,
         );
@@ -61,7 +62,7 @@ final readonly class HowAnOfferOfRepairsReads
     /** The stack has no outcome for that job any more. */
     public function ended(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::ended());
     }
 
     /**
@@ -73,6 +74,6 @@ final readonly class HowAnOfferOfRepairsReads
      */
     public function met(Obstacle $why): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::somethingStopped($why));
+        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::met($why));
     }
 }

@@ -2,7 +2,7 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
     <x-operator::heading>{{ __('uninstall.heading') }}</x-operator::heading>
 
@@ -18,9 +18,9 @@
     <x-operator::heading>{{ __('uninstall.the_library') }}</x-operator::heading>
     <x-operator::note>{{ __('uninstall.the_library_alone') }}</x-operator::note>
     <x-operator::action :label="__('uninstall.read', ['tier' => __('uninstall.tier.media')])" tap="choose('media')" />
-@elseif ($this->answer()->isWorking)
+@elseif ($this->answer()->stands->isWorking())
     <x-design::body>{{ __('uninstall.removing') }}</x-design::body>
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          yes any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('uninstall.no_outcome') }}</x-operator::emphasis>
@@ -238,7 +238,7 @@
     @endif
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

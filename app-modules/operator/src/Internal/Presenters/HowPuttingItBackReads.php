@@ -16,6 +16,7 @@ use Modules\Operator\Internal\ViewModels\ARelocationAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingItBackWouldShow;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Putting a copy back, as the template draws it: the listing first, and what
@@ -69,40 +70,38 @@ final readonly class HowPuttingItBackReads
     /** The stack is still putting it back. */
     public function running(): HowPuttingItBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): HowPuttingItBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** The stack did not finish putting it back, and said why in its own words. */
     public function refused(ARefusalInItsWords $why): HowPuttingItBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
+        return $this->following(WhereTheWorkStands::answered(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** Putting it back, or asking after it, met this instead. */
     public function met(Obstacle $why): HowPuttingItBackWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** This device no longer holds a session for the stack it was put back on. */
     public function signedOut(): HowPuttingItBackWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** The stack's report of what putting it back did. */
     public function done(ACopyPutBack $report): HowPuttingItBackWent
     {
         return new HowPuttingItBackWent(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             scope: new HowAScopeReads()->of($report->scope()),
             takenBy: $report->takenBy(),
             relocation: $this->relocation($report->whereTheDataWent()),
@@ -145,15 +144,11 @@ final readonly class HowPuttingItBackReads
 
     /** A state with no report to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
         ?ARefusalAsShown $refused = null,
     ): HowPuttingItBackWent {
         return new HowPuttingItBackWent(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             scope: null,
             takenBy: null,
             relocation: null,

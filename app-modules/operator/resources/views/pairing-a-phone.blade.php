@@ -9,14 +9,14 @@
          stack to another phone and signs nobody in. --}}
     <x-design::body>{{ __('stacks.pairing.what_it_is') }}</x-design::body>
 
-    @if (! $this->going()->went->cameBack())
+    @if (! $this->going()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->going()->went"
+            :went="$this->going()->stands->went"
             :goes="$this->goes()"
             ask-again="make()"
         />
-    @elseif ($this->going()->isWorking)
+    @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
     @elseif ($this->going()->code !== null)
         {{-- The line as a code, then the same line to type, then what to

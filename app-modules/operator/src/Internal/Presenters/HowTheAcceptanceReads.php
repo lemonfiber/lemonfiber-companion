@@ -7,8 +7,8 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where accepting a warning has got to, as the template draws it.
@@ -17,30 +17,28 @@ final readonly class HowTheAcceptanceReads
 {
     public function notAsked(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return $this->without(WhereTheWorkStands::notAsked());
     }
 
     public function signedOut(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->without(WhereTheWorkStands::running());
     }
 
     public function ended(): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheAcceptanceTurnedOutToBe
     {
         return new TheAcceptanceTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
             answered: false,
             accepted: false,
@@ -49,28 +47,24 @@ final readonly class HowTheAcceptanceReads
 
     public function met(Obstacle $why): TheAcceptanceTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** What the report the stack answered with says of the check accepted. */
     public function answered(Report $report, string $check): TheAcceptanceTurnedOutToBe
     {
         return new TheAcceptanceTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: null,
             answered: true,
             accepted: new HowAWarningReads()->in($report, $check)->accepted,
         );
     }
 
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false): TheAcceptanceTurnedOutToBe
+    private function without(WhereTheWorkStands $stands): TheAcceptanceTurnedOutToBe
     {
         return new TheAcceptanceTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refused: null,
             answered: false,
             accepted: false,

@@ -98,7 +98,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howForgettingIsGoing()->isWorking;
+        return $this->howForgettingIsGoing()->stands->isWorking();
     }
 
     public function render(): View

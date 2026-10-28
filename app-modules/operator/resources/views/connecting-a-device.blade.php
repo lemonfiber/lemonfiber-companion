@@ -6,14 +6,14 @@
     <x-design::title>{{ __('stacks.handoff.title') }}</x-design::title>
     <x-design::note>{{ $this->named() }}</x-design::note>
 
-    @if (! $this->going()->went->cameBack())
+    @if (! $this->going()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->going()->went"
+            :went="$this->going()->stands->went"
             :goes="$this->goes()"
             ask-again="show()"
         />
-    @elseif ($this->going()->isWorking)
+    @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
     @elseif ($this->going()->handoff !== null)
         @if ($this->going()->handoff->heading !== '')

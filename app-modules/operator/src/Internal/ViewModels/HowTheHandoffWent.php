@@ -13,14 +13,12 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowTheHandoffWent
 {
     /**
-     * @param HowTheReadingWent $went      whether asking came back, and what stood in the way where it did not
-     * @param bool              $isWorking whether the stack is still working it out
+     * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all
      * @param string            $refused   the stack's refusal in its own words, or empty
      * @param ?AHandoffAsShown  $handoff   where it stands, once the stack said
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
+        public WhereTheWorkStands $stands,
         public string $refused,
         public ?AHandoffAsShown $handoff,
     ) {}
