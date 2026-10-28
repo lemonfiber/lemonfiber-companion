@@ -40,11 +40,11 @@ trait SwitchesTheForms
     /** @var list<string> the forms chosen as the active set, by name */
     public array $switchingTo = [];
 
-    /** The forms the rehearsal on the screen was asked with, which is what a yes sends. */
+    /** The forms the switch on the screen was asked with. */
     public ?TheFormsToSwitchTo $switchAsked = null;
 
-    /** Whether the report on the screen is a rehearsal a yes may be given to. */
-    public bool $switchRehearsed = false;
+    /** The forms a yes sends, where the report on the screen is a rehearsal of them. */
+    public ?TheFormsToSwitchTo $switchMayBeMade = null;
 
     /** The handle of the work being followed, where there is one. */
     public ?string $switchFollowing = null;
@@ -65,7 +65,7 @@ trait SwitchesTheForms
     public function rehearseTheSwitch(): void
     {
         $this->switchAsked = null;
-        $this->switchRehearsed = false;
+        $this->switchMayBeMade = null;
         $this->switchFollowing = null;
 
         $declared = $this->forms()->names ?? [];
@@ -91,13 +91,13 @@ trait SwitchesTheForms
     /** Make the switch the rehearsal on the screen was asked with. */
     public function makeTheSwitch(): void
     {
-        $forms = $this->switchAsked;
+        $forms = $this->switchMayBeMade;
 
-        if (! $forms instanceof TheFormsToSwitchTo || ! $this->switchRehearsed) {
+        if (! $forms instanceof TheFormsToSwitchTo) {
             return;
         }
 
-        $this->switchRehearsed = false;
+        $this->switchMayBeMade = null;
         $this->switchGoing = $this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->carryOut($stack, $session, $forms));
     }
 
@@ -142,9 +142,9 @@ trait SwitchesTheForms
             },
             answered: function (TheSwitch $switch): TheSwitchTurnedOutToBe {
                 $this->switchFollowing = null;
-                $this->switchRehearsed = $switch->did() === WhetherItWasRehearsed::Rehearsed;
+                $this->switchMayBeMade = $switch->did() === WhetherItWasRehearsed::Rehearsed ? $this->switchAsked : null;
 
-                if (! $this->switchRehearsed) {
+                if (! $this->switchMayBeMade instanceof TheFormsToSwitchTo) {
                     $this->again();
                 }
 
