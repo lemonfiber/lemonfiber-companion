@@ -85,13 +85,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     /** The handle of the work being followed, while there is one. */
     public ?string $following = null;
 
-    /**
-     * What came back, once the frame has asked.
-     *
-     * `public`, for the reason {@see WhatIsRunningHere::$answered} gives.
-     */
-    public ?TheCredentialsTurnedOutToBe $answered = null;
-
     /** Where ending a grant has got to, once this frame has asked. Public for the same reason. */
     public ?TheCredentialRevokeTurnedOutToBe $going = null;
 
@@ -105,12 +98,12 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
         protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** What came back, asked once per frame, after where ending a grant has got to. */
+    /** What came back, after where ending a grant has got to; the machine is asked only where nothing it said is held. */
     public function answer(): TheCredentialsTurnedOutToBe
     {
         $this->howItIsGoing();
 
-        return $this->answered ??= $this->ask();
+        return $this->ask();
     }
 
     /** Ask what ending the grant at that place would do; anywhere else, or while work runs, nothing is asked. */
@@ -145,7 +138,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     /** Read the credentials and grants again, because the operator said so. */
     public function again(): void
     {
-        $this->answered = null;
         $this->held = null;
     }
 
@@ -261,7 +253,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
                 $this->following = null;
                 $this->held = $came->held();
                 $this->reading = $came->revoke();
-                $this->answered = null;
 
                 return new HowACredentialRevokeReads()->answered($came, $this->clock->now());
             },
@@ -273,7 +264,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
             refused: function (ARefusalInItsWords $why): TheCredentialRevokeTurnedOutToBe {
                 $this->following = null;
                 $this->held = null;
-                $this->answered = null;
 
                 return new HowACredentialRevokeReads()->refused($why);
             },

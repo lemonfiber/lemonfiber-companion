@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
+use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -172,7 +173,6 @@ it('ends the grant on a yes carrying the reading\'s offer, and says what it came
         ->and($drawn->offers())->not->toContain(aLineAboutGrants('stacks.credentials.revoke.agree'));
 
     $screen->backToTheCredentials();
-    $screen->answered = null;
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(aLineAboutGrants('stacks.credentials.grants.granted', ['plugin' => 'tdarr', 'fills' => 'library-scan']));
 });
@@ -235,4 +235,28 @@ it('a phone that holds no session says so when ending a grant', function (): voi
     $keychainless->revoke(0);
 
     expect($keychainless->howItIsGoing()->stands->went->cameBack())->toBeFalse();
+});
+
+it('reads the list after where ending a grant got to, so a grant ended on a frame no one has looked at yet is already gone', function (): void {
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsRead()), WhatBecameOfTheWork::answered(theRevokeAsEnded()));
+    $screen = theGrantingScreen($ending);
+    $screen->revoke(0);
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->agree();
+    $screen->whileItRuns();
+
+    expect(array_merge(...array_map(static fn(ACredentialAsShown $held): array => $held->grants, $screen->answer()->held)))->toBe([]);
+});
+
+it('sends no yes on an earlier reading once a grant is read again and the new reading is not in yet', function (): void {
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsRead()), WhatBecameOfTheWork::answered(theRevokeAsEnded()));
+    $screen = theGrantingScreen($ending);
+    $screen->revoke(0);
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->revoke(0);
+    $screen->agree();
+
+    expect($ending->asked())->toBe(['read:tdarr:plex.token', sprintf('after:%s', AStackThatEndsGrants::THE_READING), 'read:tdarr:plex.token']);
 });
