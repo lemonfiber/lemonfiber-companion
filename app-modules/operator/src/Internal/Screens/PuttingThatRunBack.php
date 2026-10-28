@@ -117,9 +117,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     /** The stamp of the run this screen is about, as the route carries it. */
     public function stampNamed(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** What the record says of the run, asked once per frame. */

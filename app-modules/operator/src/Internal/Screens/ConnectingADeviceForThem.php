@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AHandoff;
 use Modules\Kernel\Api\Clock;
@@ -87,9 +85,7 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
     /** The member this screen is about, by the name the route carries. */
     public function named(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** Where the hand-off has got to, or that nothing was asked yet. */

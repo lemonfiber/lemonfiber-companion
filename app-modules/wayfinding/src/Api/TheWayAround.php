@@ -28,6 +28,8 @@ use Modules\Kernel\Api\WhetherItIsOffered;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
+
 /**
  * What a screen about one stack reads about the stacks this phone holds, what
  * its menu is called and whose it is, where choosing another stack leads, how
@@ -63,9 +65,17 @@ final readonly class TheWayAround
      */
     public function stackOn(NativeComponent $screen): Stack
     {
-        $named = $screen->param('stack');
+        return $this->stack(StackId::rememberedAs($this->carried($screen, AStacksScreen::NAMED)));
+    }
 
-        return $this->stack(StackId::rememberedAs(is_string($named) ? $named : ''));
+    /**
+     * What a screen about one stack is about beside it, as its route carries
+     * it: a service, a check, a member, a copy or a word, and nothing where the
+     * route carries none.
+     */
+    public function aboutOn(NativeComponent $screen): string
+    {
+        return $this->carried($screen, AStacksScreen::ABOUT);
     }
 
     /** The stack this phone calls by that name, as it has it paired. */
@@ -253,5 +263,13 @@ final readonly class TheWayAround
                     => $standing instanceof HowItStands && WhatWasHeardSoFar::isStillCurrent($at, $now) ? $standing : HowItStands::Unknown,
             ),
         );
+    }
+
+    /** What a screen's route carries where its path has this placeholder, and nothing where it carries no text. */
+    private function carried(NativeComponent $screen, string $placeholder): string
+    {
+        $carried = $screen->param(trim($placeholder, '{}'));
+
+        return is_string($carried) ? $carried : '';
     }
 }

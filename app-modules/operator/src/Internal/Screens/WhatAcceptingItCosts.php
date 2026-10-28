@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Accepting;
@@ -40,8 +37,6 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
-use function trim;
-
 /**
  * What accepting one warning about a choice costs, in the stack's words, and accepting it on a separate yes.
  *
@@ -64,9 +59,6 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
 
     /** The warning as the stack last raised it, once the frame has asked. */
     public ?TheWarningTurnedOutToBe $answered = null;
-
-    /** The check a yes was sent for, empty until one is. */
-    public string $accepting = '';
 
     /** The handle of the work being followed, where there is one. */
     public ?string $following = null;
@@ -95,7 +87,6 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
             return;
         }
 
-        $this->accepting = $check;
         $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->answering->accept($stack, $session, Check::of($check)));
     }
 
@@ -117,7 +108,7 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
     {
         $this->howItIsGoing();
         $stack = $this->stack();
-        $named = $this->named();
+        $named = $this->around->aboutOn($this);
 
         return $this->answered ??= $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheWarningTurnedOutToBe => $this->asking->about($stack, $session)->either(
@@ -141,13 +132,6 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
             : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->answering->whatBecameOf($stack, $session, Job::named($following)));
     }
 
-    /** The check the route names, which only finds a warning in what the stack reported. */
-    private function named(): string
-    {
-        $named = $this->param('service');
-
-        return is_string($named) ? trim($named) : '';
-    }
 
     /** @param Closure(Stack, Session): WhatBecameOfTheWork<Report> $asking */
     private function put(Closure $asking): TheAcceptanceTurnedOutToBe
@@ -173,9 +157,10 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
             },
             answered: function (Report $report): TheAcceptanceTurnedOutToBe {
                 $this->following = null;
-                $this->answered = new HowAWarningReads()->in($report, $this->accepting);
+                $check = $this->around->aboutOn($this);
+                $this->answered = new HowAWarningReads()->in($report, $check);
 
-                return new HowTheAcceptanceReads()->answered($report, $this->accepting);
+                return new HowTheAcceptanceReads()->answered($report, $check);
             },
             ended: function (): TheAcceptanceTurnedOutToBe {
                 $this->following = null;

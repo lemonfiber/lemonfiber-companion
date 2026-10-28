@@ -104,9 +104,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** Which of pausing and resuming this screen is about, by the word the route carries, or none. */
     public function whatWasAsked(): ?WhatToDoWithTheDownloads
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? WhatToDoWithTheDownloads::tryFrom($named) : null;
+        return WhatToDoWithTheDownloads::tryFrom($this->around->aboutOn($this));
     }
 
     /** The lines that differ between pausing and resuming; pausing's where the route names neither, which draws none of them. */

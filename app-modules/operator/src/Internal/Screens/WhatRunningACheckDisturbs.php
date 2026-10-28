@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACheckThatDisturbs;
@@ -34,8 +32,6 @@ use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
-
-use function trim;
 
 /**
  * Running a check the stack leaves unverified because it disturbs something: what it disturbs, said first, and the run on a separate yes.
@@ -66,9 +62,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
 
     /** The finding as the stack last reported it, once the frame has asked. */
     public ?TheCheckTurnedOutToBe $answered = null;
-
-    /** The check a yes was sent for, empty until one is. */
-    public string $running = '';
 
     public function __construct(
         private readonly Asking $asking,
@@ -101,7 +94,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         $check = $shown->seconds === null
             ? ACheckThatDisturbs::unbounded($shown->disturbs, $shown->only)
             : ACheckThatDisturbs::boundedTo($shown->disturbs, $shown->only, $shown->seconds);
-        $this->running = $shown->check;
         $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->run($stack, $session, $check));
     }
 
@@ -110,7 +102,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     {
         $this->howItIsGoing();
         $stack = $this->stack();
-        $named = $this->named();
+        $named = $this->around->aboutOn($this);
 
         return $this->answered ??= $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheCheckTurnedOutToBe => $this->asking->about($stack, $session)->either(
@@ -128,14 +120,6 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     /** The finding drawn again from the report the run came back with. */
     protected function cameBackWith(Report $report): void
     {
-        $this->answered = new HowACheckThatDisturbsReads()->in($report, $this->running);
-    }
-
-    /** The check the route names, which only finds a finding in what the stack reported. */
-    private function named(): string
-    {
-        $named = $this->param('service');
-
-        return is_string($named) ? trim($named) : '';
+        $this->answered = new HowACheckThatDisturbsReads()->in($report, $this->around->aboutOn($this));
     }
 }

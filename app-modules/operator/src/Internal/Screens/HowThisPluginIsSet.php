@@ -262,7 +262,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         return $this->extending->installedOn($stack, $session)->either(
             found: function (ThePlugins $plugins) use ($stack, $session): WhatAPluginsSettingsShow {
                 foreach ($plugins->installed() as $plugin) {
-                    $this->plugin = $plugin->id() === $this->param('service') ? $plugin : $this->plugin;
+                    $this->plugin = $plugin->id() === $this->around->aboutOn($this) ? $plugin : $this->plugin;
                 }
 
                 return $this->plugin instanceof APlugin ? $this->settingsOf($this->plugin, $stack, $session) : new HowAPluginsSettingsRead()->notInstalled();

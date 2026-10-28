@@ -133,9 +133,7 @@ final class WhatThisServiceSaid extends NativeComponent
      */
     public function service(): ServiceId
     {
-        $named = $this->param('service');
-
-        return ServiceId::called(is_string($named) ? $named : '');
+        return ServiceId::called($this->around->aboutOn($this));
     }
 
     /**

@@ -115,9 +115,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** The download this screen is about, by the name the route carries. */
     public function downloadNamed(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** What stopping seeding would cost, asked once per frame. */

@@ -122,9 +122,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** The copy this screen is about, by the name the route carries. */
     public function copyNamed(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** What putting the copy back would do, asked once per frame. */

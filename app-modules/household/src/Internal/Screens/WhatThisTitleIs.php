@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
@@ -189,9 +187,7 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
     /** The title the route names, or none where it names nothing. */
     private function page(): ?HoldingId
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $this->holding($named) : null;
+        return $this->holding($this->around->aboutOn($this));
     }
 
     /** The holding `$named` names, or none where it names nothing. */

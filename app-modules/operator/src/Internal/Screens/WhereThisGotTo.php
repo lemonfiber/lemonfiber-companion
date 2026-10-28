@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -226,9 +223,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
             return $this->following;
         }
 
-        $named = $this->param('service');
-
-        return is_string($named) ? trim($named) : '';
+        return trim($this->around->aboutOn($this));
     }
 
     /** What is followed, narrowed to the season the screen holds where it holds one. */

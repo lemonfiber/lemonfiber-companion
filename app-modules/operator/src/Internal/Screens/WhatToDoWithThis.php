@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AnOffer;
@@ -164,8 +161,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      */
     public function thing(): WhatOneThingIs
     {
-        $said = $this->param('service');
-        $named = is_string($said) ? trim($said) : '';
+        $named = trim($this->around->aboutOn($this));
         $reads = new HowOneThingReads();
 
         // The forms are asked only where the name is not a service's, and on

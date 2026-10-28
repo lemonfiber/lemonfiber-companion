@@ -90,11 +90,11 @@ final class AskingForATitle extends NativeComponent
     /** The title, as the search that led here listed it, or none where nothing was carried. */
     public function title(): ?AFoundTitle
     {
-        $id = $this->param('service');
+        $id = $this->around->aboutOn($this);
         $kind = KindOfTitle::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Kind));
         $stands = WhereAFoundTitleStands::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Stands));
 
-        if (! is_string($id) || ! $kind instanceof KindOfTitle || ! $stands instanceof WhereAFoundTitleStands) {
+        if ($id === '' || ! $kind instanceof KindOfTitle || ! $stands instanceof WhereAFoundTitleStands) {
             return null;
         }
 
