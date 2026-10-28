@@ -42,6 +42,7 @@ use Tests\Support\TheWalkthroughScreenOfTheLoft;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // Watching one thing arrive: a walkthrough started, followed while it runs,
 // and its record drawn once it finishes.
@@ -156,7 +157,8 @@ it('before a walk, asks only for the glossary and draws the road a walk takes', 
         )
         ->and($drawn->said())->not->toContain(__('health.walkthrough.no_road'))
         ->and($drawn->offers())->toContain(__('health.walkthrough.walk'))
-        ->and($drawn->offers())->not->toContain(__('health.ask_again'));
+        ->and($drawn->offers())->not->toContain(__('health.ask_again'))
+        ->and(WhatTheFieldsHold::on($screen))->toBe(['']);
 });
 
 it('before a walk, says what stood in the way of reaching the machine, and leaves a way back', function (): void {
@@ -457,6 +459,24 @@ it('draws each step as the glossary\'s word for it, explained in place', functio
     )
         ->and($drawn)->not->toContain(__('health.at_stage', ['stage' => 'searching']))
         ->and($explaining->askings())->toBe(1);
+});
+
+it('reads where a walk got to on a frame of its own, and explains its steps on the next', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '')->writtenAs(WhatElseItIsCalled::formsOf('searching')),
+    ));
+    $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatWorked()));
+    $screen = aScreenThatWalked($walking, explaining: $explaining);
+    $screen->again();
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+    $askedOnTheFirst = $explaining->askings();
+    $waited = $screen->waitsForTheNextFrame();
+    $second = WhatTheDeviceWouldDraw::by($screen)->said();
+    $explained = __('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']);
+
+    expect([$askedOnTheFirst, $waited, in_array($explained, $first, strict: true)])->toBe([0, true, false])
+        ->and($explaining->askings())->toBe(1)
+        ->and($second)->toContain($explained);
 });
 
 it('reads a walk that finished while nobody was looking the same as one that was watched', function (): void {
