@@ -81,12 +81,13 @@ function theAdaptersSources(): array
 
 it('declares every reading an adapter sends in the registry of every request, and nothing else', function (): void {
     $sent = [];
+    $api = new ReflectionClass(Api::class);
 
     foreach (theAdaptersSources() as $source) {
         preg_match_all('/\bApi::([A-Z_]+_ENDPOINT)\b/', $source, $named);
 
         foreach ($named[1] as $constant) {
-            $path = constant(sprintf('%s::%s', Api::class, $constant));
+            $path = $api->getConstant($constant);
 
             if (is_string($path) && ! array_key_exists($constant, WHAT_IS_NOT_ASKED_ABOUT)) {
                 $sent[] = $path;
