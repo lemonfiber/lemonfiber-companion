@@ -171,7 +171,7 @@ final readonly class TheRequestsAsKept
     private static function standingIn(array $said): HowARequestStands
     {
         foreach ($said as $value) {
-            return HowARequestStands::said(Waiting::tryFrom(is_string($value) ? $value : '') ?? throw KeptRequestsDoNotRead::at('standing'));
+            return HowARequestStands::said((is_string($value) ? Waiting::tryFrom($value) : null) ?? throw KeptRequestsDoNotRead::at('standing'));
         }
 
         return HowARequestStands::unnamed();
