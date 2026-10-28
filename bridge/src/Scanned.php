@@ -28,35 +28,13 @@ use Closure;
  */
 final readonly class Scanned
 {
-    /**
-     * What the payload is on the arm that has none.
-     *
-     * A named constant rather than a `''` written into {@see nothing()}, and
-     * rather than a nullable: nullable puts a `?? ''` in {@see either()} for a
-     * state the two constructors cannot produce, which is a line whose removal
-     * nothing notices.
-     */
-    private const string NOTHING_WAS_READ = '';
-
-    /**
-     * The refusal as one field rather than two.
-     *
-     * {@see TheRefusal} carries the reason and whether asking again could
-     * change it, which are only ever true together. Holding them apart gives
-     * {@see read()} a `mayAskAgain` to name, and on that arm nothing reads it:
-     * any value does, and no test can tell one from another.
-     * That is the same defect {@see NOTHING_WAS_READ} is written against,
-     * reached through the other field.
-     */
-    private function __construct(
-        private string $payload,
-        private ?TheRefusal $refusal,
-    ) {}
+    /** @param string|TheRefusal $scanned what the camera read, or why it read nothing and whether asking again could change that */
+    private function __construct(private string|TheRefusal $scanned) {}
 
     /** The camera read something. Whether it is pairing material is not asked here. */
     public static function read(string $payload): self
     {
-        return new self(payload: $payload, refusal: null);
+        return new self($payload);
     }
 
     /**
@@ -69,10 +47,7 @@ final readonly class Scanned
      */
     public static function nothing(WhyNothingWasRead $why, bool $mayAskAgain): self
     {
-        return new self(
-            payload: self::NOTHING_WAS_READ,
-            refusal: new TheRefusal($why, $mayAskAgain),
-        );
+        return new self(new TheRefusal($why, $mayAskAgain));
     }
 
     /**
@@ -91,8 +66,8 @@ final readonly class Scanned
      */
     public function either(Closure $read, Closure $nothing): object
     {
-        return $this->refusal instanceof TheRefusal
-            ? $nothing($this->refusal->why, $this->refusal->mayAskAgain)
-            : $read($this->payload);
+        return $this->scanned instanceof TheRefusal
+            ? $nothing($this->scanned->why, $this->scanned->mayAskAgain)
+            : $read($this->scanned);
     }
 }

@@ -6,6 +6,8 @@ namespace Lemonfiber\Native;
 
 use Closure;
 
+use function is_array;
+
 /**
  * What came back from asking the phone to make its key: the public half and the platform's attestation, or why not.
  *
@@ -14,16 +16,8 @@ use Closure;
  */
 final readonly class PhoneKeyMade
 {
-    /**
-     * @param list<string> $chain
-     */
-    private function __construct(
-        private string $lives,
-        private string $publicKey,
-        private array $chain,
-        private string $attestation,
-        private ?WhyNoPhoneKey $why,
-    ) {}
+    /** @param array{string, string, list<string>|string}|WhyNoPhoneKey $made where it lives, its public half and what attests it; or why none was made */
+    private function __construct(private array|WhyNoPhoneKey $made) {}
 
     /**
      * Made on Android: where it lives, its public half's DER and the attestation chain, the key's own first.
@@ -32,19 +26,19 @@ final readonly class PhoneKeyMade
      */
     public static function onAndroid(string $lives, string $publicKey, array $chain): self
     {
-        return new self($lives, $publicKey, $chain, '', null);
+        return new self([$lives, $publicKey, $chain]);
     }
 
     /** Made on iOS: where it lives, its public half's DER and the App Attest object. */
     public static function onIos(string $lives, string $publicKey, string $attestation): self
     {
-        return new self($lives, $publicKey, [], $attestation, null);
+        return new self([$lives, $publicKey, $attestation]);
     }
 
     /** Not made, for this reason. */
     public static function not(WhyNoPhoneKey $why): self
     {
-        return new self('', '', [], '', $why);
+        return new self($why);
     }
 
     /**
@@ -60,10 +54,12 @@ final readonly class PhoneKeyMade
      */
     public function either(Closure $android, Closure $ios, Closure $not): mixed
     {
-        return match (true) {
-            $this->why instanceof WhyNoPhoneKey => $not($this->why),
-            $this->chain !== [] => $android($this->lives, $this->publicKey, $this->chain),
-            default => $ios($this->lives, $this->publicKey, $this->attestation),
-        };
+        if ($this->made instanceof WhyNoPhoneKey) {
+            return $not($this->made);
+        }
+
+        [$lives, $publicKey, $attested] = $this->made;
+
+        return is_array($attested) ? $android($lives, $publicKey, $attested) : $ios($lives, $publicKey, $attested);
     }
 }

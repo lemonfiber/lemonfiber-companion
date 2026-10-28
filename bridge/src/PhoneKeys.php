@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_map;
 use function in_array;
 use function is_string;
 use function sodium_base642bin;
@@ -50,7 +49,11 @@ final readonly class PhoneKeys
             return PhoneKeyMade::not(WhyNoPhoneKey::or(WhyNoPhoneKey::Failed, $said->word(WhatAnAnswerHolds::Because)));
         }
 
-        $chain = array_map($this->bytes(...), $this->words($said->listed(WhatAnAnswerHolds::Chain) ?? []));
+        $chain = [];
+
+        foreach ($said->listed(WhatAnAnswerHolds::Chain) ?? [] as $certificate) {
+            $chain[] = $this->bytes($certificate);
+        }
 
         if ($chain !== [] && ! in_array('', $chain, strict: true)) {
             return PhoneKeyMade::onAndroid($lives, $publicKey, $chain);
@@ -119,28 +122,10 @@ final readonly class PhoneKeys
         return HowThePhoneKeyAnswered::in($said) === HowThePhoneKeyAnswered::Named && is_string($model) ? trim($model) : '';
     }
 
-    /**
-     * The words a list holds, leaving out anything that is not one.
-     *
-     * @param array<mixed> $listed
-     *
-     * @return list<string>
-     */
-    private function words(array $listed): array
-    {
-        $words = [];
-
-        foreach ($listed as $word) {
-            $words[] = is_string($word) ? $word : '';
-        }
-
-        return $words;
-    }
-
     /** Base64 the device wrote, as bytes; empty where it wrote nothing that decodes. */
-    private function bytes(?string $written): string
+    private function bytes(mixed $written): string
     {
-        if ($written === null || $written === '') {
+        if (! is_string($written)) {
             return '';
         }
 
