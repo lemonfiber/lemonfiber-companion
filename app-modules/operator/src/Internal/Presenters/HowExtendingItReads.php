@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\AnActRefused;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
 use Modules\Operator\Internal\ViewModels\APluginRemovalAsShown;
 use Modules\Operator\Internal\ViewModels\APluginReproofAsShown;
@@ -40,50 +41,43 @@ final readonly class HowExtendingItReads
     /** This device no longer holds a session for the stack. */
     public function signedOut(): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     /** Asking met this instead. */
-    public function met(Obstacle $why, bool $agreed): WhatExtendsItTurnedOutToBe
+    public function met(Obstacle $why): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::met($why), afterTheYes: $agreed);
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** A source is being typed, and nothing has been asked. */
     public function typing(): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::answered(), typing: true);
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     /** The stack is at work on the rehearsal, or on the act agreed to. */
     public function running(ExtendingIt $act, bool $agreed): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running(), afterTheYes: $agreed, workingSaid: $this->working($act, $agreed));
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::running(), working: $this->working($act, $agreed));
     }
 
     /** The stack has no outcome for the work any more, which is not the same as it not having happened. */
-    public function ended(bool $agreed): WhatExtendsItTurnedOutToBe
+    public function ended(): WhatExtendsItTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended(), afterTheYes: $agreed);
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     /** The stack refused, and this is what it said and named, with each service the yes left unapproved to take its shape. */
     public function refused(ARefusalInItsWords $why, ExtendingIt $act, bool $agreed, TheShapesTaken $leftUnapproved): WhatExtendsItTurnedOutToBe
     {
         return new WhatExtendsItTurnedOutToBe(
-            stands: WhereTheWorkStands::answered(),
-            typing: false,
-            afterTheYes: $agreed,
-            workingSaid: '',
-            refusedSaid: $this->refusal($act, $agreed),
-            refused: new HowARefusalReads()->inItsWords($why),
-            unapproved: new HowAPluginAccountReads()->leftUnapproved($leftUnapproved),
-            installed: [],
-            install: null,
-            update: null,
-            removal: null,
-            proof: null,
-            run: null,
+            WhereTheWorkStands::answered(),
+            refused: new AnActRefused(
+                $this->refusal($act, $agreed),
+                new HowARefusalReads()->inItsWords($why),
+                new HowAPluginAccountReads()->leftUnapproved($leftUnapproved),
+            ),
         );
     }
 
@@ -92,7 +86,7 @@ final readonly class HowExtendingItReads
      *
      * @param list<string> $approved every value the operator has approved so far, as the reading spells each
      */
-    public function answered(ThePlugins $plugins, array $approved, bool $agreed): WhatExtendsItTurnedOutToBe
+    public function answered(ThePlugins $plugins, array $approved): WhatExtendsItTurnedOutToBe
     {
         $rows = new HowAPluginAccountReads();
         $installed = [];
@@ -112,13 +106,7 @@ final readonly class HowExtendingItReads
         );
 
         return new WhatExtendsItTurnedOutToBe(
-            stands: WhereTheWorkStands::answered(),
-            typing: false,
-            afterTheYes: $agreed,
-            workingSaid: '',
-            refusedSaid: '',
-            refused: null,
-            unapproved: [],
+            WhereTheWorkStands::answered(),
             installed: $installed,
             install: $account instanceof APluginInstallAsShown ? $account : null,
             update: $account instanceof APluginUpdateAsShown ? $account : null,
@@ -160,27 +148,4 @@ final readonly class HowExtendingItReads
         };
     }
 
-    /** A state with neither a listing nor an account in it. */
-    private function without(
-        WhereTheWorkStands $stands,
-        bool $typing = false,
-        bool $afterTheYes = false,
-        string $workingSaid = '',
-    ): WhatExtendsItTurnedOutToBe {
-        return new WhatExtendsItTurnedOutToBe(
-            stands: $stands,
-            typing: $typing,
-            afterTheYes: $afterTheYes,
-            workingSaid: $workingSaid,
-            refusedSaid: '',
-            refused: null,
-            unapproved: [],
-            installed: [],
-            install: null,
-            update: null,
-            removal: null,
-            proof: null,
-            run: null,
-        );
-    }
 }

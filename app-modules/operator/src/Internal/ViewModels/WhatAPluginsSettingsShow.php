@@ -8,19 +8,8 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatAPluginsSettingsShow
 {
     /**
-     * @param HowTheReadingWent     $went        whether both readings came back, or what stood in the way
-     * @param bool                  $isInstalled whether the plugin is among those installed
-     * @param string                $plugin      what the plugin calls itself
-     * @param list<APluginsSettingAsShown> $settings    every setting its services read
-     * @param list<ASecretAsShown>  $secrets     every secret its services read
-     * @param list<AGrantAsShown>   $grants      every credential of another service granted to it
+     * @param HowTheReadingWent             $went whether both readings came back, or what stood in the way
+     * @param ThePluginsSettingsAsRead|null $read what the plugin's services read, or null where they did not come back or the plugin is not installed
      */
-    public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isInstalled,
-        public string $plugin,
-        public array $settings,
-        public array $secrets,
-        public array $grants,
-    ) {}
+    public function __construct(public HowTheReadingWent $went, public ?ThePluginsSettingsAsRead $read = null) {}
 }

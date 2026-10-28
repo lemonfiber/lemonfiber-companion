@@ -141,13 +141,11 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
      */
     public function search(): void
     {
-        $term = $this->term();
-
-        if ($term === '' || $this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->stands->isWorking()) {
+        if ($this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->stands->isWorking()) {
             return;
         }
 
-        $following = $this->following($term);
+        $following = $this->following($this->term());
         $this->going = $this->searched(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->indexers->search($stack, $session, $following));
     }
 

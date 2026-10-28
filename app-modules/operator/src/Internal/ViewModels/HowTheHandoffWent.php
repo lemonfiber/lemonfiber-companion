@@ -14,12 +14,12 @@ final readonly class HowTheHandoffWent
 {
     /**
      * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all
-     * @param string            $refused   the stack's refusal in its own words, or empty
+     * @param string|null       $refused   the stack's refusal in its own words, or null where it did not refuse
      * @param ?AHandoffAsShown  $handoff   where it stands, once the stack said
      */
     public function __construct(
         public WhereTheWorkStands $stands,
-        public string $refused,
+        public ?string $refused,
         public ?AHandoffAsShown $handoff,
     ) {}
 }

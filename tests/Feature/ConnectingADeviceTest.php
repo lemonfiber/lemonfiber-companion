@@ -69,7 +69,7 @@ function theStackADeviceConnectsTo(): Stack
 }
 
 /** A hand-off standing where a case says, with what it would say there. */
-function aHandoffThatStands(WhereTheHandoffStands $stands, WhatTheHandoffNeedsNext $next = WhatTheHandoffNeedsNext::AskAgain, string $reason = ''): AHandoff
+function aHandoffThatStands(WhereTheHandoffStands $stands, WhatTheHandoffNeedsNext $next = WhatTheHandoffNeedsNext::AskAgain, string $reason = '', ?AnAddressToHand $address = null): AHandoff
 {
     return AHandoff::answered(
         SomebodyInTheHousehold::called('Sam'),
@@ -77,7 +77,7 @@ function aHandoffThatStands(WhereTheHandoffStands $stands, WhatTheHandoffNeedsNe
         $reason,
         $next,
         WhatToHandThem::of(
-            AnAddressToHand::at('https://den.local:8920', 'That address answers only on the home network.'),
+            $address ?? AnAddressToHand::at('https://den.local:8920', 'That address answers only on the home network.'),
             TheStepsOnTheirDevice::of('Open the app on their device and give it the server.', 'Sign in as Sam with their own password.'),
             TheClientsToHandOver::of(
                 AClientToHandOver::named('An iPhone', 'Swiftfin', openSource: true, code: 'swiftfin://server?url=https://den.local:8920', deepLink: true),
@@ -173,7 +173,8 @@ it('shows the address as a code and as text, the steps, the apps and when the co
         ->and($drawn)->toContain('swiftfin://server?url=https://den.local:8920')
         ->and($drawn)->not->toContain(__('stacks.handoff.opens_at_this_server', ['client' => 'Jellyfin for TV']))
         ->and(array_filter($drawn, static fn(string $line): bool => $line === __('stacks.clients.not_open_source')))->toHaveCount(1)
-        ->and($drawn)->toContain(__('stacks.handoff.first_given', ['when' => trans_choice('health.ago.hours', 1)]));
+        ->and($drawn)->toContain(__('stacks.handoff.first_given', ['when' => trans_choice('health.ago.hours', 1)]))
+        ->and($drawn)->not->toContain(__('stacks.invitation.no_code'));
 });
 
 it('draws a code beside each link that opens an app at this server, and says where one could not be drawn', function (): void {
@@ -201,6 +202,13 @@ it('hands no code over once a device has signed in, and still offers to ask agai
     expect($drawn)->not->toContain(__('stacks.handoff.on_their_device'))
         ->and($drawn)->not->toContain('https://den.local:8920')
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.ask_again'));
+});
+
+it('hands no code over where the stack gave no address, though it stands ready', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theConnectingScreenAnswered(aHandoffThatStands(WhereTheHandoffStands::Ready, address: AnAddressToHand::none())))->said();
+
+    expect($drawn)->toContain(__('stacks.handoff.stands.ready'))
+        ->and($drawn)->not->toContain(__('stacks.handoff.on_their_device'));
 });
 
 it('says it is waiting for them in the stack\'s words, and asks again only when tapped', function (): void {

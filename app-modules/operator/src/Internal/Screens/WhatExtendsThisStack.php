@@ -111,20 +111,17 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** What is installed, as last read, which updating and removing choose a plugin from. */
     public ?ThePlugins $listing = null;
 
-    /** The act in hand, as its own word, or empty where none is. */
-    public string $act = '';
+    /** The act in hand, where one is. */
+    public ?ExtendingIt $act = null;
 
-    /** The plugin an update, a removal, a proof or a recipe run is about, while one is in hand. */
-    public ?APlugin $subject = null;
+    /** What the act in hand is about: where an install comes from, or the plugin an update, a removal, a proof or a recipe run is about. */
+    public APlugin|APluginSource|null $subject = null;
 
     /** The demand recipe a run is about, while one is in hand. */
     public ?ARecipe $recipe = null;
 
     /** The rehearsal, while it is in front of the operator to be agreed to. */
     public ?ThePlugins $rehearsal = null;
-
-    /** The source an install's rehearsal was asked about, which the yes names again. */
-    public string $rehearsedFrom = '';
 
     /** @var list<string> every value and shape approved against the rehearsal, as it spells each */
     public array $approved = [];
@@ -170,7 +167,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         }
 
         $this->letGoOfTheRehearsal();
-        $this->act = ExtendingIt::Install->value;
+        $this->act = ExtendingIt::Install;
         $this->typing = true;
     }
 
@@ -191,8 +188,8 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
 
         $source = APluginSource::typed($this->source);
         $this->letGoOfTheRehearsal();
-        $this->act = ExtendingIt::Install->value;
-        $this->rehearsedFrom = $source->said();
+        $this->act = ExtendingIt::Install;
+        $this->subject = $source;
 
         $this->answered = $this->put(
             fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->rehearseInstalling($stack, $session, $source),
@@ -266,13 +263,14 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     public function agree(): void
     {
         $rehearsal = $this->rehearsal;
-        $act = ExtendingIt::tryFrom($this->act);
+        $act = $this->act;
+        $subject = $this->subject;
 
-        if (! $rehearsal instanceof ThePlugins || $rehearsal->agreement() === '' || ! $act instanceof ExtendingIt) {
+        if (! $rehearsal instanceof ThePlugins || ! $act instanceof ExtendingIt || $subject === null) {
             return;
         }
 
-        $asking = $this->theYes($rehearsal, $act);
+        $asking = $this->theYes($rehearsal, $act, $subject);
         $this->leftUnapproved = $rehearsal->shapesTaken()->leftOutOf(PluginLines::under('approved', ...$this->approved));
         $this->rehearsal = null;
         $this->approved = [];
@@ -330,14 +328,13 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
      *
      * @return Closure(Stack, Session): HowExtendingItIsGoing
      */
-    private function theYes(ThePlugins $rehearsal, ExtendingIt $act): Closure
+    private function theYes(ThePlugins $rehearsal, ExtendingIt $act, APlugin|APluginSource $subject): Closure
     {
         $approved = PluginLines::under('approved', ...$this->approved);
-        $subject = $this->subject;
         $recipe = $this->recipe;
 
         $agreed = match (true) {
-            $act === ExtendingIt::Install || ! $subject instanceof APlugin => APluginInstallAgreed::after($rehearsal, APluginSource::typed($this->rehearsedFrom), $approved),
+            $subject instanceof APluginSource => APluginInstallAgreed::after($rehearsal, $subject, $approved),
             $act === ExtendingIt::Update => APluginUpdateAgreed::after($rehearsal, $subject, $approved),
             $act === ExtendingIt::Prove => APluginProofAgreed::after($rehearsal, $subject),
             $act === ExtendingIt::Run && $recipe instanceof ARecipe => ARecipeRunAgreed::after($rehearsal, $subject, $recipe, $approved),
@@ -372,7 +369,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         }
 
         $this->letGoOfTheRehearsal();
-        $this->act = $act->value;
+        $this->act = $act;
         $this->subject = $chosen;
         $this->recipe = $running;
         $this->answered = $this->put(
@@ -399,7 +396,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $rehearsal = $this->rehearsal;
 
         return match (true) {
-            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved, agreed: false),
+            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved),
             $this->typing => new HowExtendingItReads()->typing(),
             default => $this->installedNow(),
         };
@@ -412,9 +409,9 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $listed = function (ThePlugins $plugins): WhatExtendsItTurnedOutToBe {
             $this->listing = $plugins;
 
-            return new HowExtendingItReads()->answered($plugins, [], agreed: false);
+            return new HowExtendingItReads()->answered($plugins, []);
         };
-        $met = $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why, agreed: false));
+        $met = $this->lettingGoIfRefused($stack, static fn(Obstacle $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->met($why));
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatExtendsItTurnedOutToBe => $this->extending->installedOn($stack, $session)->either(found: $listed, met: $met),
@@ -441,7 +438,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     private function shown(HowExtendingItIsGoing $going, Stack $stack): WhatExtendsItTurnedOutToBe
     {
         $agreed = $this->agreed;
-        $act = ExtendingIt::tryFrom($this->act) ?? ExtendingIt::Install;
+        $act = $this->act ?? ExtendingIt::Install;
 
         return $going->either(
             underway: function (Job $job) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
@@ -453,22 +450,22 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
                 $this->following = null;
                 $this->rehearsal = ! $agreed && $plugins->agreement() !== '' ? $plugins : null;
 
-                return new HowExtendingItReads()->answered($plugins, $this->approved, $agreed);
+                return new HowExtendingItReads()->answered($plugins, $this->approved);
             },
             refused: function (ARefusalInItsWords $why) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
 
                 return new HowExtendingItReads()->refused($why, $act, $agreed, $this->leftUnapproved ?? TheShapesTaken::these());
             },
-            ended: function () use ($agreed): WhatExtendsItTurnedOutToBe {
+            ended: function (): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
 
-                return new HowExtendingItReads()->ended($agreed);
+                return new HowExtendingItReads()->ended();
             },
-            met: function (Obstacle $why) use ($stack, $agreed): WhatExtendsItTurnedOutToBe {
+            met: function (Obstacle $why) use ($stack): WhatExtendsItTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return new HowExtendingItReads()->met($why, $agreed);
+                return new HowExtendingItReads()->met($why);
             },
         );
     }
@@ -477,10 +474,9 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     private function letGoOfTheRehearsal(): void
     {
         $this->rehearsal = null;
-        $this->rehearsedFrom = '';
         $this->approved = [];
         $this->leftUnapproved = null;
-        $this->act = '';
+        $this->act = null;
         $this->subject = null;
         $this->recipe = null;
         $this->agreed = false;

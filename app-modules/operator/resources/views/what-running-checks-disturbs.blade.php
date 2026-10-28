@@ -3,10 +3,10 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    @if ($this->answer()->familySaid !== '')
-        <x-operator::heading>{{ __($this->answer()->titleSaid, ['family' => __($this->answer()->familySaid)]) }}</x-operator::heading>
+    @if ($this->answer()->run->familySaid !== null)
+        <x-operator::heading>{{ __($this->answer()->run->titleSaid, ['family' => __($this->answer()->run->familySaid)]) }}</x-operator::heading>
     @else
-        <x-operator::heading>{{ __($this->answer()->titleSaid) }}</x-operator::heading>
+        <x-operator::heading>{{ __($this->answer()->run->titleSaid) }}</x-operator::heading>
     @endif
 
     @if ($this->howItIsGoing()->stands->went->cameBack())
@@ -44,13 +44,13 @@
             @endforelse
         @endif
 
-        @if ($this->answer()->runnable && ! $this->howItIsGoing()->stands->isWorking())
+        @if ($this->answer()->run->runnable && ! $this->howItIsGoing()->stands->isWorking())
             {{-- Every check the run covers that disturbs something, each in the
                  stack's words with its bound, and the downloads it interrupts,
                  before the yes. --}}
             <x-design::notice>
                 <x-design::strong>{{ __('health.run_every.what') }}</x-design::strong>
-                @forelse ($this->answer()->disturbing as $disturbing)
+                @forelse ($this->answer()->run->disturbing as $disturbing)
                     <x-design::body>{{ $disturbing->title }}</x-design::body>
                     <x-design::note>{{ $disturbing->disturbs }}</x-design::note>
                     <x-design::note>{{ __($disturbing->boundSaid, ['seconds' => $disturbing->seconds]) }}</x-design::note>

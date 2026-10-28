@@ -15,7 +15,9 @@ use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhereTheHandoffStands;
 use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AClientAsShown;
+use Modules\Operator\Internal\ViewModels\ACodeToHandOver;
 use Modules\Operator\Internal\ViewModels\AHandoffAsShown;
+use Modules\Operator\Internal\ViewModels\ALinkWithItsCode;
 use Modules\Operator\Internal\ViewModels\ASignedInDeviceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -34,25 +36,25 @@ final readonly class HowTheHandoffReads
     /** Nothing has been asked yet. */
     public function notAsked(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(WhereTheWorkStands::notAsked(), refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::notAsked(), refused: null, handoff: null);
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(WhereTheWorkStands::signedOut(), refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::signedOut(), refused: null, handoff: null);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(WhereTheWorkStands::met($why), refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::met($why), refused: null, handoff: null);
     }
 
     /** The stack is still working it out. */
     public function working(): HowTheHandoffWent
     {
-        return new HowTheHandoffWent(WhereTheWorkStands::running(), refused: '', handoff: null);
+        return new HowTheHandoffWent(WhereTheWorkStands::running(), refused: null, handoff: null);
     }
 
     /** The stack refused, and this is its reason. */
@@ -71,10 +73,40 @@ final readonly class HowTheHandoffReads
     public function answered(AHandoff $handoff, TheCodesDrawn $drawn, Instant $now): HowTheHandoffWent
     {
         $next = $handoff->next();
-        $handsOver = $handoff->stands()->handsACodeOver() && $handoff->handed()->address()->url() !== '';
+        $signedIn = [];
+
+        foreach ($handoff->signedIn() as $device) {
+            $signedIn[] = $this->signedIn($device, $now);
+        }
+
+        return new HowTheHandoffWent(
+            stands: WhereTheWorkStands::answered(),
+            refused: null,
+            handoff: new AHandoffAsShown(
+                heading: $this->heading($handoff->stands()),
+                reason: $handoff->reason(),
+                asksAgain: $next === WhatTheHandoffNeedsNext::AskAgain || $next === WhatTheHandoffNeedsNext::Nothing,
+                invites: $next === WhatTheHandoffNeedsNext::Invite,
+                starts: $next === WhatTheHandoffNeedsNext::StartServer,
+                records: $next === WhatTheHandoffNeedsNext::RecordAddress,
+                handing: $this->handing($handoff, $drawn),
+                signedIn: $signedIn,
+                given: $this->ago($handoff->given(), $now),
+            ),
+        );
+    }
+
+    /** The code to hand over, where the hand-off stands where one is handed over and the stack gave an address for it. */
+    private function handing(AHandoff $handoff, TheCodesDrawn $drawn): ?ACodeToHandOver
+    {
+        $address = $handoff->handed()->address();
+
+        if (! $handoff->stands()->handsACodeOver() || $address->url() === '') {
+            return null;
+        }
+
         $steps = [];
         $clients = [];
-        $signedIn = [];
 
         foreach ($handoff->handed()->steps() as $step) {
             $steps[] = $step;
@@ -84,44 +116,18 @@ final readonly class HowTheHandoffReads
             $clients[] = $this->client($client, $drawn);
         }
 
-        foreach ($handoff->signedIn() as $device) {
-            $signedIn[] = $this->signedIn($device, $now);
-        }
-
-        return new HowTheHandoffWent(
-            stands: WhereTheWorkStands::answered(),
-            refused: '',
-            handoff: new AHandoffAsShown(
-                heading: $this->heading($handoff->stands()),
-                reason: $handoff->reason(),
-                // Asking again is offered wherever the stack names nothing else
-                // to do, so a hand-off that names nothing is never a dead end.
-                asksAgain: $next === WhatTheHandoffNeedsNext::AskAgain || $next === WhatTheHandoffNeedsNext::Nothing,
-                invites: $next === WhatTheHandoffNeedsNext::Invite,
-                starts: $next === WhatTheHandoffNeedsNext::StartServer,
-                records: $next === WhatTheHandoffNeedsNext::RecordAddress,
-                handsOver: $handsOver,
-                squares: $handsOver ? new HowACodeReads()->squares($drawn->for($handoff->handed()->address())) : [],
-                address: $handoff->handed()->address()->url(),
-                caution: $handoff->handed()->address()->caution(),
-                steps: $steps,
-                clients: $clients,
-                signedIn: $signedIn,
-                given: $this->ago($handoff->given(), $now),
-            ),
-        );
+        return new ACodeToHandOver(new HowACodeReads()->squares($drawn->for($address)), $address->url(), $address->caution(), $steps, $clients);
     }
 
-    /** What the state is called, or nothing where the stack's reason is what is said. */
-    private function heading(WhereTheHandoffStands $stands): string
+    /** What the state is called, or null where the stack's reason is what is said. */
+    private function heading(WhereTheHandoffStands $stands): ?string
     {
         return match ($stands) {
-            WhereTheHandoffStands::Unprovisioned => '',
+            WhereTheHandoffStands::Unprovisioned => null,
             WhereTheHandoffStands::Ready, WhereTheHandoffStands::Pending, WhereTheHandoffStands::Connected, WhereTheHandoffStands::Failed
                 => sprintf('stacks.handoff.stands.%s', $stands->value),
         };
     }
-
 
     /** One app, with its link and the link's code where its code is one. */
     private function client(AClientToHandOver $client, TheCodesDrawn $drawn): AClientAsShown
@@ -130,8 +136,7 @@ final readonly class HowTheHandoffReads
             device: $client->device(),
             client: $client->client(),
             openSource: $client->isOpenSource(),
-            link: $client->isALink() ? $client->code() : '',
-            squares: $client->isALink() ? new HowACodeReads()->squares($drawn->for($client)) : [],
+            link: $client->isALink() ? new ALinkWithItsCode($client->code(), new HowACodeReads()->squares($drawn->for($client))) : null,
         );
     }
 

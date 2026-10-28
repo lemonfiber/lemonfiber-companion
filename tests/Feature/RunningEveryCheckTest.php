@@ -31,6 +31,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowARunOfChecksReads;
 use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\ViewModels\ADisturbanceAsShown;
+use Modules\Operator\Internal\ViewModels\ARunAsShown;
 use Modules\Operator\Internal\ViewModels\ARunOffered;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Stacks\Api\AStacksScreen;
@@ -146,7 +147,7 @@ it('lists every check a run of all would run that disturbs something, with the s
     $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), $running);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect(array_map(static fn(ADisturbanceAsShown $one): string => $one->title, $screen->answer()->disturbing))->toBe(['Traffic stops when the tunnel drops', 'An indexer answers a search'])
+    expect(whatTheRunWouldDisturb($screen))->toBe(['Traffic stops when the tunnel drops', 'An indexer answers a search'])
         ->and($drawn->said())->toContain(__(HowARunOfChecksReads::EVERY), __('health.run_every.what'), 'The tunnel goes down while traffic is tested', __('health.for_at_most', ['seconds' => 30]), 'A search of each indexer is spent', __('health.disturbs.no_bound'), __('health.run_every.not_a_rehearsal'))
         ->and($drawn->said())->not->toContain(__('health.run_every.disturbs_nothing'))
         ->and($drawn->offers())->toContain(__('health.run_every.run_it'))
@@ -157,7 +158,7 @@ it('lists every check a run of all would run that disturbs something, with the s
 it('lists only the family\'s checks that disturb something for a family\'s run, under the family', function (): void {
     $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), Category::Vpn);
 
-    expect(array_map(static fn(ADisturbanceAsShown $one): string => $one->title, $screen->answer()->disturbing))->toBe(['Traffic stops when the tunnel drops'])
+    expect(whatTheRunWouldDisturb($screen))->toBe(['Traffic stops when the tunnel drops'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(HowARunOfChecksReads::FAMILY, ['family' => theVpnFamilyAsSaid()]));
 });
 
@@ -194,7 +195,7 @@ it('runs what the route covers, follows it to its end, and draws what it came ba
         ->and($screen->ranAt)->toBe(1_790_000_000)
         ->and(array_map(static fn(WhatOneFindingSays $one): string => $one->title, $screen->answer()->found))->toBe($found)
         ->and($drawn->said())->toContain(__('health.run_every.found'), __(Conclusion::Passed->saidOnTheScreen()), __('health.disturbs.ran', ['ago' => trans_choice('health.ago.minutes', 0)]))
-        ->and($screen->answer()->disturbing)->not->toBe([]);
+        ->and(whatTheRunWouldDisturb($screen))->not->toBeEmpty();
 })->with([
     'every check' => [null, AStackThatRunsChecks::EVERY_CHECK, ['Traffic stops when the tunnel drops', 'An indexer answers a search', 'There is room on the disk']],
     'a family' => [Category::Vpn, 'vpn', ['Traffic stops when the tunnel drops']],
@@ -267,3 +268,15 @@ it('renders its own view', function (): void {
     expect(theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()))->render()->name())
         ->toBe(WhatRunningChecksDisturbs::TEMPLATE);
 });
+
+/**
+ * The title of every check the run on this screen would run that disturbs something, or null where no run is drawn.
+ *
+ * @return list<string>|null
+ */
+function whatTheRunWouldDisturb(WhatRunningChecksDisturbs $screen): ?array
+{
+    $run = $screen->answer()->run;
+
+    return $run instanceof ARunAsShown ? array_map(static fn(ADisturbanceAsShown $one): string => $one->title, $run->disturbing) : null;
+}

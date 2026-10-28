@@ -6,17 +6,17 @@
 <x-operator::content>
     <x-operator::heading>{{ __('plugins.settings.heading') }}</x-operator::heading>
 
-@if (! $this->answer()->isInstalled)
+@if ($this->answer()->read === null)
     <x-operator::emphasis>{{ __('plugins.settings.not_installed') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('plugins.settings.back')" :goes="$this->goes()->to(AStacksScreen::Plugins)" />
 @else
-    <x-design::body>{{ __('plugins.settings.of', ['name' => $this->answer()->plugin]) }}</x-design::body>
+    <x-design::body>{{ __('plugins.settings.of', ['name' => $this->answer()->read->plugin]) }}</x-design::body>
 
-    @forelse ($this->answer()->settings as $setting)
+    @forelse ($this->answer()->read->settings as $setting)
         <x-design::card>
             <x-design::strong>{{ $setting->name }}</x-design::strong>
-            @if ($setting->whoseSaid !== '')
-                <x-design::note>{{ __($setting->whoseSaid, ['namespace' => $setting->namespace]) }}</x-design::note>
+            @if ($setting->whose !== null)
+                <x-design::note>{{ __($setting->whose->key, $setting->whose->filling) }}</x-design::note>
             @endif
             @if ($setting->isSet)
                 <x-design::body>{{ __('plugins.settings.set_by_you') }}</x-design::body>
@@ -110,11 +110,11 @@
 
     <x-operator::heading>{{ __('plugins.settings.secrets') }}</x-operator::heading>
     <x-operator::note>{{ __('plugins.settings.secrets_at_terminal') }}</x-operator::note>
-    @forelse ($this->answer()->secrets as $secret)
+    @forelse ($this->answer()->read->secrets as $secret)
         <x-design::card>
             <x-design::strong>{{ $secret->name }}</x-design::strong>
-            @if ($secret->whoseSaid !== '')
-                <x-design::note>{{ __($secret->whoseSaid, ['namespace' => $secret->namespace]) }}</x-design::note>
+            @if ($secret->whose !== null)
+                <x-design::note>{{ __($secret->whose->key, $secret->whose->filling) }}</x-design::note>
             @endif
             <x-design::body>{{ __($secret->heldSaid) }}</x-design::body>
             <x-design::note>{{ __($secret->fromSaid) }}</x-design::note>
@@ -130,7 +130,7 @@
 
     {{-- Each credential of another service granted to it, by its setting and never its value. --}}
     <x-operator::heading>{{ __('plugins.settings.grants') }}</x-operator::heading>
-    @forelse ($this->answer()->grants as $grant)
+    @forelse ($this->answer()->read->grants as $grant)
         <x-design::card>
             <x-design::strong>{{ __('stacks.credentials.grants.of', ['credential' => $grant->credential, 'whose' => $grant->whose]) }}</x-design::strong>
             <x-operator::the-grant :grant="$grant" />
@@ -138,7 +138,7 @@
     @empty
         <x-design::body>{{ __('plugins.settings.no_grants') }}</x-design::body>
     @endforelse
-    @unless ($this->answer()->grants === [])
+    @unless ($this->answer()->read->grants === [])
         <x-operator::note>{{ __('plugins.settings.grants_ended_with_the_passwords') }}</x-operator::note>
         <x-operator::quiet-action :label="__('plugins.settings.to_the_passwords')" :goes="$this->goes()->to(AStacksScreen::Credentials)" />
     @endunless

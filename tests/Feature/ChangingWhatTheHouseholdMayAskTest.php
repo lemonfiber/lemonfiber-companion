@@ -227,8 +227,18 @@ it('rehearses for the member chosen, follows the work, and draws the stack\'s wo
 
 it('makes the change the rehearsal was asked with, not what is chosen when the yes is tapped, and reads the household again', function (): void {
     $choosing = aStackThatChangesWhatIsAllowed();
-    $screen = aRehearsedLimitForAlex($choosing);
+    $owing = AMemberWhoIsOwed::owed(Sentences::of(Sentence::of('Everything the household asks for arrives unseen.')));
+    $screen = theAllowanceChangeScreen($choosing, owing: $owing);
+    $screen->forSomebody('alex');
+    $screen->policyIs(HowTheHouseholdAsks::EverythingWaits->value);
+    $screen->requests = '5';
+    $screen->days = '7';
     $screen->answer();
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->answer();
+    $askedBeforeTheYes = $owing->askings();
     $screen->forEverybody();
     $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
     $screen->apply();
@@ -241,7 +251,31 @@ it('makes the change the rehearsal was asked with, not what is chosen when the y
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.did.carried_out'), WHAT_THE_CHANGE_SAYS)
         ->and($drawn->offers())->not->toContain(__('stacks.allowance_change.apply'))
-        ->and($screen->answered)->not->toBeNull();
+        ->and([$askedBeforeTheYes, $owing->askings()])->toBe([1, 2]);
+
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toHaveCount(1);
+});
+
+it('sends a yes once, however often it is tapped while the change is made', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed();
+    $screen = aRehearsedLimitForAlex($choosing);
+    $screen->apply();
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toHaveCount(1);
+});
+
+it('sends no yes to an earlier rehearsal while the next one is asked', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed();
+    $screen = aRehearsedLimitForAlex($choosing);
+    $screen->forEverybody();
+    $screen->rehearse();
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toBe([])
+        ->and(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe(['for=alex policy=everything-waits limit=5/7', 'for=everybody policy=everything-waits limit=5/7']);
 });
 
 it('sends no yes where nothing was rehearsed, or where the last answer was not a rehearsal', function (): void {

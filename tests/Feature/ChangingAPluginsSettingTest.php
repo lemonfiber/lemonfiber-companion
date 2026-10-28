@@ -223,6 +223,8 @@ it('lists every setting and secret one of the plugin\'s services reads, and noth
         __('plugins.settings.secret_unset'),
         __(WhereASecretCameFrom::Unsaid->saidOnTheScreen()),
     )
+        ->and(theTwoLinesUnder($drawn->said(), 'vpn.key'))->toContain(__('plugins.settings.secret_held'))
+        ->and(theTwoLinesUnder($drawn->said(), 'vpn.user'))->toContain(__('plugins.settings.secret_unset'))
         ->and($drawn->said())->not->toContain('tls.email', 'ops@example.org', 'proxy.token', __('plugins.settings.a_namespaces', ['namespace' => 'gluetun']))
         ->and($drawn->offers())->toContain(__('plugins.settings.change'), __('plugins.settings.back_to_default'));
 });
@@ -532,3 +534,17 @@ it('lists each password of another service granted to the plugin, when it was ap
         ->and($none->said())->toContain(__('plugins.settings.no_grants'))
         ->and($none->offers())->not->toContain(__('plugins.settings.to_the_passwords'));
 });
+
+/**
+ * The two lines drawn under the first line saying this, which is where a card says whose it is and how it stands.
+ *
+ * @param list<string> $said
+ *
+ * @return list<string>
+ */
+function theTwoLinesUnder(array $said, string $line): array
+{
+    $at = array_keys($said, $line, strict: true)[0] ?? count($said);
+
+    return array_slice($said, $at + 1, 2);
+}

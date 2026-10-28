@@ -6,15 +6,15 @@
     <x-operator::heading>{{ __('plugins.heading') }}</x-operator::heading>
 
 @if ($this->answer()->stands->isWorking())
-    <x-design::body>{{ __($this->answer()->workingSaid) }}</x-design::body>
+    <x-design::body>{{ __($this->answer()->working) }}</x-design::body>
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words: a source holding no plugin, a
          plugin this build refuses, a value left unapproved or an offer that
          moved, and each service the yes did not allow what it needs. Nothing
          is offered to do beneath it. --}}
-    <x-operator::emphasis>{{ __($this->answer()->refusedSaid) }}</x-operator::emphasis>
-    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
-    @forelse ($this->answer()->unapproved as $shape)
+    <x-operator::emphasis>{{ __($this->answer()->refused->said) }}</x-operator::emphasis>
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused->words" />
+    @forelse ($this->answer()->refused->unapproved as $shape)
         <x-operator::entry>
             <x-operator::emphasis>{{ __('plugins.shape_unapproved', ['service' => $shape->service]) }}</x-operator::emphasis>
             <x-design::body>{{ __($shape->neededFor) }}</x-design::body>
@@ -28,7 +28,7 @@
          work any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
-@elseif ($this->answer()->typing)
+@elseif (! $this->answer()->stands->wasAsked())
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
     @if ($this->nothingWasScanned())
         <x-design::notice tone="unknown">
@@ -236,7 +236,7 @@
     {{-- Reading what is installed, or following the work, met something.
          After a yes, whether it happened could not be read, and that is said
          first. --}}
-    @if ($this->answer()->afterTheYes)
+    @if ($this->agreed)
         <x-operator::content>
             <x-operator::emphasis>{{ __('plugins.unread_after_yes') }}</x-operator::emphasis>
         </x-operator::content>
