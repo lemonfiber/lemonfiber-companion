@@ -14,6 +14,7 @@ use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
 use Modules\Operator\Internal\ViewModels\APlaceLeftAsShown;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatForgettingRemoved;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
@@ -23,22 +24,22 @@ final readonly class HowForgettingReads
 {
     public function notAsked(): TheForgettingTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::notAsked());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     public function signedOut(): TheForgettingTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheForgettingTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     public function ended(): TheForgettingTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheForgettingTurnedOutToBe
@@ -46,11 +47,6 @@ final readonly class HowForgettingReads
         return new TheForgettingTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
-            wouldGo: null,
-            theWayInWent: false,
-            isDone: false,
-            gone: [],
-            left: [],
         );
     }
 
@@ -58,23 +54,18 @@ final readonly class HowForgettingReads
     public function met(Obstacle $why, bool $agreed): TheForgettingTurnedOutToBe
     {
         return $agreed
-            ? $this->without(WhereTheWorkStands::answered(), theWayInWent: true)
-            : $this->without(WhereTheWorkStands::met($why));
+            ? new TheForgettingTurnedOutToBe(WhereTheWorkStands::answered(), theWayInWent: true)
+            : new TheForgettingTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the stack answered: the list of what would go, or what went. */
     public function answered(TheForgetting $forgetting): TheForgettingTurnedOutToBe
     {
         return $forgetting->got()->either(
-            notAsked: fn(): TheForgettingTurnedOutToBe => $this->without(WhereTheWorkStands::answered()),
+            notAsked: static fn(): TheForgettingTurnedOutToBe => new TheForgettingTurnedOutToBe(WhereTheWorkStands::answered()),
             unconfirmed: static fn(): TheForgettingTurnedOutToBe => new TheForgettingTurnedOutToBe(
                 stands: WhereTheWorkStands::answered(),
-                refused: null,
                 wouldGo: new HowWhatIsKeptReads()->this($forgetting->listed()),
-                theWayInWent: false,
-                isDone: false,
-                gone: [],
-                left: [],
             ),
             done: static function (ThePlacesGone $gone, APathLeft ...$left): TheForgettingTurnedOutToBe {
                 $places = [];
@@ -85,27 +76,12 @@ final readonly class HowForgettingReads
 
                 return new TheForgettingTurnedOutToBe(
                     stands: WhereTheWorkStands::answered(),
-                    refused: null,
-                    wouldGo: null,
-                    theWayInWent: false,
-                    isDone: true,
-                    gone: $places,
-                    left: array_map(static fn(APathLeft $one): APlaceLeftAsShown => new APlaceLeftAsShown(where: $one->where(), why: $one->why()), array_values($left)),
+                    removed: new WhatForgettingRemoved(
+                        gone: $places,
+                        left: array_map(static fn(APathLeft $one): APlaceLeftAsShown => new APlaceLeftAsShown(where: $one->where(), why: $one->why()), array_values($left)),
+                    ),
                 );
             },
-        );
-    }
-
-    private function without(WhereTheWorkStands $stands, bool $theWayInWent = false): TheForgettingTurnedOutToBe
-    {
-        return new TheForgettingTurnedOutToBe(
-            stands: $stands,
-            refused: null,
-            wouldGo: null,
-            theWayInWent: $theWayInWent,
-            isDone: false,
-            gone: [],
-            left: [],
         );
     }
 }

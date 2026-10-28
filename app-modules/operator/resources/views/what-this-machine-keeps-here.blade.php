@@ -129,18 +129,18 @@
             @if ($this->shownToForget !== null)
                 <x-operator::offered-action :label="__('stacks.forget.forget_it')" tap="forgetEverything()" :offer="$this->offered(ForgettingWhatIsKept::Forget)" />
             @endif
-        @elseif ($this->howForgettingIsGoing()->isDone)
+        @elseif ($this->howForgettingIsGoing()->removed !== null)
             <x-design::notice>
                 <x-design::strong>{{ __('stacks.forget.done') }}</x-design::strong>
             </x-design::notice>
             <x-design::section :label="__('stacks.forget.gone')">
-                @forelse ($this->howForgettingIsGoing()->gone as $place)
+                @forelse ($this->howForgettingIsGoing()->removed->gone as $place)
                     <x-design::row :headline="$place" />
                 @empty
                     <x-design::row :headline="__('stacks.forget.nothing_gone')" />
                 @endforelse
             </x-design::section>
-            @forelse ($this->howForgettingIsGoing()->left as $one)
+            @forelse ($this->howForgettingIsGoing()->removed->left as $one)
                 <x-design::row :headline="__('stacks.forget.left', ['where' => $one->where])" :supporting="$one->why" />
             @empty
                 {{-- Nothing: every place went. --}}
