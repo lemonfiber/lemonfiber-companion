@@ -588,12 +588,14 @@ it('reads the services on the first frame and what answers what on the next, a r
     $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
     $screen = theWiringScreen(AStackThatWires::answering(), supervising: $supervising, linking: $linking);
+    $waitedBeforeAnyFrame = $screen->waitsForTheNextFrame();
 
     $first = WhatTheDeviceWouldDraw::by($screen)->said();
     $askedOnTheFirst = [$supervising->askings(), $linking->askings()];
     $second = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($askedOnTheFirst)->toBe([1, 0])
+    expect($waitedBeforeAnyFrame)->toBeFalse()
+        ->and($askedOnTheFirst)->toBe([1, 0])
         ->and($first)->toContain(__('stacks.wiring.fills.label'), __('stacks.wiring.services'))
         ->and($first)->not->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
         ->and($screen->waitsForTheNextFrame())->toBeFalse()
