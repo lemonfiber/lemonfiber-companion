@@ -16,16 +16,14 @@ final readonly class HowThePairingCodeWent
 {
     /**
      * @param WhereTheWorkStands    $stands                 where the work stands, and whether the stack could be asked at all
-     * @param bool                 $hasExpired           whether the code shown has stopped being good
-     * @param bool                 $isCheckedDifferently whether the stack's check code is not the one a phone works out, so the code is not shown
-     * @param string               $refused              the stack's refusal in its own words, or empty
-     * @param ?APairingCodeAsShown $code                 the code to show, while it is good
+     * @param ?WhyThePairingCodeIsNotShown $notShown why the code the stack answered about is not shown, where it is not
+     * @param ?string                      $refused  the stack's refusal in its own words, where it refused
+     * @param ?APairingCodeAsShown         $code     the code to show, while it is good
      */
     public function __construct(
         public WhereTheWorkStands $stands,
-        public bool $hasExpired,
-        public bool $isCheckedDifferently,
-        public string $refused,
-        public ?APairingCodeAsShown $code,
+        public ?WhyThePairingCodeIsNotShown $notShown = null,
+        public ?string $refused = null,
+        public ?APairingCodeAsShown $code = null,
     ) {}
 }
