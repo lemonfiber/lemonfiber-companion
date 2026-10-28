@@ -35,6 +35,8 @@ const WHAT_IS_NOT_ASKED_ABOUT = [
     'EVENTS_ENDPOINT' => 'the stream every screen hears the stack on, which is not a request the stack offers',
     'JOBS_ENDPOINT' => 'what became of work an action started, which follows a request already asked about',
     'ACTIONS_ENDPOINT' => 'where every action is composed from, and never a request on its own',
+    'KEYS_ENDPOINT' => 'the keys minted for apps, a route that lets somebody in, which the stack declares no ability for',
+    'DEVICE_KEYS_ENDPOINT' => 'the keys minted for phones, a route that lets somebody in, which the stack declares no ability for',
 ];
 
 /**
@@ -79,11 +81,30 @@ function theAdaptersSources(): array
     return $sources;
 }
 
+/**
+ * Every source under the sdk module that may name a request it sends, which is all of it but the registry those requests are declared in.
+ *
+ * @return array<string, string> path => source
+ */
+function theSourcesThatSend(): array
+{
+    $sources = [];
+    $registry = Tree::at('app-modules/sdk/src/Api/EveryRequestThisAppSends.php');
+
+    foreach (Tree::filesUnder(Tree::at('app-modules/sdk/src'), '.php') as $path) {
+        if ($path !== $registry) {
+            $sources[$path] = (string) file_get_contents($path);
+        }
+    }
+
+    return $sources;
+}
+
 it('declares every reading an adapter sends in the registry of every request, and nothing else', function (): void {
     $sent = [];
     $api = new ReflectionClass(Api::class);
 
-    foreach (theAdaptersSources() as $source) {
+    foreach (theSourcesThatSend() as $source) {
         preg_match_all('/\bApi::([A-Z_]+_ENDPOINT)\b/', $source, $named);
 
         foreach ($named[1] as $constant) {

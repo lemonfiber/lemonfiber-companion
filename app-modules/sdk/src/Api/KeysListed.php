@@ -89,7 +89,7 @@ final readonly class KeysListed
             self::purpose($row, $position),
             self::state($row, $position),
             AMomentAsWritten::byTheStack(self::text($row, KeysField::Minted, $position)),
-            AMomentAsWritten::byTheStack(self::optional($row, WireField::Used, $position)),
+            self::used($row, $position),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }
@@ -147,17 +147,17 @@ final readonly class KeysListed
     }
 
     /**
-     * A field that may be absent or `null`, read as empty there.
+     * When the key was last used, unwritten where it never was.
      *
      * @param array<mixed> $row
      */
-    private static function optional(array $row, NamesAWireField $field, int $position): string
+    private static function used(array $row, int $position): AMomentAsWritten
     {
-        if (! array_key_exists($field->value, $row) || $row[$field->value] === null) {
-            return '';
+        if (! array_key_exists(WireField::Used->value, $row) || $row[WireField::Used->value] === null) {
+            return AMomentAsWritten::unwritten();
         }
 
-        return self::text($row, $field, $position);
+        return AMomentAsWritten::byTheStack(self::text($row, WireField::Used, $position));
     }
 
     /** @param array<mixed> $row */

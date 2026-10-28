@@ -31,7 +31,7 @@ final class NewsIsUnreadable extends InvalidArgumentException
     {
         return new self(sprintf(
             'Entry %d of `%s` in a news envelope has no readable `%s`.',
-            $position + 1,
+            $position,
             $list->value,
             $field->value,
         ));
