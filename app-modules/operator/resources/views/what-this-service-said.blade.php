@@ -1,17 +1,18 @@
 @use('Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown')
 @use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Operator\Api\HowTheColumnScrolls')
+@use('Modules\Operator\Internal\ViewModels\WhereTheLinesStart')
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" :back="$this->hasAWayBack()" />
 <x-wayfinding::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
-<x-operator::content :scrolls="$this->answer()->startsAtTheFirstError ? HowTheColumnScrolls::FromTheTop : HowTheColumnScrolls::FromTheEnd">
+<x-operator::content :scrolls="$this->answer()->start === WhereTheLinesStart::AtTheFirstError ? HowTheColumnScrolls::FromTheTop : HowTheColumnScrolls::FromTheEnd">
     {{-- The lines from the first error on, one tap away at the top where a
          screen that opens at its end is not; and every line back, once they
          were narrowed. --}}
-    @if ($this->answer()->hasAnErrorFurtherDown)
+    @if ($this->answer()->start === WhereTheLinesStart::AboveTheFirstError)
         <x-operator::quiet-action :label="__('health.show_from_the_first_error')" tap="showFromTheFirstError()" />
-    @elseif ($this->answer()->startsAtTheFirstError)
+    @elseif ($this->answer()->start === WhereTheLinesStart::AtTheFirstError)
         <x-operator::quiet-action :label="__('health.show_every_line')" tap="showEveryLine()" />
     @endif
 

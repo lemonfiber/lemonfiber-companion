@@ -17,6 +17,7 @@ use Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
+use Modules\Operator\Internal\ViewModels\WhereTheLinesStart;
 
 /**
  * What reading one service's tail produces, as the fields a template reads.
@@ -103,8 +104,7 @@ final readonly class HowAScrollbackReads
             bound: $shown->asked()->figure(),
             isAWindow: $shown->isAWindow(),
             isSearching: $shown->lookingFor()->isSearching(),
-            hasAnErrorFurtherDown: $from === null && $before !== null,
-            startsAtTheFirstError: $from !== null,
+            start: $this->start($before, $from),
         );
     }
 
@@ -133,6 +133,16 @@ final readonly class HowAScrollbackReads
             isAWindow: false,
             isSearching: false,
         );
+    }
+
+    /** Where the lines drawn start against the first error, at `$before` rows in where there is one, and left out up to it where `$from` is that place. */
+    private function start(?int $before, ?int $from): ?WhereTheLinesStart
+    {
+        if ($from !== null) {
+            return WhereTheLinesStart::AtTheFirstError;
+        }
+
+        return $before === null ? null : WhereTheLinesStart::AboveTheFirstError;
     }
 
     /**

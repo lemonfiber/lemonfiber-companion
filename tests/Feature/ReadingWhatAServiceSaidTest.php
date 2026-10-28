@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\ViewModels\AFoldOfLinesAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
+use Modules\Operator\Internal\ViewModels\WhereTheLinesStart;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -710,7 +711,7 @@ it('gives an error, a fatal line and a warning the glyph of their tone, read alo
 it('offers the lines from the first error at the top, which starts them there and offers every line back', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWithAnErrorInIt()));
 
-    expect($screen->answer()->hasAnErrorFurtherDown)->toBeTrue()
+    expect($screen->answer()->start)->toBe(WhereTheLinesStart::AboveTheFirstError)
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.show_from_the_first_error'))
         ->and(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['bottom']);
 
@@ -720,8 +721,7 @@ it('offers the lines from the first error at the top, which starts them there an
     expect($rows)->toHaveCount(3)
         ->and(aLogRow($rows[0])['line'])->toBe('VPN provider name is not valid')
         ->and($screen->answer()->arrived)->toBe(5)
-        ->and($screen->answer()->startsAtTheFirstError)->toBeTrue()
-        ->and($screen->answer()->hasAnErrorFurtherDown)->toBeFalse()
+        ->and($screen->answer()->start)->toBe(WhereTheLinesStart::AtTheFirstError)
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.show_every_line'))
         ->and(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['top']);
 
@@ -745,13 +745,13 @@ it('offers nothing to show from where no line declared an error, or where the fi
         Said::whenever('still broken', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
     )));
 
-    expect($quiet->answer()->hasAnErrorFurtherDown)->toBeFalse()
+    expect($quiet->answer()->start)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($quiet)->offers())->not->toContain(whatTheLogScreenCalls('health.show_from_the_first_error'))
-        ->and($atOnce->answer()->hasAnErrorFurtherDown)->toBeFalse();
+        ->and($atOnce->answer()->start)->toBeNull();
 
     $atOnce->showFromTheFirstError();
 
-    expect($atOnce->answer()->startsAtTheFirstError)->toBeFalse()
+    expect($atOnce->answer()->start)->toBeNull()
         ->and($atOnce->answer()->lines)->toHaveCount(2);
 });
 
@@ -764,14 +764,14 @@ it('starts at an error on the second line, leaving out only the one before it', 
         Said::whenever('broken', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
     )));
 
-    expect($screen->answer()->hasAnErrorFurtherDown)->toBeTrue();
+    expect($screen->answer()->start)->toBe(WhereTheLinesStart::AboveTheFirstError);
 
     $screen->showFromTheFirstError();
     $rows = $screen->answer()->lines;
 
     expect($rows)->toHaveCount(1)
         ->and(aLogRow($rows[0])['line'])->toBe('broken')
-        ->and($screen->answer()->startsAtTheFirstError)->toBeTrue();
+        ->and($screen->answer()->start)->toBe(WhereTheLinesStart::AtTheFirstError);
 });
 
 it('sets every line in the figures face, weighting one from the error stream in the same face', function (): void {
