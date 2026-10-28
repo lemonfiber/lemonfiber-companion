@@ -23,6 +23,7 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatPlays;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhereEachOpenResumed;
 
 afterEach(function (): void {
     MockClient::destroyGlobal();
@@ -233,4 +234,45 @@ it('says a refused session as refused, and a report it cannot read as an answer 
 it('stands in for a stack with payloads the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('PlayingEnvelope', whatTheCoreSaysIsPlaying()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+/**
+ * What the adapter hears across as many wakes as asked.
+ *
+ * @return list<string>
+ */
+function whatWakesOfPlayingHear(Players $following, int $wakes): array
+{
+    $heard = [];
+
+    for ($wake = 0; $wake < $wakes; $wake++) {
+        $heard[] = whatTheStreamSaidOfPlaying($following->heard(aHouseThatPlays(), theOperatorsSessionWhilePlaying()));
+    }
+
+    return $heard;
+}
+
+it('opens a stream that ended again, once it has said that it ended, from where it left off', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying())),
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying(['sessions' => []]))),
+    ]);
+
+    expect(whatWakesOfPlayingHear(new Players(new PinnedClients()), 3))->toBe([EVERYTHING_PLAYING, 'closed', 'nothing'])
+        ->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
+});
+
+it('opens again the next time it is asked once let go of, forgetting where the stream left off', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying())),
+        MockResponse::make(aPlayingEvent(whatTheCoreSaysIsPlaying(['sessions' => []]))),
+    ]);
+    $following = new Players(new PinnedClients());
+
+    expect(whatWakesOfPlayingHear($following, 1))->toBe([EVERYTHING_PLAYING])
+        ->and(whatTheStreamSaidOfPlaying($following->letGo()))->toBe('closed')
+        ->and(whatWakesOfPlayingHear($following, 1))->toBe(['nothing'])
+        ->and(WhereEachOpenResumed::in($stack))->toBe([null, null]);
 });
