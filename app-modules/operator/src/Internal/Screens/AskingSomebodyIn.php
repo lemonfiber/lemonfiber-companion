@@ -31,6 +31,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Operator\Internal\AnInvitationFollowed;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -109,14 +110,11 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     /** The invitation the stack last answered, rehearsed or carried out. */
     public ?AnInvitation $invitation = null;
 
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
+    /** The work being followed, while there is some. */
+    public ?AnInvitationFollowed $following = null;
 
-    /** The name the work being followed is about, which a refusal is drawn with. */
-    public string $about = '';
-
-    /** The catalogue key for what handing it over came to, or empty where it has not been. */
-    public string $passedOn = '';
+    /** The catalogue key for what handing it over came to, where it has been. */
+    public ?string $passedOn = null;
 
     /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?TheInvitationTurnedOutToBe $going = null;
@@ -140,9 +138,9 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
      *
      * Only the field is filled: nothing is asked until the operator taps.
      */
-    public function mount(string $service = ''): void
+    public function mount(?string $service = null): void
     {
-        if (trim($service) === '') {
+        if ($service === null || trim($service) === '') {
             return;
         }
 
@@ -168,7 +166,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         $this->asked = null;
         $this->invitation = null;
         $this->following = null;
-        $this->passedOn = '';
+        $this->passedOn = null;
         $this->member = '';
         $this->going = null;
     }
@@ -345,12 +343,12 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     {
         $following = $this->following;
 
-        return $this->going ??= $following === null
-            ? new HowTheInvitationReads()->notAsked()
-            : $this->put(
-                $this->about,
-                fn(Stack $stack, Session $session): WhatBecameOfTheInvitation => $this->inviting->whatBecameOf($stack, $session, Job::named($following)),
-            );
+        return $this->going ??= $following instanceof AnInvitationFollowed
+            ? $this->put(
+                $following->name,
+                fn(Stack $stack, Session $session): WhatBecameOfTheInvitation => $this->inviting->whatBecameOf($stack, $session, Job::named($following->job)),
+            )
+            : new HowTheInvitationReads()->notAsked();
     }
 
     /**
@@ -361,22 +359,19 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     private function put(string $name, Closure $asking): TheInvitationTurnedOutToBe
     {
         $stack = $this->stack();
-        $this->about = $name;
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): TheInvitationTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
+            held: fn(Session $session): TheInvitationTurnedOutToBe => $this->shown($asking($stack, $session), $stack, $name),
             notHeld: static fn(): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->signedOut($name),
         );
     }
 
     /** What the stack said, as the screen draws it, holding what to follow or to agree to. */
-    private function shown(WhatBecameOfTheInvitation $became, Stack $stack): TheInvitationTurnedOutToBe
+    private function shown(WhatBecameOfTheInvitation $became, Stack $stack, string $name): TheInvitationTurnedOutToBe
     {
-        $name = $this->about;
-
         return $became->either(
             underway: function (Job $job) use ($name): TheInvitationTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->following = new AnInvitationFollowed($job->shown(), $name);
 
                 return new HowTheInvitationReads()->running($name);
             },

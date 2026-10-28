@@ -145,7 +145,7 @@
                     </x-design::card>
                 @endif
                 <x-design::action :label="__('stacks.invitation.pass_on')" tap="passOn()" />
-                @if ($this->passedOn !== '')
+                @if ($this->passedOn !== null)
                     <x-design::note>{{ __($this->passedOn) }}</x-design::note>
                 @endif
             @endif

@@ -530,7 +530,7 @@ it('drops what was handed over and a password about to be taken off when startin
     expect($drawn->offers())->not->toContain(__('stacks.invitation.take_it_off', ['name' => 'anna']))
         ->and($handedOverAgain->offers())->toContain(__('stacks.invitation.pass_on'))
         ->and($handedOverAgain->said())->not->toContain(__('stacks.invitation.passed_on'))
-        ->and($screen->passedOn)->toBe('')
+        ->and($screen->passedOn)->toBeNull()
         ->and($inviting->asked())->toBe(['would', 'would']);
 });
 
@@ -781,4 +781,15 @@ it('the way here and the way back are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theInvitationScreen(AStackThatInvites::answering())->render()->name())->toBe('operator::asking-somebody-in');
+});
+
+it('opens with the name another screen sent it for typed, and with nothing typed where it was sent none or only spaces', function (): void {
+    $named = static function (?string $service): string {
+        $screen = theInvitationScreen(AStackThatInvites::answering());
+        $service === null ? $screen->mount() : $screen->mount($service);
+
+        return $screen->name;
+    };
+
+    expect([$named('Sonarr'), $named(null), $named('  ')])->toBe(['Sonarr', '', '']);
 });
