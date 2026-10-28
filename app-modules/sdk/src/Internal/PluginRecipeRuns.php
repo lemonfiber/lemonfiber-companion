@@ -36,7 +36,7 @@ final readonly class PluginRecipeRuns
     public static function in(array $demand): ARecipeRun
     {
         $plugin = APluginId::called(Required::text($demand, WireField::Plugin, PluginsAreUnreadable::missing(WireField::Plugin)));
-        $recipe = PluginRecords::recipe(self::table($demand, PluginsField::Recipe), 0);
+        $recipe = PluginRecords::recipe(self::table($demand, PluginsField::Recipe), static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::within(PluginsField::Recipe, $field));
 
         if (! array_key_exists(PluginsField::Ran->value, $demand) || $demand[PluginsField::Ran->value] === null) {
             return ARecipeRun::rehearsed($plugin, $recipe);

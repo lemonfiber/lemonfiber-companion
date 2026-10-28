@@ -60,7 +60,7 @@ final readonly class PluginInstallReports
             throw PluginsAreUnreadable::missing(WireField::Recorded);
         }
 
-        $would = PluginRecords::of($install[WireField::Would->value], WireField::Would, 0);
+        $would = PluginRecords::of($install[WireField::Would->value], static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::within(WireField::Would, $field));
         $changing = WhatAnInstallChanges::these(
             ThePluginChanges::these(...self::changes($install)),
             TheContestsLeft::these(...self::contests($install)),

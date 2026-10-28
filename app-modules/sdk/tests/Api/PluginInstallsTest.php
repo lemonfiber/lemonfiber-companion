@@ -508,6 +508,17 @@ it('refuses a row it cannot read by its position, first or later, in every list'
     }
 });
 
+it('refuses the plugin an install would settle in the words of the one record it is, and a recipe it holds by its row', function (): void {
+    $noVersion = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'version' => ' ']));
+    $recipe = ['id' => 'resync', 'title' => 'Ask Plex to look again', 'steps' => [], 'pairs' => []];
+    $recipeWithNoTitle = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [$recipe, [...$recipe, 'title' => ' ']]]));
+    $recipesThatAreNotAList = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => 'resync']));
+
+    expect(static fn(): ThePlugins => PluginInstalls::in($noVersion))->toThrow(PluginsAreUnreadable::class, '`would` in the plugins envelope has no readable `version`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($recipeWithNoTitle))->toThrow(PluginsAreUnreadable::class, 'Row 1 of `recipes` in the plugins envelope has no readable `title`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($recipesThatAreNotAList))->toThrow(PluginsAreUnreadable::class, '`would` in the plugins envelope has no readable `recipes`.');
+});
+
 it('reads a reading that names no agreement, sent as null or left out, as naming none', function (): void {
     $sentAsNull = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'agreement' => null]));
     $leftOut = PluginInstalls::in(anInstallAnswerWith(static function (array $data): array {

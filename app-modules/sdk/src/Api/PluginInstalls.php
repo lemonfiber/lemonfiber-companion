@@ -124,7 +124,7 @@ final readonly class PluginInstalls
                 throw PluginsAreUnreadable::entry(WireField::Installed, WireField::Plugin, $position);
             }
 
-            $found[] = PluginRecords::of($row, WireField::Installed, $position);
+            $found[] = PluginRecords::of($row, static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::entry(WireField::Installed, $field, $position));
         }
 
         return $found;

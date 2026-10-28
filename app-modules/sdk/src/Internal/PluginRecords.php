@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
+
+use Closure;
+
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -46,18 +49,19 @@ use Modules\Sdk\Api\WireField;
 final readonly class PluginRecords
 {
     /**
-     * One plugin.
+     * One plugin, refused in the words of where it sits.
      *
-     * @param array<mixed> $row
+     * @param array<mixed>                                    $row
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    public static function of(array $row, NamesAWireField $list, int $position): APlugin
+    public static function of(array $row, Closure $unreadable): APlugin
     {
         $plugin = APlugin::named(
-            self::text($row, $list, WireField::Plugin, $position),
-            self::text($row, $list, WireField::Version, $position),
+            Required::text($row, WireField::Plugin, $unreadable(WireField::Plugin)),
+            Required::text($row, WireField::Version, $unreadable(WireField::Version)),
             self::optional($row, WireField::Name),
             self::vouched($row),
-            TheRecipes::these(...self::recipes($row, $position)),
+            TheRecipes::these(...self::recipes($row, $unreadable)),
             ...self::services($row),
         );
 
@@ -65,19 +69,20 @@ final readonly class PluginRecords
     }
 
     /**
-     * One recipe as the record or a reading carries it, with when it runs and every value it asks the operator for.
+     * One recipe as the record or a reading carries it, with when it runs and every value it asks the operator for, refused in the words of where it sits.
      *
-     * @param array<mixed> $recipe
+     * @param array<mixed>                                    $recipe
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    public static function recipe(array $recipe, int $at): ARecipe
+    public static function recipe(array $recipe, Closure $unreadable): ARecipe
     {
         return ARecipe::of(
-            self::text($recipe, PluginsField::Recipes, WireField::Id, $at),
-            self::text($recipe, PluginsField::Recipes, WireField::Title, $at),
+            Required::text($recipe, WireField::Id, $unreadable(WireField::Id)),
+            Required::text($recipe, WireField::Title, $unreadable(WireField::Title)),
             self::optional($recipe, WireField::Why),
             TheRecipeSteps::these(...self::steps($recipe)),
             TheValuesItCarries::these(...self::pairs($recipe)),
-            self::runs($recipe, $at),
+            self::runs($recipe, $unreadable),
             TheInputsARecipeAsks::these(...self::inputs($recipe)),
         );
     }
@@ -146,17 +151,18 @@ final readonly class PluginRecords
     /**
      * Every recipe, in the manifest's order; none where the record keeps none.
      *
-     * @param  array<mixed>  $row
+     * @param  array<mixed>                                    $row
+     * @param  Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      * @return list<ARecipe>
      */
-    private static function recipes(array $row, int $position): array
+    private static function recipes(array $row, Closure $unreadable): array
     {
         if (! array_key_exists(PluginsField::Recipes->value, $row)) {
             return [];
         }
 
         if (! is_array($row[PluginsField::Recipes->value])) {
-            throw PluginsAreUnreadable::entry(PluginsField::Recipes, PluginsField::Recipes, $position);
+            throw $unreadable(PluginsField::Recipes);
         }
 
         $found = [];
@@ -166,7 +172,7 @@ final readonly class PluginRecords
                 throw PluginsAreUnreadable::entry(PluginsField::Recipes, WireField::Id, $at);
             }
 
-            $found[] = self::recipe($recipe, $at);
+            $found[] = self::recipe($recipe, static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::entry(PluginsField::Recipes, $field, $at));
         }
 
         return $found;
@@ -175,9 +181,10 @@ final readonly class PluginRecords
     /**
      * When a recipe runs; one that does not say runs inside an install, as the contract has it.
      *
-     * @param array<mixed> $recipe
+     * @param array<mixed>                                    $recipe
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    private static function runs(array $recipe, int $at): WhenARecipeRuns
+    private static function runs(array $recipe, Closure $unreadable): WhenARecipeRuns
     {
         if (! array_key_exists(PluginsField::On->value, $recipe)) {
             return WhenARecipeRuns::Install;
@@ -185,7 +192,7 @@ final readonly class PluginRecords
 
         $said = $recipe[PluginsField::On->value];
 
-        return (is_string($said) ? WhenARecipeRuns::tryFrom($said) : null) ?? throw PluginsAreUnreadable::entry(PluginsField::Recipes, PluginsField::On, $at);
+        return (is_string($said) ? WhenARecipeRuns::tryFrom($said) : null) ?? throw $unreadable(PluginsField::On);
     }
 
     /**
