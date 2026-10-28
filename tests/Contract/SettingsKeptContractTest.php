@@ -88,3 +88,20 @@ it('answers a row in a shape this build does not know as none', function (): voi
 
     expect(whatTheSettingsStoreHolds(new SettingsInTheDatabase($database)->kept()))->toBe('none');
 });
+
+it('reads the settings a build before this one kept in the table\'s one row', function (): void {
+    $database = AKeptDatabase::migrated();
+    $database->table('connection_settings')->insert(['row' => 1, 'shape' => Shape::One->value, 'set_at' => WHEN_IT_WAS_SET, 'payload' => 'kept']);
+
+    expect(whatTheSettingsStoreHolds(new SettingsInTheDatabase($database)->kept()))->toBe('kept:1');
+});
+
+it('keeps a row over one in a shape this build does not know, and writes down when it was last set', function (): void {
+    $database = AKeptDatabase::migrated();
+    $database->table('connection_settings')->insert(['row' => 1, 'shape' => 99, 'set_at' => WHEN_IT_WAS_SET, 'payload' => 'kept']);
+    $store = new SettingsInTheDatabase($database);
+    $store->keep(SealedPayload::of('fresh'), Shape::One, Instant::atEpochSeconds(WHEN_IT_WAS_SET + 60));
+
+    expect(whatTheSettingsStoreHolds($store->kept()))->toBe('fresh:1')
+        ->and($database->table('connection_settings')->value('set_at'))->toBe(WHEN_IT_WAS_SET + 60);
+});

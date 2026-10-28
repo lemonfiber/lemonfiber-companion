@@ -92,6 +92,18 @@ it('lets the kept grant go and asks again where the door refused it', function (
         ->and(TheGrantAsSeen::of($kept->theGrantOn($stack->id(), adaHere())))->toStartWith(str_repeat('2', 32));
 });
 
+it('lets the kept grant go where the door refused it, even when the core grants no other', function (): void {
+    $stack = APhoneHoldingTwoStacks::aStack('a');
+    $kept = GrantsKeptInMemory::working();
+    $clock = FrozenClock::at(Instant::atEpochSeconds(10));
+    theGrantOver(AStackThatGrants::granting(aGrantForThisDevice('1', 9_000)), $kept, $clock)->on($stack, Session::of('a-session'), Whose::member('ada'));
+
+    $came = theGrantOver(AStackThatGrants::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $kept, $clock)->afresh($stack, Session::of('a-session'), Whose::member('ada'));
+
+    expect(whatTheGrantWas($came))->toBe(KindOfObstacle::CredentialWasRefused->value)
+        ->and(TheGrantAsSeen::of($kept->theGrantOn($stack->id(), adaHere())))->toBe(TheGrantAsSeen::NONE);
+});
+
 it('keeps a grant per stack, each asked for under the one id', function (): void {
     $core = AStackThatGrants::granting(aGrantForThisDevice('1', 9_000), aGrantForThisDevice('2', 9_000));
     $kept = GrantsKeptInMemory::working();
