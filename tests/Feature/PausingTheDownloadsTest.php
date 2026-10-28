@@ -243,7 +243,8 @@ it('says a rehearsal the stack no longer has is gone, and rehearses afresh when 
     $screen->again();
     $screen->answer();
 
-    expect($pausing->rehearsed())->toHaveCount(2);
+    expect($pausing->rehearsed())->toHaveCount(2)
+        ->and($screen->wasAgreedTo())->toBeFalse();
 });
 
 it('offers nothing to agree to where the stack would not rehearse, and lets go of a refused session', function (): void {
@@ -256,7 +257,7 @@ it('offers nothing to agree to where the stack would not rehearse, and lets go o
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.pausing.agree.pause'));
 });
 
-it('says what stood in the way of a yes the stack refused', function (): void {
+it('says what stood in the way of a yes the stack refused, and rehearses afresh when asked again', function (): void {
     $pausing = AStackThatPausesDownloads::rehearsingButRefusing(aRehearsedPause(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePausingScreen($pausing);
     $screen->answer();
@@ -264,6 +265,12 @@ it('says what stood in the way of a yes the stack refused', function (): void {
 
     expect($screen->done()->stands->went->cameBack())->toBeFalse()
         ->and($pausing->agreed())->toHaveCount(1);
+
+    $screen->again();
+    $screen->answer();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($pausing->rehearsed())->toHaveCount(2);
 });
 
 it('asks for a session rather than a rehearsal where this device holds none', function (): void {
