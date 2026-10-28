@@ -121,6 +121,7 @@ it('accepts the check the report warns about, follows the work, and then draws i
     expect($screen->awaitsAnOutcome())->toBeFalse()
         ->and(array_map(static fn(Job $job): string => $job->shown(), $accepting->followed()))->toBe([AStackThatAccepts::THE_ACCEPTANCE])
         ->and($drawn->said())->toContain(__('health.choice.accepted'), __('health.choice.accepted_stays'), WHAT_THE_CHOICE_COSTS)
+        ->and($drawn->said())->not->toContain(__('health.choice.not_taken'))
         ->and($drawn->offers())->not->toContain(__('health.choice.accept_it'));
 });
 
