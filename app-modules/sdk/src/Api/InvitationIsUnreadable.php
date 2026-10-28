@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
-
 use InvalidArgumentException;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -46,7 +44,7 @@ final class InvitationIsUnreadable extends InvalidArgumentException
             'The invitation envelope says `%s` is `%s`, and this app reads %s. Drawing it as the nearest one would be a guess about whether somebody is in the household.',
             $field->value,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $accepted)),
+            TheWordsItReads::quoted(...$accepted),
         ));
     }
 }

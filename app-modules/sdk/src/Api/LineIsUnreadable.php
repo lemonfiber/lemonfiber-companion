@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Stream;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -47,10 +47,7 @@ final class LineIsUnreadable extends InvalidArgumentException
             'Line %d of the log window came out of `%s`, and this app reads %s. Guessing which was meant is how a complaint gets shown as ordinary progress.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(Stream $stream): string => sprintf('`%s`', $stream->value),
-                Stream::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(Stream::cases(), 'value')),
         ));
     }
 
@@ -60,10 +57,7 @@ final class LineIsUnreadable extends InvalidArgumentException
             'Line %d of the log window says it is `%s`, and this app reads %s. It is refused rather than shown unmarked, because an error drawn as an ordinary line is the one an operator scrolls past.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(HowSeriousALineIs $level): string => sprintf('`%s`', $level->value),
-                HowSeriousALineIs::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowSeriousALineIs::cases(), 'value')),
         ));
     }
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\WhatKeepsItRunning;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -65,10 +65,7 @@ final class HostingIsUnreadable extends InvalidArgumentException
             'Command %d in the hosting envelope says it stands at `%s`, and this app reads %s. Guessing which was meant is how a command that is not running gets shown as one that is.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(HowItIsHosted $standing): string => sprintf('`%s`', $standing->value),
-                HowItIsHosted::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowItIsHosted::cases(), 'value')),
         ));
     }
 
@@ -77,10 +74,7 @@ final class HostingIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'The hosting envelope says this machine is kept by `%s`, and this app reads %s. Guessing which was meant is how a platform that configures nothing gets shown as one that does.',
             $said,
-            implode(', ', array_map(
-                static fn(WhatKeepsItRunning $keeper): string => sprintf('`%s`', $keeper->value),
-                WhatKeepsItRunning::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(WhatKeepsItRunning::cases(), 'value')),
         ));
     }
 

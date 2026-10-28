@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_map;
-use function implode;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -76,7 +76,7 @@ final class ProblemIsUnreadable extends InvalidArgumentException
             'The error envelope says its %s is `%s`, and this app reads %s. Guessing which of them was meant is how a critical failure gets shown as an advisory.',
             $field,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $read)),
+            TheWordsItReads::quoted(...$read),
         ));
     }
 }

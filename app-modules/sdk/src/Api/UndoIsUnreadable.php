@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\WhatGoingBackDoes;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -50,10 +50,7 @@ final class UndoIsUnreadable extends InvalidArgumentException
             'Row %d of `reversed` in the undo envelope says it does `%s`, and this app reads %s.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(WhatGoingBackDoes $does): string => sprintf('`%s`', $does->value),
-                WhatGoingBackDoes::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(WhatGoingBackDoes::cases(), 'value')),
         ));
     }
 }

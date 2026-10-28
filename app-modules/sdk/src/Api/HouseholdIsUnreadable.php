@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhereAMemberStands;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -60,10 +60,7 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
             'Member %d in the household envelope stands `%s`, and this app reads %s. An invitation that lapsed and one that was turned down are different answers, so a standing this app cannot place is refused rather than guessed at.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(WhereAMemberStands $stands): string => sprintf('`%s`', $stands->value),
-                WhereAMemberStands::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(WhereAMemberStands::cases(), 'value')),
         ));
     }
 
@@ -93,10 +90,7 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'The household envelope says a request is `%s`, and this app reads %s. Guessing which was meant is how something already here gets offered for approval.',
             $said,
-            implode(', ', array_map(
-                static fn(Waiting $standing): string => sprintf('`%s`', $standing->value),
-                Waiting::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(Waiting::cases(), 'value')),
         ));
     }
 }
