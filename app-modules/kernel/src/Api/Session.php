@@ -43,7 +43,7 @@ use function trim;
  */
 final readonly class Session implements JsonSerializable
 {
-    private function __construct(private string $token) {}
+    private function __construct(#[ComparedInConstantTime] private string $token) {}
 
     /**
      * What a debugger prints.

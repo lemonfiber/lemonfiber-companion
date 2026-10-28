@@ -39,7 +39,7 @@ use function trim;
  */
 final readonly class StackId
 {
-    private function __construct(private string $id) {}
+    private function __construct(#[ComparedInConstantTime] private string $id) {}
 
     /**
      * An identity minted on this side, for a stack no pairing material described.

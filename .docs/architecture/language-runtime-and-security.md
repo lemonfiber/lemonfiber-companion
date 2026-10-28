@@ -95,7 +95,7 @@ None of these is theoretical once the second locale exists.
 
 | | Rule | Enforced by |
 |---|---|---|
-| S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on | phpstan `disallowed-calls`, four shipped bundles |
+| S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on, and a value marked `ComparedInConstantTime` is compared with `hash_equals` | phpstan `disallowed-calls`, four shipped bundles + phpstan: own rule (identity comparisons) |
 | S2 | No package with a published advisory resolves | `roave/security-advisories` + `composer audit` |
 | S3 | TLS verification is never weakened | phpstan: own rule (array items) + `disallowed-calls` (the call and curl forms) + test over `config/` and every `.env*` (N1-R21 — the flag may not exist) |
 | S4 | `Illuminate\Encryption\Encrypter` is named in the `seal` module and nowhere else | arch: `ModuleBoundariesTest`, the class only used in `Modules\Seal` |

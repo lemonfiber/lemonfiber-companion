@@ -93,6 +93,26 @@ final readonly class TextAndSecurity
                 }
                 PHP, 'S1 —'),
 
+            Fixture::analyser('S1', 'Plain/ComparesATokenByIdentity.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use Modules\Kernel\Api\ComparedInConstantTime;
+
+                final readonly class ComparesATokenByIdentity
+                {
+                    public function __construct(#[ComparedInConstantTime] private string $token) {}
+
+                    public function is(self $other): bool
+                    {
+                        return $this->token === $other->token;
+                    }
+                }
+                PHP, 'S1 — `$token`'),
+
             Fixture::suite('N1-R39', 'app-modules/operator/src/Internal/Screens/ShowsSomebodysStack.php', <<<'PHP'
                 <?php
 
