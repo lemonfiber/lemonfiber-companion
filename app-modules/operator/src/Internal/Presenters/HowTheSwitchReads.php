@@ -28,42 +28,40 @@ final readonly class HowTheSwitchReads
 
     public function notAsked(): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::notAsked());
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     public function notAskable(string $why): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::answered(), notAskable: $why);
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::answered(), notAskable: $why);
     }
 
     public function signedOut(): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running());
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     public function ended(): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheSwitchTurnedOutToBe
     {
         return new TheSwitchTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            notAskable: '',
             refused: new HowARefusalReads()->inItsWords($why),
-            change: null,
         );
     }
 
     public function met(Obstacle $why): TheSwitchTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::met($why));
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported, headed by whether it was a rehearsal. */
@@ -73,8 +71,6 @@ final readonly class HowTheSwitchReads
 
         return new TheSwitchTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            notAskable: '',
-            refused: null,
             change: new TheSwitchAsShown(
                 didSaid: $rehearsed ? self::REHEARSED : self::CARRIED_OUT,
                 mayBeApplied: $rehearsed,
@@ -99,15 +95,5 @@ final readonly class HowTheSwitchReads
         }
 
         return $names;
-    }
-
-    private function without(WhereTheWorkStands $stands, string $notAskable = ''): TheSwitchTurnedOutToBe
-    {
-        return new TheSwitchTurnedOutToBe(
-            stands: $stands,
-            notAskable: $notAskable,
-            refused: null,
-            change: null,
-        );
     }
 }

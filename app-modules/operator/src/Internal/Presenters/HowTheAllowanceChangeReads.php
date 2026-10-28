@@ -26,31 +26,31 @@ final readonly class HowTheAllowanceChangeReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::notAsked());
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     /** What was chosen was not sent, and why. */
     public function notAskable(string $why): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::answered(), notAskable: $why);
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::answered(), notAskable: $why);
     }
 
     /** This phone holds no session for the stack. */
     public function signedOut(): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::signedOut());
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still at it. */
     public function running(): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::running());
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more. */
     public function ended(): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     /** The stack refused it, in its own words. */
@@ -58,16 +58,14 @@ final readonly class HowTheAllowanceChangeReads
     {
         return new TheAllowanceChangeTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            notAskable: '',
             refused: new HowARefusalReads()->inItsWords($why),
-            change: null,
         );
     }
 
     /** What stood in the way of asking. */
     public function met(Obstacle $why): TheAllowanceChangeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::met($why));
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported, headed by whether it was a rehearsal. */
@@ -83,23 +81,11 @@ final readonly class HowTheAllowanceChangeReads
 
         return new TheAllowanceChangeTurnedOutToBe(
             stands: WhereTheWorkStands::answered(),
-            notAskable: '',
-            refused: null,
             change: new TheAllowanceChangeAsShown(
                 didSaid: $rehearsed ? self::REHEARSED : self::CARRIED_OUT,
                 mayBeApplied: $rehearsed,
                 sentences: $sentences,
             ),
-        );
-    }
-
-    private function without(WhereTheWorkStands $stands, string $notAskable = ''): TheAllowanceChangeTurnedOutToBe
-    {
-        return new TheAllowanceChangeTurnedOutToBe(
-            stands: $stands,
-            notAskable: $notAskable,
-            refused: null,
-            change: null,
         );
     }
 }

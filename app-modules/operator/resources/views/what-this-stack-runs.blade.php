@@ -104,7 +104,7 @@
                 @endforelse
             </x-design::chips>
 
-            @if ($this->howTheSwitchIsGoing()->notAskable !== '')
+            @if ($this->howTheSwitchIsGoing()->notAskable !== null)
                 <x-design::notice>
                     <x-design::strong>{{ __($this->howTheSwitchIsGoing()->notAskable) }}</x-design::strong>
                 </x-design::notice>

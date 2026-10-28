@@ -57,7 +57,7 @@
         <native:outlined-text-input native:model="days" label="{{ __('stacks.allowance_change.limit.days') }}" supporting="{{ __('stacks.allowance_change.limit.days_are') }}" />
     </x-design::card>
 
-    @if ($this->howItIsGoing()->notAskable !== '')
+    @if ($this->howItIsGoing()->notAskable !== null)
         <x-design::notice>
             <x-design::strong>{{ __($this->howItIsGoing()->notAskable) }}</x-design::strong>
         </x-design::notice>
