@@ -10570,12 +10570,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nightworksio/php-mutation-gate.git",
-                "reference": "06736373bc4d4111459a43bdabba5f0102fd3b81"
+                "reference": "a766ebf7e3c078d9fb653186f081d4fc92e64989"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/06736373bc4d4111459a43bdabba5f0102fd3b81",
-                "reference": "06736373bc4d4111459a43bdabba5f0102fd3b81",
+                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/a766ebf7e3c078d9fb653186f081d4fc92e64989",
+                "reference": "a766ebf7e3c078d9fb653186f081d4fc92e64989",
                 "shasum": ""
             },
             "require": {
@@ -10789,7 +10789,7 @@
                 "issues": "https://github.com/nightworksio/php-mutation-gate/issues",
                 "source": "https://github.com/nightworksio/php-mutation-gate"
             },
-            "time": "2026-10-28T17:51:59+00:00"
+            "time": "2026-10-28T22:17:03+00:00"
         },
         {
             "name": "nunomaduro/collision",
