@@ -254,6 +254,35 @@ it('draws each service taking a privileged shape with what it is granted and giv
         ->and($plain->offers())->not->toContain(aPluginsLine('plugins.approve_shape', ['service' => 'gluetun']));
 });
 
+it('names each adapter that would write the files of the service it fronts, and says where none would', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theSharingReading()),
+    )));
+    $plain = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    )));
+
+    expect($drawn->said())->toContain(
+        aPluginsLine('plugins.sharing'),
+        aPluginsLine('plugins.writes_files_of', ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr']),
+        aPluginsLine('plugins.writes_files_at', ['upstream' => 'tdarr', 'at' => '/upstream']),
+    )
+        ->and($drawn->said())->not->toContain(aPluginsLine('plugins.no_sharing'))
+        ->and($plain->said())->toContain(aPluginsLine('plugins.no_sharing'))
+        ->and($plain->said())->not->toContain(aPluginsLine('plugins.writes_files_of', ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr']));
+});
+
+it('names an adapter writing its upstream\'s files in an update\'s rehearsal too', function (): void {
+    $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theSharingUpdateReading()));
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('update', 0);
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aPluginsLine('plugins.writes_files_of', ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr']));
+});
+
 it('approves a shape apart from the install, and sends it with the reading\'s name only where it was approved', function (): void {
     $extending = aStackWithTdarr(
         HowExtendingItIsGoing::underway(Job::named('j-1')),

@@ -174,6 +174,24 @@ it('reads each service taking a privileged shape with what it is granted and giv
         ->and(iterator_to_array($silent->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL]);
 });
 
+it('reads each adapter writing the files of the service it fronts, and an install saying nothing of it as none writing any', function (): void {
+    $sharing = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(APluginAsItArrives::aSharingReadingOnTheWire(), APluginAsItArrives::AGREEMENT)['data']));
+    $silent = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static function (array $install): array {
+        unset($install['sharing']);
+
+        return $install;
+    })));
+
+    expect($sharing)->toEqual(APluginAsItArrives::theSharingReading())
+        ->and($silent)->toEqual(APluginAsItArrives::theReading());
+});
+
+it('reads an update\'s new version writing the files of the service it fronts', function (): void {
+    $update = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswerAbout('update', [...APluginAsItArrives::anUpdateReadingOnTheWire(), 'install' => APluginAsItArrives::aSharingReadingOnTheWire()])['data']));
+
+    expect($update)->toEqual(APluginAsItArrives::theSharingUpdateReading());
+});
+
 it('reads every privileged shape the contract names', function (APrivilegedShape $shape): void {
     $read = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [['service' => 'jellyfin', 'shape' => $shape->value, 'grants' => [], 'devices' => ['/dev/dri'], 'approval' => sprintf('%s@jellyfin', $shape->value)]]])));
     $taken = iterator_to_array($read->shapesTaken(), preserve_keys: false);
@@ -311,6 +329,11 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a shape nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'shape' => 'host-network']]])), $unreadable],
         'a blank device' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'devices' => ['']]]])), $unreadable],
         'a shape taken with no approval to give' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'approval' => '']]])), $unreadable],
+        'sharing that is not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => 'tdarr-adapter'])), $unreadable],
+        'a sharing that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => ['tdarr-adapter']])), $unreadable],
+        'a sharing by no adapter' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => ' ', 'upstream' => 'tdarr', 'at' => '/upstream']]])), $unreadable],
+        'a sharing of no upstream' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => 'tdarr-adapter', 'at' => '/upstream']]])), $unreadable],
+        'a sharing landing nowhere' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr', 'at' => '']]])), $unreadable],
         'an override that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'overrides' => ['sonarr.rename']])), $unreadable],
         'checks that are not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'verified' => 'fine'])), $unreadable],
         'a check broken with no reading now' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'verified' => ['broke' => [['before' => null]], 'unsettled' => []]])), $unreadable],

@@ -18,12 +18,13 @@ final readonly class WhatAnInstallChanges
         private TheSettingsItOverrides $overrides,
         private TheShapesTaken $taking,
         private TheGrantsAsked $granting,
+        private TheUpstreamsWritten $sharing,
     ) {}
 
     /** These, as the stack listed them. */
-    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking, TheGrantsAsked $granting): self
+    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking, TheGrantsAsked $granting, TheUpstreamsWritten $sharing): self
     {
-        return new self($changes, $contests, $overrides, $taking, $granting);
+        return new self($changes, $contests, $overrides, $taking, $granting, $sharing);
     }
 
     /** Every change, in order. */
@@ -54,5 +55,11 @@ final readonly class WhatAnInstallChanges
     public function granting(): TheGrantsAsked
     {
         return $this->granting;
+    }
+
+    /** Every adapter that would write the files of the service it fronts. */
+    public function sharing(): TheUpstreamsWritten
+    {
+        return $this->sharing;
     }
 }

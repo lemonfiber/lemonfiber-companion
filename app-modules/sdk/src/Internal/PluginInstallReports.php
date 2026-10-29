@@ -23,6 +23,7 @@ use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\TheUpstreamsWritten;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatTheChecksMade;
@@ -69,6 +70,7 @@ final readonly class PluginInstallReports
             TheSettingsItOverrides::these(...self::overrides($install)),
             TheShapesTaken::these(...self::taking($install)),
             TheGrantsAsked::these(...GrantRows::askedBy($install, APluginId::called($would->id()))),
+            TheUpstreamsWritten::these(...SharingRows::in($install)),
         );
         $proofs = WhatAProofsVerdictWas::proofs($install);
         $checks = self::checks($install);

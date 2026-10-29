@@ -72,6 +72,19 @@
         <x-operator::note>{{ __('plugins.no_shapes') }}</x-operator::note>
     @endforelse
 
+    {{-- Every adapter that would be handed the whole configuration directory
+         of the service it fronts, and so write that service's own files. It
+         asks no approval of its own, and is named so it is never a surprise. --}}
+    <x-operator::heading>{{ __('plugins.sharing') }}</x-operator::heading>
+    @forelse ($install->sharing as $written)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ __('plugins.writes_files_of', ['adapter' => $written->adapter, 'upstream' => $written->upstream]) }}</x-operator::emphasis>
+            <x-operator::note>{{ __('plugins.writes_files_at', ['upstream' => $written->upstream, 'at' => $written->at]) }}</x-operator::note>
+        </x-operator::entry>
+    @empty
+        <x-operator::note>{{ __('plugins.no_sharing') }}</x-operator::note>
+    @endforelse
+
     {{-- Every credential of another service it would be handed, by its
          setting and never its value, each with its own switch apart from the
          offer: the yes to the install hands over none of them. --}}

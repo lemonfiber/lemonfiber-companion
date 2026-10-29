@@ -116,6 +116,9 @@ enum PluginsField: string implements NamesAWireField
     /** Every service an install would have take a privileged shape. */
     case Taking = 'taking';
 
+    /** Every adapter an install would have write the files of the service it fronts. */
+    case Sharing = 'sharing';
+
     /** Each credential of another service the operator granted a third-party plugin. */
     case Granted = 'granted';
 

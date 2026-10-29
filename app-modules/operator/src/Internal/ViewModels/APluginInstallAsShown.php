@@ -25,6 +25,7 @@ final readonly class APluginInstallAsShown
      * @param list<AContestAsShown>       $contests   every ask it would leave contested
      * @param list<AShapeTakenAsShown>    $taking     every service taking a privileged shape, each with its own switch
      * @param list<AGrantAskedAsShown>    $granting   every credential of another service it would hand the plugin, each with its own switch
+     * @param list<AnUpstreamWrittenAsShown> $sharing every adapter that would write the files of the service it fronts
      * @param bool                        $checked    whether the stack's own checks were asked
      * @param list<string>                $broke      every check it made worse, by title
      * @param list<string>                $unsettled  every check nothing could be concluded about, by title
@@ -41,6 +42,7 @@ final readonly class APluginInstallAsShown
         public array $contests,
         public array $taking,
         public array $granting,
+        public array $sharing,
         public bool $checked,
         public array $broke,
         public array $unsettled,
