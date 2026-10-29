@@ -120,7 +120,8 @@ it('draws the kept reading with its age on the first frame, the update drawn and
         ->and($fresh->offers())->not->toContain(takingTheTwo())
         ->and($fresh->offersThatWait())->toBe([])
         ->and($stack->askings())->toBe(1)
-        ->and([$heardBeforeMounting, !$heardOnMounting instanceof WhatWasHeardSoFar])->toBe([null, false]);
+        ->and($heardBeforeMounting)->toBeNull()
+        ->and($heardOnMounting)->toBeInstanceOf(WhatWasHeardSoFar::class);
 });
 
 it('offers the update once the stack answers, and takes it when agreed to', function (): void {
