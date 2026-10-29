@@ -23,6 +23,7 @@ use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\TheUpstreamsWritten;
 use Modules\Kernel\Api\WhatARecipeRunDid;
 use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Operator\Internal\AsText;
@@ -30,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AContestAsShown;
 use Modules\Operator\Internal\ViewModels\AGrantAskedAsShown;
 use Modules\Operator\Internal\ViewModels\AnAnswerOutOfContractAsShown;
+use Modules\Operator\Internal\ViewModels\AnUpstreamWrittenAsShown;
 use Modules\Operator\Internal\ViewModels\APluginAsShown;
 use Modules\Operator\Internal\ViewModels\APluginChangeAsShown;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
@@ -143,6 +145,7 @@ final readonly class HowAPluginAccountReads
             contests: $contests,
             taking: $taking,
             granting: $this->granting($install->granting(), $approvals, $approved),
+            sharing: $this->sharing($install->sharing()),
             checked: $checks->wereAsked(),
             broke: $this->lines($checks->broke()),
             unsettled: $this->lines($checks->unsettled()),
@@ -420,6 +423,22 @@ final readonly class HowAPluginAccountReads
 
         foreach ($answers as $answer) {
             $shown[] = new AnAnswerOutOfContractAsShown($answer->capability(), $answer->operation(), $answer->why());
+        }
+
+        return $shown;
+    }
+
+    /**
+     * Each adapter that would write the files of the service it fronts.
+     *
+     * @return list<AnUpstreamWrittenAsShown>
+     */
+    private function sharing(TheUpstreamsWritten $sharing): array
+    {
+        $shown = [];
+
+        foreach ($sharing as $written) {
+            $shown[] = new AnUpstreamWrittenAsShown(adapter: $written->adapter(), upstream: $written->upstream(), at: $written->at());
         }
 
         return $shown;

@@ -68,6 +68,10 @@ return [
     'claimant' => 'Claimed by :claimant',
     'shapes' => 'More than every plugin\'s service gets',
     'no_shapes' => 'No service of it takes more than every plugin\'s service gets',
+    'sharing' => 'Writes another service\'s files',
+    'writes_files_of' => ':adapter writes the files of :upstream',
+    'writes_files_at' => 'The whole configuration folder of :upstream is placed in it at :at',
+    'no_sharing' => 'No service of it writes another service\'s files',
     'granting' => [
         'heading' => 'Passwords of other services it would be handed',
         'for' => 'For :fills',

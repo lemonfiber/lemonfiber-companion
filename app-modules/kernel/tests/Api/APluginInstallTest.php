@@ -28,6 +28,7 @@ use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\TheUpstreamsWritten;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatAProofCameTo;
@@ -43,7 +44,7 @@ function anInstallRecorded(WhatAProofCameTo $cameTo, WhatTheChecksMade $checks, 
     return APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: $recorded,
-        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these()),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
         proofs: TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', $cameTo)),
         checks: $checks,
     );
@@ -111,7 +112,7 @@ it('asks for each password of another service it would hand the plugin apart fro
     $install = APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: false,
-        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these($asked)),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these($asked), TheUpstreamsWritten::these()),
         proofs: TheProofs::these(),
         checks: WhatTheChecksMade::notAsked(),
     );

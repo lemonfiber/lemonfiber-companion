@@ -85,6 +85,12 @@ final readonly class APluginInstall
         return $this->changing->granting();
     }
 
+    /** Every adapter that would write the files of the service it fronts. */
+    public function sharing(): TheUpstreamsWritten
+    {
+        return $this->changing->sharing();
+    }
+
     /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes, then the credentials it would hand the plugin. */
     public function approvals(): PluginLines
     {

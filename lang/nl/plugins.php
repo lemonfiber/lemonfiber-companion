@@ -68,6 +68,10 @@ return [
     'claimant' => 'Geclaimd door :claimant',
     'shapes' => 'Meer dan de service van elke plug-in krijgt',
     'no_shapes' => 'Geen service ervan neemt meer dan de service van elke plug-in krijgt',
+    'sharing' => 'Schrijft de bestanden van een andere service',
+    'writes_files_of' => ':adapter schrijft de bestanden van :upstream',
+    'writes_files_at' => 'De hele configuratiemap van :upstream komt erin op :at',
+    'no_sharing' => 'Geen service ervan schrijft de bestanden van een andere service',
     'granting' => [
         'heading' => 'Wachtwoorden van andere diensten die het zou krijgen',
         'for' => 'Voor :fills',

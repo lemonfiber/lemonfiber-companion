@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AChangePutBack;
 use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\AGrantAsked;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\AnAdapterWritingItsUpstream;
 use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
 use Modules\Kernel\Api\APlugin;
@@ -48,6 +49,7 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\TheUpstreamsWritten;
 use Modules\Kernel\Api\TheValuesItCarries;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAChangePuts;
@@ -459,11 +461,36 @@ final readonly class APluginAsItArrives
                 recorded: false,
                 changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(
                     AGrantAsked::of(ACredentialGrant::of(APluginId::called('tdarr'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds('')), self::GRANT_APPROVAL),
-                )),
+                ), TheUpstreamsWritten::these()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
                 checks: WhatTheChecksMade::notAsked(),
             ),
         );
+    }
+
+    /**
+     * The reading, with Tdarr's adapter writing Tdarr's own files.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aSharingReadingOnTheWire(): array
+    {
+        return [
+            ...self::aReadingOnTheWire(),
+            'sharing' => [['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr', 'at' => '/upstream']],
+        ];
+    }
+
+    /** The reading with Tdarr's adapter writing Tdarr's own files, as this app holds it. */
+    public static function theSharingReading(): ThePlugins
+    {
+        return ThePlugins::aboutAnInstall(TheInstalledPlugins::these(self::held()), ThePluginSources::these(), self::AGREEMENT, self::theSharingInstall());
+    }
+
+    /** The update's reading, its new version's adapter writing Tdarr's own files, as this app holds it. */
+    public static function theSharingUpdateReading(): ThePlugins
+    {
+        return self::anUpdate(self::theSharingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded());
     }
 
     /** The reading with one service taking the egress guard's shape, as this app holds it. */
@@ -483,7 +510,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard(), TheGrantsAsked::these()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -522,10 +549,22 @@ final readonly class APluginAsItArrives
             APluginInstall::reported(
                 self::held(),
                 recorded: true,
-                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
             ),
+        );
+    }
+
+    /** The install with Tdarr's adapter writing Tdarr's own files, as a reading. */
+    private static function theSharingInstall(): APluginInstall
+    {
+        return APluginInstall::reported(
+            self::held(),
+            recorded: false,
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(AnAdapterWritingItsUpstream::by('tdarr-adapter', 'tdarr', '/upstream'))),
+            proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+            checks: WhatTheChecksMade::notAsked(),
         );
     }
 
@@ -570,7 +609,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -580,7 +619,7 @@ final readonly class APluginAsItArrives
     {
         return APluginInstall::putBack(
             self::held(),
-            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these()),
+            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
             TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
             WhatTheChecksMade::notAsked(),
             ARunPutBack::reported(
