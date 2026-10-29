@@ -18,6 +18,8 @@ use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ArtworkHeldInMemory;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The HoldingArtwork contract, run against the adapter and against the fake.
 //
 // The adapter arm runs over a bridge scripted into `FakeBridge`, which goes

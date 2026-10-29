@@ -19,6 +19,8 @@ use Modules\Updates\Internal\UpkeepReadingsKept;
 use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\ReadingsInMemory;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The ForgetsOldReadings contract, run against every store of readings and
 // against all of them together.
 //

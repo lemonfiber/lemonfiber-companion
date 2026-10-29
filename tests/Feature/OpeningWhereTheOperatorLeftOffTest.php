@@ -35,6 +35,8 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\WhatThePhoneKeeps;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The app opens where the operator left off, and a chosen stack on its last tab.
 
 /** When the opening happens. */

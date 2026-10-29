@@ -20,6 +20,8 @@ use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AScreenUnderTheLock;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
+pest()->group('holds:bootstrap/Composition');
+
 // What the lock screen draws, and how it goes on.
 //
 // Asked against the rendered tree rather than the template text, because these

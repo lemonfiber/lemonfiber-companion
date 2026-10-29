@@ -78,6 +78,8 @@ use Tests\Support\WhatIsKeptOfUpdates;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatThePhoneKeeps;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The ForgetsAStack contract, run against every keeper of a stack and against
 // all of them together: what it keeps for one stack goes, what it keeps for
 // any other stays, and it says afterwards that it keeps nothing of the one.
@@ -265,6 +267,14 @@ it('lets go of everything it keeps for one stack, and of nothing it keeps for an
             ->and($keeper->keepsAnythingOf(aStackSomethingIsKeptFor('b')->id()))->toBeTrue($which)
             ->and($keeper->forgetTheStack(aStackSomethingIsKeptFor('a')->id())->howMany())->toBe(0, $which);
     }
+});
+
+it('keeps something of a stack, every keeper together, where only one of them does', function (): void {
+    $pairings = StacksInMemory::working();
+    keepSomethingFor($pairings, aStackSomethingIsKeptFor('a'));
+
+    expect(new EveryKeeperOfAStack($pairings, StandingsInMemory::working())->keepsAnythingOf(aStackSomethingIsKeptFor('a')->id()))->toBeTrue()
+        ->and(new EveryKeeperOfAStack(StacksInMemory::working(), StandingsInMemory::working())->keepsAnythingOf(aStackSomethingIsKeptFor('a')->id()))->toBeFalse();
 });
 
 it('says it may still keep something where its store cannot be read', function (): void {

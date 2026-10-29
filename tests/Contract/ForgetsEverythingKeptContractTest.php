@@ -52,6 +52,8 @@ use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhereItResumes;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The ForgetsEverythingKept contract, run against every store and against all
 // of them together.
 //

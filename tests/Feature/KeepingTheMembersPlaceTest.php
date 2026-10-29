@@ -29,6 +29,8 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 
+pest()->group('holds:bootstrap/Composition');
+
 // What the player moving means: the member's place told to the core as it is
 // heard, and nothing queued; a title that stopped and cannot go on closed and
 // said; a grant the door refused asked for again, once.

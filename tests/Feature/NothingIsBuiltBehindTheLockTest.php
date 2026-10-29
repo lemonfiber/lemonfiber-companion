@@ -25,6 +25,8 @@ use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\AScreenUnderTheLock;
 use Tests\Support\Fakes\StacksInMemory;
 
+pest()->group('holds:bootstrap/Composition');
+
 // Every way a screen reaches the glass goes through the navigation stack, and
 // every screen it builds is built behind the lock. And every way the device can
 // wake the app about its lock can put the lock up, and none can take it down.
@@ -120,6 +122,19 @@ it('puts the lock over the screen on view when the device stands it again', func
 
     expect(whereTheLockSentIt($screen))->toBe(sprintf('navigate %s', AScreenWithoutAStack::Locked->value))
         ->and($screen->getNavigationIntent()?->data)->toBe([Locked::AWAITS => false]);
+});
+
+it('puts the lock over the screen driving the runloop when the dispatcher hears that it moved', function (): void {
+    $screen = AScreenUnderTheLock::atRest();
+    $before = NativeComponent::markActive($screen);
+
+    try {
+        new WhenTheLockMoves(new TheLock(ADeviceThatKnowsYou::refusing(), StacksInMemory::holding(aPairingTheLockGuards())))->handle();
+    } finally {
+        NativeComponent::restoreActive($before);
+    }
+
+    expect(whereTheLockSentIt($screen))->toBe(sprintf('navigate %s', AScreenWithoutAStack::Locked->value));
 });
 
 it('tells the lock when the screen under it awaits an outcome', function (): void {

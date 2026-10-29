@@ -28,6 +28,8 @@ use Modules\Wayfinding\Api\HowTheWakeWent;
 use Tests\Support\AWakeOnThePhone;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The platform wakes the app while it is away, with nothing to say, and the
 // app hears each stack the operator is signed in to over its own connection:
 // what the stack raised meanwhile is told, its summary is kept, and the wake
