@@ -173,6 +173,20 @@ it('lets go of a stream gone quiet past the contract\'s silence, and of one nobo
         ->and($playing->asked())->toBe(2);
 });
 
+it('takes nothing from a live stream once nobody can see the screen, and lets go of it', function (): void {
+    $capture = ACaptureInMemory::inFront();
+    $playing = AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these(sannesFilm())));
+    $screen = whatIsPlayingOpened($playing, Whose::theOperator(), clock: FrozenClock::at(secondsIntoWatchingWhatPlays(0)), capture: $capture);
+
+    $screen->follow();
+    $asked = $playing->asked();
+    $capture->backgrounded();
+    $screen->follow();
+
+    expect($playing->asked())->toBe($asked)
+        ->and($playing->lettingsGo())->toBe(1);
+});
+
 it('waits out a break before opening the stream again', function (): void {
     $clock = FrozenClock::at(secondsIntoWatchingWhatPlays(0));
     $playing = AStackThatPlays::holdingOpen(
