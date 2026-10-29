@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
-/** One setting a plugin's services read, flattened for a template. */
-final readonly class APluginsSettingAsShown
+/** One setting in the stack's settings store, flattened for a template. */
+final readonly class AStackSettingAsShown
 {
     /**
      * @param string                         $name      its name, which changing it names
-     * @param ALineToSay|null $whose whose it is, or null where it is the plugin's own
+     * @param ALineToSay|null $whose whose it is, or null where the screen says that already
      * @param bool                           $isSet     whether the operator recorded a value
      * @param string                         $value     that value, blank where none is recorded
      * @param list<AServiceReadingItAsShown> $readers   each service that reads it

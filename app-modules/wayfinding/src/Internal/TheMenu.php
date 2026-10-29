@@ -39,6 +39,7 @@ enum TheMenu: string
     case About = 'about';
     case Uninstall = 'uninstall';
     case General = 'general';
+    case OwnSettings = 'own_settings';
     case Quality = 'quality';
     case Connections = 'connections';
     case Plugins = 'plugins';
@@ -64,7 +65,7 @@ enum TheMenu: string
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
-            self::General, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
+            self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
     }
@@ -93,6 +94,7 @@ enum TheMenu: string
             self::About => AStacksScreen::Itself,
             self::Uninstall => AStacksScreen::Uninstall,
             self::General => AStacksScreen::Settings,
+            self::OwnSettings => AStacksScreen::OwnSettings,
             self::Quality => AStacksScreen::Quality,
             self::Connections => AStacksScreen::Wiring,
             self::Plugins => AStacksScreen::Plugins,
@@ -147,6 +149,7 @@ enum TheMenu: string
             self::About => ['info', 'info.circle'],
             self::Uninstall => ['delete', 'trash'],
             self::General => ['tune', 'slider.horizontal.3'],
+            self::OwnSettings => ['settings', 'gearshape'],
             self::Quality => ['high_quality', 'sparkles'],
             self::Connections => ['cable', 'cable.connector'],
             self::Plugins => ['extension', 'puzzlepiece.extension'],

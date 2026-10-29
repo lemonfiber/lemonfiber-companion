@@ -31,6 +31,12 @@ final readonly class WhoseASettingIs
         return new self(trim($namespace));
     }
 
+    /** Whether this is the same owner as that one. */
+    public function is(self $other): bool
+    {
+        return $this->namespace === $other->namespace;
+    }
+
     /**
      * Say what happens in each case, and get back what you built.
      *

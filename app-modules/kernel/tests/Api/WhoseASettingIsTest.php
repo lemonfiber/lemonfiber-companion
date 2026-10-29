@@ -21,3 +21,9 @@ it('holds a namespace by its name without the space around it, and the core\'s b
     expect($said(WhoseASettingIs::theNamespaces('  acme/plugin  '))->getArrayCopy())->toBe(['acme/plugin'])
         ->and($said(WhoseASettingIs::theCores())->getArrayCopy())->toBe(['the core']);
 });
+
+it('is the same owner only as itself', function (): void {
+    expect(WhoseASettingIs::theNamespaces('gluetun')->is(WhoseASettingIs::theNamespaces('gluetun')))->toBeTrue()
+        ->and(WhoseASettingIs::theNamespaces('gluetun')->is(WhoseASettingIs::theNamespaces('caddy')))->toBeFalse()
+        ->and(WhoseASettingIs::theCores()->is(WhoseASettingIs::theNamespaces('gluetun')))->toBeFalse();
+});

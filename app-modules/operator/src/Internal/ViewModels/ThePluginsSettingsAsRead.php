@@ -9,7 +9,7 @@ final readonly class ThePluginsSettingsAsRead
 {
     /**
      * @param string                       $plugin   what the plugin calls itself
-     * @param list<APluginsSettingAsShown> $settings every setting its services read
+     * @param list<AStackSettingAsShown> $settings every setting its services read
      * @param list<ASecretAsShown>         $secrets  every secret its services read
      * @param list<AGrantAsShown>          $grants   every credential of another service granted to it
      */

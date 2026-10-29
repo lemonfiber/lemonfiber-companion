@@ -33,6 +33,18 @@ final readonly class TheSettingsRead implements IteratorAggregate
         return new self(array_values(array_filter($this->settings, static fn(ASetting $setting): bool => $setting->readers()->includeAnyOf($services))));
     }
 
+    /** Only the settings none of these services reads. */
+    public function readByNoneOf(Services $services): self
+    {
+        return new self(array_values(array_filter($this->settings, static fn(ASetting $one): bool => ! $one->readers()->includeAnyOf($services))));
+    }
+
+    /** Only the settings this owner holds. */
+    public function ownedBy(WhoseASettingIs $whose): self
+    {
+        return new self(array_values(array_filter($this->settings, static fn(ASetting $one): bool => $one->whose()->is($whose))));
+    }
+
     /** @return Traversable<int, ASetting> */
     public function getIterator(): Traversable
     {

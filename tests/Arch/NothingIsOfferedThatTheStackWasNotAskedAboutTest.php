@@ -218,7 +218,7 @@ it('draws every button a screen sends an action from through the component that 
         $acting[] = $screen->getName();
         $template = (string) file_get_contents(Tree::at(Screens::theFileBehindTheView($view)));
 
-        if (! str_contains($template, '<x-operator::offered-action') && ! array_key_exists($screen->getName(), WHAT_OFFERS_NOTHING_ON_ITS_OWN_SCREEN)) {
+        if (! str_contains($template, '<x-operator::offered-action') && ! str_contains($template, '="$this->offered(') && ! array_key_exists($screen->getName(), WHAT_OFFERS_NOTHING_ON_ITS_OWN_SCREEN)) {
             $silent[] = $screen->getShortName();
         }
     }
@@ -306,7 +306,7 @@ it('hands every offered button what the stack said', function (): void {
         preg_match_all('/<x-operator::offered-action\b(.*?)\/>/s', $source, $buttons);
 
         foreach ($buttons[1] as $attributes) {
-            if (! str_contains($attributes, ':offer="$this->offered(') && ! str_contains($attributes, ':offer="$offer"')) {
+            if (! str_contains($attributes, ':offer="$this->offered(') && preg_match('/:offer="\$offer(To[A-Z]\w*)?"/', $attributes) !== 1) {
                 $unasked[] = sprintf('%s: %s', substr($path, strlen(Tree::root()) + 1), trim((string) preg_replace('/\s+/', ' ', $attributes)));
             }
         }
