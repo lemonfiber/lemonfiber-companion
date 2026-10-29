@@ -104,13 +104,13 @@ final class WhatTheHouseholdAsked extends NativeComponent
     public ?WhatOneRequestSays $turningDown = null;
 
     /**
-     * What they have typed as that reason.
+     * What they have typed as that reason, once anything was typed for the request being turned down.
      *
      * `public` for the reason above and one more: `native:model` syncs into it,
      * and the sync writes only public properties — so anything less would leave
      * the field looking filled while this held nothing.
      */
-    public string $because = '';
+    public ?string $because = null;
 
     public function __construct(
         private readonly Wanting $wanting,
@@ -176,14 +176,14 @@ final class WhatTheHouseholdAsked extends NativeComponent
      */
     public function wouldDecline(string $numbered): void
     {
-        $this->because = '';
+        $this->because = null;
         $this->turningDown = $this->waitingOn($numbered);
     }
 
     /** Whether there is enough typed to turn it down with. */
     public function mayDecline(): bool
     {
-        return trim($this->because) !== '';
+        return $this->reasonTyped() !== null;
     }
 
     /** The request being turned down, or nothing where none is. */
@@ -203,14 +203,14 @@ final class WhatTheHouseholdAsked extends NativeComponent
     public function decline(): void
     {
         $request = $this->turningDown;
+        $said = $this->reasonTyped();
 
-        if ($this->answer()->waitsForTheStack || ! $request instanceof WhatOneRequestSays || ! $this->mayDecline()) {
+        if ($this->answer()->waitsForTheStack || ! $request instanceof WhatOneRequestSays || $said === null) {
             return;
         }
 
         $this->turningDown = null;
-        $said = $this->because;
-        $this->because = '';
+        $this->because = null;
 
         $this->send(Decided::toDecline(RequestId::numbered($request->number), $said));
     }
@@ -219,7 +219,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
     public function neverMind(): void
     {
         $this->turningDown = null;
-        $this->because = '';
+        $this->because = null;
     }
 
     public function render(): View
@@ -259,6 +259,14 @@ final class WhatTheHouseholdAsked extends NativeComponent
             },
             nothing: fn(): Element|View => parent::placeholder(),
         );
+    }
+
+    /** The reason typed, where it says anything. */
+    private function reasonTyped(): ?string
+    {
+        $typed = $this->because;
+
+        return $typed === null || trim($typed) === '' ? null : $typed;
     }
 
     /**
