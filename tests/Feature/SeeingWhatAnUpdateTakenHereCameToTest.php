@@ -281,10 +281,8 @@ it('carries the name the reading gave its offer back with the update taken', fun
 it('says the stack\'s own words and reads again where the update agreed to was refused because what it would apply moved', function (): void {
     $keeping = aStackWhoseUpdateMoved();
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
-    $askedBefore = $keeping->askings();
-    // The frame that heard the refusal read the offer again; the screen's
-    // cadence draws what the stack said on the next.
     WhatTheDeviceWouldDraw::by($screen);
+    $askedOnHearingTheRefusal = $keeping->askings();
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $screen->wouldYouLike();
@@ -292,10 +290,8 @@ it('says the stack\'s own words and reads again where the update agreed to was r
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
         ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
         ->and($drawn)->toContain(__('updates.nothing_applied'))
-        // Nothing is followed any more, what the stack would do now was read
-        // again, and it can be agreed to afresh.
         ->and($screen->took)->toBeNull()
-        ->and($keeping->askings())->toBeGreaterThan($askedBefore)
+        ->and($keeping->askings())->toBe($askedOnHearingTheRefusal + 1)
         ->and($screen->asking())->not->toBeNull()
         ->and($keeping->taken())->toHaveCount(1);
 });
