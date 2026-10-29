@@ -28,3 +28,8 @@ it('agrees to an install never against a reading of updating or removing', funct
             ->toThrow(APluginActWasNotRehearsed::class, 'Agreed to install a plugin');
     }
 });
+
+it('refuses a yes to installing against a reading that names no agreement to quote', function (): void {
+    expect(static fn(): APluginInstallAgreed => APluginInstallAgreed::after(APluginAsItArrives::theReading(''), APluginSource::typed('tdarr'), PluginLines::none()))
+        ->toThrow(APluginActWasNotRehearsed::class);
+});

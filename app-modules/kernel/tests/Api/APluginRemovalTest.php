@@ -37,6 +37,6 @@ it('reads a removal as removed only where the record was written, and as partial
 it('refuses a removal that names no plugin, and a capability left with nothing named', function (): void {
     expect(static fn(): APluginRemoval => APluginRemoval::reported(' ', PluginLines::none(), TheCapabilitiesLeftUnfilled::these(), removed: false, wentBack: aRemovalReversalOfNothing(WhetherItWasRehearsed::Rehearsed)))
         ->toThrow(PluginSaysNothing::class)
-        ->and(static fn(): ACapabilityLeftUnfilled => ACapabilityLeftUnfilled::of('', 'tdarr'))->toThrow(PluginSaysNothing::class, 'capability')
+        ->and(static fn(): ACapabilityLeftUnfilled => ACapabilityLeftUnfilled::of(' ', 'tdarr'))->toThrow(PluginSaysNothing::class, 'capability')
         ->and(static fn(): ACapabilityLeftUnfilled => ACapabilityLeftUnfilled::of('transcode', ''))->toThrow(PluginSaysNothing::class, 'filled_by');
 });

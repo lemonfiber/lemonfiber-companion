@@ -373,12 +373,12 @@ final readonly class APluginAsItArrives
     }
 
     /** Proving Tdarr again, as this app holds it. */
-    public static function theProof(bool $asked = false, bool $cleared = false): ThePlugins
+    public static function theProof(bool $asked = false, bool $cleared = false, ?string $agreement = null): ThePlugins
     {
         return ThePlugins::aboutAReproof(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
-            $asked ? '' : self::AGREEMENT,
+            $agreement ?? ($asked ? '' : self::AGREEMENT),
             APluginReproof::reported(
                 'tdarr',
                 TheProofs::these(self::proof(match (true) {
@@ -394,9 +394,9 @@ final readonly class APluginAsItArrives
     }
 
     /** The update's reading, as this app holds it. */
-    public static function theUpdateReading(): ThePlugins
+    public static function theUpdateReading(string $agreement = self::AGREEMENT): ThePlugins
     {
-        return self::anUpdate(self::theReadingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded());
+        return self::anUpdate(self::theReadingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded(), $agreement);
     }
 
     /** The update that did not hold, as this app holds it. */
@@ -411,9 +411,9 @@ final readonly class APluginAsItArrives
     }
 
     /** The removal's reading, as this app holds it. */
-    public static function theRemovalReading(): ThePlugins
+    public static function theRemovalReading(string $agreement = self::AGREEMENT): ThePlugins
     {
-        return self::aRemoval(self::wentBack(WhetherItWasRehearsed::Rehearsed), removed: false);
+        return self::aRemoval(self::wentBack(WhetherItWasRehearsed::Rehearsed), removed: false, agreement: $agreement);
     }
 
     /** The removal that went only part of the way, as this app holds it. */
@@ -439,12 +439,12 @@ final readonly class APluginAsItArrives
     }
 
     /** The reading, as this app holds it. */
-    public static function theReading(): ThePlugins
+    public static function theReading(string $agreement = self::AGREEMENT): ThePlugins
     {
         return ThePlugins::aboutAnInstall(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
-            self::AGREEMENT,
+            $agreement,
             self::theReadingInstall(),
         );
     }
@@ -568,22 +568,22 @@ final readonly class APluginAsItArrives
         );
     }
 
-    private static function anUpdate(APluginInstall $install, ARunPutBack $wentBack, string $stopped, WhatPuttingTheOldVersionBackCameTo $restored): ThePlugins
+    private static function anUpdate(APluginInstall $install, ARunPutBack $wentBack, string $stopped, WhatPuttingTheOldVersionBackCameTo $restored, string $agreement = self::AGREEMENT): ThePlugins
     {
         return ThePlugins::aboutAnUpdate(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
-            self::AGREEMENT,
+            $agreement,
             AnUpdate::reported('tdarr', TheVersionsItMovesBetween::of('2.1.0', '2.2.0'), PluginLines::under('interrupts', 'tdarr'), $install, $wentBack, $stopped, $restored),
         );
     }
 
-    private static function aRemoval(ARunPutBack $wentBack, bool $removed): ThePlugins
+    private static function aRemoval(ARunPutBack $wentBack, bool $removed, string $agreement = self::AGREEMENT): ThePlugins
     {
         return ThePlugins::aboutAPluginRemoval(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
-            self::AGREEMENT,
+            $agreement,
             APluginRemoval::reported(
                 'tdarr',
                 PluginLines::under('interrupts', 'tdarr'),

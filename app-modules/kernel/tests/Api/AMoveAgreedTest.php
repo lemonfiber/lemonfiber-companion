@@ -28,7 +28,8 @@ it('agrees to the way of moving in the stack staged', function (): void {
     $importing = AMove::at(Stance::Pending, TheImport::of('media', TheRecords::of(), TheRecords::of(), WhatIsUnsupported::none()));
 
     expect(AMoveAgreed::after($adopting)->by())->toBe(MovingInBy::Adopting)
-        ->and(AMoveAgreed::after($importing)->by())->toBe(MovingInBy::Importing);
+        ->and(AMoveAgreed::after($importing)->by())->toBe(MovingInBy::Importing)
+        ->and([AMoveAgreed::after($adopting)->offer(), AMoveAgreed::after($importing)->offer()])->toBe(['', '']);
 });
 
 it('carries the offer a replacement named as its yes, and none for a way agreed to by confirming it', function (): void {

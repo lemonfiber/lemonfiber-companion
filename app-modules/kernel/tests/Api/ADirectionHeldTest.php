@@ -26,9 +26,10 @@ it('keeps the verdict and each rate the client gave, in its order', function ():
         ->and(iterator_to_array(ADirectionHeld::said(WhatALimitCameTo::Unasked), preserve_keys: false))->toBe([]);
 });
 
-it('refuses a rate below nothing, naming which', function (): void {
+it('refuses a rate below nothing, naming which, and holds a rate of nothing', function (): void {
     expect(static fn(): ARateGiven => ARateGiven::of(WhichRate::Accepted, -1))
-        ->toThrow(LineSaysNothing::class, '`accepted`');
+        ->toThrow(LineSaysNothing::class, '`accepted`')
+        ->and(ARateGiven::of(WhichRate::Accepted, 0)->bytesASecond())->toBe(0);
 });
 
 it('names a catalogue line for each rate', function (): void {
