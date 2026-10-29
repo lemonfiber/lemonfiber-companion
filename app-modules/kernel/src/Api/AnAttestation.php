@@ -8,6 +8,8 @@ use function array_values;
 
 use Closure;
 
+use function is_string;
+
 /**
  * What the phone's platform says about where a key lives, for the stack to check.
  *
@@ -17,20 +19,20 @@ use Closure;
 final readonly class AnAttestation
 {
     /**
-     * @param list<string> $chain
+     * @param list<string>|string $attested Android's chain, or Apple's object
      */
-    private function __construct(private array $chain, private string $object) {}
+    private function __construct(private array|string $attested) {}
 
     /** Android's chain, each certificate in DER: the key's own, then each that vouches for the one before. */
     public static function fromAndroid(string $leaf, string ...$rest): self
     {
-        return new self([$leaf, ...array_values($rest)], '');
+        return new self([$leaf, ...array_values($rest)]);
     }
 
     /** Apple's App Attest object, as App Attest wrote it. */
     public static function fromApple(string $object): self
     {
-        return new self([], $object);
+        return new self($object);
     }
 
     /**
@@ -46,6 +48,8 @@ final readonly class AnAttestation
      */
     public function either(Closure $android, Closure $apple): object
     {
-        return $this->chain === [] ? $apple($this->object) : $android($this->chain);
+        $attested = $this->attested;
+
+        return is_string($attested) ? $apple($attested) : $android($attested);
     }
 }
