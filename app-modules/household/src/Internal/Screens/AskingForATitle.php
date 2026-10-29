@@ -94,7 +94,7 @@ final class AskingForATitle extends NativeComponent
         $kind = KindOfTitle::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Kind));
         $stands = WhereAFoundTitleStands::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Stands));
 
-        if ($id === '' || ! $kind instanceof KindOfTitle || ! $stands instanceof WhereAFoundTitleStands) {
+        if (! $kind instanceof KindOfTitle || ! $stands instanceof WhereAFoundTitleStands) {
             return null;
         }
 
