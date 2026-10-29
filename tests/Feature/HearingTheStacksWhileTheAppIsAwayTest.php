@@ -149,12 +149,13 @@ it('keeps the session of a stack that did not answer', function (): void {
     expect($phone->keychain->isHolding(theBoathouse()->id()))->toBeTrue();
 });
 
-it('gives up once it has made as many reads as a wake may, and lets go', function (): void {
+it('gives up once it has made as many reads as a wake may, each waiting as long as a wake allows, and lets go', function (): void {
     $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
         ->signedInTo(theBoathouse(), Whose::theOperator());
 
     expect($phone->hearing()->hear())->toBe(HowTheWakeWent::GaveUpOnSome)
         ->and($phone->hearing->asked())->toBe(HearingWhileAway::AT_MOST_READS)
+        ->and($phone->hearing->eachReadWaits())->toBe(HearingWhileAway::EACH_READ_WAITS_MS)
         ->and($phone->hearing->lettingsGo())->toBe(1);
 });
 

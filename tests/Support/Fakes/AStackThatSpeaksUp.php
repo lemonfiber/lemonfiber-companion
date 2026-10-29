@@ -8,6 +8,7 @@ use function array_key_exists;
 use function array_values;
 
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatWasHeard;
@@ -31,6 +32,8 @@ final class AStackThatSpeaksUp implements Hearing
     private int $asked = 0;
 
     private int $lettingsGo = 0;
+
+    private ?int $eachReadWaits = null;
 
     /** @param list<WhatWasHeard> $script */
     private function __construct(
@@ -66,6 +69,19 @@ final class AStackThatSpeaksUp implements Hearing
         $this->lettingsGo++;
 
         return WhatWasHeard::closed();
+    }
+
+    public function eachReadWaitingAtMost(HowLongEachReadWaits $wait): self
+    {
+        $this->eachReadWaits = $wait->milliseconds();
+
+        return $this;
+    }
+
+    /** How long each read was asked to wait at most, where work no screen waits on asked; nothing where none did. */
+    public function eachReadWaits(): ?int
+    {
+        return $this->eachReadWaits;
     }
 
     /** How many times a screen asked what had arrived. */

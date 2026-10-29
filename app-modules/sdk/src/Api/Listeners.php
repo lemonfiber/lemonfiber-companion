@@ -22,6 +22,7 @@ use Lemonfiber\Sdk\Generated\SettingsEnvelope;
 use Lemonfiber\Sdk\Generated\WiringEnvelope;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
 use Modules\Kernel\Api\RemedySaysNothing;
 use Modules\Kernel\Api\RequestIsUnnumbered;
@@ -37,6 +38,7 @@ use Modules\Kernel\Api\WhereHearingLeftOff;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatArrivedOnTheStream;
+use Override;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -114,7 +116,7 @@ final class Listeners implements Hearing
     private readonly TheStreamsHeld $streams;
 
     /** @param int $noLongerThanMs how long each read may wait for bytes that have not arrived, in milliseconds */
-    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes, WhereHearingLeftOff $leftOff, int $noLongerThanMs = self::NO_LONGER_THAN_MS)
+    public function __construct(private readonly Clients $clients, private readonly LoggerInterface $notes, private readonly WhereHearingLeftOff $leftOff, int $noLongerThanMs = self::NO_LONGER_THAN_MS)
     {
         $this->streams = new TheStreamsHeld($clients, $leftOff, $noLongerThanMs);
     }
@@ -130,6 +132,12 @@ final class Listeners implements Hearing
         }
 
         return $this->heardFrom($stack, $session);
+    }
+
+    #[Override]
+    public function eachReadWaitingAtMost(HowLongEachReadWaits $wait): self
+    {
+        return new self($this->clients, $this->notes, $this->leftOff, $wait->milliseconds());
     }
 
     public function letGo(): WhatWasHeard

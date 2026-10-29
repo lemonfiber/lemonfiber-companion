@@ -28,4 +28,7 @@ interface Hearing
     public function howItIs(Stack $stack, Session $session): WhatWasHeard;
 
     public function letGo(): WhatWasHeard;
+
+    /** The same subscription for work no screen waits on, each read waiting at most this long for what has not arrived. */
+    public function eachReadWaitingAtMost(HowLongEachReadWaits $wait): self;
 }

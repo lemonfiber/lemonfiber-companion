@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowItReaches;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
+use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -55,6 +56,7 @@ use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Support\AStreamThatStaysOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\NotesKeptInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
@@ -382,6 +384,21 @@ it('opens the stream once, and takes what arrived after that without asking agai
     whatWakesHear($hearing, 2);
 
     $stack->assertSentCount(1);
+});
+
+/** How long a read made for work no screen waits on is given, in milliseconds. */
+const A_PATIENT_READ_MS = 50;
+
+it('waits on a silent stream as long as work no screen waits on asks', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([AStreamThatStaysOpen::saying()]);
+    $hearing = new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere())->eachReadWaitingAtMost(HowLongEachReadWaits::ofMilliseconds(A_PATIENT_READ_MS));
+    $started = hrtime(as_number: true);
+
+    $heard = whatWakesHear($hearing, 1);
+
+    expect((hrtime(as_number: true) - $started) / 1_000_000)->toBeGreaterThanOrEqual(A_PATIENT_READ_MS)
+        ->and($heard)->toBe(['nothing']);
 });
 
 /** A second stack, listened to beside the first. */
