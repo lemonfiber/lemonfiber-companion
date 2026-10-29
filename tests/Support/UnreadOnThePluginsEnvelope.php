@@ -107,6 +107,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Every install recipe that ran and held, with what each step came to. It is filled only on an install that held, which the screen says in one line; a recipe that did not hold ends the install with a refusal carrying its own account, which is read in the stack\'s words.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.sharing',
+            'because' => 'Each adapter that is handed the whole configuration directory of the service it fronts, and where it lands (`ARCH-R339`). The stack\'s own reading of the install says so; no requirement of this app asks the rehearsal to draw it beside the four `N25-R1` names.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.verified.broke[].before',
             'because' => 'What a check said before the install, beside what it says now: the stack\'s evidence for calling it worse or unsettled. The screen names each such check by its title now (`N25-R3`).',
         ],
@@ -311,6 +315,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.install.recipes_ran`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
+            'path' => 'PluginsEnvelope.update.install.sharing',
+            'because' => 'As `PluginsEnvelope.install.sharing`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
             'path' => 'PluginsEnvelope.update.install.verified.broke[].before',
             'because' => 'As `PluginsEnvelope.install.verified.broke[].before`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
@@ -479,6 +487,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
         [
+            'path' => 'PluginsEnvelope.installed[].services[].contract',
+            'because' => 'What else was placed for one of the plugin\'s services: the loopback port it speaks its contracts on, which lemonfiber reaches and nothing else. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`), and nothing else here asks for this.',
+        ],
+        [
             'path' => 'PluginsEnvelope.installed[].services[].media_types',
             'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
@@ -583,6 +595,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.installed[].services[].listens`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.services[].contract',
+            'because' => 'As `PluginsEnvelope.installed[].services[].contract`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.services[].media_types',
             'because' => 'As `PluginsEnvelope.installed[].services[].media_types`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
@@ -685,6 +701,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].listens',
             'because' => 'As `PluginsEnvelope.installed[].services[].listens`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.services[].contract',
+            'because' => 'As `PluginsEnvelope.installed[].services[].contract`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].media_types',

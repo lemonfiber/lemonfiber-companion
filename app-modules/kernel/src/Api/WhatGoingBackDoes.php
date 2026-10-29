@@ -34,6 +34,9 @@ enum WhatGoingBackDoes: string
     /** A service's state is moved back to where it was, from where it was moved to. */
     case MoveBack = 'move-back';
 
+    /** A value in the environment file is moved back to the key it was under. */
+    case RenameBack = 'rename-back';
+
     /** A copy of a volume is kept where it is, the volume itself never having changed. */
     case KeepCopy = 'keep-copy';
 

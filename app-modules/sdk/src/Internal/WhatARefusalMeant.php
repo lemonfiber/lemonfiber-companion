@@ -307,6 +307,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::ManifestUnkept,
         RefusalCode::UnaimedCrossing,
         RefusalCode::NoGrant,
+        RefusalCode::EarlierTaken,
         RefusalCode::CatalogueReplaced,
         RefusalCode::NewestUnkept,
         RefusalCode::NoSuchFiller,
