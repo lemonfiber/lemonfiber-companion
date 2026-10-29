@@ -67,6 +67,8 @@
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
         "rector/rector": "^2.6",
         "roave/security-advisories": "dev-latest",
         "saloonphp/saloon": "^4.0",
