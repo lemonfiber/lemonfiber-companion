@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "eee2778c4263acb62725d93340b3d3bfe1dd4fe9"
+                "reference": "b6b73a1e81a465bfe7c3c1a553d79fb8e1e28e8b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/eee2778c4263acb62725d93340b3d3bfe1dd4fe9",
-                "reference": "eee2778c4263acb62725d93340b3d3bfe1dd4fe9",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/b6b73a1e81a465bfe7c3c1a553d79fb8e1e28e8b",
+                "reference": "b6b73a1e81a465bfe7c3c1a553d79fb8e1e28e8b",
                 "shasum": ""
             },
             "require": {
@@ -3139,6 +3139,7 @@
                 "ext-zlib": "*",
                 "guzzlehttp/psr7": "^3.1",
                 "laravel/pint": "^1.30",
+                "nightworksio/mutation-gate": "dev-main",
                 "pestphp/pest": "^5.1",
                 "pestphp/pest-plugin-arch": "^5.0",
                 "phpstan/phpstan": "^2.2",
@@ -3232,7 +3233,7 @@
                     "pest --coverage --min=100"
                 ],
                 "test:mutation": [
-                    "@php scripts/mutation.php"
+                    "mutation-gate"
                 ]
             },
             "license": [
@@ -3255,7 +3256,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-10-27T16:55:47+00:00"
+            "time": "2026-10-29T21:53:11+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -14985,5 +14986,5 @@
     "platform-overrides": {
         "php": "8.5.0"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }
