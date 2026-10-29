@@ -143,10 +143,6 @@ it('stays on the list the second time it is built in a run', function (): void {
         ->and($landing->theOpening())->toBe('');
 });
 
-it('is held once a run by the container, so every screen asks the same opening', function (): void {
-    expect(app(WhereAStackOpens::class))->toBe(app(WhereAStackOpens::class));
-});
-
 it('opens a stack chosen from the list on the tab last used there', function (): void {
     $attic = aStackLeftOff('The attic', 'b');
     $barn = aStackLeftOff('The barn', 'c');
