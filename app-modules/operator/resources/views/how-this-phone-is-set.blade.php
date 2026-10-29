@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\WhereAskingForNotificationsStands')
 <x-operator::screen-opens :title="__('settings.title')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
@@ -36,11 +37,11 @@
             <x-design::note>{{ __('settings.notifications_may_be_missing') }}</x-design::note>
         @endif
 
-        @if ($this->explainingNotifications)
+        @if ($this->askingForNotifications !== null)
             <x-design::card>
                 <x-design::body>{{ __($this->whyNotifications()) }}</x-design::body>
 
-                @if ($this->notificationsDeclined)
+                @if ($this->askingForNotifications === WhereAskingForNotificationsStands::Declined)
                     <x-design::body>{{ __('settings.notifications_declined') }}</x-design::body>
                     <x-design::note>{{ __($this->withoutNotifications()) }}</x-design::note>
                     <x-design::action :label="__('settings.notifications_open_settings')" tap="openTheAppsSettings()" />

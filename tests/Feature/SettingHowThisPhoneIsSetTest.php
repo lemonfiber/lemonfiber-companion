@@ -30,6 +30,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
+use Modules\Operator\Internal\WhereAskingForNotificationsStands;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Edge\NativeRouter;
@@ -482,7 +483,7 @@ it('says why before it asks the phone, saying it may tell late or not at all whi
 
     expect($notifier->timesAsked())->toBe(1)
         ->and($screen->notificationsAreOn())->toBeTrue()
-        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($screen->askingForNotifications)->toBeNull()
         ->and($wakes->isAsked())->toBeTrue();
 });
 
@@ -498,13 +499,13 @@ it('keeps notifications on when read again, and turns them off at once without a
 
     $screen->notificationsTurned(on: true);
 
-    expect($screen->explainingNotifications)->toBeFalse();
+    expect($screen->askingForNotifications)->toBeNull();
 
     $screen->notificationsTurned(on: false);
     $screen->notifying = null;
 
     expect($screen->notificationsAreOn())->toBeFalse()
-        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($screen->askingForNotifications)->toBeNull()
         ->and($notifier->timesAsked())->toBe(1)
         ->and($wakes->isAsked())->toBeFalse();
 });
@@ -529,14 +530,13 @@ it('says where to turn notifications on where the phone was told no, offers the 
 it('keeps notifications off where the phone says no to the prompt, and says where to turn them on', function (): void {
     $wakes = WakesInMemory::thatWake();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::refused(), wakes: $wakes);
-    $screen->explainingNotifications = true;
+    $screen->askingForNotifications = WhereAskingForNotificationsStands::Explained;
 
     $screen->allowNotifications();
 
     expect($screen->notificationsAreOn())->toBeFalse()
         ->and($wakes->isAsked())->toBeFalse()
-        ->and($screen->notificationsDeclined)->toBeTrue()
-        ->and($screen->explainingNotifications)->toBeTrue();
+        ->and($screen->askingForNotifications)->toBe(WhereAskingForNotificationsStands::Declined);
 });
 
 it('closes the reason without asking anything when the operator says not now', function (): void {
@@ -546,7 +546,7 @@ it('closes the reason without asking anything when the operator says not now', f
 
     $screen->notNow();
 
-    expect($screen->explainingNotifications)->toBeFalse()
+    expect($screen->askingForNotifications)->toBeNull()
         ->and($screen->notificationsAreOn())->toBeFalse()
         ->and($notifier->timesAsked())->toBe(0);
 });
