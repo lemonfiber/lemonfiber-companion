@@ -184,6 +184,7 @@ final readonly class APluginAsItArrives
             'recipes_ran' => [],
             'taking' => [],
             'granting' => [],
+            'sharing' => [],
         ];
     }
 

@@ -88,6 +88,7 @@ return [
             'withdraw' => 'What lemonfiber wrote into the file is taken back out',
             'rewind' => 'The file lemonfiber wrote over is written back to what it held',
             'move-back' => 'The service\'s data is moved back to where it was',
+            'rename-back' => 'The value is moved back to the name it was saved under',
             'keep-copy' => 'The copy of the volume is kept, and the volume itself was never changed',
             'repin' => 'Pinned back to the version it was on',
             'reconfigure' => 'The service\'s own setting is put back',
