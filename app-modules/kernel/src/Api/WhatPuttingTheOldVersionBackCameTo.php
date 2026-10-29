@@ -16,12 +16,12 @@ use function trim;
  */
 final readonly class WhatPuttingTheOldVersionBackCameTo
 {
-    private function __construct(private string $version, private bool $placed, private bool $running) {}
+    private function __construct(private string $version, private ?bool $placed, private ?bool $running) {}
 
     /** Nothing had to be put back. */
     public static function notNeeded(): self
     {
-        return new self('', placed: false, running: false);
+        return new self('', placed: null, running: null);
     }
 
     /** The version put back, and how far it got; a blank version is refused. */
@@ -46,15 +46,15 @@ final readonly class WhatPuttingTheOldVersionBackCameTo
         return $this->version;
     }
 
-    /** Whether everything its record says it placed is on the machine again. */
+    /** Whether everything its record says it placed is on the machine again; never where nothing was put back. */
     public function isPlaced(): bool
     {
-        return $this->placed;
+        return $this->placed === true;
     }
 
-    /** Whether its containers are running again. */
+    /** Whether its containers are running again; never where nothing was put back. */
     public function isRunning(): bool
     {
-        return $this->running;
+        return $this->running === true;
     }
 }
