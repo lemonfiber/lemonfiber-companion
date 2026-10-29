@@ -317,3 +317,54 @@ it('hands every offered button what the stack said', function (): void {
         implode("\n  ", $unasked),
     ));
 });
+
+/**
+ * Each offer this template hands a component that draws the button itself, where it is not what the stack said.
+ *
+ * @return list<string>
+ */
+function theOffersHandedOnFromElsewhere(string $source): array
+{
+    preg_match_all('/<x-operator::(?!offered-action\b)[\w.-]+((?:[^>"]|"[^"]*")*)>/s', $source, $components);
+    $elsewhere = [];
+
+    foreach ($components[1] as $attributes) {
+        preg_match_all('/:offer(?:-to-[\w-]+)?="([^"]*)"/', $attributes, $offers);
+
+        foreach ($offers[1] as $offer) {
+            if (! str_starts_with($offer, '$this->offered(')) {
+                $elsewhere[] = $offer;
+            }
+        }
+    }
+
+    return $elsewhere;
+}
+
+it('hands a component that draws an offered button only what the stack said', function (): void {
+    $elsewhere = [];
+    $handedOn = 0;
+
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $path) {
+        $handedOn += (int) preg_match_all('/<x-operator::(?!offered-action\b)[\w.-]+(?:[^>"]|"[^"]*")*:offer-to-/s', (string) file_get_contents($path));
+
+        foreach (theOffersHandedOnFromElsewhere((string) file_get_contents($path)) as $offer) {
+            $elsewhere[] = sprintf('%s: %s', substr($path, strlen(Tree::root()) + 1), $offer);
+        }
+    }
+
+    expect($handedOn)->toBeGreaterThan(0, 'no template hands a component an offer, so this rule read nothing')
+        ->and($elsewhere)->toBe([], sprintf(
+            "These hand a component an offer that is not what the stack said:\n  %s\n",
+            implode("\n  ", $elsewhere),
+        ));
+});
+
+it('refuses a component handed an offer from a literal or from another variable', function (): void {
+    $template = <<<'BLADE'
+        <x-operator::a-stack-setting :setting="$setting" :offer-to-set="$this->offered(ChangingASetting::Set)" :offer-to-clear="$somethingElse" />
+        <x-operator::the-grant :grant="$grant" :offer="AnOffer::named('grant-revoke:7')" />
+        BLADE;
+
+    expect(theOffersHandedOnFromElsewhere($template))->toBe(['$somethingElse', 'AnOffer::named(\'grant-revoke:7\')']);
+});
