@@ -651,11 +651,14 @@ it('is what the router serves under the shelf path', function (): void {
     expect($resolved['class'] ?? null)->toBe(WhatYouCanWatch::class);
 });
 
-it('offers a member the app\'s settings where the local network was refused, and says so where the phone would not open them', function (): void {
+it('offers a member the app\'s settings where the local network was refused, and says so only once the phone would not open them', function (): void {
     $settings = AppsSettingsThatOpen::wouldNot();
     $screen = theShelfScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted)), settings: $settings);
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.open_settings'));
+    $before = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($before->offers())->toContain(__('connection.open_settings'))
+        ->and($before->said())->not->toContain(__('connection.settings_would_not_open'));
 
     $screen->openTheAppsSettings();
 
