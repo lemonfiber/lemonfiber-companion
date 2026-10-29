@@ -27,6 +27,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\RemovalsUnderWayInMemory;
+use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 
 /**
@@ -95,6 +96,6 @@ final readonly class WhatThePhoneKeeps
     /** Removing a stack, with nothing left from a removal before. */
     public static function nothingToFinish(): RemovingAStack
     {
-        return new RemovingAStack(RemovalsUnderWayInMemory::working(), new EveryKeeperOfAStack());
+        return new RemovingAStack(RemovalsUnderWayInMemory::working(), new EveryKeeperOfAStack(StacksInMemory::working()));
     }
 }

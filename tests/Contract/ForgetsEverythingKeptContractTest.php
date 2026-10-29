@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
+use Bootstrap\Composition\NothingToAsk;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
@@ -10,6 +11,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
@@ -27,6 +29,7 @@ use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhichTab;
 use Modules\News\Api\Noticing;
+use Modules\News\Internal\NewsKept;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\Store\NewsInTheDatabase;
 use Modules\News\Internal\WhatEachStackLastNamed;
@@ -50,6 +53,8 @@ use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
+use Tests\Support\WhatEveryKeeperKeeps;
+use Tests\Support\WhatTheModulesDeclare;
 use Tests\Support\WhereItResumes;
 
 pest()->group('holds:bootstrap/Composition');
@@ -103,6 +108,48 @@ it('forgets everything every store it answers for keeps, and says how much that 
     }
 });
 
+it('refuses to be built with no store to ask', function (): void {
+    expect(static fn(): EveryStoreThePhoneKeeps => new EveryStoreThePhoneKeeps())->toThrow(NothingToAsk::class);
+});
+
+/**
+ * The stores the modules declare that the app clears through another, each with why.
+ *
+ * @var array<class-string, string>
+ */
+const CLEARED_THROUGH_ANOTHER = [
+    NewsKept::class => 'what is kept of each stack\'s news is cleared by what notices it, which lets go of what each stack last named with it',
+];
+
+it('clears every store the modules declare, when the app clears what the phone keeps', function (): void {
+    $stores = WhatEveryKeeperKeeps::heldBy(EveryStoreThePhoneKeeps::class, 'stores', app(ForgetsEverythingKept::class));
+
+    foreach (WhatTheModulesDeclare::theirOwn(ForgetsEverythingKept::class) as $declared) {
+        if (array_key_exists($declared, CLEARED_THROUGH_ANOTHER)) {
+            continue;
+        }
+
+        expect(array_any($stores, static fn(mixed $store): bool => $store instanceof $declared))->toBeTrue($declared);
+    }
+});
+
+it('leaves nothing in any store the app clears, when it clears what the phone keeps', function (): void {
+    WhatEveryKeeperKeeps::inTheAppOverStoresOfItsOwn();
+
+    foreach (WhatEveryKeeperKeeps::askedAsOne(app(ForgetsAStack::class)) as $keeper) {
+        WhatEveryKeeperKeeps::somethingFor($keeper, WhatEveryKeeperKeeps::aStack('a'));
+    }
+
+    $clearing = app(ForgetsEverythingKept::class);
+
+    expect($clearing->forgetEverything()->howMany())->toBeGreaterThan(0);
+
+    foreach (WhatEveryKeeperKeeps::heldBy(EveryStoreThePhoneKeeps::class, 'stores', $clearing) as $store) {
+        assert($store instanceof ForgetsEverythingKept);
+        expect($store->forgetEverything()->howMany())->toBe(0, $store::class);
+    }
+});
+
 it('forgets nothing where nothing is kept, and says so', function (): void {
     $stores = [
         'the adapter' => new HealthReadingsInTheDatabase(AKeptDatabase::migrated()),
@@ -116,7 +163,6 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the requests adapter' => new RequestsInTheDatabase(AKeptDatabase::migrated()),
         'the languages adapter' => new LanguagesInTheDatabase(AKeptDatabase::migrated()),
         'every store together' => new EveryStoreThePhoneKeeps(ReadingsInMemory::empty(), ReadingsInMemory::empty()),
-        'no store at all' => new EveryStoreThePhoneKeeps(),
     ];
 
     foreach ($stores as $which => $forgetting) {

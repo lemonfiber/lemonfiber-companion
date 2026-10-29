@@ -21,6 +21,7 @@ use Bootstrap\Composition\NativePHP\WhenThePlayerMoves;
 use function config;
 
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 use function is_array;
@@ -32,6 +33,7 @@ use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Events\TheLockMoved;
 use Lemonfiber\Native\Events\ThePlayerMoved;
 use Lemonfiber\Native\Handover as TheSheet;
+use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\LocalNetwork as TheLocalNetworkProbe;
 use Lemonfiber\Native\Player\Player as ThePlayer;
@@ -178,15 +180,15 @@ final class CompositionRoot extends ServiceProvider
     /** The tag every store of readings is registered under. */
     private const string EVERY_STORE_OF_READINGS = 'every-store-of-readings';
 
-    /**
-     * Which theme is on the glass, one for the life of the process, made when first asked for.
-     *
-     * Held here rather than bound as itself, because the composition root is
-     * all that paints it: the boot paints the member's theme and the
-     * navigation stack each screen's. What the design module reads is the port
-     * it implements, bound to this one instance.
-     */
-    private ?TheTheme $theme = null;
+    /** Which theme is on the glass, one for the life of the process: the boot paints the member's, and the navigation stack each screen's. */
+    private readonly TheTheme $theme;
+
+    /** @param Application $app */
+    public function __construct($app)
+    {
+        parent::__construct($app);
+        $this->theme = new TheTheme($this->theKeychain(...));
+    }
 
     public function register(): void
     {
@@ -250,7 +252,7 @@ final class CompositionRoot extends ServiceProvider
         // fact about this composition rather than about routing. A suite must
         // never enter the real one: it blocks against the bridge, so a test
         // that reached it would hang rather than fail.
-        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop($this->theTheme()->forTheScreen(...));
+        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop($this->theme->forTheScreen(...));
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
 
@@ -291,10 +293,8 @@ final class CompositionRoot extends ServiceProvider
         // outside this process, and holding one for the life of a long-running
         // app is how a keychain that was unlocked at launch goes on reading as
         // unlocked after the device has locked.
-        $this->app->bind(
-            SecureStorage::class,
-            static fn(): SecureStorage => new ArtworkGoesWithTheSession(new PlatformKeychain(new PlatformStore()), new PlatformArtwork(new TheArtworkHeld())),
-        );
+        $this->app->bind(Keeps::class, PlatformStore::class);
+        $this->app->bind(SecureStorage::class, $this->theSessionsAndTheirArtwork(...));
 
         // Artwork in the device's memory, and nowhere else. Bound rather than a
         // singleton for the store's reason: what is held is the device's, and
@@ -424,7 +424,7 @@ final class CompositionRoot extends ServiceProvider
         // painted and the next one reads, across the one process this runtime
         // keeps. It reaches the keychain afresh for each screen, for the
         // keychain's reason above.
-        $this->app->singleton(WhichThemeIsOnTheGlass::class, $this->theTheme(...));
+        $this->app->instance(WhichThemeIsOnTheGlass::class, $this->theme);
     }
 
     /** What the phone keeps between launches, the seal over it, and every set of keepers asked as one. */
@@ -436,10 +436,7 @@ final class CompositionRoot extends ServiceProvider
         // may hold and must not spread, and a stack is what it must retain and
         // no discard may take with it. One port for both would be the place where
         // the first piece of code to write one out takes the other with it.
-        $this->app->bind(
-            Stacks::class,
-            static fn(): Stacks => new PlatformStacks(new PlatformStore()),
-        );
+        $this->app->bind(Stacks::class, PlatformStacks::class);
 
         // The word each stack's one line last said, in the same store and bound
         // the same way. A third port rather than a method on either of the two
@@ -448,61 +445,40 @@ final class CompositionRoot extends ServiceProvider
         // applies to it and to nothing else here — which is why it answers `Showing` and
         // they answer collections. Folding it into `Stacks` would put a value
         // that must carry its age behind a port whose other answers must not.
-        $this->app->bind(
-            Standings::class,
-            static fn(): Standings => new PlatformStandings(new PlatformStore()),
-        );
+        $this->app->bind(Standings::class, PlatformStandings::class);
 
         // The handle of work left running on each stack, in the same store and
         // bound the same way. A fourth port rather than a method on any of the
         // three above, because it answers a different question: not who this
         // device signs in as, what it is paired with or what a stack's one line
         // last said, but which work a screen left running there.
-        $this->app->bind(
-            WorkLeftRunning::class,
-            static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore(), new PlatformStacks(new PlatformStore())),
-        );
+        $this->app->bind(WorkLeftRunning::class, PlatformWorkLeftRunning::class);
 
         // The grant this device plays a member's titles with on each stack, in
         // the same store and bound the same way. A keeper of the stack, so
         // Remove from phone lets it go.
-        $this->app->bind(
-            KeepingTheGrant::class,
-            static fn(): KeepingTheGrant => new PlatformGrants(new PlatformStore()),
-        );
+        $this->app->bind(KeepingTheGrant::class, PlatformGrants::class);
 
         // The name this phone's key is registered under on each stack, in the
         // same store. A keeper of the stack, so Remove from phone lets it go.
-        $this->app->bind(
-            KeepingThePhoneKeysName::class,
-            static fn(): KeepingThePhoneKeysName => new PlatformPhoneKeysNames(new PlatformStore()),
-        );
+        $this->app->bind(KeepingThePhoneKeysName::class, PlatformPhoneKeysNames::class);
 
         // Where the operator was: the stack last on view and the tab last used
         // on each, in the same store and bound the same way. A marker, so it
         // goes with Clear saved data and with Remove from phone.
-        $this->app->bind(
-            WhereTheOperatorWas::class,
-            static fn(): WhereTheOperatorWas => new PlatformWhereTheOperatorWas(new PlatformStore()),
-        );
+        $this->app->bind(WhereTheOperatorWas::class, PlatformWhereTheOperatorWas::class);
 
         // The last event each stack's stream carried, in the same store and
         // bound the same way. A marker, so it goes with Clear saved data and
         // with Remove from phone.
-        $this->app->bind(
-            WhereHearingLeftOff::class,
-            static fn(): WhereHearingLeftOff => new PlatformWhereHearingLeftOff(new PlatformStore(), new PlatformStacks(new PlatformStore())),
-        );
+        $this->app->bind(WhereHearingLeftOff::class, PlatformWhereHearingLeftOff::class);
 
         // The two keys that seal what the phone keeps, in the same store and
         // bound the same way. Beside the session rather than beside the data
         // they seal: a key kept in the application's own files would sit next
         // to what it locks, and this store is the one place on the phone that
         // is not those files.
-        $this->app->bind(
-            HoldsTheSealKeys::class,
-            static fn(): HoldsTheSealKeys => new PlatformSealKeys(new PlatformStore()),
-        );
+        $this->app->bind(HoldsTheSealKeys::class, PlatformSealKeys::class);
 
         // Sealing itself, named by class. Its two dependencies are ports bound
         // here, the keys above and the entropy at the top, so the container
@@ -604,10 +580,7 @@ final class CompositionRoot extends ServiceProvider
             ->needs(ForgetsAStack::class)
             ->giveTagged(self::WHAT_IS_KEPT_OF_A_STACK);
         $this->app->bind(ForgetsAStack::class, EveryKeeperOfAStack::class);
-        $this->app->bind(
-            RemovalsUnderWay::class,
-            static fn(): RemovalsUnderWay => new PlatformStacks(new PlatformStore()),
-        );
+        $this->app->bind(RemovalsUnderWay::class, PlatformStacks::class);
     }
 
     /**
@@ -624,13 +597,18 @@ final class CompositionRoot extends ServiceProvider
     /** The member's theme, painted once every provider has booted. */
     private function paintTheMembersTheme(): void
     {
-        $this->theTheme()->paint(WhoseTheme::Member);
+        $this->theme->paint(WhoseTheme::Member);
     }
 
-    /** The one theme on the glass, made the first time anything asks for it. */
-    private function theTheme(): TheTheme
+    /**
+     * The platform's keychain, letting go of a stack's artwork with its session.
+     *
+     * A method for the reason {@see keepTheLock()} is one: `make()` raises a
+     * checked exception.
+     */
+    private function theSessionsAndTheirArtwork(): SecureStorage
     {
-        return $this->theme ??= new TheTheme($this->theKeychain(...));
+        return new ArtworkGoesWithTheSession($this->app->make(PlatformKeychain::class), $this->app->make(HoldingArtwork::class));
     }
 
     /** The keychain, made afresh each time it is asked for, as its binding says. */

@@ -17,7 +17,7 @@ use Native\Mobile\Edge\NativeComponent;
  */
 final class TheOperatorIsHere implements TreeObserver
 {
-    private string $lastRoute = '';
+    private ?string $lastRoute = null;
 
     public function __construct(private readonly NotingWhereTheOperatorIs $noting) {}
 

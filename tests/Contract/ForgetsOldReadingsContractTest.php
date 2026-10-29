@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreOfReadings;
+use Bootstrap\Composition\NothingToAsk;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\ForgetsOldReadings;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\SealedPayload;
@@ -18,6 +20,8 @@ use Modules\Updates\Internal\Store\UpkeepReadingsInTheDatabase;
 use Modules\Updates\Internal\UpkeepReadingsKept;
 use Tests\Support\AKeptDatabase;
 use Tests\Support\Fakes\ReadingsInMemory;
+use Tests\Support\WhatEveryKeeperKeeps;
+use Tests\Support\WhatTheModulesDeclare;
 
 pest()->group('holds:bootstrap/Composition');
 
@@ -91,6 +95,36 @@ it('lets go of every reading read before the moment, in every store it answers f
     }
 });
 
+it('refuses to be built with no store to ask', function (): void {
+    expect(static fn(): EveryStoreOfReadings => new EveryStoreOfReadings())->toThrow(NothingToAsk::class);
+});
+
+it('lets go of old readings in every store the modules declare, when the app lets go of them', function (): void {
+    $stores = WhatEveryKeeperKeeps::heldBy(EveryStoreOfReadings::class, 'stores', app(ForgetsOldReadings::class));
+
+    foreach (WhatTheModulesDeclare::theirOwn(ForgetsOldReadings::class) as $declared) {
+        expect(array_any($stores, static fn(mixed $store): bool => $store instanceof $declared))->toBeTrue($declared);
+    }
+});
+
+it('leaves no reading older than the moment in any store the app lets go of readings in', function (): void {
+    WhatEveryKeeperKeeps::inTheAppOverStoresOfItsOwn();
+
+    foreach (WhatEveryKeeperKeeps::askedAsOne(app(ForgetsAStack::class)) as $keeper) {
+        WhatEveryKeeperKeeps::somethingFor($keeper, WhatEveryKeeperKeeps::aStack('a'));
+    }
+
+    $lettingGo = app(ForgetsOldReadings::class);
+    $later = Instant::atEpochSeconds(PHP_INT_MAX);
+
+    expect($lettingGo->forgetOlderThan($later)->howMany())->toBeGreaterThan(0);
+
+    foreach (WhatEveryKeeperKeeps::heldBy(EveryStoreOfReadings::class, 'stores', $lettingGo) as $store) {
+        assert($store instanceof ForgetsOldReadings);
+        expect($store->forgetOlderThan($later)->howMany())->toBe(0, $store::class);
+    }
+});
+
 it('lets go of nothing where nothing is kept, and says so', function (): void {
     foreach ([
         'the health adapter' => static fn(): ForgetsOldReadings => new HealthReadingsInTheDatabase(AKeptDatabase::migrated()),
@@ -98,7 +132,6 @@ it('lets go of nothing where nothing is kept, and says so', function (): void {
         'the services adapter' => static fn(): ForgetsOldReadings => new ListingsInTheDatabase(AKeptDatabase::migrated()),
         'the requests adapter' => static fn(): ForgetsOldReadings => new RequestsInTheDatabase(AKeptDatabase::migrated()),
         'the fake' => static fn(): ForgetsOldReadings => ReadingsInMemory::empty(),
-        'no store at all' => static fn(): ForgetsOldReadings => new EveryStoreOfReadings(),
     ] as $which => $made) {
         expect($made()->forgetOlderThan(Instant::atEpochSeconds(WHEN_THE_OLD_AND_THE_NEW_WERE_READ))->howMany())->toBe(0, $which);
     }

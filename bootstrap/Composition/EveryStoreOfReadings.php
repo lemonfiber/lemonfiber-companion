@@ -23,6 +23,10 @@ final readonly class EveryStoreOfReadings implements ForgetsOldReadings
 
     public function __construct(ForgetsOldReadings ...$stores)
     {
+        if ($stores === []) {
+            throw NothingToAsk::in(self::class);
+        }
+
         $this->stores = $stores;
     }
 

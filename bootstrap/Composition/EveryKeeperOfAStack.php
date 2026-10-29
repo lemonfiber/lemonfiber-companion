@@ -25,6 +25,10 @@ final readonly class EveryKeeperOfAStack implements ForgetsAStack
 
     public function __construct(ForgetsAStack ...$keepers)
     {
+        if ($keepers === []) {
+            throw NothingToAsk::in(self::class);
+        }
+
         $this->keepers = array_values($keepers);
     }
 

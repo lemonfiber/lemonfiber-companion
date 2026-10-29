@@ -9,12 +9,10 @@ use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Facades\Route;
 
 use function is_array;
-use function ltrim;
 
 use Native\Mobile\Edge\NativeRouter;
 
 use function request;
-use function sprintf;
 
 /**
  * `Route::native()`, building each screen through the container.
@@ -119,9 +117,7 @@ final readonly class ScreenRoutes
      */
     private function answer(string $screen): mixed
     {
-        $path = sprintf('/%s', ltrim(request()->path(), '/'));
-
-        return $this->runloop->enter($this->build, $screen, $this->parameters($path), request()->getRequestUri());
+        return $this->runloop->enter($this->build, $screen, $this->parameters(request()->getPathInfo()), request()->getRequestUri());
     }
 
     /**
