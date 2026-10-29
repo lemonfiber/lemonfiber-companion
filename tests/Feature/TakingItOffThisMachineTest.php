@@ -529,14 +529,14 @@ it('lets go of the volume acknowledged, and the reading, when another removal is
     $screen->acknowledgeTheVolume();
     $screen->choose('services');
 
-    expect($screen->volumeAcknowledged)->toBeFalse()
+    expect($screen->volumeAcknowledged)->toBeNull()
         ->and($screen->surveyed)->toBeNull();
 
     $screen->answer();
     $screen->acknowledgeTheVolume();
     $screen->chooseAgain();
 
-    expect($screen->volumeAcknowledged)->toBeFalse()
+    expect($screen->volumeAcknowledged)->toBeNull()
         ->and($screen->surveyed)->toBeNull()
         ->and($screen->tier)->toBe('')
         ->and($screen->answer()->chosen)->toBeFalse();

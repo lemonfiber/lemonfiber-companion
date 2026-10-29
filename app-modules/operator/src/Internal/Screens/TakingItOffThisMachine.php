@@ -81,11 +81,11 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     public ?AnUninstall $surveyed = null;
 
     /**
-     * Whether the operator has acknowledged, apart from the yes, that the data is on a network share or a drive that unplugs.
+     * The volume the operator acknowledged, apart from the yes, that the reading's data is on: a network share or a drive that unplugs.
      *
      * Public for {@see HowCurrentThisStackIs::$answered}'s reason.
      */
-    public bool $volumeAcknowledged = false;
+    public ?string $volumeAcknowledged = null;
 
     /** The handle of the removal being followed, while there is one. Not shown and never kept past this screen. */
     public ?string $following = null;
@@ -154,7 +154,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     /** Say, apart from the yes, that the data being on this volume is known. */
     public function acknowledgeTheVolume(): void
     {
-        $this->volumeAcknowledged = true;
+        $this->volumeAcknowledged = $this->surveyed?->manifest()->volume();
     }
 
     /**
@@ -167,7 +167,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     {
         $surveyed = $this->surveyed;
 
-        return $surveyed instanceof AnUninstall && $surveyed->manifest()->volume() !== '' && ! $this->volumeAcknowledged;
+        return $surveyed instanceof AnUninstall && $surveyed->manifest()->volume() !== '' && $surveyed->manifest()->volume() !== $this->volumeAcknowledged;
     }
 
     /** Take it off now, interrupting anything still coming down. */
@@ -234,7 +234,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
             return;
         }
 
-        $agreed = AnUninstallAgreed::after($surveyed, $waiting, acknowledgedTheVolume: $this->volumeAcknowledged);
+        $agreed = AnUninstallAgreed::after($surveyed, $waiting, acknowledgedTheVolume: $this->volumeAcknowledged !== null);
         $this->surveyed = null;
         $this->agreedTo = $agreed->tier()->value;
 
@@ -328,7 +328,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     private function letGoOfTheReading(): void
     {
         $this->surveyed = null;
-        $this->volumeAcknowledged = false;
+        $this->volumeAcknowledged = null;
         $this->agreedTo = '';
         $this->going = null;
     }
