@@ -127,9 +127,7 @@ final class WhatTheStackItselfReads extends NativeComponent implements AwaitsAnO
     /** Every installed plugin's services, read first, so what they read can be set aside. */
     private function found(Stack $stack, Session $session): WhatTheStackItselfReadsShows
     {
-        if (! $this->mayReadItsStack()) {
-            return new HowTheStacksOwnSettingsRead()->waits();
-        }
+        $this->readsItsStack();
 
         return $this->extending->installedOn($stack, $session)->either(
             found: function (ThePlugins $plugins) use ($stack, $session): WhatTheStackItselfReadsShows {

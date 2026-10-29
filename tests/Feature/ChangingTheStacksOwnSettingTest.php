@@ -181,6 +181,20 @@ it('reads the plugins on the first frame and the settings on the next, saying it
         ->and($tuning->askings())->toBe(1);
 });
 
+it('reads the plugins and the settings afresh, a frame apart, when asked again', function (): void {
+    $tuning = aStackThatSetsItsOwn();
+    $screen = theStacksOwnSettingsRead($tuning);
+    $screen->again();
+
+    expect($screen->read)->toBeNull()
+        ->and($screen->thePluginsServices)->toBeNull()
+        ->and($screen->answered)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('plugins.settings.own_reading'))
+        ->and($tuning->askings())->toBe(1)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('domain')
+        ->and($tuning->askings())->toBe(2);
+});
+
 it('lists every setting and secret no installed plugin reads, grouped as the core\'s and by namespace, and nothing a plugin reads', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theStacksOwnSettingsRead(aStackThatSetsItsOwn()));
 
