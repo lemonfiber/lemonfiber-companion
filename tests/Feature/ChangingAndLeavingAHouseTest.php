@@ -51,6 +51,17 @@ it('is served at the house\'s own path, titled Profile, and offers its three row
         ->and($drawn->offers())->toContain(__('household.switch_house'), __('household.app_settings'), __('household.remove_house'));
 });
 
+it('opens neither asking to take the house off nor saying it could not be, until asked', function (): void {
+    $home = aHouseOnTheirProfile('a', 'The loft');
+    $profile = new AMemberOnTheirProfile($home)->profileOf($home);
+    $drawn = WhatTheDeviceWouldDraw::by($profile);
+
+    expect($profile->confirmingTheRemoval)->toBeFalse()
+        ->and($profile->removalRefused)->toBeFalse()
+        ->and($drawn->said())->not->toContain(__('household.remove_house_confirm', ['house' => 'The loft']), __('household.remove_house_refused', ['house' => 'The loft']))
+        ->and($drawn->offers())->not->toContain(__('household.keep_it'));
+});
+
 it('lists every house by name alone, the one the member is in marked, only while the list is open', function (): void {
     $first = aHouseOnTheirProfile('a', 'The loft');
     $second = aHouseOnTheirProfile('b', 'Zolder');
