@@ -138,10 +138,13 @@ final readonly class Said
      * `mb_stripos` rather than `str_contains` with a case fold, because a log
      * line is whatever bytes a service wrote and folding case by byte turns a
      * multi-byte character into something that matches nothing.
+     *
+     * A blank search is not a search, so every line holds it, whatever
+     * `mb_stripos` does with an empty needle.
      */
     public function holds(LookingFor $looking): bool
     {
-        return mb_stripos($this->line, $looking->typed()) !== false;
+        return ! $looking->isSearching() || mb_stripos($this->line, $looking->typed()) !== false;
     }
 
     /**

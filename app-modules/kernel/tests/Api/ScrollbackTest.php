@@ -160,24 +160,11 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
         ->and(everyLineIn($window))->toBe('first | second');
 });
 
-it('a blank search selects every line, which is what exempts the early return', function (): void {
-    // `matching()` carries a mutation exemption, and this is the assertion that
-    // ends it.
-    //
-    // The early return answers a blank search with the window whole. Removing
-    // it drops through to the loop below, which asks each line whether it holds
-    // what is being looked for — and `mb_stripos($line, '')` is 0, so every
-    // line says yes. The two arms then build the same window from the same
-    // lines, with the same `LookingFor`: every non-searching one holds the
-    // empty string, so `nothing()` and a blank `text()` are the same value.
-    //
-    // Nothing can tell them apart while that is true. The day `holds()` answers
-    // a blank search with `false`, it stops being true and the early return
-    // becomes the only thing keeping the window whole.
+it('holds a blank search on every line, whatever the line says', function (): void {
     foreach ([LookingFor::nothing(), LookingFor::text('   ')] as $blank) {
-        expect($blank->isSearching())->toBeFalse()
-            ->and($blank->typed())->toBe('', 'a non-searching LookingFor now holds text, so the early return in `Scrollback::matching()` is observable: it answers `nothing()` where the loop answers what it was given. Delete the `@pest-mutate-ignore: RemoveEarlyReturn` beside it and assert which of the two a blank search reports.')
-            ->and(aLineSaying('nothing like that')->holds($blank))
-            ->toBeTrue('a blank search no longer selects every line, so the early return in `Scrollback::matching()` is the only thing that gives the window back whole. Delete the `@pest-mutate-ignore: RemoveEarlyReturn` beside it and assert the count it returns.');
+        expect(aLineSaying('nothing like that')->holds($blank))->toBeTrue();
     }
+
+    expect(aLineSaying('tunnel up')->holds(LookingFor::text('retry')))->toBeFalse()
+        ->and(aLineSaying('Retrying in 5s')->holds(LookingFor::text('retry')))->toBeTrue();
 });

@@ -46,8 +46,8 @@ it('names exactly one wire version, which is what exempts `newest()`', function 
         1,
         'A second wire version now exists, so `newest()` is observable: with two '
         . 'cases the maximum and the minimum are different answers and a test can '
-        . 'tell them apart. Delete the `@pest-mutate-ignore: MaxToMin` beside '
-        . '`WireVersion::newest()` and write the test that pins the ordering — that '
+        . 'tell them apart. Delete the `MaxToMin` entry for `WireVersion.php` in '
+        . '`mutation-gate.json` and write the test that pins the ordering — that '
         . 'the newest is the highest value, rather than whichever case happens to '
         . 'be declared first.',
     );
