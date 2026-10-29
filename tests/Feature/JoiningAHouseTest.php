@@ -338,6 +338,16 @@ it('adds the house a join link names, pinned to its certificate, once they say s
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
 })->with(['scanned', 'opened while it was running', 'opened from cold']);
 
+it('lets go of the house a join link offered once the camera is opened for another code, so confirming after it adds nothing', function (): void {
+    [$screen, $stacks] = aJoinLinkOpenedBy('opened from cold');
+
+    $screen->findTheHouse();
+    $screen->confirmTheHouse();
+
+    expect($screen->offeredAt)->toBe('')
+        ->and($stacks->holdsAny())->toBeFalse();
+});
+
 it('keeps nothing of a join link they say nobody in their house sent, and confirming afterwards adds nothing', function (): void {
     [$screen, $stacks] = aJoinLinkOpenedBy('scanned');
 
