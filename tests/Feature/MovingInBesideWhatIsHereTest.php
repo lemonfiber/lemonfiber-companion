@@ -550,7 +550,7 @@ it('leaves an answer where it is and moves nothing', function (): void {
     $screen->leaveIt();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect([$screen->about, $screen->following, $screen->staged])->toBe(['', null, null])
+    expect([$screen->about, $screen->following, $screen->staged])->toBe([null, null, null])
         ->and($screen->howTheMoveIsGoing()->move)->toBeNull()
         ->and($drawn->offers())->not->toContain(__('stacks.moving_in.agree.adopt'))
         ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
