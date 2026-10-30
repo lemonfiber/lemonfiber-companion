@@ -346,3 +346,19 @@ it('sends nothing for a setting nobody offered alongside', function (): void {
     expect($screen->changing?->alongside)->toBe([])
         ->and($screen->toMoveAlongside())->toBe([]);
 });
+
+it('leaves nothing out of a change nobody opened, nor while the stack works on one', function (): void {
+    $tuning = aStackHoldingTheGuardsChoices(WhatBecameOfTheWork::refused(outsideItsChoices()));
+    $screen = theGuardsChoicesScreen($tuning);
+    $screen->leaveOut('vpn.type');
+    $unopened = $screen->changing;
+    $screen = piaAloneRefused($tuning);
+    $screen->alsoMove('vpn.type');
+    $screen->choose('vpn.type', 'openvpn');
+    $screen->rehearse();
+    $screen->leaveOut('vpn.type');
+
+    expect($unopened)->toBeNull()
+        ->and($screen->following)->not->toBeNull()
+        ->and($screen->changing?->alongside)->toBe(['vpn.type' => 'openvpn']);
+});

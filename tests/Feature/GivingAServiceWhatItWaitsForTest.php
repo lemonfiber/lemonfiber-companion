@@ -208,3 +208,14 @@ it('reads the settings again when asked', function (): void {
 
     expect($tuning->askings())->toBe(2);
 });
+
+it('opens no setting it does not list, and none on the page of a service nothing holds back', function (): void {
+    $waiting = thePageAboutWhatItWaitsFor(aStackHoldingTheGuardBack());
+    WhatTheDeviceWouldDraw::by($waiting);
+    $waiting->change('vpn.unlisted');
+    $running = thePageAboutWhatItWaitsFor(aStackHoldingTheGuardBack(), 'caddy');
+    WhatTheDeviceWouldDraw::by($running);
+    $running->change('vpn.provider');
+
+    expect([$waiting->changing, $running->changing])->toBe([null, null]);
+});

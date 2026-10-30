@@ -485,6 +485,11 @@ it('refuses a payload that is not a shape at all when asked what else the machin
     ))->toThrow(RosterIsUnreadable::class, 'data');
 });
 
+it('refuses a payload that is not a shape at all when asked what the machine holds back', function (): void {
+    expect(fn(): TheServicesWaiting => Rosters::whatIsWaiting(new Envelope(1, 'status', 'a sentence where a payload belongs')))
+        ->toThrow(RosterIsUnreadable::class, 'data');
+});
+
 it('refuses an undeclared entry that is not a row', function (): void {
     // A list of the right name holding the wrong thing. Refused by the field
     // that carried it rather than read as a container with nothing to say,
