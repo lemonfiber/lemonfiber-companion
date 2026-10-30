@@ -9,6 +9,7 @@ use Tests\TestCase;
 // The application is booted here, unlike most component tests: a render needs
 // the view factory, the component namespace and the precompiler.
 uses(TestCase::class);
+pest()->group('holds:app-modules/operator/src/View/Components/Content.php');
 
 // What a screen puts in the component's slot is drawn inside the padded column,
 // and the column inside a scroll view, so a screen longer than the handset

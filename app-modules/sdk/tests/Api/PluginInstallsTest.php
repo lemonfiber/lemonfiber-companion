@@ -508,6 +508,15 @@ it('refuses a row it cannot read by its position, first or later, in every list'
     }
 });
 
+it('refuses a sharing row it cannot read by its position, first or later', function (): void {
+    $sharing = ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr', 'at' => '/upstream'];
+    $first = anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => ['tdarr-adapter', $sharing]]));
+    $later = anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [$sharing, [...$sharing, 'at' => ' ']]]));
+
+    expect(static fn(): ThePlugins => PluginInstalls::in($first))->toThrow(PluginsAreUnreadable::class, 'Row 0 of `sharing` in the plugins envelope has no readable `adapter`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($later))->toThrow(PluginsAreUnreadable::class, 'Row 1 of `sharing` in the plugins envelope has no readable `at`.');
+});
+
 it('refuses the plugin an install would settle in the words of the one record it is, and a recipe it holds by its row', function (): void {
     $noVersion = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'version' => ' ']));
     $recipe = ['id' => 'resync', 'title' => 'Ask Plex to look again', 'steps' => [], 'pairs' => []];
