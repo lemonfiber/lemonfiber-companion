@@ -64,7 +64,7 @@ it('is installed only where it was recorded, no proof failed and the checks foun
 it('is never installed once it was put back, however its proofs and checks came out', function (): void {
     $putBack = APluginInstall::putBack(
         APluginAsItArrives::held(),
-        WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these()),
+        WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
         TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', WhatAProofCameTo::passed())),
         WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
         ARunPutBack::reported(WhetherItWasRehearsed::CarriedOut, WhatWentBack::these(), ChangesAndWhy::these(), ChangesAndWhy::these()),
