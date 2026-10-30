@@ -93,7 +93,7 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     }
 
     /** The setting of that name one of the plugin's services reads, as last read, or none; a secret is never one. */
-    private function itsSetting(string $setting): ?ASetting
+    protected function itsSetting(string $setting): ?ASetting
     {
         $plugin = $this->plugin;
         $read = $this->read;

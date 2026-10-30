@@ -101,7 +101,7 @@ final class WhatTheStackItselfReads extends NativeComponent implements AwaitsAnO
     }
 
     /** The setting of that name no installed plugin reads, as last read, or none; a secret is never one. */
-    private function itsSetting(string $setting): ?ASetting
+    protected function itsSetting(string $setting): ?ASetting
     {
         $services = $this->thePluginsServices;
         $read = $this->read;

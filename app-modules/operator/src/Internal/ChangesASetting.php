@@ -152,7 +152,7 @@ trait ChangesASetting
     }
 
     /** The setting of that name the screen lists, as last read, or none; a secret is never one. */
-    abstract private function itsSetting(string $setting): ?ASetting;
+    abstract protected function itsSetting(string $setting): ?ASetting;
 
     /** Take what the stream said of the settings in place of what was read. */
     private function hearTheSettings(): void
