@@ -90,6 +90,9 @@ enum AStacksScreen: string
     /** Everything this machine is set to, as the machine itself lists it. */
     case Settings = '/stacks/{stack}/settings';
 
+    /** Every setting and secret in the machine's stores that no installed plugin reads, and changing a setting. */
+    case OwnSettings = '/stacks/{stack}/settings/own';
+
     /** What this phone keeps of this machine, and taking it off the phone. */
     case OnThisPhone = '/stacks/{stack}/on-this-phone';
 

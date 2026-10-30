@@ -54,6 +54,7 @@ return [
         'about' => 'About',
         'uninstall' => 'Uninstall',
         'general' => 'General',
+        'own_settings' => 'Own settings',
         'quality' => 'Quality',
         'connections' => 'Connections',
         'plugins' => 'Plugins',

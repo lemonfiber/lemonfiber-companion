@@ -51,6 +51,7 @@ use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
+use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -226,6 +227,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // does not know, and should not have to guess, which service owns
             // it.
             Router::native(AStacksScreen::Settings->value, WhatThisStackIsSetTo::class);
+            Router::native(AStacksScreen::OwnSettings->value, WhatTheStackItselfReads::class);
 
             // What this phone keeps of the machine, and taking it off the
             // phone: the menu's Stack settings.

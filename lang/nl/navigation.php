@@ -54,6 +54,7 @@ return [
         'about' => 'Over',
         'uninstall' => 'Verwijderen',
         'general' => 'Algemeen',
+        'own_settings' => 'Eigen instellingen',
         'quality' => 'Kwaliteit',
         'connections' => 'Verbindingen',
         'plugins' => 'Plug-ins',

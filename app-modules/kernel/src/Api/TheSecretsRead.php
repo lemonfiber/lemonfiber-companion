@@ -33,6 +33,18 @@ final readonly class TheSecretsRead implements IteratorAggregate
         return new self(array_values(array_filter($this->secrets, static fn(ASecret $secret): bool => $secret->readers()->includeAnyOf($services))));
     }
 
+    /** Only the secrets none of these services reads. */
+    public function readByNoneOf(Services $services): self
+    {
+        return new self(array_values(array_filter($this->secrets, static fn(ASecret $one): bool => ! $one->readers()->includeAnyOf($services))));
+    }
+
+    /** Only the secrets this owner holds. */
+    public function ownedBy(WhoseASettingIs $whose): self
+    {
+        return new self(array_values(array_filter($this->secrets, static fn(ASecret $one): bool => $one->whose()->is($whose))));
+    }
+
     /** @return Traversable<int, ASecret> */
     public function getIterator(): Traversable
     {

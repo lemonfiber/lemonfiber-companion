@@ -29,6 +29,7 @@ use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
 use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
+use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
@@ -75,6 +76,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatExtendsThisStack::class,
     WhatItHoldsToLetThemIn::class,
     WhatTheHouseholdIsAllowed::class,
+    WhatTheStackItselfReads::class,
     WhatWouldBePutRight::class,
 ];
 

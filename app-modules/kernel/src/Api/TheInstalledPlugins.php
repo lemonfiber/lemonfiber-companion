@@ -26,6 +26,18 @@ final readonly class TheInstalledPlugins implements IteratorAggregate
         return new self(array_values($plugins));
     }
 
+    /** Every service of every one of them. */
+    public function services(): Services
+    {
+        $services = [];
+
+        foreach ($this->plugins as $plugin) {
+            $services = [...$services, ...$plugin->services()];
+        }
+
+        return Services::these(...$services);
+    }
+
     /** @return Traversable<int, APlugin> */
     public function getIterator(): Traversable
     {
